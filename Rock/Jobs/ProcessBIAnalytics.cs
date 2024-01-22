@@ -25,6 +25,8 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
@@ -622,7 +624,7 @@ UPDATE [{analyticsTableName}]
 
                     if ( recordsDeleted > 0 )
                     {
-                        Log( RockLogLevel.Debug, $"Removed {recordsDeleted} history records that do not correspond to a Person record." );
+                        Logger.LogDebug( $"Removed {recordsDeleted} history records that do not correspond to a Person record." );
                     }
                 }
 

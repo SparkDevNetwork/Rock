@@ -78,8 +78,9 @@ namespace RockWeb.Blocks.CheckIn
 
     [TextField( "No Option Message",
         Key = AttributeKey.NoOptionMessage,
+        Description = @"Message to display on a person's row if they don't have any options available. This is rare, as people without options are normally removed from the list altogether, but there are some check-in configurations that can lead to ""unscheduleable"" people remaining in the list.",
         IsRequired = false,
-        DefaultValue = "Sorry, there are currently not any available areas that the selected people can check into.",
+        DefaultValue = "",
         Category = "Text",
         Order = 10 )]
 
@@ -236,7 +237,6 @@ namespace RockWeb.Blocks.CheckIn
 
                     lTitle.Text = GetTitleText();
                     lCaption.Text = GetAttributeValue( AttributeKey.Caption );
-                    lCaption2.Text = lCaption.Text;
                     lbSelect.Text = GetAttributeValue( AttributeKey.NextButtonText );
 
                     if ( _autoCheckin )
@@ -323,13 +323,8 @@ namespace RockWeb.Blocks.CheckIn
                             pnlChangeButton.Visible = selectedOptions.Count > 1 || AnyUnselectedOptions( person );
                         }
                     }
-                    //<div class='row'>
-                    //    <div class='col-md-4 family-personselect'>{0}</div>
-                    //    <div class='col-md-8 auto-select'>
-                    //        <div class='auto-select-caption'>is checking into...<div>
-                    //        <div class='auto-select-details'>{1}</div>
-                    //    </div>
-                    //</div>
+
+                    var noOptionMessage = GetAttributeValue( AttributeKey.NoOptionMessage );
 
                     if ( options.Any() )
                     {
@@ -343,6 +338,17 @@ namespace RockWeb.Blocks.CheckIn
 </div>
 
 ", person.Person.FullName, options.AsDelimited( "<br/>" ) );
+                    }
+                    else if ( !person.AnyPossibleSchedules && noOptionMessage.IsNotNullOrWhiteSpace() )
+                    {
+                        lPersonButton.Text = string.Format( @"
+<div class='row'>
+    <div class='col-md-5 family-personselect'>{0}</div>
+    <div class='col-md-7 family-no-option'>
+        <div class='no-option-caption'>{1}</div>
+    </div>
+</div>"
+, person.Person.FullName, noOptionMessage );
                     }
                     else
                     {
@@ -552,19 +558,14 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        protected void ProcessSelection()
-        {
-            ProcessSelection(
-                maWarning,
-                () => CurrentCheckInState.CheckIn.CurrentFamily.GetPeople( true )
-                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) )
-                    .Count() <= 0,
-                string.Format( "<p>{0}</p>", GetAttributeValue( AttributeKey.NoOptionMessage ) ) );
-        }
-
         protected string GetSelectedClass( bool selected )
         {
             return selected ? "active" : "";
+        }
+
+        protected string GetDisabledClass( bool anyPossibleSchedules )
+        {
+            return !anyPossibleSchedules ? "disabled" : "";
         }
 
         protected string GetCheckboxClass( bool selected )
@@ -687,19 +688,19 @@ namespace RockWeb.Blocks.CheckIn
         {
             foreach ( var groupType in person.GroupTypes )
             {
-                if ( !groupType.PreSelected )
+                if ( !groupType.PreSelected && groupType.AvailableForSchedule?.Any() == true )
                 {
                     return true;
                 }
                 foreach ( var group in groupType.Groups )
                 {
-                    if ( !group.PreSelected )
+                    if ( !group.PreSelected && group.AvailableForSchedule?.Any() == true )
                     {
                         return true;
                     }
                     foreach ( var location in group.Locations )
                     {
-                        if ( !location.PreSelected )
+                        if ( !location.PreSelected && location.AvailableForSchedule?.Any() == true )
                         {
                             return true;
                         }

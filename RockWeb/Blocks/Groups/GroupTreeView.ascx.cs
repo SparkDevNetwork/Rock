@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Groups
             public const string GroupTypesInclude = "GroupTypes";
             public const string GroupTypesExclude = "GroupTypesExclude";
             public const string RootGroup = "RootGroup";
-            public const string LimitToSecurityRoleGroups = "LimitToSecurityRoleGroups";
+            public const string LimitToSecurityRoleGroups = "LimittoSecurityRoleGroups";
             public const string ShowSettingsPanel = "ShowFilterOption";
             public const string DisplayInactiveCampuses = "DisplayInactiveCampuses";
             public const string InitialCountSetting = "InitialCountSetting";

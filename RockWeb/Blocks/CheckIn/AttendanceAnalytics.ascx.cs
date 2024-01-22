@@ -27,6 +27,8 @@ using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Chart;
@@ -667,14 +669,6 @@ namespace RockWeb.Blocks.CheckIn
             if ( pnlShowByChart.Visible )
             {
                 var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
-                double? chartDataWeekCount = null;
-                double? chartDataMonthCount = null;
-                int maxXLabelCount = 20;
-                if ( dateRange.End.HasValue && dateRange.Start.HasValue )
-                {
-                    chartDataWeekCount = ( dateRange.End.Value - dateRange.Start.Value ).TotalDays / 7;
-                    chartDataMonthCount = ( dateRange.End.Value - dateRange.Start.Value ).TotalDays / 30;
-                }
 
                 lcAttendance.TooltipContentScript = GetChartTooltipScript( groupBy );
 
@@ -684,21 +678,15 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     case ChartGroupBy.Week:
                         {
-                            if ( chartDataWeekCount < maxXLabelCount )
-                            {
-                                intervalType = "day";
-                                intervalSize = "7";
-                            }
+                            intervalType = "week";
+                            intervalSize = "1";
                         }
                         break;
 
                     case ChartGroupBy.Month:
                         {
-                            if ( chartDataMonthCount < maxXLabelCount )
-                            {
-                                intervalType = "month";
-                                intervalSize = "1";
-                            }
+                            intervalType = "month";
+                            intervalSize = "1";
                         }
                         break;
 
@@ -1615,8 +1603,8 @@ var headerText = dp.label;
             {
                 taskLogMessage += $"Task Name: {info.name}, Time To Run: {info.TimeToRun()}. ";
             }
-            RockLogger.Log.Information( RockLogDomains.Reporting, "Attendance Analytics Task Times: " + taskLogMessage );
-            RockLogger.Log.Information( RockLogDomains.Reporting, "Attendance Analytics Parameters: " +
+            Logger.LogInformation( "Attendance Analytics Task Times: " + taskLogMessage );
+            Logger.LogInformation( "Attendance Analytics Parameters: " +
                 "groupTypeIdList: {@groupTypeIdList}, groupIdList: {@groupIdList}, start: {@start}, end: {@end}, " +
                 "campusIdList: {@campusIdList}, includeNullCampus: {@includeNullCampus}, scheduleIdList: {@scheduleIdList}",
                 groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList );

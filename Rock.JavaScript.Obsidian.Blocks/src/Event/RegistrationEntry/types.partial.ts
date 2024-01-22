@@ -123,6 +123,7 @@ export type RegistrationEntryBlockViewModel = {
     signatureDocumentTemplateName?: string | null;
 
     hideProgressBar: boolean;
+    disableCaptchaSupport: boolean;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
@@ -139,6 +140,7 @@ export type RegistrationEntryBlockFeeViewModel = {
     isRequired: boolean;
     items: RegistrationEntryBlockFeeItemViewModel[];
     discountApplies: boolean;
+    hideWhenNoneRemaining?: boolean;
 };
 
 export type RegistrationEntryBlockFeeItemViewModel = {
@@ -176,7 +178,7 @@ export type RegistrantInfo = {
     isOnWaitList: boolean;
 
     /** The family guid that this person is to be a part of */
-    familyGuid: Guid;
+    familyGuid: Guid | null;
 
     /** If the person were an existing person, this is his/her guid */
     personGuid: Guid | null;
@@ -184,6 +186,7 @@ export type RegistrantInfo = {
     fieldValues: Record<Guid, unknown>;
     cost: number;
     feeItemQuantities: Record<Guid, number>;
+    existingSignatureDocumentGuid?: Guid | null,
     signatureData?: string | null;
 
     guid: Guid;
@@ -214,6 +217,7 @@ export type RegistrationEntryBlockArgs = {
     gatewayToken: string | null;
     discountCode: string | null;
     amountToPayNow: number;
+    isCaptchaValid: boolean;
 };
 
 export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
@@ -262,4 +266,5 @@ export type RegistrationEntryState = {
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;
     ownFamilyGuid: Guid;
+    isCaptchValid: boolean;
 };

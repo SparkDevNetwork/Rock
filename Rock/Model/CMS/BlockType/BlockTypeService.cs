@@ -230,9 +230,8 @@ namespace Rock.Model
         /// Registers any block types that are not currently registered in Rock.
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
-        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false )
+        public static void RegisterBlockTypes( string physWebAppPath, bool refreshAll = false )
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
@@ -488,5 +487,32 @@ namespace Rock.Model
 
             return base.Delete( item );
         }
+
+        #region Obsolete Methods
+        /*
+            11/22/2023 - JR
+
+            The RegisterBlockTypes method is being deprecated in its current form to align with the evolving architecture of our application, 
+            specifically the transition from Web Forms to a more modern, modular framework. The dependency on System.Web.UI.Page is no longer 
+            relevant in this context.
+
+            Reason: Introducing an overloaded version of RegisterBlockTypes that omits the System.Web.UI.Page parameter. This new method
+            provides the same functionality but is designed to be more straightforward and not reliant on legacy technologies.
+        */
+
+        /// <summary>
+        /// Registers any block types that are not currently registered in Rock.
+        /// </summary>
+        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
+        [RockObsolete("1.17.1")]
+        [Obsolete("This method is deprecated and will be removed in a future version. Please use the overload without the System.Web.UI.Page parameter.")]
+        public static void RegisterBlockTypes(string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false)
+        {
+            RegisterBlockTypes(physWebAppPath, refreshAll);
+        }
+
+        #endregion
     }
 }

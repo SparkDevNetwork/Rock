@@ -12,7 +12,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.MediaAccount"
                  entityTypeName="MediaAccount"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
@@ -120,11 +120,14 @@
             });
         }
 
-        labels.push({
-            iconCssClass:"",
-            title: mediaAccountViewBag.value?.lastRefresh ?? "",
-            type: "info"
-        });
+        if (mediaAccountViewBag.value?.lastRefresh) {
+            labels.push({
+                iconCssClass: "",
+                title: mediaAccountViewBag.value?.lastRefresh ?? "",
+                type: "info"
+            });
+        }
+
 
         return labels;
     });

@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField(
         "Show Nick Name",
         Key = AttributeKey.ShowNickName,
-        Description = "Whether to show the person's Nickname in addition to the First Name.",
+        Description = "Whether to show the person's Nickname in addition to the First Name in the edit screen.",
         DefaultBooleanValue = true,
         Order = 4 )]
 
@@ -351,6 +351,16 @@ namespace RockWeb.Blocks.Cms
             /// True if gender should be shown.
             /// </summary>
             public const string ShowGender = "ShowGender";
+
+            /// <summary>
+            /// True if the person's title should be shown.
+            /// </summary>
+            public const string ShowTitle = "ShowTitle";
+
+            /// <summary>
+            /// True if the person's suffix should be shown.
+            /// </summary>
+            public const string ShowSuffix = "ShowSuffix";
 
             /// <summary>
             /// The families that this person is in.
@@ -649,6 +659,12 @@ namespace RockWeb.Blocks.Cms
             var showGender = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean();
             rblGender.Visible = showGender;
             mergeFields.Add( MergeFieldKey.ShowGender, showGender );
+
+            var showTitle = GetAttributeValue( AttributeKey.ShowTitle ).AsBoolean();
+            mergeFields.Add( MergeFieldKey.ShowTitle, showTitle );
+
+            var showSuffix = GetAttributeValue( AttributeKey.ShowSuffix ).AsBoolean();
+            mergeFields.Add( MergeFieldKey.ShowSuffix, showSuffix );
 
             var showEmailPreference = GetAttributeValue( AttributeKey.ShowEmailPreference ).AsBoolean();
             rblEmailPreference.Visible = showEmailPreference;

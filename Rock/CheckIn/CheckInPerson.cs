@@ -127,6 +127,14 @@ namespace Rock.CheckIn
         public List<CheckInSchedule> PossibleSchedules { get; set; }
 
         /// <summary>
+        /// Gets whether this person has any possible schedules available for check-in.
+        /// </summary>
+        /// <value>
+        /// Whether this person has any possible schedules available for check-in.
+        /// </value>
+        public bool AnyPossibleSchedules => this.PossibleSchedules?.Any() == true;
+
+        /// <summary>
         /// Gets or sets state parameters which can be used by workflow actions to track state of current person's check-in
         /// </summary>
         /// <value>

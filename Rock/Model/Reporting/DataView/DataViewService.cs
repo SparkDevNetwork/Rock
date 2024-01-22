@@ -21,8 +21,12 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Data.SqlClient;
 using System.Linq;
+
 using EF6.TagWith;
+
+using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Types;
+
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
@@ -254,7 +258,8 @@ namespace Rock.Model
 
             if ( timeToRunDurationMilliseconds.HasValue )
             {
-                RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
+                RockLogger.LoggerFactory.CreateLogger<DataViewService>()
+                    .LogDebug( "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
                 dataViewInfo.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
                 /*
                  * If the run duration is set that means this was called after the expression was
@@ -332,7 +337,7 @@ namespace Rock.Model
 
             if ( dataViewObjectQuery == null )
             {
-                RockLogger.Log.WriteToLog( RockLogLevel.Error, $"{nameof( UpdateDataViewPersistedValues )}: Unable to update persisted values for data view with ID {dataView.Id}." );
+                Logger.LogError( $"{nameof( UpdateDataViewPersistedValues )}: Unable to update persisted values for data view with ID {dataView.Id}." );
                 return;
             }
 

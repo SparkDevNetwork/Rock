@@ -3,7 +3,7 @@
   "description": "Project for all core blocks in Rock.",
   "scripts": {
     "build-fast": "node build/build-fast.js",
-    "build": "npm run build:types && rollup --config rollup.config.cjs && echo '' > dist/.buildstamp && echo DONE",
+    "build": "npm run build:types && node ../Rock.JavaScript.Obsidian/Build/rollup-mt.js rollup.config.cjs && echo '' > dist/.buildstamp && echo DONE",
     "build:types": "node ./build/build-types.js",
     "watch": "rollup --config rollup.config.cjs --watch",
     "clean": "rimraf dist",
@@ -40,7 +40,7 @@
     "ts-node": "^10.9.1",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2",
-    "vue": "^3.3.4",
+    "vue": "^3.3.10",
     "vue-eslint-parser": "^9.3.1"
   }
 }

@@ -76,6 +76,9 @@ namespace Rock.Client
         public bool? IsAlert { get; set; }
 
         /// <summary />
+        public bool IsPinned { get; set; }
+
+        /// <summary />
         public bool IsPrivateNote { get; set; }
 
         /// <summary />
@@ -153,6 +156,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsAlert = source.IsAlert;
+            this.IsPinned = source.IsPinned;
             this.IsPrivateNote = source.IsPrivateNote;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

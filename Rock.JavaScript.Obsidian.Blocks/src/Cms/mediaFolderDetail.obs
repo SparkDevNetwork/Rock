@@ -11,7 +11,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.MediaFolder"
                  :entityTypeName="panelName"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="false"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
@@ -64,7 +64,6 @@
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
     const validProperties = [
-        "attributeValues",
         "contentChannel",
         "contentChannelAttribute",
         "description",

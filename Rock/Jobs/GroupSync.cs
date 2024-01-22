@@ -23,6 +23,9 @@ using System.Linq;
 using System.Text;
 
 using Humanizer;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -127,7 +130,7 @@ namespace Rock.Jobs
                     var enableLoggingMessage = "Enable 'Warning' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues.";
                     warningExceptionMessage = $"{warningExceptionMessage} {enableLoggingMessage}";
 
-                    Log( Logging.RockLogLevel.Warning, $"{result.WarningMessages.Count} {"warning".PluralizeIf( result.WarningMessages.Count > 1 ).Titleize()}: {result.WarningMessages.AsDelimited( " | " )}" );
+                    Logger.LogWarning( $"{result.WarningMessages.Count} {"warning".PluralizeIf( result.WarningMessages.Count > 1 ).Titleize()}: {result.WarningMessages.AsDelimited( " | " )}" );
 
                     resultSb.AppendLine( $"{circleWarning} {enableLoggingMessage}" );
                 }

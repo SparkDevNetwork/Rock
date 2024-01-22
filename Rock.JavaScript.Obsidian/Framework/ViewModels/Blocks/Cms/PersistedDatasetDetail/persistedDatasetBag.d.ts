@@ -56,11 +56,17 @@ export type PersistedDatasetBag = {
     /** The DateTime when to stop updating the Rock.Model.PersistedDataset.ResultData */
     expireDateTime?: string | null;
 
+    /**  Gets or sets the readable iCalendar content  */
+    friendlyScheduleText?: string | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
+
+    /** Gets or sets a value indicating whether this instance is used by the system. */
+    isSystem: boolean;
 
     /** Gets or sets the persisted last refresh date time. */
     lastRefreshDateTime?: string | null;
@@ -71,6 +77,30 @@ export type PersistedDatasetBag = {
     /** Gets or sets the Name of the PersistedDataset. */
     name?: string | null;
 
-    /** Gets or sets the refresh interval minutes */
+    /** Gets or sets the named schedules. */
+    namedSchedules?: ListItemBag[] | null;
+
+    /** Gets or sets the schedule data. */
+    persistedSchedule?: string | null;
+
+    /** Gets or sets the Schedule ID. */
+    persistedScheduleId?: number | null;
+
+    /** Gets or sets the persisted schedule interval type. */
+    persistedScheduleIntervalType?: string | null;
+
+    /** Gets or sets the persisted schedule type. */
+    persistedScheduleType?: string | null;
+
+    /** Gets or sets the persistence type. */
+    persistenceType?: string | null;
+
+    /** Gets or sets the refresh interval */
+    refreshInterval?: number | null;
+
+    /** Gets or sets the refresh interval Hours */
     refreshIntervalHours?: number | null;
+
+    /**  Gets or sets the time to build in milliseconds */
+    timeToBuildMS?: number | null;
 };

@@ -40,6 +40,17 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( publicValue.IsNullOrWhiteSpace() )
+            {
+                return "{}";
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             if ( privateValue.IsNullOrWhiteSpace() )

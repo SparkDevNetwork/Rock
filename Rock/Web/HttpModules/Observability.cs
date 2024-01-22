@@ -15,17 +15,16 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Web;
-using Microsoft.Ajax.Utilities;
-using Rock.Attribute;
-using Rock.Bus;
+
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
+using Rock.Net;
 using Rock.Observability;
-using Rock.Utility;
 using Rock.Web.UI;
 
 namespace Rock.Web.HttpModules
@@ -89,6 +88,8 @@ namespace Rock.Web.HttpModules
             HttpApplication application = ( HttpApplication ) sender;
             HttpContext context = application.Context;
 
+            BeginLogRequest( context );
+
             // Register a control adapter for handling Rock block events if we have not already registered one
             if ( !context.Request.Browser.Adapters.Contains( typeof( RockBlock ).FullName ) )
             {
@@ -113,39 +114,39 @@ namespace Rock.Web.HttpModules
                 activity = ObservabilityHelper.StartActivity( $"HANDLER: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
                 activity?.AddTag( "rock-otel-type", "rock-handler" );
 
-                RockMetricSource.HandlerRequestCounter.Add( 1, RockMetricSource.CommonTags );
+                RockMetricSource.HandlerRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
             else if ( context.Request.Headers["X-Rock-Mobile-Api-Key"] != null )
             {
                 activity = ObservabilityHelper.StartActivity( $"MOBILE: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
                 activity?.AddTag( "rock-otel-type", "rock-mobile" );
 
-                RockMetricSource.MobileAppRequestCounter.Add( 1, RockMetricSource.CommonTags );
+                RockMetricSource.MobileAppRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
             else if ( context.Request.Url.PathAndQuery.StartsWith( "/api/v2/tv" ) )
             {
                 activity = ObservabilityHelper.StartActivity( $"TV: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
                 activity?.AddTag( "rock-otel-type", "rock-tv" );
 
-                RockMetricSource.TvAppRequestCounter.Add( 1, RockMetricSource.CommonTags );
+                RockMetricSource.TvAppRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
             else if ( context.Request.Url.PathAndQuery.StartsWith( "/api" ) )
             {
                 activity = ObservabilityHelper.StartActivity( $"API: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
                 activity?.AddTag( "rock-otel-type", "rock-api" );
 
-                RockMetricSource.ApiRequestCounter.Add( 1, RockMetricSource.CommonTags ); 
+                RockMetricSource.ApiRequestCounter?.Add( 1, RockMetricSource.CommonTags ); 
             }
             else
             {
                 activity = ObservabilityHelper.StartActivity( $"WEB: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
                 activity?.AddTag( "rock-otel-type", "rock-web" );
 
-                RockMetricSource.ApiRequestCounter.Add( 1, RockMetricSource.CommonTags );
+                RockMetricSource.ApiRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
 
             // Increment the HTTP request metric for all requests
-            RockMetricSource.AllRequestCounter.Add( 1, RockMetricSource.CommonTags );
+            RockMetricSource.AllRequestCounter?.Add( 1, RockMetricSource.CommonTags );
 
             if ( activity != null )
             {
@@ -174,13 +175,132 @@ namespace Rock.Web.HttpModules
             HttpApplication application = ( HttpApplication ) sender;
             HttpContext context = application.Context;
 
+            // Intentionally end the log request before the activity so that it
+            // gets attached to the activity.
+            EndLogRequest( context );
+
             if ( context.Items[ContextKey] is Activity activity )
             {
                 activity.AddTag( "http.status_code", context.Response.StatusCode );
-                //http.response.body.size
 
                 activity.Dispose();
             }
         }
+
+        #region Request Logging
+
+        /// <summary>
+        /// The key used to store the RequestDetail on the HttpContext.
+        /// </summary>
+        private const string RequestDetailContextKey = "__RockRequestDetailContext__";
+
+        /// <summary>
+        /// The request log format template.
+        /// </summary>
+        private const string RequestLogFormat = "{DateTime} {ServerIp} {Method} {Path} {Query} {ServerPort} {Username} {ClientIp} {UserAgent} {Referer} {Status} {Substatus} {Duration}";
+
+        /// <summary>
+        /// The logger that will be used for logs.
+        /// </summary>
+        private readonly ILogger _requestLogger = RockLogger.LoggerFactory.CreateLogger( "WebServer.Logs" );
+
+        /// <summary>
+        /// Begins tracking the request. This provides logging details
+        /// similar to what IIS would log in its own log files.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void BeginLogRequest( HttpContext context )
+        {
+            if ( !_requestLogger.IsEnabled( LogLevel.Information ) )
+            {
+                return;
+            }
+
+            var clientInfo = new ClientInformation( context.Request );
+            var username = context.User?.Identity?.Name ?? string.Empty;
+
+            if ( username.StartsWith( "rckipid" ) )
+            {
+                username = "<ImpersonationToken>";
+            }
+
+            var request = new RequestDetail
+            {
+                DateTime = DateTime.Now,
+                ClientIp = clientInfo.IpAddress.IfEmpty( "-" ),
+                UserAgent = clientInfo.UserAgent.IfEmpty( "-" ),
+                Referer = context.Request.UrlReferrer?.ToString() ?? "-",
+                Username = username.IfEmpty( "-" ),
+                Method = context.Request.HttpMethod,
+                Path = context.Request.Path,
+                Query = context.Request.QueryString.ToQueryString( false ).IfEmpty( "-" ),
+                ServerIp = context.Request.ServerVariables["LOCAL_ADDR"],
+                ServerPort = context.Request.ServerVariables["SERVER_PORT"].AsIntegerOrNull() ?? 0,
+            };
+
+            context.Items[RequestDetailContextKey] = request;
+        }
+
+        /// <summary>
+        /// Ends the logging for the current request.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void EndLogRequest( HttpContext context )
+        {
+            if ( !( context.Items[RequestDetailContextKey] is RequestDetail request ) )
+            {
+                return;
+            }
+
+            request.Duration = ( int ) Math.Floor( ( DateTime.Now - request.DateTime ).TotalMilliseconds );
+            request.Status = context.Response.StatusCode;
+            request.Substatus = context.Response.SubStatusCode;
+
+            _requestLogger.LogInformation( RequestLogFormat,
+                request.DateTime.ToString( "O" ),
+                request.ServerIp,
+                request.Method,
+                request.Path,
+                request.Query,
+                request.ServerPort,
+                request.Username,
+                request.ClientIp,
+                request.UserAgent,
+                request.Referer,
+                request.Status,
+                request.Substatus,
+                request.Duration );
+        }
+
+        private class RequestDetail
+        {
+            public DateTime DateTime { get; set; }
+
+            public string ClientIp { get; set; }
+
+            public string Username { get; set; }
+
+            public string ServerIp { get; set; }
+
+            public int ServerPort { get; set; }
+
+            public string Method { get; set; }
+
+            public string Path { get; set; }
+
+            public string Query { get; set; }
+
+            public int Status { get; set; }
+
+            public int Substatus { get; set; }
+
+            public int Duration { get; set; }
+
+            public string UserAgent { get; set; }
+
+            public string Referer { get; set; }
+        }
+
+        #endregion
     }
 }

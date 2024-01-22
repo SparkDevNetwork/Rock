@@ -22,8 +22,7 @@ using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Rock.Bus;
-using Rock.Lava.RockLiquid.Blocks;
+
 using Rock.Observability;
 using Rock.Web.Cache.NonEntities;
 
@@ -292,15 +291,17 @@ namespace Rock.Data.Interception
 
                 activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
                 activity.AddTag( "db.system", "mssql" );
-                activity.AddTag( "db.query", command.CommandText );
+                activity.AddTag( "db.query", command.CommandText.Truncate( ObservabilityHelper.MaximumAttributeLength, false ) );
                 activity.AddTag( "rock-otel-type", "rock-db" );
                 activity.AddTag( "rock-db-hash", observabilityInfo.CommandHash );
 
                 // Check if this query should get additional observability telemetry
                 if ( DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash ) )
                 {
-                    // Append stack trace 
-                    activity.AddTag( "rock-db-stacktrace", System.Environment.StackTrace );
+                    // Append stack trace
+                    var stackTrace = TrimInfrastructureFromStackTrace( new StackTrace( true ).ToString() );
+
+                    activity.AddTag( "rock-db-stacktrace", stackTrace.Truncate( ObservabilityHelper.MaximumAttributeLength ) );
 
                     // Append parameters
                     var parameters = new StringBuilder();
@@ -311,13 +312,13 @@ namespace Rock.Data.Interception
                         parameters.Append( $"{keyValue.Key}: {keyValue.Value}{Environment.NewLine}" );
                     }
 
-                    activity.AddTag( "rock-db-parameters", parameters.ToString() );
+                    activity.AddTag( "rock-db-parameters", parameters.ToString().Truncate( ObservabilityHelper.MaximumAttributeLength ) );
                 }
 
                 // Add observability metric
                 var tags = RockMetricSource.CommonTags;
                 tags.Add( "operation", observabilityInfo.CommandType );
-                RockMetricSource.DatabaseQueriesCounter.Add( 1, tags );
+                RockMetricSource.DatabaseQueriesCounter?.Add( 1, tags );
             }
 
             if ( context is RockContext rockContext )
@@ -441,6 +442,57 @@ namespace Rock.Data.Interception
             }
 
             return (key, value);
+        }
+
+        /// <summary>
+        /// Trims the Entity Framework Infrastructure calls from stack trace.
+        /// The stack trace will have a few frames from RockEfInterceptor and
+        /// then a bunch of System.Data.Entity.* calls. After those it goes
+        /// into user code for what caused the SQL command to execute. Because
+        /// space is limited we remove these inner 8 or so calls which gives us
+        /// an additional 8 or so stack traces of user code to diagnose where
+        /// the real problem lies.
+        /// </summary>
+        /// <param name="stackTrace">The stack trace to be trimmed.</param>
+        /// <returns>A string that contains the trimmed stack trace information.</returns>
+        private static string TrimInfrastructureFromStackTrace( string stackTrace )
+        {
+            var stackTraceLines = stackTrace.Split( new string[] { Environment.NewLine }, StringSplitOptions.None );
+            var trimmedStackTraceLines = new List<string>( stackTraceLines.Length );
+            var trimming = false;
+
+            for ( int i = 0; i < stackTraceLines.Length; i++ )
+            {
+                if ( !trimming )
+                {
+                    if ( stackTraceLines[i].StartsWith( "   at Rock.Data.Interception." ) )
+                    {
+                        trimmedStackTraceLines.Add( stackTraceLines[i] );
+                    }
+                    else
+                    {
+                        trimming = true;
+                    }
+                }
+                else
+                {
+                    if ( stackTraceLines[i].StartsWith( "   at System.Data.Entity." ) )
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        trimmedStackTraceLines.Add( "   [trimmed]" );
+                        trimmedStackTraceLines.AddRange( stackTraceLines.Skip( i ) );
+
+                        return string.Join( Environment.NewLine, trimmedStackTraceLines );
+                    }
+                }
+            }
+
+            // Shouldn't ever really get here, but just in case return the
+            // original stack trace.
+            return stackTrace;
         }
 
         #endregion

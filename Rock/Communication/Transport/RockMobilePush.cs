@@ -341,7 +341,7 @@ namespace Rock.Communication.Transport
                                         {
                                             notification.Android = new AndroidConfig
                                             {
-                                                Notification =
+                                                Notification = new AndroidNotification
                                                 {
                                                     Sound = sound
                                                 }
@@ -349,7 +349,7 @@ namespace Rock.Communication.Transport
 
                                             notification.Apns = new ApnsConfig
                                             {
-                                                Aps =
+                                                Aps = new Aps
                                                 {
                                                     Sound = sound
                                                 }
@@ -456,27 +456,32 @@ namespace Rock.Communication.Transport
                 data.AddOrReplace( "silent", "true" );
             }
 
+            // Android config
+            var androidConfig = new AndroidConfig
+            {
+                Notification = new AndroidNotification
+                {
+                    ClickAction = "Rock.Mobile.Main",
+                    Sound = sound ?? string.Empty,
+                }
+            };
+
+            // iOS config
+            var apnsConfig = new ApnsConfig
+            {
+                Aps = new Aps
+                {
+                    Badge = emailMessage.Data?.ApplicationBadgeCount
+                }
+            };
+
             var msg = new FirebaseAdmin.Messaging.MulticastMessage
             {
                 Tokens = to,
                 Notification = notification,
                 Data = data,
-                Android =
-                {
-                    Notification =
-                    {
-                        ClickAction = "Rock.Mobile.Main",
-                        Sound = sound,
-
-                    }
-                },
-                Apns =
-                {
-                    Aps =
-                    {
-                        Badge = emailMessage.Data.ApplicationBadgeCount
-                    }
-                }
+                Android = androidConfig,
+                Apns = apnsConfig
             };
 
             var firebaseApp = GetFirebaseApp();

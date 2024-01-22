@@ -102,30 +102,11 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                var scheduleValues = new List<ListItemBag>();
-
-                foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                var guids = privateValue.SplitDelimitedValues().AsGuidList();
+                var dataViews = new DataViewService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) ).ToListItemBagList();
+                if ( dataViews.Any() )
                 {
-                    Guid? guid = guidValue.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        var schedule = NamedScheduleCache.Get( guid.Value );
-                        if ( schedule != null )
-                        {
-                            var scheduleValue = new ListItemBag()
-                            {
-                                Text = schedule.Name,
-                                Value = schedule.Guid.ToString(),
-                            };
-
-                            scheduleValues.Add( scheduleValue );
-                        }
-                    }
-                }
-
-                if ( scheduleValues.Any() )
-                {
-                    return scheduleValues.ToCamelCaseJson( false, true );
+                    return dataViews.ToCamelCaseJson( false, true );
                 }
             }
 

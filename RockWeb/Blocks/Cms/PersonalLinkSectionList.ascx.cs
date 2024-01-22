@@ -336,11 +336,18 @@ namespace RockWeb.Blocks.Cms
             var limitToSharedSections = GetAttributeValue( AttributeKey.SharedSections ).AsBoolean();
             List<PersonalLinkSection> personalLinkSectionList;
             Dictionary<int, PersonalLinkSectionOrder> currentPersonSectionOrderLookupBySectionId = null;
+            var nameFilter = gfFilter.GetFilterPreference( UserPreferenceKey.Name );
 
             if ( limitToSharedSections )
             {
                 // only show shared sections in this mode
                 var sharedPersonalLinkSectionsQuery = new PersonalLinkSectionService( rockContext ).Queryable().Where( a => a.IsShared );
+
+                if ( nameFilter.IsNotNullOrWhiteSpace() )
+                {
+                    sharedPersonalLinkSectionsQuery = sharedPersonalLinkSectionsQuery.Where( p => p.Name.Contains( nameFilter ) );
+                }
+
                 personalLinkSectionList = sharedPersonalLinkSectionsQuery.Include( a => a.PersonalLinks ).OrderBy( a => a.Name ).AsNoTracking().ToList();
             }
             else
@@ -358,7 +365,9 @@ namespace RockWeb.Blocks.Cms
                     .Include( a => a.PersonalLinks )
                     .AsNoTracking()
                     .ToList()
-                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson )
+                        && ( string.IsNullOrWhiteSpace( nameFilter ) || a.Name.Contains( nameFilter ) )
+                        )
                     .ToList();
 
                 // NOTE: We might be making changes when resorting this, so don't use AsNoTracking()

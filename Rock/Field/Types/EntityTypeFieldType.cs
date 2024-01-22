@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// returns EntityType.Guid
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENTITYTYPE )]
     public class EntityTypeFieldType : FieldType, IEntityFieldType

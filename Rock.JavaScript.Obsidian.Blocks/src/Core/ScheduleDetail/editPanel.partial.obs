@@ -11,9 +11,15 @@
                          label="Abbreviated Name" />
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-3">
                 <CheckBox v-model="isActive"
                           label="Active" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isPublic"
+                          label="Public"
+                          help="Determines if this schedule should be shown or hidden when viewed by individuals outside of the organization." />
             </div>
         </div>
 
@@ -66,13 +72,6 @@
                             title="" :data-original-title="props.options?.helpText">Preview</RockButton>
                     </div>
                 </div>
-            </div>
-
-
-            <div class="col-md-6">
-                <CheckBox v-model="isPublic"
-                          label="Show Publicly"
-                          help="Determines if this schedule should be shown or hidden when viewed by individuals outside of the organization." />
             </div>
         </div>
 

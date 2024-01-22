@@ -42,7 +42,7 @@ namespace Rock.Blocks.Tv
     [Category( "TV > TV Apps" )]
     [Description( "Allows a person to edit an Apple TV application.." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -183,7 +183,7 @@ namespace Rock.Blocks.Tv
                 IsSystem = entity.IsSystem,
                 Name = entity.Name,
                 Description = entity.Description,
-                EnablePageViews = entity.EnablePageViews,
+                EnablePageViews = entity.Id != 0 && entity.EnablePageViews,
                 LoginPage = new ViewModels.Rest.Controls.PageRouteValueBag()
                 {
                     Page = entity.LoginPage.ToListItemBag(),

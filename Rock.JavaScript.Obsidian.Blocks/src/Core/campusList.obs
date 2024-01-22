@@ -8,9 +8,9 @@
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
-          @selectItem="onSelectItem">
-        <SelectColumn />
-
+          @selectItem="onSelectItem"
+          :showLaunchWorkflow="false" >
+        <ReorderColumn :onOrderChanged=onOrderChanged />
         <TextColumn name="name"
                     title="Name"
                     field="name"
@@ -61,7 +61,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { CampusListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusList/campusListOptionsBag";
@@ -106,10 +106,26 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
-        console.log(config);
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
         }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
     }
 
     /**

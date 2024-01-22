@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular site." )]
     [IconCssClass( "fa fa-question" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -602,8 +602,9 @@ namespace Rock.Blocks.Cms
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
                 attributeService.Delete( attr );
-                rockContext.SaveChanges();
             }
+
+            rockContext.SaveChanges();
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )

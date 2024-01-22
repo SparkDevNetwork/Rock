@@ -1,13 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockForm @submit="onFormSubmit">
-        <TextBox
-            v-model="fullName"
-            class="rock-fullname"
-            :disabled="disabled"
-            name="name"
-            placeholder="Please enter name (Required)"></TextBox>
-
         <div class="row">
             <AccountInfo
                 v-if="!config.isAccountInfoHidden"
@@ -22,8 +15,11 @@
                 v-model="internalPersonInfo"
                 class="col-md-6"
                 :config="config"
-                :disabled="disabled" />
-        </div>
+                :disabled="disabled"
+                :isMobile="isMobile" />
+            </div>
+
+        <Captcha v-if="!disableCaptchaSupport" v-model="isCaptchaValid"></Captcha>
 
         <div class="row">
             <div class="col-md-12">
@@ -38,11 +34,12 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
+    import { useBreakpoint } from "../types.partial";
     import AccountInfo from "./registrationStepAccountInfo.partial.obs";
     import PersonInfo from "./registrationStepPersonInfo.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -50,6 +47,9 @@
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryRegisterRequestBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterRequestBox";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+
+    const breakpoint = useBreakpoint();
 
     const props = defineProps({
         config: {
@@ -86,7 +86,11 @@
 
     //#region Values
 
-    const fullName = ref("");
+    const isMobile = computed<boolean>(() => breakpoint.value === "xs");
+
+    const isCaptchaValid = ref("");
+
+    const disableCaptchaSupport = ref(props.config.disableCaptchaSupport);
 
     const shouldUsernameUpdateSetPersonInfoEmail = computed<boolean>(() => props.config.isEmailRequiredForUsername);
 
@@ -110,13 +114,15 @@
                     personInfo: {
                         ...props.modelValue.personInfo,
                         email: newValue?.username
-                    }
+                    },
+                    isCaptchaValid: asBoolean(isCaptchaValid.value)
                 };
             }
             else {
                 modelValue = {
                     ...props.modelValue,
-                    accountInfo: newValue
+                    accountInfo: newValue,
+                    isCaptchaValid: asBoolean(isCaptchaValid.value)
                 };
             }
 

@@ -28,6 +28,10 @@ insert_final_newline = true
 indent_size = 4
 charset = utf-8-bom
 
+# Sort using and Import directives with System.* appearing first
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+
 [*.sql]
 trim_trailing_whitespace = false
 
@@ -36,9 +40,6 @@ trim_trailing_whitespace = false
 trim_trailing_whitespace = false
 
 # Style: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
-
-# Sort using and Import directives with System.* appearing first
-dotnet_sort_system_directives_first = true
 
 csharp_prefer_braces = true
 

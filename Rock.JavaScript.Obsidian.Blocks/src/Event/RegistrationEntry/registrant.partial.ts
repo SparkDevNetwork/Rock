@@ -26,10 +26,11 @@ import RockButton from "@Obsidian/Controls/rockButton.obs";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import Captcha from "@Obsidian/Controls/captcha.obs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
-import FeeField from "./feeField.partial";
+import FeeField from "./feeField.partial.obs";
 import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
 import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
@@ -40,6 +41,7 @@ import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electron
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
+import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
 const store = useStore();
 
@@ -76,7 +78,8 @@ export default defineComponent({
         RockForm,
         FeeField,
         DropDownList,
-        ItemsWithPreAndPostHtml
+        ItemsWithPreAndPostHtml,
+        Captcha
     },
     props: {
         currentRegistrant: {
@@ -88,7 +91,7 @@ export default defineComponent({
             required: true
         }
     },
-    setup() {
+    setup(props) {
         const invokeBlockAction = useInvokeBlockAction();
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
@@ -99,6 +102,16 @@ export default defineComponent({
         const formResetKey = ref("");
         const isNextDisabled = ref(false);
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
+        const isCaptchaValid = ref("");
+        const disableCaptcha = ref(registrationEntryState.viewModel.disableCaptchaSupport);
+
+        for (const fee of registrationEntryState.viewModel.fees) {
+            for (const feeItem of fee.items) {
+                if (typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
+                    props.currentRegistrant.feeItemQuantities[feeItem.guid] = 0;
+                }
+            }
+        }
 
         return {
             formResetKey,
@@ -109,7 +122,9 @@ export default defineComponent({
             registrationEntryState,
             signatureData,
             signatureSource,
-            signatureToken
+            signatureToken,
+            isCaptchaValid,
+            disableCaptcha
         };
     },
     updated() {
@@ -252,7 +267,7 @@ export default defineComponent({
                 const registrant = this.registrationEntryState.registrants[i];
                 const info = getRegistrantBasicInfo(registrant, this.viewModel.registrantForms);
 
-                if (!usedFamilyGuids[registrant.familyGuid] && info?.firstName && info?.lastName) {
+                if (registrant.familyGuid && !usedFamilyGuids[registrant.familyGuid] && info?.firstName && info?.lastName) {
                     options.push({
                         text: `${info.firstName} ${info.lastName}`,
                         value: registrant.familyGuid
@@ -272,7 +287,7 @@ export default defineComponent({
             }
 
             // Add the current person (registrant) if not already added
-            const familyGuid = usedFamilyGuids[this.currentRegistrant.familyGuid] == true
+            const familyGuid = !this.currentRegistrant.familyGuid || usedFamilyGuids[this.currentRegistrant.familyGuid] == true
                 ? newGuid()
                 : this.currentRegistrant.familyGuid;
             options.push({
@@ -325,7 +340,6 @@ export default defineComponent({
                 return;
             }
 
-
             this.registrationEntryState.currentRegistrantFormIndex--;
 
             // Wait for the previous form to be rendered and then scroll to the top
@@ -348,10 +362,17 @@ export default defineComponent({
                     });
 
                     if (result.isSuccess && result.data) {
-                        this.signatureSource = (result.data as Record<string, string>).documentHtml;
-                        this.signatureToken = (result.data as Record<string, string>).securityToken;
+                        const data = (result.data as Record<string, string>);
 
-                        lastFormIndex += 1;
+                        if (data.existingSignatureDocumentGuid) {
+                            this.currentRegistrant.existingSignatureDocumentGuid = data.existingSignatureDocumentGuid;
+                        }
+                        else {
+                            this.signatureSource = data.documentHtml;
+                            this.signatureToken = data.securityToken;
+
+                            lastFormIndex += 1;
+                        }
                     }
                     else {
                         console.error(result.data);
@@ -362,6 +383,8 @@ export default defineComponent({
                     this.isNextDisabled = false;
                 }
             }
+
+            this.registrationEntryState.isCaptchValid = asBoolean(this.isCaptchaValid);
 
             if (this.currentFormIndex >= lastFormIndex) {
                 this.$emit("next");
@@ -382,10 +405,6 @@ export default defineComponent({
 
             // Get all of the fee items in use for all registrants and add them to the combinedFeeItemQuantities Record
             for(const registrant of self.registrationEntryState.registrants) {
-                if(registrant.guid === this.currentRegistrant.guid) {
-                    continue;
-                }
-
                 for (const feeItemGuid in registrant.feeItemQuantities) {
 
                     if (registrant.feeItemQuantities[feeItemGuid] > 0) {
@@ -410,7 +429,7 @@ export default defineComponent({
                             continue;
                         }
 
-                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid];
+                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid] ?? 0;
                         if(usedFeeItemCount !== undefined && usedFeeItemCount !== null) {
                             feeItem.countRemaining = feeItem.originalCountRemaining - usedFeeItemCount;
                         }
@@ -516,12 +535,37 @@ export default defineComponent({
                 }
             }
         },
+
+        onUpdateRegistrantFee(values: Record<string, number>): void {
+            const newValue = {...this.currentRegistrant.feeItemQuantities};
+
+            for (const key of Object.keys(values)) {
+                newValue[key] = values[key];
+            }
+
+            this.currentRegistrant.feeItemQuantities = newValue;
+
+            this.updateFeeItemsRemaining();
+        },
+
+        onSetFamilyGuid(familyGuid: Guid): void {
+            if (familyGuid !== this.currentRegistrant.familyGuid) {
+                this.currentRegistrant.familyGuid = familyGuid;
+                this.currentRegistrant.personGuid = null;
+            }
+        },
+
+        onSetPersonGuid(guid: Guid): void {
+            if (guid !== this.currentRegistrant.personGuid) {
+                this.currentRegistrant.personGuid = guid;
+
+                if (this.familyMember) {
+                    this.currentRegistrant.familyGuid = this.familyMember.familyGuid;
+                }
+            }
+        }
     },
     watch: {
-        "currentRegistrant.familyGuid"(): void {
-            // Clear the person guid if the family changes
-            this.currentRegistrant.personGuid = null;
-        },
         familyMember: {
             handler(): void {
                 if (!this.familyMember) {
@@ -557,11 +601,11 @@ export default defineComponent({
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
                 <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
-                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :items="familyOptions" validationTitle="Family" />
+                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" :modelValue="currentRegistrant.familyGuid" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
                 </div>
                 <div v-if="familyMemberOptions.length" class="row">
                     <div class="col-md-6">
-                        <DropDownList v-model="currentRegistrant.personGuid" :items="familyMemberOptions" label="Family Member to Register" />
+                        <DropDownList :modelValue="currentRegistrant.personGuid" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" label="Family Member to Register" />
                     </div>
                 </div>
             </template>
@@ -577,7 +621,7 @@ export default defineComponent({
             <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
                 <h4>{{pluralFeeTerm}}</h4>
                 <template v-for="fee in viewModel.fees" :key="fee.guid">
-                    <FeeField :fee="fee" v-model="currentRegistrant.feeItemQuantities" />
+                    <FeeField :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
                 </template>
             </div>
         </template>
@@ -592,6 +636,8 @@ export default defineComponent({
                 <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="signatureDocumentTerm" />
             </div>
         </div>
+
+        <Captcha v-if="!disableCaptcha" v-model="isCaptchaValid" />
 
         <div class="actions row">
             <div class="col-xs-6">

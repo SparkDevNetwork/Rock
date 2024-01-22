@@ -177,7 +177,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+            if ( usage != ConfigurationValueUsage.View && publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
             {
                 var entityTypeName = publicConfigurationValues[ENTITY_TYPE_NAME_KEY];
                 var entityType = EntityTypeCache.Get( entityTypeName );

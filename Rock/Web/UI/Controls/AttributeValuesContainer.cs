@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using System.Windows.Media.Animation;
 
 using Rock.Attribute;
 using Rock.Web.Cache;
@@ -381,6 +382,11 @@ namespace Rock.Web.UI.Controls
             if ( item != null && item.Attributes != null )
             {
                 var categoryAttributes = GetDistinctAttributesByCategory( item );
+                var blockEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.BLOCK );
+                var areBlockSettingsControls = ( item.Attributes.Values.FirstOrDefault()?.EntityTypeId ?? 0 ) == blockEntityTypeId;
+
+                // Show block setting categories in panels if at least one category is specified.
+                var showCategoryPanels = areBlockSettingsControls && categoryAttributes.Where( c => c.Category != null ).Count() > 0;
 
                 foreach ( var attributeCategory in categoryAttributes.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
                 {
@@ -393,13 +399,18 @@ namespace Rock.Web.UI.Controls
                         // keep track of which attributes we created edit controls for, so we can re-create them on postback
                         _editModeAttributeIdsState.AddRange( attributes.Select( a => a.Id ) );
 
-                        AttributeAddEditControlsOptions options = new AttributeAddEditControlsOptions
+                        var options = new AttributeAddEditControlsOptions
                         {
                             NumberOfColumns = this.NumberOfColumns,
                             IncludedAttributes = attributes.ToList(),
                             RequiredAttributes = this.RequiredAttributes?.ToList(),
                             ShowCategoryLabel = ShowCategoryLabel,
-                            ShowPrePostHtml = this.ShowPrePostHtml
+                            ShowPrePostHtml = this.ShowPrePostHtml,
+
+                            ShowCategoryPanels = showCategoryPanels,
+                            // Use "General Settings" as default label for uncategorized block settings attributes.
+                            DefaultCategoryName = areBlockSettingsControls ? "General Settings" : null,
+                            CategoryDescription = attributeCategory.Category?.Description,
                         };
 
                         Rock.Attribute.Helper.AddEditControlsForCategory(

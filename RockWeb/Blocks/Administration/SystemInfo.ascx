@@ -57,7 +57,7 @@
 
         <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Success" Title="Success" Visible="false" Text=""></Rock:NotificationBox>
 
-        <div class="actions margin-t-xl">
+        <div ID="divActions" runat="server" class="actions margin-t-xl">
             <Rock:BootstrapButton runat="server" ID="btnFlushCache" CssClass="btn btn-primary" Text="Clear Cache" OnClick="btnClearCache_Click" DataLoadingText="Clearing..." ToolTip="Flushes all cached items from the Rock cache (e.g. Pages, BlockTypes, Blocks, Attributes, etc." />
             <a href="#" class="btn btn-link js-restart" title="Restarts the Application.">Restart Rock</a>
             <asp:Button runat="server" ID="btnRestart" OnClick="btnRestart_Click" CssClass="hidden" />

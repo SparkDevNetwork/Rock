@@ -48,6 +48,11 @@ function getDisplayedValue(row: Record<string, unknown>, column: ColumnDefinitio
     return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
 }
 
+/**
+ * Displays a cell as a Person. This has a few options to control the
+ * formatting, but generally follows a standard layout so different grids with
+ * person columns all look the same.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -77,14 +82,32 @@ export default defineComponent({
             default: getDisplayedValue
         },
 
+        /**
+         * If `true` then the avatar image will not be shown.
+         */
         hideAvatar: {
             type: Boolean as PropType<boolean>,
             default: false
         },
 
+        /**
+         * Normally the column will display the nick name first, such as
+         * "Ted Decker". If this is set to `true` then it will show the last
+         * name first, such as "Decker, Ted".
+         */
         showLastNameFirst: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        /**
+         * If `true` then the person will be displayed as a hyperlink to the
+         * person detail page. No checking is performed if the current
+         * individual has access to that page.
+         */
+        showAsLink: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     }
 });

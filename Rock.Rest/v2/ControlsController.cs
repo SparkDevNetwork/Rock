@@ -23,6 +23,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
+
 using Rock.Attribute;
 using Rock.Badge;
 using Rock.ClientService.Core.Category;
@@ -34,14 +35,17 @@ using Rock.Extension;
 using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Lava;
+using Rock.Media;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
@@ -601,6 +605,40 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Attribute Matrix Editor
+
+        /// <summary>
+        /// Take the public edit values for a given matrix item and convert them to public viewing values.
+        /// </summary>
+        /// <param name="options">The options that describe the attributes and their public edit values.</param>
+        /// <returns>The public edit values and the public viewing values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AttributeMatrixEditorNormalizeEditValue" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
+        public IHttpActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
+                {
+                    var attr = AttributeCache.Get( a.Value.AttributeGuid );
+
+                    var privateValue = PublicAttributeHelper.GetPrivateValue( attr, options.AttributeValues.GetValueOrDefault( a.Key, "" ) );
+                    var publicValue = PublicAttributeHelper.GetPublicValueForView( attr, privateValue );
+                    return publicValue;
+                } );
+
+                return Ok( new
+                {
+                    ViewValues = publicValues,
+                    EditValues = options.AttributeValues
+                } );
+            }
+        }
+
+        #endregion
+
         #region Audit Detail
 
         /// <summary>
@@ -673,6 +711,72 @@ namespace Rock.Rest.v2
             } );
 
             return Ok( componentsList );
+        }
+
+        #endregion
+
+        #region Badge Control
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="options">The options that describe badge to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the badge components.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BadgeControlGetBadge" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "D9840506-7251-4F41-A1B2-D3168FB3AFDA" )]
+        public IHttpActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
+                var entityType = entityTypeCache?.GetEntityType();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Verify that we found the entity type.
+                if ( entityType == null )
+                {
+                    return BadRequest( "Unknown entity type." );
+                }
+
+                // Load the entity and verify we got one.
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+
+                if ( entity == null )
+                {
+                    return NotFound();
+                }
+
+                // If the entity can be secured, ensure the person has access to it.
+                if ( entity is ISecured securedEntity )
+                {
+                    var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( entity, Authorization.VIEW ) == true;
+
+                    if ( !isAuthorized )
+                    {
+                        return Unauthorized();
+                    }
+                }
+
+                BadgeCache badge = BadgeCache.Get( options.BadgeTypeGuid );
+
+                if ( badge == null || badge.EntityTypeId.Value != entityTypeCache.Id )
+                {
+                    return NotFound();
+                }
+
+                var isBadgeAuthorized = badge.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                    || grant?.IsAccessGranted( badge, Authorization.VIEW ) == true;
+
+                if ( !isBadgeAuthorized )
+                {
+                    return Unauthorized();
+                }
+
+                return Ok( badge.RenderBadge( entity ) );
+            }
         }
 
         #endregion
@@ -1043,6 +1147,48 @@ namespace Rock.Rest.v2
                 Text = account.Name,
                 Value = account.Guid.ToString()
             };
+        }
+
+        #endregion
+
+        #region Captcha
+
+        /// <summary>
+        /// Gets saved captcha Site Key
+        /// </summary>
+        [HttpPost]
+        [System.Web.Http.Route( "CaptchaControlGetConfiguration" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9e066058-13d9-4b4d-8457-07ba8e2cacd3" )]
+        public IHttpActionResult CaptchaControlGetConfiguration()
+        {
+            var bag = new CaptchaControlConfigurationBag()
+            {
+                SiteKey = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY )
+            };
+
+            return Ok( bag );
+        }
+
+        /// <summary>
+        /// Gets saved captcha Site Key
+        /// </summary>
+        [HttpPost]
+        [System.Web.Http.Route( "CaptchaControlValidateToken" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8f373592-d745-4d69-944a-729e15c3f941" )]
+        public IHttpActionResult CaptchaControlValidateToken( [FromBody] CaptchaControlValidateTokenOptionsBag options )
+        {
+            var api = new CloudflareApi();
+
+            var isTokenValid = api.IsTurnstileTokenValid( options.Token );
+
+            var result = new CaptchaControlTokenValidateTokenResultBag()
+            {
+                IsTokenValid = isTokenValid
+            };
+
+            return Ok( result );
         }
 
         #endregion
@@ -1571,6 +1717,44 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Currency Box
+
+        /// <summary>
+        /// Gets the currency info for the currency box matching the given currency code defined value Guid.
+        /// </summary>
+        /// <returns>The currency symbol and decimal places</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "CurrencyBoxGetCurrencyInfo" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6E8D0B48-EB88-4028-B03F-064A690902D4" )]
+        public IHttpActionResult CurrencyBoxGetCurrencyInfo( [FromBody] CurrencyBoxGetCurrencyInfoOptionsBag options )
+        {
+            Guid currencyCodeGuid = options.CurrencyCodeGuid;
+            RockCurrencyCodeInfo currencyInfo = null;
+
+            if ( !currencyCodeGuid.IsEmpty() )
+            {
+                var currencyCodeDefinedValueCache = DefinedValueCache.Get( currencyCodeGuid );
+                if ( currencyCodeDefinedValueCache != null )
+                {
+                    currencyInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueCache.Id );
+                }
+            }
+
+            if ( currencyInfo == null )
+            {
+                currencyInfo = new RockCurrencyCodeInfo();
+            }
+
+            return Ok( new CurrencyBoxGetCurrencyInfoResultsBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces
+            } );
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>
@@ -1615,45 +1799,7 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Defined Value Picker
-
-        /// <summary>
-        /// Gets the defined values and their categories that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a tree view control.
-        /// </summary>
-        /// <param name="options">The options that describe which defined values to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of defined values.</returns>
-        [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
-        [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
-        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
-                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-
-                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                {
-                    return NotFound();
-                }
-
-                var definedValues = definedType.DefinedValues
-                    .Where( v => ( v.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Authorization.VIEW ) == true )
-                        && ( options.IncludeInactive || v.IsActive ) )
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .Select( v => new ListItemBag
-                    {
-                        Value = v.Guid.ToString(),
-                        Text = v.Value
-                    } )
-                    .ToList();
-
-                return Ok( definedValues );
-            }
-        }
+        #region Defined Value Editor
 
         /// <summary>
         /// Get the attributes for the given Defined Type
@@ -1661,10 +1807,10 @@ namespace Rock.Rest.v2
         /// <param name="options">The options needed to find the attributes for the defined type</param>
         /// <returns>A list of attributes in a form the Attribute Values Container can use</returns>
         [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerGetAttributes" )]
+        [System.Web.Http.Route( "DefinedValueEditorGetAttributes" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "10b3fa87-756e-4dde-bf67-fb102037ddc3" )]
-        public IHttpActionResult DefinedValuePickerGetAttributes( DefinedValuePickerGetAttributesOptionsBag options )
+        [Rock.SystemGuid.RestActionGuid( "E2601583-94D5-4C21-96FA-309B9FB7E11F" )]
+        public IHttpActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -1678,7 +1824,25 @@ namespace Rock.Rest.v2
                 DefinedTypeId = definedType.Id
             };
 
-            return Ok( GetAttributes( definedValue ) );
+            definedValue.LoadAttributes();
+
+            var attributes = definedValue.Attributes.ToDictionary( a => a.Key, a =>
+            {
+                return PublicAttributeHelper.GetPublicAttributeForEdit( a.Value );
+            } );
+
+            var defaultValues = definedValue.Attributes.ToDictionary( a => a.Key, a =>
+            {
+                var config = a.Value.ConfigurationValues;
+                var fieldType = a.Value.FieldType.Field;
+                return fieldType.GetPublicEditValue( a.Value.DefaultValue, config );
+            } );
+
+            return Ok( new DefinedValueEditorGetAttributesResultsBag
+            {
+                Attributes = attributes,
+                DefaultValues = defaultValues
+            } );
         }
 
         /// <summary>
@@ -1687,10 +1851,10 @@ namespace Rock.Rest.v2
         /// <param name="options">The options the new defined value</param>
         /// <returns>A <see cref="ListItemBag"/> representing the new defined value.</returns>
         [HttpPost]
-        [System.Web.Http.Route( "DefinedValuePickerSaveNewValue" )]
+        [System.Web.Http.Route( "DefinedValueEditorSaveNewValue" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "2a10eb70-cc9a-48be-8ed7-d9104fd9fdca" )]
-        public IHttpActionResult DefinedValuePickerSaveNewValue( DefinedValuePickerSaveNewValueOptionsBag options )
+        [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
+        public IHttpActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -1759,6 +1923,48 @@ namespace Rock.Rest.v2
                 }
 
                 return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
+            }
+        }
+
+        #endregion
+
+        #region Defined Value Picker
+
+        /// <summary>
+        /// Gets the defined values and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which defined values to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of defined values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
+        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v => ( v.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Authorization.VIEW ) == true )
+                        && ( options.IncludeInactive || v.IsActive ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
+                    } )
+                    .ToList();
+
+                return Ok( definedValues );
             }
         }
 
@@ -2881,6 +3087,579 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Member Requirement Card
+
+        /// <summary>
+        /// Get the data needed to properly display the GroupMemberRequirementCard control
+        /// </summary>
+        /// <param name="options">The options that describe which data to load.</param>
+        /// <returns>A <see cref="GroupMemberRequirementCardGetConfigResultsBag"/> containing everything the card needs to be displayed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardGetConfig" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "E3981034-6A58-48CB-85ED-F9900AA99934" )]
+        public IHttpActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag options )
+        {
+            if ( options.GroupRequirementGuid.IsEmpty() || options.GroupMemberRequirementGuid.IsEmpty() )
+            {
+                return BadRequest( "GroupRequirementGuid and GroupMemberRequirementGuid are required." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var currentPerson = RockRequestContext.CurrentPerson;
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+                var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( options.GroupMemberRequirementGuid );
+
+                if ( groupMemberRequirement == null || groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
+                var LabelKey = new
+                {
+                    RequirementMet = " Requirement Met",
+                    RequirementNotMet = " Requirement Not Met",
+                    RequirementMetWithWarning = "Requirement Met With Warning"
+                };
+                var groupRequirementType = groupRequirement.GroupRequirementType;
+                var results = new GroupMemberRequirementCardGetConfigResultsBag();
+
+                if (
+                    groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual
+                    && options.MeetsGroupRequirement != MeetsGroupRequirement.Meets
+                )
+                {
+                    results.ManualRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace()
+                            ? groupRequirement.GroupRequirementType.CheckboxLabel
+                            : groupRequirement.GroupRequirementType.Name,
+                        Icon = "fa fa-square-o fa-fw"
+                    };
+                }
+
+                if ( options.CanOverride && options.MeetsGroupRequirement != MeetsGroupRequirement.Meets )
+                {
+                    results.OverrideRequirementControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = "Mark as Met",
+                        Icon = "fa fa-check-circle-o fa-fw"
+                    };
+                }
+
+                var hasNotMetWorkflow = groupRequirementType.WarningWorkflowTypeId.HasValue
+                    && !groupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
+                    && options.MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
+
+                var hasWarningWorkflow = groupRequirementType.WarningWorkflowTypeId.HasValue
+                    && !groupRequirementType.ShouldAutoInitiateWarningWorkflow
+                    && options.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
+
+                if ( hasNotMetWorkflow )
+                {
+                    results.NotMetWorkflowControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace()
+                            ? groupRequirementType.DoesNotMeetWorkflowLinkText
+                            : "Requirement Not Met",
+                        Icon = "fa fa-play-circle-o fa-fw"
+                    };
+                }
+
+                if ( hasWarningWorkflow )
+                {
+                    results.WarningWorkflowControl = new GroupMemberRequirementCardSubControlConfigBag
+                    {
+                        Enabled = true,
+                        Label = groupRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                            groupRequirementType.WarningWorkflowLinkText :
+                            "Requirement Met With Warning",
+                        Icon = "fa fa-play-circle-o fa-fw"
+                    };
+                }
+
+                if ( groupMemberRequirement.WasOverridden )
+                {
+                    results.IsOverridden = true;
+                    results.OverriddenBy = groupMemberRequirement.OverriddenByPersonAlias.Person.FullName;
+                    results.OverriddenAt = groupMemberRequirement.OverriddenDateTime.ToShortDateString();
+                }
+
+                results.Message = "Issue With Requirement.";
+
+                switch ( options.MeetsGroupRequirement )
+                {
+                    case MeetsGroupRequirement.Meets:
+                        results.Message = groupRequirementType.PositiveLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.PositiveLabel : LabelKey.RequirementMet;
+                        break;
+                    case MeetsGroupRequirement.NotMet:
+                        results.Message = groupRequirementType.NegativeLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.NegativeLabel : LabelKey.RequirementNotMet;
+                        break;
+                    case MeetsGroupRequirement.MeetsWithWarning:
+                        results.Message = groupRequirementType.WarningLabel.IsNotNullOrWhiteSpace() ? groupRequirementType.WarningLabel : LabelKey.RequirementMetWithWarning;
+                        break;
+                }
+
+                results.Summary = groupRequirementType.Summary;
+
+                return Ok( results );
+            }
+        }
+
+        /// <summary>
+        /// Manually mark a GroupMemberRequirement as met
+        /// </summary>
+        /// <param name="options">The options that describe which item to mark met</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardMarkMetManually" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "AE5A418A-645C-4EA5-A870-AA74F7109354" )]
+        public IHttpActionResult GroupMemberRequirementCardMarkMetManually( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                {
+                    // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                    var groupRequirementService = new GroupRequirementService( rockContext );
+                    var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                    if ( groupRequirement != null && groupMember != null )
+                    {
+                        groupMemberRequirement = new GroupMemberRequirement
+                        {
+                            GroupRequirementId = groupRequirement.Id,
+                            GroupMemberId = groupMember.Id
+                        };
+                        groupMemberRequirementService.Add( groupMemberRequirement );
+                    }
+                }
+
+                groupMemberRequirement.WasManuallyCompleted = true;
+                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson?.PrimaryAliasId;
+                groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
+                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Manually override a GroupMemberRequirement as met
+        /// </summary>
+        /// <param name="options">The options that describe which item to override</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardOverrideMarkMet" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "DA54A9CE-840F-4629-B270-7FCBAC86312C" )]
+        public IHttpActionResult GroupMemberRequirementCardOverrideMarkMet( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementService = new GroupRequirementService( rockContext );
+                var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+                var currentPerson = RockRequestContext.CurrentPerson;
+
+                // Determine if current person is authorized to override
+                if ( currentPerson == null )
+                {
+                    return Unauthorized();
+                }
+
+                var currentPersonIsLeaderOfCurrentGroup = new GroupMemberService( rockContext )
+                    .GetByGroupId( groupRequirement.Group.Id )
+                    .Where( m => m.GroupRole.IsLeader )
+                    .Select( m => m.PersonId )
+                    .Contains( currentPerson.Id );
+
+                bool currentPersonCanOverride = groupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
+                var hasPermissionToOverride = groupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
+
+                if ( !( currentPersonCanOverride || hasPermissionToOverride ) )
+                {
+                    return Unauthorized();
+                }
+
+                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                {
+                    // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                    var groupMemberService = new GroupMemberService( rockContext );
+                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                    if ( groupRequirement != null && groupMember != null )
+                    {
+                        groupMemberRequirement = new GroupMemberRequirement
+                        {
+                            GroupRequirementId = groupRequirement.Id,
+                            GroupMemberId = groupMember.Id
+                        };
+                        groupMemberRequirementService.Add( groupMemberRequirement );
+                    }
+                }
+
+                groupMemberRequirement.WasOverridden = true;
+                groupMemberRequirement.OverriddenByPersonAliasId = currentPerson.PrimaryAliasId;
+                groupMemberRequirement.OverriddenDateTime = RockDateTime.Now;
+                groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Run the "not met" workflow for the given GroupMemberRequirement
+        /// </summary>
+        /// <param name="options">The options that describe which requirement to run the workflow on</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardRunNotMetWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "A9202026-CAF8-4B68-BE95-263FAE77F92D" )]
+        public IHttpActionResult GroupMemberRequirementCardRunNotMetWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+
+                if ( !groupRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
+                {
+                    return BadRequest();
+                }
+
+                // Begin the workflow.
+                var workflowType = WorkflowTypeCache.Get( groupRequirementType.DoesNotMeetWorkflowTypeId.Value );
+
+                // If a workflow type is not persisted, let the user know that it did not work.
+                if ( !workflowType.IsPersisted )
+                {
+                    return Ok( new
+                    {
+                        Alert = $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started."
+                    } );
+                }
+
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                    Rock.Model.Workflow workflow;
+                    if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
+                    {
+                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
+                        var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+                        var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                        return Ok( new
+                        {
+                            GoTo = workflowLink.BuildUrl()
+                        } );
+                    }
+                    else
+                    {
+                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        {
+                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                            var groupRequirementService = new GroupRequirementService( rockContext );
+                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                            if ( groupRequirement != null && groupMember != null )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement
+                                {
+                                    GroupRequirementId = groupRequirement.Id,
+                                    GroupMemberId = groupMember.Id
+                                };
+                                groupMemberRequirementService.Add( groupMemberRequirement );
+                            }
+                        }
+
+                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+
+                        if ( processed )
+                        {
+                            // Update the group member requirement with the workflow - could potentially overwrite an existing workflow ID, but that is expected.
+                            groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
+                            groupMemberRequirement.RequirementFailDateTime = RockDateTime.Now;
+                            rockContext.SaveChanges();
+
+                            if ( workflow.HasActiveEntryForm( RockRequestContext.CurrentPerson ) )
+                            {
+                                var message = $"A '{workflowType.Name}' workflow has been started.<br /><br />The new workflow has an active form that is ready for input.";
+
+                                var qryParams = new Dictionary<string, string>
+                                {
+                                    { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                    { "WorkflowGuid", workflow.Guid.ToString() }
+                                };
+
+                                var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                                return Ok( new
+                                {
+                                    Open = workflowLink.BuildUrl(),
+                                    Alert = message
+                                } );
+                            }
+                            else
+                            {
+                                return Ok( new
+                                {
+                                    Alert = $"A '{workflowType.Name}' workflow was started."
+                                } );
+                            }
+                        }
+                    }
+                }
+
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// Run the "warning" workflow for the given GroupMemberRequirement
+        /// </summary>
+        /// <param name="options">The options that describe which requirement to run the workflow on</param>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementCardRunWarningWorkflow" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "CD7F3FAF-975D-4BDA-8A2D-5E236E7942DD" )]
+        public IHttpActionResult GroupMemberRequirementCardRunWarningWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
+                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+
+                if ( !groupRequirementType.WarningWorkflowTypeId.HasValue )
+                {
+                    return BadRequest();
+                }
+
+                // Begin the workflow.
+                var workflowType = WorkflowTypeCache.Get( groupRequirementType.WarningWorkflowTypeId.Value );
+
+                // If a workflow type is not persisted, let the user know that it did not work.
+                if ( !workflowType.IsPersisted )
+                {
+                    return Ok( new
+                    {
+                        Alert = $"The Workflow Type '{workflowType.Name}' is not configured to be automatically persisted, and could not be started."
+                    } );
+                }
+
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                    Rock.Model.Workflow workflow;
+                    if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
+                    {
+                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
+                        var qryParams = new Dictionary<string, string>
+                            {
+                                { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                { "WorkflowGuid", workflow.Guid.ToString() }
+                            };
+                        var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                        return Ok( new
+                        {
+                            GoTo = workflowLink.BuildUrl()
+                        } );
+                    }
+                    else
+                    {
+                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        {
+                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
+                            var groupRequirementService = new GroupRequirementService( rockContext );
+                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
+
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
+
+                            if ( groupRequirement != null && groupMember != null )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement
+                                {
+                                    GroupRequirementId = groupRequirement.Id,
+                                    GroupMemberId = groupMember.Id
+                                };
+                                groupMemberRequirementService.Add( groupMemberRequirement );
+                            }
+                        }
+
+                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
+
+                        if ( processed )
+                        {
+                            // Update the group member requirement with the workflow - could potentially overwrite an existing workflow ID, but that is expected.
+                            groupMemberRequirement.WarningWorkflowId = workflow.Id;
+                            groupMemberRequirement.RequirementWarningDateTime = RockDateTime.Now;
+                            rockContext.SaveChanges();
+
+                            if ( workflow.HasActiveEntryForm( RockRequestContext.CurrentPerson ) )
+                            {
+                                var message = $"A '{workflowType.Name}' workflow has been started.<br /><br />The new workflow has an active form that is ready for input.";
+
+                                var qryParams = new Dictionary<string, string>
+                                {
+                                    { "WorkflowTypeGuid", workflowType.Guid.ToString() },
+                                    { "WorkflowGuid", workflow.Guid.ToString() }
+                                };
+
+                                var workflowLink = new PageReference( options.WorkflowEntryLinkedPageValue, qryParams );
+
+                                return Ok( new
+                                {
+                                    Open = workflowLink.BuildUrl(),
+                                    Alert = message
+                                } );
+                            }
+                            else
+                            {
+                                return Ok( new
+                                {
+                                    Alert = $"A '{workflowType.Name}' workflow was started."
+                                } );
+                            }
+                        }
+                    }
+                }
+
+                return Ok();
+            }
+        }
+
+        #endregion
+
+        #region Group Member Requirements Container
+
+        /// <summary>
+        /// Get the data for each of the cards in the GroupMemberRequirementContainer
+        /// </summary>
+        /// <param name="options">The options that describe which data to load.</param>
+        /// <returns>A <see cref="GroupMemberRequirementContainerGetDataResultsBag"/> containing everything the cards need to be displayed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberRequirementContainerGetData" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "B1F29337-BD8B-4F62-A68E-F67C32E8CFDE" )]
+        public IHttpActionResult GroupMemberRequirementContainerGetData( [FromBody] GroupMemberRequirementContainerGetDataOptionsBag options )
+        {
+            var results = new GroupMemberRequirementContainerGetDataResultsBag
+            {
+                Errors = new List<GroupMemberRequirementErrorBag>(),
+                CategorizedRequirements = new List<GroupMemberRequirementCategoryBag>()
+            };
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupRole = new GroupTypeRoleService( rockContext ).Get( options.GroupRoleGuid );
+                var person = new PersonService( rockContext ).Get( options.PersonGuid );
+                var group = new GroupService( rockContext ).Get( options.GroupGuid );
+
+                var currentPerson = RockRequestContext.CurrentPerson;
+
+                // Determine whether the current person is a leader of the chosen group.
+                var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupGuid( options.GroupGuid );
+                var currentPersonIsLeaderOfCurrentGroup = currentPerson == null ? false :
+                    groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( currentPerson.Id );
+
+                IEnumerable<GroupRequirementStatus> groupRequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, person?.Id ?? 0, groupRole.Id );
+
+                // This collects the statuses by their requirement type category with empty / no category requirement types first, then it is by category name.
+                var requirementCategories = groupRequirementStatuses
+                .Select( s => new
+                {
+                    CategoryId = s.GroupRequirement.GroupRequirementType.CategoryId,
+                    Name = s.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? s.GroupRequirement.GroupRequirementType.Category.Name : string.Empty,
+                    RequirementResults = groupRequirementStatuses.Where( gr => gr.GroupRequirement.GroupRequirementType.CategoryId == s.GroupRequirement.GroupRequirementType.CategoryId ),
+                } ).OrderBy( a => a.CategoryId.HasValue ).ThenBy( a => a.Name ).DistinctBy( a => a.CategoryId );
+
+                var requirementsWithErrors = groupRequirementStatuses.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
+
+                if ( requirementsWithErrors.Any() )
+                {
+                    var nbRequirementErrors = new GroupMemberRequirementErrorBag
+                    {
+                        Text = string.Format( "An error occurred in one or more of the requirement calculations" ),
+                        Details = requirementsWithErrors.Select( a => string.Format( "{0}: {1}", a.GroupRequirement.GroupRequirementType.Name, a.CalculationException.Message ) ).ToList().AsDelimited( Environment.NewLine )
+                    };
+                    results.Errors.Add( nbRequirementErrors );
+                }
+
+                foreach ( var requirementCategory in requirementCategories )
+                {
+                    var newCategory = new GroupMemberRequirementCategoryBag
+                    {
+                        Id = requirementCategory.CategoryId,
+                        Name = requirementCategory.Name,
+                        MemberRequirements = new List<GroupMemberRequirementCardConfigBag>()
+                    };
+
+                    // Set up Security or Override access.
+
+                    // Add the Group Member Requirement Cards here.
+                    foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( r => r.GroupRequirement.GroupRequirementType.Name ) )
+                    {
+                        bool leaderCanOverride = requirementStatus.GroupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
+                        var hasPermissionToOverride = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
+                        var isAuthorized = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson );
+                        var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( requirementStatus.GroupMemberRequirementId ?? 0 );
+
+                        // Do not render cards where the current person is not authorized, or the status is "Not Applicable" or "Error".
+                        if ( isAuthorized && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable && requirementStatus.MeetsGroupRequirement != MeetsGroupRequirement.Error )
+                        {
+                            var card = new GroupMemberRequirementCardConfigBag
+                            {
+                                Title = requirementStatus.GroupRequirement.GroupRequirementType.Name,
+                                TypeIconCssClass = requirementStatus.GroupRequirement.GroupRequirementType.IconCssClass,
+                                MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
+                                GroupRequirementGuid = requirementStatus.GroupRequirement.Guid,
+                                GroupRequirementTypeGuid = requirementStatus.GroupRequirement.GroupRequirementType.Guid,
+                                GroupMemberRequirementGuid = groupMemberRequirement.Guid,
+                                GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate?.ToShortDateString(),
+                                CanOverride = leaderCanOverride || hasPermissionToOverride
+                            };
+
+                            newCategory.MemberRequirements.Add( card );
+                        }
+                    }
+
+                    results.CategorizedRequirements.Add( newCategory );
+                }
+                return Ok( results );
+            }
+        }
+
+        #endregion
+
         #region Group Type Group Picker
 
         /// <summary>
@@ -3936,6 +4715,51 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return mediaElements;
+        }
+
+        #endregion
+
+        #region Media Player
+
+        /// <summary>
+        /// Gets the media accounts that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <returns>A List of <see cref="TreeItemBag" /> objects that represent media accounts.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MediaPlayerGetPlayerOptions" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "85EF9540-0B5E-4816-9A13-9B09BF1ECA4F" )]
+        public IHttpActionResult MediaPlayerGetPlayerOptions( [FromBody] MediaPlayerGetPlayerOptionsOptionsBag options )
+        {
+            if ( options.PlayerOptions == null || options.MediaElementGuid == null )
+            {
+                return BadRequest( "Player Options and MediaElementGuid are Required." );
+            }
+
+            var playerOptions = new MediaPlayerOptions
+            {
+                Autoplay = options.PlayerOptions.Autoplay,
+                Autopause = options.PlayerOptions.Autopause,
+                ClickToPlay = options.PlayerOptions.ClickToPlay,
+                Controls = options.PlayerOptions.Controls,
+                Debug = options.PlayerOptions.Debug,
+                HideControls = options.PlayerOptions.HideControls,
+                MediaUrl = options.PlayerOptions.MediaUrl,
+                Muted = options.PlayerOptions.Muted,
+                PosterUrl = options.PlayerOptions.PosterUrl,
+                RelatedEntityId = options.PlayerOptions.RelatedEntityId,
+                RelatedEntityTypeId = options.PlayerOptions.RelatedEntityTypeId,
+                SeekTime = options.PlayerOptions.SeekTime,
+                TrackProgress = options.PlayerOptions.TrackProgress,
+                Type = options.PlayerOptions.Type,
+                Volume = options.PlayerOptions.Volume,
+                WriteInteraction = options.PlayerOptions.WriteInteraction
+            };
+
+            playerOptions.UpdateValuesFromMedia( null, options.MediaElementGuid, options.AutoResumeInDays, options.CombinePlayStatisticsInDays, RockRequestContext.CurrentPerson, RockRequestContext.CurrentVisitorId );
+
+            return Ok( playerOptions );
         }
 
         #endregion
@@ -5924,18 +6748,16 @@ namespace Rock.Rest.v2
                     entityType = entityType.BaseType;
                 }
 
-                var attributes = new List<Rock.Web.Cache.AttributeCache>();
+                var attributes = new List<AttributeCache>();
 
                 var entityTypeCache = EntityTypeCache.Get( entityType );
 
-                List<Rock.Web.Cache.AttributeCache> allAttributes = null;
+                List<AttributeCache> allAttributes = null;
                 Dictionary<int, List<int>> inheritedAttributes = null;
 
-                //
                 // If this entity can provide inherited attribute information then
                 // load that data now. If they don't provide any then generate empty lists.
-                //
-                if ( model is Rock.Attribute.IHasInheritedAttributes entityWithInheritedAttributes )
+                if ( model is IHasInheritedAttributes entityWithInheritedAttributes )
                 {
                     allAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
                     inheritedAttributes = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
@@ -5944,10 +6766,8 @@ namespace Rock.Rest.v2
                 allAttributes = allAttributes ?? new List<AttributeCache>();
                 inheritedAttributes = inheritedAttributes ?? new Dictionary<int, List<int>>();
 
-                //
                 // Get all the attributes that apply to this entity type and this entity's
                 // properties match any attribute qualifiers.
-                //
                 var entityTypeId = entityTypeCache?.Id;
 
                 if ( entityTypeCache != null )
@@ -5976,9 +6796,7 @@ namespace Rock.Rest.v2
                     }
                 }
 
-                //
                 // Append these attributes to our inherited attributes, in order.
-                //
                 foreach ( var attribute in attributes.OrderBy( a => a.Order ) )
                 {
                     allAttributes.Add( attribute );

@@ -19,7 +19,10 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.Serialization;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 
@@ -284,7 +287,8 @@ namespace Rock.Web.Cache
                     // Added some diagnostics to record where this code is being called from
                     // since our current exceptions are missing this detail.
                     var stackTrace = new System.Diagnostics.StackTrace( true );
-                    Logging.RockLogger.Log.Debug( Logging.RockLogDomains.Other, $"Path: {Path}" + System.Environment.NewLine + stackTrace.ToString() );
+                    RockLogger.LoggerFactory.CreateLogger<BlockTypeCache>()
+                        .LogDebug( ex, $"Path: {Path}" + System.Environment.NewLine + stackTrace.ToString() );
                     ExceptionLogService.LogException( ex );
                     return null;
                 }

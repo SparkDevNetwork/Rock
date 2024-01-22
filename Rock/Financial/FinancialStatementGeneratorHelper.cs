@@ -343,18 +343,21 @@ namespace Rock.Financial
                     var transactionSettings = reportSettings.TransactionSettings;
                     var financialTransactionQry = FinancialStatementGeneratorHelper.GetFinancialTransactionQuery( financialStatementGeneratorOptions, rockContext, false );
 
+                    IQueryable<Person> personQry = null;
                     var personList = new List<Person>();
                     Person person = null;
                     if ( personId.HasValue )
                     {
-                        person = new PersonService( rockContext ).Queryable( true, true ).Include( a => a.Aliases ).Include( a => a.PrimaryFamily ).Where( a => a.Id == personId.Value ).FirstOrDefault();
+                        personQry = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId.Value );
+                        person = personQry.Include( a => a.PrimaryFamily ).FirstOrDefault();
                         personList.Add( person );
                     }
                     else
                     {
                         // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
                         GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                        personList = groupMemberService.GetByGroupId( groupId, true ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.Person ).Include( a => a.Aliases ).Include( a => a.PrimaryFamily ).ToList();
+                        personQry = groupMemberService.GetByGroupId( groupId, true ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.Person );
+                        personList = personQry.Include( a => a.PrimaryFamily ).ToList();
                         person = personList.FirstOrDefault();
                     }
 
@@ -364,17 +367,24 @@ namespace Rock.Financial
 
                     List<int> personAliasIds;
                     using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Person Alias Ids" ) ) {
-                        personAliasIds = personList.SelectMany( a => a.Aliases.Select( x => x.Id ) ).ToList();
+                        /*
+                            1/4/2024 - JPH
 
-                        if ( personAliasIds.Count == 1 )
-                        {
-                            var personAliasId = personAliasIds[0];
-                            financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAliasId.Value == personAliasId );
-                        }
-                        else
-                        {
-                            financialTransactionQry = financialTransactionQry.Where( a => personAliasIds.Contains( a.AuthorizedPersonAliasId.Value ) );
-                        }
+                            The following 2 usages of ".Contains(...)" result in JOINs rather than WHERE...IN clauses, since they're
+                            leveraging an IQueryable<Person> instead of the List<int>[PersonAlias.Id] we were previously using.
+
+                            Reason: Statement Generator times out when generating statements for people with an excessive number of
+                                    person alias records.
+                        */
+                        var personIdQry = personQry.Select( p => p.Id );
+
+                        personAliasIds = new PersonAliasService( rockContext )
+                            .Queryable()
+                            .Where( pa => personIdQry.Contains( pa.PersonId ) )
+                            .Select( pa => pa.Id )
+                            .ToList();
+
+                        financialTransactionQry = financialTransactionQry.Where( a => personIdQry.Contains( a.AuthorizedPersonAlias.PersonId ) );
                     }
 
                     using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Configure Transaction Query" ) )
@@ -493,15 +503,22 @@ namespace Rock.Financial
                         // get the location that was specified for the recipient
                         mailingAddress = new LocationService( rockContext ).Get( locationId.Value );
                     }
-                    /*  JME 9/22/2023
+                    /*  
+                        12/7/2023 - NA
+                        We discoverd the 'else' below was compensating for the fact that the ContributionStatementGenerator
+                        block was failing to include the LocationId in the financialStatementGeneratorRecipientRequest.
+                        Therefore, we're fixing it in that block.
+
+                        9/22/2023 - JME 
                         This query below was taking 4 seconds on the Life.Church server and appears to be redundant to the original query. Said
                         a different way, if the request above didn't find a location this one won't either.
-                    else
-                    {
-                        // for backwards compatibility, get the first address
-                        IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
-                        mailingAddress = groupLocationsQry.Where( a => a.GroupId == groupId ).Select( a => a.Location ).FirstOrDefault();
-                    }
+
+                        else
+                        {
+                            // for backwards compatibility, get the first address
+                            IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
+                            mailingAddress = groupLocationsQry.Where( a => a.GroupId == groupId ).Select( a => a.Location ).FirstOrDefault();
+                        }
                     */
 
                     mergeFields.Add( MergeFieldKey.MailingAddress, mailingAddress );

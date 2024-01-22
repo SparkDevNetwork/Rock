@@ -56,11 +56,11 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
 import ListBox from "@Obsidian/Controls/listBox.obs";
+import ListItems from "@Obsidian/Controls/listItems.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
@@ -95,7 +95,6 @@ import Rating from "@Obsidian/Controls/rating.obs";
 import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
-import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
 import AssessmentTypePicker from "@Obsidian/Controls/assessmentTypePicker.obs";
@@ -244,6 +243,24 @@ import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
 import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
 import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
+import AttributeMatrixEditorGallery from "./ControlGallery/attributeMatrixEditorGallery.partial.obs";
+import BadgeControlGallery from "./ControlGallery/badgeControlGallery.partial.obs";
+import BadgeGallery from "./ControlGallery/badgeGallery.partial.obs";
+import WarningBlockGallery from "./ControlGallery/warningBlockGallery.partial.obs";
+import KeyValueListGallery from "./ControlGallery/keyValueListGallery.partial.obs";
+import YearPickerGallery from "./ControlGallery/yearPickerGallery.partial.obs";
+import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs";
+import FirstNameTextBoxGallery from "./ControlGallery/firstNameTextBoxGallery.partial.obs";
+import ImageUploaderGallery from "./ControlGallery/imageUploaderGallery.partial.obs";
+import MediaPlayerGallery from "./ControlGallery/mediaPlayerGallery.partial.obs";
+import RadioButtonGallery from "./ControlGallery/radioButtonGallery.partial.obs";
+import BulletedListGallery from "./ControlGallery/bulletedListGallery.partial.obs";
+import TermDescriptionGallery from "./ControlGallery/termDescriptionGallery.partial.obs";
+import ValueFilterGallery from "./ControlGallery/valueFilterGallery.partial.obs";
+import SecurityButtonGallery from "./ControlGallery/securityButtonGallery.partial.obs";
+import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partial.obs";
+import JsonFieldsBuilderGallery from "./ControlGallery/jsonFieldsBuilderGallery.partial.obs";
+import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -385,7 +402,8 @@ const attributeValuesContainerGallery = defineComponent({
         :displayAsTabs="displayAsTabs"
         :showCategoryLabel="showCategoryLabel"
         :numberOfColumns="numberOfColumns"
-        :entityTypeName="entityName" />
+        :entityTypeName="entityName"
+        :showPrePostHtml="showPrePost" />
 
     <template #settings>
         <div class="row">
@@ -1036,6 +1054,37 @@ const mediaSelectorGallery = defineComponent({
 });
 
 /** Demonstrates a list box */
+const listItemsGallery = defineComponent({
+    name: "ListItemsGallery",
+    components: {
+        GalleryAndResult,
+        ListItems,
+        TextBox
+    },
+    setup() {
+        return {
+            value: ref([]),
+            valuePrompt: ref(""),
+            importCode: getControlImportPath("listItems"),
+            exampleCode: `<ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{'output:modelValue': value, 'input:items': options}"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />
+
+    <template #settings>
+        <TextBox label="Value Prompt" v-model="valuePrompt" />
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a list box */
 const listBoxGallery = defineComponent({
     name: "ListBoxGallery",
     components: {
@@ -1400,7 +1449,7 @@ const genderPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <GenderPicker label="Your Gender" v-model="value" />
+    <GenderPicker  v-model="value" />
 
     <template #settings>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
@@ -1559,35 +1608,6 @@ const inlineSwitchGallery = defineComponent({
     <template #settings>
         <CheckBox label="Is Bold" v-model="isBold" />
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a currency box */
-const currencyBoxGallery = defineComponent({
-    name: "CurrencyBoxGallery",
-    components: {
-        GalleryAndResult,
-        CurrencyBox
-    },
-    setup() {
-        return {
-            value: ref(1.23),
-            importCode: getControlImportPath("currencyBox"),
-            exampleCode: `<CurrencyBox label="Currency" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CurrencyBox label="Currency" v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2159,54 +2179,6 @@ const fileUploaderGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates the image uploader component. */
-const imageUploaderGallery = defineComponent({
-    name: "ImageUploaderGallery",
-    components: {
-        GalleryAndResult,
-        CheckBox,
-        ImageUploader,
-        TextBox
-    },
-    setup() {
-        return {
-            binaryFileTypeGuid: ref(BinaryFiletype.Default),
-            showDeleteButton: ref(true),
-            uploadAsTemporary: ref(true),
-            uploadButtonText: ref("Upload"),
-            value: ref(null),
-            importCode: getControlImportPath("imageUploader"),
-            exampleCode: `<ImageUploader v-model="value" label="Image Uploader" :uploadAsTemporary="true" :binaryFileTypeGuid="BinaryFiletype.Default" uploadButtonText="Upload" :showDeleteButton="true" />`
-        };
-    },
-    template: `
-    <GalleryAndResult
-        :value="value"
-        :importCode="importCode"
-        :exampleCode="exampleCode"
-        enableReflection >
-        <ImageUploader v-model="value"
-            label="Image Uploader"
-            :uploadAsTemporary="uploadAsTemporary"
-            :binaryFileTypeGuid="binaryFileTypeGuid"
-            :uploadButtonText="uploadButtonText"
-            :showDeleteButton="showDeleteButton" />
-
-        <template #settings>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="uploadAsTemporary" label="Upload As Temporary" />
-                <TextBox formGroupClasses="col-sm-8" v-model="binaryFileTypeGuid" label="Binary File Type Guid" />
-            </div>
-            <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="showDeleteButton" label="Show Delete Button" />
-                <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
-            </div>
-
-            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-        </template>
-    </GalleryAndResult>`
-});
-
 /** Demonstrates a sliding date range picker */
 const slidingDateRangePickerGallery = defineComponent({
     name: "SlidingDateRangePickerGallery",
@@ -2570,11 +2542,9 @@ const sectionHeaderGallery = defineComponent({
         :description="description"
         :isSeparatorHidden="!showSeparator" >
         <template v-if="showActionBar" #actions>
-            <div>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
-                <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
-            </div>
+            <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+            <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+            <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
         </template>
     </SectionHeader>
 
@@ -2632,11 +2602,9 @@ const sectionContainerGallery = defineComponent({
         v-model="showContent"
         :toggleText="showContentToggle ? 'Show' : ''" >
         <template v-if="showActionBar" #actions>
-            <div>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
-                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
-                <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
-            </div>
+            <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+            <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+            <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
         </template>
         Here's some content to put in here.
     </SectionContainer>
@@ -4749,7 +4717,7 @@ const notificationBoxGallery = defineComponent({
             options,
             alertType: ref(AlertType.Default),
             importCode: getSfcControlImportPath("notificationBox"),
-            exampleCode: `<NotificationBox dismissable alertType="AlertType.Info" @dismiss="onDismiss" heading="Heading Text">
+            exampleCode: `<NotificationBox dismissible :alertType="AlertType.Info" @dismiss="onDismiss" heading="Heading Text">
     This is an alert!
     <template #details>
         Here's a place where you can place details that show up when you click "Show Details".
@@ -4781,7 +4749,7 @@ const notificationBoxGallery = defineComponent({
                 <TextBox v-model="details" label="Details Text" />
             </div>
             <div class="col-md-3">
-                <CheckBox label="Dismissable" v-model="isDismissible" />
+                <CheckBox label="Dismissible" v-model="isDismissible" />
             </div>
         </div>
     </template>
@@ -5086,71 +5054,6 @@ const javaScriptAnchorGallery = defineComponent({
     :exampleCode="exampleCode" >
 
     <JavaScriptAnchor @click="onClick">This link can run code, but does not link to a page.</JavaScriptAnchor>
-</GalleryAndResult>`
-});
-
-/** Demonstrates javascript anchor */
-const keyValueListGallery = defineComponent({
-    name: "KeyValueListGallery",
-    components: {
-        GalleryAndResult,
-        KeyValueList,
-        CheckBox,
-        TextBox
-    },
-    setup() {
-        const limitValues = ref(false);
-        const displayValueFirst = ref(false);
-        const options: ListItemBag[] = [
-            {
-                text: "Option 1",
-                value: "1"
-            },
-            {
-                text: "Option 2",
-                value: "2"
-            },
-            {
-                text: "Option 3",
-                value: "3"
-            },
-        ];
-
-        const valueOptions = computed(() => limitValues.value ? options : null);
-
-        return {
-            limitValues,
-            displayValueFirst,
-            valueOptions,
-            value: ref(null),
-            fullWidth: ref(false),
-            keyPlaceholder: ref("Key"),
-            valuePlaceholder: ref("Value"),
-            importCode: getControlImportPath("keyValueList"),
-            exampleCode: `<KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{ 'output:modelValue':value, 'input:valueOptions':valueOptions }"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-
-    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" :fullWidth="fullWidth" />
-
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-md-4" label="Limit Possible Values" v-model="limitValues" />
-            <CheckBox formGroupClasses="col-md-4" label="Show Value First" v-model="displayValueFirst" />
-            <CheckBox formGroupClasses="col-md-4" label="Full Width" v-model="fullWidth" />
-        </div>
-        <div class="row">
-            <TextBox formGroupClasses="col-md-4" label="Placeholder for Key Field" v-model="keyPlaceholder" />
-            <TextBox formGroupClasses="col-md-4" label="Placeholder for Value Field" v-model="valuePlaceholder" />
-        </div>
-    </template>
 </GalleryAndResult>`
 });
 
@@ -8049,6 +7952,7 @@ const controlGalleryComponents: Record<string, Component> = [
     checkBoxListGallery,
     mediaSelectorGallery,
     listBoxGallery,
+    listItemsGallery,
     phoneNumberBoxGallery,
     dropDownListGallery,
     helpBlockGallery,
@@ -8059,7 +7963,7 @@ const controlGalleryComponents: Record<string, Component> = [
     socialSecurityNumberBoxGallery,
     timePickerGallery,
     ratingGallery,
-    currencyBoxGallery,
+    CurrencyBoxGallery,
     emailBoxGallery,
     numberUpDownGallery,
     staticFormControlGallery,
@@ -8072,7 +7976,7 @@ const controlGalleryComponents: Record<string, Component> = [
     panelGallery,
     PersonPickerGallery,
     fileUploaderGallery,
-    imageUploaderGallery,
+    ImageUploaderGallery,
     slidingDateRangePickerGallery,
     definedValuePickerGallery,
     campusPickerGallery,
@@ -8120,7 +8024,7 @@ const controlGalleryComponents: Record<string, Component> = [
     fieldTypeEditorGallery,
     inlineRangeSliderGallery,
     javaScriptAnchorGallery,
-    keyValueListGallery,
+    KeyValueListGallery,
     loadingGallery,
     loadingIndicatorGallery,
     numberUpDownGroupGallery,
@@ -8192,6 +8096,21 @@ const controlGalleryComponents: Record<string, Component> = [
     ChartGallery,
     EntityPickerGallery,
     PersonBasicEditorGallery,
+    AttributeMatrixEditorGallery,
+    BadgeControlGallery,
+    BadgeGallery,
+    WarningBlockGallery,
+    YearPickerGallery,
+    FirstNameTextBoxGallery,
+    MediaPlayerGallery,
+    RadioButtonGallery,
+    BulletedListGallery,
+    TermDescriptionGallery,
+    ValueFilterGallery,
+    SecurityButtonGallery,
+    MarkdownEditorGallery,
+    JsonFieldsBuilderGallery,
+    HtmlEditorGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

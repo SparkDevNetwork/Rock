@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using CSScriptLibrary;
+
 using Microsoft.Web.XmlTransform;
 
 using Rock;
@@ -118,20 +118,15 @@ namespace RockWeb.Blocks.Administration
         private void ShowDetails()
         {
             BindGeneralConfiguration();
-
             BindTimeZones();
-
             BindOtherAppSettings();
             BindMaxFileSize();
             BindLoginCookieTimeout();
-
             BindExperimentalSettings();
-
             BindObservabilitySettings();
-
             BindSystemDiagnosticsSettings();
-
             BindUiSettings();
+            BindFamilyRulesSettings();
         }
 
         #endregion
@@ -258,6 +253,16 @@ namespace RockWeb.Blocks.Administration
             nbUiSettings.Text = "Settings saved successfully.";
         }
 
+        protected void btnFamilyRules_Click( object sender, EventArgs e )
+        {
+            Rock.Web.SystemSettings.SetValue( SystemSetting.BIBLE_STRICT_SPOUSE, cbBibleStrictSpouse.Checked.ToString() );
+
+            nbFamilyRulesMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbFamilyRulesMessage.Visible = true;
+            nbFamilyRulesMessage.Title = string.Empty;
+            nbFamilyRulesMessage.Text = "Settings saved successfully.";
+        }
+
         #endregion
 
         #region Methods
@@ -276,6 +281,10 @@ namespace RockWeb.Blocks.Administration
 
             kvlEndpointHeaders.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS );
 
+            nbObservabilitySpanCountLimit.IntegerValue = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT ).AsIntegerOrNull();
+
+            nbObservabilityMaxAttributeLength.IntegerValue = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH ).AsIntegerOrNull();
+
             vlTargetedQueries.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES );
         }
 
@@ -288,7 +297,7 @@ namespace RockWeb.Blocks.Administration
             cbIncludeBusinessInPersonPicker.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER ).AsBoolean();
             cbEnableKeepAlive.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean();
             tbPDFExternalRenderEndpoint.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
-            nbVisitorCookiePersistenceLengthDays.Text = (Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays).ToString();
+            nbVisitorCookiePersistenceLengthDays.Text = ( Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays ).ToString();
             nbPersonalizationCookieCacheLengthMinutes.Text = ( Rock.Web.SystemSettings.GetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES ).AsIntegerOrNull() ?? SettingDefault.PersonalizationCookieCacheLengthMinutes ).ToString();
         }
 
@@ -481,6 +490,14 @@ namespace RockWeb.Blocks.Administration
             rtbSmsOptInMessage.Text = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
         }
 
+        /// <summary>
+        /// Binds the Family Rules Settings
+        /// </summary>
+        private void BindFamilyRulesSettings()
+        {
+            cbBibleStrictSpouse.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
+        }
+
         #endregion
 
         #region Event Handlers
@@ -537,7 +554,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e"></param>
         protected void btnObservabilitySave_Click( object sender, EventArgs e )
         {
-            if ( cbEnableObservaility.Checked &&  urlObservabilityEndpoint.Text.IsNullOrWhiteSpace() )
+            if ( cbEnableObservaility.Checked && urlObservabilityEndpoint.Text.IsNullOrWhiteSpace() )
             {
                 nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Warning;
                 nbObservabilityMessages.Text = "To enable observability, please provide a valid service endpoint. (e.g. https://otlp.nr-data.net:4317)";
@@ -548,6 +565,8 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL, ddlEndpointProtocol.SelectedValue );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS, kvlEndpointHeaders.Value );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT, urlObservabilityEndpoint.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT, nbObservabilitySpanCountLimit.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH, nbObservabilityMaxAttributeLength.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES, vlTargetedQueries.Value );
 
             nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Success;

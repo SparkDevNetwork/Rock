@@ -54,14 +54,14 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 1 )]
 
-    [BooleanField( "Are Requirements Publicly Hidden",
-        Description = "Set to true to publicly show the group member's requirements.",
+    [BooleanField( "Hide Requirements",
+        Description = "When set to 'Yes', the group member's requirements section will be hidden.",
         Key = AttributeKey.AreRequirementsPubliclyHidden,
         DefaultBooleanValue = false,
         Order = 2 )]
 
-    [BooleanField( "Is Requirement Summary Hidden",
-        Description = "Set to true to hide the \"Summary\" field.",
+    [BooleanField( "Hide Requirement Type Summary",
+        Description = "If requirements are being shown, setting this to 'Yes' will hide the requirement type's \"Summary\" value.",
         Key = AttributeKey.IsSummaryHidden,
         DefaultBooleanValue = false,
         Order = 3 )]
@@ -597,7 +597,7 @@ namespace RockWeb.Blocks.Groups
                 || group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
                 || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson )
                 || ( IsSignUpMode && group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) ) )
-                {
+            {
                 readOnly = false;
                 nbEditModeMessage.Text = string.Empty;
             }
@@ -1040,7 +1040,7 @@ namespace RockWeb.Blocks.Groups
             gmrcRequirements.RequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
 
             // Determine whether the current person is a leader of the chosen group.
-            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupMemberId.ValueAsInt() );
+            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupId.ValueAsInt() );
             var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
                 groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
 

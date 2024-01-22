@@ -483,6 +483,20 @@ namespace Rock.Chart
                     thisDate = thisDate.AddDays( 1 );
                 }
             }
+            else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Week )
+            {
+                // To test for the last date of the reporting period, get the next week.
+                var lastDateNextWeek = endDate.AddDays( 7 );
+
+                while ( thisDate < lastDateNextWeek )
+                {
+                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
+
+                    categoryDataPoints.Add( categoryDataPoint );
+
+                    thisDate = thisDate.AddDays( 7 );
+                }
+            }
             else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
             {
                 // To test for the last date of the reporting period, get the first day of the following month.
@@ -566,7 +580,7 @@ namespace Rock.Chart
                 datasetQuantized.BorderColor = dataset.BorderColor;
                 datasetQuantized.FillColor = dataset.FillColor;
 
-                if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+                if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day || timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Week )
                 {
                     var quantizedDataPoints = datapoints
                         .GroupBy( x => new { Day = x.DateTime } )
@@ -797,6 +811,11 @@ namespace Rock.Chart
         /// Day time scale
         /// </summary>
         Day = 1,
+
+        /// <summary>
+        /// Week time scale
+        /// </summary>
+        Week = 2,
 
         /// <summary>
         /// Month time scale

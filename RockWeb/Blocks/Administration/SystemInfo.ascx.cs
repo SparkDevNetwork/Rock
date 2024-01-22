@@ -34,6 +34,7 @@ using Rock;
 using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility.Settings;
 using Rock.VersionInfo;
@@ -96,6 +97,7 @@ namespace RockWeb.Blocks.Administration
             {
                 ShowDetailTab();
             }
+
         }
 
         /// <summary>
@@ -151,6 +153,11 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnClearCache_Click( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            {
+                return;
+            }
+
             var msgs = RockCache.ClearAllCachedItems();
 
             // Flush today's Check-in Codes
@@ -163,7 +170,7 @@ namespace RockWeb.Blocks.Administration
             FieldTypeService.RegisterFieldTypes();
 
             BlockTypeService.FlushRegistrationCache();
-            BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
+            BlockTypeService.RegisterBlockTypes( webAppPath, false );
 
             msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
 
@@ -197,6 +204,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnRestart_Click( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            {
+                return;
+            }
+
             RockWebFarm.OnRestartRequested( CurrentPerson );
             RestartWebApplication();
         }
@@ -492,6 +504,12 @@ namespace RockWeb.Blocks.Administration
             else if ( _ActivePanel == SystemInfoPanels.Diagnostics )
             {
                 LoadPageDiagnostics();
+            }
+
+            if ( !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            {
+                divActions.Visible = false;
+                btnDrainQueue.Visible = false;
             }
 
             SetActivePanel( _ActivePanel );

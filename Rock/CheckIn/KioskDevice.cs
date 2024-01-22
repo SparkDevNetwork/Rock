@@ -357,6 +357,24 @@ namespace Rock.CheckIn
         /// <param name="rockContext">The rock context.</param>
         private static void LoadKioskLocations( KioskDevice kioskDevice, Location location, int? campusId, RockContext rockContext )
         {
+            /*  11-09-2023 DSH
+
+              Performance tuning was done on this method to handle extremely
+              large and complex check-in configurations. Previously a number of
+              additional queries were being executed (hundreds). So now we try
+              to load data in bulk in fewer queries. This shows a pretty massive
+              performance boost.
+
+              There is the possiblity the new code makes it slightly slower for
+              smaller configurations, but because those were so fast already it
+              should not be a noticeable difference.
+
+              Testing was performed with 50 kiosks, 1,250 locations and 2,500 groups.
+              Each kiosk had 5 random locations.
+              Each group had 8 random locations.
+              Each group location had 3 random schedules.
+            */
+
             // Get the child locations and the selected location
             var allLocations = new LocationService( rockContext ).GetAllDescendentIds( location.Id ).ToList();
             allLocations.Add( location.Id );
@@ -374,9 +392,49 @@ namespace Rock.CheckIn
             var groupLocationList = new GroupLocationService( rockContext )
                 .GetActiveByLocations( allLocations )
                 .Include( x => x.Location )
-                .Include( x => x.Schedules )
+                .Include( x => x.Group )
                 .OrderBy( l => l.Order ).AsNoTracking()
                 .ToList();
+
+            // Load all the attributes for the groups now in one query instead
+            // of a bunch of individual queries later.
+            groupLocationList
+                .Select( l => l.Group )
+                .DistinctBy( g => g.Id )
+                .LoadAttributes( rockContext );
+
+            // The above call only loaded Attributes for the first Group of a given ID.
+            // We need to copy the attributes to all other Groups whose IDs match.
+            var groupsWithAttributes = groupLocationList
+                .Select( g => g.Group )
+                .Where( g => g.Attributes != null && g.AttributeValues != null );
+
+            foreach ( var groupWithAttributes in groupsWithAttributes )
+            {
+                var groupsMissingAttributes = groupLocationList
+                    .Select( g => g.Group )
+                    .Where( g => g.Id == groupWithAttributes.Id
+                        && ( g.Attributes == null || g.AttributeValues == null )
+                    );
+
+                foreach ( var groupMissingAttributes in groupsMissingAttributes )
+                {
+                    groupMissingAttributes.Attributes = groupWithAttributes.Attributes;
+                    groupMissingAttributes.AttributeValues = groupWithAttributes.AttributeValues;
+                }
+            }
+
+            // Load all the schedules in one shot. This is faster than adding
+            // Schedules as an Include above. Because we are already including
+            // the Location and Group objects, adding in Schedules duplicates
+            // all that data by however many schedules we have.
+            var groupLocationIds = groupLocationList.Select( x => x.LocationId ).ToList();
+            var groupLocationSchedules = new GroupLocationService( rockContext )
+                .Queryable()
+                .Include( gl => gl.Schedules )
+                .Where( gl => groupLocationIds.Contains( gl.LocationId ) )
+                .ToList()
+                .ToDictionary( gl => gl.Id, gl => gl.Schedules.ToList() );
 
             foreach ( var groupLocation in groupLocationList )
             {
@@ -384,8 +442,16 @@ namespace Rock.CheckIn
                 kioskLocation.CampusId = campusId;
                 kioskLocation.Order = groupLocation.Order;
 
+                // Snag the schedules from our single query above. If we can't
+                // find it then fall back to the old slow way. Shouldn't happen
+                // but just makes us a bit safer.
+                if ( !groupLocationSchedules.TryGetValue( groupLocation.Id, out var schedules ) )
+                {
+                    schedules = groupLocation.Schedules.ToList();
+                }
+
                 // Populate each kioskLocation with its schedules (kioskSchedules)
-                foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
+                foreach ( var schedule in schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
                     if ( activeSchedules.Keys.Contains( schedule.Id ) )
                     {
@@ -419,7 +485,16 @@ namespace Rock.CheckIn
                     if ( kioskGroup == null )
                     {
                         kioskGroup = new KioskGroup( groupLocation.Group );
-                        kioskGroup.Group.LoadAttributes( rockContext );
+
+                        // KioskGroup will call Clone() on the group. This
+                        // currently does not copy Attributes or AttributeValues
+                        // properties to the new object.
+                        if ( kioskGroup.Group.Attributes == null )
+                        {
+                            kioskGroup.Group.Attributes = groupLocation.Group.Attributes;
+                            kioskGroup.Group.AttributeValues = groupLocation.Group.AttributeValues;
+                        }
+
                         kioskGroupType.KioskGroups.Add( kioskGroup );
                     }
 

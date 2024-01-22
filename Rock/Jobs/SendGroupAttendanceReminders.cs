@@ -21,6 +21,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -88,7 +90,7 @@ namespace Rock.Jobs
 
                     if ( jobPreferredCommunicationType == CommunicationType.SMS )
                     {
-                        Log( RockLogLevel.Error, message );
+                        Logger.LogError( message );
 
                         // Halt job execution until the system is correctly configured.
                         throw new Exception( message );
@@ -96,7 +98,7 @@ namespace Rock.Jobs
                     else
                     {
                         _jobWarnings.Add( message );
-                        Log( RockLogLevel.Warning, message );
+                        Logger.LogWarning( message );
 
                         // Force the job to use email, since SMS is not available.
                         jobPreferredCommunicationType = CommunicationType.Email;
@@ -196,7 +198,7 @@ namespace Rock.Jobs
             {
                 var error = $"Cannot send attendance reminders for group type {groupType.Name}.  The group type does not have an attendance reminder system communication.";
                 _jobErrors.Add( error );
-                Log( RockLogLevel.Error, error );
+                Logger.LogError( error );
                 return;
             }
 
@@ -207,7 +209,7 @@ namespace Rock.Jobs
                     + $"was found in system communication {systemCommunication.Title}.  Reminders for "
                     + $"group type {groupType.Name} will be sent by email.";
                 _jobWarnings.Add( warning );
-                Log( RockLogLevel.Warning, warning );
+                Logger.LogWarning( warning );
                 jobPreferredCommunicationType = CommunicationType.Email;
             }
 
@@ -221,13 +223,13 @@ namespace Rock.Jobs
             attendanceRemindersResults.Errors.ForEach( error => {
                 var warningText = $"Error sending reminders for group type {groupType.Name}: " + error;
                 _jobWarnings.Add( warningText );
-                Log( RockLogLevel.Warning, warningText );
+                Logger.LogWarning( warningText );
             } );
 
             attendanceRemindersResults.Warnings.ForEach( warning => {
                 var warningText = $"Warning sending reminders for group type {groupType.Name}: " + warning;
                 _jobWarnings.Add( warningText );
-                Log( RockLogLevel.Warning, warningText );
+                Logger.LogWarning( warningText );
             } );
 
             var reminderCount = attendanceRemindersResults.MessagesSent;

@@ -1,0 +1,266 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="col-xs-12 col-sm-6 col-md-4 requirement-item">
+        <div :class="`alert alert-${alertType} alert-requirement`">
+            <span class="flex-shrink-0" v-if="typeIconCssClass"><i :class="`${typeIconCssClass} fa-fw icon`"></i></span>
+            <div class="flex-fill">
+                <span class="requirement-title h6" v-if="title">{{ title }}</span>
+                <span v-if="isOverridden" ref="overriddenTooltipEl" class="help cursor-pointer" tabindex="-1" data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true" title="" :data-original-title="`Requirement Marked Met by ${overriddenBy} on ${overriddenAt}`"><i class="fa fa-user-check fa-fw"></i></span>
+                <span v-if="groupMemberRequirementDueDate && !isMet" class="requirement-due small">Due: {{ groupMemberRequirementDueDate }}</span>
+                <div class="requirement-message" v-if="message">{{ message }}</div>
+                <div class="requirement-summary" v-if="summary && !isSummaryHidden">{{ summary }}</div>
+                <ul v-if="areActionsShown" class="list-unstyled list-requirements">
+                    <li v-if="!isMet && manualRequirementControl.enabled">
+                        <a tabindex="0" role="button" @click.prevent="manuallyMarkMet"><i :class="manualRequirementControl.isLoading ? 'fa fa-spinner fa-spin' : manualRequirementControl.icon"></i> {{ manualRequirementControl.label }}</a>
+                    </li>
+                    <li v-if="!isMet && notMetWorkflowControl.enabled">
+                        <a tabindex="0" role="button" @click.prevent="runNotMetWorkflow"><i :class="notMetWorkflowControl.isLoading ? 'fa fa-spinner fa-spin' : notMetWorkflowControl.icon"></i> {{ notMetWorkflowControl.label }}</a>
+                    </li>
+                    <li v-if="!isMet && warningWorkflowControl.enabled">
+                        <a tabindex="0" role="button" @click.prevent="runWarningWorkflow"><i :class="warningWorkflowControl.isLoading ? 'fa fa-spinner fa-spin' : warningWorkflowControl.icon"></i> {{ warningWorkflowControl.label }}</a>
+                    </li>
+                    <li v-if="!isMet && overrideRequirementControl.enabled && !isOverridden">
+                        <a tabindex="0" role="button" @click.prevent="overrideMarkMet"><i :class="overrideRequirementControl.isLoading ? 'fa fa-spinner fa-spin' : overrideRequirementControl.icon"></i> {{ overrideRequirementControl.label }}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, Ref, computed, ref, watch } from "vue";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { GroupMemberRequirementCardGetConfigOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardGetConfigOptionsBag";
+    import { GroupMemberRequirementCardGetConfigResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardGetConfigResultsBag";
+    import { GroupMemberRequirementCardSubControlConfigBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardSubControlConfigBag";
+    import { GroupMemberRequirementCardMarkMetManuallyOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardMarkMetManuallyOptionsBag";
+    import { GroupMemberRequirementCardRunWorkflowOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardRunWorkflowOptionsBag";
+    import { GroupMemberRequirementCardRunWorkflowResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardRunWorkflowResultsBag";
+    import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        title: {
+            type: String,
+            required: true
+        },
+
+        canOverride: {
+            type: Boolean
+        },
+
+        groupRequirementGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        groupMemberGuid: {
+            type: String as PropType<Guid>
+        },
+
+        groupMemberRequirementGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        isSummaryHidden: {
+            type: Boolean
+        },
+
+        isInteractionDisabled: {
+            type: Boolean
+        },
+
+        groupMemberRequirementDueDate: {
+            type: String
+        },
+
+        workflowEntryLinkedPageValue: {
+            type: String
+        },
+
+        typeIconCssClass: {
+            type: String
+        },
+
+        meetsGroupRequirement: {
+            type: Number as PropType<MeetsGroupRequirement>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "statusChanged"): void
+    }>();
+
+    const http = useHttp();
+    const message = ref("");
+    const summary = ref("");
+    const isOverridden = ref(false);
+    const overriddenAt = ref("");
+    const overriddenBy = ref("");
+
+    const manualRequirementControl = ref<GroupMemberRequirementCardSubControlConfigBag>({ enabled: false, isLoading: false });
+    const notMetWorkflowControl = ref<GroupMemberRequirementCardSubControlConfigBag>({ enabled: false, isLoading: false });
+    const warningWorkflowControl = ref<GroupMemberRequirementCardSubControlConfigBag>({ enabled: false, isLoading: false });
+    const overrideRequirementControl = ref<GroupMemberRequirementCardSubControlConfigBag>({ enabled: false, isLoading: false });
+
+    const overriddenTooltipEl = ref<HTMLElement>();
+
+    const meetsGroupRequirement = ref(props.meetsGroupRequirement);
+
+    const isMet = computed(() => meetsGroupRequirement.value === MeetsGroupRequirement.Meets);
+    const areActionsShown = computed(() => {
+        return !props.isInteractionDisabled
+            && (manualRequirementControl.value.enabled
+                || overrideRequirementControl.value.enabled
+                || notMetWorkflowControl.value.enabled
+                || warningWorkflowControl.value.enabled);
+    });
+    const alertType = computed(() => {
+        switch (meetsGroupRequirement.value) {
+            case MeetsGroupRequirement.Meets:
+                return "success";
+            case MeetsGroupRequirement.NotMet:
+                return "danger";
+            case MeetsGroupRequirement.MeetsWithWarning:
+                return "warning";
+            default:
+                return "info";
+        }
+    });
+
+    // #region Functions
+
+    /**
+     * Loads the items from the server.
+     */
+    async function loadConfig(): Promise<void> {
+        const options: GroupMemberRequirementCardGetConfigOptionsBag = {
+            groupMemberRequirementGuid: props.groupMemberRequirementGuid,
+            groupRequirementGuid: props.groupRequirementGuid,
+            meetsGroupRequirement: meetsGroupRequirement.value,
+            canOverride: props.canOverride
+        };
+        const result = await http.post<GroupMemberRequirementCardGetConfigResultsBag>("/api/v2/Controls/GroupMemberRequirementCardGetConfig", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            const data = result.data;
+
+            message.value = data.message ?? "";
+            summary.value = data.summary ?? "";
+            isOverridden.value = data.isOverridden;
+            overriddenAt.value = data.overriddenAt ?? "";
+            overriddenBy.value = data.overriddenBy ?? "";
+
+            manualRequirementControl.value = data.manualRequirementControl ?? { enabled: false, isLoading: false };
+            overrideRequirementControl.value = data.overrideRequirementControl ?? { enabled: false, isLoading: false };
+            notMetWorkflowControl.value = data.notMetWorkflowControl ?? { enabled: false, isLoading: false };
+            warningWorkflowControl.value = data.warningWorkflowControl ?? { enabled: false, isLoading: false };
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+        }
+    }
+
+    async function manuallyMarkMet(): Promise<void> {
+        manualRequirementControl.value.isLoading = true;
+
+        try {
+            const options: GroupMemberRequirementCardMarkMetManuallyOptionsBag = {
+                groupMemberRequirementGuid: props.groupMemberRequirementGuid,
+                groupRequirementGuid: props.groupRequirementGuid,
+                groupMemberGuid: props.groupMemberGuid
+            };
+            const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardMarkMetManually", undefined, options);
+
+            if (result.isSuccess) {
+                emit("statusChanged");
+            }
+        }
+        finally {
+            manualRequirementControl.value.isLoading = false;
+        }
+    }
+
+    async function overrideMarkMet(): Promise<void> {
+        const isConfirmed = await confirm("Are you sure you want to manually mark this requirement as met?");
+        if (isConfirmed) {
+            overrideRequirementControl.value.isLoading = true;
+
+            try {
+                const options: GroupMemberRequirementCardMarkMetManuallyOptionsBag = {
+                    groupMemberRequirementGuid: props.groupMemberRequirementGuid,
+                    groupRequirementGuid: props.groupRequirementGuid,
+                    groupMemberGuid: props.groupMemberGuid
+                };
+                const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardOverrideMarkMet", undefined, options);
+
+                if (result.isSuccess) {
+                    emit("statusChanged");
+                }
+            }
+            finally {
+                overrideRequirementControl.value.isLoading = false;
+            }
+        }
+    }
+
+    function runNotMetWorkflow(): void {
+        runWorkflow(notMetWorkflowControl, "NotMet");
+    }
+
+    function runWarningWorkflow(): void {
+        runWorkflow(warningWorkflowControl, "Warning");
+    }
+
+    async function runWorkflow(button: Ref<{ isLoading: boolean }>, type: "NotMet" | "Warning"): Promise<void> {
+        button.value.isLoading = true;
+
+        try {
+            const options: GroupMemberRequirementCardRunWorkflowOptionsBag = {
+                groupMemberRequirementGuid: props.groupMemberRequirementGuid,
+                groupRequirementGuid: props.groupRequirementGuid,
+                groupMemberGuid: props.groupMemberGuid,
+                workflowEntryLinkedPageValue: props.workflowEntryLinkedPageValue
+            };
+            const result = await http.post<GroupMemberRequirementCardRunWorkflowResultsBag>(`/api/v2/Controls/GroupMemberRequirementCardRun${type}Workflow`, undefined, options);
+
+            if (result.isSuccess && result.data) {
+                if (result.data.goTo) {
+                    window.location.assign(result.data.goTo);
+                    return;
+                }
+                if (result.data.alert) {
+                    await alert(result.data.alert);
+                }
+                if (result.data.open) {
+                    window.open(result.data.open);
+                    return;
+                }
+            }
+        }
+        finally {
+            button.value.isLoading = false;
+        }
+    }
+
+    // #endregion
+
+    watch(() => props.meetsGroupRequirement, () => {
+        meetsGroupRequirement.value = props.meetsGroupRequirement;
+    });
+
+    watch(() => [props.groupRequirementGuid, props.groupMemberRequirementGuid, props.meetsGroupRequirement], () => {
+        loadConfig();
+    }, { immediate: true });
+
+    watch(overriddenTooltipEl, () => {
+        if (overriddenTooltipEl.value) {
+            tooltip(overriddenTooltipEl.value);
+        }
+    });
+</script>

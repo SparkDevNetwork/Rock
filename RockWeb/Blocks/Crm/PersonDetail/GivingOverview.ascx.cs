@@ -21,15 +21,14 @@ using System.Linq;
 using System.Text;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Humanizer;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -250,8 +249,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var givingId = Person.GivingId;
 
+            // Get the past 3 years of monthly giving history.
             var threeYearsAgo = RockDateTime.Now.AddMonths( -35 ).StartOfMonth();
-            List<MonthlyAccountGivingHistory> threeYearsOfMonthlyAccountGiving = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId, threeYearsAgo );
+            var threeYearsOfMonthlyAccountGiving = GetMonthlyGivingHistory( threeYearsAgo );
 
             if ( threeYearsOfMonthlyAccountGiving.Any() )
             {
@@ -304,7 +304,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             ShowMessageIfStale();
 
-            BindYearlySummary();
+            BindYearlySummary( threeYearsOfMonthlyAccountGiving );
 
             var eraFirstGave = Person.GetAttributeValue( "core_EraFirstGave" ).AsDateTime();
             bdgFirstGift.Text = $"First Gift: {eraFirstGave.ToElapsedString()}";
@@ -315,6 +315,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             bdgLastGift.ToolTip = eraLastGive.ToShortDateString();
 
             ShowGivingAlerts();
+        }
+
+        private List<MonthlyAccountGivingHistory> GetMonthlyGivingHistory( DateTime? startDate = null )
+        {
+            var rockContext = new RockContext();
+            var givingId = Person.GivingId;
+
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+            var givingHistories = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId, startDate, includeNegativeTransactions:true );
+            return givingHistories;
         }
 
         /// <summary>
@@ -328,14 +338,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var oneYearAgo = RockDateTime.Now.AddMonths( -12 );
 
             var twelveMonthsTransactionsQry = financialTransactionService
-                    .GetGivingAutomationSourceTransactionQueryByGivingId( givingId )
+                    .GetGivingAutomationSourceTransactionQueryByGivingId( givingId, true )
                     .Where( t => t.TransactionDateTime >= oneYearAgo );
 
             var twelveMonthTransactions = twelveMonthsTransactionsQry
                 .Select( a => new
                 {
                     TransactionDateTime = a.TransactionDateTime,
-                    TotalAmountBeforeRefund = a.TransactionDetails.Where(td => td.Account.IsTaxDeductible == true).Sum( d => d.Amount ),
+                    TotalAmountBeforeRefund = a.TransactionDetails
+                        .Where( td => td.Account.IsTaxDeductible == true )
+                        .Select( d => d.Amount )
+                        .DefaultIfEmpty( 0.0M )
+                        .Sum(),
                     // For each Refund (there could be more than one) get the refund amount for each if the refunds's Detail records for the Account.
                     // Then sum that up for the total refund amount for the account
                     TotalRefundAmount = a
@@ -399,7 +413,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var last90DayCountText = $"{last90DayCount} {"gift".PluralizeIf( last90DayCount != 1 )}";
 
             var last90DaysSubValue =
-$@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ? "success" : "danger" )}"">
+$@"<span title=""{growthPercentText}"" class=""small text-{( isGrowthPositive ? "success" : "danger" )}"">
     <i class=""fa {( isGrowthPositive ? "fa-arrow-up" : "fa-arrow-down" )}""></i>
     {growthPercentDisplay}
 </span>
@@ -668,7 +682,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
         /// <summary>
         /// Binds the yearly summary.
         /// </summary>
-        private void BindYearlySummary()
+        private void BindYearlySummary( List<MonthlyAccountGivingHistory> givingHistories = null )
         {
             var givingId = Person.GivingId;
             using ( var rockContext = new RockContext() )
@@ -684,13 +698,26 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                     startDate = null;
                 }
 
-                var monthlyAccountGivingHistoryList = new FinancialTransactionService( rockContext ).GetGivingAutomationMonthlyAccountGivingHistory( givingId, startDate );
+                // If a list of giving histories is not supplied, retrieve it now.
+                if ( givingHistories == null )
+                {
+                    givingHistories = GetMonthlyGivingHistory( startDate );
+                }
+
+                var previousYearMonthlyGivingSummaries = givingHistories;
+
+                if ( startDate != null )
+                {
+                    previousYearMonthlyGivingSummaries = givingHistories
+                        .Where( s => s.Year >= startDate.Value.Year )
+                        .ToList();
+                }
 
                 var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
                     .AsNoTracking()
-                    .ToDictionary( k => k.Id, v => v.Name );
+                    .ToDictionary( k => k.Id, v => new FinancialAccountInfo { Name = v.Name, Order = v.Order } );
 
-                var summaryList = monthlyAccountGivingHistoryList
+                var summaryList = previousYearMonthlyGivingSummaries
                     .GroupBy( a => new { a.Year, a.AccountId } )
                     .Select( t => new SummaryRecord
                     {
@@ -701,17 +728,36 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                     .OrderByDescending( a => a.Year )
                     .ToList();
 
+                // Create yearly contribution summaries by account.
                 var contributionSummaries = new List<ContributionSummary>();
                 foreach ( var item in summaryList.GroupBy( a => a.Year ) )
                 {
                     var contributionSummary = new ContributionSummary();
                     contributionSummary.Year = item.Key;
-                    contributionSummary.SummaryRecords = new List<SummaryRecord>();
+
+                    var summaryRecords = new List<SummaryRecord>();
                     foreach ( var a in item )
                     {
-                        a.AccountName = financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty;
-                        contributionSummary.SummaryRecords.Add( a );
+                        if ( financialAccounts.ContainsKey( a.AccountId ) )
+                        {
+                            var account = financialAccounts[a.AccountId];
+                            a.AccountName = account.Name;
+                            a.Order = account.Order;
+                        }
+                        else
+                        {
+                            a.AccountName = string.Empty;
+                            a.Order = 0;
+                        }
+
+                        summaryRecords.Add( a );
                     }
+
+                    // Display the accounts in the order specified by the Accounts list.
+                    contributionSummary.SummaryRecords = summaryRecords
+                        .OrderBy( s => s.Order )
+                        .ThenBy( s => s.AccountName )
+                        .ToList();
 
                     contributionSummary.TotalAmount = item.Sum( a => a.TotalAmount );
                     contributionSummaries.Add( contributionSummary );
@@ -747,6 +793,8 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             public string AccountName { get; set; }
 
             public decimal TotalAmount { get; set; }
+
+            public int Order { get; set; }
         }
 
         /// <summary>
@@ -759,6 +807,13 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             public List<SummaryRecord> SummaryRecords { get; set; }
 
             public decimal TotalAmount { get; set; }
+        }
+
+        private class FinancialAccountInfo
+        {
+            public string Name { get; set; }
+
+            public int Order { get; set; }
         }
     }
 }

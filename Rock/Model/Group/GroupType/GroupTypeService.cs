@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -148,6 +150,96 @@ namespace Rock.Model
         public IEnumerable<GroupTypeCache> GetCheckinAreaDescendants( Guid parentGroupTypeGuid )
         {
             return this.GetCheckinAreaDescendants( this.Get( parentGroupTypeGuid ).Id );
+        }
+
+        /// <summary>
+        /// Gets all related (ancestor, sibling and descendant) check-in areas for the provided check-in area,
+        /// based on its ancestor check-in configuration.
+        /// </summary>
+        /// <param name="checkInArea">The check-in area for which to get related check-in areas.</param>
+        /// <returns>All related (ancestor, sibling and descendant) check-in areas for the provided check-in area.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.2" )]
+        public List<GroupTypeCache> GetRelatedCheckInAreas( GroupTypeCache checkInArea )
+        {
+            var checkInConfiguration = this.GetCheckInConfiguration( checkInArea );
+            if ( checkInConfiguration == null )
+            {
+                return null;
+            }
+
+            return this.GetCheckinAreaDescendants( checkInConfiguration.Id );
+        }
+
+        /// <summary>
+        /// Gets the check-in configuration (the first ancestor group type with purpose == "Check-in Template")
+        /// for the specified check-in area.
+        /// </summary>
+        /// <param name="checkInArea">The check-in area for which to get the check-in configuration.</param>
+        /// <returns>The check-in configuration for the specified check-in area, or <c>null</c> if not found.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.2" )]
+        public GroupTypeCache GetCheckInConfiguration( GroupTypeCache checkInArea )
+        {
+            var alreadyEncounteredGroupTypeIds = new List<int>();
+            return this.FindAncestorCheckInConfiguration( checkInArea, ref alreadyEncounteredGroupTypeIds );
+        }
+
+        /// <summary>
+        /// Recursively searches the ancestor group type path to find the first one whose purpose == "Check-in Template".
+        /// </summary>
+        /// <param name="checkInArea">The current [check-in area] group type whose ancestors should be searched.</param>
+        /// <param name="alreadyEncounteredGroupTypeIds">The list of group type IDs we've already encountered and searched,
+        /// to prevent infinite loops caused by circular references.</param>
+        /// <returns>The first ancestor group type whose purpose == "Check-in Template".</returns>
+        private GroupTypeCache FindAncestorCheckInConfiguration( GroupTypeCache checkInArea, ref List<int> alreadyEncounteredGroupTypeIds )
+        {
+            GroupTypeCache checkInConfiguration = null;
+            var checkInTemplatePurposeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+
+            foreach ( var parentGroupType in checkInArea.ParentGroupTypes )
+            {
+                // If we've already encountered this group type, we have a circular reference; continue to the next one.
+                if ( alreadyEncounteredGroupTypeIds.Contains( parentGroupType.Id ) )
+                {
+                    continue;
+                }
+
+                // Take note of this group type's ID so we only check it once.
+                alreadyEncounteredGroupTypeIds.Add( parentGroupType.Id );
+
+                if ( parentGroupType.GroupTypePurposeValueId == checkInTemplatePurposeValueId )
+                {
+                    // We found it; set it and break out of this loop.
+                    checkInConfiguration = parentGroupType;
+                    break;
+                }
+
+                // Continue recursively up the group type path.
+                checkInConfiguration = this.FindAncestorCheckInConfiguration( parentGroupType, ref alreadyEncounteredGroupTypeIds );
+
+                // If we found it recursively, no need to continue searching.
+                if ( checkInConfiguration != null )
+                {
+                    break;
+                }
+            }
+
+            return checkInConfiguration;
         }
 
         #endregion Methods for CheckinAreas (which are GroupTypes)

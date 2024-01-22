@@ -23,6 +23,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -111,7 +113,7 @@ namespace Rock.Jobs
                     .ToList();
             }
 
-            Log( RockLogLevel.Info, "Retrieved {queuedCommunicationsCount} queued communications.", startDateTime, stopWatch.ElapsedMilliseconds, sendCommunications.Count );
+            Log( LogLevel.Information, $"Retrieved {sendCommunications.Count} queued communications.", startDateTime, stopWatch.ElapsedMilliseconds );
 
             if ( sendCommunications == null )
             {
@@ -173,7 +175,7 @@ namespace Rock.Jobs
                 }
             }
 
-            Log( RockLogLevel.Info, "Sent {communicationsSentCount} communications.", startDateTime, stopWatch.ElapsedMilliseconds, communicationsSent );
+            Log( LogLevel.Information, $"Sent {communicationsSent} communications.", startDateTime, stopWatch.ElapsedMilliseconds );
 
             if ( communicationsSent > 0 )
             {
@@ -211,7 +213,7 @@ namespace Rock.Jobs
                 rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
             }
 
-            Log( RockLogLevel.Info, @"Updated expired communication recipients' status to ""Failed"".", startDateTime, stopWatch.ElapsedMilliseconds );
+            Log( LogLevel.Information, @"Updated expired communication recipients' status to ""Failed"".", startDateTime, stopWatch.ElapsedMilliseconds );
         }
 
         /// <summary>
@@ -251,7 +253,7 @@ namespace Rock.Jobs
 
             var startDateTime = RockDateTime.Now;
             var communicationStopWatch = Stopwatch.StartNew();
-            Log( RockLogLevel.Debug, "Starting to send {communicationName}.", startDateTime, propertyValues: comm.Name );
+            Log( LogLevel.Debug, $"Starting to send {comm.Name}.", startDateTime );
             try
             {
                 await Model.Communication.SendAsync( comm ).ConfigureAwait( false );
@@ -261,7 +263,7 @@ namespace Rock.Jobs
                 communicationResult.Exception = ex;
             }
 
-            Log( RockLogLevel.Info, "{communicationName} sent.", startDateTime, communicationStopWatch.ElapsedMilliseconds, comm.Name );
+            Log( LogLevel.Information, $"{comm.Name} sent.", startDateTime, communicationStopWatch.ElapsedMilliseconds );
             mutex.Release();
             return communicationResult;
         }

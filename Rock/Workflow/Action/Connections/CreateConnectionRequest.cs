@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,14 +42,14 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Connection Status Attribute", "The attribute that contains the connection status to use for the new request.", false, "", "", 2, null,
         new string[] { "Rock.Field.Types.ConnectionStatusFieldType" } )]
     [ConnectionStatusField( "Connection Status", "The connection status to use for the new request (when Connection Status Attribute is not specified or invalid). If neither this setting or the Connection Status Attribute setting are set, the default status will be used.", false, "", "", 3 )]
-    [WorkflowAttribute( "Campus Attribute", "An optional attribute that contains the campus to use for the request.", false, "", "", 4, null,
+    [WorkflowAttribute( "Campus Attribute", "An optional attribute that contains the campus to use for the request.  If not provided the primary campus id of the person would be used if available.", false, "", "", 4, null,
         new string[] { "Rock.Field.Types.CampusFieldType" } )]
     [WorkflowAttribute( "Connection Comment Attribute", "An optional attribute that contains the comment to use for the request.", false, "", "", 5, null,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
     [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", false, "", "", 6, null,
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "F95C376A-714E-41FE-B27A-683F9E9078ED")]
+    [Rock.SystemGuid.EntityTypeGuid( "F95C376A-714E-41FE-B27A-683F9E9078ED" )]
     public class CreateConnectionRequest : ActionComponent
     {
         /// <summary>
@@ -66,7 +66,7 @@ namespace Rock.Workflow.Action
 
             // Get the person
             PersonAlias personAlias = null;
-            Guid personAliasGuid = action.GetWorkflowAttributeValue(GetAttributeValue( action, "PersonAttribute" ).AsGuid()).AsGuid();
+            Guid personAliasGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "PersonAttribute" ).AsGuid() ).AsGuid();
             personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid );
             if ( personAlias == null )
             {
@@ -130,9 +130,14 @@ namespace Rock.Workflow.Action
                     }
                 }
             }
+            // If no campus was found, default to the primary campus of the person
+            if ( !campusId.HasValue )
+            {
+                campusId = personAlias.Person.PrimaryCampusId;
+            }
 
-            // Get the Comment
-            String comment = action.GetWorkflowAttributeValue(GetAttributeValue(action, "ConnectionCommentAttribute").AsGuid());
+            // Get the Comment 
+            String comment = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionCommentAttribute" ).AsGuid() );
 
             var connectionRequestService = new ConnectionRequestService( rockContext );
 

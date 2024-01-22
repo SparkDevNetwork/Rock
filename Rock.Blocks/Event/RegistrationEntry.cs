@@ -24,6 +24,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+using DotLiquid.Util;
+
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
@@ -39,8 +41,8 @@ using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
 using Rock.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
 {
@@ -128,6 +130,13 @@ namespace Rock.Blocks.Event
         DefaultBooleanValue = true,
         Order = 11 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 17 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
@@ -151,6 +160,7 @@ namespace Rock.Blocks.Event
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         /// <summary>
@@ -262,7 +272,7 @@ namespace Rock.Blocks.Event
                         }
 
                         // Check if the registration meets the discount's minimum required registrants
-                        if (  discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
+                        if ( discount.RegistrationTemplateDiscount.MinRegistrants.HasValue && registrantCount < discount.RegistrationTemplateDiscount.MinRegistrants.Value )
                         {
                             continue;
                         }
@@ -287,7 +297,7 @@ namespace Rock.Blocks.Event
                     return ActionOk( new
                     {
                         DiscountCode = registration.DiscountCode,
-                        RegistrationUsagesRemaining = (int?) null,
+                        RegistrationUsagesRemaining = ( int? ) null,
                         DiscountAmount = registration.DiscountAmount,
                         DiscountPercentage = registration.DiscountPercentage,
                         DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants.Value
@@ -340,7 +350,7 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
-                if ( PageParameter( PageParameterKey.GroupId).AsIntegerOrNull() == null )
+                if ( PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() == null )
                 {
                     var groupId = GetRegistrationGroupId( rockContext );
                     if ( groupId.HasValue )
@@ -567,6 +577,38 @@ namespace Rock.Blocks.Event
                 // Process the Person so we have data for the Lava merge.
                 bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
                 var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamily?.Guid ?? Guid.Empty, isCreatedAsRegistrant, rockContext );
+
+                var response = new RegistrationEntrySignatureDocument();
+
+                // If the person happens to have a valid signature document of the required template, we may skip this step.
+                if ( documentTemplate.IsValidInFuture && documentTemplate.ValidityDurationInDays.HasValue )
+                {
+                    // When thinking about date comparisons, think in terms of extremes:
+                    //  - If they signed a document today, and it's only valid for 1 day, it's still valid (at any point) today.
+                    //  - If they signed a document (at any point) yesterday or before, and it's only valid for 1 day, it's no longer valid today.
+                    // With this in mind, add one day to the specified ValidityDurationInDays before comparing.
+                    var earliestSignatureDate = RockDateTime.Today.AddDays( -documentTemplate.ValidityDurationInDays.ToIntSafe() + 1 );
+                    var existingSignatureDocument = new RegistrationRegistrantService( rockContext )
+                        .Queryable()
+                        .Where( r =>
+                            r.PersonAlias.PersonId == person.Id &&
+                            r.SignatureDocument.SignatureDocumentTemplateId == documentTemplate.Id &&
+                            r.SignatureDocument.SignedDateTime >= earliestSignatureDate )
+                        .OrderByDescending( r => r.SignatureDocument.SignedDateTime )
+                        .Select( r => new
+                        {
+                            r.SignatureDocument.Guid
+                        } )
+                        .FirstOrDefault();
+
+                    if ( existingSignatureDocument != null )
+                    {
+                        response.ExistingSignatureDocumentGuid = existingSignatureDocument.Guid;
+
+                        return ActionOk( response );
+                    }
+                }
+
                 var (campusId, location, _) = UpdatePersonFromRegistrant( person, registrantInfo, new History.HistoryChangeList(), context.RegistrationSettings );
 
                 if ( person.Attributes == null )
@@ -591,7 +633,7 @@ namespace Rock.Blocks.Event
 
                 // Prepare the merge fields.
                 var campusCache = campusId.HasValue ? CampusCache.Get( campusId.Value ) : null;
-               
+
                 var mergeFields = new Dictionary<string, object>
                 {
                     { "Registration", new LavaSignatureRegistration( registrationInstance, groupId, args.Registrants.Count ) },
@@ -606,11 +648,10 @@ namespace Rock.Blocks.Event
                 var unencryptedSecurityToken = new[] { RockDateTime.Now.ToString( "o" ), GetSha256Hash( fieldHashToken + html ) }.ToJson();
                 var encryptedSecurityToken = Encryption.EncryptString( unencryptedSecurityToken );
 
-                return ActionOk( new RegistrationEntrySignatureDocument
-                {
-                    DocumentHtml = html,
-                    SecurityToken = encryptedSecurityToken
-                } );
+                response.DocumentHtml = html;
+                response.SecurityToken = encryptedSecurityToken;
+
+                return ActionOk( response );
             }
         }
 
@@ -765,6 +806,22 @@ namespace Rock.Blocks.Event
             return null;
         }
 
+        /// <inheritdoc/>
+        protected override string GetPlaceholderContent( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Web )
+            {
+                return @"
+   <div class=""skeleton skeleton-block w-lg mx-auto mb-4""></div>
+   <div class=""skeleton skeleton-heading w-md mx-auto""></div>
+   <div class=""skeleton skeleton-block w-sm mx-auto mt-5""></div>
+   <div class=""skeleton skeleton-button ml-auto""></div>
+";
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Updates or Inserts the session.
         /// </summary>
@@ -854,7 +911,7 @@ namespace Rock.Blocks.Event
             var logCurrentPersonDetails = $"Current Person Name: {this.RequestContext.CurrentPerson?.FullName} (Person ID: {this.RequestContext.CurrentPerson?.Id});";
             var logMsgPrefix = $"Obsidian{( logInstanceOrTemplateName.IsNotNullOrWhiteSpace() ? $@" ""{logInstanceOrTemplateName}""" : string.Empty )} Registration; {logCurrentPersonDetails}{Environment.NewLine}";
 
-            var ( wereFieldsMissing, missingFieldsDetails ) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
+            var (wereFieldsMissing, missingFieldsDetails) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
             if ( wereFieldsMissing )
             {
                 var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
@@ -1079,7 +1136,7 @@ namespace Rock.Blocks.Event
             if ( campusId.HasValue )
             {
                 context.Registration.CampusId = campusId;
-                History.EvaluateChange( registrationChanges, "Campus", string.Empty, CampusCache.Get( (int) campusId ).Name );
+                History.EvaluateChange( registrationChanges, "Campus", string.Empty, CampusCache.Get( ( int ) campusId ).Name );
             }
 
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
@@ -1114,6 +1171,11 @@ namespace Rock.Blocks.Event
             {
                 // Get each registrant
                 var index = 0;
+
+                // Keep track of the registered person IDs to prevent mistakenly merging different
+                // people (i.e. twins who share an email address) into the same person record
+                // based on an over-confident PersonService.FindPerson(...) match result.
+                context.PersonIdsRegisteredWithinThisSession.Clear();
 
                 foreach ( var registrantInfo in args.Registrants )
                 {
@@ -1629,7 +1691,7 @@ namespace Rock.Blocks.Event
                     }
 
                     return mobilePhone?.Number;
-                    
+
             }
 
             return null;
@@ -1832,7 +1894,7 @@ namespace Rock.Blocks.Event
                 phoneNumber = phoneData.Number;
                 isMessagingEnabled = phoneData.IsMessagingEnabled;
             }
-            else if( fieldValue is string )
+            else if ( fieldValue is string )
             {
                 // Only got the number, so leave IsMessagingEnabled null so it isn't changed
                 phoneNumber = fieldValue.ToStringSafe();
@@ -1842,7 +1904,7 @@ namespace Rock.Blocks.Event
                 // No usable data, just return without doing anything.
                 return;
             }
-            
+
             string cleanNumber = PhoneNumber.CleanNumber( phoneNumber );
             var numberType = DefinedValueCache.Get( phoneTypeGuid );
 
@@ -1873,7 +1935,7 @@ namespace Rock.Blocks.Event
             phone.Number = cleanNumber;
             History.EvaluateChange( changes, $"{numberType.Value} Phone", oldPhoneNumber, phone.NumberFormattedWithCountryCode );
 
-            if( isMessagingEnabled != null )
+            if ( isMessagingEnabled != null )
             {
                 phone.IsMessagingEnabled = isMessagingEnabled.Value;
                 History.EvaluateChange( changes, $"{numberType.Value} IsMessagingEnabled", oldIsMessagingEnabled, phone.IsMessagingEnabled );
@@ -1983,6 +2045,25 @@ namespace Rock.Blocks.Event
                 // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
                 var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
                 person = personService.FindPerson( personQuery, true );
+
+                if ( person != null && context.PersonIdsRegisteredWithinThisSession.Contains( person.Id ) )
+                {
+                    /*
+                        1/8/2024 - JPH
+
+                        We've seen scenarios in which different people (i.e. twins who share an email address) are
+                        mistakenly merged into a single person record because of the way our FindPerson(...) method
+                        works. Rock is correctly attempting to prevent the creation of duplicate person records,
+                        but we need to handle this unique scenario by instead keeping track of the person IDs that
+                        have already been tied to a registrant record within this specific registration session,
+                        and if the FindPerson(...) method returns the same person more than once, we'll force Rock
+                        to create a new person record, at the risk of creating duplicate people. This risk is more
+                        tolerable than the risk of failing to save a Person altogether, as in the twin example above.
+
+                        Reason: Attempt to prevent merging different people based on an over-confident match result.
+                    */
+                    person = null;
+                }
 
                 // Try to find a matching person based on name within same family as registrar
                 if ( person == null && registrar != null && registrantInfo.FamilyGuid == registrarFamilyGuid )
@@ -2357,6 +2438,9 @@ namespace Rock.Blocks.Event
             // Save the person ( and family if needed )
             SavePerson( rockContext, context.RegistrationSettings, person, registrantInfo.FamilyGuid ?? Guid.NewGuid(), campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateExistingCampus );
 
+            // Take note of this registered person identifier.
+            context.PersonIdsRegisteredWithinThisSession.Add( person.Id );
+
             // Load the person's attributes
             person.LoadAttributes();
 
@@ -2435,14 +2519,14 @@ namespace Rock.Blocks.Event
                                     f.RegistrationTemplateFeeId == feeModel.Id &&
                                     f.RegistrationTemplateFeeItemId == feeItemModel.Id );
 
-                        // If this fee is required and this is the last item, then make sure at least 1 is selected
-                        if ( isLastFeeItemModel && totalFeeQuantity < 1 && quantity < 1 && feeModel.IsRequired )
-                        {
-                            quantity = 1;
-                        }
-
                         // If there is a limited supply, ensure that more are not ordered than available
                         var countRemaining = context.FeeItemsCountRemaining.GetValueOrNull( feeItemModel.Guid );
+
+                        // Adjust for any existing quantity usage. Meaning, if countRemaining
+                        // is 0 but we have 1 quantity used on file (in the database) then we
+                        // add that back in. Otherwise the logic below would automatically unselect
+                        // it because it thinks no value is available.
+                        countRemaining += registrantFee?.Quantity ?? 0;
 
                         // Don't allow quantity to be more than supply
                         if ( countRemaining.HasValue && countRemaining < quantity )
@@ -2522,22 +2606,42 @@ namespace Rock.Blocks.Event
             // inline signature is not currently supported.
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired && isNewRegistration )
             {
-                var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
-                var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
-                var signedBy = RequestContext.CurrentPerson ?? registrar;
+                var signatureDocumentService = new SignatureDocumentService( rockContext );
 
-                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name);
-
-                new SignatureDocumentService( rockContext ).Add( document );
-                rockContext.SaveChanges();
-
-                // Send communication after the save is complete.
-                if ( documentTemplate.CompletionSystemCommunication != null )
+                // If a previously-signed document was specified for reuse, make a query to the database to get its ID.
+                int? existingSignatureDocumentId = null;
+                if ( registrantInfo.ExistingSignatureDocumentGuid.HasValue )
                 {
-                    postSaveActions.Add( () =>
+                    existingSignatureDocumentId = signatureDocumentService.GetId( registrantInfo.ExistingSignatureDocumentGuid.Value );
+                }
+
+                // If the previous document's ID was found, use it to complete the registration. Otherwise, attempt to create a new document.
+                if ( existingSignatureDocumentId.HasValue )
+                {
+                    registrant.SignatureDocumentId = existingSignatureDocumentId.Value;
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                    var signedBy = RequestContext.CurrentPerson ?? registrar;
+
+                    var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
+                    var document = CreateSignatureDocument( documentTemplate, signedData, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name );
+
+
+                    signatureDocumentService.Add( document );
+                    registrant.SignatureDocument = document;
+                    rockContext.SaveChanges();
+
+                    // Send communication after the save is complete.
+                    if ( documentTemplate.CompletionSystemCommunication != null )
                     {
-                        ElectronicSignatureHelper.SendSignatureCompletionCommunication( document.Id, out _ );
-                    } );
+                        postSaveActions.Add( () =>
+                        {
+                            ElectronicSignatureHelper.SendSignatureCompletionCommunication( document.Id, out _ );
+                        } );
+                    }
                 }
             }
 
@@ -2562,12 +2666,12 @@ namespace Rock.Blocks.Event
             registrantInfo.PersonGuid = person.Guid;
         }
 
-        private static ( Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache> ) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template )
+        private static (Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache>) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template )
         {
             var attributes = new Dictionary<string, AttributeCache>();
             var attributeValues = new Dictionary<string, AttributeValueCache>();
             var registrantAttributeFields = template.Forms
-                .SelectMany( f => f.Fields.Where(ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
+                .SelectMany( f => f.Fields.Where( ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
                 .ToList();
 
             foreach ( var field in registrantAttributeFields )
@@ -2585,7 +2689,7 @@ namespace Rock.Blocks.Event
                 attributeValues.Add( attribute.Key, attributeValue );
             }
 
-            return ( attributes, attributeValues );
+            return (attributes, attributeValues);
         }
 
         /// <summary>
@@ -2690,6 +2794,7 @@ namespace Rock.Blocks.Event
                     AmountToPayNow = session.AmountToPayNow,
                     DiscountCode = session.DiscountCode,
                     FieldValues = session.FieldValues,
+                    IsCaptchaValid = true,
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
                     RegistrationGuid = session.RegistrationGuid, // See engineering note from 9/7/2022 above.
@@ -2748,7 +2853,8 @@ namespace Rock.Blocks.Event
 
             // Get models needed for the view model
             var hasDiscountsAvailable = context.RegistrationSettings.Discounts?.Any() == true;
-            var formModels = context.RegistrationSettings.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
+            var formModels = context.RegistrationSettings
+                .Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
 
             // Get family members
             var currentPerson = GetCurrentPerson();
@@ -2800,10 +2906,6 @@ namespace Rock.Blocks.Event
                     HideWhenNoneRemaining = feeModel.HideWhenNoneRemaining,
                     Items = feeModel.FeeItems
                         .Where( fi => fi.IsActive )
-                        .Where( fi => !feeModel.HideWhenNoneRemaining
-                            || (feeModel.HideWhenNoneRemaining
-                                && context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ) != null
-                                && context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ) > 0 ) )
                         .Select( fi => new RegistrationEntryBlockFeeItemViewModel
                         {
                             Cost = fi.Cost,
@@ -2812,6 +2914,7 @@ namespace Rock.Blocks.Event
                             OriginalCountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid ),
                             CountRemaining = context.FeeItemsCountRemaining.GetValueOrNull( fi.Guid )
                         } )
+                        .ToList()
                 };
 
                 fees.Add( feeViewModel );
@@ -2819,12 +2922,17 @@ namespace Rock.Blocks.Event
 
             // Get forms with fields
             var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
-            var allAttributeFields = formModels.SelectMany( fm => fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true ) ).ToList();
+            var allAttributeFields = formModels
+                .SelectMany( fm =>
+                    fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true )
+                ).ToList();
 
             foreach ( var formModel in formModels )
             {
                 var form = new RegistrationEntryBlockFormViewModel();
-                var fieldModels = formModel.Fields.Where( f => !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) ).OrderBy( f => f.Order );
+                var fieldModels = formModel.Fields
+                    .Where( f => !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
+                    .OrderBy( f => f.Order );
                 var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
 
                 foreach ( var fieldModel in fieldModels )
@@ -3021,6 +3129,15 @@ namespace Rock.Blocks.Event
                         FieldValues = !isOnWaitList ? GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels, false ) : new Dictionary<Guid, object>()
                     } );
                 }
+
+                // Populate all the default registration attribute values.
+                session.FieldValues = session.FieldValues ?? new Dictionary<Guid, object>();
+                foreach ( var registrationAttribute in registrationAttributes )
+                {
+                    var defaultEditValue = PublicAttributeHelper.GetPublicEditValue( registrationAttribute, registrationAttribute.DefaultValue );
+
+                    session.FieldValues[registrationAttribute.Guid] = defaultEditValue;
+                }
             }
 
             // Determine the starting point. External registration updates are
@@ -3034,6 +3151,19 @@ namespace Rock.Blocks.Event
             var adjustedSpotsRemaining = isExistingRegistration && session != null
                 ? context.SpotsRemaining + session.Registrants.Where( r => r.IsOnWaitList == false ).Count()
                 : context.SpotsRemaining;
+
+            // Adjust the original fee remaining counts to account for any existing
+            // registrants that already have a fee item selected. In other words,
+            // if the database says we have 2 fees remaining, but we are returning
+            // to an existing registration that has 1 of that fee, then we should
+            // tell the client that there were 3 original fees remaining.
+            foreach ( var fee in fees )
+            {
+                foreach ( var feeItem in fee.Items )
+                {
+                    feeItem.OriginalCountRemaining += session.Registrants.Select( r => r.FeeItemQuantities.GetValueOrNull( feeItem.Guid ) ?? 0 ).Sum();
+                }
+            }
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
@@ -3128,7 +3258,8 @@ namespace Rock.Blocks.Event
                     .ToList(),
 
                 EnableSaveAccount = enableSavedAccount,
-                SavedAccounts = savedAccounts
+                SavedAccounts = savedAccounts,
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean()
             };
 
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired )
@@ -3424,12 +3555,17 @@ namespace Rock.Blocks.Event
 
             transaction.Summary = context.Registration.GetSummary();
 
-            var transactionDetail = transaction.TransactionDetails?.FirstOrDefault() ?? new FinancialTransactionDetail();
+            var transactionDetail = transaction.TransactionDetails.FirstOrDefault();
+            if ( transactionDetail == null )
+            {
+                transactionDetail = new FinancialTransactionDetail();
+                transaction.TransactionDetails.Add( transactionDetail );
+            }
+
             transactionDetail.Amount = amount;
             transactionDetail.AccountId = context.RegistrationSettings.FinancialAccountId ?? transactionDetail.AccountId;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = context.Registration.Id;
-            transaction.TransactionDetails.Add( transactionDetail );
 
             var batchChanges = new History.HistoryChangeList();
 
@@ -3829,6 +3965,8 @@ namespace Rock.Blocks.Event
             foreach ( var attribute in registrationAttributes )
             {
                 var value = registration.GetAttributeValue( attribute.Key );
+                value = PublicAttributeHelper.GetPublicEditValue( attribute, value );
+
                 session.FieldValues[attribute.Guid] = value;
             }
 
@@ -3899,6 +4037,7 @@ namespace Rock.Blocks.Event
             var currentPerson = GetCurrentPerson();
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
 
             // Basic check on the args to see that they appear valid
             if ( args == null )
@@ -3916,6 +4055,12 @@ namespace Rock.Blocks.Event
             if ( args.Registrar == null )
             {
                 errorMessage = "A registrar is required";
+                return null;
+            }
+
+            if ( !disableCaptcha && !args.IsCaptchaValid )
+            {
+                errorMessage = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
                 return null;
             }
 
@@ -3988,8 +4133,25 @@ namespace Rock.Blocks.Event
         {
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
+            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
 
-            return registrationService.GetRegistrationContext( registrationInstanceId, PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull(), out errorMessage );
+            // If the URL does not have a registrationId then check if there
+            // is a registration session. Some redirect gateways drop the
+            // RegistrationId parameter from the return URL. So we'll try
+            // to get it from the session if we have one.
+            if ( !registrationId.HasValue )
+            {
+                var sessionGuid = GetRegistrationSessionPageParameter( null );
+
+                if ( sessionGuid.HasValue )
+                {
+                    var session = new RegistrationSessionService( rockContext ).Get( sessionGuid.Value );
+
+                    registrationId = session?.RegistrationId;
+                }
+            }
+
+            return registrationService.GetRegistrationContext( registrationInstanceId, registrationId, out errorMessage );
         }
 
         /// <summary>
@@ -4263,7 +4425,7 @@ namespace Rock.Blocks.Event
         /// <param name="assignedTo">The <see cref="Person"/> that is the responsible party for signing the document.</param>
         /// <param name="appliesTo">The <see cref="Person"/> that this document will apply to.</param>
         /// <returns>A <see cref="SignatureDocument"/> object that can be saved to the database.</returns>
-        private static SignatureDocument CreateSignatureDocument( SignatureDocumentTemplate signatureDocumentTemplate, SignedDocumentData documentData, IEntity entity, Person signedBy, Person assignedTo, Person appliesTo, String registrantName, String registrationInstanceName )
+        private static SignatureDocument CreateSignatureDocument( SignatureDocumentTemplate signatureDocumentTemplate, SignedDocumentData documentData, Person signedBy, Person assignedTo, Person appliesTo, String registrantName, String registrationInstanceName )
         {
             // Glue stuff into the signature document
             var signatureDocument = new SignatureDocument
@@ -4271,8 +4433,6 @@ namespace Rock.Blocks.Event
                 SignatureDocumentTemplateId = signatureDocumentTemplate.Id,
                 Status = SignatureDocumentStatus.Signed,
                 Name = $"{registrantName} ({registrationInstanceName})",
-                EntityTypeId = entity != null ? EntityTypeCache.GetId( entity.GetType() ) : null,
-                EntityId = entity?.Id,
                 SignedByPersonAliasId = signedBy.PrimaryAliasId,
                 AssignedToPersonAliasId = assignedTo.PrimaryAliasId,
                 AppliesToPersonAliasId = appliesTo.PrimaryAliasId,
@@ -4317,6 +4477,8 @@ namespace Rock.Blocks.Event
                 }
 
                 signatureDocument.BinaryFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId ?? 0, signatureDocument.Name, signedSignatureDocumentHtml );
+                signatureDocument.BinaryFile.ParentEntityId = signatureDocumentTemplate.Id;
+                signatureDocument.BinaryFile.ParentEntityTypeId = EntityTypeCache.Get<SignatureDocumentTemplate>().Id;
                 signatureDocument.BinaryFile.IsTemporary = false;
             }
 
@@ -4373,7 +4535,7 @@ namespace Rock.Blocks.Event
             public CampusCache Campus { get; }
 
             public DefinedValueCache ConnectionStatus { get; }
-            
+
             public DateTime? AnniversaryDate { get; }
 
             public DateTime? BirthDate { get; }
@@ -4408,7 +4570,7 @@ namespace Rock.Blocks.Event
 
             public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationInstance registrationInstance )
             {
-                var ( registrantAttributes, registrantAttributeValues) = GetRegistrantAttributesFromRegistration(registrantInfo, registrationInstance.RegistrationTemplate );
+                var (registrantAttributes, registrantAttributeValues) = GetRegistrantAttributesFromRegistration( registrantInfo, registrationInstance.RegistrationTemplate );
 
                 Address = homeLocation;
                 Campus = campus;

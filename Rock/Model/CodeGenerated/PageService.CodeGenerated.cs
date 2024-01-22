@@ -165,7 +165,10 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Page target, Page source )
         {
             target.Id = source.Id;
+            #pragma warning disable 612, 618
             target.AdditionalSettings = source.AdditionalSettings;
+            #pragma warning restore 612, 618
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AllowIndexing = source.AllowIndexing;
             target.BodyCssClass = source.BodyCssClass;
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;

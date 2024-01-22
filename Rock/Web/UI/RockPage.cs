@@ -766,16 +766,20 @@ namespace Rock.Web.UI
 
                 // Add attributes
                 Activity.Current.AddTag( "rock-otel-type", "rock-page" );
-                Activity.Current.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
-                Activity.Current.AddTag( "rock.current-user", this.CurrentUser?.UserName );
-                Activity.Current.AddTag( "rock.current-visitor", this.CurrentVisitor?.AliasPersonGuid );
-                Activity.Current.AddTag( "rock.page-id", this.PageId );
-                Activity.Current.AddTag( "rock.page-ispostback", this.IsPostBack );
+                Activity.Current.AddTag( "rock-current-user", this.CurrentUser?.UserName );
+                Activity.Current.AddTag( "rock-current-person", this.CurrentPerson?.FullName );
+                Activity.Current.AddTag( "rock-current-visitor", this.CurrentVisitor?.AliasPersonGuid );
+                Activity.Current.AddTag( "rock-page-id", this.PageId );
+                Activity.Current.AddTag( "rock-page-ispostback", this.IsPostBack );
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
 
-            RequestContext = new RockRequestContext( Request, new RockResponseContext( this ) );
+#pragma warning disable 618
+            ConvertLegacyContextCookiesToJSON();
+#pragma warning restore 618
+
+            RequestContext = new RockRequestContext( Request, new RockResponseContext( this ), CurrentUser );
 
             if ( _pageCache != null )
             {
@@ -1305,6 +1309,14 @@ Rock.settings.initialize({{
                                     {
                                         control = TemplateControl.LoadControl( block.BlockType.Path );
                                         control.ClientIDMode = ClientIDMode.AutoID;
+
+                                        // This block needs Obsidian so that it can
+                                        // open the custom settings dialogs of Obsidian
+                                        // blocks on the page.
+                                        if ( block.BlockType.Path.Equals( "~/Blocks/Cms/PageZoneBlocksEditor.ascx", StringComparison.OrdinalIgnoreCase ) )
+                                        {
+                                            _pageNeedsObsidian = true;
+                                        }
                                     }
                                     else if ( block.BlockType.EntityTypeId.HasValue )
                                     {
@@ -1773,7 +1785,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 }
 
                 MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                if ( getMethod != null )
+                if ( getMethod == null )
                 {
                     continue;  // Couldn't find method to fetch Entity.
                 }
@@ -1868,7 +1880,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
             // Check for page context that were explicitly set in Page Properties.  These will
             // override any values that were already set, either by cookies or the query string
             // (meaning an explicitly set Page Context overrides the generic Id/Guid from the
-            // code block immediately preceeding this one).
+            // code block immediately preceding this one).
             foreach ( var pageContext in _pageCache.PageContexts )
             {
                 var contextId = PageParameter( pageContext.Value );
@@ -2212,7 +2224,20 @@ Obsidian.onReady(() => {{
             {
                 Authorization.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
-                Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
+
+                /*
+                    10/23/2023 - JMH
+
+                    Bypass two-factor authentication when restoring the "impersonated by" user's session;
+                    otherwise, they would have to use two-factor authentication again.
+
+                    Reason: Two-Factor Authentication
+                 */
+                Rock.Security.Authorization.SetAuthCookie(
+                    impersonatedByUser.UserName,
+                    isPersisted: false,
+                    isImpersonated: false,
+                    isTwoFactorAuthenticated: true );
                 Response.Redirect( PageReference.BuildUrl( true ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
@@ -3118,69 +3143,136 @@ $.ajax({
         }
 
         /// <summary>
-        /// Sets the context cookie.
+        /// Sets the provided entity within the context cookie.
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
-        /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
+        /// <param name="entity">The entity to set within the cookie.</param>
+        /// <param name="pageSpecific">Whether to set the entity within a page-specific cookie.</param>
+        /// <param name="refreshPage">Whether to refresh the page after adding/updating the cookie.</param>
         public void SetContextCookie( IEntity entity, bool pageSpecific = false, bool refreshPage = true )
         {
-            string cookieName = GetContextCookieName( pageSpecific );
-
-            var contextCookie = Request.Cookies[cookieName];
-            if ( contextCookie == null )
+            if ( entity == null )
             {
-                contextCookie = new HttpCookie( cookieName );
+                return;
             }
 
-            Type entityType = entity.GetType();
+            var entityType = entity.GetType();
             if ( entityType.IsDynamicProxyType() )
             {
                 entityType = entityType.BaseType;
             }
 
-            contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
-            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
-
-            AddOrUpdateCookie( contextCookie );
-
-            if ( refreshPage )
+            if ( entity.Guid == Guid.Empty )
             {
-                Response.Redirect( Request.RawUrl, false );
-                Context.ApplicationInstance.CompleteRequest();
+                // Clear this entity type from the context cookie instead.
+                ClearContextCookie( entityType, pageSpecific, refreshPage );
+                return;
+            }
+
+            try
+            {
+                var cookieName = GetContextCookieName( pageSpecific );
+                var contextCookie = FindCookie( cookieName ) ?? new HttpCookie( cookieName );
+                var contextItems = contextCookie.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+                /*
+                    12/1/2023 - JPH
+
+                    Here's how this used to work:
+                        1. `entity.ContextKey` returns an encrypted, encoded string;
+                        2. We used to immediately decode the string before putting it into the cookie; not sure why;
+                        3. The `System.Web` library's handling of cookies successfully wrote AND retrieved this
+                           unencoded string; they gave it back to us exactly as we gave it to them, likely
+                           auto-encoding and auto-decoding for us behind the scenes.
+
+                    WHAT THE CODE USED TO BE:
+                    contextItems.AddOrReplace( entityType.FullName, HttpUtility.UrlDecode( entity.ContextKey ) );
+
+                    But when attempting to retrieve these `System.Web`-written cookies using our new, Obsidian request flow:
+                        1. All of the "+" characters were replaced with " " characters, breaking our decryption attempt.
+                        2. This is because the newer, `System.Net` library's retrieving of cookies seemingly double-decodes
+                           the string values, leading to the plus sign replacement behavior we're seeing.
+                           https://stackoverflow.com/a/55077150
+
+                    WHAT THE CODE IS NOW:
+                    contextItems.AddOrReplace( entityType.FullName, entity.ContextKey );
+
+                    The "fix" is to leave the string encoded on the way into the cookie, which fixes the `System.Net` lib's
+                    retrieval of the cookie. But this now means we need to manually decode the cookie on this (`System.Web`)
+                    side, within the `AddCookieContextEntities()` method.
+
+                    Reason: Context cookie compatibility between Web Forms and Obsidian.
+                    https://github.com/SparkDevNetwork/Rock/issues/5634
+                 */
+                contextItems.AddOrReplace( entityType.FullName, entity.ContextKey );
+
+                contextCookie.Value = contextItems.ToJson();
+                contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+
+                AddOrUpdateCookie( contextCookie );
+
+                if ( refreshPage )
+                {
+                    Response.Redirect( Request.RawUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+            }
+            catch
+            {
+                // Intentionally ignore exception in case JSON [de]serialization fails.
             }
         }
 
         /// <summary>
-        /// Clears the context cookie.
+        /// Clears the specified entity type from the context cookie and deletes the cookie itself if
+        /// no more entity types remain within its value.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
-        /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
+        /// <param name="entityType">Type of the entity to clear from the cookie.</param>
+        /// <param name="pageSpecific">Whether to clear the entity type from a page-specific cookie.</param>
+        /// <param name="refreshPage">Whether to refresh the page after clearing the entity type from the cookie.</param>
         public void ClearContextCookie( Type entityType, bool pageSpecific = false, bool refreshPage = true )
         {
-            string cookieName = GetContextCookieName( pageSpecific );
-
-            var contextCookie = Request.Cookies[cookieName];
-            if ( contextCookie == null )
+            if ( entityType == null )
             {
-                contextCookie = new HttpCookie( cookieName );
+                return;
             }
 
-            if ( entityType.IsDynamicProxyType() )
+            try
             {
-                entityType = entityType.BaseType;
+                var cookieName = GetContextCookieName( pageSpecific );
+                var contextCookie = FindCookie( cookieName ) ?? new HttpCookie( cookieName );
+                var contextItems = contextCookie.Value.FromJsonOrNull<Dictionary<string, string>>();
+
+                if ( entityType.IsDynamicProxyType() )
+                {
+                    entityType = entityType.BaseType;
+                }
+
+                contextItems?.Remove( entityType.FullName );
+
+                if ( contextItems?.Any() == true )
+                {
+                    // Re-serialize the value and bump the expiration date out.
+                    contextCookie.Value = contextItems.ToJson();
+                    contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+                }
+                else
+                {
+                    // No more entity types remain; delete the cookie.
+                    contextCookie.Value = null;
+                    contextCookie.Expires = RockDateTime.Now.AddDays( -1 );
+                }
+
+                AddOrUpdateCookie( contextCookie );
+
+                if ( refreshPage )
+                {
+                    Response.Redirect( Request.RawUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
             }
-
-            contextCookie.Values[entityType.FullName] = null;
-            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
-
-            AddOrUpdateCookie( contextCookie );
-
-            if ( refreshPage )
+            catch
             {
-                Response.Redirect( Request.RawUrl, false );
-                Context.ApplicationInstance.CompleteRequest();
+                // Intentionally ignore exception in case JSON [de]serialization fails.
             }
         }
 
@@ -3206,11 +3298,106 @@ $.ajax({
         }
 
         /// <summary>
+        /// Converts the legacy, "structured" context cookies to a simpler, JSON format.
+        /// </summary>
+        [Obsolete( "Remove this method after a few major versions, hopefully allowing enough time to convert all legacy context cookies." )]
+        [RockObsolete( "1.17" )]
+        private void ConvertLegacyContextCookiesToJSON()
+        {
+            // Find any cookies whose names start with the legacy cookie name prefix.
+            var legacyCookies = new List<HttpCookie>();
+            foreach ( var cookieName in Request.Cookies.AllKeys )
+            {
+                if ( !cookieName.StartsWith( "Rock_Context" ) )
+                {
+                    continue;
+                }
+
+                legacyCookies.Add( Request.Cookies[cookieName] );
+            }
+
+            foreach ( var legacyCookie in legacyCookies )
+            {
+                try
+                {
+                    // Add each of the "structured" values to a simple dictionary.
+                    var contextItems = new Dictionary<string, string>();
+
+                    for ( var i = 0; i < legacyCookie.Values.Count; i++ )
+                    {
+                        var cookieValue = legacyCookie.Values[i];
+                        if ( cookieValue.IsNullOrWhiteSpace() )
+                        {
+                            continue;
+                        }
+
+                        // We need to decrypt the value so we can use the entity type name for the key.
+                        var contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
+                        var valueParts = contextItem.Split( '|' );
+                        if ( valueParts.Length != 2 )
+                        {
+                            continue;
+                        }
+
+                        // Re-add the entire, encoded value, as the object loading process depends on this specific format.
+                        var encodedCookieValue = HttpUtility.UrlEncode( cookieValue );
+                        contextItems.Add( valueParts[0], encodedCookieValue );
+                    }
+
+                    // Add the new, JSON-based cookie.
+                    if ( contextItems.Any() )
+                    {
+                        // We're changing the names of the cookies:
+                        //  1. Renaming the site cookie from the old name (Rock_Context) will make it easier
+                        //     to know when we've already converted to the new, JSON cookie on a given client,
+                        //     without having to dig into the cookie's value, thereby making subsequent
+                        //     request/response cycles faster.
+                        //  2. Legacy, page-specific cookie names followed this format: "Rock_Context:n",
+                        //     where n is the page ID. Since colons may not be used in cookie names, we'll
+                        //     convert these names to a valid format.
+                        var legacyCookieNameParts = legacyCookie.Name.Split( ':' );
+                        int? pageId = null;
+
+                        if ( legacyCookieNameParts.Length == 2 )
+                        {
+                            pageId = legacyCookieNameParts[1].AsIntegerOrNull();
+                            if ( pageId.GetValueOrDefault() <= 0 )
+                            {
+                                // There was something wrong with this cookie name; skip it.
+                                continue;
+                            }
+                        }
+
+                        var newCookieName = pageId.HasValue
+                            ? $"{RockRequestContext.PageContextCookieNamePrefix}{pageId.Value}"
+                            : RockRequestContext.SiteContextCookieName;
+
+                        var newCookie = new HttpCookie( newCookieName, contextItems.ToJson() )
+                        {
+                            Expires = legacyCookie.Expires // Leave the expiration date/time as it was.
+                        };
+
+                        AddOrUpdateCookie( newCookie );
+                    }
+                }
+                catch
+                {
+                    // Intentionally ignore exception in case conversion fails.
+                }
+
+                // Always remove the legacy, "structured" cookie, regardless of conversion success.
+                legacyCookie.Values.Clear();
+                legacyCookie.Expires = RockDateTime.Now.AddDays( -1 );
+                AddOrUpdateCookie( legacyCookie );
+            }
+        }
+
+        /// <summary>
         /// Adds context entities from a cookie to a provided <see cref="KeyEntity"/> dictionary.
         /// </summary>
-        /// <param name="cookie"></param>
-        /// <param name="keyEntityDictionary"></param>
-        /// <returns></returns>
+        /// <param name="cookie">The context cookie that contains the encrypted context entities.</param>
+        /// <param name="keyEntityDictionary">The dictionary into which to place the decrypted context entities.</param>
+        /// <returns>The dictionary holding the decrypted context entities.</returns>
         private Dictionary<string, Data.KeyEntity> AddCookieContextEntities( HttpCookie cookie, Dictionary<string, Data.KeyEntity> keyEntityDictionary )
         {
             if ( cookie == null )
@@ -3218,29 +3405,39 @@ $.ajax({
                 return keyEntityDictionary; // nothing to do.
             }
 
-            for ( int valueIndex = 0; valueIndex < cookie.Values.Count; valueIndex++ )
+            try
             {
-                string cookieValue = cookie.Values[valueIndex];
-                if ( string.IsNullOrWhiteSpace( cookieValue ) )
+                var contextItems = cookie.Value.FromJsonOrNull<Dictionary<string, string>>();
+                if ( contextItems?.Any( c => c.Value.IsNotNullOrWhiteSpace() ) != true )
                 {
-                    continue;
+                    // Delete the cookie since it holds no context items. Should never happen.
+                    cookie.Value = null;
+                    cookie.Expires = RockDateTime.Now.AddHours( -1 );
+
+                    return keyEntityDictionary;
                 }
 
-                try
+                foreach ( var encryptedItem in contextItems.Values )
                 {
-                    string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
-                    string[] parts = contextItem.Split( '|' );
-                    if ( parts.Length != 2 )
+                    if ( encryptedItem.IsNullOrWhiteSpace() )
                     {
                         continue;
                     }
 
-                    keyEntityDictionary.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
+                    var decodedItem = HttpUtility.UrlDecode( encryptedItem );
+                    var decryptedItem = Rock.Security.Encryption.DecryptString( decodedItem );
+                    var itemParts = decryptedItem.Split( '|' );
+                    if ( itemParts.Length != 2 )
+                    {
+                        continue;
+                    }
+
+                    keyEntityDictionary.AddOrReplace( itemParts[0], new Data.KeyEntity( itemParts[1] ) );
                 }
-                catch
-                {
-                    // intentionally ignore exception in case cookie is corrupt
-                }
+            }
+            catch
+            {
+                // Intentionally ignore exception in case any part of this process fails.
             }
 
             return keyEntityDictionary;
@@ -3268,11 +3465,12 @@ $.ajax({
         /// <summary>
         /// Gets the name of the context cookie.
         /// </summary>
-        /// <param name="pageSpecific">if set to <c>true</c> [page specific].</param>
-        /// <returns></returns>
+        /// <param name="pageSpecific">Whether to get the name for a page-specific context cookie.</param>
+        /// <returns>The name of the context cookie or <c>null</c> if <paramref name="pageSpecific"/> == <c>true</c>
+        /// and this request has not yet been prepared for a given page.</returns>
         public string GetContextCookieName( bool pageSpecific )
         {
-            return "Rock_Context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
+            return RequestContext?.GetContextCookieName( pageSpecific );
         }
 
         /// <summary>

@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <component :is="fieldComponent" :modelValue="value" :configurationValues="configurationValues" />
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { computed } from "vue";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps(standardCellProps);
+
+    const configurationValues = computed(() => {
+        const attribute = props.column.props.attribute as PublicAttributeBag;
+        return attribute?.configurationValues ?? {};
+    });
+
+    const fieldComponent = computed(() => {
+        const attribute = props.column.props.attribute as PublicAttributeBag;
+
+        let fieldType = getFieldType(attribute?.fieldTypeGuid ?? FieldType.Text);
+
+        if (!fieldType) {
+            fieldType = getFieldType(FieldType.Text)!;
+        }
+
+        return fieldType.getCondensedFormattedComponent();
+    });
+
+    const value = computed(() => {
+        if (props.column.field) {
+            return (props.row[props.column.field] ?? "") as string;
+        }
+        else {
+            return "";
+        }
+    });
+</script>

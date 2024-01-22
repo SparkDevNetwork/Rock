@@ -18,6 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
@@ -54,6 +55,11 @@ namespace Rock.Net
         /// we return the same instance for the entire request.
         /// </summary>
         private ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
+
+        /// <summary>
+        /// Whether this object represents a legacy, `System.Web` request.
+        /// </summary>
+        private bool _isLegacyRequest;
 
         #endregion
 
@@ -170,6 +176,16 @@ namespace Rock.Net
         /// <value>The cookies that were found in the request.</value>
         private IDictionary<string, string> Cookies { get; set; }
 
+        /// <summary>
+        /// Gets the site context cookie name.
+        /// </summary>
+        internal static string SiteContextCookieName => "ROCK_CONTEXT_SITE";
+
+        /// <summary>
+        /// Gets the page context cookie name prefix.
+        /// </summary>
+        internal static string PageContextCookieNamePrefix = "ROCK_CONTEXT_PAGE_";
+
         #endregion
 
         #region Constructors
@@ -192,11 +208,14 @@ namespace Rock.Net
         /// </summary>
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
         /// <param name="response">The object that handles response updates.</param>
-        internal RockRequestContext( HttpRequest request, IRockResponseContext response )
+        /// <param name="currentUser">The currently logged in user.</param>
+        internal RockRequestContext( HttpRequest request, IRockResponseContext response, UserLogin currentUser )
         {
+            _isLegacyRequest = true;
+
             Response = response;
 
-            CurrentUser = UserLoginService.GetCurrentUser( true );
+            CurrentUser = currentUser;
 
             RequestUri = request.UrlProxySafe();
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -231,6 +250,7 @@ namespace Rock.Net
 
             // Initialize any context entities found.
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            AddContextEntitiesFromCookie( false );
             AddContextEntitiesFromHeaders();
 
             CurrentVisitorId = LoadCurrentVisitorId();
@@ -241,11 +261,12 @@ namespace Rock.Net
         /// </summary>
         /// <param name="request">The request that we will initialize from.</param>
         /// <param name="response">The object that handles response updates.</param>
-        internal RockRequestContext( IRequest request, IRockResponseContext response )
+        /// <param name="currentUser">The currently logged in user.</param>
+        internal RockRequestContext( IRequest request, IRockResponseContext response, UserLogin currentUser )
         {
             Response = response;
 
-            CurrentUser = UserLoginService.GetCurrentUser( true );
+            CurrentUser = currentUser;
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -274,6 +295,7 @@ namespace Rock.Net
 
             // Initialize any context entities found.
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            AddContextEntitiesFromCookie( false );
             AddContextEntitiesFromHeaders();
 
             CurrentVisitorId = LoadCurrentVisitorId();
@@ -332,136 +354,269 @@ namespace Rock.Net
         }
 
         /// <summary>
+        /// Adds the context entities from a cookie.
+        /// </summary>
+        /// <param name="isPageSpecific">Whether to add page-specific context entities.</param>
+        private void AddContextEntitiesFromCookie( bool isPageSpecific )
+        {
+            var cookieName = GetContextCookieName( isPageSpecific );
+            if ( cookieName.IsNullOrWhiteSpace() )
+            {
+                // Cookie name not defined.
+                return;
+            }
+
+            var cookieValue = GetCookieValue( cookieName );
+            if ( cookieValue.IsNullOrWhiteSpace() )
+            {
+                // Cookie not found or value not defined.
+                return;
+            }
+
+            var contextItems = cookieValue.FromJsonOrNull<Dictionary<string, string>>();
+            if ( contextItems?.Any( c => c.Value.IsNotNullOrWhiteSpace() ) != true )
+            {
+                // Cookie holds no context items.
+                return;
+            }
+
+            foreach ( var encryptedItem in contextItems.Values )
+            {
+                if ( encryptedItem.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                AddOrReplaceEncryptedContextEntity( encryptedItem );
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the context cookie.
+        /// </summary>
+        /// <param name="isPageSpecific">Whether to get the name for a page-specific context cookie.</param>
+        /// <returns>The name of the context cookie or <c>null</c> if <paramref name="isPageSpecific"/> == <c>true</c>
+        /// and this request has not yet been prepared for a given page.</returns>
+        internal string GetContextCookieName( bool isPageSpecific )
+        {
+            if ( isPageSpecific && _pageCache == null )
+            {
+                return null;
+            }
+
+            return isPageSpecific
+                ? $"{PageContextCookieNamePrefix}{_pageCache.Id}"
+                : SiteContextCookieName;
+        }
+
+        /// <summary>
+        /// Decrypts the value and adds or replaces the specified context entity.
+        /// </summary>
+        /// <param name="encryptedItem">The encrypted item containing the context entity to add or replace.</param>
+        /// <param name="bypassDecoding">Whether to explicitly bypass decoding (if the caller knows the item
+        /// has already been decoded).</param>
+        private void AddOrReplaceEncryptedContextEntity( string encryptedItem, bool bypassDecoding = false )
+        {
+            try
+            {
+                /*
+                    12/1/2023 - JPH
+
+                    This `RockRequestContext` class has multiple constructors, which leads to multiple
+                    ways of retrieving this context cookie (https://stackoverflow.com/a/55077150).
+
+                        1. If this cookie was retrieved using the `System.Web` lib (by way of the
+                           constructor that takes an `HttpRequest` object, we need to manually URL
+                           decode this value before attempting to decrypt it.
+                        2. If this cookie was retrieved using the `System.Net` lib (by way of the
+                           constructor that take an `IRequest` object, the value will have already
+                           been decoded for us.
+
+                    Reason: Context cookie compatibility between Web Forms and Obsidian.
+                    https://github.com/SparkDevNetwork/Rock/issues/5634
+                 */
+                var decodedItem = encryptedItem;
+                if ( _isLegacyRequest && !bypassDecoding )
+                {
+                    decodedItem = HttpUtility.UrlDecode( encryptedItem );
+                }
+
+                var contextItem = Rock.Security.Encryption.DecryptString( decodedItem );
+                var parts = contextItem.Split( '|' );
+                if ( parts.Length != 2 )
+                {
+                    return;
+                }
+
+                AddOrReplaceContextEntity( parts[0], parts[1] );
+            }
+            catch
+            {
+                // Intentionally ignore exception in case encrypted value is corrupt.
+            }
+        }
+
+        /// <summary>
+        /// Adds or replaces a context entity for the specified entity type name and key.
+        /// </summary>
+        /// <param name="entityTypeName">The entity type name.</param>
+        /// <param name="entityKey">The entity key.</param>
+        private void AddOrReplaceContextEntity( string entityTypeName, string entityKey )
+        {
+            // If entity type name or entity key are not defined then skip.
+            if ( entityTypeName.IsNullOrWhiteSpace() || entityKey.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            // Determine the entity type in question.
+            var type = EntityTypeCache.All()
+                .Where( a => a.IsEntity )
+                .FirstOrDefault( a =>
+                    a.Name.Equals( entityTypeName, StringComparison.InvariantCultureIgnoreCase )
+                    || a.FriendlyName.Equals( entityTypeName, StringComparison.InvariantCultureIgnoreCase )
+                )
+                ?.GetEntityType();
+
+            // If we got an unknown type then skip.
+            if ( type == null )
+            {
+                return;
+            }
+
+            // Lazy load the entity so we don't actually load if it is never accessed.
+            ContextEntities.AddOrReplace( type, new Lazy<IEntity>( () =>
+            {
+                IEntity entity = null;
+                var keyParts = entityKey.Split( '>' );
+                var allowIntegerIdentifier = _siteCache?.DisablePredictableIds != true;
+
+                if ( keyParts.Length == 2 )
+                {
+                    // Load from public key (ID>Guid).
+                    entity = Reflection.GetIEntityForEntityTypeAndPublicKey( type, entityKey );
+                }
+                else if ( type == typeof( Person ) )
+                {
+                    // This is to maintain feature parity with RockPage.GetCurrentContext(), which
+                    // eager-loads a large object graph for person context entities when loading
+                    // via Id, Guid or IdKey.
+                    // https://github.com/SparkDevNetwork/Rock/blob/59123107b3ce4d38331a22c8d869fc8aeb1611c7/Rock/Web/UI/RockPage.cs#L3054
+                    var personService = new PersonService( new RockContext() );
+                    var eagerQry = personService
+                        .GetQueryableByKey( entityKey, allowIntegerIdentifier )
+                        .Include( p => p.MaritalStatusValue )
+                        .Include( p => p.ConnectionStatusValue )
+                        .Include( p => p.RecordStatusValue )
+                        .Include( p => p.RecordStatusReasonValue )
+                        .Include( p => p.RecordTypeValue )
+                        .Include( p => p.SuffixValue )
+                        .Include( p => p.TitleValue )
+                        .Include( p => p.GivingGroup )
+                        .Include( p => p.Photo )
+                        .Include( p => p.Aliases );
+
+                    var personQueryOptions = new PersonService.PersonQueryOptions { IncludeDeceased = true };
+
+                    entity = personService.AmendQueryable( eagerQry, personQueryOptions ).FirstOrDefault();
+                }
+                else if ( allowIntegerIdentifier && int.TryParse( entityKey, out var entityId ) )
+                {
+                    // Load from plain integer Id, but only if not disabled by site.
+                    entity = Reflection.GetIEntityForEntityType( type, entityId );
+                }
+                else if ( Guid.TryParse( entityKey, out Guid entityGuid ) )
+                {
+                    // Load from Guid.
+                    entity = Reflection.GetIEntityForEntityType( type, entityGuid );
+                }
+                else
+                {
+                    // Load from IdKey.
+                    entity = Reflection.GetIEntityForEntityType( type, entityKey );
+                }
+
+                if ( entity != null && entity is IHasAttributes attributedEntity )
+                {
+                    Helper.LoadAttributes( attributedEntity );
+                }
+
+                return entity;
+            } ) );
+        }
+
+        /// <summary>
         /// Adds the context entities from headers.
         /// </summary>
         protected virtual void AddContextEntitiesFromHeaders()
         {
             foreach ( var kvp in Headers )
             {
-                //
                 // Skip any header that isn't an entity context header.
-                //
                 if ( !kvp.Key.StartsWith( "X-ENTITYCONTEXT-", StringComparison.InvariantCultureIgnoreCase ) )
                 {
                     continue;
                 }
 
-                //
-                // Determine the entity type in question.
-                //
-                var entityName = kvp.Key.Substring( 16 );
-                var type = EntityTypeCache.All()
-                    .Where( a => a.IsEntity )
-                    .FirstOrDefault( a => a.FriendlyName.Equals( entityName, StringComparison.InvariantCultureIgnoreCase ) )
-                    ?.GetEntityType();
-                string entityKey = kvp.Value.First();
-
-                //
-                // If we got an unknown type or no Id/Guid then skip.
-                //
-                if ( type == null || entityKey.IsNullOrWhiteSpace() )
-                {
-                    continue;
-                }
-
-                //
-                // Lazy load the entity so we don't actually load if it is never
-                // accessed.
-                //
-                ContextEntities.AddOrReplace( type, new Lazy<IEntity>( () =>
-                {
-                    IEntity entity = null;
-
-                    if ( _siteCache?.DisablePredictableIds != true && int.TryParse( entityKey, out int entityId ) )
-                    {
-                        entity = Reflection.GetIEntityForEntityType( type, entityId );
-                    }
-                    else if ( Guid.TryParse( entityKey, out Guid entityGuid ) )
-                    {
-                        entity = Reflection.GetIEntityForEntityType( type, entityGuid );
-                    }
-
-                    if ( entity != null && entity is IHasAttributes attributedEntity )
-                    {
-                        Helper.LoadAttributes( attributedEntity );
-                    }
-
-                    return entity;
-                } ) );
+                AddOrReplaceContextEntity( kvp.Key.Substring( 16 ), kvp.Value.FirstOrDefault() );
             }
         }
 
         /// <summary>
-        /// Adds the context entities for page.
+        /// Adds the context entities for the page.
         /// </summary>
         /// <param name="pageCache">The page cache.</param>
         private void AddContextEntitiesForPage( PageCache pageCache )
         {
+            // The order in which objects are added to the ContextEntities collection is important. Since we're
+            // using AddOrReplace, the last object of any given type will be the context object that ends up in
+            // the collection. Sitewide cookie and header context objects may have already been added within this
+            // class's constructors, above. Any page-specific cookie objects will override sitewide objects that
+            // have already been added.
+            AddContextEntitiesFromCookie( true );
+
+            // Page parameters are checked next, but will only override context objects that have already
+            // been set by cookie or header contexts; new context objects will not be added by the presence
+            // of a page parameter alone.
+            foreach ( var entityType in ContextEntities.Keys.ToList() )
+            {
+                // Look for Id first, this can be either integer, guid or IdKey.
+                var entityTypeName = entityType.Name;
+                var entityKey = GetPageParameter( $"{entityTypeName}Id" );
+                if ( entityKey.IsNotNullOrWhiteSpace() )
+                {
+                    AddOrReplaceContextEntity( entityTypeName, entityKey );
+                }
+
+                // If Guid is present, it will override Id.
+                Guid? entityGuid = GetPageParameter( $"{entityTypeName}Guid" ).AsGuidOrNull();
+                if ( entityGuid.HasValue )
+                {
+                    AddOrReplaceContextEntity( entityTypeName, entityGuid.Value.ToString() );
+                }
+            }
+
+            // Next, check for page contexts that were explicitly set in Page Properties. These will
+            // override any values that were already set by cookies, headers or page parameters.
             foreach ( var pageContext in pageCache.PageContexts )
             {
-                var entityType = EntityTypeCache.Get( pageContext.Key )?.GetEntityType();
-                if ( entityType == null )
+                var entityKey = GetPageParameter( pageContext.Value );
+                if ( entityKey.IsNullOrWhiteSpace() )
                 {
                     continue;
                 }
 
-                var contextId = GetPageParameter( pageContext.Value );
+                AddOrReplaceContextEntity( pageContext.Key, entityKey );
+            }
 
-                if ( contextId.IsNullOrWhiteSpace() )
-                {
-                    continue;
-                }
-
-                if ( int.TryParse( contextId, out var id ) )
-                {
-                    // Load from plain integer Id, but only if not disabled by site.
-                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
-                    {
-                        if ( _siteCache?.DisablePredictableIds == true )
-                        {
-                            return null;
-                        }
-
-                        var entity = Reflection.GetIEntityForEntityType( entityType, id );
-
-                        if ( entity != null && entity is IHasAttributes attributedEntity )
-                        {
-                            Helper.LoadAttributes( attributedEntity );
-                        }
-
-                        return entity;
-                    } ) );
-                }
-                else if ( Guid.TryParse( contextId, out var guid ) )
-                {
-                    // Load from Guid.
-                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
-                    {
-                        var entity = Reflection.GetIEntityForEntityType( entityType, guid );
-
-                        if ( entity != null && entity is IHasAttributes attributedEntity )
-                        {
-                            Helper.LoadAttributes( attributedEntity );
-                        }
-
-                        return entity;
-                    } ) );
-                }
-                else
-                {
-                    // Load from IdKey.
-                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
-                    {
-                        var entity = Reflection.GetIEntityForEntityType( entityType, contextId );
-
-                        if ( entity != null && entity is IHasAttributes attributedEntity )
-                        {
-                            Helper.LoadAttributes( attributedEntity );
-                        }
-
-                        return entity;
-                    } ) );
-                }
+            // Finally, check for any encrypted context keys specified in the query string. These take
+            // precedence over any previously-set context objects.
+            var separator = new char[1] { ',' };
+            foreach ( var param in GetPageParameter( "context" ).Split( separator, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                // Query string parameters will have already been decoded, so instruct
+                // the decryption method to always bypass this part of the process.
+                AddOrReplaceEncryptedContextEntity( param, true );
             }
         }
 

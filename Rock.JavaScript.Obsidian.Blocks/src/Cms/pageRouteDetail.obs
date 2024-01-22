@@ -12,7 +12,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PageRoute"
                  entityTypeName="PageRoute"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isDeleteable"
                  :isEditVisible="isEditable"
@@ -116,6 +116,10 @@
         return config.options ?? {};
     });
 
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value !== DetailPanelMode.Edit;
+    });
+
     // #endregion
 
     // #region Functions
@@ -131,15 +135,11 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!pageRouteEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -223,12 +223,7 @@
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "object") {
-                pageRouteViewBag.value = result.data;
-
-                return true;
-            }
-            else if (result.statusCode === 201 && typeof result.data === "string") {
+            if (result.statusCode === 200 && typeof result.data === "string") {
                 return result.data;
             }
         }

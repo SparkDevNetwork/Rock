@@ -18,6 +18,9 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -84,7 +87,7 @@ namespace Rock.Model
                                      c.ConnectionState != ConnectionState.Inactive &&
                                      c.ConnectionState != ConnectionState.Connected ) )
                             {
-                                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Crm, $"Person.PreSave() setting connection requests Inactive for Person.Id {this.Entity.Id} and ConnectionRequest.Id = {connectionRequest.Id}" );
+                                Logger.LogDebug( $"Person.PreSave() setting connection requests Inactive for Person.Id {this.Entity.Id} and ConnectionRequest.Id = {connectionRequest.Id}" );
                                 connectionRequest.ConnectionState = ConnectionState.Inactive;
                             }
                         }

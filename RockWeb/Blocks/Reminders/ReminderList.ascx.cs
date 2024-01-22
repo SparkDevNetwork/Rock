@@ -546,7 +546,7 @@ namespace RockWeb.Blocks.Reminders
 
             foreach ( var reminder in reminders.ToList() )
             {
-                var entity = reminderEntities[reminder.Id];
+                var entity = reminderEntities.ContainsKey( reminder.Id ) ? reminderEntities[reminder.Id] : null;
                 if ( entity == null )
                 {
                     invalidReminders.Add( reminder );

@@ -185,6 +185,12 @@ export type UploadOptions = {
 
     /** A function to call to report the ongoing progress of the upload. */
     progress: UploadProgressCallback;
+
+    /** The parent entity type identifier */
+    parentEntityTypeId?: number;
+
+    /** The parent entity identifier */
+    parentEntityId?: number;
 };
 
 /**
@@ -274,6 +280,14 @@ export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, opt
     }
     else {
         url += "&isTemporary=True";
+    }
+
+    if (options?.parentEntityTypeId) {
+        url += "&ParentEntityTypeId=" + options.parentEntityTypeId;
+    }
+
+    if (options?.parentEntityId) {
+        url += "&ParentEntityId=" + options.parentEntityId;
     }
 
     const formData = new FormData();

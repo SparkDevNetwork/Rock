@@ -27,5 +27,13 @@ namespace Rock.ViewModels.Blocks.Security.ForgotUserName
         /// A bag containing the required information to display various block captions.
         /// </summary>
         public ForgotUserNameCaptionsBag Captions { get; set; }
+
+        /// <summary>
+        /// If set to true the CAPTCHA verification step will not be performed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableCaptchaSupport { get; set; }
     }
 }

@@ -624,6 +624,7 @@ $(document).ready(function() {
             kvlOrder.Required = true;
 
             ShowEdit();
+            ShowView(); // Populate the placeholder so that incase the model is closed a blank page is not shown.
 
             upnlContent.Update();
         }

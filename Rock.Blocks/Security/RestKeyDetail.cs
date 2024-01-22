@@ -39,7 +39,7 @@ namespace Rock.Blocks.Security
     [Category( "Security" )]
     [Description( "Displays the details of a particular user login." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

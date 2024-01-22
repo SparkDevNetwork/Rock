@@ -87,7 +87,7 @@
             password: "",
             username: ""
         },
-        personInfo: {
+        personInfo: config.accountEntryPersonInfoBag ?? {
             birthday: {
                 year: 0,
                 month: 0,
@@ -99,7 +99,7 @@
             lastName: "",
             phoneNumbers: [...config.phoneNumbers ?? []]
         },
-        fullName: null,
+        isCaptchaValid: false,
         selectedPersonId: null,
         state: config.state
     });

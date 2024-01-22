@@ -94,7 +94,7 @@ namespace Rock.Blocks.Core
         private TagDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
             var options = new TagDetailOptionsBag();
-
+            options.TagNameBlackListRegex = Tag.VALIDATOR_REGEX_BLACKLIST;
             return options;
         }
 
@@ -280,20 +280,8 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.BackgroundColor ),
                 () => entity.BackgroundColor = box.Entity.BackgroundColor );
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
-
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
-
-            box.IfValidProperty( nameof( box.Entity.EntityType ),
-                () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ) );
-
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierColumn ),
-                () => entity.EntityTypeQualifierColumn = box.Entity.EntityTypeQualifierColumn );
-
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierValue ),
-                () => entity.EntityTypeQualifierValue = box.Entity.EntityTypeQualifierValue );
 
             box.IfValidProperty( nameof( box.Entity.IconCssClass ),
                 () => entity.IconCssClass = box.Entity.IconCssClass );
@@ -304,8 +292,23 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.OwnerPersonAlias ),
-                () => entity.OwnerPersonAliasId = box.Entity.OwnerPersonAlias.GetEntityId<PersonAlias>( rockContext ) );
+            if ( BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, GetCurrentPerson() ) )
+            {
+                box.IfValidProperty( nameof( box.Entity.Category ),
+                    () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+
+                box.IfValidProperty( nameof( box.Entity.EntityType ),
+                    () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ) );
+
+                box.IfValidProperty( nameof( box.Entity.OwnerPersonAlias ),
+                    () => entity.OwnerPersonAliasId = box.Entity.OwnerPersonAlias.GetEntityId<PersonAlias>( rockContext ) );
+
+                box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierColumn ),
+                    () => entity.EntityTypeQualifierColumn = box.Entity.EntityTypeQualifierColumn );
+
+                box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierValue ),
+                    () => entity.EntityTypeQualifierValue = box.Entity.EntityTypeQualifierValue );
+            }
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -404,7 +407,7 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Tag.FriendlyTypeName}." );
                 return false;

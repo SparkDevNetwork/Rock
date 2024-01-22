@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of campuses." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the campus details.",
@@ -72,8 +72,8 @@ namespace Rock.Blocks.Core
             var box = new ListBlockBox<CampusListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsAddEnabled = GetIsAddOrDeleteEnabled();
+            box.IsDeleteEnabled = GetIsAddOrDeleteEnabled();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -97,11 +97,9 @@ namespace Rock.Blocks.Core
         /// Determines if the add button should be enabled in the grid.
         /// <summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        private bool GetIsAddOrDeleteEnabled()
         {
-            var entity = new Campus();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -169,12 +167,47 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( $"Not authorized to delete ${Campus.FriendlyTypeName}." );
                 }
 
+                // Don't allow deleting the last campus.
+                if ( !entityService.Queryable().Where( c => c.Id != entity.Id ).Any() )
+                {
+                    return ActionBadRequest( $"{entity.Name} is the only campus and cannot be deleted (Rock requires at least one campus)." );
+                }
+
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
                 {
                     return ActionBadRequest( errorMessage );
                 }
 
                 entityService.Delete( entity );
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Changes the ordered position of a single item.
+        /// </summary>
+        /// <param name="key">The identifier of the item that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderItem( string key, string beforeKey )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Get the queryable and make sure it is ordered correctly.
+                var qry = GetListQueryable( rockContext );
+                qry = GetOrderedListQueryable( qry, rockContext );
+
+                // Get the entities from the database.
+                var items = GetListItems( qry, rockContext );
+
+                if ( !items.ReorderEntity( key, beforeKey ) )
+                {
+                    return ActionBadRequest( "Invalid reorder attempt." );
+                }
+
                 rockContext.SaveChanges();
 
                 return ActionOk();

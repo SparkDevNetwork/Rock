@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 
 using MassTransit;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Logging;
 using Rock.Model;
 
@@ -31,6 +33,28 @@ namespace Rock.Bus.Faults
     /// <seealso cref="MassTransit.IReceiveObserver" />
     public sealed class ReceiveFaultObserver : IReceiveObserver
     {
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        private ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
+
         /// <summary>
         /// Called when a message being consumed produced a fault
         /// </summary>
@@ -45,7 +69,7 @@ namespace Rock.Bus.Faults
             var errorMessage = $"A ConsumeFault occurred in the {consumerType}. Original Message: {context.Message}. Exception: {exception}";
             ExceptionLogService.LogException( new BusException( errorMessage, exception ) );
 
-            RockLogger.Log.Error( RockLogDomains.Bus, "A ConsumeFault occurred in the @consumerType. Original Message: @originalMessage Exception: @exception", consumerType, context.Message, exception );
+            Logger.LogError( "A ConsumeFault occurred in the @consumerType. Original Message: @originalMessage Exception: @exception", consumerType, context.Message, exception );
             return RockMessageBus.GetCompletedTask();
         }
 
@@ -93,7 +117,7 @@ namespace Rock.Bus.Faults
             var errorMessage = $"A ReceiveFault occurred. Context: {context}. Exception {exception}";
             ExceptionLogService.LogException( new BusException( errorMessage, exception ) );
 
-            RockLogger.Log.Error( RockLogDomains.Bus, "A ReceiveFault occurred Context: @context Exception: @exception", context, exception );
+            Logger.LogError( "A ReceiveFault occurred Context: @context Exception: @exception", context, exception );
             return RockMessageBus.GetCompletedTask();
         }
     }

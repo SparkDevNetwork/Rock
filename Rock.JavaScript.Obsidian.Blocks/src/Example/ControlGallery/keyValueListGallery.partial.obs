@@ -1,0 +1,83 @@
+<template>
+    <GalleryAndResult :value="{ 'output:modelValue': value, 'input:valueOptions': valueOptions, 'input:keyOptions': keyOptions }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :keyOptions="keyOptions" :displayValueFirst="displayValueFirst" :fullWidth="fullWidth" />
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-md-3" label="Limit Possible Keys" v-model="limitKeys" />
+                <CheckBox formGroupClasses="col-md-3" label="Limit Possible Values" v-model="limitValues" />
+                <CheckBox formGroupClasses="col-md-3" label="Show Value First" v-model="displayValueFirst" />
+                <CheckBox formGroupClasses="col-md-3" label="Full Width" v-model="fullWidth" />
+            </div>
+            <div class="row">
+                <TextBox formGroupClasses="col-md-4" label="Placeholder for Key Field" v-model="keyPlaceholder" />
+                <TextBox formGroupClasses="col-md-4" label="Placeholder for Value Field" v-model="valuePlaceholder" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref();
+    const fullWidth = ref(false);
+    const keyPlaceholder = ref("Key");
+    const valuePlaceholder = ref("Value");
+
+    const limitKeys = ref(false);
+    const limitValues = ref(false);
+    const displayValueFirst = ref(false);
+    const koptions: ListItemBag[] = [
+        {
+            text: "Key Option 1",
+            value: "k1"
+        },
+        {
+            text: "Key Option 2",
+            value: "k2"
+        },
+        {
+            text: "Key Option 3",
+            value: "k3"
+        },
+    ];
+    const voptions: ListItemBag[] = [
+        {
+            text: "Value Option 1",
+            value: "v1"
+        },
+        {
+            text: "Value Option 2",
+            value: "v2"
+        },
+        {
+            text: "Value Option 3",
+            value: "v3"
+        },
+    ];
+
+    const keyOptions = computed(() => limitKeys.value ? koptions : undefined);
+    const valueOptions = computed(() => limitValues.value ? voptions : undefined);
+
+    const importCode = getSfcControlImportPath("keyValueList");
+    const exampleCode = computed(() => {
+        const displayValueFirstProp = displayValueFirst.value == true ? " displayValueFirst" : "";
+        const fullWidthProp = fullWidth.value == true ? " fullWidth" : "";
+        const keyOptionsProp = keyOptions.value ? ` :keyOptions="keyOptions"` : "";
+        const valueOptionsProp = valueOptions.value ? ` :valueOptions="valueOptions"` : "";
+
+        return `<KeyValueList label="Keys and Values" v-model="value"${keyOptionsProp}${valueOptionsProp} keyPlaceholder="${keyPlaceholder.value}" valuePlaceholder="${valuePlaceholder.value}"${fullWidthProp}${displayValueFirstProp} />`;
+    });
+</script>

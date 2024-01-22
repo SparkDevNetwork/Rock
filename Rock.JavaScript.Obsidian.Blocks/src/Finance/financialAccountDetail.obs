@@ -81,7 +81,8 @@
         "publicDescription",
         "publicName",
         "startDate",
-        "url"
+        "url",
+        "imageBinaryFile",
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(financialAccountEditBag, validProperties, invokeBlockAction), undefined, true);

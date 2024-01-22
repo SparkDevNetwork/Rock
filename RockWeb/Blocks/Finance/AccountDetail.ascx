@@ -82,6 +82,7 @@
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                             <Rock:DataTextBox ID="tbUrl" runat="server"
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Url" Label="URL" />
+                            <Rock:ImageUploader ID="imgBinaryFile" runat="server" Label="Image" />
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbGLCode" runat="server"
@@ -106,7 +107,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="attributes">
-                                <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                                <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                             </div>
                         </div>
                     </div>

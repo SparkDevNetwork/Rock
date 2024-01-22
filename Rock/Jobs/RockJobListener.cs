@@ -15,19 +15,21 @@
 // </copyright>
 //
 using System;
+using System.Diagnostics;
 using System.Linq;
-using Quartz;
 
 using DotLiquid;
+
+using Microsoft.Extensions.Logging;
+
+using Quartz;
 
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Bus;
 using Rock.Observability;
-using System.Diagnostics;
 
 namespace Rock.Jobs
 {
@@ -37,6 +39,11 @@ namespace Rock.Jobs
     public class RockJobListener : IJobListener
     {
         /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
         /// Get the name of the <see cref="IJobListener"/>.
         /// </summary>
         public string Name
@@ -44,6 +51,23 @@ namespace Rock.Jobs
             get
             {
                 return "RockJobListener";
+            }
+        }
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
             }
         }
 
@@ -71,7 +95,7 @@ namespace Rock.Jobs
             // get job type id
             int jobId = context.JobDetail.Description.AsInteger();
 
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job is about to be executed.", jobId, context.JobDetail?.Key );
+            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job is about to be executed.", jobId, context.JobDetail?.Key );
 
             // load job
             var rockContext = new RockContext();
@@ -135,7 +159,7 @@ namespace Rock.Jobs
         /// <seealso cref="M:Quartz.IJobListener.JobToBeExecuted(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
         public void JobExecutionVetoed( IJobExecutionContext context )
         {
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was vetoed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was vetoed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
         }
 
         /// <summary>
@@ -172,7 +196,7 @@ namespace Rock.Jobs
             if ( job == null )
             {
                 // if job was deleted or wasn't found, just exit
-                RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was not found.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was not found.", jobId, context.JobDetail?.Key );
                 return;
             }
 
@@ -203,7 +227,7 @@ namespace Rock.Jobs
                     sendMessage = true;
                 }
 
-                RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was executed.", jobId, context.JobDetail?.Key );
             }
             else
             {
@@ -242,7 +266,7 @@ namespace Rock.Jobs
                     sendMessage = true;
                 }
 
-                RockLogger.Log.Debug( RockLogDomains.Jobs, exceptionToLog, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed with an exception.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug( exceptionToLog, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed with an exception.", jobId, context.JobDetail?.Key );
             }
 
             rockContext.SaveChanges();

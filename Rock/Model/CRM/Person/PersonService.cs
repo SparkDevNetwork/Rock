@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.BulkExport;
 using Rock.Data;
 using Rock.Security;
+using Rock.SystemKey;
 using Rock.Utility;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
@@ -190,19 +191,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities 
-        /// using the options specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people and nameless person records)
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities
+        /// using the options specified in the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor).
         /// </summary>
         /// <param name="personQueryOptions">The person query options.</param>
         /// <returns></returns>
         public IQueryable<Person> Queryable( PersonQueryOptions personQueryOptions )
         {
-            return this.Queryable( null, personQueryOptions );
+            return this.Queryable( ( string ) null, personQueryOptions );
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities with eager loading of properties that are included in the includes parameter.
-        /// using the option specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor. )
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities with eager loading of properties that are included in the includes parameter
+        /// using the options specified in the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor).
         /// </summary>
         /// <param name="includes">The includes.</param>
         /// <param name="personQueryOptions">The person query options.</param>
@@ -210,6 +211,20 @@ namespace Rock.Model
         private IQueryable<Person> Queryable( string includes, PersonQueryOptions personQueryOptions )
         {
             var qry = base.Queryable( includes );
+
+            return AmendQueryable( qry, personQueryOptions );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities, building on the provided queryable (or defaulting to the base queryable if not provided)
+        /// using the options specified in the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor.)
+        /// </summary>
+        /// <param name="qry"></param>
+        /// <param name="personQueryOptions"></param>
+        /// <returns></returns>
+        internal IQueryable<Person> AmendQueryable( IQueryable<Person> qry, PersonQueryOptions personQueryOptions )
+        {
+            qry = qry ?? base.Queryable();
             List<int> excludedPersonRecordTypeIds = new List<int>();
 
             personQueryOptions = personQueryOptions ?? new PersonQueryOptions();
@@ -2935,11 +2950,13 @@ namespace Rock.Model
         /// </returns>
         public TResult GetSpouse<TResult>( Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
         {
+            // Note this logic is duplicated in SpouseNameSelect and SpouseTransform.
             //// Spouse is determined if all these conditions are met
             //// 1) Both Persons are adults in the same family (GroupType = Family, GroupRole = Adult, and in same Group)
-            //// 2) Opposite Gender as Person, if Gender of both Persons is known
+            //// 2) Opposite Gender as Person, if Gender of both Persons is known. This condition won't hold true if the church sets the Bible Strict Spouse setting to false.
             //// 3) Both Persons are Married
             int marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            var isBibleStrictSpouse = Rock.Web.SystemSettings.GetValue( SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
@@ -2960,12 +2977,10 @@ namespace Rock.Model
 
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
-
-                // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
-                .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
+                .Where( m => !isBibleStrictSpouse || m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .OrderBy( m => groupOrderQuery.FirstOrDefault( x => x.GroupId == m.GroupId && x.PersonId == person.Id ).GroupOrder ?? int.MaxValue )
-                .ThenBy( m => DbFunctions.DiffDays( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
+                .ThenBy( m => Math.Abs( DbFunctions.DiffDays( m.Person.BirthDate ?? new DateTime( 1, 1, 1 ), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) ?? 0 ) )
                 .ThenBy( m => m.PersonId )
                 .Select( selector )
                 .FirstOrDefault();
@@ -3660,6 +3675,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = ownerRole.Id;
+                    groupMember.GroupTypeId = knownRelationshipGroupType.Id;
 
                     var group = new Group();
                     group.Name = knownRelationshipGroupType.Name;
@@ -3683,6 +3699,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = ownerRole.Id;
+                    groupMember.GroupTypeId = impliedRelationshipGroupType.Id;
 
                     var group = new Group();
                     group.Name = impliedRelationshipGroupType.Name;
@@ -3715,6 +3732,7 @@ namespace Rock.Model
                     var groupMember = new GroupMember();
                     groupMember.Person = person;
                     groupMember.GroupRoleId = familyRole.Id;
+                    groupMember.GroupTypeId = familyGroupType.Id;
 
                     var groupMembers = new List<GroupMember>();
                     groupMembers.Add( groupMember );
@@ -4462,12 +4480,12 @@ FROM (
         public static void UpdateGivingId( int personId, RockContext rockContext )
         {
             var person = new PersonService( rockContext ).Get( personId );
-            var correctGivingId = person.GivingGroupId.HasValue ? $"G{ person.GivingGroupId.Value }" : $"P{ person.Id }";
+            var correctGivingId = person.GivingGroupId.HasValue ? $"G{person.GivingGroupId.Value}" : $"P{person.Id}";
 
             // Make sure the GivingId is correct.
             if ( person.GivingId != correctGivingId )
             {
-                rockContext.Database.ExecuteSqlCommand( $"UPDATE [Person] SET [GivingId] = '{ correctGivingId }' WHERE [Id] = { personId }" );
+                rockContext.Database.ExecuteSqlCommand( $"UPDATE [Person] SET [GivingId] = '{correctGivingId}' WHERE [Id] = {personId}" );
             }
         }
 
@@ -4987,35 +5005,6 @@ AND GroupTypeId = ${familyGroupType.Id}
             return mergeRequestQry;
         }
 
-        /// <summary>
-        /// This function will take a person, and if they're a child return a queryable of all
-        /// of the adults in their primary family. The term 'Parents' is iffy, we know.
-        /// </summary>
-        /// <param name="people">The people.</param>
-        /// <param name="filterByGender">The filter by gender.</param>
-        /// <returns>IQueryable&lt;Person&gt;.</returns>
-        [RockInternal( "1.15" )]
-        internal IQueryable<Person> GetParentsForChildren( List<Person> people, Gender? filterByGender = null )
-        {
-            var personFamilyIds = people.Where( p => p.AgeClassification == AgeClassification.Child )
-                .Select( p => p.PrimaryFamilyId );
-
-            var groupMemberService = new GroupMemberService( Context as RockContext );
-
-            var parentsQry = groupMemberService
-                .Queryable()
-                .Where( gm => personFamilyIds.Contains( gm.GroupId )
-                    && gm.Person.AgeClassification == AgeClassification.Adult
-                    && gm.GroupMemberStatus == GroupMemberStatus.Active );
-
-            if ( filterByGender != null )
-            {
-                parentsQry = parentsQry.Where( x => x.Person.Gender == filterByGender );
-            }
-
-            return parentsQry.Select( gm => gm.Person );
-        }
-
         #region Configuration Settings
 
         /// <summary>
@@ -5079,6 +5068,120 @@ AND GroupTypeId = ${familyGroupType.Id}
             return Queryable()
                 .Where( person => person.ForeignKey == foreignSystemKey && person.ForeignId == foreignSystemPersonId )
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Unsubscribes a person from email communications.
+        /// <para>If Email Preference is "Email Allowed" then it will be set to "No Mass Emails".</para>
+        /// <para>If Email Preference is "No Mass Emails" then it will be set to "Do Not Email".</para>
+        /// <para>If Email Preference is "Do Not Email" then no changes are made.</para>
+        /// </summary>
+        /// <param name="person">The person to update.</param>
+        public void UnsubscribeFromEmail( Person person )
+        {
+            if ( person == null )
+            {
+                throw new ArgumentNullException( nameof( person ), "Person is required" );
+            }
+
+            // Make the email preference more restrictive based on the current preference.
+            if ( person.EmailPreference == EmailPreference.EmailAllowed )
+            {
+                person.EmailPreference = EmailPreference.NoMassEmails;
+            }
+            else if ( person.EmailPreference == EmailPreference.NoMassEmails )
+            {
+                person.EmailPreference = EmailPreference.DoNotEmail;
+            }
+        }
+        
+        /// <summary>
+        /// Unsubscribes a person from email communications and writes a one-click email unsubscription history record.
+        /// <para>If Email Preference is "Email Allowed" then it will be set to "No Mass Emails".</para>
+        /// <para>If Email Preference is "No Mass Emails" then it will be set to "Do Not Email".</para>
+        /// <para>If Email Preference is "Do Not Email" then no changes are made and no history is written.</para>
+        /// </summary>
+        /// <param name="person">The person to update.</param>
+        public void OneClickUnsubscribeFromEmail( Person person )
+        {
+            if ( person == null )
+            {
+                throw new ArgumentNullException( nameof( person ), "Person is required" );
+            }
+
+            var oldValue = person.EmailPreference;
+
+            UnsubscribeFromEmail( person );
+
+            // Write a history record for the one-click email unsubscription.            
+            if ( oldValue != person.EmailPreference )
+            {
+                var changes = new History.HistoryChangeList();
+                changes.AddChange( History.HistoryVerb.EmailUnsubscribed, History.HistoryChangeType.Property, "Email Preference" );
+
+                // The person unsubscribed themself, so manually set them as the modified by person.
+                person.ModifiedByPersonAliasId = person.PrimaryAliasId;
+                person.ModifiedAuditValuesAlreadyUpdated = true;
+
+                HistoryService.SaveChanges(
+                    ( RockContext ) this.Context,
+                    typeof( Person ),
+                    Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(),
+                    person.Id,
+                    changes,
+                    "Unsubscribed",
+                    relatedModelType: null,
+                    relatedEntityId: null,
+                    modifiedByPersonAliasId: person.PrimaryAliasId,
+                    commitSave: false );
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribes a person from an email communication list.
+        /// </summary>
+        /// <param name="person">The person to update.</param>
+        /// <param name="communicationListsQuery">The query of communication list(s) from which to unsubscribe.</param>
+        /// <exception cref="ArgumentException">If person is null</exception>
+        /// <exception cref="ArgumentException">If communication lists query is null</exception>
+        public void UnsubscribeFromEmail( Person person, IQueryable<Group> communicationListsQuery )
+        {
+            if ( person == null )
+            {
+                throw new ArgumentNullException( nameof( person ), "Person is required" );
+            }
+
+            if ( communicationListsQuery == null )
+            {
+                throw new ArgumentNullException( nameof( communicationListsQuery ), "Communication lists query is required" );
+            }
+
+            // Get the communication list recipient records for this person to inactivate.
+            var recipientRecordsToInactivate = communicationListsQuery
+                 // Ensure the Group(s) are Communication List(s).
+                .IsCommunicationList()
+                 // Only retrieve the group memberships for the unsubscribing person.
+                .SelectMany( cl => cl.Members )
+                .Where( m => m.PersonId == person.Id )
+                // Only retrieve the recipient records that are not already Inactive.
+                .Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                .ToList();
+
+            // This person should only have one recipient record for each communication list,
+            // but set each one as inactive in case there are multiple per communication list.
+            var personPrimaryAliasId = person.PrimaryAliasId;
+            foreach ( var recipientToInactivate in recipientRecordsToInactivate )
+            {
+                recipientToInactivate.GroupMemberStatus = GroupMemberStatus.Inactive;
+                if ( recipientToInactivate.Note.IsNullOrWhiteSpace() )
+                {
+                    recipientToInactivate.Note = "Unsubscribed";
+                }
+
+                // The person unsubscribed themself, so manually set them as the modified by person.
+                recipientToInactivate.ModifiedByPersonAliasId = personPrimaryAliasId;
+                recipientToInactivate.ModifiedAuditValuesAlreadyUpdated = true;
+            }
         }
     }
 }

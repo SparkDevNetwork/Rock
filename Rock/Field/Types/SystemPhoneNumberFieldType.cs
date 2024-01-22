@@ -36,7 +36,7 @@ namespace Rock.Field.Types
     /// Stored as either a single Guid or a comma-delimited list of Guids (if AllowMultiple).
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SYSTEM_PHONE_NUMBER )]
     public class SystemPhoneNumberFieldType : FieldType, IEntityFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType
     {
@@ -45,6 +45,7 @@ namespace Rock.Field.Types
         private const string ALLOW_MULTIPLE_KEY = "allowMultiple";
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
         private const string REPEAT_COLUMNS_KEY = "repeatColumns";
+        private const string VALUES_KEY = "values";
 
         #endregion
 
@@ -63,7 +64,7 @@ namespace Rock.Field.Types
                     var systemPhoneNumber = SystemPhoneNumberCache.Get( guid );
                     if ( systemPhoneNumber != null )
                     {
-                        names.Add(systemPhoneNumber.Name );
+                        names.Add( systemPhoneNumber.Name );
                     }
                 }
 
@@ -75,37 +76,40 @@ namespace Rock.Field.Types
 
         #endregion
 
-        #region Edit Control
+        #region Configuration
 
         /// <inheritdoc/>
-        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
-            var guids = privateValue.SplitDelimitedValues().AsGuidList();
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            var systemPhoneNumbers = new List<SystemPhoneNumberCache>();
-            foreach ( var guid in guids )
+            var phoneNumbers = SystemPhoneNumberCache.All();
+
+            if ( !publicConfigurationValues.TryGetValue( INCLUDE_INACTIVE_KEY, out string includeInactiveString ) || !includeInactiveString.AsBoolean() )
             {
-                var systemPhoneNumber = SystemPhoneNumberCache.Get( guid );
-                if ( systemPhoneNumber != null )
-                {
-                    systemPhoneNumbers.Add( systemPhoneNumber );
-                }
+                phoneNumbers = phoneNumbers.Where( sp => sp.IsActive ).ToList();
             }
 
-            return new ListItemBag
-            {
-                Value = privateValue,
-                Text = systemPhoneNumbers.Select( v => v.Name ).JoinStrings( ", " )
-            }.ToCamelCaseJson( false, true );
+            publicConfigurationValues[VALUES_KEY] = phoneNumbers.OrderBy( v => v.Name )
+                .ToListItemBagList()
+                .ToCamelCaseJson( false, true );
+
+            return publicConfigurationValues;
         }
 
-        /// <inheritdoc/>
-        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            var value = publicValue.FromJsonOrNull<ListItemBag>();
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
-            return value?.Value ?? string.Empty;
+            configurationValues.Remove( VALUES_KEY );
+
+            return configurationValues;
         }
+
+        #endregion Configuration
+
+        #region Edit Control
 
         #endregion
 
@@ -256,7 +260,7 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Repeat Columns",
-                Help = "Select how many columns the list should use before going to the next row. If 0 then the options are put next to each other and wrap around. If blank then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.",
+                Help = "Select how many columns the list should use before going to the next row. If 0 then the options are put next to each other and wrap around. If blank then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add constraints due to available space.",
                 MinimumValue = "0"
             };
 

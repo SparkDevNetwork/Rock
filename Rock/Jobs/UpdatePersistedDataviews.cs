@@ -22,9 +22,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -177,13 +178,10 @@ namespace Rock.Jobs
                         finally
                         {
                             Log(
-                                RockLogLevel.Info,
-                                "DataView ID: {dataViewId}, DataView Name: {dataViewName}, Error Occurred: {errorOccurred}",
+                                LogLevel.Information,
+                                $"DataView ID: {dataViewId}, DataView Name: {name}, Error Occurred: {errorOccurred}",
                                 startDateTime,
-                                stopwatch.ElapsedMilliseconds,
-                                dataViewId,
-                                name,
-                                errorOccurred );
+                                stopwatch.ElapsedMilliseconds );
                         }
                     }
                 }

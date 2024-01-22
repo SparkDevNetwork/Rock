@@ -64,6 +64,11 @@ namespace Rock.ViewModels.Blocks.Cms.PersistedDatasetDetail
         public DateTime? ExpireDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is used by the system.
+        /// </summary>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         public bool IsActive { get; set; }
@@ -84,8 +89,54 @@ namespace Rock.ViewModels.Blocks.Cms.PersistedDatasetDetail
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the refresh interval minutes
+        /// Gets or sets the refresh interval Hours
         /// </summary>
         public int? RefreshIntervalHours { get; set; }
+
+        /// <summary>
+        /// Gets or sets the refresh interval
+        /// </summary>
+        public int? RefreshInterval { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Schedule ID.
+        /// </summary>
+        public int? PersistedScheduleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted schedule interval type.
+        /// </summary>
+        public string PersistedScheduleIntervalType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persistence type.
+        /// </summary>
+        public string PersistenceType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted schedule type.
+        /// </summary>
+        public string PersistedScheduleType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule data.
+        /// </summary>
+        public string PersistedSchedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the named schedules.
+        /// </summary>
+        public List<ListItemBag> NamedSchedules { get; set; }
+
+        /// <summary>
+        ///  Gets or sets the readable iCalendar content 
+        /// </summary>
+        public string FriendlyScheduleText { get; set; }
+
+        /// <summary>
+        ///  Gets or sets the time to build in milliseconds
+        /// </summary>
+        public double? TimeToBuildMS { get; set; }
+
     }
 }

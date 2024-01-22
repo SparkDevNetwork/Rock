@@ -1,0 +1,168 @@
+<template>
+    <GalleryAndResult :value="{ value: items, attributes, defaultAttributeValues: defaults }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <NotificationBox v-if="showNotification" dismissible @dismiss="showNotification = false" alertType="warning">This control is meant for internal use only.</NotificationBox>
+
+        <AttributeMatrixEditor v-model="items" :attributes="attributes" :defaultAttributeValues="defaults" :minRows="minRows" :maxRows="maxRows ?? Infinity" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <NumberBox v-model="minRows" label="Minimum Number of Rows" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox v-model="maxRows" label="Maximum Number of Rows" />
+                </div>
+            </div>
+            <NotificationBox v-if="showNotification" dismissible @dismiss="showNotification = false" alertType="warning">This control is meant for internal use only.</NotificationBox>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import AttributeMatrixEditor from "@Obsidian/Controls/Internal/attributeMatrixEditor.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const minRows = ref(0);
+    const maxRows = ref(999);
+
+    const attributes = ref({
+        "ArticleImage": {
+            "fieldTypeGuid": "97f8157d-a8c8-4ab3-96a2-9cb2a9049e6d",
+            "attributeGuid": "ba1d667d-080d-4a17-9392-f3e953969c7a",
+            "name": "Article Image",
+            "key": "ArticleImage",
+            "description": "",
+            "isRequired": false,
+            "order": 0,
+            "categories": null,
+            "configurationValues": {
+                "binaryFileType": "c1142570-8cd6-4a20-83b1-acb47c1cd377",
+                "formatAsLink": "False",
+                "img_tag_template": "<img src='{{ ImageUrl }}' class='img-responsive' />"
+            },
+            "preHtml": null,
+            "postHtml": null
+        },
+        "ArticleTitle": {
+            "fieldTypeGuid": "9c204cd0-1233-41c5-818a-c5da439445aa",
+            "attributeGuid": "dbc9e868-d509-4436-8b11-1343a02db433",
+            "name": "Article Title",
+            "key": "ArticleTitle",
+            "description": "",
+            "isRequired": true,
+            "order": 1,
+            "categories": null,
+            "configurationValues": {
+                "ispassword": "False",
+                "maxcharacters": "",
+                "showcountdown": "False"
+            },
+            "preHtml": null,
+            "postHtml": null
+        },
+        "ArticleContent": {
+            "fieldTypeGuid": "dd7ed4c0-a9e0-434f-acfe-bd4f56b043df",
+            "attributeGuid": "95fe772f-d799-41dd-9802-f5fd487933fc",
+            "name": "Article Content",
+            "key": "ArticleContent",
+            "description": "",
+            "isRequired": true,
+            "order": 2,
+            "categories": null,
+            "configurationValues": {
+                "documentfolderroot": "",
+                "imagefolderroot": "",
+                "toolbar": "Light",
+                "userspecificroot": "False"
+            },
+            "preHtml": null,
+            "postHtml": null
+        },
+        "ArticleLink": {
+            "fieldTypeGuid": "c0d0d7e2-c3b0-4004-abea-4bbfad10d5d2",
+            "attributeGuid": "f1213105-c2ce-4ca3-9039-cd1c4b40d048",
+            "name": "ArticleLink",
+            "key": "ArticleLink",
+            "description": "Optional link to for the article.",
+            "isRequired": false,
+            "order": 3,
+            "categories": null,
+            "configurationValues": {},
+            "preHtml": null,
+            "postHtml": null
+        }
+    });
+
+    const items = ref([
+        {
+            "guid": "ac0dd30f-6ec3-4254-9362-cfee0141c69e",
+            "order": 0,
+            "editValues": {
+                "ArticleImage": "{\"value\":\"1ed83aa0-ab8b-4d3d-af71-9fea3cfae8b0\",\"text\":\"wp5562339.jpg\"}",
+                "ArticleTitle": "Another",
+                "ArticleContent": "<p>Thing</p>",
+                "ArticleLink": "/foryou"
+            },
+            "viewValues": {
+                "ArticleImage": "{\"value\":\"1ed83aa0-ab8b-4d3d-af71-9fea3cfae8b0\",\"text\":\"wp5562339.jpg\"}",
+                "ArticleTitle": "Another",
+                "ArticleContent": "<p>Thing</p>",
+                "ArticleLink": "/foryou"
+            }
+        },
+        {
+            "guid": "6b2ed1cf-5e51-4b13-a59f-f19d55db8479",
+            "order": 1,
+            "editValues": {
+                "ArticleImage": "",
+                "ArticleTitle": "Hello",
+                "ArticleContent": "<p>There</p>",
+                "ArticleLink": ""
+            },
+            "viewValues": {
+                "ArticleImage": "",
+                "ArticleTitle": "Hello",
+                "ArticleContent": "<p>There</p>",
+                "ArticleLink": ""
+            }
+        },
+        {
+            "guid": "296c0144-e58e-4eb9-8f42-5b5587b26f09",
+            "order": 2,
+            "editValues": {
+                "ArticleImage": "",
+                "ArticleTitle": "Some Title",
+                "ArticleContent": "<p>Some Content</p>",
+                "ArticleLink": "/some-url"
+            },
+            "viewValues": {
+                "ArticleImage": "",
+                "ArticleTitle": "Some Title",
+                "ArticleContent": "<p>Some Content</p>",
+                "ArticleLink": "/some-url"
+            }
+        }
+    ]);
+
+    const defaults = {
+        "ArticleImage": "",
+        "ArticleTitle": "Add Your Title Here",
+        "ArticleContent": "",
+        "ArticleLink": "/blog/"
+    };
+
+    const showNotification = ref(true);
+
+
+    const importCode = getSfcControlImportPath("attributeMatrixEditor");
+    const exampleCode = computed(() => {
+        const minRowsProp = minRows.value != 0 ? ` :minRows="${minRows.value}"` : "";
+        const maxRowsProp = maxRows.value != null ? ` :maxRows="${maxRows.value}"` : "";
+        return `<AttributeMatrixEditor v-model="value" :attributes="attributes" :defaultAttributeValues="defaultAttributeValues" v-model="value"${minRowsProp}${maxRowsProp} />`;
+    });
+</script>

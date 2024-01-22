@@ -5,7 +5,7 @@
     "build-fast": "node Build/build-fast.js",
     "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && echo '' > dist/.buildstamp && echo DONE",
     "build:types": "node ./Build/build-types.js",
-    "build-framework": "npm run build:types && rollup --config Framework/rollup.config.cjs",
+    "build-framework": "npm run build:types && node ./Build/rollup-mt.js Framework/rollup.config.cjs",
     "build-core": "webpack --no-color && lessc --js System/vendor.less dist/System/obsidian-vendor.css && cleancss --source-map dist/System/obsidian-vendor.css -o dist/System/obsidian-vendor.min.css",
     "watch": "rollup --config Framework/rollup.config.cjs --watch",
     "copy-webforms-core": "copyfiles -u 2 \"dist/System/*\" \"../RockWeb/Obsidian/\"",
@@ -48,6 +48,7 @@
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-vue": "^6.0.0",
+    "semver": "^7.5.4",
     "terser-webpack-plugin": "^5.3.9",
     "ts-jest": "^29.1.1",
     "ts-loader": "^9.4.4",
@@ -75,7 +76,8 @@
     "mitt": "^3.0.1",
     "pdfobject": "^2.2.12",
     "systemjs": "^6.14.2",
+    "tinymce": "^6.8.2",
     "tslib": "^2.6.2",
-    "vue": "^3.3.4"
+    "vue": "^3.3.10"
   }
 }

@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type BenevolenceWorkflowBag = {
@@ -29,7 +28,7 @@ export type BenevolenceWorkflowBag = {
     benevolenceTypeId?: number | null;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid?: string | null;
 
     /** Gets or sets a value indicating whether this instance is inherited. */
     isInherited: boolean;

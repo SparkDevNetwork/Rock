@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type used to display Assessment type check boxes.
     /// Stored as Assessment type's Guid.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian  )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ASSESSMENT_TYPE )]
     public class AssessmentTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
@@ -54,24 +55,11 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var guids = new List<Guid>();
-
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    Guid? guid = guidValue.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        guids.Add( guid.Value );
-                    }
-                }
+                var guids = value.SplitDelimitedValues().AsGuidList();
 
                 if ( guids.Any() )
                 {
-                    var assessmentTypes = guids.Select( a => AssessmentTypeCache.Get( a ) ).ToList();
-                    if ( assessmentTypes.Any() )
-                    {
-                        formattedValue = string.Join( ", ", ( from assessmentType in assessmentTypes select assessmentType?.Title ) );
-                    }
+                    formattedValue = guids.Select( a => AssessmentTypeCache.Get( a ) ).Select( a => a.Title ).JoinStrings( ", " );
                 }
             }
 
@@ -96,7 +84,7 @@ namespace Rock.Field.Types
 
             if ( assessmentTypeValues != null && assessmentTypeValues.Any() )
             {
-                return string.Join( ",", assessmentTypeValues.Select( s => s.Value ) );
+                return assessmentTypeValues.Select( s => s.Value ).JoinStrings( ", " );
             }
 
             return string.Empty;
@@ -107,27 +95,8 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                var assessmentTypeValues = new List<ListItemBag>();
-
-                foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    Guid? guid = guidValue.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        var assessmentType = AssessmentTypeCache.Get( guid.Value );
-                        if ( assessmentType != null )
-                        {
-                            var scheduleValue = new ListItemBag()
-                            {
-                                Text = assessmentType.Title,
-                                Value = assessmentType.Guid.ToString(),
-                            };
-
-                            assessmentTypeValues.Add( scheduleValue );
-                        }
-                    }
-                }
-
+                var guidList = privateValue.SplitDelimitedValues().AsGuidList();
+                var assessmentTypeValues = AssessmentTypeCache.All().Where( a => guidList.Contains( a.Guid ) ).ToListItemBagList();
                 if ( assessmentTypeValues.Any() )
                 {
                     return assessmentTypeValues.ToCamelCaseJson( false, true );
@@ -178,7 +147,7 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                var valueGuidList = privateValue.SplitDelimitedValues().AsGuidList();
 
                 var ids = new AssessmentTypeService( rockContext )
                     .Queryable()

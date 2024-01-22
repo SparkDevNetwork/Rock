@@ -16,6 +16,8 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -77,6 +79,23 @@ namespace Rock.Model
             }
 
             return qry;
+        }
+
+        /// <summary>
+        /// Get all the Connection Statuses for a Connection Opportunity
+        /// </summary>
+        /// <param name="connectionOpportunityId"></param>
+        /// <returns></returns>
+        public List<ConnectionStatus> GetStatuses( int connectionOpportunityId )
+        {
+            return Queryable()
+                .AsNoTracking()
+                .Where( co => co.Id == connectionOpportunityId  )
+                .SelectMany( co => co.ConnectionType.ConnectionStatuses )
+                .Where( cs => cs.IsActive )
+                .ToList()
+                .OrderBy( cs => cs.Order )
+                .ToList();
         }
 
         #endregion

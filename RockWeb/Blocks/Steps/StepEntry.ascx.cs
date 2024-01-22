@@ -556,6 +556,7 @@ namespace RockWeb.Blocks.Steps
             if ( step != null )
             {
                 stepId = step.Id;
+                pdAuditDetails.SetEntity( step, ResolveRockUrl( "~" ) );
             }
 
             pnlDetails.Visible = true;
@@ -567,6 +568,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( stepId == 0 )
             {
+                pdAuditDetails.Visible = false;
                 ShowEditDetails();
             }
             else

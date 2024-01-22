@@ -1,19 +1,19 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <li v-if="resource" class="list-group-item text-sm">
-        <img :src="imgSrc" :class="imgCssClass" draggable="false">
+    <li v-if="resource" :class="resourceCssClass">
+        <img :src="imgSrc" class="avatar" draggable="false">
         <span class="resource-name">
             {{ personName }}
             <i v-if="conflictTooltip"
                ref="conflictElement"
                class="fa fa-exclamation-triangle"
                data-toggle="tooltip"
-               :title="conflictTooltip"></i>
+               :data-original-title="conflictTooltip"></i>
             <i v-if="preferenceTooltip"
                ref="preferenceElement"
                class="fa fa-minus-circle"
                data-toggle="tooltip"
-               :title="preferenceTooltip"></i>
+               :data-original-title="preferenceTooltip"></i>
         </span>
         <span class="resource-role">{{ resource?.GroupRoleName }}</span>
 
@@ -148,8 +148,12 @@
         return props.resource?.ConfirmationStatus ?? "";
     });
 
-    const imgCssClass = computed((): string => {
-        return `avatar avatar-status${(status.value ? ` ${status.value.toLowerCase()}` : "")}`;
+    const statusCssClass = computed((): string => {
+        return `status-${(status.value ? `${status.value.toLowerCase()}` : "unknown")}`;
+    });
+
+    const resourceCssClass = computed((): string => {
+        return `list-group-item text-sm ${statusCssClass.value}`;
     });
 
     const attendanceId = computed((): number => {

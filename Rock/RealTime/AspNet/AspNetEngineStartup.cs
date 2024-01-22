@@ -33,6 +33,7 @@ using Owin;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.HttpModules;
 
 namespace Rock.RealTime.AspNet
 {
@@ -56,7 +57,16 @@ namespace Rock.RealTime.AspNet
         /// <param name="app">The application.</param>
         public static void Configure( IAppBuilder app )
         {
-            app.MapSignalR();
+            // Suppress SignalR "The remote host closed the connection" errors
+            // that make it to the global hub pipeline.
+            // This is unlikely to happen but adding just in case.
+            GlobalHost.HubPipeline.AddModule( new SignalRErrorModule() );
+            
+            // Suppress SignalR "The remote host closed the connection" errors in the legacy SignalR pipeline.
+            var legacySignalRHubConfig = new HubConfiguration();
+            legacySignalRHubConfig.Resolver?.Resolve<IHubPipeline>()?.AddModule( new SignalRErrorModule() );
+
+            app.MapSignalR( legacySignalRHubConfig );
 
             /* 02/18/2022 MDP
              By default, Signal R will use reflection to find classes that inherit from Microsoft.AspNet.SignalR.
@@ -74,6 +84,9 @@ namespace Rock.RealTime.AspNet
             };
             rtHubConfiguration.Resolver.Register( typeof( IHubDescriptorProvider ), () => new RealTimeHubDescriptorProvider() );
             rtHubConfiguration.Resolver.Register( typeof( JsonSerializer ), () => CreateRealTimeSerializer() );
+            
+            // Suppress SignalR "The remote host closed the connection" errors in the Rock RealTime pipeline.
+            rtHubConfiguration.Resolver?.Resolve<IHubPipeline>()?.AddModule( new SignalRErrorModule() );
 
             var azureEndpoint = System.Configuration.ConfigurationManager.AppSettings["AzureSignalREndpoint"];
             var azureAccessKey = System.Configuration.ConfigurationManager.AppSettings["AzureSignalRAccessKey"];
@@ -83,6 +96,7 @@ namespace Rock.RealTime.AspNet
                 // Register some logic to handle adding a claim for the anonymous
                 // person identifier if we have one.
                 subApp.Use( RegisterSignalRClaims );
+                subApp.Use( FixNegotiateConnectionData );
 
                 if ( azureEndpoint.IsNullOrWhiteSpace() || azureAccessKey.IsNullOrWhiteSpace() )
                 {
@@ -135,6 +149,50 @@ namespace Rock.RealTime.AspNet
                 var identity = new ClaimsIdentity( new Claim[] { new Claim( "rock:visitor", visitorKeyCookie ) } );
 
                 claimsPrincipal.AddIdentity( identity );
+            }
+
+            return nextHandler();
+        }
+
+        /// <summary>
+        /// Fixes the negotiate endpoint connection data. This is only needed by
+        /// Rock.Mobile shell when running under the simulator. For some reason it
+        /// URL encodes part of the string which confuses the ASP.Net implementation
+        /// of SignalR.
+        /// </summary>
+        /// <param name="context">The context that identifies the request.</param>
+        /// <param name="nextHandler">The next handler to be called after this one.</param>
+        /// <returns>A Task that indicates when this process has completed.</returns>
+        private static Task FixNegotiateConnectionData( IOwinContext context, Func<Task> nextHandler )
+        {
+            if ( context.Request.Path.Value != "/negotiate" && context.Request.Path.Value != "/start" )
+            {
+                return nextHandler();
+            }
+
+            var connectionData = context.Request.Query["connectionData"];
+            if ( connectionData != null && connectionData.StartsWith( "[%7B" ) )
+            {
+                var sb = new System.Text.StringBuilder();
+
+                foreach ( var kvp in context.Request.Query )
+                {
+                    if ( sb.Length > 0 )
+                    {
+                        sb.Append( "&" );
+                    }
+
+                    if ( kvp.Key == "connectionData" )
+                    {
+                        sb.Append( $"connectionData={connectionData.GetFullyUrlDecodedValue()}" );
+                    }
+                    else
+                    {
+                        sb.Append( $"{kvp.Key}={context.Request.Query[kvp.Key]}" );
+                    }
+                }
+
+                context.Request.QueryString = new QueryString( sb.ToString() );
             }
 
             return nextHandler();

@@ -16,6 +16,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
 using Rock.Logging;
 using Rock.Model;
@@ -36,6 +38,8 @@ namespace Rock.Bus.Message
         /// </summary>
         public static void Publish()
         {
+            var logger = RockLogger.LoggerFactory.CreateLogger<PageRouteWasUpdatedMessage>();
+
             if ( !RockMessageBus.IsRockStarted )
             {
                 // Don't publish events until Rock is all the way started
@@ -45,12 +49,12 @@ namespace Rock.Bus.Message
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    logger.LogError( logMessage );
                     ExceptionLogService.LogException( new BusException( logMessage ) );
                 }
                 else
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                    logger.LogDebug( logMessage );
                 }
 
                 return;
@@ -60,7 +64,7 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<PageRouteEventQueue, PageRouteWasUpdatedMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published 'Page Route Was Updated' message." );
+            logger.LogDebug( "Published 'Page Route Was Updated' message." );
         }
     }
 }

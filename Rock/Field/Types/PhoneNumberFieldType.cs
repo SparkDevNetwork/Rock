@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a phone number
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M1.52,10.6l3-1.27a.86.86,0,0,1,1,.24l1.21,1.48a9.59,9.59,0,0,0,4.36-4.36L9.58,5.48a.85.85,0,0,1-.25-1l1.27-3a.87.87,0,0,1,1-.5l2.76.64a.85.85,0,0,1,.66.83A12.52,12.52,0,0,1,2.49,15a.85.85,0,0,1-.83-.66L1,11.58A.87.87,0,0,1,1.52,10.6Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PHONE_NUMBER )]
