@@ -976,7 +976,25 @@ namespace Rock.Communication
                 // If Enable One-Click Unsubscribe is true, then the URL should be the People API Unsubscribe endpoint.
                 var personActionIdentifier = communicationRecipient.PersonAlias.Person.GetPersonActionIdentifier( "Unsubscribe" );
                 var rootUrl = globalAttributes.GetValue( "PublicApplicationRoot" ).RemoveTrailingForwardslash();
-                listUnsubscribeHeaderValues.Add( $"<{rootUrl}/api/People/OneClickUnsubscribe/{personActionIdentifier}{(communication?.ListGroupId.HasValue == true ? $"?communicationListIdKey={communication.ListGroupId}" : string.Empty)}>" );
+                var queryParams = new List<string>();
+
+                if ( communication?.ListGroupId.HasValue == true )
+                {
+                    queryParams.Add( $"communicationListIdKey={communication.ListGroup?.IdKey ?? communication.ListGroupId.ToString()}" );
+                }
+
+                if ( communication != null )
+                {
+                    queryParams.Add( $"communicationIdKey={communication.IdKey}" );
+                }
+
+                var queryString = string.Empty;
+                if ( queryParams.Any() )
+                {
+                    queryString = $"?{string.Join( "&", queryParams )}";
+                }
+
+                listUnsubscribeHeaderValues.Add( $"<{rootUrl}/api/People/OneClickUnsubscribe/{personActionIdentifier}{queryString}>" );
             }
             else if ( mediumAttributes.TryGetValue( "UnsubscribeURL", out var unsubscribeUrl )
                       && unsubscribeUrl.IsNotNullOrWhiteSpace() )
