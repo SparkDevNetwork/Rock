@@ -22,13 +22,10 @@
            @save="onSaveSchedule">
         <DateTimePicker v-model="startDateTime"
                         label="Start Date / Time"
-                        help=""
-                        :rules="requiredRules" />
+                        help="Select the Date and Time to base the schedule on. Make sure to set this if you want the schedule to work. Set to blank if you want to leave this unscheduled."
+                         />
 
-        <RockFormField :modelValue="duration"
-                       label="Duration"
-                       name="duration"
-                       :rules="requiredRules">
+        <RockFormField :modelValue="duration" label="Duration" name="duration">
             <template #default>
                 <div class="form-control-group">
                     <NumberBox v-model="durationInHours"
@@ -411,45 +408,31 @@
     // #region Computed Values
 
     const requiredRules = computed((): ValidationRule[] => {
-        if (containsRequiredRule(props.rules)) {
             return ["required"];
-        }
-        else {
-            return [];
-        }
     });
 
     const durationInHours = computed({
         get(): number | null {
-            return duration.value ? Math.floor(duration.value / 60) : null;
+            return (duration.value === null || duration.value <= 1) ? 0 : Math.floor(duration.value / 60);
         },
+
 
         set(value: number | null) {
             const newDuration = ((value ?? 0) * 60) + (durationInMinutes.value ?? 0);
 
-            if (newDuration <= 0) {
-                duration.value = null;
-            }
-            else {
-                duration.value = newDuration;
-            }
+            duration.value = newDuration >= 0 ? newDuration : 0;
         }
     });
 
     const durationInMinutes = computed({
         get(): number | null {
-            return duration.value ? Math.floor(duration.value % 60) : null;
-        },
+            return (duration.value === null || duration.value <= 1) ? 0 : duration.value % 60;
+    },
 
         set(value: number | null) {
             const newDuration = ((durationInHours.value ?? 0) * 60) + (value ?? 0);
 
-            if (newDuration <= 0) {
-                duration.value = null;
-            }
-            else {
-                duration.value = newDuration;
-            }
+            duration.value = newDuration >= 0 ? newDuration : 0;
         }
     });
 
@@ -623,8 +606,8 @@
     function getCalendarString(): string {
         const event = new Event();
 
-        event.startDateTime = RockDateTime.parseISO(startDateTime.value ?? "") ?? undefined;
-        event.endDateTime = event.startDateTime?.addMinutes(duration.value ?? 0);
+        event.startDateTime = RockDateTime.parseISO(startDateTime.value ?? "") ?? RockDateTime.now();
+        event.endDateTime = event.startDateTime?.addMinutes(duration.value ?? 1);
 
         if (scheduleType.value === "recurring") {
             if (occurrencePattern.value === "specificDates") {
@@ -916,8 +899,8 @@
     }
 
     function onSaveSchedule(): void {
-        internalValue.value = getCalendarString();
 
+        internalValue.value = getCalendarString();
         emit("update:modelValue", internalValue.value);
         isModalVisible.value = false;
     }

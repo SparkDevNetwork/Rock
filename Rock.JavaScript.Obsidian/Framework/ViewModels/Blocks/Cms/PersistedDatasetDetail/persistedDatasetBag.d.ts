@@ -59,6 +59,9 @@ export type PersistedDatasetBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets a value indicating whether this instance is used by the system. */
+    isSystem?: boolean;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
@@ -73,4 +76,31 @@ export type PersistedDatasetBag = {
 
     /** Gets or sets the refresh interval minutes */
     refreshIntervalHours?: number | null;
+
+    /** Gets or sets the ID of the schedule for this PersistedDataset */
+    persistedScheduleId?: number | null;
+
+    /** Gets or sets the schedule interval in minutes. */
+    refreshInterval?: number | null;
+
+    /** Gets or sets the type of schedule interval */
+    persistedScheduleIntervalType?: string | null;
+
+    /** Gets or sets the type of the schedule. */
+    persistenceType?: string | null;
+
+    /** Gets or sets the persisted schedule type. */
+    persistedScheduleType?: string | null;
+
+    /** Gets or sets the persisted schedule. */
+    persistedSchedule?: string | null;
+
+    /** Gets or sets the list of named schedules. */
+    namedSchedules?: ListItemBag[] | null;
+
+    /** Gets or sets the readable iCalendar content */
+    friendlyScheduleText?: string | null;
+
+    /** Gets or sets the result data. */
+    timeToBuildMS?: number | null;
 };

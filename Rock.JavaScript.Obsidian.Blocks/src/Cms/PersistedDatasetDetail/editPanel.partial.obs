@@ -1,15 +1,23 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <NotificationBox v-if="isSystem" alertType="info">
+        <span>
+            <strong>Note: </strong>Because this dataset is used by Rock, editing is not enabled.
+        </span>
+    </NotificationBox>
     <fieldset>
         <div class="row">
+
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
-                         rules="required" />
+                         rules="required"
+                         :disabled="isSystem" />
 
                 <TextBox v-model="accessKey"
                          label="Access Key"
                          rules="required"
+                         :disabled="isSystem"
                          help="The key to use to uniquely identify this dataset. This will be the key to use when using the PersistedDataset lava filter." />
             </div>
 
@@ -22,30 +30,78 @@
 
         <TextBox v-model="description"
                  label="Description"
-                 textMode="multiline" />
+                 textMode="multiline"
+                 :disabled="isSystem" />
 
         <CodeEditor v-model="buildScript"
                     label="Build Script"
                     help="Lava Template to use for building JSON that will be used as the cached dataset object."
                     theme="rock"
                     mode="text"
-                    :editorHeight="200" />
+                    :editorHeight="200"
+                    :disabled="isSystem" />
 
         <LavaCommandPicker v-model="enabledLavaCommands"
                            :multiple="true"
-                           label="Enabled Lava Commands" />
+                           label="Enabled Lava Commands"
+                           :disabled="isSystem" />
+
+        <Panel title="Persistence Schedule">
+            <div>
+                <!-- Toggle Switch for Persistence Schedule -->
+                <Switch v-model="isPersistenceEnabled" text="Persistence Schedule" />
+            </div>
+            <!-- Persistence Schedule Settings -->
+            <div v-if="isPersistenceEnabled" class="panel-body bottom-border">
+                <div class="row">
+                    <!-- Type Selection: Interval or Schedule -->
+                    <div class="col-xs-12 col-md-3">
+                        <RadioButtonList v-model="typeOfPersistence"
+                                         :items="persistenceTypeOptions"
+                                         label="Type" />
+                    </div>
+
+                    <!-- Conditional Display Logic -->
+                    <template v-if="typeOfPersistence === 'Interval'">
+                        <!-- Interval Picker -->
+                        <div class="col-xs-12 col-md-9">
+                            <RangeSlider v-model="intervalMinutes"
+                                         label="Persistence Interval"
+                                         :min="intervalMin"
+                                         :max="intervalMax"
+                                         :step="intervalStep"
+                                         :showValueBar="true"
+                                         :columnCount="2" />
+                            <div class="sliderButtons">
+                                <ButtonGroup v-model="typeOfInterval"
+                                             :items="intervalTypeOptions"
+                                             btnSize="xs" />
+                            </div>
+                        </div>
+                    </template>
+
+                    <template v-if="typeOfPersistence === 'Schedule'">
+                        <!-- Schedule Type Selection: Unique or Named -->
+                        <div class="col-xs-12 col-md-3">
+                            <RadioButtonList v-model="typeOfSchedule"
+                                             :items="scheduleTypeOptions"
+                                             label="Persistence Schedule" />
+                        </div>
+                        <div v-if="typeOfSchedule === 'Unique'" class="col-xs-12 col-md-6">
+                            <ScheduleBuilder label="Unique" v-model:modelValue="persistedSchedule" :onUpdate:modelValue="handleScheduleData" />
+                        </div>
+                        <div v-else class="col-xs-12 col-md-6">
+                            <DropDownList v-model="selectedNamedSchedule"
+                                          :items="namedSchedules"
+                                          label="Named" />
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </Panel>
 
         <div class="row">
             <div class="col-md-2">
-                <NumberBox v-model="refreshInterval"
-                           label="Refresh Interval"
-                           help="How often the dataset should be updated by the Update Persisted Dataset job."
-                           :decimalCount="0"
-                           rules="required|gte:0">
-                    <template v-slot:inputGroupAppend>
-                        <span class="input-group-addon">hour(s)</span>
-                    </template>
-                </NumberBox>
 
                 <NumberBox v-model="memoryCacheDuration"
                            label="Memory Cache Duration"
@@ -68,7 +124,8 @@
                                   label="Entity Type"
                                   help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified.'"
                                   :multiple="false"
-                                  :includeGlobalOption="false" />
+                                  :includeGlobalOption="false"
+                                  :disabled="isSystem" />
 
                 <CheckBox v-model="allowManualRefresh"
                           help="Determines if the persisted dataset can be manually refreshed in the Persisted Dataset list."
@@ -80,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
@@ -88,18 +145,24 @@
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { PersistedDatasetBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetBag";
     import { PersistedDatasetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<PersistedDatasetBag>,
             required: true
         },
-
         options: {
             type: Object as PropType<PersistedDatasetDetailOptionsBag>,
             required: true
@@ -112,55 +175,96 @@
     }>();
 
     // #region Values
-
+    const typeOfPersistence = ref(props.modelValue.persistenceType as string ?? "");
+    const typeOfSchedule = ref(props.modelValue.persistedScheduleType as string ?? "Unique");
+    const typeOfInterval = ref(props.modelValue.persistedScheduleIntervalType as string ?? "Hours");
+    const intervalMinutes = ref(props.modelValue.refreshInterval as number ?? 12);
+    const isPersistenceEnabled = ref(props.modelValue.persistenceType !== null);
+    const selectedNamedSchedule = ref(props.modelValue.persistedScheduleId?.toString() ?? "");
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const accessKey = propertyRef(props.modelValue.accessKey ?? "", "AccessKey");
     const buildScript = propertyRef(props.modelValue.buildScript ?? "", "BuildScript");
     const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
-    const enabledLavaCommands = ref<ListItemBag[]>(props.modelValue.enabledLavaCommands ?? []);
+    const enabledLavaCommands = ref<ListItemBag[]>(props.modelValue.enabledLavaCommands ?? [{ value: "All", text: "All" }]);
     const allowManualRefresh = propertyRef(props.modelValue.allowManualRefresh ?? false, "AllowManualRefresh");
     const refreshInterval = propertyRef(props.modelValue.refreshIntervalHours, "RefreshIntervalMinutes");
     const memoryCacheDuration = propertyRef(props.modelValue.memoryCacheDurationHours, "MemoryCacheDurationMS");
     const expiresOn = propertyRef(props.modelValue.expireDateTime ?? "", "ExpireDateTime");
+    const refreshIntervalMinutes = propertyRef(props.modelValue.refreshInterval ?? 1, "RefreshInterval");
+    const persistedSchedule = propertyRef(props.modelValue.persistedSchedule ?? "", "PersistedSchedule");
+    const persistenceIntervalType = propertyRef(props.modelValue.persistedScheduleIntervalType ?? "", "PersistedScheduleIntervalType");
+    const persistedScheduleType = propertyRef(props.modelValue.persistedScheduleType ?? "", "PersistedScheduleType");
+    const persistenceType = propertyRef(typeOfPersistence?.value, "PersistenceType");
 
-    // The properties that are being edited. This should only contain
-    // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, accessKey, buildScript, entityType, allowManualRefresh, refreshInterval, memoryCacheDuration, expiresOn];
+    const propRefs = [description, isActive, name, accessKey, buildScript, entityType, enabledLavaCommands, allowManualRefresh, refreshInterval, memoryCacheDuration, expiresOn, refreshIntervalMinutes, persistedSchedule, persistenceType, persistedScheduleType, persistenceIntervalType];
 
-    // #endregion
+    const persistenceTypeOptions = [
+        { value: "Interval", text: "Interval" },
+        { value: "Schedule", text: "Schedule" }
+    ];
 
-    // #region Computed Values
+    const scheduleTypeOptions = [
+        { value: "Unique", text: "Unique" },
+        { value: "NamedSchedule", text: "Named Schedule" }
+    ];
+
+    const namedSchedules = computed(() => props.modelValue.namedSchedules ?? []);
+
+    const intervalTypeOptions = [
+        { value: "Mins", text: "Mins" },
+        { value: "Hours", text: "Hours" },
+        { value: "Days", text: "Days" }
+    ];
+
+    const intervalMin = computed(() => {
+        switch (typeOfInterval.value) {
+            case "Mins": return 1;
+            case "Hours": return 1;
+            case "Days": return 1;
+        }
+    });
+
+    const intervalMax = computed(() => {
+        switch (typeOfInterval.value) {
+            case "Mins": return 59;
+            case "Hours": return 23;
+            case "Days": return 31;
+        }
+    });
+
+    const intervalStep = computed(() => {
+        switch (typeOfInterval.value) {
+            case "Mins": return 1;
+            case "Hours": return 1;
+            case "Days": return 1;
+        }
+    });
+
+    const isSystem = computed(() => props.modelValue.isSystem ?? false);
 
     // #endregion
 
     // #region Functions
+    function handlePersistenceToggle(): void {
+        if (!isPersistenceEnabled.value) {
+            typeOfPersistence.value = "";
+            typeOfSchedule.value = "Unique";
+            intervalMinutes.value = 12;
+            persistedSchedule.value = "";
+            selectedNamedSchedule.value = "";
+            refreshIntervalMinutes.value = 1;
+        }
+        emitUpdate();
+    }
 
-    // #endregion
+    function handleScheduleData(scheduleData: string): void {
+        persistedSchedule.value = scheduleData;
+        emitUpdate();
+    }
 
-    // #region Event Handlers
-
-    // #endregion
-
-    // Watch for parental changes in our model value and update all our values.
-    watch(() => props.modelValue, () => {
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(accessKey, props.modelValue.accessKey ?? "");
-        updateRefValue(buildScript, props.modelValue.buildScript ?? "");
-        updateRefValue(entityType, props.modelValue.entityType ?? {});
-        updateRefValue(enabledLavaCommands, props.modelValue.enabledLavaCommands ?? []);
-        updateRefValue(allowManualRefresh, props.modelValue.allowManualRefresh ?? false);
-        updateRefValue(refreshInterval, props.modelValue.refreshIntervalHours);
-        updateRefValue(memoryCacheDuration, props.modelValue.memoryCacheDurationHours);
-        updateRefValue(expiresOn, props.modelValue.expireDateTime ?? "");
-    });
-
-    // Determines which values we want to track changes on (defined in the
-    // array) and then emit a new object defined as newValue.
-    watch([...propRefs], () => {
+    function emitUpdate(): void {
         const newValue: PersistedDatasetBag = {
             ...props.modelValue,
             description: description.value,
@@ -173,13 +277,59 @@
             allowManualRefresh: allowManualRefresh.value,
             refreshIntervalHours: refreshInterval.value,
             memoryCacheDurationHours: memoryCacheDuration.value,
-            expireDateTime: expiresOn.value
+            expireDateTime: expiresOn.value,
+            persistedScheduleIntervalType: typeOfInterval.value,
+            persistenceType: isPersistenceEnabled.value ? persistenceType.value : null,
+            persistedScheduleType: isPersistenceEnabled.value ? persistedScheduleType.value : null,
+            refreshInterval: isPersistenceEnabled.value && typeOfPersistence.value === "Interval" ? intervalMinutes.value : null,
+            persistedSchedule: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" ? persistedSchedule.value : null,
+            persistedScheduleId: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && selectedNamedSchedule.value ? parseInt(selectedNamedSchedule.value) : null
         };
-
         emit("update:modelValue", newValue);
+    }
+    // #endregion
+
+    // #region Watchers
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(accessKey, props.modelValue.accessKey ?? "");
+        updateRefValue(buildScript, props.modelValue.buildScript ?? "");
+        updateRefValue(entityType, props.modelValue.entityType ?? {});
+        updateRefValue(enabledLavaCommands, props.modelValue.enabledLavaCommands ?? []);
+        updateRefValue(allowManualRefresh, props.modelValue.allowManualRefresh ?? false);
+        updateRefValue(refreshInterval, props.modelValue.refreshIntervalHours);
+        updateRefValue(memoryCacheDuration, props.modelValue.memoryCacheDurationHours);
+        updateRefValue(expiresOn, props.modelValue.expireDateTime ?? "");
+        updateRefValue(refreshIntervalMinutes, props.modelValue.refreshInterval ?? 1);
+        updateRefValue(persistedSchedule, props.modelValue.persistedSchedule ?? "");
+        updateRefValue(persistenceType, props.modelValue.refreshInterval != null ? "Interval" : "Schedule");
+        updateRefValue(persistedScheduleType, props.modelValue.refreshInterval != null ? "Unique" : "NamedSchedule");
     });
 
-    // Watch for any changes to props that represent properties and then
-    // automatically emit which property changed.
-    watchPropertyChanges(propRefs, emit);
+    watch([...propRefs, selectedNamedSchedule], emitUpdate);
+
+    watch(() => isPersistenceEnabled.value, handlePersistenceToggle);
+    watch(() => intervalMinutes.value, () => {
+        if (typeOfPersistence.value === "Interval") {
+            refreshIntervalMinutes.value = intervalMinutes.value;
+            emitUpdate();
+        }
+    });
+    // #endregion
+
+    // Initial setup
+    emitUpdate();
 </script>
+<style scoped>
+.sliderButtons {
+    display: flex;
+    justify-content: flex-end;
+    /* Align items to the end of the flex container */
+    align-items: center;
+    /* Vertically center items */
+    margin-top: 10px;
+    /* Add some space above the buttons */
+}
+</style>
