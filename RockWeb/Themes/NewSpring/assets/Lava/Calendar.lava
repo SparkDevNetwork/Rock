@@ -1,0 +1,309 @@
+{% assign fallbackImage = 'Global' | Attribute:'ImageSquare','Url' %}
+{% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+
+<pre>{{ eventItemOccurrenceCount }}</pre>
+
+  {% if eventItemOccurrenceCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+  {% endif %}
+
+//- Loop through and strip out featured events into their own array
+{% assign featuredEventItemOccurrences = '' %}
+{% for event in EventItemOccurrences %}
+
+  {% assign featured = event.EventItemOccurrence.EventItem.EventCalendarItems | Where:'EventCalendarId',1 | First | Attribute:'FeaturedEvent' %}
+
+  {% if featured == 'Yes' %}
+
+    {% assign featuredEventItemOccurrences = featuredEventItemOccurrences |  AddToArray:event %}
+    {% assign EventItemOccurrences = EventItemOccurrences |  RemoveFromArray:event %}
+
+    //- Once we get to three featured events, leave the rest in the non-featured array
+    {% assign featuredEventsSize = featuredEventItemOccurrences | Size %}
+    {% if featuredEventsSize == 3 %}
+      {% break %}
+    {% endif %}
+
+  {% endif %}
+{% endfor %}
+
+
+{% assign featuredCount = featuredEventItemOccurrences | Size %}
+{% if featuredCount > 0 %}
+  <div class="row push-bottom xs-push-half-bottom">
+    {% for event in featuredEventItemOccurrences %}<div class="col-md-4 col-sm-6 col-xs-12">
+      <div class="bg-white soft xs-soft-half rounded-lg">
+        <h4>{{ event.Name }}</h4>
+      </div>
+    </div>{% endfor %}
+  </div>
+{% endif %}
+
+
+
+
+<div class="push-bottom xs-push-half-bottom">
+  {% for occurrence in EventItemOccurrences %}
+
+    //- Do not show events that have passed
+    {% assign now = 'Now' | Date %}
+    {% if occurrence.DateTime >= now %}
+
+      {% assign eventCalendarItem = occurrence.EventItemOccurrence.EventItem.EventCalendarItems | Where:'EventCalendarId',1 | First %}
+      {% assign hasChildcare = eventCalendarItem | Attribute:'Childcare' %}
+
+      //- Pull eventSlug from linkages
+      {% assign linkages = occurrence.EventItemOccurrence.Linkages %}
+      {% if linkages != empty %}
+        {% assign linkageCount = linkages | Size %}
+        {% if linkageCount == 1 %}
+          {% assign eventSlug = linkages | First | Property:'UrlSlug' %}
+        {% endif %}
+      {% else %}
+        {% assign eventSlug = '' %}
+      {% endif %}
+
+      //- Set month so we can compare to previous event's in order to "group" events by month with headers
+      {% assign month = occurrence.Date | Date:'MMMM' %}
+
+      {% if month != prevMonth %}
+      <h3 class="h2 push-top">{{ month }}</h3>
+      {% endif %}
+
+      {% assign prevMonth = month %}
+
+      //- Display Event
+      <pre>{
+        "Name": {{ occurrence.Name | ToJSON }},
+        "Campus": {{ occurrence.EventItemOccurrence.Campus.Name | ToJSON }},
+        "StartDateTime": {{ occurrence.DateTime | ToJSON }},
+      }</pre>
+      {% comment %} <a href="/events/{{ eventSlug }}" class="text-decoration-none text-gray-dark">
+        <div class="bg-white soft-half rounded-lg push-half-bottom">
+          <div class="floating floating-left row">
+            <div class="floating-item col-md-1 col-sm-2 hidden-xs">
+              <div class="ratio-square rounded-lg background-cover background-center bg-gray-lighter" style="background-image:url('{{ eventCalendarItem | Attribute:'ImageLandscape','Url' | Default:fallbackImage }}'); max-width: 60px;"></div>
+            </div><div class="floating-item col-md-11 col-sm-9 col-xs-12">
+
+              <div class="row">
+                <div class="floating-item col-md-4 col-sm-12 col-xs-12">
+                  {% assign eventName = eventCalendarItem | Attribute:'PublicName' | Default:occurrence.Name %}
+                  <p class="letter-spacing-condensed flush"><b>{{ eventName }}</b></p>
+                </div><div class="floating-item col-md-4 col-sm-12 col-xs-12">
+                  <p class="flush">
+                    {{ occurrence.Date | Date:'ddd, MMM d' }}, {{ occurrence.Time | Date:'h:mm tt' }} -
+                    {% if occurrence.Date != occurrence.EndDate %}
+                      {{ occurrence.EndDate | Date:'ddd, MMM d' }}
+                    {% endif %}
+                    {{ occurrence.EndTime | Date:'h:mm tt' }}
+                  </p>
+                </div><div class="floating-item col-md-2 col-sm-11 col-xs-11">
+                  <p class="flush sm-push-half-bottom xs-push-half-bottom">{{ occurrence.Location }}</p>
+                </div><div class="floating-item col-md-2 col-sm-1 col-xs-1">
+
+                    <i class="fas fa-lg fa-baby {% if hasChildcare == 'Yes' %}text-success{% else %}text-gray-lighter{% endif %} push-right" data-toggle="tooltip" data-placement="top" title="{% if hasChildcare == 'Yes' %}Childcare Provided{% else %}No Childcare{% endif %}"></i>
+
+
+                  <i class="fas fa-lg fa-calendar-alt"></i>
+
+                  <i class="fas fa-lg fa-chevron-right pull-right push-right xs-flush-right"></i>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </a> {% endcomment %}
+    {% endif %}
+  {% endfor %}
+</div>
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+    $('.js-group-item').tooltip();
+  });
+
+  // Converts Checkboxes into functional select options
+  Sys.Application.add_load(function() {
+    $('.calendar-lava .form-group .control-label:contains("Campus")').addClass('d-none');
+    $('.calendar-lava .form-group .control-label:contains("Campus")').parent().addClass('filter-campus');
+    $('.calendar-lava .form-group .control-label:contains("Campus")').parent().addClass('js-filter-campus');
+    $('.calendar-lava .form-group .control-label:contains("Category")').addClass('d-none');
+    $('.calendar-lava .form-group .control-label:contains("Category")').parent().addClass('filter-category');
+    $('.calendar-lava .form-group .control-label:contains("Category")').parent().addClass('js-filter-category');
+
+    $(function () {
+      var checkBoxesCampus = $('.js-filter-campus .checkbox'),
+          checkBoxesCategory = $('.js-filter-category .checkbox'),
+          checkBoxesWrapCampus = $('.js-filter-campus .control-wrapper'),
+          checkBoxesWrapCategory = $('.js-filter-category .control-wrapper'),
+          checkBoxesId = checkBoxesCampus.find('input').prop('id'),
+          checkBoxesName = checkBoxesCampus.find('input').prop('name'),
+          checksCampus = $('.js-filter-campus input[type=checkbox]'),
+          checksCategory = $('.js-filter-category input[type=checkbox]'),
+          selectWrapCampus = document.createElement('div'),
+          selectWrapCategory = document.createElement('div');
+
+      $(selectWrapCampus).addClass('select-wrapper');
+      $(selectWrapCategory).addClass('select-wrapper');
+
+      $selectCampus = $('<select class="js-campusselect"><option id="All" name="All" value="All" >All Campuses</option></select>').appendTo(selectWrapCampus);
+      $(selectWrapCampus).appendTo(checkBoxesWrapCampus);
+
+      $selectCategory = $('<select class="js-categoryselect"><option id="All" name="All" value="All" >Audience</option></select>').appendTo(selectWrapCategory);
+      $(selectWrapCategory).appendTo(checkBoxesWrapCategory);
+
+      $('.js-campusselect').on('change', function(){
+          var selecVal = $(this).val();
+          checksCampus.each(function () {
+              if($(this).val() == 'All'){
+                  $(this).removeAttr('checked');
+              } else if ($(this).val() == selecVal){
+                  $(this).prop('checked', true);
+              } else {
+                  $(this).prop('checked', false);
+              }
+          });
+      });
+
+      $('.js-categoryselect').on('change', function(){
+          var selecVal = $('.js-categoryselect').val();
+          checksCategory.each(function () {
+              if($(this).val() == 'All'){
+                  $(this).removeAttr('checked');
+              } else if($(this).val() == selecVal){
+                  $(this).prop('checked', true);
+              } else {
+                  $(this).prop('checked', false);
+              }
+          });
+      });
+
+      checkBoxesCampus.each(function (n) {
+          var dataText  = $(this).find('span').text();
+          var dataValue = $(this).find('input').val();
+          var checkBoxId = $(this).find('input').prop('id');
+          var checkBoxName = $(this).find('input').prop('name');
+          $selectCampus.append('<option id="' + dataText + '" name="' + dataText + '" value="' + dataValue + '">' + dataText + '</option>');
+      });
+
+      checkBoxesCategory.each(function (n) {
+          var dataText  = $(this).find('span').text();
+          var dataValue = $(this).find('input').val();
+          var checkBoxId = $(this).find('input').prop('id');
+          var checkBoxName = $(this).find('input').prop('name');
+          $selectCategory.append('<option id="' + dataText + '" name="' + dataText + '" value="' + dataValue + '">' + dataText + '</option>');
+
+      });
+
+      if ($('.js-filter-campus .checkbox').find('input').is(':checked')) {
+        var x = $('.js-filter-campus .checkbox input:checked').val();
+        $('.js-campusselect option[value="' + x + '"]').attr('selected', 'selected');
+      }
+      if ($('.js-filter-category .checkbox').find('input').is(':checked')) {
+        var x = $('.js-filter-category .checkbox input:checked').val();
+        $('.js-categoryselect option[value="' + x + '"]').attr('selected', 'selected');
+      }
+
+    });
+  });
+</script>
+
+<style>
+
+  .filter-campus .controls,
+  .filter-category .controls {
+    display: none;
+  }
+
+  .calendar-lava div[id$="pnlDetails"] > div[class^="col-"] {
+    width: 100%;
+  }
+
+  .calendar-lava div[id$="pnlFilters"] .form-group {
+    display: inline-block;
+  }
+  .calendar-lava .date-range-picker,
+  .calendar-lava .date-range-picker .input-group {
+    margin-bottom: 0;
+  }
+  .calendar-lava .date-range-picker .control-label {
+    display: none;
+  }
+</style>
+
+  {% comment %} {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+
+  {% if eventItemOccurrenceCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+  {% endif %}
+
+  {% for eventItemOccurrence in EventItemOccurrences %}
+  <div class="panel panel-default margin-t-md">
+    <div class="panel-heading clearfix">
+      <h2 class="panel-title pull-left">
+        {{ eventItemOccurrence.Name }}
+      </h2>
+      <div class="pull-right">
+        {% if eventItemOccurrence.DetailPage != null %}
+        <a href="{{ eventItemOccurrence.DetailPage }}">
+          View Details <i class="fa fa-chevron-right"></i>
+        </a>
+		{% else %}
+		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
+            View Details <i class="fa fa-chevron-right"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="col-md-2">
+        <div class="row">
+          <strong>Date</strong>
+        </div>
+        <div class="row">
+          {% if eventItemOccurrence.Date != eventItemOccurrence.EndDate %}
+            {{ eventItemOccurrence.Date | Date:'MMM d' }} - {{ eventItemOccurrence.EndDate | Date:'MMM d' }}
+          {% else %}
+            {{ eventItemOccurrence.Date | Date:'MMM d' }}
+          {% endif %}
+        </div>
+      </div><div class="col-md-2">
+        <div class="row">
+          <strong>Time</strong>
+        </div>
+        <div class="row">
+          {{ eventItemOccurrence.Time }}
+        </div>
+      </div><div class="col-md-3">
+        <div class="row">
+          <strong>Location</strong>
+        </div>
+        <div class="row">
+          {{ eventItemOccurrence.Location }}
+        </div>
+      </div><div class="col-md-4">
+        <div class="row">
+          <strong>Summary</strong>
+        </div>
+        <div class="row">
+          {{ eventItemOccurrence.Summary }}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script> {% endcomment %}

@@ -1,0 +1,33 @@
+{%- comment -%}Determine if this item's channel has a primary parent channel{%- endcomment -%}
+{% capture parentTitle %}
+{% sql %}
+    SELECT pcc.Id
+    FROM Attribute a
+    JOIN AttributeValue av
+    ON a.Id = av.AttributeId
+    JOIN ContentChannel cc
+    ON av.EntityId = cc.Id
+    JOIN ContentChannelItem cci
+    ON cci.ContentChannelId = cc.Id
+    JOIN ContentChannel pcc
+    ON av.Value = pcc.Guid
+    WHERE a.[Key] = 'PrimaryParentChannel'
+    AND a.EntityTypeId = 209
+    AND cci.Id = {{ cciid }}
+{% endsql %}{% capture pccid %}{% for result in results %}{{ result.Id }}{% endfor %}{% endcapture %}
+{% if pccid and pccid != empty %}
+    {%- comment -%}Item has a primary parent channel{%- endcomment -%}
+    {% sql %}
+        SELECT pcci.Title
+        FROM ContentChannelItem cci
+        JOIN ContentChannel cc
+        ON cci.ContentChannelId = cc.Id
+        JOIN ContentChannelItemAssociation ccia
+        ON cci.Id = ccia.ChildContentChannelItemId
+        JOIN ContentChannelItem pcci
+        ON ccia.ContentChannelItemId = pcci.Id
+        WHERE cci.Id = {{ cciid }}
+        AND pcci.ContentChannelId = {{ pccid }}
+    {% endsql %}{% for result in results %}{{ result.Title }}{% endfor %}
+{% endif %}
+{% endcapture %}{{ parentTitle | Trim }}

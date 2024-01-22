@@ -1,0 +1,88 @@
+{% assign internalApplicationRoot = 'Global' | Attribute:'InternalApplicationRoot' %}
+{% assign externalApplicationRoot = 'Global' | Attribute:'ExternalApplicationRoot' %}
+{% assign items = 'newspring_news' | PersistedDataset | Where:'Status',2 | Where:'Priority',0,'notequal' %}
+
+//- This loops through the items from the dataset and strips out anything that is future-dated or expired.
+{%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
+{%- for item in items -%}
+	{%- assign status = item.Status %}
+	{%- assign publishDateTime = item.PublishDateTime | Date:'yyyyMMddHHmmss' -%}
+	{%- assign expireDateTime = item.ExpireDateTime | Date:'yyyyMMddHHmmss' -%}
+	{% if publishDateTime > now or expireDateTime < now or status != 2 %}
+		{% assign items = items | RemoveFromArray:item %}
+	{% endif %}
+{%- endfor -%}
+{% assign items = items | OrderBy:'Priority' %}
+
+<style>
+    .rounded-lg { border-radius: 7px; }
+    .float-left { float: left; }
+    .float-right { float: right; }
+    .width-half { width: 50%; }
+
+    @media only screen and (max-width: 668px) {
+        .xs-float-none { float: none; }
+        .xs-width-full { width: 100% !important; }
+        .xs-flush-right { margin-right: 0 !important; }
+        .xs-flush-left { margin-left: 0 !important; }
+        .xs-push-bottom { margin-bottom: 15px; }
+    }
+</style>
+
+{% if campusid and campusid != empty %}
+    {% assign campusname = 'All' | FromCache:'Campus' | Where:'Id',campusid | First | Property:'Name' %}
+{% endif %}
+
+
+{% if campusname and campusname != empty %}
+    <table class="content" border="0" cellspacing="0" cellpadding="0">
+        <tbody>
+            {% assign displayCount = 0 %}
+            {% for item in items %}
+                {% assign campuses = item.Campuses | Split:',' %}
+                {% if campuses contains campusname %}
+                    {% if displayCount < limit %}
+                        {% assign displayCount = displayCount | Plus:1 %}
+
+                        {% capture imageAlignment -%}{%- cycle 'left', 'right' -%}{%- endcapture %}
+                        {% capture imageMargin -%}{%- if imageAlignment == 'left' -%}right{%- else -%}left{%- endif -%}{%- endcapture %}
+                        {% assign imageUrl = item.ImageSquare %}
+
+                        <tr>
+                            <td>
+                                {% if editable == 'true' %}<p class="clearfix"><a href="{{ internalApplicationRoot | Append:'ContentChannelItem/' | Append:item.Id }}" class="btn btn-primary btn-xs pull-right" target="_blank">Edit This</a></p>{% endif %}
+
+                                {% if imageUrl and imageUrl != empty %}
+                                    <img class="float-{{ imageAlignment }} xs-float-none width-half xs-width-full push-{{ imageMargin }} xs-flush-{{ imageMargin }} rounded-lg xs-push-bottom" src="{{ imageUrl }}">
+                                {% endif %}
+
+                                <h2>{{ item.Title | Trim }}</h2>
+
+                                {% assign summary = item.Summary | Replace:'<p><br></p>','' %}
+                                {% assign permalink = item.Permalink %}
+                                {% if summary != empty %}
+                                    {{ summary | HtmlDecode | Trim }}
+
+                                    {% if permalink != empty %}
+                                        <p><a target="_blank" href="{{ permalink }}" style="background-color: #6bac43; font-family: 'Colfax', -apple-system, Roboto, sans-serif; font-weight: 600; letter-spacing: -.2px; text-decoration: none; padding: 10px 15px; color: #ffffff; border-radius: 5px; display: inline-block; mso-padding-alt: 0;">
+                                            <!--[if mso]>
+                                            <i style="letter-spacing: 25px; mso-font-width: -100%; mso-text-raise: 30pt;">&nbsp;</i>
+                                            <![endif]-->
+                                            <span style="mso-text-raise: 15pt;">Read More</span>
+                                            <!--[if mso]>
+                                            <i style="letter-spacing: 25px; mso-font-width: -100%;">&nbsp;</i>
+                                            <![endif]-->
+                                        </a></p>
+                                    {% endif %}
+                                {% else %}
+                                    {{ item.Content | HtmlDecode | Trim | Replace:'<p><br></p>','' }}
+                                {% endif %}
+                                <br>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

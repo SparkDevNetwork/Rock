@@ -1,0 +1,99 @@
+{% assign offset = 'Global' | PageParameter:'Page' | Minus:1 %}
+{% assign currentMonthYear = 'Now' | Date:'MMyyyy' %}
+{% assign displayMonthYear = 'Now' | Date | DateAdd:offset,'M' | Date:'MMyyyy' %}
+
+{% assign fallbackImage = 'Global' | Attribute:'ImageSquare','Url' %}
+{% assign Items = 'events' | PersistedDataset %}
+{% assign campusid = campusid | AsInteger %}
+
+{% for item in Items %}
+    {% assign startDateMonthYear = item.StartDateTime | Date:'MMyyyy' %}
+    {% if startDateMonthYear != displayMonthYear %}
+        {% assign Items = Items | RemoveFromArray:item %}
+    {% endif%}
+{% endfor %}
+
+//- Filter events if campus-specific
+{% if campusid and campusid != empty %}
+    {% for event in Items %}
+        {% if event.Campus.Id == campusid or event.Campus.Id == null %}
+        {% else %}
+            {% assign Items = Items | RemoveFromArray:event %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<div class="push-bottom xs-push-half-bottom">
+{% for event in Items %}
+
+    //- Display header for first event of each month
+    {% assign eventMonth = event.StartDateTime | Date:'MMMM' %}
+    {% if eventMonth != prevEventMonth %}
+        <h3 class="push-ends">{{ eventMonth }} {{ event.StartDateTime | Date:'yyyy' }}</h3>
+    {% endif %}
+    {% assign prevEventMonth = eventMonth %}
+
+    //- Define URL for event tile
+    {% assign linkages = event.Linkages %}
+    {% assign campusLinkage = linkages | Where:'GroupCampusId',campusid | First %}
+    {% if campusid != empty and campusLinkage != null %}
+        //- Use campus linkage
+        {% assign slug = campusLinkage.UrlSlug | Prepend:'/events/' %}
+    {% elseif linkages != empty %}
+        //- Use all campuses linkage
+        {% assign slug = linkages | First | Property:'UrlSlug' | Prepend:'/events/' %}
+    {% else %}
+        //- Use details url
+        {% assign slug = event.DetailsUrl %}
+    {% endif %}
+
+    //- Don't show an event that doesn't have a link
+    {% if slug and slug != empty %}
+    <a href="{{ slug }}" class="text-decoration-none text-gray-dark">
+
+        <div class="bg-white soft-half rounded-lg push-half-bottom">
+            <div class="floating floating-left row">
+                <div class="floating-item col-md-1 col-sm-2 col-xs-3">
+                    <div class="ratio-square rounded-lg background-cover background-center bg-gray-lighter" style="background-image:url('{{ event.ImageSquare | Default:fallbackImage }}');"></div>
+                </div><div class="floating-item col-md-11 col-sm-9 col-xs-9">
+
+                    <div class="row">
+                        <div class="floating-item col-md-4 col-sm-12 col-xs-12">
+                            <p class="letter-spacing-condensed flush"><b>{{ event.Name }}</b></p>
+                        </div><div class="floating-item col-md-4 col-sm-12 col-xs-12">
+                            {% assign startDateComparison = event.StartDateTime | Date:'yyyyMMdd'%}
+                            {% assign endDateComparison = event.EndDateTime | Date:'yyyyMMdd'%}
+                            {% assign startTimeComparison = event.StartDateTime | Date:'HHmm'%}
+                            {% assign endTimeComparison = event.EndDateTime | Date:'HHmm'%}
+                            <p class="flush">
+                            {% if startDateComparison != endDateComparison %}
+                                {{ event.StartDateTime | Date:'MMM d, h:mm tt' }} - {{ event.EndDateTime | Date:'MMM d, h:mm tt' }}
+                            {% else %}
+                                {% if startTimeComparison != endTimeComparison %}
+                                    {{ event.StartDateTime | Date:'MMM d, h:mm' }} - {{ event.EndDateTime | Date:'h:mm tt' }}
+                                {% else %}
+                                    {{ event.StartDateTime | Date:'MMM d, h:mm tt' }}
+                                {% endif %}
+                            {% endif %}
+                            </p>
+                        </div><div class="floating-item col-md-2 col-sm-11 col-xs-11">
+                            <p class="flush sm-push-half-bottom xs-flush">{{ event.Campus.Name | Default:'All Campuses' }}</p>
+                        </div><div class="floating-item col-md-2 col-sm-1 col-xs-1 hidden">
+
+                            <i class="fas fa-lg fa-baby {% if event.Childcare == 'Yes' %}text-success{% else %}text-gray-lighter{% endif %} push-right" data-toggle="tooltip" data-placement="top" title="{% if event.Childcare == 'Yes' %}Childcare Provided{% else %}No Childcare{% endif %}"></i>
+
+                            <i class="fas fa-lg fa-calendar-alt"></i>
+                            <i class="fas fa-lg fa-chevron-right pull-right push-right xs-flush-right"></i>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endif %}
+{% endfor %}
+</div>
+
+{[ pagination itemcount:'144' pagesize:'12' ]}

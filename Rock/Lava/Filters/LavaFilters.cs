@@ -2791,7 +2791,7 @@ namespace Rock.Lava
             }
             else
             {
-                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
+                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset
                 if ( isCollection )
                 {
                     IEnumerable<dynamic> dataObjectAsCollection = dataObject as IEnumerable<dynamic>;
@@ -3021,7 +3021,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum FollowFilterType
         {

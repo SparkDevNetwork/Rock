@@ -1,0 +1,15 @@
+{%- assign modalId = uniqueid -%}
+<a href="#" class="btn btn-primary {{ buttonclasses }}" data-toggle="modal" data-target="#modal-{{ modalId }}">{{ buttontext }} &nbsp;<i class="fas fa-sm fa-play"></i></a>
+
+<!-- Modal -->
+<div class="modal fade" id="modal-{{ modalId }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+        <div class="modal-body">
+            <p class="push-half-bottom clearfix"><i class="fa fa-times close" data-dismiss="modal" aria-hidden="true"></i></p>
+            
+            {[ wistiaEmbed id:'{{ id }}' contentchannelitemid:'{{ contentchannelitemid }}' entitytypeid:'{{ entitytypeid }}' entityid:'{{ entityid }}' donottrack:'{{ donottrack }}' ]}
+        </div>
+    </div>
+  </div>
+</div>

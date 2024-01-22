@@ -1,0 +1,86 @@
+<div class="shell bg-gray-lighter hard-sides clearfix flush overflow-hidden">
+    <div class="soft-double-bottom xs-soft-bottom">
+        <div class="text-center">
+            <h2>Jesus Changes Everything</h2>
+        </div>
+
+
+        {%- assign swiperid = '' | UniqueIdentifier -%}
+
+        <!-- Slider main container -->
+        <div id="{{ swiperid }}" class="swiper-container">
+            <!-- Additional required wrapper -->
+            <div class="swiper-wrapper">
+                <!-- Slides -->
+                {%- for item in items -%}
+                    <div class="swiper-slide">
+                        <div class="text-center">
+                            <a href="{{ item.LinkUrl }}">
+                                <div class="ratio-square mx-auto push-ends circular overflow-hidden" style="width: 250px;">
+                                    <div class="full-screen background-cover background-center" style="background-image:url('{{ item.ImageUrl }}');"></div>
+                                </div>
+                            </a>
+                            <h3 class="h4 serif italic text-gray-dark">“{{ item.Quote }}”</h3>
+                            <p class="text-primary lead text-uppercase sans-serif strongest push-half-bottom">&mdash; {{ item.Name }}</p>
+                            {% if item.LinkUrl and item.LinkUrl != empty %}
+                                <p class="italic"><small><a class="text-gray" href="{{ item.LinkUrl }}">{{ item.LinkText | Default:'Learn More' }}</a></small></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {%- endfor -%}
+            </div>
+
+            <!-- Add Arrows -->
+            <div class="hidden-sm hidden-xs">
+                <div class="swiper-next"><i class="fal fa-fw fa-2x fa-angle-right"></i></div>
+                <div class="swiper-prev"><i class="fal fa-fw fa-2x fa-angle-left"></i></div>
+            </div>
+
+            <!-- If we need pagination -->
+            <div class="swiper-pagination"></div>
+        </div>
+
+        <script>
+        var swiper = new Swiper('#{{ swiperid }}', {
+            slidesPerView: 4.3,
+            spaceBetween: 100,
+            speed: 100,
+            centeredSlides: true,
+            roundLengths: true,
+            grabCursor: true,
+            resistanceRatio: 0.5,
+            keyboard: {
+                enabled: true,
+                onlyInViewport: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                dynamicBullets: true
+            },
+            navigation: {
+                nextEl: '.swiper-next',
+                prevEl: '.swiper-prev',
+            },
+            breakpoints: {
+                667: {
+                slidesPerView: 1.15
+                },
+                768: {
+                slidesPerView: 2.3
+                },
+                1280: {
+                slidesPerView: 2.1
+                },
+                1400: {
+                slidesPerView: 3.1
+                }
+            }
+
+        });
+
+        $(document).ready(function(){
+            swiper.update();
+        });
+        </script>
+    </div>
+</div>

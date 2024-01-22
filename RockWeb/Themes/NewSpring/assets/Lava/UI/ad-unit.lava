@@ -1,0 +1,137 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
+
+{%- assign id = id | Default:uniqueid -%}
+{%- assign modalid = uniqueid -%}
+
+<style>
+    {% if backgroundcolor != '' %}
+        #{{ id }} {
+            background-color: {{ backgroundcolor }};
+        }
+        {% if foregroundcolor == 'white' %}
+            #{{ id }} blockquote, blockquote footer, blockquote small, blockquote .small {
+                color: #fff;
+            }
+        {% endif %}
+    {% endif %}
+</style>
+
+    <section data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if textalignment == '' %}text-center{% endif %} {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides hard xs-push-half-bottom rounded-lg text-{{ foregroundcolor }}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }} !important;"{% endif %}>
+
+        {% if ratio and ratio != empty %}
+        {% assign trimcopy = 'Yes' %}
+        <div class="ratio-{{ ratio }} sm-ratio-shuare xs-ratio-square">
+            <div class="ratio-item d-flex justify-content-center align-items-{{ contentalignment }} {% if imageurl and imageurl != empty %}{% if textalignment == 'Left' %}floating-left{% elseif textalignment == 'Right' %}floating-right{% endif %}{% endif %} sm-text-center xs-text-center">
+        {% endif %}
+
+                    {% if imageurl != null and imageurl != '' %}
+                        <span class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %}" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image: url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></span>
+                    {% endif %}
+
+                    <div class="bring-forward text-constrained {% if textalignment == 'Center' or imageurl == '' %}mx-auto{% endif %} {% if textalignment == 'Center' and imageurl == '' %}text-center{% elseif textalignment == 'Right' and imageurl != '' %}text-left pull-right{% elseif imageurl == '' and textalignment == 'Right' %}text-center{% endif %} xs-text-center soft-double-top soft-bottom soft-double-sides clearfix xs-soft-top xs-soft-sides xs-hard-bottom clearfix">
+
+                        {% if hideforegroundelements == 'Yes' %}<div class="hidden">{% endif %}
+
+                            <div class="{% if textalignment == 'Center' %}text-center{% endif %}">
+                                {% if label != null and label != '' %}
+                                    <p><small class="label label-default circular sans-serif letter-spacing-condensed">{{ label }}</small></p>
+                                {% endif %}
+
+                                {% if title != null and title != '' %}
+                                    <h2 class="{% if titlesize != null and titlesize != '' %}{{ titlesize }}{% endif %} push-half-bottom">{{ title }}</h2>
+                                {% endif %}
+
+                                {% if subtitle != null and subtitle != '' %}
+                                    <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
+                                {% endif %}
+                            </div>
+
+                            {% assign length = content | Size %}
+                            {% if content and content != empty %}
+                                <div class="{% if imageurl and imageurl != '' and textalignment == 'Center' %}text-center{% endif %}">
+                                    {% if trimcopy == 'Yes' %}
+                                        {{ content | Truncate:140,'...' }}{% if length > 140 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">Read More</a>{% endif %}
+                                    {% else %}
+                                        {{ content }}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                        {% if hideforegroundelements == 'Yes' %}</div>{% endif %}
+
+                        <div class="{% if imageurl == '' or imageurl != '' and textalignment == 'Center' %}text-center{% endif %}">
+
+                            {% if hideforegroundelements == 'Yes' %}<div class="hidden">{% endif %}
+
+                                {% if linkurl and linkurl != empty %}
+                                    <p>
+                                        {[ button linkurl:'{{ linkurl | Trim }}' linktext:'{{ linktext }}' buttontype:'' buttonsize:'' ]}
+                                    </p>
+                                {% endif %}
+
+                                {% if video != null and video != '' %}
+                                    {[ wistiaButton id:'{{ video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'' entitytypeid:'' entityid:'' ]}
+                                {% endif %}
+
+                            {% if hideforegroundelements == 'Yes' %}</div>{% endif %}
+
+                            {% if lava != null and lava != '' %}
+                                {% if hideforegroundelements == 'Yes' %}<div class="soft-ends">{% endif %}
+                                    {{ lava | HtmlDecode }}
+                                {% if hideforegroundelements == 'Yes' %}</div>{% endif %}
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+        {% if ratio and ratio != empty %}
+            </div>
+        </div>
+        {% endif %}
+
+    </section>
+
+{% if contentalignment == 'start' or contentalignment == 'end' and backgroundcolor != '' and gradientamount > 0 %}
+    {% assign gradientorientation = contentalignment |  Replace:'start','0' | Replace:'end','180' %}
+    <style>
+        #{{ id }} .background-cover:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgb(0,0,0);
+            background: linear-gradient({{ gradientorientation | Append:'deg' }}, transparent 0%, {{ backgroundcolor }} 100%);
+            opacity: {{ gradientamount }};
+        }
+    </style>
+{% endif %}
+
+{% if trimcopy == 'Yes' %}
+    {% if length > 140 %}
+    <div class="modal fade" id="{{ modalid }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="text-gray-darker pull-right" data-dismiss="modal" aria-label="Close">
+                        <i class="fa fa-lg fa-times"></i>
+                    </a>
+                    {% if title != null and title != '' %}
+                        <h3 class="flush">{{ title }}</h3>
+                    {% endif %}
+                </div>
+                <div class="modal-body soft hard-bottom">
+                    {{ content }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+{[ endscripturize ]}

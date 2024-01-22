@@ -1,0 +1,24 @@
+{% sql %}
+    SELECT
+        p.[Id]
+        , p.[NickName]
+        , p.[LastName]
+        , p.[Gender]
+        , p.[AnniversaryDate]
+        , MONTH(p.[AnniversaryDate]) 'AnniversaryMonth'
+        , DAY(p.[AnniversaryDate]) 'AnniversaryDay'
+        , (
+            SELECT TOP 1 g.[Id]
+            FROM [Group] g
+            JOIN [GroupMember] gm2 ON gm2.[PersonId] = p.[Id] AND gm2.[GroupId] = g.[Id]
+            WHERE g.[GroupTypeId] = 10
+            ORDER BY g.[Id]
+        ) 'FamilyGroupId'
+    FROM [GroupMember] gm
+    JOIN [Person] p ON gm.[PersonId] = p.[Id]
+    WHERE gm.[GroupId] = 3
+    AND gm.[IsArchived] = 0
+    AND gm.[GroupMemberStatus] = 1
+    AND p.[AnniversaryDate] IS NOT NULL
+{% endsql %}
+{{ results | ToJSON }}
