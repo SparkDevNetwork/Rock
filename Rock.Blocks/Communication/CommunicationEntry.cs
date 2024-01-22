@@ -36,6 +36,10 @@ using Rock.Net;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.ComponentModel.DataAnnotations;
+using System.Web.SessionState;
+using System.Collections;
+using Rock.Lava.RockLiquid.Blocks;
+using System.Web.Http;
 
 namespace Rock.Blocks.Communication
 {
@@ -772,10 +776,9 @@ namespace Rock.Blocks.Communication
         [BlockAction( "Test" )]
         public BlockActionResult Test( CommunicationEntryCommunicationBag bag )
         {
-            var validator = new TestCommunicationValidator();
-            var validationResult = validator.Validate( bag );
+            var validationResult = new TestBlockActionValidator().Validate( bag );
 
-            if ( validator.IsError( validationResult ) )
+            if ( validationResult.IsError() )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
@@ -903,10 +906,10 @@ namespace Rock.Blocks.Communication
         [BlockAction( "Send" )]
         public BlockActionResult Send( CommunicationEntryCommunicationBag bag )
         {
-            var validator = new SendCommunicationValidator();
+            var validator = new SendBlockActionValidator();
             var validationResult = validator.Validate( bag );
 
-            if ( validator.IsError( validationResult ) )
+            if ( validationResult.IsError() )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
@@ -1064,10 +1067,10 @@ namespace Rock.Blocks.Communication
         [BlockAction( "Save" )]
         public BlockActionResult Save( CommunicationEntryCommunicationBag bag )
         {
-            var validator = new SaveCommunicationValidator();
+            var validator = new SaveBlockActionValidator();
             var validationResult = validator.Validate( bag );
 
-            if ( validator.IsError( validationResult ) )
+            if ( validationResult.IsError() )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
@@ -1940,10 +1943,9 @@ namespace Rock.Blocks.Communication
                 }
             }
 
-            var futureSendDate = bag.FutureSendDateTime;
-            if ( futureSendDate.HasValue && futureSendDate.Value.DateTime.CompareTo( RockDateTime.Now ) > 0 )
+            if ( bag.FutureSendDateTime.HasValue )
             {
-                communication.FutureSendDateTime = futureSendDate.Value.DateTime;
+                communication.FutureSendDateTime = bag.FutureSendDateTime.Value.DateTime;
             }
             else
             {
@@ -1999,345 +2001,40 @@ namespace Rock.Blocks.Communication
 
         #region Helper Classes
 
-        private interface IValidate<T>
+        private class TestBlockActionValidator : Validator<CommunicationEntryCommunicationBag>
         {
-            ValidationResult Validate( T value, [CallerMemberName] string argumentName = null );
-        }
-
-        private interface IValidationRule<T>
-        {
-            ValidationResult Validate( T value, [CallerMemberName] string argumentName = null );
-        }
-
-        private class RequiredRule : IValidationRule<object>, IValidationRule<Guid>, IValidationRule<int>, IValidationRule<string>
-        {
-            private string GetErrorMessage( string argumentName )
+            public TestBlockActionValidator()
             {
-                return $"{argumentName} is required";
-            }
-
-            public ValidationResult Validate( object value, [CallerMemberName] string argumentName = null )
-            {
-                if ( value == null )
-                {
-                    return new ValidationResult( GetErrorMessage( argumentName ) );
-                }
-
-                return ValidationResult.Success;
-            }
-
-            public ValidationResult Validate( Guid value, [CallerMemberName] string argumentName = null )
-            {
-                if ( value == null )
-                {
-                    return new ValidationResult( GetErrorMessage( argumentName ) );
-                }
-
-                return ValidationResult.Success;
-            }
-
-            public ValidationResult Validate( int value, [CallerMemberName] string argumentName = null )
-            {
-                if ( value == 0 )
-                {
-                    return new ValidationResult( GetErrorMessage( argumentName ) );
-                }
-
-                return ValidationResult.Success;
-            }
-
-            public ValidationResult Validate( string value, [CallerMemberName] string argumentName = null )
-            {
-                if ( value.IsNullOrWhiteSpace() )
-                {
-                    return new ValidationResult( GetErrorMessage( argumentName ) );
-                }
-
-                return ValidationResult.Success;
+                RuleFor( bag => bag ).WithName( "Communication Information" ).IsRequired();
+                RuleFor( bag => bag.FromName ).IsRequired();
+                RuleFor( bag => bag.FromAddress ).IsRequired();
+                RuleFor( bag => bag.MediumEntityTypeGuid ).IsRequired().WithErrorMessage( "The medium type is required" );
+                RuleFor( bag => bag.FutureSendDateTime ).WithName( "Schedule Send" ).IsNullOrFutureDateTimeOffset();
             }
         }
 
-        private class ObjectRuleBuilder<T, TProp> where TProp : class
+        private class SaveBlockActionValidator : Validator<CommunicationEntryCommunicationBag>
         {
-            private readonly List<IValidate<T>> _rules;
-            private readonly Expression<Func<T, TProp>> _propSelectorExpression;
-            private readonly Func<T, TProp> _propSelector;
-            private readonly string _propertyName;
-
-            public ObjectRuleBuilder( List<IValidate<T>> rules, Expression<Func<T, TProp>> propSelectorExpression )
+            public SaveBlockActionValidator()
             {
-                _rules = rules;
-                _propSelectorExpression = propSelectorExpression;
-                _propSelector = _propSelectorExpression.Compile();
-                _propertyName = ( ( MemberExpression )_propSelectorExpression.Body ).Member.Name;
-            }
-
-            public void Required()
-            {
-                var requiredRule = new RequiredRule();
-                _rules.Add( new DelegatingRule<T, TProp>( ( t, tName ) => requiredRule.Validate( _propSelector( t ), _propertyName ) ) );
+                RuleFor( bag => bag ).WithName( "Communication Information" ).IsRequired();
+                RuleFor( bag => bag.FromName ).IsRequired();
+                RuleFor( bag => bag.FromAddress ).IsRequired();
+                RuleFor( bag => bag.MediumEntityTypeGuid ).IsRequired().WithErrorMessage( "The medium type is required" );
+                RuleFor( bag => bag.FutureSendDateTime ).WithName( "Schedule Send" ).IsNullOrFutureDateTimeOffset();
             }
         }
 
-        private class GuidRuleBuilder<T>
+        private class SendBlockActionValidator : Validator<CommunicationEntryCommunicationBag>
         {
-            private readonly List<IValidate<T>> _rules;
-            private readonly Expression<Func<T, Guid>> _propSelectorExpression;
-            private readonly Func<T, Guid> _propSelector;
-            private readonly string _propertyName;
-
-            public GuidRuleBuilder( List<IValidate<T>> rules, Expression<Func<T, Guid>> propSelectorExpression )
+            public SendBlockActionValidator()
             {
-                _rules = rules;
-                _propSelectorExpression = propSelectorExpression;
-                _propSelector = _propSelectorExpression.Compile();
-                _propertyName = ( ( MemberExpression )_propSelectorExpression.Body ).Member.Name;
-            }
-
-            public void Required()
-            {
-                var requiredRule = new RequiredRule();
-                _rules.Add( new DelegatingRule<T, Guid>( ( t, tName ) => requiredRule.Validate( _propSelector( t ), _propertyName ) ) );
-            }
-        }
-
-        private class StringRuleBuilder<T>
-        {
-            private readonly List<IValidate<T>> _rules;
-            private readonly Expression<Func<T, string>> _propSelectorExpression;
-            private readonly Func<T, string> _propSelector;
-            private readonly string _propertyName;
-
-            public StringRuleBuilder( List<IValidate<T>> rules, Expression<Func<T, string>> propSelectorExpression )
-            {
-                _rules = rules;
-                _propSelectorExpression = propSelectorExpression;
-                _propSelector = _propSelectorExpression.Compile();
-                _propertyName = ( ( MemberExpression )_propSelectorExpression.Body ).Member.Name;
-            }
-
-            public void Required()
-            {
-                var requiredRule = new RequiredRule();
-                _rules.Add( new DelegatingRule<T, Guid>( ( t, tName ) => requiredRule.Validate( _propSelector( t ), _propertyName ) ) );
-            }
-        }
-
-        private class DelegatingRule<T, TProp> : IValidate<T>
-        {
-            private readonly Func<T, string, ValidationResult> _validator;
-
-            public DelegatingRule( Func<T, string, ValidationResult> validator )
-            {
-                _validator = validator;
-            }
-
-            public ValidationResult Validate( T value, [CallerMemberName] string argumentName = null )
-            {
-                return _validator( value, argumentName );
-            }
-        }
-
-        private abstract class CommunicationValidator : IValidate<CommunicationEntryCommunicationBag>
-        {
-            private List<IValidate<CommunicationEntryCommunicationBag>> _rules = new List<IValidate<CommunicationEntryCommunicationBag>>();
-
-            private ObjectRuleBuilder<CommunicationEntryCommunicationBag, TProp> RuleFor<TProp>( Expression<Func<CommunicationEntryCommunicationBag, TProp>> propSelectorExpression ) where TProp : class
-            {
-                return new ObjectRuleBuilder<CommunicationEntryCommunicationBag, TProp>( _rules, propSelectorExpression );
-            }
-
-            private StringRuleBuilder<CommunicationEntryCommunicationBag> RuleFor( Expression<Func<CommunicationEntryCommunicationBag, string>> propSelectorExpression )
-            {
-                return new StringRuleBuilder<CommunicationEntryCommunicationBag>( _rules, propSelectorExpression );
-            }
-
-            private GuidRuleBuilder<CommunicationEntryCommunicationBag> RuleFor( Expression<Func<CommunicationEntryCommunicationBag, Guid>> propSelectorExpression )
-            {
-                return new GuidRuleBuilder<CommunicationEntryCommunicationBag>( _rules, propSelectorExpression );
-            }
-
-            public abstract ValidationResult Validate( CommunicationEntryCommunicationBag bag, [CallerMemberName] string argumentName = null );
-
-            public bool IsError( ValidationResult validationResult )
-            {
-                var validator = new SendValidator();
-                var result = validator.Validate();
-
-                // In SendValidator ctor
-                RuleFor( b => b ).Required();
-
-                // In RuleBuilder<T, TProp>
-                IValidator<T> Required( Expression<Func<T, TProp>> propSelector )
-                {
-                    return new DelegatingRule<T, TProp>( ( b ) => new RequiredRule().Validate( propSelector.Compile()( b ) ) );
-                }
-                // In DelegatingRule<T, TProp> ctor
-                DelegatingRule<T, TProp>( Func<T, ValidationResult>)
-                {
-
-                }
-                
-                RuleFor( b => b.MediumEntityTypeGuid ).Required();
-
-                return validationResult?.ErrorMessage.IsNotNullOrWhiteSpace() == true;
-            }
-            
-            protected bool IsCommunicationNotNull( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
-            {
-                if ( bag == null )
-                {
-                    validationResult = new ValidationResult( "Communication information is required" );
-                    return false;
-                }
-                else
-                {
-                    validationResult = null;
-                    return true;
-                }
-            }
-
-            protected bool IsMediumEntityTypeValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
-            {
-                if ( bag.MediumEntityTypeGuid.IsEmpty() )
-                {
-                    // TODO JMH Should we validate the Guid is associated with a valid medium?
-                    validationResult = new ValidationResult( "The medium type is required" );
-                    return false;
-                }
-                else
-                {
-                    validationResult = null;
-                    return true;
-                }
-            }
-
-            protected bool IsDelaySendUntilValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
-            {
-                var futureSendDateTime = bag.FutureSendDateTime;
-
-                if ( futureSendDateTime.HasValue && futureSendDateTime.Value.CompareTo( RockDateTime.Now ) < 0 )
-                {
-                    validationResult = new ValidationResult( "The Delay Send Until value must be a future date/time" );
-                    return false;
-                }
-                else
-                {
-                    validationResult = null;
-                    return true;
-                }
-            }
-
-            protected bool IsRecipientsValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
-            {
-                if ( bag.Recipients?.Any() != true )
-                {
-                    validationResult = new ValidationResult( "At least one recipient is required" );
-                    return false;
-                }
-                else
-                {
-                    validationResult = null;
-                    return true;
-                }
-            }
-        }
-
-        private class TestCommunicationValidator : CommunicationValidator
-        {
-            public override ValidationResult Validate( CommunicationEntryCommunicationBag bag )
-            {
-                ValidationResult validationResult;
-
-                var requiredRule = new RequiredRule();
-                requiredRule.Validate( bag );
-
-                if ( !IsCommunicationNotNull( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                if ( !IsMediumEntityTypeValid( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                if ( !IsDelaySendUntilValid( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                // Recipients are not required to test the communication.
-
-                // If this line is reached, then all validation passed.
-                // Return a successful validation result.
-                return ValidationResult.Success;
-            }
-        }
-
-        private class SaveCommunicationValidator : CommunicationValidator
-        {
-            public override ValidationResult Validate( CommunicationEntryCommunicationBag bag )
-            {
-                ValidationResult validationResult;
-
-                if ( !IsCommunicationNotNull( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                if ( !IsMediumEntityTypeValid( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                if ( !IsDelaySendUntilValid( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                // Recipients are not required to save the communication.
-
-                // If this line is reached, then all validation passed.
-                // Return a successful validation result.
-                return ValidationResult.Success;
-            }
-        }
-
-        private class ValidationRule
-        {
-
-        }
-
-        private class SendCommunicationValidator : CommunicationValidator
-        {
-            public override ValidationResult Validate( CommunicationEntryCommunicationBag bag )
-            {
-                ValidationResult validationResult;
-
-                if ( IsCommunicationNotNull( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                if ( !IsMediumEntityTypeValid( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                if ( !IsDelaySendUntilValid( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                if ( !IsRecipientsValid( bag, out validationResult ) )
-                {
-                    return validationResult;
-                }
-
-                // If this line is reached, then all validation passed.
-                // Return a successful validation result.
-                return ValidationResult.Success;
+                RuleFor( bag => bag ).WithName( "Communication Information" ).IsRequired();
+                RuleFor( bag => bag.FromName ).IsRequired();
+                RuleFor( bag => bag.FromAddress ).IsRequired();
+                RuleFor( bag => bag.MediumEntityTypeGuid ).WithName( "Medium Type" ).IsRequired();
+                RuleFor( bag => bag.FutureSendDateTime ).WithName( "Schedule Send" ).IsNullOrFutureDateTimeOffset();
+                RuleFor( bag => bag.Recipients ).IsNotEmpty().WithErrorMessage( "At least one recipient is required" );
             }
         }
 
@@ -2366,13 +2063,13 @@ namespace Rock.Blocks.Communication
                 // Save what was entered for FromEmail and FromName in case the template blanks it out.
                 var originalFromEmail = target.FromEmail;
                 var originalFromName = target.FromName;
-                
+
                 Copy( source, target );
 
                 // Resolve lava-enabled fields from the template.
                 target.FromName = source.FromName.ResolveMergeFields( requestContext.GetCommonMergeFields() );
                 target.FromEmail = source.FromEmail.ResolveMergeFields( requestContext.GetCommonMergeFields() );
-                    
+
                 // If FromName was cleared by the template,
                 // then use the original value (similar logic to CommunicationEntryWizard).
                 if ( target.FromName.IsNullOrWhiteSpace() )
@@ -2424,10 +2121,10 @@ namespace Rock.Blocks.Communication
             public static List<ListItemBag> ToListItemBags( IEnumerable<AttachmentDto> attachmentDtos )
             {
                 return attachmentDtos?.Select( s => new ListItemBag
-                    {
-                        Text = s.FileName,
-                        Value = s.Guid.ToString()
-                    } )
+                {
+                    Text = s.FileName,
+                    Value = s.Guid.ToString()
+                } )
                     .ToList();
             }
         }
@@ -2479,10 +2176,10 @@ namespace Rock.Blocks.Communication
             public Guid? CommunicationTemplateGuid { get => _bag.CommunicationTemplateGuid; set => _bag.CommunicationTemplateGuid = value; }
             public bool IsBulkCommunication { get => _bag.IsBulkCommunication; set => _bag.IsBulkCommunication = value; }
             public string FromName { get => _bag.FromName; set => _bag.FromName = value; }
-            public string FromEmail { get => _bag.FromEmail; set => _bag.FromEmail = value; }
-            public string ReplyToEmail { get => _bag.ReplyToEmail; set => _bag.ReplyToEmail = value; }
-            public string CCEmails { get => _bag.CCEmails; set => _bag.CCEmails = value; }
-            public string BCCEmails { get => _bag.BCCEmails; set => _bag.BCCEmails = value; }
+            public string FromEmail { get => _bag.FromAddress; set => _bag.FromAddress = value; }
+            public string ReplyToEmail { get => _bag.ReplyAddress; set => _bag.ReplyAddress = value; }
+            public string CCEmails { get => _bag.CCAddresses; set => _bag.CCAddresses = value; }
+            public string BCCEmails { get => _bag.BCCAddresses; set => _bag.BCCAddresses = value; }
             public string Subject { get => _bag.Subject; set => _bag.Subject = value; }
             public string Message { get => _bag.Message; set => _bag.Message = value; }
             public string MessageMetaData { get => _bag.MessageMetaData; set => _bag.MessageMetaData = value; }
@@ -2537,5 +2234,332 @@ namespace Rock.Blocks.Communication
         }
 
         #endregion
+    }
+
+    internal interface IRuleBuilder<T, TValue, TValidate> where TValidate : IValidate<TValue>
+    {
+        ValidationRule<T> AddRule( TValidate validate );
+    }
+
+    [RockInternal( "1.17.0" )]
+    internal class ValidationRuleBuilder<T, TValue> : IRuleBuilder<T, TValue, IValidate<TValue>>
+    {
+        private readonly List<IValidate<T>> _rules;
+        private readonly Expression<Func<T, TValue>> _valueSelectorExpression;
+        private readonly Func<T, TValue> _valueSelector;
+
+        /// <summary>
+        /// Gets or sets the name of the value to validate.
+        /// <para>Defaults to the name extracted from the expression passed to the constructor.</para>
+        /// </summary>
+        /// <value>
+        /// The name of the value to validate.
+        /// </value>
+        public string Name { get; set; }
+
+        internal ValidationRuleBuilder( List<IValidate<T>> rules, Expression<Func<T, TValue>> valueSelectorExpression )
+        {
+            _rules = rules;
+            _valueSelectorExpression = valueSelectorExpression;
+            _valueSelector = _valueSelectorExpression.Compile();
+            Name = ( ( _valueSelectorExpression.Body as MemberExpression ) ?? ( ( _valueSelectorExpression.Body as UnaryExpression )?.Operand as MemberExpression ) )?.Member.Name ?? (_valueSelectorExpression.Body as ParameterExpression)?.Name;
+        }
+
+        public ValidationRule<T> AddRule( Func<TValue, ValidationResult> validateFunc )
+        {
+            var rule = new ValidationRule<T>( Name, ( T t ) => validateFunc( _valueSelector( t ) ) );
+            _rules.Add( rule );
+            return rule;
+        }
+
+        public ValidationRule<T> AddRule( IValidate<TValue> validate )
+        {
+            var rule = new ValidationRule<T>( Name, ( T t ) => validate.Validate( _valueSelector( t ) ) );
+            _rules.Add( rule );
+            return rule;
+        }
+    }
+
+    [RockInternal( "1.17.0" )]
+    internal static class ValidationExtensions
+    {
+        public static ValidationResult Validate<T>( this T source, Action<Validator<T>> defineRules )
+        {
+            var rulesValidator = new Validator<T>();
+
+            // Define the validation rules.
+            defineRules( rulesValidator );
+
+            // Validate the object.
+            return rulesValidator.Validate( source );
+        }
+
+        internal static bool IsError( this ValidationResult validationResult )
+        {
+            return validationResult?.ErrorMessage.IsNotNullOrWhiteSpace() == true;
+        }
+
+        /// <summary>
+        /// Ensures the value is not null.
+        /// </summary>
+        /// <typeparam name="T">The type to validate.</typeparam>
+        /// <typeparam name="TValue">The type of the value to validate.</typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns>The validation rule.</returns>
+        internal static ValidationRule<T> IsRequired<T, TValue>( this ValidationRuleBuilder<T, TValue> builder ) where TValue : class
+        {
+            var requiredRule = new RequiredRule( builder.Name );
+            return builder.AddRule( ( TValue value ) => requiredRule.Validate( value ) );
+        }
+
+        /// <summary>
+        /// Ensures the Guid is not empty.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <returns></returns>
+        internal static ValidationRule<T> IsRequired<T>( this ValidationRuleBuilder<T, Guid> builder )
+        {
+            return builder.AddRule( new RequiredRule( builder.Name ) );
+        }
+
+        internal static ValidationRule<T> IsRequired<T>( this ValidationRuleBuilder<T, string> builder )
+        {
+            return builder.AddRule( new RequiredRule( builder.Name ) );
+        }
+
+        internal static ValidationRule<T> IsRequired<T>( this ValidationRuleBuilder<T, int> builder )
+        {
+            return builder.AddRule( new RequiredRule( builder.Name ) );
+        }
+
+        internal static ValidationRule<T> IsNullOrFutureDateTimeOffset<T>( this ValidationRuleBuilder<T, DateTimeOffset?> builder )
+        {
+            return builder.AddRule( new IsNullOrFutureDateTimeOffsetRule( builder.Name ) );
+        }
+
+        internal static ValidationRule<T> IsNotEmpty<T, TValue>( this ValidationRuleBuilder<T, TValue> builder ) where TValue : IEnumerable
+        {
+            return builder.AddRule( new NotEmptyRule<TValue>( builder.Name ) );
+        }
+
+        /// <summary>
+        /// Overrides the value name which validation rules use to construct error messages.
+        /// </summary>
+        /// <typeparam name="T">The type to validate.</typeparam>
+        /// <typeparam name="TValue">The type of the value to validate.</typeparam>
+        /// <param name="builder">The builder.</param>
+        /// <param name="valueName">The value name override.</param>
+        /// <returns>The rule builder.</returns>
+        internal static ValidationRuleBuilder<T, TValue> WithName<T, TValue>( this ValidationRuleBuilder<T, TValue> builder, string valueName )
+        {
+            builder.Name = valueName;
+            return builder;
+        }
+
+        /// <summary>
+        /// Overrides the value name which validation rules use to construct error messages.
+        /// </summary>
+        /// <typeparam name="T">The type to validate.</typeparam>
+        /// <typeparam name="TValue">The type of the value to validate.</typeparam>
+        /// <param name="rule">The builder.</param>
+        /// <param name="valueName">The value name override.</param>
+        /// <returns>The rule builder.</returns>
+        internal static ValidationRule<T> WithName<T, TValue>( this ValidationRule<T> rule, string valueName )
+        {
+            rule.Name = valueName;
+            return rule;
+        }
+
+        internal static ValidationRule<T> WithErrorMessage<T>( this ValidationRule<T> rule, string message )
+        {
+            var oldValidator = rule.Validator;
+
+            rule.Validator = ( T t ) =>
+            {
+                var validationResult = oldValidator( t );
+
+                if (validationResult.IsError() )
+                {
+                    validationResult.ErrorMessage = message;
+                }
+
+                return validationResult;
+            };
+
+            return rule;
+        }
+    }
+
+    [RockInternal( "1.17.0" )]
+    internal interface IValidate<in T>
+    {
+        ValidationResult Validate( T value );
+    }
+
+    [RockInternal( "1.17.0" )]
+    internal class RequiredRule :
+        IValidateValue<object>,
+        IValidateValue<Guid>,
+        IValidateValue<int>,
+        IValidateValue<string>
+    {
+        public string Name { get; set; }
+
+        public RequiredRule( string valueName )
+        {
+            Name = valueName;
+        }
+
+        private string GetErrorMessage()
+        {
+            return $"{Name?.Replace(" ", string.Empty).SplitCase()} is required.";
+        }
+
+        public ValidationResult Validate( object value )
+        {
+            if ( value == null )
+            {
+                return new ValidationResult( GetErrorMessage() );
+            }
+
+            return ValidationResult.Success;
+        }
+
+        public ValidationResult Validate( Guid value )
+        {
+            if ( value.IsEmpty() )
+            {
+                return new ValidationResult( GetErrorMessage() );
+            }
+
+            return ValidationResult.Success;
+        }
+
+        public ValidationResult Validate( int value )
+        {
+            if ( value == 0 )
+            {
+                return new ValidationResult( GetErrorMessage() );
+            }
+
+            return ValidationResult.Success;
+        }
+
+        public ValidationResult Validate( string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return new ValidationResult( GetErrorMessage() );
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+    
+    [RockInternal( "1.17.0" )]
+    internal interface INotEmptyRule<in TCollection> : IValidateValue<TCollection> where TCollection : IEnumerable
+    {}
+
+    [RockInternal( "1.17.0" )]
+    internal class NotEmptyRule<TCollection> : INotEmptyRule<TCollection> where TCollection : IEnumerable
+    {
+        public string Name { get; set; }
+
+        public NotEmptyRule( string valueName )
+        {
+            Name = valueName;
+        }
+
+        public ValidationResult Validate( TCollection value )
+        {
+            var enumerator = value?.GetEnumerator();
+
+            if ( enumerator?.MoveNext() != true )
+            {
+                return new ValidationResult( $"{Name?.Replace(" ", string.Empty).SplitCase()} must not be empty." );
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    [RockInternal( "1.17.0" )]
+    internal class IsNullOrFutureDateTimeOffsetRule : IValidateValue<DateTimeOffset?>
+    {
+        public string Name { get; set; }
+
+        public IsNullOrFutureDateTimeOffsetRule( string valueName )
+        {
+            Name = valueName;
+        }
+
+        public ValidationResult Validate( DateTimeOffset? value )
+        {
+            if ( value.HasValue && value.Value.CompareTo( RockDateTime.Now ) < 0 )
+            {
+                return new ValidationResult( $"{Name?.Replace(" ", string.Empty).SplitCase()} must be a future date/time." );
+            }
+            else
+            {
+                return ValidationResult.Success;
+            }
+        }
+    }
+
+    internal interface IValidateValue<in T> : IValidate<T>
+    {
+        /// <summary>
+        /// Gets or sets the name of the value to validate.
+        /// </summary>
+        /// <value>
+        /// The name of the value to validate.
+        /// </value>
+        string Name { get; set; }
+    }
+
+    [RockInternal( "1.17.0" )]
+    internal class ValidationRule<T> : IValidateValue<T>
+    {
+        /// <inheritdoc/>
+        public string Name { get; set; }
+
+        internal Func<T, ValidationResult> Validator { get; set; }
+
+        public ValidationRule( string name, Func<T, ValidationResult> validator )
+        {
+            Name = name;
+            Validator = validator ?? throw new ArgumentNullException( nameof( validator ) );
+        }
+
+        public ValidationResult Validate( T value )
+        {
+            return Validator( value );
+        }
+    }
+
+    [RockInternal( "1.17.0" )]
+    internal class Validator<T> : IValidate<T>
+    {
+        private readonly List<IValidate<T>> _rules = new List<IValidate<T>>();
+
+        public ValidationRuleBuilder<T, TValue> RuleFor<TValue>( Expression<Func<T, TValue>> valueSelectorExpression )
+        {
+            return new ValidationRuleBuilder<T, TValue>( _rules, valueSelectorExpression );
+        }
+
+        public virtual ValidationResult Validate( T bag )
+        {
+            foreach (var rule in _rules )
+            {
+                var validationResult = rule.Validate( bag );
+                if ( validationResult.IsError() )
+                {
+                    return validationResult;
+                }
+            }
+
+            return ValidationResult.Success;
+        }
     }
 }

@@ -29,11 +29,11 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing the communication information for the Communication Entry block. */
 export type CommunicationEntryCommunicationBag = {
-    /** Gets or sets the BCC emails. */
-    bccEmails?: string | null;
+    /** Gets or sets the BCC email addresses. */
+    bccAddresses?: string | null;
 
-    /** Gets or sets the cc emails. */
-    ccEmails?: string | null;
+    /** Gets or sets the cc email addresses. */
+    ccAddresses?: string | null;
 
     /** Gets or sets the communication unique identifier. */
     communicationGuid?: Guid | null;
@@ -44,8 +44,8 @@ export type CommunicationEntryCommunicationBag = {
     /** Gets or sets the email attachment binary files. */
     emailAttachmentBinaryFiles?: ListItemBag[] | null;
 
-    /** Gets or sets from email. */
-    fromEmail?: string | null;
+    /** Gets or sets from email address. */
+    fromAddress?: string | null;
 
     /** Gets or sets from name. */
     fromName?: string | null;
@@ -89,8 +89,8 @@ export type CommunicationEntryCommunicationBag = {
     /** Gets or sets the recipients. */
     recipients?: CommunicationEntryRecipientBag[] | null;
 
-    /** Gets or sets the reply to email. */
-    replyToEmail?: string | null;
+    /** Gets or sets the reply to email address. */
+    replyAddress?: string | null;
 
     /** Gets or sets the SMS attachment binary file ids. */
     smsAttachmentBinaryFileIds?: number[] | null;

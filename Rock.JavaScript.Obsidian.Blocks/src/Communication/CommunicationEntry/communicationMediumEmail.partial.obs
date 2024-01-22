@@ -163,7 +163,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, Ref, computed, nextTick, onMounted, ref, watchEffect } from "vue";
+    import { PropType, Ref, computed, nextTick, onMounted, ref, watch, watchEffect } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
     import { Nullable } from "./types.partial";
@@ -242,11 +242,11 @@
     const internalIsBulkCommunication = ref<boolean>(!!props.communication?.isBulkCommunication);
     const templateGuid = ref<string>(props.communication?.communicationTemplateGuid ?? "");
     const fromName = ref<string>(props.communication?.fromName ?? "");
-    const fromAddress = ref<string>(props.communication?.fromEmail ?? "");
-    const replyToAddress = ref<string>(props.communication?.replyToEmail ?? "");
+    const fromAddress = ref<string>(props.communication?.fromAddress ?? "");
+    const replyToAddress = ref<string>(props.communication?.replyAddress ?? "");
     const isLavaAllowed = ref<boolean>(true);
-    const ccAddresses = ref<string>(props.communication?.ccEmails ?? "");
-    const bccAddresses = ref<string>(props.communication?.bccEmails ?? "");
+    const ccAddresses = ref<string>(props.communication?.ccAddresses ?? "");
+    const bccAddresses = ref<string>(props.communication?.bccAddresses ?? "");
     // Should CC and BCC fields if the loaded communication has either value.
     const isCcShown = ref<boolean>(!!(ccAddresses.value || bccAddresses));
     const subject = ref<string>(props.communication?.subject ?? "");
@@ -572,18 +572,18 @@
             internalDisabled.value = true;
             const bag: CommunicationEntryCommunicationBag = {
                 isBulkCommunication: isBulkCommunication.value,
-                bccEmails: bccAddresses.value,
-                ccEmails: ccAddresses.value,
+                bccAddresses: bccAddresses.value,
+                ccAddresses: ccAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationTemplateGuid: templateGuid.value,
                 emailAttachmentBinaryFiles: attachments.value ?? [],
-                fromEmail: fromAddress.value,
+                fromAddress: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: props.mediumEntityTypeGuid,
                 message: message.value,
                 recipients: recipients.value,
-                replyToEmail: replyToAddress.value,
+                replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value
             };
@@ -610,18 +610,18 @@
 
             const bag: CommunicationEntryCommunicationBag = {
                 isBulkCommunication: isBulkCommunication.value,
-                bccEmails: bccAddresses.value,
-                ccEmails: ccAddresses.value,
+                bccAddresses: bccAddresses.value,
+                ccAddresses: ccAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationTemplateGuid: templateGuid.value,
                 emailAttachmentBinaryFiles: attachments.value,
-                fromEmail: fromAddress.value,
+                fromAddress: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: props.mediumEntityTypeGuid,
                 message: message.value,
                 recipients: recipients.value,
-                replyToEmail: replyToAddress.value,
+                replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value,
             };
@@ -650,18 +650,18 @@
 
             const bag: CommunicationEntryCommunicationBag = {
                 isBulkCommunication: isBulkCommunication.value,
-                bccEmails: bccAddresses.value,
-                ccEmails: ccAddresses.value,
+                bccAddresses: bccAddresses.value,
+                ccAddresses: ccAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationTemplateGuid: templateGuid.value,
                 emailAttachmentBinaryFiles: attachments.value ?? [],
-                fromEmail: fromAddress.value,
+                fromAddress: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: props.mediumEntityTypeGuid,
                 message: message.value,
                 recipients: recipients.value,
-                replyToEmail: replyToAddress.value,
+                replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value
             };
@@ -705,7 +705,7 @@
     });
 
     // Populate fields whenever the template is changed.
-    watchEffect(async () => {
+    watch(templateGuid, async () => {
         if (templateGuid.value) {
             console.log(`Template changed: ${templateGuid.value}`);
 
@@ -721,20 +721,18 @@
                 if (template.fromName) {
                     fromName.value = template.fromName;
                 }
-                if (template.fromEmail) {
-                    fromAddress.value = template.fromEmail;
+                if (template.fromAddress) {
+                    fromAddress.value = template.fromAddress;
                 }
 
-                replyToAddress.value = template.replyToEmail ?? "";
-                ccAddresses.value = template.ccEmails ?? "";
-                bccAddresses.value = template.bccEmails ?? "";
+                replyToAddress.value = template.replyAddress ?? "";
+                ccAddresses.value = template.ccAddresses ?? "";
+                bccAddresses.value = template.bccAddresses ?? "";
                 subject.value = template.subject ?? "";
                 attachments.value = template.emailAttachmentBinaryFiles ?? [];
                 message.value = template.message ?? "";
             }
         }
-    }, {
-        flush: "post"
     });
 
     //#endregion

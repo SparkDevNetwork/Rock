@@ -14,9 +14,12 @@
                                     :items="mediums" />
 
                 <NotificationBox v-if="validationSummaryMessage"
-                                 id="ValidationSummary"
                                  heading="Please correct the following:"
-                                 alertType="validation">{{ validationSummaryMessage }}</NotificationBox>
+                                 alertType="validation">
+                    <ul>
+                        <li>{{ validationSummaryMessage }}</li>
+                    </ul>
+                </NotificationBox>
 
                 <NotificationBox v-if="false"
                                  id="nbInvalidTransport"

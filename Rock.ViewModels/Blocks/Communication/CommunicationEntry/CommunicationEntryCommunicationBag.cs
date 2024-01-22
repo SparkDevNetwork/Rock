@@ -61,36 +61,36 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         public string FromName { get; set; }
 
         /// <summary>
-        /// Gets or sets from email.
+        /// Gets or sets from email address.
         /// </summary>
         /// <value>
-        /// From email.
+        /// From email address.
         /// </value>
-        public string FromEmail { get; set; }
+        public string FromAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the reply to email.
+        /// Gets or sets the reply to email address.
         /// </summary>
         /// <value>
-        /// The reply to email.
+        /// The reply to email address.
         /// </value>
-        public string ReplyToEmail { get; set; }
+        public string ReplyAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the cc emails.
+        /// Gets or sets the cc email addresses.
         /// </summary>
         /// <value>
-        /// The cc emails.
+        /// The cc email addresses.
         /// </value>
-        public string CCEmails { get; set; }
+        public string CCAddresses { get; set; }
 
         /// <summary>
-        /// Gets or sets the BCC emails.
+        /// Gets or sets the BCC email addresses.
         /// </summary>
         /// <value>
-        /// The BCC emails.
+        /// The BCC email addresses.
         /// </value>
-        public string BCCEmails { get; set; }
+        public string BCCAddresses { get; set; }
 
         /// <summary>
         /// Gets or sets the subject.
