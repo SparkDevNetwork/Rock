@@ -800,10 +800,20 @@ namespace Rock
 
             if ( currentPersonOverride != null )
             {
-                context.SetMergeField( "CurrentPerson", currentPersonOverride );
+                context.SetInternalField( "CurrentPerson", currentPersonOverride );
             }
 
-            context.SetMergeFields( mergeObjects );
+            foreach ( var kvp in mergeObjects )
+            {
+                if ( kvp.Key.StartsWith( LavaHelper.InternalMergeFieldPrefix ) )
+                {
+                    context.SetInternalField( kvp.Key.Substring( LavaHelper.InternalMergeFieldPrefix.Length ), kvp.Value );
+                }
+                else
+                {
+                    context.SetMergeField( kvp.Key, kvp.Value );
+                }
+            }
 
             var parameters = LavaRenderParameters.WithContext( context );
             parameters.ShouldEncodeStringsAsXml = encodeStringOutput;
