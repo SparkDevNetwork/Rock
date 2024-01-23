@@ -2707,6 +2707,9 @@ namespace RockWeb.Blocks.WorkFlow
 
                 buttonMergeFields.Add( "ButtonClick", buttonClickScript );
 
+                string buttonCancelScript = "handleWorkflowCancelButtonClick();";
+                buttonMergeFields.Add( "ButtonCancel", buttonCancelScript );
+
                 var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName );
                 buttonMergeFields.Add( "ButtonLink", buttonLinkScript );
 

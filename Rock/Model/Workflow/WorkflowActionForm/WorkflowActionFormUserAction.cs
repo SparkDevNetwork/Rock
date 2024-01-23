@@ -113,7 +113,7 @@ namespace Rock.Model
 
             // Add other buttons that have been configured to disable validation.
             // In accordance with the Rock documentation, button validation can be disabled
-            // by replacing the text "{{ ButtonClick }}" with "return true;" in the Button HTML Attribute.
+            // by replacing the text "{{ ButtonClick }}" with "{{ ButtonCancel }}" in the Button HTML Attribute.
             // Add any buttons with this configuration to the collection of Cancel buttons.
             var buttonType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.BUTTON_HTML );
 
@@ -126,7 +126,7 @@ namespace Rock.Model
                     buttonHtml = buttonHtml.ToLower().Replace( " ", "" );
 
                     if ( !buttonHtml.Contains( "{{buttonclick}}" )
-                         && buttonHtml.Contains( "onclick=\"returntrue;\"" ) )
+                         && buttonHtml.Contains( "onclick=\"{{buttoncancel}}\"" ) )
                     {
                         cancelButtonList.Add( buttonDefinedValue.Guid );
                     }

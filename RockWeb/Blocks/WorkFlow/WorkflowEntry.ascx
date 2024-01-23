@@ -131,10 +131,24 @@
                     }
                 }
 
+                var buttons = document.querySelectorAll("div.workflow-entry-panel div.actions a.btn");
+                buttons.forEach(e => e.setAttribute("disabled", "true"));
+
                 return true;
             }
+            function handleWorkflowCancelButtonClick() {
+                var buttons = document.querySelectorAll("div.workflow-entry-panel div.actions a.btn");
+                buttons.forEach(e => e.setAttribute("disabled", "true"));
 
+                return true;
+            }
         </script>
+
+        <style>
+            .btn.disabled, .btn[disabled], fieldset[disabled] .btn {
+                pointer-events: none;
+            }
+        </style>
 
     </ContentTemplate>
 </asp:UpdatePanel>
