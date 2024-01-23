@@ -50,6 +50,9 @@ namespace Rock.Client
         public int? CheckedOutByPersonAliasId { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.Event.CheckInStatus CheckInStatus { get; set; }
+
+        /// <summary />
         public int? DeclineReasonValueId { get; set; }
 
         /// <summary />
@@ -167,6 +170,7 @@ namespace Rock.Client
             this.CampusId = source.CampusId;
             this.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
             this.CheckedOutByPersonAliasId = source.CheckedOutByPersonAliasId;
+            this.CheckInStatus = source.CheckInStatus;
             this.DeclineReasonValueId = source.DeclineReasonValueId;
             this.DeviceId = source.DeviceId;
             this.DidAttend = source.DidAttend;

@@ -72,7 +72,7 @@ You can view an online version of this email here:
         Key = AttributeKey.BulkEmailThreshold,
         Order = 5 )]
 
-    [EmailField( "Request Unsubscribe E-mail",
+    [EmailField( "Request Unsubscribe Email",
         Description = "Used for the 'Mailto Method' of the List-Unsubscribe email header. When blank, the global 'Organization Email' setting is used.",
         IsRequired = false,
         Key = AttributeKey.RequestUnsubscribeEmail,

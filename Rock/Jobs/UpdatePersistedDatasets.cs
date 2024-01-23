@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -48,19 +49,13 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            StringBuilder results = new StringBuilder();
-            int updatedDatasetCount = 0;
-            var errors = new List<string>();
-            List<Exception> exceptions = new List<Exception>();
+            var warnings = new List<string>();
             List<PersistedDataset> datasetsToBeUpdated;
-            int totalDatasetCount = 0;
+            int updatedDatasetCount = 0;
 
             using ( var rockContext = new RockContext() )
             {
                 var currentDateTime = RockDateTime.Now;
-
-                // Count of all persisted datasets in the system
-                totalDatasetCount = new PersistedDatasetService( rockContext ).Queryable().Count();
 
                 // Fetch datasets that are active, not expired, and include their associated schedules
                 var persistedDatasetQuery = new PersistedDatasetService( rockContext )
@@ -94,49 +89,43 @@ namespace Rock.Jobs
                 foreach ( var persistedDataset in datasetsToBeUpdated )
                 {
                     var name = persistedDataset.Name;
+                    this.UpdateLastStatusMessage( FormatStatusMessage( "Updating", name, "success" ) );
                     try
                     {
-                        this.UpdateLastStatusMessage( $"Updating {name}" );
                         persistedDataset.UpdateResultData();
-                        rockContext.SaveChanges();
+                        this.UpdateLastStatusMessage( FormatStatusMessage( "Updating", name, "success" ) );
                         updatedDatasetCount++;
                     }
                     catch ( Exception ex )
                     {
-                        var errorMessage = $"An error occurred while trying to update persisted dataset '{name}' so it was skipped. Error: {ex.Message}";
-                        errors.Add( errorMessage );
-                        exceptions.Add( new Exception( errorMessage, ex ) );
+                        var warningMessage = $"Ran the job with Warnings: {name} was run but could not update due to the following error: {ex.Message}";
+                        warnings.Add( warningMessage );
                         ExceptionLogService.LogException( ex, null );
+                        this.UpdateLastStatusMessage( FormatStatusMessage( "Warning", name, "warning" ) );
+                    }
+                    finally
+                    {
+                        rockContext.SaveChanges();
                     }
                 }
             }
 
-            // Format the result message
-            FormatResultMessage( results, updatedDatasetCount, datasetsToBeUpdated.Count, totalDatasetCount, errors );
+            var resultMessage = new StringBuilder();
+            resultMessage.AppendLine( $"<i class='fa fa-circle text-success'></i> Updated {updatedDatasetCount} dataset{( updatedDatasetCount == 1 ? "" : "s" )}" );
 
-            if ( exceptions.Any() )
+            // If there are warnings, concatenate them into the final result.
+            if ( warnings.Any() )
             {
-                throw new RockJobWarningException( "UpdatePersistedDatasets completed with warnings", new AggregateException( exceptions ) );
+                resultMessage.AppendLine(string.Join( "<br>", warnings ));
             }
+            this.Result = resultMessage.ToString();
         }
 
-        private void FormatResultMessage( StringBuilder results, int updatedCount, int eligibleToUpdateCount, int totalCount, List<string> errors )
+        private string FormatStatusMessage( string action, string datasetName, string statusType )
         {
-            results.AppendLine( $"<i class='fa fa-circle text-success'></i> Updated {updatedCount} {"persisted dataset".PluralizeIf( updatedCount != 1 )}" );
-            int notUpdatedCount = eligibleToUpdateCount - updatedCount;
-            if ( notUpdatedCount > 0 )
-            {
-                results.AppendLine( $"<i class='fa fa-circle text-warning'></i> Skipped {notUpdatedCount} {"up-to-date/inactive dataset".PluralizeIf( notUpdatedCount != 1 )}" );
-            }
-
-            results.AppendLine( $"<i class='fa fa-circle text-info'></i> Total datasets in system: {totalCount}" );
-
-            foreach ( var error in errors )
-            {
-                results.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
-            }
-
-            results.ToString();
+            string iconClass = statusType == "success" ? "fa-circle text-success" :
+                               statusType == "warning" ? "fa-circle text-warning" : "";
+            return $"<i class='fa {iconClass}'></i> {action}: {datasetName}";
         }
     }
 }

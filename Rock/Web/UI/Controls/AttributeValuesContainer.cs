@@ -20,7 +20,6 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using System.Windows.Media.Animation;
 
 using Rock.Attribute;
 using Rock.Web.Cache;

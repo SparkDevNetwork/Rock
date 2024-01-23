@@ -20,7 +20,7 @@
                           v-model="child.familyRoleGuid"
                           :disabled="disabled"
                           :items="config.childRelationshipTypes ?? undefined"
-                          label="Relationship to Adult"
+                          :label="`Relationship to ${adultLabel}`"
                           :rules="requiredRules"
                           :showBlankItem="false" />
         </div>
@@ -220,6 +220,16 @@
             required: true
         },
 
+        childLabel: {
+            type: String as PropType<string>,
+            default: "Child"
+        },
+
+        adultLabel: {
+            type: String as PropType<string>,
+            default: "Adult"
+        },
+
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -240,7 +250,7 @@
     //#region Computed Values
 
     const caption = computed<string>(() => {
-        return toTitleCase(`${getNumberAsOrdinalString(props.childNumber)} Child`);
+        return toTitleCase(`${getNumberAsOrdinalString(props.childNumber)} ${props.childLabel}`);
     });
 
     /*

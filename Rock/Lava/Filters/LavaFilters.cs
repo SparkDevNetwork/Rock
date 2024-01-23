@@ -45,6 +45,7 @@ using Rock.Enums.Core;
 using Rock.Lava.Helpers;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Utilities;
 using Rock.Utility;
@@ -5023,18 +5024,25 @@ namespace Rock.Lava
         private static Person GetCurrentPerson( ILavaRenderContext context )
         {
             // First check for a person override value included in lava context
-            var currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
-
-            if ( currentPerson == null )
+            if ( context.GetMergeField( "CurrentPerson" ) is Person currentPerson )
             {
-                var httpContext = System.Web.HttpContext.Current;
-                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
-                }
+                return currentPerson;
             }
 
-            return currentPerson;
+            // Next check the RockRequestContext in the lava context.
+            if ( context.GetInternalField( "RockRequestContext" ) is RockRequestContext currentRequest )
+            {
+                return currentRequest.CurrentPerson;
+            }
+
+            // Finally check the HttpContext.
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+            {
+                return httpContext.Items["CurrentPerson"] as Person;
+            }
+
+            return null;
         }
 
         /// <summary>

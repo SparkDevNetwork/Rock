@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,15 +56,21 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes )
                         {
-                            groupType.PreSelected = groupType.LastCheckIn.HasValue && groupType.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0;
+                            groupType.PreSelected = groupType.LastCheckIn.HasValue
+                                && groupType.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0
+                                && groupType.AvailableForSchedule?.Any() == true;
 
                             foreach ( var group in groupType.Groups )
                             {
-                                group.PreSelected = group.LastCheckIn.HasValue && group.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0;
+                                group.PreSelected = group.LastCheckIn.HasValue
+                                    && group.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0
+                                    && group.AvailableForSchedule?.Any() == true;
 
                                 foreach ( var location in group.Locations )
                                 {
-                                    location.PreSelected = location.LastCheckIn.HasValue && location.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0;
+                                    location.PreSelected = location.LastCheckIn.HasValue
+                                        && location.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0
+                                        && location.AvailableForSchedule?.Any() == true;
 
                                     foreach ( var schedule in location.Schedules )
                                     {

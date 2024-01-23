@@ -13,10 +13,11 @@
                  entityTypeName="Schedule"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="config.options?.canDelete"
+                 :isDeleteVisible="isDeleteable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :footerSecondaryActions="footerActions"
                  :additionalDeleteMessage="additionalDeleteMessage"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -42,6 +43,7 @@
     import EditPanel from "./ScheduleDetail/editPanel.partial.obs";
     import ViewPanel from "./ScheduleDetail/viewPanel.partial.obs";
     import { onConfigurationValuesChanged, getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useReloadBlock, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./ScheduleDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -144,6 +146,10 @@
         return config.isEditable === true;
     });
 
+    const isDeleteable = computed((): boolean => {
+        return (config.options?.canDelete ?? false) && isEditable.value;
+    });
+
     const options = computed((): ScheduleDetailOptionsBag => {
         return config.options ?? {
             canDelete: false,
@@ -154,6 +160,19 @@
 
     const additionalDeleteMessage = computed((): string => {
         return config.options?.hasAttendance ? "This schedule has attendance history. If you delete this, the attendance history will no longer be associated with the schedule." : "";
+    });
+
+    const footerActions = computed((): PanelAction[] => {
+        if(panelMode.value !== DetailPanelMode.View || !isEditable.value) {
+            return [];
+        }
+        return [
+        {
+            iconCssClass: "fa fa-clone",
+            title: "Copy Schedule",
+            type: "default",
+            handler: onCopy
+        }];
     });
 
     // #endregion
@@ -218,7 +237,6 @@
 
         if (result.isSuccess && result.data && result.data.entity) {
             scheduleEditBag.value = result.data.entity;
-
             return true;
         }
         else {
@@ -276,6 +294,21 @@
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save schedule.";
 
         return false;
+    }
+
+    /**
+     * Called when the copy icon on the detail block has been clicked.
+     */
+     async function onCopy(): Promise<void> {
+        errorMessage.value = "";
+        var result = await invokeBlockAction<ScheduleBag | string>("Copy", {
+                    key: scheduleViewBag.value?.idKey ?? ""
+        });
+        if (result.isSuccess && result.data && typeof result.data === "string") {
+            window.location.href = makeUrlRedirectSafe(result.data);
+            return;
+        }
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to copy schedule.";
     }
 
     // #endregion

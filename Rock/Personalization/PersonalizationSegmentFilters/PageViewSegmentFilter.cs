@@ -325,37 +325,37 @@ namespace Rock.Personalization.SegmentFilters
 
             if ( PageUrlComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                ApplyComparisonFilter( ref pageViewsInteractionsQuery, PageUrlComparisonType, PageUrlComparisonValue, i => i.InteractionData );
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, PageUrlComparisonType, PageUrlComparisonValue, nameof( Interaction.InteractionData ) );
             }
 
             if ( PageReferrerComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                ApplyComparisonFilter( ref pageViewsInteractionsQuery, PageReferrerComparisonType, PageReferrerComparisonValue, i => i.ChannelCustomIndexed1 );
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, PageReferrerComparisonType, PageReferrerComparisonValue, nameof( Interaction.ChannelCustomIndexed1 ) );
             }
 
             if ( SourceComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                ApplyComparisonFilter( ref pageViewsInteractionsQuery, SourceComparisonType, SourceComparisonValue, i => i.Source );
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, SourceComparisonType, SourceComparisonValue, nameof( Interaction.Source ) );
             }
 
             if ( MediumComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                ApplyComparisonFilter( ref pageViewsInteractionsQuery, MediumComparisonType, MediumComparisonValue, i => i.Medium );
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, MediumComparisonType, MediumComparisonValue, nameof( Interaction.Medium ) );
             }
 
             if ( CampaignComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                ApplyComparisonFilter( ref pageViewsInteractionsQuery, CampaignComparisonType, CampaignComparisonValue, i => i.Campaign );
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, CampaignComparisonType, CampaignComparisonValue, nameof( Interaction.Campaign ) );
             }
 
             if ( ContentComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                ApplyComparisonFilter( ref pageViewsInteractionsQuery, ContentComparisonType, ContentComparisonValue, i => i.Content );
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, ContentComparisonType, ContentComparisonValue, nameof( Interaction.Content ) );
             }
 
             if ( TermComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                ApplyComparisonFilter( ref pageViewsInteractionsQuery, TermComparisonType, TermComparisonValue, i => i.Term );
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, TermComparisonType, TermComparisonValue, nameof( Interaction.Term ) );
             }
 
             var personAliasQuery = personAliasService.Queryable();
@@ -372,35 +372,21 @@ namespace Rock.Personalization.SegmentFilters
             return result;
         }
 
-        private void ApplyComparisonFilter<T>( ref IQueryable<Interaction> interactionQuery, ComparisonType comparisonType, string comparisonValue, Func<Interaction, T> interactionPropertyGetter )
+        /// <summary>
+        /// Generates an expression that compares the specified property name to the specified comparison value and applies it as a filter.
+        /// </summary>
+        /// <param name="interactionQuery">The interaction query.</param>
+        /// <param name="comparisonType">Type of the comparison.</param>
+        /// <param name="comparisonValue">The comparison value.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        private void ApplyComparisonFilter( ref IQueryable<Interaction> interactionQuery, ComparisonType comparisonType, string comparisonValue, string propertyName )
         {
-            switch ( comparisonType )
-            {
-                case ComparisonType.EqualTo:
-                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().ToUpper() == comparisonValue.ToUpper() );
-                    break;
-                case ComparisonType.NotEqualTo:
-                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().ToUpper() != comparisonValue.ToUpper() );
-                    break;
-                case ComparisonType.StartsWith:
-                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().StartsWith( comparisonValue ) );
-                    break;
-                case ComparisonType.Contains:
-                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().Contains( comparisonValue ) );
-                    break;
-                case ComparisonType.DoesNotContain:
-                    interactionQuery = interactionQuery.Where( i => !interactionPropertyGetter( i ).ToString().Contains( comparisonValue ) );
-                    break;
-                case ComparisonType.IsBlank:
-                    interactionQuery = interactionQuery.Where( i => string.IsNullOrWhiteSpace( interactionPropertyGetter( i ).ToString() ) );
-                    break;
-                case ComparisonType.IsNotBlank:
-                    interactionQuery = interactionQuery.Where( i => !string.IsNullOrWhiteSpace( interactionPropertyGetter( i ).ToString() ) );
-                    break;
-                case ComparisonType.EndsWith:
-                    interactionQuery = interactionQuery.Where( i => interactionPropertyGetter( i ).ToString().EndsWith( comparisonValue ) );
-                    break;
-            }
+            var parameterExpression = Expression.Parameter( typeof( Interaction ), "i" );
+            var constantExpression = Expression.Constant( comparisonValue );
+            var propertyExpression = Expression.Property( parameterExpression, propertyName );
+            var whereExpression = ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+
+            interactionQuery = interactionQuery.Where( parameterExpression, whereExpression );
         }
     }
 }
