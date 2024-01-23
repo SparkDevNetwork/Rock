@@ -480,9 +480,18 @@ namespace Rock.Model
                     )
                 );
 
-            if ( !includeNegativeTransactions )
+            // Some gateways have used negative transactions to offset Rock transaction balances without linking the negative transaction
+            // as a refund for the original.  In this case, we need to allow negative transactions to be included, but the Where() clause
+            // immediately above this section has already accounted for negative transactions which are correctly marked as refunds, so
+            // we always need to exclude those.
+            if ( includeNegativeTransactions )
             {
-                // Remove transactions with $0 or negative amounts. If those are refunds, they have already been factored in.
+                // Exclude refunds with negative amounts.
+                query = query.Where( t => t.RefundDetails == null || t.TransactionDetails.Any( d => d.Amount > 0M ) );
+            }
+            else
+            {
+                // Exclude all negative amounts.
                 query = query.Where( t => t.TransactionDetails.Any( d => d.Amount > 0M ) );
             }
 
