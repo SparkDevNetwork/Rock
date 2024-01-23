@@ -76,14 +76,6 @@ namespace Rock.Blocks.Finance
 
         #region Keys
 
-        /// <summary>
-        /// Keys to use for Attributes
-        /// </summary>
-        private static class AttributeKey
-        {
-            public const string BatchNames = "BatchNames";
-        }
-
         private static class PageParameterKey
         {
             public const string BatchId = "BatchId";
@@ -101,6 +93,7 @@ namespace Rock.Blocks.Finance
             public const string TransactionMatchingPage = "TransactionMatchingPage";
             public const string AuditPage = "AuditPage";
             public const string IsAccountTotalsHidden = "IsAccountTotalsHidden";
+            public const string BatchNames = "BatchNames";
         }
         #endregion Keys
 
