@@ -366,6 +366,15 @@ namespace Rock.Blocks.Crm
         Category = CategoryKey.AdultFields,
         Order = 14 )]
 
+    [TextField(
+        "Adult Label",
+        Key = AttributeKey.AdultLabel,
+        Description = "The label that should be used when referring to adults on the form. Please provide this in the singular form.",
+        Category = CategoryKey.AdultFields,
+        DefaultValue = "Adult",
+        IsRequired = false,
+        Order = 15 )]
+
     #endregion
 
     #region Child Category
@@ -479,6 +488,16 @@ namespace Rock.Blocks.Crm
         DefaultValue = "Hide",
         Category = CategoryKey.ChildFields,
         Order = 10 )]
+
+    [TextField(
+        "Child Label",
+        Key = AttributeKey.ChildLabel,
+        Description = "The label that should be used when referring to children on the form. Please provide this in the singular form.",
+        DefaultValue = "Child",
+        IsRequired = false,
+        Category = CategoryKey.ChildFields,
+        Order = 11 )]
+
     #endregion
 
     #region Child Relationship Category
@@ -559,6 +578,7 @@ namespace Rock.Blocks.Crm
             public const string CreateAccountDescription = "CreateAccountDescription";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
+            public const string AdultLabel = "AdultLabel";
 
             public const string ChildSuffix = "ChildSuffix";
             public const string ChildGender = "ChildGender";
@@ -571,6 +591,7 @@ namespace Rock.Blocks.Crm
             public const string ChildProfilePhoto = "ChildProfilePhoto";
             public const string ChildRaceOption = "ChildRaceOption";
             public const string ChildEthnicityOption = "ChildEthnicityOption";
+            public const string ChildLabel = "ChildLabel";
 
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
@@ -1930,6 +1951,8 @@ namespace Rock.Blocks.Crm
                 ChildRaceField = GetFieldBag( AttributeKey.ChildRaceOption ),
                 ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption ),
                 DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                AdultLabel = GetAttributeValue( AttributeKey.AdultLabel ),
+                ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };
 
             using ( var rockContext = new RockContext() )

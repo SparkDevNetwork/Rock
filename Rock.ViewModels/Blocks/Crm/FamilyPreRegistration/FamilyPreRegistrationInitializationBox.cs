@@ -239,5 +239,21 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
         /// </value>
         public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
+        /// The label that should be used when referring to adults on the form.
+        /// </summary>
+        /// <value>
+        /// The adult label.
+        /// </value>
+        public string AdultLabel { get; set; }
+
+        /// <summary>
+        /// The label that should be used when referring to children on the form.
+        /// </summary>
+        /// <value>
+        /// The adult label.
+        /// </value>
+        public string ChildLabel { get; set; }
     }
 }
