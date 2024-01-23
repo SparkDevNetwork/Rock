@@ -117,6 +117,7 @@
     <Compile Include="Core\DeviceDetail.cs" />
     <Compile Include="Core\DeviceList.cs" />
     <Compile Include="Core\FollowingSuggestionTypeList.cs" />
+    <Compile Include="Core\LocationList.cs" />
     <Compile Include="Core\Notes.cs" />
     <Compile Include="Core\NoteTypeList.cs" />
     <Compile Include="Core\NoteWatchDetail.cs" />
