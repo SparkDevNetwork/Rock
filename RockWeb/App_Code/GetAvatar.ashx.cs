@@ -155,6 +155,7 @@ namespace RockWeb
                 {
                     // Ignore the exception
                     context.ClearError();
+                    context.ApplicationInstance.CompleteRequest();
                 }
                 else
                 {
