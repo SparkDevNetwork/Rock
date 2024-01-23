@@ -62,6 +62,9 @@ export type PersistedDatasetBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets a value indicating whether this instance is used by the system. */
+    isSystem?: boolean;
+
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 

@@ -82,5 +82,10 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
         /// Whether the Account Totals section is configured to be hidden.
         /// </summary>
         public bool IsAccountTotalsHidden { get; set; }
+
+        /// <summary>
+        /// The Defined Type Guid for the Batch Name Defined Type Picker if the Defined Type is specified.
+        /// </summary>
+        public string BatchNameDefinedTypeGuid { get; set; }
     }
 }
