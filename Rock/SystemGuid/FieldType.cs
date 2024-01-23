@@ -554,6 +554,11 @@ namespace Rock.SystemGuid
         public const string PHONE_NUMBER = "6B1908EC-12A2-463A-A7BD-970CE0FAF097";
 
         /// <summary>
+        /// Prayer Request field type
+        /// </summary>
+        public const string PRAYER_REQUEST = "E34A29A4-3787-4CF5-9C17-08EFB9E2FD23";
+
+        /// <summary>
         /// Range Slider field type
         /// </summary>
         public const string RANGE_SLIDER = "C8B6C51A-DD7C-4B75-8604-F0580697088E";
