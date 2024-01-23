@@ -834,7 +834,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 foreach ( var expectedOutputString in expectedOutputs )
                 {
-                    var expectedOutput = expectedOutputString;
+                    var expectedOutput = expectedOutputString ?? string.Empty;
 
                     // If ignoring whitespace, strip it from the comparison string.
                     if ( options.IgnoreWhiteSpace )
