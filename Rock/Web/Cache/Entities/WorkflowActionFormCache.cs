@@ -113,6 +113,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryMobilePhoneEntryOption { get; private set; }
 
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntrySmsOptInEntryOption" />
+        [DataMember]
+        public WorkflowActionFormShowHideOption PersonEntrySmsOptInEntryOption { get; private set; }
+
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryBirthdateEntryOption"/>
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntryBirthdateEntryOption { get; private set; }
@@ -322,7 +326,9 @@ namespace Rock.Web.Cache
             var actionForm = this;
 
             FormPersonEntrySettings formPersonEntrySettings;
-            if ( workflowFormBuilderTemplate != null )
+
+            // Use the settings from the template if PersonEntry is enabled on the template (those settings override the form).
+            if ( workflowFormBuilderTemplate != null && workflowFormBuilderTemplate.AllowPersonEntry )
             {
                 formPersonEntrySettings = workflowFormBuilderTemplate.PersonEntrySettingsJson?.FromJsonOrNull<Rock.Workflow.FormBuilder.FormPersonEntrySettings>();
             }
@@ -342,6 +348,7 @@ namespace Rock.Web.Cache
                     HideIfCurrentPersonKnown = actionForm.PersonEntryHideIfCurrentPersonKnown,
                     MaritalStatus = actionForm.PersonEntryMaritalStatusEntryOption,
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption,
+                    SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption,
                     RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
@@ -361,10 +368,12 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public bool GetAllowPersonEntry( WorkflowFormBuilderTemplateCache workflowFormBuilderTemplate )
         {
-            if ( workflowFormBuilderTemplate != null )
+            // If there is a form builder template that has 'Person Entry Settings' enabled, then 'person entry' is allowed
+            if ( workflowFormBuilderTemplate != null && workflowFormBuilderTemplate.AllowPersonEntry )
             {
-                return workflowFormBuilderTemplate.AllowPersonEntry;
+                return true;
             }
+            // Otherwise the form gets to decide if 'person entry' is enabled.
             else
             {
                 return this.AllowPersonEntry;
@@ -414,6 +423,7 @@ namespace Rock.Web.Cache
             this.PersonEntryRaceEntryOption = workflowActionForm.PersonEntryRaceEntryOption;
             this.PersonEntryEthnicityEntryOption = workflowActionForm.PersonEntryEthnicityEntryOption;
             this.PersonEntryMobilePhoneEntryOption = workflowActionForm.PersonEntryMobilePhoneEntryOption;
+            this.PersonEntrySmsOptInEntryOption = workflowActionForm.PersonEntrySmsOptInEntryOption;
             this.PersonEntryPersonAttributeGuid = workflowActionForm.PersonEntryPersonAttributeGuid;
             this.PersonEntryPostHtml = workflowActionForm.PersonEntryPostHtml;
             this.PersonEntryPreHtml = workflowActionForm.PersonEntryPreHtml;

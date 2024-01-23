@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -114,6 +114,15 @@ namespace Rock.Model
         public int? InteractionSessionLocationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the interaction channel identifier.
+        /// </summary>
+        /// <value>
+        /// The interaction channel identifier.
+        /// </value>
+        [DataMember]
+        public int? InteractionChannelId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Interaction Count.
         /// </summary>
         /// <value>
@@ -158,6 +167,14 @@ namespace Rock.Model
         }
         private ICollection<Interaction> _interactions;
 
+        /// <summary>
+        /// Gets or sets the interaction channel.
+        /// </summary>
+        /// <value>
+        /// The interaction channel.
+        /// </value>
+        public virtual InteractionChannel InteractionChannel { get; set; }
+
         #endregion
     }
 
@@ -175,6 +192,7 @@ namespace Rock.Model
         {
             this.HasOptional( r => r.DeviceType ).WithMany().HasForeignKey( r => r.DeviceTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.InteractionSessionLocation ).WithMany( r => r.InteractionSessions ).HasForeignKey( r => r.InteractionSessionLocationId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.InteractionChannel ).WithMany( r => r.InteractionSessions ).HasForeignKey( r => r.InteractionChannelId ).WillCascadeOnDelete( false );
         }
     }
 

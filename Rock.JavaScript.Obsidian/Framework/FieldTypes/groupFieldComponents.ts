@@ -17,7 +17,7 @@
 
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import GroupPicker from "@Obsidian/Controls/groupPicker";
+import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({

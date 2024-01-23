@@ -50,7 +50,8 @@
                                         <Rock:DataTextBox ID="tbQualifierValueAlt" runat="server"  onkeypress="javascript:clearQualifierData()" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="EntityTypeQualifierValue" Label="To" Help="Optional: Provide a specific value for the property to filter on.  If left blank it means the previous value must be different than its new value (i.e. changed)." />
                                     </div>
                                 </div>
-                                <Rock:DataTextBox ID="tbQualifierValue" runat="server" onkeypress="javascript:clearAltQualifierData()" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="EntityTypeQualifierValue" Label="Or value is" Help="Optional: Provide a specific value for the property to filter on." />                            </div>
+                                <Rock:DataTextBox ID="tbQualifierValue" runat="server" onkeypress="javascript:clearAltQualifierData()" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="EntityTypeQualifierValue" Label="Or value is" Help="Optional: Provide a specific value for the property to filter on." />
+                            </div>
                         </div>
                     </div>
                 </fieldset>

@@ -169,15 +169,15 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbGlobalRepeatPreventionDuration" Label="Global Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent any alert from being triggered within the provided number of days from a previous alteration." />
+                                <Rock:NumberBox ID="nbGlobalRepeatPreventionDuration" Label="Global Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent any alert from being triggered within the provided number of days from a previous alert." />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbGratitudeRepeatPreventionDuration" Label="Gratitude Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a gratitude alert from being triggered within the provided number of days from a previous alteration." />
+                                <Rock:NumberBox ID="nbGratitudeRepeatPreventionDuration" Label="Gratitude Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a gratitude alert from being triggered within the provided number of days from a previous alert." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbFollowupRepeatPreventionDuration" Label="Follow-up Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a follow-up alert from being triggered within the provided number of days from a previous alteration." />
+                                <Rock:NumberBox ID="nbFollowupRepeatPreventionDuration" Label="Follow-up Repeat Prevention Duration" runat="server" AppendText="days" CssClass="input-width-md" Help="This will prevent a follow-up alert from being triggered within the provided number of days from a previous alert." />
                             </div>
                         </div>
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
@@ -239,7 +239,7 @@
                         <Rock:DaysOfWeekPicker ID="dwpDaysToRunAlertType" runat="server" Label="Days to Run" RepeatDirection="Horizontal" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbRepeatPreventionDuration" runat="server" Label="Repeat Prevention Duration" AppendText="days" ValidationGroup="vgAlertDetails" Help="The number of days between triggering the same alert. Blank means that the same trigger can occur on each occrrence if not global settings exist." />
+                        <Rock:NumberBox ID="nbRepeatPreventionDuration" runat="server" Label="Repeat Prevention Duration" AppendText="days" ValidationGroup="vgAlertDetails" Help="The number of days between triggering the same alert. Blank means that the same trigger can occur on each occurrence if no global settings exist." />
                     </div>
                 </div>
                 <div class="panel panel-section">
@@ -262,7 +262,7 @@
                         <hr>
                         <div class="row">
                             <div class="col-md-5">
-                                <Rock:NumberBox ID="nbFrequencySensitivityScale" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Frequency Sensitivity Scale" ValidationGroup="vgAlertDetails" Help="The number of standard devivations below or above the mean the gift must be to trigger the alert. A value of 2 would classify the extreme 5% as outliers." />
+                                <Rock:NumberBox ID="nbFrequencySensitivityScale" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Frequency Sensitivity Scale" ValidationGroup="vgAlertDetails" Help="The number of standard deviations below or above the mean the gift must be to trigger the alert. A value of 2 would classify the extreme 5% as outliers." />
                             </div>
                             <div class="col-md-7 text-sm">
                                 <asp:Literal ID="lFrequencySensitivityScaleHelp" runat="server" />
@@ -293,9 +293,9 @@
                     </div>
 
                     <div class="panel-body">
-                        <Rock:WorkflowTypePicker ID="wtpLaunchWorkflow" runat="server" Label="Launch Workflow of Type" ValidationGroup="vgAlertDetails" Help="If matched, a workflow of the provided type will be launched setting the authorized person as the initiator and setting the attribute with the key of 'FinancialTransactionId' is it exists" />
+                        <Rock:WorkflowTypePicker ID="wtpLaunchWorkflow" runat="server" Label="Launch Workflow of Type" ValidationGroup="vgAlertDetails" Help="If matched, the selected workflow will be launched setting the workflow 'Initiator' as the financial transaction's 'authorized' person, and setting the attribute value with key  'FinancialTransactionId' (if it exists) to the financial transaction's Id." />
                         <Rock:RockDropDownList ID="ddlConnectionType" runat="server" Label="Connection Type" AutoPostBack="true" ValidationGroup="vgAlertDetails" OnSelectedIndexChanged="ddlConnectionType_SelectedIndexChanged" CssClass="input-width-xxl" />
-                        <Rock:RockDropDownList ID="ddlConnectionOpportunity" runat="server" Label="Connection Opportunity" ValidationGroup="vgAlertDetails" CssClass="input-width-xxl" Help="If matched, will create a new connection request with the authorized person as the requestor and setting the attribute with the key 'FinancialTransactionId' if it exists." />
+                        <Rock:RockDropDownList ID="ddlConnectionOpportunity" runat="server" Label="Connection Opportunity" ValidationGroup="vgAlertDetails" CssClass="input-width-xxl" Help="If matched, will create a new connection request with the giver as the requestor and setting the attribute with the key 'FinancialTransactionId' if it exists. The Connection Request's Campus would be set from the Campus Filter defined above if it is provided. Otherwise the primary campus of the giver would be used in the Connection Request." />
                         <Rock:RockDropDownList ID="ddlDonorSystemCommunication" runat="server" Label="Send Donor Communication From Template" Help="If matched, a new communication will be sent to the person authorizing the gift using the provided communication template." ValidationGroup="vgAlertDetails" />
                         <Rock:RockDropDownList ID="ddlAccountParticipantSystemCommunication" runat="server" Label="Send Account Participant Communication From Template" Help="If matched, a new communication will be sent to those following the Financial Account with the Purpose Key of 'Giving Alerts'. This action does require that an Account Filter be configured above for the alert." ValidationGroup="vgAlertDetails" />
                         <Rock:RockCheckBox ID="cbSendBusEvent" runat="server" Label="Send Bus Event" Help="If matched, will send an event via the Event Bus to notify external systems." ValidationGroup="vgAlertDetails" />

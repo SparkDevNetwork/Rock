@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         :rules="tagnameValidators" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <CategoryPicker v-model="category"
+                                label="Category"
+                                :multiple="false"
+                                :entityTypeGuid="tagEntityTypeGuid" />
+
+                <RadioButtonList v-model="scope"
+                                 label="Scope"
+                                 horizontal
+                                 :items="scopeItems" />
+
+                <PersonPicker v-if="isPersonalScope"
+                              v-model="owner"
+                              label="Owner" />
+
+                <TextBox v-model="iconCssClass"
+                         label="Icon Css Class" />
+
+            </div>
+
+            <div class="col-md-6">
+
+                <EntityTypePicker v-model="entityType"
+                                  :multiple="false"
+                                  label="Entity Type" />
+
+                <TextBox v-model="entityTypeQualifierColumn"
+                         label="Entity Type Qualifier Column" />
+
+                <TextBox v-model="entityTypeQualifierValue"
+                         label="Entity Type Qualifier Value" />
+
+                <ColorPicker v-model="backgroundColor"
+                             label="Background Color"
+                             help="The background color to use when displaying tag." />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, computed } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { TagBag } from "@Obsidian/ViewModels/Blocks/Core/TagDetail/tagBag";
+    import { TagDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/TagDetail/tagDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidationResult, ValidationRule } from "@Obsidian/Types/validationRules";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<TagBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<TagDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: TagBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const category = propertyRef(props.modelValue.category ?? null, "CategoryId");
+    const scope = ref(props.modelValue.ownerPersonAlias ? "personal" : "organizational");
+    const owner = propertyRef(props.modelValue.ownerPersonAlias ?? undefined, "OwnerPersonAliasId");
+    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
+    const entityType = propertyRef(props.modelValue.entityType ?? null, "EntityTypeId");
+    const entityTypeQualifierColumn = propertyRef(props.modelValue.entityTypeQualifierColumn ?? "", "EntityTypeQualifierColumn");
+    const entityTypeQualifierValue = propertyRef(props.modelValue.entityTypeQualifierValue ?? "", "EntityTypeQualifierValue");
+    const backgroundColor = propertyRef(props.modelValue.backgroundColor ?? "", "BackgroundColor");
+    const personal = "personal";
+    const organizational = "organizational";
+    const scopeItems: ListItemBag[] = [
+        {
+            value: organizational,
+            text: "Organizational"
+        },
+        {
+            value: personal,
+            text: "Personal"
+        }
+    ];
+    const tagEntityTypeGuid = EntityType.Tag;
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, category, iconCssClass, entityType, entityTypeQualifierColumn, entityTypeQualifierValue, backgroundColor, owner];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isPersonalScope = computed((): boolean => {
+        const isPersonal = scope.value === personal;
+        return isPersonal;
+    });
+
+    const tagNameBlackListRegex = computed((() => props.options.tagNameBlackListRegex ? new RegExp(props.options.tagNameBlackListRegex) : null));
+
+    // #endregion
+
+    // #region Functions
+
+    const tagnameValidators: ValidationRule[] = [
+        "required",
+        (value: unknown, _params: unknown[] | undefined): ValidationResult => {
+            if (typeof value !== "string" || !value?.trim()) {
+                return "Name is required.";
+            }
+
+            if (tagNameBlackListRegex.value && !tagNameBlackListRegex.value.test(value)) {
+                return "Invalid characters have been entered for the tag name. Angle brackets, percent, and ampersand are not allowed.";
+            }
+
+            return true;
+        }
+    ];
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(category, props.modelValue.category ?? {});
+        updateRefValue(owner, props.modelValue.ownerPersonAlias ?? undefined);
+        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
+        updateRefValue(entityType, props.modelValue.entityType ?? {});
+        updateRefValue(entityTypeQualifierColumn, props.modelValue.entityTypeQualifierColumn ?? "");
+        updateRefValue(entityTypeQualifierValue, props.modelValue.entityTypeQualifierValue ?? "");
+        updateRefValue(backgroundColor, props.modelValue.backgroundColor ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, scope, ...propRefs], () => {
+        const newValue: TagBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            category: category.value,
+            ownerPersonAlias: scope.value === organizational ? null : owner.value,
+            iconCssClass: iconCssClass.value,
+            entityType: entityType.value,
+            entityTypeQualifierColumn: entityTypeQualifierColumn.value,
+            entityTypeQualifierValue: entityTypeQualifierValue.value,
+            backgroundColor: backgroundColor.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

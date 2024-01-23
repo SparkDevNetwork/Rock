@@ -33,10 +33,16 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Security Role (Group)
     /// Stored as Group.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SECURITY_ROLE )]
     public class SecurityRoleFieldType : FieldType, IEntityReferenceFieldType
     {
+        #region Configuration
+
+        private const string CLIENT_VALUES = "values";
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -63,6 +69,33 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            var roles = new GroupService( new RockContext() )
+                .Queryable()
+                .Where( g => g.IsSecurityRole )
+                .OrderBy( t => t.Name )
+                .ToListItemBagList();
+
+            configurationValues[CLIENT_VALUES] = roles.ToCamelCaseJson( false, true );
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( CLIENT_VALUES );
+
+            return configurationValues;
+        }
 
         #endregion
 

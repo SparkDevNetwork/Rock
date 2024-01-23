@@ -21,11 +21,18 @@
 // </copyright>
 //
 
-import { AccountEntryStep } from "@Obsidian/Enums/Blocks/Security/AccountEntry/accountEntryStep";
+import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
+import { AccountEntryRegisterResponseBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterResponseBox";
 
 /** A box that contains the required information to render an account entry block. */
 export type AccountEntryInitializationBox = {
+    /** Gets or sets the person details if there is an identified user. */
+    accountEntryPersonInfoBag?: AccountEntryPersonInfoBag | null;
+
+    /** Gets or sets the account entry step box. */
+    accountEntryRegisterStepBox?: AccountEntryRegisterResponseBox | null;
+
     /** Gets or sets a value indicating whether phone numbers shown. */
     arePhoneNumbersShown: boolean;
 
@@ -34,6 +41,9 @@ export type AccountEntryInitializationBox = {
 
     /** The caption when a confirmation email was sent to a selected, duplicate person. */
     confirmationSentCaption?: string | null;
+
+    /** Gets or sets a value indicating whether captcha support should be disabled for this block. */
+    disableCaptchaSupport: boolean;
 
     /** The email address of the registering user. */
     email?: string | null;
@@ -59,6 +69,9 @@ export type AccountEntryInitializationBox = {
     /** Gets or sets a value indicating whether username must be an email. */
     isEmailRequiredForUsername: boolean;
 
+    /** Indicating whether the Gender dropdown is shown. */
+    isGenderPickerShown: boolean;
+
     /** Gets or sets a value indicating whether the mobile number is hidden. */
     isMobileNumberHidden: boolean;
 
@@ -79,9 +92,6 @@ export type AccountEntryInitializationBox = {
 
     /** The registration state. */
     state?: string | null;
-
-    /** The account entry step. */
-    step?: AccountEntryStep | null;
 
     /** The success caption. */
     successCaption?: string | null;

@@ -180,7 +180,7 @@ namespace Rock.Core.NotificationMessageTypes
             var key = $"number-{phoneNumber.Id}";
 
             var messageTypeCache = NotificationMessageTypeCache.All()
-                .Where( nmt => nmt.Key == key )
+                .Where( nmt => nmt.EntityTypeId == _componentEntityTypeId.Value && nmt.Key == key )
                 .FirstOrDefault();
 
             if ( messageTypeCache != null )
@@ -208,9 +208,7 @@ namespace Rock.Core.NotificationMessageTypes
 
             rockContext.SaveChanges();
 
-            return NotificationMessageTypeCache.All()
-                .Where( nmt => nmt.Key == key )
-                .FirstOrDefault();
+            return NotificationMessageTypeCache.Get( messageType.Id );
         }
 
         #endregion
@@ -218,11 +216,33 @@ namespace Rock.Core.NotificationMessageTypes
         #region Methods
 
         /// <inheritdoc/>
+        public override NotificationMessageMetadataBag GetMetadata( NotificationMessage message )
+        {
+            var messageData = message.ComponentDataJson.FromJsonOrNull<MessageData>();
+            var url = messageData != null ? $"~/GetAvatar.ashx?PersonId={messageData.PersonId}" : "~/GetAvatar.ashx?Style=Icon";
+
+            return new NotificationMessageMetadataBag
+            {
+                PhotoUrl = url,
+                IconCssClass = "fa fa-comment-o",
+                Color = "#16C98D"
+            };
+        }
+
+        /// <inheritdoc/>
         public override NotificationMessageActionBag GetActionForNotificationMessage( NotificationMessage message, SiteCache site, RockRequestContext context )
         {
             var siteTerm = site.SiteType == SiteType.Web ? "web site" : "application";
-            int? conversationPageId = 12; // = site.ConversationPageId
+            int? conversationPageId = null;
             var messageData = message.ComponentDataJson.FromJsonOrNull<MessageData>();
+
+            if ( site.SiteType == SiteType.Mobile )
+            {
+                var siteOptions = site.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalSiteSettings>();
+
+                conversationPageId = siteOptions?.SmsConversationPageId;
+            }
+
             var conversationPage = conversationPageId.HasValue ? PageCache.Get( conversationPageId.Value ) : null;
 
             if ( conversationPage == null )
@@ -230,7 +250,7 @@ namespace Rock.Core.NotificationMessageTypes
                 return new NotificationMessageActionBag
                 {
                     Type = NotificationMessageActionType.ShowMessage,
-                    Message = $"This {siteTerm} has not been configured to SMS conversations."
+                    Message = $"This {siteTerm} has not been configured for SMS conversations."
                 };
             }
 

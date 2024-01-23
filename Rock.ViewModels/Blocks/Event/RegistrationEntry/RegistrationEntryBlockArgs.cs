@@ -25,7 +25,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockArgs Interface
     /// </summary>
-    public interface IRegistrationEntryBlockArgs : IViewModel
+    public interface IRegistrationEntryBlockArgs
     {
         /// <summary>
         /// Gets or sets the registration unique identifier.
@@ -160,6 +160,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The amount to pay now.
         /// </value>
         public decimal AmountToPayNow { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the solved captcha is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the solved captcha is valid; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCaptchaValid { get; set; }
     }
 
     /// <summary>
@@ -214,6 +222,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The fee item quantities.
         /// </value>
         public Dictionary<Guid, int> FeeItemQuantities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of a previously-signed signature document that should be reused for this registrant.
+        /// </summary>
+        /// <value>
+        /// The unique identifier of a previously-signed signature document that should be reused for this registrant.
+        /// </value>
+        public Guid? ExistingSignatureDocumentGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the encoded signature data.

@@ -53,7 +53,7 @@ namespace Rock.Badge.Component
 
     [BooleanField(
         "Adult Attendance Type",
-        Description = "Determine if the individual attendance be shown instead of the family attendance while displaying the family attendance badge",
+        Description = "When viewing an adult profile with this badge, should the graph reflect the weekend attendance of anyone in the family, or just their own? Most churches don't have weekend attendance records for adults, in which case you should leave this set to \"Family\". Child profiles will always display only individual attendance in the graph.",
         TrueText = "Individual",
         FalseText = "Family",
         IsRequired = false,

@@ -246,7 +246,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string PrimaryColor
         {
-            get => ViewState[nameof( PrimaryColor )] as string ?? "var(--brand-primary)";
+            get => ViewState[nameof( PrimaryColor )] as string ?? "var(--color-primary)";
             set => ViewState[nameof( PrimaryColor )] = value;
         }
 
@@ -619,15 +619,20 @@ namespace Rock.Web.UI.Controls
         /// <param name="page">The page.</param>
         public static void AddLinksForMediaToPage( string mediaUrl, Page page )
         {
-            RockPage.AddScriptLink( page, "~/Scripts/plyr/3.6.8/plyr.min.js", false );
-            RockPage.AddCSSLink( page, "~/Scripts/plyr/3.6.8/plyr.min.css", false );
+            /*
+                6/16/2023 - JPH
 
-            if ( mediaUrl != null && mediaUrl.IndexOf( ".m3u8", StringComparison.OrdinalIgnoreCase ) != -1 )
-            {
-                RockPage.AddScriptLink( page, "~/Scripts/plyr/3.6.8/hls.min.js", false );
-            }
+                Make sure we always "fingerprint" these resources so we can control the browser's caching behavior.
+                The libraries represented within the plyr.js file (Plyr, hls.js) are doing the heavy lifting for
+                us with respect to video streaming compatibility with modern browsers, and we might need to be able
+                to instruct individuals how to manually deploy hotfixes by overwriting the final JS file. Without
+                fingerprinting in place, the browser will cache this file far too aggressively.
 
-            RockPage.AddScriptLink( page, page.ResolveUrl( "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js" ) );
+                Reason: Issue #5445: v15 media player endless buffering with tracking through video
+                (https://github.com/SparkDevNetwork/Rock/issues/5445)
+            */
+            RockPage.AddScriptLink( page, "~/Scripts/Rock/plyr.js", true );
+            RockPage.AddScriptLink( page, "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js", true );
         }
 
         /// <inheritdoc/>
@@ -695,7 +700,7 @@ namespace Rock.Web.UI.Controls
             };
 
             // Update the options with any values from the MediaElement.
-            _playerOptions.UpdateValuesFromMedia( MediaElementId, null, AutoResumeInDays, CombinePlayStatisticsInDays, rockPage?.CurrentPerson );
+            _playerOptions.UpdateValuesFromMedia( MediaElementId, null, AutoResumeInDays, CombinePlayStatisticsInDays, rockPage?.CurrentPerson, rockPage?.CurrentVisitor?.Id );
 
             // Add the CSS and JavaScript links to the page.
             AddLinksForMediaToPage( _playerOptions.MediaUrl, Page );
@@ -727,6 +732,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
+            // add ace.js on demand only when there will be a codeeditor rendered
+            if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "plyr-include", ResolveUrl( "~/Scripts/Rock/plyr.js" ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "mediaplayer-include", ResolveUrl( "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js" ) );
+            }
+
             // Render the container for everything.
             writer.AddAttribute( HtmlTextWriterAttribute.Id, ClientID );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-media-player" + CssClass );

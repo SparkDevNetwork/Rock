@@ -11,8 +11,8 @@
 </template>
 
 <script setup lang="ts">
-    import TextBox from "@Obsidian/Controls/textBox";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { standardFilterProps } from "@Obsidian/Core/Controls/grid";
     import { TextFilterMethod, TextFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

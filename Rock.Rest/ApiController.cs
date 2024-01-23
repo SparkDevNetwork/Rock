@@ -434,7 +434,17 @@ namespace Rock.Rest
                                 try
                                 {
                                     var int32 = Convert.ToInt32( currentValue );
-                                    property.SetValue( targetModel, int32 );
+                                
+                                    if ( !propertyType.IsEnum )
+                                    {
+                                        property.SetValue( targetModel, int32 );
+                                    }
+                                    else
+                                    {
+                                        // Convert the int to the enum type per https://stackoverflow.com/a/54627581
+                                        var convertedValue = Enum.ToObject( propertyType, int32 );
+                                        property.SetValue( targetModel, convertedValue, null );
+                                    }
                                 }
                                 catch ( OverflowException )
                                 {
@@ -849,20 +859,21 @@ namespace Rock.Rest
              *
              */
 
-            Guid? guid = Service.GetGuid( id );
+            var guid = Service.GetGuid( id );
             if ( !guid.HasValue )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            string cookieName = "Rock_Context";
-            string typeName = typeof( T ).FullName;
+            // Set a sitewide context cookie.
+            var cookieName = RockRequestContext.GetContextCookieName( false );
+            var typeName = typeof( T ).FullName;
 
-            string identifier =
+            var identifier =
                 typeName + "|" +
                 id.ToString() + ">" +
                 guid.ToString();
-            string contextValue = Rock.Security.Encryption.EncryptString( identifier );
+            var contextValue = System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( identifier ) );
 
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext == null )
@@ -870,10 +881,26 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
-            var contextCookie = httpContext.Request.Cookies[cookieName] ?? new System.Web.HttpCookie( cookieName );
-            contextCookie.Values[typeName] = contextValue;
-            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
-            Rock.Web.UI.RockPage.AddOrUpdateCookie( contextCookie );
+            try
+            {
+                var contextCookie = httpContext.Request.Cookies[cookieName] ?? new System.Web.HttpCookie( cookieName );
+                var contextItems = contextCookie.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+                contextItems.AddOrReplace( typeName, contextValue );
+
+                contextCookie.Value = contextItems.ToJson();
+                contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+
+                Rock.Web.UI.RockPage.AddOrUpdateCookie( contextCookie );
+            }
+            catch
+            {
+                // Intentionally ignore exception in case JSON [de]serialization fails.
+                var errorResponse = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    $"Unable to set context for ID {id}." );
+                throw new HttpResponseException( errorResponse );
+            }
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }

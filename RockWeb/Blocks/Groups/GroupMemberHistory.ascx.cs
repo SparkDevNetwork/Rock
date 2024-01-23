@@ -404,7 +404,7 @@ namespace RockWeb.Blocks.Groups
 
             string timelineLavaTemplate = this.GetAttributeValue( "TimelineLavaTemplate" );
 
-            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, EntityTypeCache.Get<Rock.Model.GroupMember>(), groupMemberId, null, additionalMergeFields );
+            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, EntityTypeCache.Get<Rock.Model.GroupMember>(), groupMemberId, null, additionalMergeFields, CurrentPerson );
             lTimelineHtml.Text = "<div class='panel-body'>" + timelineHtml + "</div>";
         }
 

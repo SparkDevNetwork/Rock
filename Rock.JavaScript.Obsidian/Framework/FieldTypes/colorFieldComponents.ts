@@ -15,8 +15,8 @@
 // </copyright>
 //
 import { computed, defineComponent, ref, watch } from "vue";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import ColorPicker from "@Obsidian/Controls/colorPicker";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -141,7 +141,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

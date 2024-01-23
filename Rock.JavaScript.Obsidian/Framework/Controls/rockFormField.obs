@@ -1,0 +1,135 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<script lang="ts">
+
+    // NOTE: This file can be converted to final SFC form after upgrading Vue to
+    // 3.3 so we can use the defineOptions() to disable inheritence.
+    import { standardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { useFormState } from "@Obsidian/Utility/form";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { normalizeRules, validateValue } from "@Obsidian/ValidationRules";
+    import { computed, defineComponent, onBeforeUnmount, ref, watch } from "vue";
+    import RockLabel from "./rockLabel.obs";
+
+    export default defineComponent({
+        name: "RockFormField",
+
+        inheritAttrs: false,
+
+        components: {
+            RockLabel
+        },
+
+        compilerOptions: {
+            whitespace: "preserve"
+        },
+
+        props: {
+            modelValue: {
+                required: true
+            },
+
+            /**
+             * If the modelValue is an object or array and its properties get changed, normally
+             * that doesn't trigger a re-validation. If you enable this, it'll watch more deeply for
+             * changes, therefore being able to trigger on any change to the modelValue. Only use
+             * this when you actually need to because it can potentially cause performance issues
+             * and unintended side effects.
+             */
+            watchDeep: {
+                type: Boolean,
+                default: false
+            },
+
+            name: {
+                type: String,
+                required: true
+            },
+
+            disableLabel: {
+                type: Boolean,
+                default: false
+            },
+
+            ...standardRockFormFieldProps
+        },
+
+        setup(props) {
+            /** The reactive state of the form. */
+            const formState = useFormState();
+
+            /** The unique identifier used to identify this form field. */
+            const uniqueId = `rock-${props.name}-${newGuid()}`;
+
+            /** The internal value being tracked for the field. */
+            const internalValue = ref<unknown>("");
+
+            /** The internal rules we will be used for calculations. */
+            const internalRules = computed(() => normalizeRules(props.rules));
+
+            /** Determines if this field is marked as required. */
+            const isRequired = computed((): boolean => internalRules.value.includes("required"));
+
+            /** Holds the current error message for this form field. */
+            const currentError = ref("");
+
+            /** Any error classes to be applied to the field depending on the current state. */
+            const errorClasses = computed((): string[] => {
+                if (!formState || formState.submitCount < 1) {
+                    return [];
+                }
+
+                return currentError.value !== "" ? ["has-error"] : [];
+            });
+
+            /** The text label to display to the user which identifies this field. */
+            const fieldLabel = computed((): string => {
+                return props.validationTitle || props.label;
+            });
+
+            // Watch for changes to the modelValue and update our internalValue.
+            watch(() => [props.modelValue, props.rules], () => {
+                internalValue.value = props.modelValue;
+
+                const errors = validateValue(internalValue.value, props.rules);
+
+                if (errors.length > 0) {
+                    currentError.value = errors[0];
+                    formState?.setError(uniqueId, fieldLabel.value, currentError.value);
+                }
+                else {
+                    currentError.value = "";
+                    formState?.setError(uniqueId, fieldLabel.value, "");
+                }
+            }, {
+                immediate: true,
+                deep: props.watchDeep
+            });
+
+            // If we are removed from the DOM completely, clear the error before we go.
+            onBeforeUnmount(() => {
+                currentError.value = "";
+                formState?.setError(uniqueId, fieldLabel.value, "");
+            });
+
+            return {
+                errorClasses,
+                fieldLabel,
+                formState,
+                isRequired,
+                uniqueId,
+            };
+        },
+
+        template: `
+<slot name="pre" />
+<div v-if="label || help || disableLabel" class="form-group" :class="[formGroupClasses, isRequired && !isRequiredIndicatorHidden ? 'required' : '', errorClasses]">
+    <RockLabel :for="uniqueId" :help="help" v-if="!disableLabel">
+        {{label}} <slot name="besideLabel" />
+    </RockLabel>
+    <slot v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
+</div>
+<slot v-else v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
+<slot name="post" />
+`
+    });
+</script>

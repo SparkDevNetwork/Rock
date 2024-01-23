@@ -251,7 +251,7 @@ namespace Rock.Utility.Settings.Giving
 
         /// <summary>
         /// Gets or sets the time period within which transactions will be considered as a single giving event,
-        /// for the purposes of calculating giving frequency and consistency. If not specified, every transactions
+        /// for the purposes of calculating giving frequency and consistency. If not specified, every transaction
         /// is regarded as a unique giving event.
         /// </summary>
         /// <value>A period of time in hours.</value>

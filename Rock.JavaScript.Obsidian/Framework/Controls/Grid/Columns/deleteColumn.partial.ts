@@ -18,7 +18,12 @@
 import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import DeleteCell from "../Cells/deleteCell.partial.obs";
+import { IGridState } from "@Obsidian/Types/Controls/grid";
 
+/**
+ * Shows a delete button that will prompt the individual for confirmation
+ * before calling the click handler.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -58,11 +63,21 @@ export default defineComponent({
         },
 
         /**
+         * An optional callback that will be used to determine if the delete
+         * button is disabled for the specified row.
+         */
+        rowDisabled: {
+            type: Function as PropType<((row: Record<string, unknown>, grid: IGridState) => boolean)>,
+            required: false
+        },
+
+        /**
          * Called when the delete button has been clicked and the confirmation
-         * has been approved.
+         * has been approved. If a Promise is returned then the button will
+         * remain disabled until the Promise is resolved.
          */
         onClick: {
-            type: Function as PropType<((key: string) => void) | ((key: string) => Promise<void>)>,
+            type: Function as PropType<(key: string, grid: IGridState) => (void | Promise<void>)>,
             required: false
         }
     }

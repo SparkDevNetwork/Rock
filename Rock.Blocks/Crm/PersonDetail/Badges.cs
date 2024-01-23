@@ -33,12 +33,14 @@ namespace Rock.Blocks.Crm.PersonDetail
     /// <summary>
     /// Handles displaying badges for a person.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Badges" )]
-    [Category( "Obsidian > CRM > Person Detail" )]
+    [Category( "CRM > Person Detail" )]
     [Description( "Handles displaying badges for a person." )]
     [IconCssClass( "fa fa-certificate" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
+    [InitialBlockHeight( 100 )]
 
     #region Block Attributes
 
@@ -92,7 +94,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Rock.Web.UI.ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "86e12a6c-2086-4562-b50e-3ea1e8b5b017" )]
     [Rock.SystemGuid.BlockTypeGuid( "2412c653-9369-4772-955e-80ee8fa051e3" )]
-    public class Badges : RockObsidianBlockType
+    public class Badges : RockBlockType
     {
         #region Keys
 

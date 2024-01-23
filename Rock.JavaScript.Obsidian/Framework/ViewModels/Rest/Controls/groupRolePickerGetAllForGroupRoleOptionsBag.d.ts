@@ -28,8 +28,13 @@ import { Guid } from "@Obsidian/Types";
  * the GroupMemberPicker control.
  */
 export type GroupRolePickerGetAllForGroupRoleOptionsBag = {
+    /** Exclude group roles from the returned list that match any of the given identifiers. */
     excludeGroupRoles?: Guid[] | null;
 
+    /**
+     * Unique identifier of a group role. Used to get the rest of the data
+     * about this role, and the group type it belongs to.
+     */
     groupRoleGuid?: Guid | null;
 
     /**

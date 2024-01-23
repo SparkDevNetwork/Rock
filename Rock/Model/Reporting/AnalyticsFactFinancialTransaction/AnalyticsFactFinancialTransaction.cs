@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,7 +29,6 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsFactFinancialTransaction" )]
     [DataContract]
-    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     [Rock.SystemGuid.EntityTypeGuid( "6447497F-C40F-41B9-AB5B-A1F14F80DD18")]
     public class AnalyticsFactFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsFactFinancialTransaction>
     {

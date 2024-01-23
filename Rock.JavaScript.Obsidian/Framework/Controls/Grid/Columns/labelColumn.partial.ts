@@ -46,10 +46,22 @@ function getTextValue(row: Record<string, unknown>, column: ColumnDefinition): s
 
         return `${(value as ListItemBag).text}`;
     }
+    else if (typeof value === "number" || typeof value === "string") {
+        const textSource = column.props["textSource"] as Record<string | number, string>;
+
+        if (textSource && value in textSource) {
+            return textSource[value];
+        }
+    }
 
     return `${value}`;
 }
 
+/**
+ * Displays a value as a pill label. The style can be customized on a per value
+ * basis. So you can, for example, have "success" type values show a green
+ * label and "failure" type values show a red label.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -82,6 +94,17 @@ export default defineComponent({
         exportValue: {
             type: Function as PropType<ExportValueFunction>,
             default: getTextValue
+        },
+
+        /**
+         * The lookup table to use to translate the raw value into a string.
+         * This can be used, for example, to translate an enum into its text
+         * format. This table is used before the classSource and colorSource
+         * tables are used.
+         */
+        textSource: {
+            type: Object as PropType<Record<string | number, string>>,
+            required: false
         },
 
         /**

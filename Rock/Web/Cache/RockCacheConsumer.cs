@@ -17,6 +17,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
@@ -59,13 +61,13 @@ namespace Rock.Web.Cache
             If we later discover that this isn't OK, we'll revisit this decision and make any updates to make it OK again.
             */
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Cache Update message from {message.SenderNodeName} node. {message.ToDebugString()}." );
+            Logger.LogDebug( $"Consumed Cache Update message from {message.SenderNodeName} node. {message.ToDebugString()}." );
             var applyCacheMessageMethodInfo = FindApplyCacheMessageMethodInfo( message.CacheTypeName );
 
             if ( applyCacheMessageMethodInfo == null )
             {
                 var logMessage = $"Unable to resolve cache type when consuming cache update message. {message.ToDebugString()}.";
-                RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                Logger.LogDebug( logMessage );
                 ExceptionLogService.LogException( new BusException( logMessage ) );
 
                 return;

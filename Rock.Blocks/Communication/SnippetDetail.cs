@@ -27,18 +27,20 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Communication.SnippetDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication
 {
     /// <summary>
     /// Displays the details of a particular snippet.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Snippet Detail" )]
     [Category( "Communication" )]
     [Description( "Displays the details of a particular snippet." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -53,7 +55,7 @@ namespace Rock.Blocks.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "4b445492-20e7-41e3-847a-f4d4723e9973" )]
     [Rock.SystemGuid.BlockTypeGuid( "8b0f3048-99ba-4ed1-8de6-6a34f498f556" )]
-    public class SnippetDetail : RockObsidianDetailBlockType
+    public class SnippetDetail : RockDetailBlockType
     {
         #region Keys
 
@@ -74,8 +76,6 @@ namespace Rock.Blocks.Communication
 
         #endregion Keys
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>
@@ -89,7 +89,7 @@ namespace Rock.Blocks.Communication
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<Snippet>();
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Snippet>();
 
                 return box;
             }

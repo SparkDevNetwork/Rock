@@ -1,0 +1,288 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isPublic"
+                          label="Public" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <CodeEditor v-model="publicDescription"
+                    label="Public Description HTML"
+                    mode="lava"
+                    theme="rock"
+                    :editorHeight="250"
+                    help="Additional HTML content to include with the account." />
+
+        <div class="row">
+            <div class="col-md-6">
+                <AccountPicker v-model="parentAccount"
+                               label="Parent Account"
+                               enhanceForLongLists />
+
+                <DefinedValuePicker v-model="accountTypeValue"
+                                    label="Account Type"
+                                    :definedTypeGuid="DefinedType.FinancialAccountType" />
+
+                <TextBox v-model="publicName"
+                         label="PublicName" />
+
+                <CampusPicker v-model="campus"
+                              label="Campus"
+                              showBlankItem
+                              includeInactive />
+
+                <TextBox v-model="url"
+                         label="URL" />
+
+                <ImageUploader v-model="imageBinaryFile"
+                               label="Image"
+                               :uploadAsTemporary="true"
+                               uploadButtonText="Upload"
+                               :showDeleteButton="true" />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="glCode" label="GL Code" />
+                <DatePicker v-model="startDate" label="Start Date" />
+                <DatePicker v-model="endDate" label="End Date" />
+                <CheckBox v-model="isTaxDeductible" label="Tax Deductible" />
+            </div>
+        </div>
+
+        <div>
+            <label>Account Participants</label>
+            <div class="panel-body">
+                <div class="grid grid-panel">
+                    <Grid :data="accountParticipantsGridData" keyField="key" itemTerm="Account Participant" liveUpdates light @addItem="onAddAccount">
+                        <TextColumn name="name" field="name" title="Person" />
+                        <TextColumn name="purposeKey" field="purposeKey" title="Purpose" />
+                        <DeleteColumn @click="onDeleteAccount" disableConfirmation />
+                    </Grid>
+                </div>
+            </div>
+
+
+            <Modal v-model="isModalOpen" title="Page Attributes" @save="onSaveAccount" saveText="Save">
+
+                <fieldset>
+                    <PersonPicker v-model="personAlias"
+                                  label="Person"
+                                  rules="required" />
+
+                    <DropDownList v-model="purposeKey"
+                                  label="Purpose"
+                                  :items="purposeKeyOptions"
+                                  :showBlankItem="false"
+                                  rules="required" />
+                </fieldset>
+
+            </Modal>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import Grid, { DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { FinancialAccountBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialAccountDetail/financialAccountBag";
+    import { FinancialAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialAccountDetail/financialAccountDetailOptionsBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { FinancialAccountParticipantBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialAccountDetail/financialAccountParticipantBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialAccountBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<FinancialAccountDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FinancialAccountBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? true, "IsActive");
+    const isPublic = propertyRef(props.modelValue.isPublic ?? true, "IsPublic");
+    const isTaxDeductible = propertyRef(props.modelValue.isTaxDeductible ?? false, "IsTaxDeductible");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const publicDescription = propertyRef(props.modelValue.publicDescription ?? "", "PublicDescription");
+    const glCode = propertyRef(props.modelValue.glCode ?? "", "GlCode");
+    const publicName = propertyRef(props.modelValue.publicName ?? "", "PublicName");
+    const url = propertyRef(props.modelValue.url ?? "", "Url");
+    const startDate = propertyRef(props.modelValue.startDate ?? "", "startDate");
+    const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
+    const parentAccount = propertyRef(props.modelValue.parentAccount ?? {}, "ParentAccount");
+    const accountTypeValue = propertyRef(props.modelValue.accountTypeValue ?? {}, "AccountTypeValue");
+    const campus = propertyRef(props.modelValue.campus ?? {}, "Campus");
+    const imageBinaryFile = propertyRef(props.modelValue.imageBinaryFile ?? {}, "ImageBinaryFileId");
+    const accountParticipants = ref(props.modelValue.accountParticipants ?? []);
+    const purposeKeyOptions = ref(props.options.purposeKeyOptions ?? []);
+    const isModalOpen = ref(false);
+    const personAlias = ref<ListItemBag | undefined>();
+    const purposeKey = ref("");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, isPublic, isTaxDeductible, name, publicDescription, glCode, publicName, url, startDate, endDate, parentAccount, accountTypeValue, campus, imageBinaryFile];
+
+    // #endregion
+
+    // #region Computed Values
+    const accountParticipantsGridData: GridDataBag = reactive<GridDataBag>({
+        rows: accountParticipants.value.map(x => convertToAccountParticipantsGridRowItem(x))
+    });
+    // #endregion
+
+    // #region Functions
+    function convertToAccountParticipantsGridRowItem(participant: FinancialAccountParticipantBag): Record<string, unknown> {
+        return {
+            key: participant.personAlias?.value,
+            name: participant.personFullName,
+            purposeKey: purposeKeyOptions.value.find(x => x.value == participant.purposeKey)?.text
+        };
+    }
+    // #endregion
+
+    // #region Event Handlers
+    async function onAddAccount(): Promise<void> {
+        resetModal();
+        isModalOpen.value = true;
+    }
+
+    const onDeleteAccount = async (key: string): Promise<void> => {
+        isModalOpen.value = false;
+        accountParticipants.value = accountParticipants.value.filter(s => s.personAlias?.value !== key);
+
+        // Update the grid.
+        if (accountParticipantsGridData.rows) {
+            const index = accountParticipantsGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                accountParticipantsGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    function onSaveAccount(): void {
+
+        if (personAlias.value) {
+            const newParticipant = {
+                personAlias: personAlias.value,
+                personFullName: personAlias.value.text,
+                purposeKey: purposeKey.value
+            } as FinancialAccountParticipantBag;
+            accountParticipants.value.push(newParticipant);
+
+            // Add new RowItem to the grid to represent the newly added attribute.
+            const newRowItem = convertToAccountParticipantsGridRowItem(newParticipant);
+            accountParticipantsGridData.rows?.push(newRowItem);
+
+            resetModal();
+            isModalOpen.value = false;
+        }
+    }
+
+    function resetModal(): void {
+        personAlias.value = undefined;
+        purposeKey.value = "";
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? true);
+        updateRefValue(isPublic, props.modelValue.isPublic ?? true);
+        updateRefValue(isTaxDeductible, props.modelValue.isTaxDeductible ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(publicDescription, props.modelValue.publicDescription ?? "");
+        updateRefValue(glCode, props.modelValue.glCode ?? "");
+        updateRefValue(publicName, props.modelValue.publicName ?? "");
+        updateRefValue(url, props.modelValue.url ?? "");
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
+        updateRefValue(parentAccount, props.modelValue.parentAccount ?? {});
+        updateRefValue(accountTypeValue, props.modelValue.accountTypeValue ?? {});
+        updateRefValue(campus, props.modelValue.campus ?? {});
+        updateRefValue(accountParticipants, props.modelValue.accountParticipants ?? []);
+        updateRefValue(imageBinaryFile, props.modelValue.imageBinaryFile ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, accountParticipants, ...propRefs], () => {
+        const newValue: FinancialAccountBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            isPublic: isPublic.value,
+            isTaxDeductible: isTaxDeductible.value,
+            name: name.value,
+            publicDescription: publicDescription.value,
+            glCode: glCode.value,
+            publicName: publicName.value,
+            url: url.value,
+            startDate: startDate.value,
+            endDate: endDate.value,
+            parentAccount: parentAccount.value,
+            accountTypeValue: accountTypeValue.value,
+            campus: campus.value,
+            accountParticipants: accountParticipants.value,
+            imageBinaryFile: imageBinaryFile.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

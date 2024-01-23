@@ -39,6 +39,6 @@ namespace Rock.Blocks
         /// <value>
         /// The client block identifier.
         /// </value>
-        string BlockFileUrl { get; }
+        string ObsidianFileUrl { get; }
     }
 }

@@ -163,18 +163,14 @@ namespace Rock.Lava.DotLiquid
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <param name="scope"></param>
-        public override void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Current )
+        public override void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Default )
         {
             int scopeIndex;
 
             // DotLiquid Scopes are ordered with the current level first.
-            if ( scope == LavaContextRelativeScopeSpecifier.Root )
+            if ( scope == LavaContextRelativeScopeSpecifier.Parent && _context.Scopes.Count > 1 )
             {
                 scopeIndex = _context.Scopes.Count - 1;
-            }
-            else if ( scope == LavaContextRelativeScopeSpecifier.Parent && _context.Scopes.Count > 1 )
-            {
-                scopeIndex = 1;
             }
             else
             {

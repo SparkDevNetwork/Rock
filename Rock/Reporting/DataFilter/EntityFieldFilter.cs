@@ -55,11 +55,6 @@ namespace Rock.Reporting.DataFilter
 
             bool entityFieldPickerIsHidden = filterMode == FilterMode.SimpleFilter;
 
-            if (ddlEntityField is RockDropDownList rockDropDownList)
-            {
-                rockDropDownList.EnhanceForLongLists = true;
-            }
-
             if ( entityFieldPickerIsHidden )
             {
                 ddlEntityField.Style[HtmlTextWriterStyle.Display] = "none";
@@ -67,7 +62,15 @@ namespace Rock.Reporting.DataFilter
 
             if ( !entityFieldPickerIsHidden )
             {
-                writer.AddAttribute( "class", "col-md-3" );
+                // Only enhance for long lists if the dropdownlist will be displayed. The RockDropDownList creates a custom searchable dropdown element 
+                // if EnhanceForLongLists is set to true and sets the display attribute on the default element to false, setting the display to none only
+                // affects the default control, thus the searchable element will still be visible
+                if ( ddlEntityField is RockDropDownList rockDropDownList )
+                {
+                    rockDropDownList.EnhanceForLongLists = true;
+                }
+
+                writer.AddAttribute( "class", "col-md-5 col-lg-4" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 ddlEntityField.AddCssClass( "entity-property-selection" );
                 ddlEntityField.RenderControl( writer );
@@ -79,7 +82,7 @@ namespace Rock.Reporting.DataFilter
                 ddlEntityField.RenderControl( writer );
             }
 
-            writer.AddAttribute( "class", entityFieldPickerIsHidden ? "col-md-12" : "col-md-9" );
+            writer.AddAttribute( "class", entityFieldPickerIsHidden ? "col-md-12" : "col-md-7 col-lg-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( entityFieldPickerIsHidden && ddlEntityField.SelectedItem != null )

@@ -17,19 +17,20 @@
 
 import { defineComponent, provide, reactive, ref } from "vue";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import CountdownTimer from "@Obsidian/Controls/countdownTimer";
-import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
-import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
-import RockButton from "@Obsidian/Controls/rockButton";
+import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
+import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor.obs";
+import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
+import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
 import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
 import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
 import { useStore } from "@Obsidian/PageState";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { List } from "@Obsidian/Utility/linq";
-import Page from "@Obsidian/Utility/page";
+import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
 import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
 import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
@@ -76,11 +77,12 @@ export default defineComponent({
         const invokeBlockAction = useInvokeBlockAction();
         const notFoundMessage = viewModel?.registrationInstanceNotFoundMessage || "The selected registration could not be found or is no longer active.";
 
-        if (viewModel === null || viewModel.registrationInstanceNotFoundMessage) {
+        if (viewModel === null || viewModel?.registrationInstanceNotFoundMessage) {
             notFound.value = true;
 
             return {
                 viewModel,
+                steps,
                 notFound,
                 notFoundMessage
             };
@@ -132,11 +134,13 @@ export default defineComponent({
             discountCode: viewModel.session?.discountCode || "",
             discountAmount: viewModel.session?.discountAmount || 0,
             discountPercentage: viewModel.session?.discountPercentage || 0,
+            discountMaxRegistrants: viewModel.session?.discountMaxRegistrants || 0,
             successViewModel: viewModel.successViewModel,
             amountToPayToday: 0,
             sessionExpirationDateMs: null,
             registrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid(),
-            ownFamilyGuid: store.state.currentPerson?.primaryFamilyGuid || newGuid()
+            ownFamilyGuid: viewModel.currentPersonFamilyGuid || newGuid(),
+            isCaptchValid: false
         };
         const registrationEntryState = reactive(staticRegistrationEntryState);
 
@@ -153,7 +157,8 @@ export default defineComponent({
                 registrar: registrationEntryState.registrar,
                 registrants: registrationEntryState.registrants,
                 amountToPayNow: registrationEntryState.amountToPayToday,
-                registrationGuid: viewModel.session?.registrationGuid || null
+                registrationGuid: viewModel.session?.registrationGuid || null,
+                isCaptchaValid: registrationEntryState.isCaptchValid
             };
         };
 
@@ -198,7 +203,7 @@ export default defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson(): PersonBag | null {
+        currentPerson(): CurrentPersonBag | null {
             return store.state.currentPerson;
         },
 
@@ -435,7 +440,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.PerRegistrantForms;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrationStartPrevious(): Promise<void> {
@@ -443,7 +450,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Intro;
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrationStartNext(): Promise<void> {
@@ -451,7 +460,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrantPrevious(): Promise<void> {
@@ -459,7 +470,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPreAttributes ? Step.RegistrationStartForm : Step.Intro;
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrantNext(): Promise<void> {
@@ -467,7 +480,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.Review;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrationEndPrevious(): Promise<void> {
@@ -475,7 +490,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onRegistrationEndNext(): Promise<void> {
@@ -483,7 +500,9 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onSummaryPrevious(): Promise<void> {
@@ -500,7 +519,9 @@ export default defineComponent({
                     this.registrationEntryState.currentStep = Step.PerRegistrantForms;
                 }
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onSummaryNext(): Promise<void> {
@@ -512,7 +533,9 @@ export default defineComponent({
                     this.registrationEntryState.currentStep = Step.Success;
                 }
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onPaymentPrevious(): Promise<void> {
@@ -520,14 +543,18 @@ export default defineComponent({
                 await this.persistSession(false);
                 this.registrationEntryState.currentStep = Step.Review;
                 this.registrationEntryState.navBack = true;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         },
         async onPaymentNext(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 this.registrationEntryState.currentStep = Step.Success;
                 this.registrationEntryState.navBack = false;
-                Page.smoothScrollToTop();
+
+                // Wait for the form to be rendered and then scroll to the top.
+                setTimeout(() => smoothScrollToTop(), 10);
             }
         }
     },
@@ -592,7 +619,7 @@ export default defineComponent({
     </NotificationBox>
     <template v-else>
         <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
-        <ProgressTracker v-if="currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
+        <ProgressTracker v-if="viewModel.hideProgressBar !== true && currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
             <template #aside>
                 <div v-if="secondsBeforeExpiration >= 0" v-show="secondsBeforeExpiration <= (30 * 60)" class="remaining-time flex-grow-1 flex-md-grow-0">
                     <NotificationBox v-if="hasSessionRenewalSuccess" alertType="success" class="m-0 pt-3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
@@ -613,7 +640,8 @@ export default defineComponent({
         <RegistrationEntryPayment v-else-if="currentStep === steps.payment" @next="onPaymentNext" @previous="onPaymentPrevious" />
         <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
         <NotificationBox v-else alertType="danger">Invalid State: '{{currentStep}}'</NotificationBox>
+
+        <SessionRenewal :isSessionExpired="isSessionExpired" @success="onSessionRenewalSuccess" />
     </template>
-    <SessionRenewal :isSessionExpired="isSessionExpired" @success="onSessionRenewalSuccess" />
 </div>`
 });

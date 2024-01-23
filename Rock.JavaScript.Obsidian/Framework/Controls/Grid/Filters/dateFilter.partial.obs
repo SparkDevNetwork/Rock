@@ -7,11 +7,11 @@
                       :items="searchTypeItems" />
 
         <div v-if="isFirstValueVisible" class="mb-2">
-            <DatePicker v-model="searchValue" :container="popupContainerElement" />
+            <DatePicker v-model="searchValue" :container="popupContainerElement" horizontalOrientation="left" />
         </div>
 
         <div v-if="isSecondValueVisible" class="mb-2">
-            <DatePicker v-model="secondSearchValue" :container="popupContainerElement" />
+            <DatePicker v-model="secondSearchValue" :container="popupContainerElement" horizontalOrientation="left" />
         </div>
     </div>
 </template>
@@ -19,7 +19,7 @@
 <script setup lang="ts">
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import { ref, watch, computed } from "vue";
-    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DateFilterMethod, DateFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
     import { standardFilterProps } from "@Obsidian/Core/Controls/grid";

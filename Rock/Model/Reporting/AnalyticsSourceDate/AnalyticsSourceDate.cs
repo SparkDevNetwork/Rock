@@ -32,7 +32,6 @@ namespace Rock.Model
     [Table( "AnalyticsSourceDate" )]
     [DataContract]
     [HideFromReporting]
-    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     [IncludeForModelMap]
     public partial class AnalyticsSourceDate
     {

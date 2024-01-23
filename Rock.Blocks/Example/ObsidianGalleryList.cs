@@ -38,18 +38,13 @@ namespace Rock.Blocks.Example
     [Category( "Example" )]
     [Description( "Demonstrates the various parts of the Obsidian List blocks." )]
     [IconCssClass( "fa fa-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4315fd92-f9f1-4038-abdc-a2d661b9dedf" )]
     [Rock.SystemGuid.BlockTypeGuid( "121eec5e-f8aa-4cd8-a61d-9c99c269280e" )]
     [CustomizedGrid]
-    public class ObsidianGalleryList : RockObsidianEntityListBlockType<Person>
+    public class ObsidianGalleryList : RockEntityListBlockType<Person>
     {
-        #region Properties
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>

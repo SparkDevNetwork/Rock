@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Logging
 {
     /// <summary>
     /// The Log Levels available for RockLogger.
     /// </summary>
+    [Obsolete( "This is not used and will be removed in the future." )]
+    [RockObsolete( "1.17" )]
     public enum RockLogLevel
     {
         /// <summary>

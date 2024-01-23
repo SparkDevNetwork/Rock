@@ -82,6 +82,8 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Checkin/CheckinAreas.css", true );
+
             cbShowInactive.Checked = GetBlockPersonPreferences().GetValue( "show-inactive" ).AsBoolean();
 
             BuildRows( !Page.IsPostBack );

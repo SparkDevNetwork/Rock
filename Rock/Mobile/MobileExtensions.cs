@@ -78,7 +78,7 @@ namespace Rock.Mobile
         /// <returns>DisplayInNavWhen.</returns>
         public static DisplayInNavWhen ToMobile( this Rock.Model.DisplayInNavWhen displayInNavWhen )
         {
-            switch( displayInNavWhen )
+            switch ( displayInNavWhen )
             {
                 case Model.DisplayInNavWhen.Always:
                     return DisplayInNavWhen.Always;
@@ -88,6 +88,88 @@ namespace Rock.Mobile
                     return DisplayInNavWhen.WhenAllowed;
                 default:
                     return DisplayInNavWhen.Never;
+            }
+        }
+
+        #endregion
+
+        #region Communication Type
+
+        /// <summary>
+        /// Converts the communication type enum to mobile.
+        /// </summary>
+        /// <param name="communicationType">Type of the communication.</param>
+        /// <returns>Rock.Common.Mobile.Enums.CommunicationType.</returns>
+        public static Rock.Common.Mobile.Enums.CommunicationType ToMobile( this Rock.Model.CommunicationType communicationType )
+        {
+            switch ( communicationType )
+            {
+                case Model.CommunicationType.PushNotification:
+                    return CommunicationType.PushNotification;
+
+                case Model.CommunicationType.SMS:
+                    return CommunicationType.Sms;
+
+                case Model.CommunicationType.Email:
+                    return CommunicationType.Email;
+
+                default:
+                    return CommunicationType.RecipientPreference;
+            }
+        }
+
+        #endregion
+
+        #region Email Preference
+
+        /// <summary>
+        /// Convert the Email Preference Enum to Mobile Specific Email Preference
+        /// </summary>
+        /// <param name="emailPreference"></param>
+        /// <returns></returns>
+        public static Rock.Common.Mobile.Enums.EmailPreference ToMobile( this Model.EmailPreference emailPreference )
+        {
+            switch ( emailPreference )
+            {
+                case Model.EmailPreference.DoNotEmail:
+                    return EmailPreference.DoNotEmail;
+                case Model.EmailPreference.NoMassEmails:
+                    return EmailPreference.NoMassEmails;
+
+                default:
+                    return EmailPreference.EmailAllowed;
+            }
+        }
+
+        #endregion
+
+        #region Keyboard Input Mode
+
+        /// <summary>
+        /// Converts the <see cref="Rock.Enums.Core.KeyboardInputMode" /> to the mobile counterpart.
+        /// </summary>
+        /// <param name="keyboardInputMode"></param>
+        /// <returns></returns>
+        public static Rock.Common.Mobile.Enums.KeyboardInputMode ToMobile( this Rock.Enums.Core.KeyboardInputMode keyboardInputMode )
+        {
+            switch ( keyboardInputMode )
+            {
+                case Enums.Core.KeyboardInputMode.Default:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Default;
+                case Enums.Core.KeyboardInputMode.Email:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Email;
+                case Enums.Core.KeyboardInputMode.Numeric:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Numeric;
+                case Enums.Core.KeyboardInputMode.Decimal:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Decimal;
+                case Enums.Core.KeyboardInputMode.Telephone:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Telephone;
+                case Enums.Core.KeyboardInputMode.Text:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Text;
+                case Enums.Core.KeyboardInputMode.Url:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Url;
+                default:
+                    return Rock.Common.Mobile.Enums.KeyboardInputMode.Default;
             }
         }
 
@@ -118,6 +200,107 @@ namespace Rock.Mobile
                     return Model.Gender.Unknown;
             }
         }
+    }
 
+    /// <summary>
+    /// Extension methods for <see cref="Rock.Common.Mobile.Enums.CommunicationType"/>.
+    /// </summary>
+    public static class MobileExtensionsCommunicationPreference
+    {
+        /// <summary>
+        /// Converts a mobile <see cref="EmailPreference"/> to a web native.
+        /// </summary>
+        /// <param name="communicationType">The email preference.</param>
+        /// <returns>Rock.Model.CommunicationType.</returns>
+        public static Rock.Model.CommunicationType ToNative( this CommunicationType communicationType )
+        {
+            switch ( communicationType )
+            {
+                case CommunicationType.RecipientPreference:
+                    return Model.CommunicationType.RecipientPreference;
+                case CommunicationType.PushNotification:
+                    return Model.CommunicationType.PushNotification;
+                case CommunicationType.Email:
+                    return Model.CommunicationType.Email;
+                case CommunicationType.Sms:
+                    return Model.CommunicationType.SMS;
+                default:
+                    return Model.CommunicationType.RecipientPreference;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for <see cref="Rock.Common.Mobile.Enums.EmailPreference"/>.
+    /// </summary>
+    public static class MobileExtensionsEmailPreference
+    {
+        /// <summary>
+        /// Converts a mobile <see cref="EmailPreference"/> to a web native.
+        /// </summary>
+        /// <param name="emailPreference">The email preference.</param>
+        /// <returns>Rock.Model.EmailPreference.</returns>
+        public static Rock.Model.EmailPreference ToNative( this EmailPreference emailPreference )
+        {
+            switch ( emailPreference )
+            {
+                case EmailPreference.DoNotEmail:
+                    return Model.EmailPreference.DoNotEmail;
+                case EmailPreference.NoMassEmails:
+                    return Model.EmailPreference.NoMassEmails;
+                default:
+                    return Model.EmailPreference.EmailAllowed;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for the <see cref="Rock.Common.Mobile.Enums.ConnectionState" />.
+    /// </summary>
+    public static class MobileExtensionsConnectionState
+    {
+        /// <summary>
+        /// Converts a web native <see cref="ConnectionState"/> to a mobile <see cref="Rock.Common.Mobile.Enums.ConnectionState"/>.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static Rock.Common.Mobile.Enums.ConnectionState ToMobile( this ConnectionState state )
+        {
+            switch ( state )
+            {
+                case ConnectionState.Active:
+                    return Rock.Common.Mobile.Enums.ConnectionState.Active;
+                case ConnectionState.Inactive:
+                    return Rock.Common.Mobile.Enums.ConnectionState.Inactive;
+                case ConnectionState.FutureFollowUp:
+                    return Rock.Common.Mobile.Enums.ConnectionState.FutureFollowUp;
+                case ConnectionState.Connected:
+                    return Rock.Common.Mobile.Enums.ConnectionState.Connected;
+                default:
+                    return Rock.Common.Mobile.Enums.ConnectionState.Active;
+            }
+        }
+
+        /// <summary>
+        /// Converts a mobile <see cref="Rock.Common.Mobile.Enums.ConnectionState"/> to a web native.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static ConnectionState ToNative( this Rock.Common.Mobile.Enums.ConnectionState state )
+        {
+            switch ( state )
+            {
+                case Rock.Common.Mobile.Enums.ConnectionState.Active:
+                    return ConnectionState.Active;
+                case Rock.Common.Mobile.Enums.ConnectionState.Inactive:
+                    return ConnectionState.Inactive;
+                case Rock.Common.Mobile.Enums.ConnectionState.FutureFollowUp:
+                    return ConnectionState.FutureFollowUp;
+                case Rock.Common.Mobile.Enums.ConnectionState.Connected:
+                    return ConnectionState.Connected;
+                default:
+                    return ConnectionState.Active;
+            }
+        }
     }
 }

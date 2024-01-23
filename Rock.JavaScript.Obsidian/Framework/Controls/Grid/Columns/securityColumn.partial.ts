@@ -20,6 +20,10 @@ import { Component, defineComponent, PropType } from "vue";
 import SecurityCell from "../Cells/securityCell.partial.obs";
 import { IGridState } from "@Obsidian/Types/Controls/grid";
 
+/**
+ * Displays a security button that will open the standard Security editor
+ * modal for the item.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,

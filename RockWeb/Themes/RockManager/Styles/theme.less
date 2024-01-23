@@ -119,18 +119,10 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
-// Temporary Fix for Safari 13 Select Rendering Bug
-select {
-  -webkit-font-smoothing: none;
-}
-// End Temporary Fix
-
 main {
   display: block;
 }
 
-h3,
-h4,
 legend {
   font-weight: 400;
 }
@@ -140,6 +132,11 @@ strong,
 dl:not(.dl-horizontal) dt,
 dt {
   font-weight: @font-weight-semibold;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 500;
 }
 
 input[type="text"],
@@ -544,8 +541,7 @@ textarea,
 }
 
 .rating-input i {
-  color: @brand-primary;
-  color: var(--brand-primary);
+  color: var(--color-primary);
 }
 
 .wizard {
@@ -748,8 +744,7 @@ td.grid-actions {
   display: flex;
   margin-bottom: 0;
   color: @white;
-  background-color: @brand-primary;
-  background-color: var(--brand-primary, @brand-primary);
+  background-color: var(--color-primary, @brand-primary);
   border: 0;
 
   @media (max-width: @screen-sm-max) {
@@ -849,8 +844,7 @@ td.grid-actions {
 
       &:hover {
         color: @white;
-        background-color: @brand-primary;
-        background-color: var(--brand-primary, @brand-primary);
+        background-color: var(--color-primary, @brand-primary);
         opacity: 1;
       }
     }
@@ -894,7 +888,6 @@ td.grid-actions {
     z-index: -1;
     width: @navbarside-width;
     content: "";
-    background-color: @navbarside-background-color;
     background-color: var(--navbarside-background-color);
   }
 }
@@ -904,14 +897,13 @@ td.grid-actions {
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: @zindex-navbar-fixed + 10;
+  z-index: @zindex-navbar-fixed - 20;
   display: none;
   width: @navbarside-width;
   height: 100% !important;
   overflow-x: hidden;
   overflow-y: auto;
   color: @navbarside-color;
-  background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
 
   .zone-instance,
@@ -1071,7 +1063,6 @@ td.grid-actions {
     padding: 4px 15px;
     margin: -5px -15px 5px;
     color: @pagetitle-text-color;
-    background-color: @pagetitle-background;
     background-color: var(--pagetitle-background, @pagetitle-background);
 
     .title {

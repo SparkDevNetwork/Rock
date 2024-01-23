@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Groups
             public const string GroupTypesInclude = "GroupTypes";
             public const string GroupTypesExclude = "GroupTypesExclude";
             public const string RootGroup = "RootGroup";
-            public const string LimitToSecurityRoleGroups = "LimitToSecurityRoleGroups";
+            public const string LimitToSecurityRoleGroups = "LimittoSecurityRoleGroups";
             public const string ShowSettingsPanel = "ShowFilterOption";
             public const string DisplayInactiveCampuses = "DisplayInactiveCampuses";
             public const string InitialCountSetting = "InitialCountSetting";
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Groups
             public const string DisableAutoSelectFirstGroup = "DisableAutoSelectFirstGroup";
         }
 
-        private static class PageParameter
+        private static class PageParameterKey
         {
             public const string GroupId = "GroupId";
         }
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
-            _groupId = PageParameter( PageParameter.GroupId );
+            _groupId = PageParameter( PageParameterKey.GroupId );
 
             var preferences = GetBlockPersonPreferences();
             var typePreferences = GetBlockTypePersonPreferences();
@@ -512,7 +512,7 @@ namespace RockWeb.Blocks.Groups
         protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
-            qryParams.Add( PageParameter.GroupId, 0.ToString() );
+            qryParams.Add( PageParameterKey.GroupId, 0.ToString() );
             qryParams.Add( "ParentGroupId", hfRootGroupId.Value );
             qryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
 
@@ -529,7 +529,7 @@ namespace RockWeb.Blocks.Groups
             int groupId = hfSelectedGroupId.ValueAsInt();
 
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
-            qryParams.Add( PageParameter.GroupId, 0.ToString() );
+            qryParams.Add( PageParameterKey.GroupId, 0.ToString() );
             qryParams.Add( "ParentGroupId", groupId.ToString() );
             qryParams.Add( "ExpandedIds", hfInitialGroupParentIds.Value );
 

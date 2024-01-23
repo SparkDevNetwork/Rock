@@ -23,6 +23,9 @@ using System.Linq;
 using System.Text;
 
 using Humanizer;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -103,7 +106,7 @@ namespace Rock.Jobs
 
             if ( groupsChangedCount > 0 )
             {
-                resultSb.AppendLine( $"{circleSuccess} {result.DeletedMemberCount} {"person".PluralizeIf( result.DeletedMemberCount != 1 ).Titleize()} Deleted" );
+                resultSb.AppendLine( $"{circleSuccess} {result.DeletedMemberCount} {"person".PluralizeIf( result.DeletedMemberCount != 1 ).Titleize()} Removed" );
                 resultSb.AppendLine( $"{circleSuccess} {result.AddedMemberCount} {"person".PluralizeIf( result.AddedMemberCount != 1 ).Titleize()} Added" );
             }
 
@@ -127,7 +130,7 @@ namespace Rock.Jobs
                     var enableLoggingMessage = "Enable 'Warning' logging level for 'Jobs' domain in Rock Logs and re-run this job to get a full list of issues.";
                     warningExceptionMessage = $"{warningExceptionMessage} {enableLoggingMessage}";
 
-                    Log( Logging.RockLogLevel.Warning, $"{result.WarningMessages.Count} {"warning".PluralizeIf( result.WarningMessages.Count > 1 ).Titleize()}: {result.WarningMessages.AsDelimited( " | " )}" );
+                    Logger.LogWarning( $"{result.WarningMessages.Count} {"warning".PluralizeIf( result.WarningMessages.Count > 1 ).Titleize()}: {result.WarningMessages.AsDelimited( " | " )}" );
 
                     resultSb.AppendLine( $"{circleWarning} {enableLoggingMessage}" );
                 }

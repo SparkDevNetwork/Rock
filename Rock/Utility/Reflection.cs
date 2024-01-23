@@ -258,7 +258,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the type of the i entity for entity.
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// identifier specified.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="id">The identifier.</param>
@@ -277,7 +278,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the type of the i entity for entity.
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// unique identifier specified.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="guid">The unique identifier.</param>
@@ -290,6 +292,30 @@ namespace Rock
             {
                 System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
                 return getMethod.Invoke( serviceInstance, new object[] { guid } ) as Rock.Data.IEntity;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// public key specified.
+        /// <para>
+        /// Note that this key is NOT the hashed IEntity.IdKey, but rather the "Id>Guid" format used in some
+        /// legacy areas of Rock, such as the identifiers encrypted within context cookies.
+        /// </para>
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="publicKey">The public key.</param>
+        /// <returns></returns>
+        internal static Rock.Data.IEntity GetIEntityForEntityTypeAndPublicKey( Type entityType, string publicKey )
+        {
+            var dbContext = Reflection.GetDbContextForEntityType( entityType );
+            Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByPublicKey", new Type[] { typeof( string ) } );
+                return getMethod.Invoke( serviceInstance, new object[] { publicKey } ) as Rock.Data.IEntity;
             }
 
             return null;
@@ -377,8 +403,12 @@ namespace Rock
             {
                 var cacheType = Type.GetType( $"Rock.Web.Cache.{type.Name}Cache" );
 
-                // Make sure the base type inherits from ModelCache<,>
-                if ( cacheType != null && cacheType.BaseType.IsGenericType && cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) )
+                // Make sure the base type inherits from ModelCache<,> or EntityCache<,>
+                var isValidCacheType = cacheType != null
+                    && cacheType.BaseType.IsGenericType
+                    && ( cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) || cacheType.BaseType.GetGenericTypeDefinition() == typeof( EntityCache<,> ) );
+
+                if ( isValidCacheType )
                 {
                     // Make sure the base type is the expected type, e.g. ModelCache<CampusCache, Campus>
                     if ( cacheType.BaseType.GenericTypeArguments[1] == type )
@@ -517,7 +547,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the entity identifiers for the set of entity keys.
+        /// Gets the entity ids for a entity type from a list of entity guids, idkeys or ids as strings.
         /// </summary>
         /// <param name="entityType">The entity type cache, this represents the model to use when mapping the <paramref name="entityKeys"/> to a identifiers.</param>
         /// <param name="entityKeys">The entity identifier keys to be converted to integer identifiers.</param>

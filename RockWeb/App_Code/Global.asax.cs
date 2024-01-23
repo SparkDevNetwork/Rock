@@ -26,12 +26,14 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using Rock;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Utility.Settings;
@@ -623,8 +625,6 @@ namespace RockWeb
                 // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
                 var client = new WebClient();
                 client.DownloadString( GetKeepAliveUrl() );
-
-                RockLogger.Log.Close();
             }
             catch
             {

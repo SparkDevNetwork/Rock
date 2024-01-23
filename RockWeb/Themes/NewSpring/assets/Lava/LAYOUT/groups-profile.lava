@@ -78,8 +78,8 @@
 
 <div class="push-top">
   <div class="text-center">
-    <p><a href="/groups/{{ group.Id }}/toolbox" class="btn btn-primary shadowed hidden"><i class="fal fa-chevron-left push-quarter-right"></i> Back to Group</a></p>
-    <div class="ratio ratio-square background-cover background-center circular shadowed mx-auto" style="background-image:url('{{ person.PhotoUrl }}'); max-width: 250px; border: 5px solid #fff;"></div>
+    <p><a href="/groups/{{ group.Id }}/toolbox" class="btn btn-primary hidden"><i class="fal fa-chevron-left push-quarter-right"></i> Back to Group</a></p>
+    <div class="ratio ratio-square background-cover background-center circular mx-auto" style="background-image:url('{{ person.PhotoUrl }}'); max-width: 250px; border: 5px solid #fff;"></div>
     <h2 class="h1 strongest push-top push-half-bottom">{{ person.NickName }} {{ person.LastName }}</h2>
 
     <div class="push-bottom">
@@ -93,22 +93,6 @@
   </div>
 
   {% comment %}
-    UI for adding/removing pending group members
-  {% endcomment %}
-  {% if status == 2 %}
-    {[ cardBlock type:'info' ]}
-      <p>{{ person.NickName }} is currently a <span class="text-info stronger">pending</span> member of your group.</p>
-      <div class="row row-condensed">
-        <div class="col-md-6 col-xs-12 sm-push-half-bottom xs-push-half-bottom">
-          <a href="#" class="btn btn-primary btn-block"><i class="fal fa-plus-circle push-quarter-right"></i> Add</a>
-        </div><div class="col-md-6 col-xs-12">
-          <a href="#" class="btn btn-danger btn-block"><i class="fal fa-minus-circle push-quarter-right"></i> Remove</a>
-        </div>
-      </div>
-    {[ endcardBlock ]}
-  {% endif %}
-
-  {% comment %}
     Group Member Contact Information
   {% endcomment %}
   {% capture emailActive %}{% if person.Email and person.Email != empty and person.EmailPreference != 'Do Not Email' %}true{% else %}false{% endif %}{% endcapture %}
@@ -117,11 +101,11 @@
 
   <div class="row row-condensed push-bottom xs-push-half-bottom">
     <div class="col-xs-4">
-      <a href="mailto:{{ person.Email }}" class="btn btn-block {% if emailActive == 'false' %}btn-disabled{% else %}btn-default{% endif %} shadowed text-center" {% if emailActive == 'false' %}disabled title="Person has no email address or they do not wish to be emailed."{% endif %}><i class="fal fa-lg fa-envelope"></i></a>
+      <a href="mailto:{{ person.Email }}" class="btn btn-block {% if emailActive == 'false' %}btn-disabled{% else %}btn-default{% endif %} text-center" {% if emailActive == 'false' %}disabled title="Person has no email address or they do not wish to be emailed."{% endif %}><i class="fal fa-lg fa-envelope"></i></a>
     </div><div class="col-xs-4">
-      <a href="tel:/{{ mobileNumber }}" class="btn btn-block shadowed text-center {% if mobileNumber == empty or mobileNumber == '' %}btn-disabled{% else %}btn-default{% endif %}" {% if mobileNumber == empty or mobileNumber == '' %}disabled title="Person has no mobile number."{% endif %}><i class="fal fa-lg fa-phone"></i></a>
+      <a href="tel:/{{ mobileNumber }}" class="btn btn-block text-center {% if mobileNumber == empty or mobileNumber == '' %}btn-disabled{% else %}btn-default{% endif %}" {% if mobileNumber == empty or mobileNumber == '' %}disabled title="Person has no mobile number."{% endif %}><i class="fal fa-lg fa-phone"></i></a>
     </div><div class="col-xs-4">
-      <a href="sms:/{{ smsNumber }}" class="btn btn-block shadowed text-center {% if smsNumber == empty or smsNumber == '' %}btn-disabled{% else %}btn-default{% endif %}" {% if smsNumber == empty or smsNumber == '' %}disabled title="Person has no SMS-enabled mobile number."{% endif %}><i class="fal fa-lg fa-comments"></i></a>
+      <a href="sms:/{{ smsNumber }}" class="btn btn-block text-center {% if smsNumber == empty or smsNumber == '' %}btn-disabled{% else %}btn-default{% endif %}" {% if smsNumber == empty or smsNumber == '' %}disabled title="Person has no SMS-enabled mobile number."{% endif %}><i class="fal fa-lg fa-comments"></i></a>
     </div>
   </div>
 
@@ -134,7 +118,7 @@
       <h2 class="h4 xs-h5 text-uppercase strongest push-top">{{ person.NickName | Possessive }} Information</h2>
 
       {% assign homeAddress = person | Address:'Home' %}
-      <ul class="list-group push-bottom xs-push-half-bottom rounded shadowed">
+      <ul class="list-group push-bottom xs-push-half-bottom rounded">
         <li class="list-group-item">
             <i class="fal fa-fw fa-map-marker-alt position-relative push-quarter-right"></i> {{ person | Campus | Property:'Name' }}
           </li>
@@ -177,7 +161,7 @@
         Group Member Actions
       {% endcomment %}
       <p>
-        <a href="/workflows/119?PersonId={{ person.Id }}" class="btn btn-block btn-primary shadowed"><i class="fal fa-fw fa-exclamation-triangle position-relative push-quarter-right"></i> Report a Person Data Error</a>
+        <a href="/workflows/119?PersonId={{ person.Id }}" class="btn btn-block btn-primary"><i class="fal fa-fw fa-exclamation-triangle position-relative push-quarter-right"></i> Report an Error</a>
       </p>
 
     </div><div class="col-md-12 col-sm-6 col-xs-12">
@@ -267,7 +251,7 @@
         {% endif %}
       {% endcapture %}
 
-      <ul class="list-group push-bottom xs-push-half-bottom rounded shadowed">
+      <ul class="list-group push-bottom xs-push-half-bottom rounded">
         <li class="list-group-item">{{ salvationText | Trim }}</li>
         <li class="list-group-item">{{ baptismText | Trim }}</li>
         <li class="list-group-item">{{ servingText | Trim }}</li>

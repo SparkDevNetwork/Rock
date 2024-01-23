@@ -19,6 +19,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.Data.Interactions;
 
 namespace Rock.Tests.Integration.Reporting
 {
@@ -61,7 +62,7 @@ namespace Rock.Tests.Integration.Reporting
             var rockContext = new RockContext();
             var interactionService = new InteractionService( rockContext );
 
-            var interaction = BuildInteraction( rockContext, Convert.ToDateTime( "2010-3-15" ) );
+            var interaction = BuildInteraction( Convert.ToDateTime( "2010-3-15" ) );
 
             interactionService.Add( interaction );
             rockContext.SaveChanges();
@@ -91,7 +92,7 @@ namespace Rock.Tests.Integration.Reporting
 
                 for ( var i = 0; i < 15; i++ )
                 {
-                    var interaction = BuildInteraction( rockContext, TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+                    var interaction = BuildInteraction( TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
                     interactionService.Add( interaction );
                 }
 
@@ -111,16 +112,16 @@ namespace Rock.Tests.Integration.Reporting
             }
         }
 
-        private Rock.Model.Interaction BuildInteraction( RockContext rockContext, DateTime interactionDate )
+        private Rock.Model.Interaction BuildInteraction( DateTime interactionDate )
         {
-            var args = new TestDataHelper.Interactions.CreatePageViewInteractionActionArgs
+            var args = new CreatePageViewInteractionActionArgs
             {
                 PageIdentifier = SystemGuid.Page.EXCEPTION_LIST,
                 ForeignKey = interactionForeignKey,
                 ViewDateTime = interactionDate
             };
 
-            var interaction = TestDataHelper.Interactions.CreatePageViewInteraction( args, rockContext );
+            var interaction = InteractionsDataManager.Instance.CreatePageViewInteraction( args );
             return interaction;
         }
 

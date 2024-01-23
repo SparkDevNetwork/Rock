@@ -134,17 +134,31 @@ namespace Rock.Model
                 return null;
             }
 
-            // Look up and validate the discount by the code
+            // Look up and validate the discount by the code unless the registration has already been saved with the discount
             if ( discountCode.IsNotNullOrWhiteSpace() )
             {
-                var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-
-                context.Discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, discountCode );
-
-                if ( context.Discount == null )
+                if ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() )
                 {
-                    errorMessage = "The discount code is not valid";
-                    return null;
+                    var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
+
+                    context.Discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, discountCode );
+
+                    if ( context.Discount == null )
+                    {
+                        errorMessage = "The discount code is not valid";
+                        return null;
+                    }
+                }
+                else
+                {
+                    var registrationDiscount = new RegistrationTemplateDiscountService( new RockContext() ).GetDiscountsForRegistrationInstance( registrationInstanceId ).Where( d => d.Code == discountCode ).FirstOrDefault();
+                    if ( registrationDiscount != null )
+                    {
+                        context.Discount = new RegistrationTemplateDiscountWithUsage
+                        {
+                            RegistrationTemplateDiscount = registrationDiscount
+                        };
+                    }
                 }
             }
 
@@ -400,6 +414,16 @@ namespace Rock.Model
         /// The gateway person identifier.
         /// </value>
         public string GatewayPersonIdentifier { get; set; }
+
+        private readonly List<int> _personIdsRegisteredWithinThisSession = new List<int>();
+
+        /// <summary>
+        /// Gets the identifiers of the people who have been registered within a registration session.
+        /// </summary>
+        /// <value>
+        /// The identifiers of the people who have been registered within a registration session.
+        /// </value>
+        public List<int> PersonIdsRegisteredWithinThisSession => _personIdsRegisteredWithinThisSession;
     }
 
     /// <summary>
@@ -440,6 +464,8 @@ namespace Rock.Model
             MaxRegistrants = ( template.AllowMultipleRegistrants ? template.MaxRegistrants : 1 ) ?? instance.MaxAttendees;
             IsLoginRequired = template.LoginRequired;
             AllowExternalRegistrationUpdates = template.AllowExternalRegistrationUpdates;
+            ShowSmsOptIn = template.ShowSmsOptIn;
+            SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
 
             // Workflow type ids
             WorkflowTypeIds = new List<int>();
@@ -608,6 +634,22 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is wait list enabled; otherwise, <c>false</c>.
         /// </value>
         public bool IsWaitListEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the SMS opt-in checkbox should be displayed with a mobile phone number
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSmsOptIn { get; private set; }
+
+        /// <summary>
+        /// Gets the SMS opt in text.
+        /// </summary>
+        /// <value>
+        /// The SMS opt in text.
+        /// </value>
+        public string SmsOptInText { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether [are current family members shown].

@@ -54,7 +54,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<GroupRolePicker v-model="internalValue" :groupTypeGuid="groupTypeValue.value" />
+<GroupRolePicker v-model="internalValue" :groupTypeGuid="groupTypeValue.value" showBlankItem />
 `
 });
 
@@ -106,7 +106,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
         * Emits the updateConfigurationValue if the value has actually changed.
-        * 
+        *
         * @param key The key that was possibly modified.
         * @param value The new value.
         */

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,9 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a reporting dataset persisted in the database by a user
+    /// Represents a reporting dataset which is persisted in the database. These are typically
+    /// used for resource-intensive queries that take a longer time to fetch. They are then
+    /// cached and re-persisted according to the refresh interval.
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "PersistedDataset" )]
@@ -38,7 +40,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the unique key to use to access this persisted dataset
+        /// Gets or sets the unique key to use to access this persisted dataset.
         /// </summary>
         /// <value>
         /// The access key.
@@ -70,7 +72,7 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the refresh interval minutes
+        /// Gets or sets the refresh interval minutes.
         /// </summary>
         /// <value>
         /// The refresh interval minutes.
@@ -88,7 +90,7 @@ namespace Rock.Model
         public DateTime? LastRefreshDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets a comma-delimited list of enabled LavaCommands
+        /// Gets or sets a comma-delimited list of enabled LavaCommands.
         /// </summary>
         /// <value>
         /// The enabled lava commands.
@@ -106,7 +108,7 @@ namespace Rock.Model
         public bool AllowManualRefresh { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the serialized data of the dataset. See <seealso cref="ResultFormat"/>
+        /// Gets or sets the serialized data of the dataset. See <seealso cref="ResultFormat"/>.
         /// </summary>
         /// <value>
         /// The result data.
@@ -133,7 +135,7 @@ namespace Rock.Model
         public int? MemoryCacheDurationMS { get; set; }
 
         /// <summary>
-        /// Gets or sets the build script. See <seealso cref="BuildScriptType"/>
+        /// Gets or sets the build script. See <seealso cref="BuildScriptType"/>.
         /// </summary>
         /// <value>
         /// The build script.
@@ -171,7 +173,7 @@ namespace Rock.Model
         public bool IsActive { get; set; } = true;
 
         /// <summary>
-        /// The amount of time that it took to persist the <see cref="ResultData"/>
+        /// The amount of time that it took to persist the <see cref="ResultData"/>.
         /// </summary>
         /// <value>
         /// The time to build ms.
@@ -189,13 +191,23 @@ namespace Rock.Model
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// The DateTime when to stop updating the <see cref="ResultData"/>
+        /// The DateTime when to stop updating the <see cref="ResultData"/>.
         /// </summary>
         /// <value>
         /// The expire date time.
         /// </value>
         [DataMember]
         public DateTime? ExpireDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted schedule interval minutes.
+        /// If this is null, then the DataView is not persisted.
+        /// </summary>
+        /// <value>
+        /// The persisted schedule interval minutes.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleIntervalMinutes { get; set; }
 
         #endregion Entity Properties
 
@@ -209,6 +221,23 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ID of the schedule for this PersistedDataset.
+        /// </summary>
+        /// <value>
+        /// The persisted schedule identifier.
+        /// </value>
+        [DataMember]
+        public int? PersistedScheduleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule associated with this PersistedDataset.
+        /// </summary>
+        /// <value>
+        /// A schedule entity.
+        /// </value>
+        public virtual Schedule PersistedSchedule { get; set; }
 
         #endregion
     }
@@ -224,6 +253,8 @@ namespace Rock.Model
         public PesistedDatasetConfiguration()
         {
             this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
+
+            this.HasOptional( a => a.PersistedSchedule ).WithMany().HasForeignKey( a => a.PersistedScheduleId ).WillCascadeOnDelete( false );
         }
     }
 }

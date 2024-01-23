@@ -25,6 +25,8 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -77,7 +79,7 @@ namespace RockWeb.Blocks.Crm
             public const string ViewAllAttributes = "ViewAllAttributes";
         }
 
-        #endregion
+        #endregion Security Actions
 
         #region Constants
 
@@ -112,15 +114,15 @@ namespace RockWeb.Blocks.Crm
             FAMILY_VALUES,
             BUSINESS_INFORMATION,
             BUSINESS_ATTRIBUTES
-    };
+        };
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
         private MergeData MergeData { get; set; }
 
-        #endregion
+        #endregion Properties
 
         #region Base Control Methods
 
@@ -334,7 +336,7 @@ namespace RockWeb.Blocks.Crm
             return base.SaveViewState();
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -501,11 +503,7 @@ namespace RockWeb.Blocks.Crm
 
             var oldPhotos = new List<int>();
 
-            var logger = new RockProcessLogger
-            {
-                DefaultTopic = "PersonMerge",
-                LogDomain = RockLogDomains.Crm
-            };
+            var logger = new RockProcessLogger( Logger );
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = 90;
 
@@ -525,7 +523,7 @@ namespace RockWeb.Blocks.Crm
                     Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                     if ( primaryPerson != null )
                     {
-                        logger.DefaultTopic = $"PersonMerge:{primaryPerson.FullName}";
+                        logger.DefaultTopic = $"{primaryPerson.FullName}";
                         logger.Write( $"Merge started. [TargetPersonId={primaryPerson.Id}]" );
 
                         primaryPersonId = primaryPerson.Id;
@@ -730,6 +728,26 @@ namespace RockWeb.Blocks.Crm
 
                         rockContext.SaveChanges();
 
+                        // Merge Reminders on merge
+                        logger.Write( $"Merging Reminders..." );
+
+                        var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
+                        var personReminderTypesQry = new ReminderTypeService( rockContext ).Queryable()
+                            .Where( t => t.EntityTypeId == personEntityTypeId.Value );
+
+                        foreach ( var p in MergeData.People.Where( p => p.Id != primaryPerson.Id) )
+                        {
+                            var personReminders = new ReminderService( rockContext ).Queryable()
+                                .Where( r => personReminderTypesQry.Contains( r.ReminderType ) && r.EntityId == p.Id ).ToList();
+
+                            foreach ( var personReminder in personReminders )
+                            {
+                                personReminder.EntityId = primaryPerson.Id;
+                            }
+
+                            rockContext.SaveChanges();
+                        }
+
                         // Merge search keys on merge
                         logger.Write( $"Merging Search Keys..." );
 
@@ -850,7 +868,6 @@ namespace RockWeb.Blocks.Crm
 		                }
 
                         // Run scripts to merge non-primary person data.
-                        var personEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) );
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
                         {
                             var parms = new Dictionary<string, object>();
@@ -1019,6 +1036,9 @@ namespace RockWeb.Blocks.Crm
                                     currentTargetFamilyLocation.GroupLocationTypeValue = null;
                                     currentTargetFamilyLocation.GroupLocationTypeValueId = prevLocType.Id;
 
+                                    currentTargetFamilyLocation.IsMailingLocation = false;
+                                    currentTargetFamilyLocation.IsMappedLocation = false;
+
                                     newTargetFamilyLocation = new GroupLocation();
                                 }
                                 else
@@ -1144,7 +1164,7 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -1689,7 +1709,7 @@ namespace RockWeb.Blocks.Crm
             return nonPrimarySystemAccount;
         }
 
-        #endregion
+        #endregion Methods
 
         /// <summary>
         /// Executes a merge script that is equivalent to the stored procedure "spCrm_PersonMerge".
@@ -2151,14 +2171,25 @@ AND Attendance.Id != @FirstTimeRecordId
         /// </summary>
         private class RockProcessLogger
         {
-            public string LogDomain { get; set; }
-            public string DefaultTopic { get; set; }
-            public RockLogLevel DefaultLogLevel { get; set; } = RockLogLevel.Debug;
+            private readonly ILogger _logger;
 
-            public void Write( string message, string topic = null, RockLogLevel? logLevel = null )
+            public string DefaultTopic { get; set; }
+
+            public RockProcessLogger( ILogger logger )
             {
-                var msg = $"({ topic ?? DefaultTopic }) { message }";
-                RockLogger.Log.WriteToLog( logLevel ?? DefaultLogLevel, domain: LogDomain, messageTemplate: msg );
+                _logger = logger;
+            }
+
+            public void Write( string message )
+            {
+                if ( DefaultTopic.IsNullOrWhiteSpace() )
+                {
+                    _logger.LogDebug( message );
+                }
+                else
+                {
+                    _logger.LogDebug( $"({DefaultTopic}) {message}" );
+                }
             }
         }
 

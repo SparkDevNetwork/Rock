@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,13 +35,77 @@ namespace Rock.Field.Types
     /// Field Type used to display Assessment type check boxes.
     /// Stored as Assessment type's Guid.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian  )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ASSESSMENT_TYPE )]
     public class AssessmentTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+
+        #endregion
+
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var guids = value.SplitDelimitedValues().AsGuidList();
+
+                if ( guids.Any() )
+                {
+                    formattedValue = guids.Select( a => AssessmentTypeCache.Get( a ) ).Select( a => a.Title ).JoinStrings( ", " );
+                }
+            }
+
+            return formattedValue;
+        }
+
+        #endregion
+
+
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var assessmentTypeValues = publicValue.FromJsonOrNull<List<ListItemBag>>();
+
+            if ( assessmentTypeValues != null && assessmentTypeValues.Any() )
+            {
+                return assessmentTypeValues.Select( s => s.Value ).JoinStrings( ", " );
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                var guidList = privateValue.SplitDelimitedValues().AsGuidList();
+                var assessmentTypeValues = AssessmentTypeCache.All().Where( a => guidList.Contains( a.Guid ) ).ToListItemBagList();
+                if ( assessmentTypeValues.Any() )
+                {
+                    return assessmentTypeValues.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return string.Empty;
+        }
+
 
         #endregion
 
@@ -82,7 +147,7 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                var valueGuidList = privateValue.SplitDelimitedValues().AsGuidList();
 
                 var ids = new AssessmentTypeService( rockContext )
                     .Queryable()

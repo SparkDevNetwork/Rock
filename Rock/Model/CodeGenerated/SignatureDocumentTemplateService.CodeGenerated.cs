@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -70,53 +66,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// SignatureDocumentTemplate View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( SignatureDocumentTemplate ) )]
-    public partial class SignatureDocumentTemplateViewModelHelper : ViewModelHelper<SignatureDocumentTemplate, SignatureDocumentTemplateBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override SignatureDocumentTemplateBag CreateViewModel( SignatureDocumentTemplate model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new SignatureDocumentTemplateBag
-            {
-                IdKey = model.IdKey,
-                BinaryFileTypeId = model.BinaryFileTypeId,
-                CompletionSystemCommunicationId = model.CompletionSystemCommunicationId,
-                Description = model.Description,
-                DocumentTerm = model.DocumentTerm,
-                InviteSystemCommunicationId = model.InviteSystemCommunicationId,
-                IsActive = model.IsActive,
-                LavaTemplate = model.LavaTemplate,
-                Name = model.Name,
-                ProviderEntityTypeId = model.ProviderEntityTypeId,
-                ProviderTemplateKey = model.ProviderTemplateKey,
-                SignatureType = ( int ) model.SignatureType,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -182,11 +131,13 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
             target.IsActive = source.IsActive;
+            target.IsValidInFuture = source.IsValidInFuture;
             target.LavaTemplate = source.LavaTemplate;
             target.Name = source.Name;
             target.ProviderEntityTypeId = source.ProviderEntityTypeId;
             target.ProviderTemplateKey = source.ProviderTemplateKey;
             target.SignatureType = source.SignatureType;
+            target.ValidityDurationInDays = source.ValidityDurationInDays;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -195,20 +146,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static SignatureDocumentTemplateBag ToViewModel( this SignatureDocumentTemplate model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new SignatureDocumentTemplateViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

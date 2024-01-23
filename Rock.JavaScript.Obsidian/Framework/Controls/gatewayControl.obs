@@ -1,0 +1,78 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <ComponentFromUrl :url="url"
+                          :settings="settings"
+                          :amount="amountToPay"
+                          :returnUrl="returnUrl"
+                          @validation="onValidation"
+                          @success="onSuccess"
+                          @error="onError" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ComponentFromUrl from "./componentFromUrl.obs";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
+    import { GatewayEmitStrings } from "@Obsidian/Enums/Controls/gatewayEmitStrings";
+
+    const props = defineProps({
+        gatewayControlModel: {
+            type: Object as PropType<GatewayControlBag>,
+            required: true
+        },
+
+        amountToPay: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        returnUrl: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: typeof GatewayEmitStrings.Success, value: string): void;
+        (e: typeof GatewayEmitStrings.Validation, value: FormError[]): void;
+        (e: typeof GatewayEmitStrings.Error, value: string): void;
+    }>();
+
+    /** The URL that will be used to load the gateway component. */
+    const url = computed((): string => props.gatewayControlModel.fileUrl ?? "");
+
+    /** The settings that will be supplied to the gateway component. */
+    const settings = computed((): Record<string, unknown> => props.gatewayControlModel.settings as Record<string, unknown>);
+
+    /** The amount to be charged to the payment method by the gateway. */
+    const amountToPay = computed((): number => props.amountToPay);
+
+    /**
+     * Intercept the success event, so that local state can reflect it.
+     * @param token
+     */
+    function onSuccess(token: string): void {
+        emit(GatewayEmitStrings.Success, token);
+    }
+
+    /**
+     * This method handles validation updates.
+     *
+     * @param validationErrors The fields and error messages.
+     */
+    function onValidation(validationErrors: FormError[]): void {
+        emit(GatewayEmitStrings.Validation, validationErrors);
+    }
+
+    /**
+     * This method handles errors in the gateway component.
+     *
+     * @param message The error message to display.
+     */
+    function onError(message: string): void {
+        emit(GatewayEmitStrings.Error, message);
+    }
+</script>

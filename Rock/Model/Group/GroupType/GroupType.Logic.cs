@@ -36,7 +36,6 @@ namespace Rock.Model
         /// Gets or sets the attendance reminder followup days list.  This is the logical representation of <see cref="AttendanceReminderFollowupDays"/>.
         /// </summary>
         /// <value>The attendance reminder followup days list.</value>
-        [CodeGenExclude(CodeGenFeature.ViewModelFile)]
         public List<int> AttendanceReminderFollowupDaysList
         {
             get
@@ -270,6 +269,39 @@ namespace Rock.Model
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
             return GetInheritedAttributesForQualifier( rockContext, TypeId, "Id" );
+        }
+
+        /// <summary>
+        /// Get the group location picker mode for the provided location.
+        /// </summary>
+        /// <param name="location">The location whose group location picker mode should be determined.</param>
+        /// <returns>The group location picker mode for the provided location.</returns>
+        public static GroupLocationPickerMode GetGroupLocationPickerMode( Location location )
+        {
+            if ( location != null )
+            {
+                if ( location.IsNamedLocation )
+                {
+                    return GroupLocationPickerMode.Named;
+                }
+
+                if ( !string.IsNullOrWhiteSpace( location.GetFullStreetAddress().Replace( ",", string.Empty ) ) )
+                {
+                    return GroupLocationPickerMode.Address;
+                }
+
+                if ( location.GeoPoint != null )
+                {
+                    return GroupLocationPickerMode.Point;
+                }
+
+                if ( location.GeoFence != null )
+                {
+                    return GroupLocationPickerMode.Polygon;
+                }
+            }
+
+            return GroupLocationPickerMode.None;
         }
 
         #endregion

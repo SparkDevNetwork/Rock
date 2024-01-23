@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Microsoft.Extensions.Logging;
+
 using Rock.Logging;
 using System;
 using System.Collections;
@@ -125,8 +127,8 @@ namespace Rock.Web.UI
             }
             catch ( System.Security.Cryptography.CryptographicException cryptographicException )
             {
-                RockLogger.Log.Error( RockLogDomains.Core, cryptographicException, "Failed decrypting the encrypted View state Props" +
-                    "" );
+                RockLogger.LoggerFactory.CreateLogger<RockHiddenFieldPageStatePersister>()
+                    .LogError( cryptographicException, "Failed decrypting the encrypted View state Props" );
                 return;
             }
 

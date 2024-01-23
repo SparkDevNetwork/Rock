@@ -34,6 +34,8 @@ using System.Text;
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Web;
+using Rock.Blocks;
+using Rock.Security;
 
 /// <summary>
 ///
@@ -473,6 +475,32 @@ namespace RockWeb.Blocks.Cms
         private void AddAdminControls( BlockCache block, Panel pnlLayoutItem )
         {
             Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right control-actions" };
+            var blockCompiledType = block.BlockType.GetCompiledType();
+
+            // Add in any custom actions from next generation blocks.
+            if ( typeof( IHasCustomActions ).IsAssignableFrom( blockCompiledType ) )
+            {
+                var customActionsBlock = ( IHasCustomActions ) Activator.CreateInstance( blockCompiledType );
+                var canEdit = BlockCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+
+                var configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
+
+                foreach ( var action in configActions )
+                {
+                    var script = $@"Obsidian.onReady(() => {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.showCustomBlockAction('{action.ComponentFileUrl}', '{page.Guid}', '{block.Guid}');
+    }});
+}});";
+
+                    pnlAdminButtons.Controls.Add( new Literal
+                    {
+                        Text = $"<a href=\"#\" onclick=\"event.preventDefault(); {script.EncodeXml( true )}\" title=\"{action.Tooltip.EncodeXml( true )}\" class=\"btn btn-sm btn-default btn-square\"><i class=\"{action.IconCssClass}\"></i></a>"
+                    } );
+                }
+            }
 
             // Block Properties
             Literal btnBlockProperties = new Literal();
@@ -667,7 +695,7 @@ namespace RockWeb.Blocks.Cms
                         <div class='block-config-buttons pull-right'>
                         ",
                     block.Name,
-                    block.BlockType );
+                    AddIconIfObsidian( block.BlockType ) );
 
                 pnlBlockEditWidget.Controls.Add( lPanelHeading );
 
@@ -681,6 +709,24 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Adds the "party popper" emoji to the block type name if it is an Obsidian block type
+        /// </summary>
+        /// <param name="blockType">Type of the block.</param>
+        /// <returns></returns>
+        private string AddIconIfObsidian( BlockTypeCache blockType )
+        {
+            var entityType = blockType?.EntityType?.GetEntityType();
+            if ( entityType != null && typeof( IRockObsidianBlockType ).IsAssignableFrom( entityType ) )
+            {
+                return blockType.Name + " \U0001f389";
+            }
+            else
+            {
+                return blockType.Name;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnAddBlock control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -688,46 +734,40 @@ namespace RockWeb.Blocks.Cms
         protected void btnAddBlock_Click( object sender, EventArgs e )
         {
             tbNewBlockName.Text = string.Empty;
+            var siteType = PageCache.Get( hfPageId.Value.AsInteger() ).Layout.Site.SiteType;
 
             // Load the block types
             using ( var rockContext = new RockContext() )
             {
                 try
                 {
-                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
                 }
                 catch
                 {
                     // ignore
                 }
 
-                // Get a list of BlockTypes that does not include Mobile block types.
-                List<BlockTypeCache> allExceptMobileBlockTypes = new List<BlockTypeCache>();
-                foreach( var cachedBlockType in BlockTypeCache.All() )
-                {
-                    try
-                    {
-                        var blockCompiledType = cachedBlockType.GetCompiledType();
-
-                        if ( !typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
-                        {
-                            allExceptMobileBlockTypes.Add( cachedBlockType );
-                        }
-                    }
-                    catch ( Exception )
-                    {
-                        // Intentionally ignored
-                    }
-                }
-
-                var blockTypes = allExceptMobileBlockTypes.Select( b => new { b.Id, b.Name, b.Category, b.Description } ).ToList();
+                var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType )
+                    .Select( b => new { b.Id, b.Name, b.Category, b.Description,
+                        IsObsidian = typeof( IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() ) } )
+                    .ToList();
 
                 ddlBlockType.Items.Clear();
 
                 // Add the categorized block types
                 foreach ( var blockType in blockTypes.Where( b => b.Category != string.Empty ).OrderBy( b => b.Category ).ThenBy( b => b.Name ) )
                 {
-                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                    var blockTypeName = blockType.Name;
+
+                    // Append the "party popper" emoji to the block type name if it
+                    // is an Obsidian block type so we can differentiate during rollout.
+                    if ( blockType.IsObsidian )
+                    {
+                        blockTypeName += " \U0001f389";
+                    }
+
+                    var li = new ListItem( blockTypeName, blockType.Id.ToString() );
                     li.Attributes.Add( "optiongroup", blockType.Category );
                     li.Attributes.Add( "title", blockType.Description );
                     ddlBlockType.Items.Add( li );
@@ -903,11 +943,11 @@ namespace RockWeb.Blocks.Cms
                 var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '>' } );
                 if ( parts.Length > 1 )
                 {
-                    tbNewBlockName.Text = parts[parts.Length - 1].Trim();
+                    tbNewBlockName.Text = parts[parts.Length - 1].Trim().Replace( " \U0001f389", string.Empty );
                 }
                 else
                 {
-                    tbNewBlockName.Text = ddlBlockType.SelectedItem.Text;
+                    tbNewBlockName.Text = ddlBlockType.SelectedItem.Text.Replace( " \U0001f389", string.Empty );
                 }
             }
         }

@@ -1,0 +1,123 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div v-if="!achieverId" class="row">
+            <div class="col-md-6" id="divAchiever" runat="server">
+                <NumberBox v-model="achieverId" rules="required" label="Achiever Id" />
+            </div>
+            <div class="col-md-6" id="divAchievement" runat="server">
+                <AchievementTypePicker v-model="achievementType" rules="required" label="Achievement" :multiple="false" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DatePicker v-model="achievementAttemptStartDateTime"
+                            rules="required"
+                            label="Start Date"
+                            help="The date that progress toward this attempt began." />
+            </div>
+            <div class="col-md-6">
+                <DatePicker v-model="achievementAttemptEndDateTime"
+                            label="End Date"
+                            help="The date that progress toward this attempt ended." />
+            </div>
+            <div class="col-md-6">
+                <NumberBox v-model="progress"
+                           class="input-width-md"
+                           label="Progress"
+                           help="The percent towards completion of this attempt. 0.5 is 50%, 1 is 100%, etc." />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AchievementAttemptBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptBag";
+    import { AchievementAttemptDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptDetailOptionsBag";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AchievementAttemptBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AchievementAttemptDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AchievementAttemptBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const achieverId = propertyRef(props.modelValue.achieverEntityId ?? null, "AchieverEntityId");
+    const achievementType = propertyRef(props.modelValue.achievementType ?? {}, "AchievementType");
+    const achievementAttemptStartDateTime = propertyRef(props.modelValue.achievementAttemptStartDateTime ?? "", "AchievementAttemptStartDateTime");
+    const achievementAttemptEndDateTime = propertyRef(props.modelValue.achievementAttemptEndDateTime ?? "", "AchievementAttemptEndDateTime");
+    const progress = propertyRef(props.modelValue.progress, "Progress");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [achieverId, achievementType, achievementAttemptStartDateTime, achievementAttemptEndDateTime, progress];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(achieverId, props.modelValue.achieverEntityId ?? null);
+        updateRefValue(achievementType, props.modelValue.achievementType ?? {});
+        updateRefValue(achievementAttemptStartDateTime, props.modelValue.achievementAttemptStartDateTime ?? "");
+        updateRefValue(achievementAttemptEndDateTime, props.modelValue.achievementAttemptEndDateTime ?? "");
+        updateRefValue(progress, props.modelValue.progress);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: AchievementAttemptBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            achieverEntityId: achieverId.value,
+            achievementType: achievementType.value,
+            achievementAttemptStartDateTime: achievementAttemptStartDateTime.value,
+            achievementAttemptEndDateTime: achievementAttemptEndDateTime.value,
+            progress: progress.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

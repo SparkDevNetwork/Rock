@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Tv
         false,
         @"<div>
     <h1>Success!</h1>
-    <span>{{ CurrentPerson.NickName }}, you have successfully authenicated to your application.</span>
+    <span>{{ CurrentPerson.NickName }}, you have successfully authenticated to your application.</span>
 </div>",
         "default",
         3,
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Tv
             nbAuthenticationMessages.Visible = false;
 
             // Configure header and footer
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
 
             lHeaderInfo.Text = GetAttributeValue(AttributeKey.HeaderContent).ResolveMergeFields( mergeFields );
             lFooterInfo.Text = GetAttributeValue( AttributeKey.FooterContent ).ResolveMergeFields( mergeFields );
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Tv
             pnlAuthenticate.Visible = false;
             pnlSuccess.Visible = true;
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
             lSuccessContent.Text = GetAttributeValue( AttributeKey.SuccessMessage ).ResolveMergeFields( mergeFields );
         }
 

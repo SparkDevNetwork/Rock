@@ -28,7 +28,7 @@
 <script setup lang="ts">
     import { computed, nextTick, PropType, provide, ref } from "vue";
     import Group from "./group.partial.obs";
-    import { ReloadScheduleOccurrences } from "./types.partial";
+    import { ReloadScheduleOccurrences, ScheduleId } from "./types.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
@@ -64,15 +64,16 @@
 
     // #region Computed Values
 
+    const scheduleId = computed((): number => {
+        // It's assumed that all occurrences provided will belong to the same schedule;
+        // just grab the first scheduleId, since they should all be the same.
+        return props.occurrences?.[0]?.scheduleId ?? 0;
+    });
+
     const title = computed((): string => {
         // It's assumed that all occurrences provided will belong to the same schedule;
         // just grab the first scheduleName, since they should all be the same.
-        let scheduleName: string | null | undefined;
-        if (props.occurrences?.length) {
-            scheduleName = props.occurrences[0].scheduleName;
-        }
-
-        return scheduleName || "Schedule";
+        return props.occurrences?.[0]?.scheduleName || "Schedule";
     });
 
     const sortedOccurrencesByGroup = computed((): (GroupSchedulerOccurrenceBag[])[] => {
@@ -139,5 +140,6 @@
 
     // #endregion
 
+    provide(ScheduleId, scheduleId);
     provide(ReloadScheduleOccurrences, reloadScheduleOccurrences);
 </script>

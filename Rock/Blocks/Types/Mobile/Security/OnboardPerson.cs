@@ -37,12 +37,13 @@ namespace Rock.Blocks.Types.Mobile.Security
     /// <summary>
     /// Provides an interface for the user to safely identify themselves and create a login.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Onboard Person" )]
     [Category( "Mobile > Security" )]
     [Description( "Provides an interface for the user to safely identify themselves and create a login." )]
     [IconCssClass( "fa fa-plane-departure" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -111,6 +112,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         DefinedTypeGuid = SystemGuid.DefinedType.CAMPUS_TYPE,
         IsRequired = true,
         DefaultValue = SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL,
+        AllowMultiple = true,
         Category = AttributeCategories.Campus,
         Key = AttributeKeys.DisplayCampusTypes,
         Order = 0 )]
@@ -120,6 +122,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         DefinedTypeGuid = SystemGuid.DefinedType.CAMPUS_STATUS,
         IsRequired = true,
         DefaultValue = SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN,
+        AllowMultiple = true,
         Category = AttributeCategories.Campus,
         Key = AttributeKeys.DisplayCampusStatuses,
         Order = 1 )]
@@ -411,7 +414,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_SECURITY_ONBOARD_PERSON )]
     [Rock.SystemGuid.BlockTypeGuid( "9544EE9E-07C2-4F14-9C93-3B16EBF0CC47")]
-    public class OnboardPerson : RockMobileBlockType
+    public class OnboardPerson : RockBlockType
     {
         #region Block Attributes
 
@@ -1016,21 +1019,8 @@ namespace Rock.Blocks.Types.Mobile.Security
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 2;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Security.OnboardPerson";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 2 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -1307,7 +1297,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 Email = details.Email,
                 Gender = ToWeb( details.Gender ) ?? Rock.Model.Gender.Unknown,
                 IsEmailActive = true,
-                EmailPreference = EmailPreference.EmailAllowed,
+                EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
                 RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 ConnectionStatusValueId = dvcConnectionStatus?.Id,
                 RecordStatusValueId = dvcRecordStatus?.Id

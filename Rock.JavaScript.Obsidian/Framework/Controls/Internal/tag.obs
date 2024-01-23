@@ -1,0 +1,67 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span :class="tagClass" :style="tagStyle">
+        <span v-if="iconCssClass" class="tag-icon">
+            <i :class="iconCssClass"></i>
+        </span>
+        <span>{{ text }}</span>
+        <a v-if="!disabled" href="#" title="Remove tag" @click.prevent.stop="onRemoveTag">x</a>
+    </span>
+</template>
+
+<script setup lang="ts">
+    import { EntityTagListTagBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListTagBag";
+    import { computed, PropType } from "vue";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<EntityTagListTagBag>,
+            required: true
+        },
+
+        /** Disable interactivity (delete button) */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "removeTag", v: string): void
+    }>();
+
+    const text = computed((): string => {
+        return props.modelValue.name ?? "";
+    });
+
+    const iconCssClass = computed((): string => {
+        return props.modelValue.iconCssClass ?? "";
+    });
+
+    const tagClass = computed((): Record<string, boolean> => {
+        return {
+            tag: true,
+            personal: props.modelValue.isPersonal,
+            disabled: props.disabled
+        };
+    });
+
+    const tagStyle = computed((): Record<string, string> => {
+        const styles = {};
+
+        if (props.modelValue.backgroundColor) {
+            const color = new RockColor(props.modelValue.backgroundColor);
+            const pair = RockColor.calculateColorPair(color);
+
+            styles["background-color"] = pair.backgroundColor.toHex();
+            styles["color"] = pair.foregroundColor.toHex();
+        }
+
+        return styles;
+    });
+
+    const onRemoveTag = (): void => {
+        emit("removeTag", props.modelValue.idKey ?? "");
+    };
+</script>

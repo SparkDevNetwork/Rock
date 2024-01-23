@@ -1,2 +1,5 @@
 #specific files
 app.[Cc]onnectionStrings.config
+*.runsettings
+/app.Settings.config.example
+*.TestSettings.config

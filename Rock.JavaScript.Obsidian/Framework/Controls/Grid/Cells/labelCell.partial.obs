@@ -6,10 +6,10 @@
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { computed } from "vue";
 
     const props = defineProps(standardCellProps);
-    const brightnessCache: Record<string, number> = {};
 
     /** Contains the display text of the cell. */
     const text = computed((): string => {
@@ -26,6 +26,13 @@
             }
 
             return `${(value as ListItemBag).text}`;
+        }
+        else if (typeof value === "number" || typeof value === "string") {
+            const textSource = props.column.props["textSource"] as Record<string | number, string>;
+
+            if (textSource && value in textSource) {
+                return textSource[value];
+            }
         }
 
         return `${value}`;
@@ -49,67 +56,24 @@
 
         if (props.column.field && props.row[props.column.field] && (props.row[props.column.field] as ListItemBag).value) {
             // Looks like a ListItemBag, extract the color information.
-            const backgroundColor = (props.row[props.column.field] as ListItemBag).value ?? "gray";
+            const baseColor = (props.row[props.column.field] as ListItemBag).value ?? "gray";
+
+            const pair = RockColor.calculateColorPair(new RockColor(baseColor));
 
             return {
-                "backgroundColor": backgroundColor,
-                "color": (calculateColorBrightness(backgroundColor) ?? 0) > 0.5 ? "black" : "white"
+                "backgroundColor": pair.backgroundColor.toRgba(),
+                "color": pair.foregroundColor.toRgba()
             };
         }
         else if (colorSource && text.value in colorSource) {
+            const baseColor = colorSource[text.value];
+            const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+
             // We are using the color lookup and we have a match.
             return {
-                "backgroundColor": colorSource[text.value],
-                "color": (calculateColorBrightness(colorSource[text.value]) ?? 0) > 0.5 ? "black" : "white"
+                "backgroundColor": pair.backgroundColor.toRgba(),
+                "color": pair.foregroundColor.toRgba()
             };
         }
     });
-
-    /**
-     * Calculates the brightness of the given CSS color string.
-     *
-     * @param color The CSS color string to be calculated.
-     *
-     * @returns A number between 0 and 1, or undefined if the brightness could not be determined.
-     */
-    function calculateColorBrightness(color: string | undefined | null): number | undefined {
-        if (!color) {
-            return undefined;
-        }
-
-        if (color in brightnessCache) {
-            return brightnessCache[color];
-        }
-
-        // Create a node that we will use to parse the color specified into a
-        // standard format we can use.
-        const node = document.createElement("div");
-        try {
-            // Set the color and mark it to never display. Then add it to the body
-            // so we can compute the style.
-            node.setAttribute("style", `color: ${color} !important; display: none !important;`);
-            document.body.appendChild(node);
-
-            // Compute the color style. This always returns in one of two formats
-            // no matter what the input format above was:
-            // rgb(r,g,b)
-            // rgba(r,g,b,a)
-            const computedColor = window.getComputedStyle(node).color;
-            const rgbaMatch = computedColor.match(/rgba?\((.*)\)/);
-            if (!rgbaMatch) {
-                return undefined;
-            }
-
-            const rgba = rgbaMatch[1].split(",").map(Number);
-
-            // Calculate the brightness of the color.
-            const brightness = Math.round(((rgba[0] * 299) + (rgba[1] * 587) + (rgba[2] * 114)) / 1000);
-
-            // Our brightness is 0-255, make it 0-1.
-            return Math.min(255, brightness) / 255;
-        }
-        finally {
-            node.remove();
-        }
-    }
 </script>

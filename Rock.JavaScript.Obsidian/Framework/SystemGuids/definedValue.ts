@@ -57,6 +57,8 @@ export const DefinedValue = {
     BlockTemplateMobileGroupMemberList: "E5618730-9E50-4BDA-9E13-D27697F83980",
     /** The block template for the mobile group member view. */
     BlockTemplateMobileGroupMemberView: "09053C7C-9374-4489-8A7B-71F02E3E7D89",
+    /** The block template for the mobile notes block. */
+    BlockTemplateMobileGroupMembers: "89322C87-CA36-4169-9361-FDA4EFEF07C1",
     /** The block template for the mobile group schedule preference landing page. */
     BlockTemplateMobileGroupSchedulePreferenceLandingPage: "D39CCB65-2444-48E4-9DE1-7A01AB20CB61",
     /** The block template for the mobile group schedule preference landing page. */

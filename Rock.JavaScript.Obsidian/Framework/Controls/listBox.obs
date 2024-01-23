@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="internalValue"
+                   formGroupClasses="rock-drop-down-list"
+                   name="dropdownlist">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <select :id="uniqueId" class="form-control" :class="compiledFormControlClasses" v-bind="field" v-model="internalValue" ref="theSelect" multiple>
+                    <option v-if="showBlankItem" :value="blankValue"></option>
+                    <option v-for="item in items" :key="item.value ?? undefined" :value="item.value">{{ item.text }}</option>
+                </select>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<Array<string>>,
+            default: []
+        },
+
+        items: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+
+        formControlClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        enhanceForLongLists: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        showBlankItem: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        blankValue: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string[]): void;
+    }>();
+
+    const uniqueId = `rock-listbox-${newGuid()}`;
+    const internalValue = ref<string[]>([]);
+    const theSelect = ref<HTMLElement>();
+    let isMounted = false;
+
+
+    /** The compiled list of CSS classes (props and calculated from other inputs) for the select element */
+    const compiledFormControlClasses = computed((): string => {
+        if (props.enhanceForLongLists) {
+            return props.formControlClasses + " chosen-select";
+        }
+
+        return props.formControlClasses;
+    });
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    /** Uses jQuery to get the chosen element */
+    function getChosenJqueryEl(): any {
+        const jquery = <any>window[<any>"$"];
+        let $chosenDropDown = jquery(theSelect.value);
+
+        if (!$chosenDropDown || !$chosenDropDown.length) {
+            $chosenDropDown = jquery(`#${uniqueId}`);
+        }
+
+        return $chosenDropDown;
+    }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    function createOrDestroyChosen(): void {
+        if (!isMounted) {
+            return;
+        }
+
+        const $chosenDropDown = getChosenJqueryEl();
+
+        if (props.enhanceForLongLists) {
+            $chosenDropDown
+                .chosen({
+                    width: "100%",
+                    placeholder_text_multiple: " ",
+                    placeholder_text_single: " "
+                })
+                .change(() => {
+                    internalValue.value = $chosenDropDown.val();
+                });
+        }
+        else {
+            $chosenDropDown.chosen("destroy");
+        }
+    }
+
+    function syncValue(): void {
+        if (internalValue.value.length === props.modelValue.length && internalValue.value.every((v, i) => v === props.modelValue[i])) {
+            return;
+        }
+
+        internalValue.value = props.modelValue;
+
+        if (props.enhanceForLongLists) {
+            nextTick(() => {
+                const $chosenDropDown = getChosenJqueryEl();
+                $chosenDropDown.trigger("chosen:updated");
+            });
+        }
+    }
+
+    watch(() => props.modelValue, () => {
+        syncValue();
+    }, { immediate: true });
+
+    watch(() => props.items, () => {
+        syncValue();
+    }, { immediate: true });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+
+    watch(() => props.enhanceForLongLists, () => {
+        createOrDestroyChosen();
+    });
+
+    onMounted(() => {
+        isMounted = true;
+        createOrDestroyChosen();
+    });
+</script>

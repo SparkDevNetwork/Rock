@@ -64,12 +64,6 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.DetailPage )]
-    [BooleanField(
-        "Enable Legacy Global Attribute Lava",
-        Description = "This should only be enabled if your lava is using legacy Global Attributes. Enabling this option, will negatively affect the performance of this block.",
-        DefaultBooleanValue = false,
-        Order = 2,
-        Key = AttributeKey.SupportLegacy )]
 
     // Custom Settings
     [ContentChannelField(
@@ -202,7 +196,6 @@ namespace RockWeb.Blocks.Cms
         {
             public const string EnabledLavaCommands = "EnabledLavaCommands";
             public const string DetailPage = "DetailPage";
-            public const string SupportLegacy = "SupportLegacy";
             public const string Channel = "Channel";
             public const string Status = "Status";
             public const string Template = "Template";
@@ -631,6 +624,7 @@ $(document).ready(function() {
             kvlOrder.Required = true;
 
             ShowEdit();
+            ShowView(); // Populate the placeholder so that incase the model is closed a blank page is not shown.
 
             upnlContent.Update();
         }
@@ -721,7 +715,6 @@ $(document).ready(function() {
                 var currentPageContent = pagination.GetCurrentPageItems( contentItemList );
 
                 var mergeFieldOptions = new Rock.Lava.CommonMergeFieldsOptions();
-                mergeFieldOptions.GetLegacyGlobalMergeFields = GetAttributeValue( AttributeKey.SupportLegacy ).AsBoolean();
                 var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, mergeFieldOptions );
 
                 // Merge content and attribute fields if block is configured to do so.

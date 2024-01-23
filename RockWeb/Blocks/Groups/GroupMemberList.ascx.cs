@@ -246,8 +246,8 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
 
-                    // If all of the roles in a group are sync'd then don't show the add button
-                    gGroupMembers.Actions.ShowAdd = _groupTypeCache.Roles
+                    // If someone can edit group members and if all of the roles in a group are sync'd then don't show the add button
+                    gGroupMembers.Actions.ShowAdd = canEditBlock && _groupTypeCache.Roles
                         .Where( r => !_group.GroupSyncs.Select( s => s.GroupTypeRoleId )
                         .Contains( r.Id ) )
                         .Any();
@@ -2083,17 +2083,33 @@ namespace RockWeb.Blocks.Groups
             _showNoteColumn = GetAttributeValue( "ShowNoteColumn" ).AsBoolean();
             gGroupMembers.ColumnsOfType<RockBoundField>().First( a => a.DataField == "Note" ).Visible = _showNoteColumn;
 
-            List<int> selectedGroupMemberIds = new List<int>();
-
-            // If any row is selected, use those selected, otherwise choose all of them.
-            selectedGroupMemberIds = !gGroupMembers.SelectedKeys.Any() ? qry.Select( gm => gm.Id ).ToList() : gGroupMembers.SelectedKeys.OfType<int>().ToList();
-
             var hasInactiveGroupMembers = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive ).Any();
 
-            if ( selectedGroupMemberIds.Count > 0 && hasInactiveGroupMembers )
+            // Determine if the current query has inactive group members selected.
+            if ( hasInactiveGroupMembers )
             {
-                // Determine if the current query has inactive group members selected.
-                _hasInactiveGroupMembersSelected = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive && selectedGroupMemberIds.Contains( gm.Id ) ).Any();
+                if ( gGroupMembers.SelectedKeys.Any() )
+                {
+                    // At least one row is selected, use the list of selected rows.
+                    var selectedGroupMemberIds = gGroupMembers.SelectedKeys.OfType<int>().ToList();
+
+                    if ( selectedGroupMemberIds.Count > 1_000 )
+                    {
+                        // Doing a .Contains() on a large number can cause the
+                        // query to fail with an "out of resources" error.
+                        var groupMemberIdsInQuery = qry.Select( gm => gm.Id ).ToList();
+                        _hasInactiveGroupMembersSelected = groupMemberIdsInQuery.Any( gmid => selectedGroupMemberIds.Contains( gmid ) );
+                    }
+                    else
+                    {
+                        _hasInactiveGroupMembersSelected = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive && selectedGroupMemberIds.Contains( gm.Id ) ).Any();
+                    }
+                }
+                else
+                {
+                    // Nothing is selected, so check everybody in the query.
+                    _hasInactiveGroupMembersSelected = qry.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive ).Any();
+                }
             }
 
             gGroupMembers.SetLinqDataSource( qry );

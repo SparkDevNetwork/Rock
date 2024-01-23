@@ -14,11 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 
 namespace Rock.Jobs
@@ -26,20 +23,49 @@ namespace Rock.Jobs
     internal class JobMigration : IMigration
     {
         private readonly int _commandTimeout;
+        private readonly RockContext _rockContext;
 
-        public JobMigration(int commandTimeout )
+        public JobMigration( int commandTimeout )
         {
             _commandTimeout = commandTimeout;
         }
 
+        /// <summary>
+        /// Create a Job Migration Class out of a RockContext
+        /// </summary>
+        /// <param name="rockContext">The RockContext to be used to make the SQL commands. Please ensure that the rockContext has the commandTimeout set.</param>
+        public JobMigration( RockContext rockContext)
+        {
+            _rockContext = rockContext;
+        }
+
         public void Sql( string sql )
         {
-            DbService.ExecuteCommand( sql, commandTimeout: _commandTimeout );
+            if ( _rockContext == null )
+            {
+                DbService.ExecuteCommand( sql, commandTimeout: _commandTimeout );
+            }
+            else
+            {
+                _rockContext.Database.ExecuteSqlCommand( sql );
+            }
+        }
+
+        public void Sql( string sql, Dictionary<string, object> parameters )
+        {
+            if ( _rockContext == null )
+            {
+                DbService.ExecuteCommand( sql, parameters: parameters, commandTimeout: _commandTimeout );
+            }
+            else
+            {
+                _rockContext.Database.ExecuteSqlCommand( sql, parameters );
+            }
         }
 
         public object SqlScalar( string sql )
         {
-            return DbService.ExecuteScaler( sql );
+            return DbService.ExecuteScalar( sql );
         }
     }
 }

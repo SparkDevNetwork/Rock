@@ -61,12 +61,12 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import RockFormField from "@Obsidian/Controls/rockFormField";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean as PropType<boolean | undefined | null>,
             required: true
         },
 

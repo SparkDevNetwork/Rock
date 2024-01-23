@@ -58,6 +58,12 @@ namespace Rock.Client
         /// <summary />
         public bool IsSystem { get; set; }
 
+        /// <summary />
+        public string LastErrorCode { get; set; }
+
+        /// <summary />
+        public DateTime? LastErrorCodeDateTime { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -119,6 +125,8 @@ namespace Rock.Client
             this.GroupId = source.GroupId;
             this.IsDefault = source.IsDefault;
             this.IsSystem = source.IsSystem;
+            this.LastErrorCode = source.LastErrorCode;
+            this.LastErrorCodeDateTime = source.LastErrorCodeDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.PersonAliasId = source.PersonAliasId;

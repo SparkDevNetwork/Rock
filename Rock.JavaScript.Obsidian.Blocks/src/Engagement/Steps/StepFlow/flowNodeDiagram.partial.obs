@@ -1,0 +1,386 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="flow-node-diagram-container">
+        <div class="flow-tooltip" v-html="tooltip.html" v-if="tooltip.isShown" :style="tooltipStyles" />
+
+        <svg class="step-flow-svg mx-auto" :width="chartWidth" :height="chartHeight" :viewBox="'0 0 ' + chartWidth + ' ' + chartHeight">
+            <FlowNodeDiagramLevel
+                                  v-for="(level, levelNum) in diagramData"
+                                  :key="'level' + levelNum"
+                                  :levelData="level"
+                                  :levelNumber="levelNum + 1"
+                                  @showTooltip="showTooltip" />
+        </svg>
+
+        <div class="step-flow-legend" v-html="settings.legendHtml" />
+
+        <transition name="fade" appear>
+            <div v-if="isLoading" class="loadingContainer">
+                <h3>Loading...</h3>
+            </div>
+        </transition>
+    </div>
+</template>
+
+<style>
+.flow-node-diagram-container {
+    position: relative;
+    width: max-content;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.flow-node-diagram-container .flow-tooltip {
+    position: absolute;
+    background: #fff;
+    max-width: 260px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 14px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05)
+}
+
+.flow-node-diagram-container svg {
+    max-width: 100%;
+    height: auto;
+    min-height: 50px;
+}
+
+.flow-node-diagram-container .loadingContainer {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, .75);
+}
+
+.flow-node-diagram-container .loadingContainer h3 {
+    margin: 0;
+}
+
+.flow-node-diagram-container .fade-enter-from,
+.flow-node-diagram-container .fade-leave-to {
+    opacity: 0;
+}
+
+.flow-node-diagram-container .fade-enter-active,
+.flow-node-diagram-container .fade-leave-active {
+    transition: opacity .2s ease-in-out;
+}
+
+.step-flow-svg .edge:hover {
+    fill: rgba(170, 170, 170, 0.8);
+}
+
+.step-flow-svg .edge {
+  opacity: 0;
+  transform-origin: left center;
+  animation: flow-edges 0.25s ease-in-out forwards;
+}
+.step-flow-svg .edge.level-2 {
+  animation-delay: 0.25s;
+}
+.step-flow-svg .edge.level-3 {
+  animation-delay: .5s;
+}
+.step-flow-svg .edge.level-4 {
+  animation-delay: .75s;
+}
+.step-flow-svg .edge.level-5 {
+  animation-delay: 1s;
+}
+.step-flow-svg .edge.level-6 {
+  animation-delay: 1.25s;
+}
+@keyframes flow-edges {
+  0% {
+    opacity: 0;
+    -webkit-clip-path: inset(0 100% 0 0);
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    opacity: 1;
+    -webkit-clip-path: inset(0 0 0 0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.flow-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px auto 0;
+    gap: 12px;
+    width: 100%;
+}
+
+.flow-key {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    line-height: 1.1;
+}
+
+.flow-key .color {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+</style>
+
+<script setup lang="ts">
+    import FlowNodeDiagramLevel from "./flowNodeDiagramLevel.partial.obs";
+    import { computed, PropType, reactive } from "vue";
+    import { toDecimalPlaces } from "@Obsidian/Utility/numberUtils";
+    import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
+    import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramEdgeBag";
+    import { FlowNodeDiagramSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramSettingsBag";
+
+    type Point = { x: number; y: number };
+    type Rectangle = Point & { width: number; height: number };
+    type Path = { sourcePoint: Point, targetPoint: Point, thickness: number };
+
+    type FlowDiagramInFlow = FlowNodeDiagramEdgeBag & Path;
+    type FlowDiagramLevelNode = FlowNodeDiagramNodeBag & Rectangle & {
+        totalUnits: number;
+        inFlows: FlowDiagramInFlow[];
+    };
+
+    type FlowDiagramLevel = FlowDiagramLevelNode[];
+    type FlowDiagramData = FlowDiagramLevel[];
+
+    type NonNullValues<T> = { [P in keyof T]: NonNullable<T[P]> };
+    type FlowNodeDiagramSettingsFull = NonNullValues<Required<FlowNodeDiagramSettingsBag>>;
+
+    const defaultSettings: FlowNodeDiagramSettingsFull = {
+        nodeWidth: 12,
+        nodeVerticalSpacing: 12,
+        chartWidth: 1200,
+        chartHeight: 900,
+        legendHtml: ""
+    };
+
+    function round(num: number): number {
+        return toDecimalPlaces(num, 2);
+    }
+
+    const props = defineProps({
+        // Details about the nodes that are being "flowed" between.
+        flowNodes: {
+            type: Array as PropType<FlowNodeDiagramNodeBag[]>,
+            default: () => []
+        },
+
+        // Details about flows between nodes
+        flowEdges: {
+            type: Array as PropType<FlowNodeDiagramEdgeBag[]>,
+            default: () => []
+        },
+
+        // Generated HTML string for the chart legend
+        legendHtml: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        // Settings that control the sizes of different items in the diagram.
+        settings: {
+            type: Object as PropType<FlowNodeDiagramSettingsBag>,
+            default: () => ({})
+        },
+
+        // Show a spinner to indicate the data is being loaded if true.
+        isLoading: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const tooltip = reactive({
+        isShown: false,
+        html: "",
+        x: 0,
+        y: 0,
+        side: "left"
+    });
+
+    const settings = computed<FlowNodeDiagramSettingsFull>(() => {
+        const settings = { ...defaultSettings };
+        Object.entries(props.settings).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                settings[key] = value;
+            }
+        });
+
+        return settings;
+    });
+    const nodeCount = computed(() => props.flowNodes.length);
+    const levelsCount = computed(() => props.flowEdges.reduce((count, edge) => Math.max(count, edge.level), 0));
+    const chartWidth = computed(() => settings.value.chartWidth);
+    const nodeHorizontalSpacing = computed(() => {
+        const flowSpace = settings.value.chartWidth - /* nodes */ (settings.value.nodeWidth * levelsCount.value) - /* Label Text */ 24;
+        return flowSpace / (levelsCount.value - 1);
+    });
+    // Set the chart height based on settings if we have chart data, otherwise set it to a minimal value
+    const chartHeight = computed(() => nodeCount.value > 0 ? settings.value.chartHeight : 50);
+    // Nodes have a certain order, so let's make sure they're in order
+
+    const diagramData = computed<FlowDiagramData>(() => {
+        type FlowPosition = {
+            id: number;
+            nextLeftY: number;
+            nextRightY: number;
+        };
+
+        // Make sure nodes are in order
+        const orderedNodes = [...props.flowNodes].sort((nodeA, nodeB) => nodeA.order - nodeB.order);
+
+        if (levelsCount.value == 0) {
+            return [] as FlowDiagramData;
+        }
+
+        const data: FlowDiagramData = [];
+        const { nodeWidth, nodeVerticalSpacing, chartHeight } = settings.value;
+        const totalNodeVerticalGap = nodeVerticalSpacing * (nodeCount.value - 1);
+        let previousTotalUnits = 0;
+        let useableHeight = chartHeight - totalNodeVerticalGap - 50; // The 50 gives some padding at the bottom for long labels
+        let previousX = 0;
+        let currentX = 24; // start with enough room for text labels
+
+        // Hold data about Y positioning of flows on a node
+        const flowPositionData: FlowPosition[][] = [[]];
+
+        for (let level = 1; level <= levelsCount.value; level++) {
+            // Set up an element for this level
+            flowPositionData.push([]);
+
+            // Get everything flowing into the nodes at this level.
+            const levelFlows = props.flowEdges.filter(flow => flow.level == level);
+
+            // Total number of units flowing into this level.
+            const totalLevelUnits = levelFlows.reduce((tot, { units }) => tot + units, 0);
+
+            if (level > 1) {
+                useableHeight = round(totalLevelUnits / previousTotalUnits * useableHeight);
+            }
+
+            // The starting Y position for the next node
+            let currentY = (chartHeight - (useableHeight + totalNodeVerticalGap)) / 2;
+
+            // Construct the base diagram nodes, which we'll fill in calculations for later.
+            const levelNodes: FlowDiagramLevel = orderedNodes.map(node => {
+                // Get the flows coming into this node and order them by the order of the source nodes
+                const nodeInFlows: FlowNodeDiagramEdgeBag[] = levelFlows.filter(flow => flow.targetId == node.id).sort((flowA, flowB): number => {
+                    const nodeOrderA = orderedNodes.findIndex(node => node.id == flowA.sourceId);
+                    const nodeOrderB = orderedNodes.findIndex(node => node.id == flowB.sourceId);
+
+                    return nodeOrderA - nodeOrderB;
+                });
+
+                // Calculate size of the node
+                const totalUnits = nodeInFlows.reduce((total, flow) => total + flow.units, 0);
+                const height = round(totalUnits / totalLevelUnits * useableHeight);
+
+                const nodeFlowPosition = {
+                    id: node.id,
+                    nextLeftY: currentY,
+                    nextRightY: currentY
+                };
+
+                flowPositionData[level].push(nodeFlowPosition);
+
+                // Calculate the incoming flows' path points and store on the flow object
+                const inFlows: FlowDiagramInFlow[] = nodeInFlows.map(flow => {
+                    const sourcePoint: Point = { x: previousX + nodeWidth, y: 0 };
+                    const targetPoint: Point = { x: currentX, y: nodeFlowPosition.nextLeftY };
+                    const thickness = round(flow.units / totalUnits * height);
+
+                    nodeFlowPosition.nextLeftY += thickness;
+
+                    if (level > 1) {
+                        const prevNodeFlowPosition = flowPositionData[level - 1].find(node => node.id == flow.sourceId);
+
+                        if (prevNodeFlowPosition) {
+                            sourcePoint.y = prevNodeFlowPosition.nextRightY;
+                            prevNodeFlowPosition.nextRightY += thickness;
+                        }
+                    }
+
+                    return {
+                        ...flow,
+                        sourcePoint,
+                        targetPoint,
+                        thickness
+                    };
+                });
+
+                const levelNode = {
+                    ...node,
+                    x: currentX,
+                    y: currentY,
+                    width: nodeWidth,
+                    height,
+                    totalUnits,
+                    inFlows
+                };
+
+                // Set up for the next node
+                currentY += height + (height > 0 ? nodeVerticalSpacing : 0);
+
+                return levelNode;
+            });
+
+            // Set up for the next level
+            previousTotalUnits = totalLevelUnits;
+            previousX = currentX;
+            currentX += nodeWidth + nodeHorizontalSpacing.value;
+
+            data.push(levelNodes);
+        } // End for each level
+
+        return data;
+    });
+
+    const tooltipStyles = computed((): Record<string, string> => {
+        const styles: Record<string, string> = {};
+
+        if (tooltip.side === "left") {
+            styles.left = `${tooltip.x}px`;
+        }
+        else {
+            styles.right = `${tooltip.x}px`;
+        }
+
+        styles.top = `${tooltip.y}px`;
+
+        return styles;
+    });
+
+    function showTooltip(html?: string, e?: MouseEvent): void {
+        if (html && e) {
+            tooltip.isShown = true;
+            tooltip.html = html;
+            tooltip.x = e.offsetX + 15;
+            tooltip.y = e.offsetY + 15;
+
+            if (e.clientX + 250 /* magic number... approx max width of a tooltip */ > document.documentElement.clientWidth) {
+                tooltip.x = 0;
+                tooltip.side = "right";
+            }
+            else {
+                tooltip.side = "left";
+            }
+        }
+        else {
+            tooltip.isShown = false;
+        }
+    }
+</script>

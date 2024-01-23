@@ -565,6 +565,65 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Unsubscribes a person from all email communications or a specific communication list if one is provided.
+        /// </summary>
+        /// <param name="personActionIdentifier">The person action identifier. Action should be "Unsubscribe".</param>
+        /// <param name="communicationListIdKey">The communication list identifier key.</param>
+        /// <remarks>
+        /// <para>This endpoint is for email client one-click unsubscribe functionality (<a href="https://datatracker.ietf.org/doc/html/rfc8058">RFC8058</a>).</para>
+        /// <para>As of 12/13/2023, <a href="https://datatracker.ietf.org/doc/html/rfc8058#section-3.1">RFC8058 Section 3.1</a> states:</para>
+        /// <para>
+        /// The POST request MUST NOT include cookies, HTTP authorization, or any
+        /// other context information. The unsubscribe operation is logically
+        /// unrelated to any previous web activity, and context information could
+        /// inappropriately link the unsubscribe to previous activity.
+        /// </para>
+        /// <para>For this reason, this endpoint does not and must not require authentication or authorization other than the encrypted person action identifier.</para>
+        /// </remarks>
+        [System.Web.Http.Route( "api/People/OneClickUnsubscribe/{personActionIdentifier}")]
+        [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "D9B2C190-B881-4691-8941-079F47CE0E2F" )]
+        public HttpResponseMessage OneClickUnsubscribe( string personActionIdentifier, string communicationListIdKey = null )
+        {
+            // The service for this controller should be an instance of the PersonService,
+            // but create one if it is not.
+            var rockContext = ( RockContext ) this.Service.Context;
+            if ( !( this.Service is PersonService personService ) )
+            {
+                personService = new PersonService( rockContext );
+            }
+            
+            // Enable lazy loading.
+            SetProxyCreation( true );
+
+            // Get the person from the action identifier, ensuring "Unsubscribe" is the action.
+            var person = personService.GetByPersonActionIdentifier( personActionIdentifier, "Unsubscribe" );
+            if ( person == null )
+            {
+                return new HttpResponseMessage( HttpStatusCode.BadRequest )
+                {
+                    Content = new StringContent( "Invalid person" )
+                };
+            }
+
+            if ( communicationListIdKey.IsNotNullOrWhiteSpace() )
+            {
+                // Unsubscribe from email communication list.
+                var communicationListsQuery = new GroupService( rockContext )
+                    .GetQueryableByKey( communicationListIdKey )
+                    .IsCommunicationList();
+                personService.UnsubscribeFromEmail( person, communicationListsQuery );
+            }
+            else
+            {
+                personService.OneClickUnsubscribeFromEmail( person );
+            }
+            rockContext.SaveChanges();
+
+            return new HttpResponseMessage( HttpStatusCode.NoContent );
+        }
+
+        /// <summary>
         /// Updates the profile photo of the logged in person.
         /// </summary>
         /// <param name="photoBytes">The photo bytes.</param>
@@ -810,7 +869,7 @@ namespace Rock.Rest.Controllers
             string phone = null,
             string email = null )
         {
-            // Enable Proxy Creation so that LazyLoading will work. 
+            // Enable Proxy Creation so that LazyLoading will work.
             SetProxyCreation( true );
             return SearchForPeople( Service.Context as RockContext, name, address, phone, email, includeDetails, includeBusinesses, includeDeceased, true );
         }
@@ -1107,7 +1166,7 @@ namespace Rock.Rest.Controllers
                 {
                     var fullStreetAddress = primaryLocation.GetFullStreetAddress();
                     string addressHtml = $"<dl class='address'><dt>Address</dt><dd>{fullStreetAddress.ConvertCrLfToHtmlBr()}</dd></dl>";
-                    personSearchResult.Address = fullStreetAddress;
+                    personSearchResult.Address = fullStreetAddress.ConvertCrLfToHtmlBr();
                     personInfoHtmlBuilder.Append( addressHtml );
                 }
             }
@@ -1202,7 +1261,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetCurrentPersonImpersonationToken" )]
         [Rock.SystemGuid.RestActionGuid( "A4765A37-043B-49CE-AA9F-C3FFF055176C" )]
-        public string GetCurrentPersonImpersonationToken( DateTime? expireDateTime = null, int? usageLimit = null, int? pageId = null )
+        public string GetCurrentPersonImpersonationToken( DateTimeOffset? expireDateTime = null, int? usageLimit = null, int? pageId = null )
         {
             var currentPerson = GetPerson();
 
@@ -1211,7 +1270,15 @@ namespace Rock.Rest.Controllers
                 return string.Empty;
             }
 
-            return GetImpersonationParameter( currentPerson.Id, expireDateTime, usageLimit, pageId ).Substring( 8 );
+            // Convert to organization date time so that we don't expire
+            // the token from timezone differences.
+            DateTime? orgExpireDateTime = null;
+            if ( expireDateTime.HasValue )
+            {
+                orgExpireDateTime = expireDateTime.Value.ToOrganizationDateTime();
+            }
+
+            return GetImpersonationParameter( currentPerson.Id, orgExpireDateTime, usageLimit, pageId ).Substring( 8 );
         }
 
         /// <summary>

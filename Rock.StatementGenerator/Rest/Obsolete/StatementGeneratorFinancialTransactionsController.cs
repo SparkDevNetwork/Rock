@@ -455,7 +455,7 @@ namespace Rock.StatementGenerator.Rest
                 var lavaTemplateLava = lavaTemplateValue.GetAttributeValue( "LavaTemplate" );
                 var lavaTemplateFooterLava = lavaTemplateValue.GetAttributeValue( "FooterHtml" );
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false, GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetDeviceFamily = false, GetOSFamily = false, GetPageContext = false, GetPageParameters = false, GetCampuses = true, GetCurrentPerson = true } );
                 mergeFields.Add( "LavaTemplate", lavaTemplateValue );
 
                 mergeFields.Add( "PersonList", personList );

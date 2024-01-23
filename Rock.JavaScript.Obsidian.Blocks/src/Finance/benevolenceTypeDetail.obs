@@ -1,0 +1,192 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel :title="panelTitle" :headerSecondaryActions="secondaryActions">
+
+            <EditPanel v-model="benevolenceTypeEditBag" :options="options" />
+
+            <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+            </Modal>
+
+            <template #footerActions>
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            :isLoading="isSaving"
+                            @click="onStartSubmitForm">
+                    Save
+                </RockButton>
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onCancel">
+                    Cancel
+                </RockButton>
+            </template>
+
+        </Panel>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import EditPanel from "./BenevolenceTypeDetail/editPanel.partial.obs";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./BenevolenceTypeDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { BenevolenceTypeBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceTypeDetail/benevolenceTypeBag";
+    import { BenevolenceTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceTypeDetail/benevolenceTypeDetailOptionsBag";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+
+    const config = useConfigurationValues<DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const benevolenceTypeEditBag = ref<BenevolenceTypeBag>(config.entity ?? {} as BenevolenceTypeBag);
+
+    const isSaving = ref(false);
+    const isNavigating = ref(false);
+    const submitForm = ref(false);
+    const resetKey = ref("");
+    const showAuditDetailsModal = ref(false);
+    const entityTypeGuid = EntityType.BenevolenceType;
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+        "description",
+        "isActive",
+        "name",
+        "requestLavaTemplate",
+        "showFinancialResults",
+        "maximumNumberOfDocuments",
+        "workflows"
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+    * The identifier key value for this entity.
+    */
+    const entityKey = computed((): string => {
+        return benevolenceTypeEditBag.value?.idKey ?? "";
+    });
+
+    /**
+    * The panel title
+    */
+    const panelTitle = computed((): string => {
+        return benevolenceTypeEditBag.value.idKey ? "Edit Benevolence Type" : "Add Benevolence Type";
+    });
+
+    const options = computed((): BenevolenceTypeDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    /**
+    * Additional labels to display in the block panel.
+    */
+    const secondaryActions = computed((): PanelAction[] | undefined => {
+        const actions: PanelAction[] = [];
+
+        if (benevolenceTypeEditBag?.value?.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
+            });
+        }
+
+        return actions;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    function onCancel(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            isNavigating.value = true;
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const data: DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> = {
+            entity: benevolenceTypeEditBag.value,
+            isEditable: true,
+            validProperties: validProperties
+        };
+
+        const result = await invokeBlockAction<BenevolenceTypeBag | string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "string") {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save benevolence type.";
+        }
+
+    }
+
+    /**
+     * Begins the form submission process.
+     */
+    const onStartSubmitForm = (): void => {
+        submitForm.value = true;
+    };
+
+    // #endregion
+
+    provideSecurityGrant(securityGrant);
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified benevolence type could not be viewed.";
+    }
+</script>

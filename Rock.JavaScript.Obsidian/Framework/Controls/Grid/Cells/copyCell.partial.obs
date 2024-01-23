@@ -1,0 +1,24 @@
+<template>
+    <CopyButton :value="copyValue"></CopyButton>
+</template>
+
+<script setup lang="ts">
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    const copyValue = computed<string>(() => {
+        const getValueToCopyFn = props.column.props.valueToCopy as (row: Record<string, unknown>, column: ColumnDefinition, grid: IGridState) => string;
+        const value = getValueToCopyFn(props.row, props.column, props.grid);
+        if (typeof value === "string") {
+            return value;
+        }
+        // Return an empty string for other types.
+        return "";
+    });
+</script>
+
+

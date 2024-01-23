@@ -411,7 +411,7 @@ type StandardColumnProps = {
 
     /**
      * Provides a custom component that will be used to render a skeleton of
-     * the cell during data loading operations. This is rearely needed as you
+     * the cell during data loading operations. This is rarely needed as you
      * can usually accomplish the same with a template.
      */
     skeletonComponent: {
@@ -697,6 +697,12 @@ export type ColumnDefinition = {
      * The component to use when displaying a skeleton of this column cell.
      */
     skeletonComponent?: Component;
+
+    /**
+     * The component that will be displayed in the filter popup before the
+     * main filter content.
+     */
+    filterPrependComponent?: Component;
 
     /** Gets the value to use when filtering on the quick filter. */
     quickFilterValue: QuickFilterValueFunction;

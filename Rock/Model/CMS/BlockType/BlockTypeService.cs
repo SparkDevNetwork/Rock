@@ -23,6 +23,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -229,9 +230,8 @@ namespace Rock.Model
         /// Registers any block types that are not currently registered in Rock.
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
-        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false )
+        public static void RegisterBlockTypes( string physWebAppPath, bool refreshAll = false )
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
@@ -361,6 +361,53 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Get the list of BlockTypes that may be added to the Page Zone for the given site type
+        /// </summary>
+        /// <param name="siteType">The site type of the blocks to be added.</param>
+        /// <returns></returns>
+        public static List<BlockTypeCache> BlockTypesToDisplay( SiteType siteType )
+        {
+            return BlockTypeCache.All()
+                .Where( bt =>
+                {
+                    var type = bt.GetCompiledType();
+                    if ( siteType == SiteType.Web )
+                    {
+                        if ( typeof( RockBlock ).IsAssignableFrom( type ) )
+                        {
+                            return true;
+                        }
+
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            // if no site type is specified, then it likely is an obsidian block which is yet to be released.
+                            // So show it only if it is the develop environment.
+                            if ( type.GetCustomAttribute<SupportedSiteTypesAttribute>() == null )
+                            {
+                                return System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
+                            }
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
+                    }
+                    else if ( siteType == SiteType.Mobile )
+                    {
+                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                        {
+                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
+                        }
+
+                        // Failsafe for any blocks that implement this directly.
+                        return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
+                    }
+                    return false;
+                } )
+                .ToList();
+        }
+
         // Stores the list of block type files that have been processed in this application session.
         private static List<string> _processedBlockPaths = new List<string>();
         private static readonly object _processedBlockPathsLock = new object();
@@ -440,5 +487,32 @@ namespace Rock.Model
 
             return base.Delete( item );
         }
+
+        #region Obsolete Methods
+        /*
+            11/22/2023 - JR
+
+            The RegisterBlockTypes method is being deprecated in its current form to align with the evolving architecture of our application, 
+            specifically the transition from Web Forms to a more modern, modular framework. The dependency on System.Web.UI.Page is no longer 
+            relevant in this context.
+
+            Reason: Introducing an overloaded version of RegisterBlockTypes that omits the System.Web.UI.Page parameter. This new method
+            provides the same functionality but is designed to be more straightforward and not reliant on legacy technologies.
+        */
+
+        /// <summary>
+        /// Registers any block types that are not currently registered in Rock.
+        /// </summary>
+        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
+        [RockObsolete("1.17.1")]
+        [Obsolete("This method is deprecated and will be removed in a future version. Please use the overload without the System.Web.UI.Page parameter.")]
+        public static void RegisterBlockTypes(string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false)
+        {
+            RegisterBlockTypes(physWebAppPath, refreshAll);
+        }
+
+        #endregion
     }
 }

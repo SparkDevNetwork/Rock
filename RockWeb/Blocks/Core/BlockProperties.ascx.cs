@@ -598,10 +598,19 @@ namespace RockWeb.Blocks.Core
         {
             int blockId = PageParameter( "BlockId" ).AsInteger();
             var block = BlockCache.Get( blockId );
+            var site = block.Site ?? block.Layout?.Site ?? block.Page?.Layout?.Site;
 
             CustomSettingsProviders = new Dictionary<RockCustomSettingsProvider, Control>();
 
-            var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType() ).Reverse();
+            // Site really shouldn't ever be null, but just in case we somehow
+            // get here if the block configuration is bad, bail out with an
+            // empty set of custom setting providers.
+            if ( site == null )
+            {
+                return;
+            }
+
+            var providers = RockCustomSettingsProvider.GetProvidersForType( block.BlockType.GetCompiledType(), site.SiteType ).Reverse();
             foreach ( var provider in providers )
             {
                 // Place the custom controls in a naming container to avoid

@@ -16,14 +16,21 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Spatial;
+using System.Data.SqlClient;
 using System.Linq;
+
+using EF6.TagWith;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.SqlServer.Types;
 
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
 using Rock.SystemKey;
-using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -251,7 +258,8 @@ namespace Rock.Model
 
             if ( timeToRunDurationMilliseconds.HasValue )
             {
-                RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
+                RockLogger.LoggerFactory.CreateLogger<DataViewService>()
+                    .LogDebug( "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
                 dataViewInfo.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
                 /*
                  * If the run duration is set that means this was called after the expression was
@@ -288,6 +296,134 @@ namespace Rock.Model
             {
                 this.ResetPermanentStoreIdentifiers( childFilter );
             }
+        }
+
+        /// <summary>
+        /// Updates the data view's <see cref="DataViewPersistedValue"/>s in the database.
+        /// </summary>
+        /// <param name="dataViewId">The identifier of the data view whose values should be updated.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout in seconds.</param>
+        internal void UpdateDataViewPersistedValues( int dataViewId, int? databaseTimeoutSeconds = null )
+        {
+            UpdateDataViewPersistedValues( Get( dataViewId ), databaseTimeoutSeconds );
+        }
+
+        /// <summary>
+        /// Updates the data view's <see cref="DataViewPersistedValue"/>s in the database.
+        /// </summary>
+        /// <param name="dataView">The data view whose values should be updated.</param>
+        /// <param name="databaseTimeoutSeconds">The database timeout in seconds.</param>
+        internal void UpdateDataViewPersistedValues( DataView dataView, int? databaseTimeoutSeconds = null )
+        {
+            if ( dataView == null )
+            {
+                return;
+            }
+
+            // Get the dynamic query to be used to source the entity IDs for this data view. Set an override so that any existing
+            // persisted values aren't used when rebuilding the values from the data view query.
+            var overrides = new DataViewFilterOverrides { ShouldUpdateStatics = false };
+            overrides.IgnoreDataViewPersistedValues.Add( dataView.Id );
+
+            var dataViewObjectQuery = dataView
+                .GetQuery( new DataViewGetQueryArgs
+                {
+                    DbContext = this.Context,
+                    DataViewFilterOverrides = overrides,
+                    DatabaseTimeoutSeconds = databaseTimeoutSeconds
+                } )
+                .Select( entity => entity.Id )
+                .ToObjectQuery();
+
+            if ( dataViewObjectQuery == null )
+            {
+                Logger.LogError( $"{nameof( UpdateDataViewPersistedValues )}: Unable to update persisted values for data view with ID {dataView.Id}." );
+                return;
+            }
+
+            var tagger = new SqlServerTagger();
+            var taggedSql = tagger.GetTaggedSqlQuery( dataViewObjectQuery.ToTraceString(), new TaggingOptions { TagMode = TagMode.Prefix } );
+
+            var tempTableName = $"DataView_{dataView.Id}";
+
+            var sql = $@"
+BEGIN TRY
+    DROP TABLE IF EXISTS #{tempTableName};
+
+    CREATE TABLE #{tempTableName}
+    (
+        [EntityId] [int] NOT NULL
+    );
+
+    -- Select the new entity IDs that should be added/remain in the persisted set.
+    INSERT INTO #{tempTableName}
+    {taggedSql};
+
+    -- Delete any old Entity IDs that should no longer be in the persisted set.
+    -- We'll delete these in batches to prevent locking the table.
+    DECLARE @RowsAffected [int];
+    WHILE @RowsAffected IS NULL OR @RowsAffected > 0
+    BEGIN
+        DELETE TOP (1500) [existing]
+        FROM [DataViewPersistedValue] [existing]
+        WHERE [existing].[DataViewId] = @DataViewId
+            AND ( NOT EXISTS (
+                    SELECT [EntityId]
+                    FROM #{tempTableName}
+                    WHERE [EntityId] = [existing].[EntityId]
+                )
+            );
+
+        SET @RowsAffected = @@ROWCOUNT;
+    END
+
+    -- Add any missing Entity IDs that weren't already in the persisted set.
+    INSERT INTO [DataViewPersistedValue]
+    (
+        [DataViewId]
+        , [EntityId]
+    )
+    SELECT @DataViewId
+        , [EntityId]
+    FROM #{tempTableName} [new]
+    WHERE NOT EXISTS (
+        SELECT [EntityId]
+        FROM [DataViewPersistedValue]
+        WHERE [DataViewId] = @DataViewId
+            AND [EntityId] = [new].[EntityId]
+    );
+
+    DROP TABLE #{tempTableName};
+END TRY
+BEGIN CATCH
+    DROP TABLE IF EXISTS #{tempTableName};
+END CATCH;";
+
+            var parameters = new List<object> {
+                new SqlParameter( "@DataViewId", dataView.Id )
+            }
+            .Concat(
+                dataViewObjectQuery.Parameters.Select( objectParameter => {
+                    if ( objectParameter.Value is DbGeography geography )
+                    {
+                        // We need to manually convert DbGeography to SqlGeography since we're sidestepping EF here.
+                        // https://stackoverflow.com/a/45099842 (Use SqlGeography instead of DbGeography)
+                        // https://stackoverflow.com/a/23187033 (Entity Framework: SqlGeography vs DbGeography)
+                        return new SqlParameter
+                        {
+                            ParameterName = objectParameter.Name,
+                            Value = SqlGeography.Parse( geography.AsText() ),
+                            SqlDbType = SqlDbType.Udt,
+                            UdtTypeName = "geography"
+                        };
+                    }
+
+                    return new SqlParameter( objectParameter.Name, objectParameter.Value ?? DBNull.Value );
+                } )
+            )
+            .ToArray();
+
+            this.Context.Database.ExecuteSqlCommand( TransactionalBehavior.DoNotEnsureTransaction, sql, parameters );
         }
     }
 }

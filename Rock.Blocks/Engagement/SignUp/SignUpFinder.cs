@@ -41,13 +41,15 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <summary>
     /// Block used for finding a sign-up group/project.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IHasCustomActions" />
 
     [DisplayName( "Sign-Up Finder" )]
-    [Category( "Obsidian > Engagement > Sign-Up" )]
+    [Category( "Engagement > Sign-Up" )]
     [Description( "Block used for finding a sign-up group/project." )]
     [IconCssClass( "fa fa-clipboard-check" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
 
@@ -264,8 +266,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [Rock.SystemGuid.EntityTypeGuid( "BF09747C-786D-4979-BADF-2D0157F4CB21" )]
     [Rock.SystemGuid.BlockTypeGuid( "74A20402-00DF-4A87-98D1-B5A8920F1D32" )]
-    [ContextAware( typeof( Campus ), IsConfigurable = true )]
-    public class SignUpFinder : RockObsidianBlockType, IHasCustomActions
+    public class SignUpFinder : RockBlockType, IHasCustomActions
     {
         #region Keys & Constants
 
@@ -404,8 +405,6 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #region Properties
 
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
         public bool IsAuthenticated
         {
             get
@@ -448,7 +447,7 @@ namespace Rock.Blocks.Engagement.SignUp
             box.ProjectTypeFilterLabel = GetAttributeValue( AttributeKey.ProjectTypeFilterLabel );
             box.Campuses = GetCampusFilterItems();
             box.PageCampusContext = GetPageCampusContext();
-            box.NamedSchedules = GetNamedScheduleFilterItems();
+            box.NamedSchedules = GetNamedScheduleFilterItems( rockContext );
             box.NamedScheduleFilterLabel = GetAttributeValue( AttributeKey.NamedScheduleFilterLabel );
             box.AttributesByProjectType = GetAttributeFilterItems( rockContext );
             box.DisplayDateRange = GetAttributeValue( AttributeKey.DisplayDateRange ).AsBoolean();
@@ -579,21 +578,23 @@ namespace Rock.Blocks.Engagement.SignUp
                 return null;
             }
 
-            return CampusCache.Get( pageContextCampus.Id ).ToListItemBag();
+            return pageContextCampus.ToListItemBag();
         }
 
         /// <summary>
         /// Gets the named schedules that should be presented as filter items for the search.
         /// </summary>
         /// <returns>The named schedules that should be presented as filter items for the search.</returns>
-        private List<ListItemBag> GetNamedScheduleFilterItems()
+        private List<ListItemBag> GetNamedScheduleFilterItems( RockContext rockContext )
         {
             if ( !GetAttributeValue( AttributeKey.DisplayNamedScheduleFilter ).AsBoolean() )
             {
                 return new List<ListItemBag>();
             }
 
-            var namedScheduleCaches = NamedScheduleCache.All();
+            // ScheduleService is used instead of the NamedScheduleCache because we want ToFriendlyScheduleText to return
+            // the condensed values instead of HTML formatted values when the Schedule has multiple dates.
+            var query = new ScheduleService( rockContext ).Queryable();
 
             var rootScheduleCategoryGuid = GetAttributeValue( AttributeKey.RootScheduleCategory ).AsGuidOrNull();
             if ( rootScheduleCategoryGuid.HasValue )
@@ -601,13 +602,29 @@ namespace Rock.Blocks.Engagement.SignUp
                 var rootScheduleCategoryId = CategoryCache.GetId( rootScheduleCategoryGuid.Value );
                 if ( rootScheduleCategoryId.HasValue )
                 {
-                    namedScheduleCaches = namedScheduleCaches
-                        .Where( a => a.CategoryId.HasValue && a.CategoryId.Value == rootScheduleCategoryId.Value )
-                        .ToList();
+                    query = query.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == rootScheduleCategoryId.Value && a.IsActive );
                 }
             }
 
-            return namedScheduleCaches.ToListItemBagList();
+            return ToListItemBagList( query.ToList() );
+        }
+
+        /// <summary>
+        /// Converts the schedules to a List of ListItemBags. Used instead of the ToListItemBagList() extension method because
+        /// the extension method uses the FriendlyScheduleTex value of the Schedule which does not return the condensed value
+        /// by default and as a result contains HTML string if the schedule has multiple dates.
+        /// </summary>
+        /// <param name="namedSchedules">The named schedules.</param>
+        /// <returns></returns>
+        private List<ListItemBag> ToListItemBagList( List<Schedule> namedSchedules )
+        {
+            var items = namedSchedules.Select( a => new ListItemBag()
+            {
+                Text = a.ToFriendlyScheduleText( true ),
+                Value = a.Guid.ToString()
+            } );
+
+            return items.ToList();
         }
 
         /// <summary>
@@ -765,7 +782,20 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             // Filter by campuses.
-            var campusIds = GetIds( selectedFilters.Campuses, CampusCache.GetId, GetCampusFilterItems() );
+            var campusIds = new List<int>();
+            if ( GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean() )
+            {
+                campusIds = GetIds( selectedFilters.Campuses, CampusCache.GetId, GetCampusFilterItems() );
+            }
+            else if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
+            {
+                var pageContextCampus = this.RequestContext.GetContextEntity<Campus>();
+                if ( pageContextCampus!= null )
+                {
+                    campusIds.Add( pageContextCampus.Id );
+                }
+            }
+
             if ( campusIds.Any() )
             {
                 qryGroupLocationSchedules = qryGroupLocationSchedules
@@ -773,7 +803,7 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             // Filter by named schedules.
-            var namedScheduleIds = GetIds( selectedFilters.NamedSchedules, NamedScheduleCache.GetId, GetNamedScheduleFilterItems() );
+            var namedScheduleIds = GetIds( selectedFilters.NamedSchedules, NamedScheduleCache.GetId, GetNamedScheduleFilterItems( rockContext ) );
             if ( namedScheduleIds.Any() )
             {
                 qryGroupLocationSchedules = qryGroupLocationSchedules
@@ -1342,7 +1372,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var actions = new List<BlockCustomActionBag>();
 
-            if ( BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
+            if ( canAdministrate )
             {
                 actions.Add( new BlockCustomActionBag
                 {

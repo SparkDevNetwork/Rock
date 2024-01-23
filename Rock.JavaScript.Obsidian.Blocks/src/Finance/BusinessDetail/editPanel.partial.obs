@@ -1,0 +1,275 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <div class="row">
+            <div class="col-md-3">
+                <fieldset>
+                    <DefinedValuePicker label="Record Status"
+                                        v-model="recordStatus"
+                                        :definedTypeGuid="DefinedType.PersonRecordStatus"
+                                        :multiple="false"
+                                        :enhanceForLongLists="false" />
+                    <DefinedValuePicker label="Reason"
+                                        v-model="recordStatusReason"
+                                        v-if="isReasonVisible"
+                                        :definedTypeGuid="DefinedType.PersonRecordStatusReason"
+                                        :multiple="false"
+                                        :enhanceForLongLists="false" />
+                </fieldset>
+            </div>
+
+            <div class="col-md-9">
+                <div class="row">
+                    <div class="col-md-6">
+                        <CampusPicker v-model="campus" label="Campus" includeInactive showBlankItem />
+                    </div>
+                </div>
+
+                <TextBox label="Name" v-model="businessName" />
+
+                <div class="panel panel-section">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Address</h3>
+                    </div>
+                    <div class="panel-body">
+                        <AddressControl label="Address" v-model="address" />
+                        <CheckBox label="Save Former Address As Previous Address" v-model="saveFormerAddress" />
+                    </div>
+                </div>
+
+                <div class="panel panel-section">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Contact Information</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6">
+                                <PhoneNumberBox label="Phone Number" v-model="phoneNumber" :countryCode="countryCode" />
+                            </div>
+                            <div class="col-xs-3">
+                                <CheckBox label="SMS" v-model="isSms" />
+                            </div>
+                            <div class="col-xs-3">
+                                <CheckBox label="Unlisted" v-model="isUnlisted" />
+                            </div>
+                        </div>
+                        <EmailBox label="Email" v-model="email" />
+                        <RadioButtonList label="Email Preference" v-model="emailPreference" :items="emailPreferences" horizontal :repeatColumns="0" />
+                    </div>
+                </div>
+
+                <Panel :v-model="false"
+                       :isDrawerOpen="false"
+                       title="Advanced Settings"
+                       :hasCollapse="true"
+                       :hasFullscreen="false"
+                       :isFullscreenPageOnly="true">
+                    <RockLabel help="Search keys provide alternate ways to search for an individual.">Search Keys</RockLabel>
+
+                    <div class="table-responsive">
+                        <table class="grid-table table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr align="left">
+                                    <th data-priority="1" scope="col">Search Type</th>
+                                    <th data-priority="1" scope="col">Search Value</th>
+                                    <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr v-if="searchKeys.length > 0" v-for="searchKey in searchKeys" align="left">
+                                    <td data-priority="1">{{ searchKey.searchType?.text }}</td>
+                                    <td data-priority="1">{{ searchKey.searchValue }}</td>
+                                    <td class="grid-columncommand" data-priority="1" align="center">
+                                        <a title="Delete" @click.prevent.stop="onDeleteSearchKey(searchKey)"><i class="fa fa-times"></i></a>
+                                    </td>
+                                </tr>
+
+                                <div v-else>
+                                    No Search Keys Found
+                                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="grid-actions border-bottom border-panel">
+                        <RockButton class="btn-add btn-grid-action" btnType="link" @click="onAddSearchKey"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
+                    </div>
+                </Panel>
+
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+            </div>
+
+        </div>
+
+        <Modal v-model="isModalOpen"
+               title="Add Search Key"
+               @save="onSaveSearchKey"
+               saveText="Save">
+
+            <div>
+                <DropDownList label="Search Key"
+                              v-model="searchKeyType"
+                              :items="searchKeyTypeList"
+                              showBlankItem />
+
+                <TextBox label="Search Value" v-model="searchKeyValue" rules="required" />
+
+            </div>
+
+        </Modal>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { BusinessDetailBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/businessDetailBag";
+    import { BusinessDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/businessDetailOptionsBag";
+    import { SearchKeyBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/searchKeyBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<BusinessDetailBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<BusinessDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: BusinessDetailBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const businessName = propertyRef(props.modelValue.businessName ?? "", "FirstName");
+    const recordStatus = propertyRef(props.modelValue.recordStatus ?? {}, "RecordStatusValueId");
+    const recordStatusReason = propertyRef(props.modelValue.recordStatusReason ?? {}, "RecordStatusReasonValueId");
+    const email = propertyRef(props.modelValue.emailAddress ?? "", "Email");
+    const emailPreference = propertyRef(props.modelValue.emailPreference ?? "", "EmailPreference");
+    const phoneNumber = ref(props.modelValue.phoneNumber ?? "");
+    const countryCode = ref(props.modelValue.countryCode ?? "");
+    const address = ref(props.modelValue.address ?? {});
+    const campus = propertyRef(props.modelValue.campus ?? {}, "CampusId");
+    const saveFormerAddress = ref(props.modelValue.saveFormerAddressAsPreviousAddress);
+    const isSms = ref(props.modelValue.isSmsChecked);
+    const isUnlisted = ref(props.modelValue.isUnlistedChecked);
+    const searchKeys = ref(props.options.searchKeys ?? []);
+    const searchKeyTypeList = ref(props.options.searchTypesList ?? []);
+    const searchKeyType = ref("");
+    const searchKeyValue = ref("");
+    const isModalOpen = ref(false);
+    const emailPreferences: ListItemBag[] = [
+        { text: "Email Allowed", value: "EmailAllowed" },
+        { text: "No Mass Emails", value: "NoMassEmails" },
+        { text: "Do Not Email", value: "DoNotEmail" },
+    ];
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [businessName, recordStatus, recordStatusReason, email, campus, emailPreference];
+
+    // #endregion
+
+    // #region Computed Values
+    const isReasonVisible = computed((): boolean => {
+        return recordStatus.value.value?.toUpperCase() == DefinedValue.PersonRecordStatusInactive;
+    });
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    const onAddSearchKey = (): void => {
+        isModalOpen.value = true;
+    };
+
+    const onSaveSearchKey = (): void => {
+        isModalOpen.value = false;
+        const searchType = searchKeyTypeList.value.find(x => x.value === searchKeyType.value);
+        searchKeys.value.push({ searchType: searchType, searchValue: searchKeyValue.value });
+
+        searchKeyValue.value = "";
+        searchKeyType.value = "";
+    };
+
+    const onDeleteSearchKey = async (searchKey: SearchKeyBag): Promise<void> => {
+        isModalOpen.value = false;
+        if (!searchKey.guid) {
+            searchKeys.value = searchKeys.value.filter(s => s.searchType?.value !== searchKey.searchType?.value && s.searchValue !== searchKey.searchValue);
+        }
+        else {
+            searchKeys.value = searchKeys.value.filter(s => s.guid != searchKey.guid);
+        }
+    };
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(businessName, props.modelValue.businessName ?? "");
+        updateRefValue(recordStatus, props.modelValue.recordStatus ?? {});
+        updateRefValue(recordStatusReason, props.modelValue.recordStatusReason ?? {});
+        updateRefValue(email, props.modelValue.emailAddress ?? "");
+        updateRefValue(emailPreference, props.modelValue.emailPreference ?? "");
+        updateRefValue(phoneNumber, props.modelValue.phoneNumber ?? "");
+        updateRefValue(campus, props.modelValue.campus ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, searchKeys, phoneNumber, saveFormerAddress, isSms, isUnlisted, address, ...propRefs], () => {
+        const newValue: BusinessDetailBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            businessName: businessName.value,
+            recordStatus: recordStatus.value,
+            recordStatusReason: recordStatusReason.value,
+            emailAddress: email.value,
+            campus: campus.value,
+            emailPreference: emailPreference.value,
+            phoneNumber: phoneNumber.value,
+            saveFormerAddressAsPreviousAddress: saveFormerAddress.value,
+            isSmsChecked: isSms.value,
+            isUnlistedChecked: isUnlisted.value,
+            address: address.value,
+            searchKeys: searchKeys.value,
+            countryCode: countryCode.value
+        };
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

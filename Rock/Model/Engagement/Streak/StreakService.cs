@@ -127,5 +127,26 @@ namespace Rock.Model
             target.CurrentStreakCount = source.CurrentStreakCount;
             target.CurrentStreakStartDate = source.CurrentStreakStartDate;
         }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="currentPerson">The logged in person who is performing the delete</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( Streak item, Person currentPerson, out string errorMessage )
+        {
+            // persons with no administrator priviledge should not be allowed to delete streak detail
+            if ( !item.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, currentPerson ) )
+            {
+                errorMessage = "You are not authorized to delete this item.";
+                return false;
+            }
+            errorMessage = string.Empty;
+            return true;
+        }
     }
 }

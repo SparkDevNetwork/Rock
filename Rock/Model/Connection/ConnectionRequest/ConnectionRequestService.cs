@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model.Connection.ConnectionRequest.Options;
@@ -1020,7 +1021,7 @@ namespace Rock.Model
             }
 
             // 3) The person is assigned to the request or the request security allows it and the connection type has EnableRequestSecurity
-            return (connectionRequest.ConnectorPersonAlias != null && connectionRequest.ConnectorPersonAlias.PersonId == currentPerson.Id )
+            return ( connectionRequest.ConnectorPersonAlias != null && connectionRequest.ConnectorPersonAlias.PersonId == currentPerson.Id )
                     || connectionRequest.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
@@ -1089,6 +1090,48 @@ namespace Rock.Model
             {
                 throw new ArgumentException( "An args object is required" );
             }
+        }
+
+        /// <summary>
+        /// Creates a The <see cref="ConnectionRequest"/> from the provided input. If for some reason, the Connection Request
+        /// was not able to be created, null would be returned.
+        /// </summary>
+        /// <param name="connectionOpportunityId">The Connection Opportunity Id of the Connection Request.</param>
+        /// <param name="personAliasId">The Person Alias Id of the Connection Request.</param>
+        /// <param name="campusId">The optional Campus Id which would determine which campus the Connection Request should be
+        /// linked to. If no campus is provided, then it defaults to the Main campus of the person linked to the personAliasId.</param>
+        /// <param name="status">The optional Status of the Connection Request. If not provided, it will default to the
+        /// provided Connection Opportunity's default status.</param>
+        /// <param name="rockContext">An optional <see cref="RockContext" />. A new context would be created if not provided.</param>
+        /// <returns></returns>
+        internal ConnectionRequest CreateConnectionRequestWithDefaultConnector( int connectionOpportunityId, int personAliasId, int? campusId = null, ConnectionStatus status = null, RockContext rockContext = null )
+        {
+            // create a new RockContent if null was provided
+            rockContext = rockContext ?? new RockContext();
+
+            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+            status = status ?? connectionOpportunityService.GetStatuses( connectionOpportunityId )
+                    .FirstOrDefault( cs => cs.IsDefault )
+                        ?? connectionOpportunityService.GetStatuses( connectionOpportunityId )
+                    .FirstOrDefault();
+            if ( status == null )
+            {
+                return null;
+            }
+
+            var opportunity = connectionOpportunityService.Get( connectionOpportunityId );
+            campusId = campusId ?? new PersonAliasService( rockContext )
+                .Get( personAliasId ).Person?.PrimaryCampusId;
+
+            return new ConnectionRequest
+            {
+                ConnectionOpportunityId = opportunity.Id,
+                PersonAliasId = personAliasId,
+                ConnectionStatusId = status.Id,
+                ConnectionState = ConnectionState.Active,
+                CampusId = campusId,
+                ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId )
+            };
         }
 
         #endregion Connection Board Helper Methods

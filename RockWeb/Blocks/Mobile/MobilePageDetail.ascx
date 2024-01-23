@@ -81,6 +81,7 @@
 
                 <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" ValidationGroup="EditPage" />
                 <Rock:ImageUploader ID="imgPageIcon" runat="server" Help="This image is used as a icon for your page." Label="Icon" />
+                <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
 
                 <Rock:PanelWidget ID="pwEditAdvancedSettings" runat="server" Title="Advanced Settings">
                     <div class="row">
@@ -100,6 +101,14 @@
                                 Required="true"
                                 ValidationGroup="EditPage"
                                 Help="The URL that the user will be sent to when opening this page." />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbRoute" runat="server"
+                                Label="Route"
+                                Help="The page route is used to match mobile pages with the web equivalent." />
                         </div>
                     </div>
 

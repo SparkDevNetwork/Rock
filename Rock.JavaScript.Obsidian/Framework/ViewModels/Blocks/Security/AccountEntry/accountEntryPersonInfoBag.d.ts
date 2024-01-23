@@ -21,15 +21,23 @@
 // </copyright>
 //
 
+import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { Guid } from "@Obsidian/Types";
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** A bag that contains the required information to render an account entry block's person info section. */
 export type AccountEntryPersonInfoBag = {
     /** Gets or sets the address. */
     address?: AddressControlBag | null;
+
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the birthday. */
     birthday?: BirthdayPickerBag | null;
@@ -44,7 +52,7 @@ export type AccountEntryPersonInfoBag = {
     firstName?: string | null;
 
     /** Gets or sets the gender. */
-    gender?: number | null;
+    gender?: Gender | null;
 
     /** Gets or sets the last name. */
     lastName?: string | null;

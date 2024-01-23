@@ -16,7 +16,7 @@
 //
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox";
+import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox.obs";
 
 export const EditComponent = defineComponent({
     name: "SSNField.Edit",

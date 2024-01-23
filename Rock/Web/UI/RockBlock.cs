@@ -17,14 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Attribute;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -38,6 +40,15 @@ namespace Rock.Web.UI
     /// </summary>
     public abstract class RockBlock : UserControl
     {
+        #region Fields
+
+        /// <summary>
+        /// The logger backing field for the <see cref="Logger"/> property.
+        /// </summary>
+        private ILogger _logger;
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -207,51 +218,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
-        public virtual List<EntityTypeCache> ContextTypesRequired
-        {
-            get
-            {
-                if ( _contextTypesRequired == null )
-                {
-                    _contextTypesRequired = new List<EntityTypeCache>();
-
-                    int properties = 0;
-                    foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
-                    {
-                        var contextAttribute = ( ContextAwareAttribute ) attribute;
-
-                        if ( !contextAttribute.Contexts.Any() )
-                        {
-                            // If the entity type was not specified in the attribute, look for a property that defines it
-                            string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : string.Empty );
-                            properties++;
-
-                            Guid guid = Guid.Empty;
-                            if ( Guid.TryParse( GetAttributeValue( propertyKeyName ), out guid ) )
-                            {
-                                _contextTypesRequired.Add( EntityTypeCache.Get( guid ) );
-                            }
-                        }
-                        else
-                        {
-                            foreach ( var context in contextAttribute.Contexts )
-                            {
-                                var entityType = context.EntityType;
-
-                                if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
-                                {
-                                    _contextTypesRequired.Add( entityType );
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return _contextTypesRequired;
-            }
-        }
-
-        private List<EntityTypeCache> _contextTypesRequired;
+        public virtual List<EntityTypeCache> ContextTypesRequired => this.BlockCache?.ContextTypesRequired ?? new List<EntityTypeCache>();
 
         /// <summary>
         /// Gets a dictionary of the current context entities.  The key is the type of context, and the value is the entity object
@@ -325,6 +292,24 @@ namespace Rock.Web.UI
         /// In this mode, only those elements needed to configure the block should be rendered - the block content should be omitted.
         /// </summary>
         public bool ConfigurationRenderModeIsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets the logger instance that can be used to write log messages for
+        /// this block.
+        /// </summary>
+        /// <value>The logger instance.</value>
+        public ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
 
         #endregion
 

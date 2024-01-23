@@ -25,8 +25,10 @@ namespace Rock.Blocks
     /// Base for a standard Obsidian Detail block type. This is a block that
     /// will display an entity with the option to edit and save changes.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
-    public abstract class RockObsidianDetailBlockType : RockObsidianBlockType
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    [RockObsolete( "1.16" )]
+    [Obsolete( "Use RockDetailBlockType instead." )]
+    public abstract class RockObsidianDetailBlockType : RockBlockType
     {
         /// <summary>
         /// Gets the initial entity from page parameters or creates a new entity

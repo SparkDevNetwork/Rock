@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,58 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// UserLogin View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( UserLogin ) )]
-    public partial class UserLoginViewModelHelper : ViewModelHelper<UserLogin, UserLoginBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override UserLoginBag CreateViewModel( UserLogin model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new UserLoginBag
-            {
-                IdKey = model.IdKey,
-                ApiKey = model.ApiKey,
-                EntityTypeId = model.EntityTypeId,
-                FailedPasswordAttemptCount = model.FailedPasswordAttemptCount,
-                FailedPasswordAttemptWindowStartDateTime = model.FailedPasswordAttemptWindowStartDateTime,
-                IsConfirmed = model.IsConfirmed,
-                IsLockedOut = model.IsLockedOut,
-                IsOnLine = model.IsOnLine,
-                IsPasswordChangeRequired = model.IsPasswordChangeRequired,
-                LastActivityDateTime = model.LastActivityDateTime,
-                LastLockedOutDateTime = model.LastLockedOutDateTime,
-                LastLoginDateTime = model.LastLoginDateTime,
-                LastPasswordChangedDateTime = model.LastPasswordChangedDateTime,
-                LastPasswordExpirationWarningDateTime = model.LastPasswordExpirationWarningDateTime,
-                Password = model.Password,
-                PersonId = model.PersonId,
-                UserName = model.UserName,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -193,20 +137,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static UserLoginBag ToViewModel( this UserLogin model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new UserLoginViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

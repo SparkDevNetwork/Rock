@@ -113,6 +113,12 @@ namespace Rock.Lava.Shortcodes
             public const string HideControlsStopped = "hidecontrolsstopped";
 
             /// <summary>
+            /// Defines the interaction that should be updated with new session
+            /// information. If not provided it will be determined automatically.
+            /// </summary>
+            public const string InteractionGuid = "interactionguid";
+
+            /// <summary>
             /// Specifies either the id or the guid of the media element to
             /// load from. This will automatically set the video URL. If a
             /// thumbnail URL has not been provided it will be set as well.
@@ -143,6 +149,12 @@ namespace Rock.Lava.Shortcodes
             /// interaction if the session is being tracked.
             /// </summary>
             public const string RelatedEntityTypeId = "relatedentitytypeid";
+
+            /// <summary>
+            /// Determines if the video should be resumed if the last playback
+            /// position is known. The default value is true.
+            /// </summary>
+            public const string Resume = "resume";
 
             /// <summary>
             /// The number of seconds to seek forward or backward when the
@@ -192,6 +204,12 @@ namespace Rock.Lava.Shortcodes
             public const string Volume = "volume";
 
             /// <summary>
+            /// The existing watch map data that will be used to resume the
+            /// session and used when updating watch progress.
+            /// </summary>
+            public const string WatchMap = "watchmap";
+
+            /// <summary>
             /// The width of the media container. By default the container
             /// will be responsive and take up as much space as is available.
             /// However, if you provide a value here you can set an explicit
@@ -211,10 +229,13 @@ namespace Rock.Lava.Shortcodes
             + "," + ParameterKeys.Controls
             + "," + ParameterKeys.Debug
             + "," + ParameterKeys.HideControls
+            + "," + ParameterKeys.HideControlsStopped
+            + "," + ParameterKeys.InteractionGuid
             + "," + ParameterKeys.Media
             + "," + ParameterKeys.Muted
             + "," + ParameterKeys.RelatedEntityId
             + "," + ParameterKeys.RelatedEntityTypeId
+            + "," + ParameterKeys.Resume
             + "," + ParameterKeys.PrimaryColor
             + "," + ParameterKeys.SeekTime
             + "," + ParameterKeys.Source
@@ -223,6 +244,7 @@ namespace Rock.Lava.Shortcodes
             + "," + ParameterKeys.TrackSession
             + "," + ParameterKeys.Type
             + "," + ParameterKeys.Volume
+            + "," + ParameterKeys.WatchMap
             + "," + ParameterKeys.Width;
 
         /// <summary>
@@ -265,11 +287,13 @@ so you can customize this to be exactly what you want.</p>
     <li><strong>debug</strong> (false) - Enables developer level logging information to the JavaScript console during operation.</li>
     <li><strong>hidecontrols</strong> (true) - When enabled the on screen controls will automatically hide after 2 seconds without user activity.</li>
     <li><strong>hidecontrolsstopped</strong> (false) - When enabled the on screen controls will automatically hide until the media has started playing.</li>
+    <li><strong>interactionguid</strong> - Defines the interaction that should be updated with new session information.</li>
     <li><strong>media</strong> - Specifies either the id or the guid of the media element to load from. This will automatically set the video URL. If a thumbnail URL has not been provided it will be set as well.</li>
     <li><strong>muted</strong> (false) - If enabled then the media player will initially be muted.</li>
     <li><strong>primarycolor</strong> - The primary color to use for player elements, such as the play button. This can be any valid CSS color. Default is to use the primary brand color of the theme.</li>
     <li><strong>relatedentityid</strong> - The related entity identifier to store with the interaction if the session is being tracked.</li>
     <li><strong>relatedentitytypeid</strong> - The related entity type identifier to store with the interaction if the session is being tracked.</li>
+    <li><strong>resume</strong> (true) - Determines if the video should be resumed if the last playback position is known.</li>
     <li><strong>seektime</strong> (10) - The number of seconds to seek forward or backward when the fast-forward or rewind controls are clicked.</li>
     <li><strong>src</strong> - The URL of the media file to be played.</li>
     <li><strong>thumbnail</strong> - The thumbnail image URL to display before the video starts playing. This only works with HTML5 style videos, it will not work with embed links such as YouTube uses.</li>
@@ -277,6 +301,7 @@ so you can customize this to be exactly what you want.</p>
     <li><strong>tracksession</strong> (true) - Determines if the user's session should be tracked and stored as an Interaction in the system. This is required to provide play metrics as well as use the resume feature later.</li>
     <li><strong>type</strong> - Specifies the type of media to be played. Can be either ""audio"" or ""video"". Default is to auto-detect.</li>
     <li><strong>volume</strong> (1) - The initial volume to start the media player at. This is a value between 0 and 1, with 1 meaning full volume.</li>
+    <li><strong>watchmap</strong> - The existing watch map data that will be used to resume the session and used when updating watch progress.
     <li><strong>width</strong> - The width of the media container. By default the container will be responsive and take up as much space as is available. However, if you provide a value here you can set an explicit width in either pixels or percentage.</li>
 </ul>
 
@@ -351,6 +376,7 @@ so you can customize this to be exactly what you want.</p>
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
+            int? visitorAliasId = null;
             var currentPerson = GetCurrentPerson( context );
             var settings = GetAttributesFromMarkup( _markup, context );
 
@@ -365,7 +391,12 @@ so you can customize this to be exactly what you want.</p>
                 sessionGuid = null;
             }
 
-            RenderToWriter( settings.Attributes, currentPerson, sessionGuid, result );
+            if ( currentPerson == null )
+            {
+                visitorAliasId = GetVisitorAliasId( context );
+            }
+
+            RenderToWriter( settings.Attributes, currentPerson, visitorAliasId, sessionGuid, result );
         }
 
         internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
@@ -383,11 +414,13 @@ so you can customize this to be exactly what you want.</p>
             settings.AddOrIgnore( ParameterKeys.Debug, "false" );
             settings.AddOrIgnore( ParameterKeys.HideControls, "true" );
             settings.AddOrIgnore( ParameterKeys.HideControlsStopped, "false" );
+            settings.AddOrIgnore( ParameterKeys.InteractionGuid, "" );
             settings.AddOrIgnore( ParameterKeys.Media, "" );
             settings.AddOrIgnore( ParameterKeys.Muted, "false" );
-            settings.AddOrIgnore( ParameterKeys.PrimaryColor, "var(--brand-primary)" );
+            settings.AddOrIgnore( ParameterKeys.PrimaryColor, "var(--color-primary)" );
             settings.AddOrIgnore( ParameterKeys.RelatedEntityId, "" );
             settings.AddOrIgnore( ParameterKeys.RelatedEntityTypeId, "" );
+            settings.AddOrIgnore( ParameterKeys.Resume, "true" );
             settings.AddOrIgnore( ParameterKeys.SeekTime, "10" );
             settings.AddOrIgnore( ParameterKeys.Source, "" );
             settings.AddOrIgnore( ParameterKeys.Thumbnail, "" );
@@ -395,6 +428,7 @@ so you can customize this to be exactly what you want.</p>
             settings.AddOrIgnore( ParameterKeys.TrackSession, "true" );
             settings.AddOrIgnore( ParameterKeys.Type, "" );
             settings.AddOrIgnore( ParameterKeys.Volume, "1" );
+            settings.AddOrIgnore( ParameterKeys.WatchMap, "" );
             settings.AddOrIgnore( ParameterKeys.Width, "" );
 
             return settings;
@@ -426,13 +460,27 @@ so you can customize this to be exactly what you want.</p>
         }
 
         /// <summary>
+        /// Gets the visitor alias identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private static int? GetVisitorAliasId( ILavaRenderContext context )
+        {
+            // First check for a person override value included in lava context
+            var personAlias = context.GetMergeField( "CurrentVisitor", null ) as PersonAlias;
+
+            return personAlias?.Id;
+        }
+
+        /// <summary>
         /// Renders the shortcode contents to the writer.
         /// </summary>
         /// <param name="parms">The parameters that will be used to construct the content.</param>
         /// <param name="currentPerson">The current person.</param>
+        /// <param name="personAliasId">The optional person alias identifier if <paramref name="currentPerson"/> is <c>null</c>.</param>
         /// <param name="rockSessionGuid">The current Rock session unique identifier.</param>
         /// <param name="result">The writer that output should be written to.</param>
-        internal static void RenderToWriter( Dictionary<string, string> parms, Person currentPerson, Guid? rockSessionGuid, TextWriter result )
+        internal static void RenderToWriter( Dictionary<string, string> parms, Person currentPerson, int? personAliasId, Guid? rockSessionGuid, TextWriter result )
         {
             var options = new MediaPlayerOptions
             {
@@ -442,35 +490,41 @@ so you can customize this to be exactly what you want.</p>
                 Controls = parms[ParameterKeys.Controls],
                 Debug = parms[ParameterKeys.Debug].AsBoolean(),
                 HideControls = parms[ParameterKeys.HideControls].AsBoolean( true ),
+                InteractionGuid = parms[ParameterKeys.InteractionGuid].AsGuidOrNull(),
+                Map = parms[ParameterKeys.WatchMap],
+                MediaElementGuid = parms[ParameterKeys.Media].AsGuidOrNull(),
                 MediaUrl = parms[ParameterKeys.Source],
                 Muted = parms[ParameterKeys.Muted].AsBoolean(),
                 PosterUrl = parms[ParameterKeys.Thumbnail],
                 RelatedEntityId = parms[ParameterKeys.RelatedEntityId].AsIntegerOrNull(),
                 RelatedEntityTypeId = parms[ParameterKeys.RelatedEntityTypeId].AsIntegerOrNull(),
+                ResumePlaying = parms[ParameterKeys.Resume].AsBooleanOrNull(),
                 SeekTime = parms[ParameterKeys.SeekTime].AsIntegerOrNull() ?? 10,
                 SessionGuid = rockSessionGuid,
                 TrackProgress = true,
                 Type = parms[ParameterKeys.Type],
                 Volume = parms[ParameterKeys.Volume].AsDoubleOrNull() ?? 1.0,
-                WriteInteraction = currentPerson != null
+                WriteInteraction = currentPerson != null || personAliasId.HasValue
                     ? parms[ParameterKeys.TrackSession].AsBoolean( true )
                     : parms[ParameterKeys.TrackAnonymousSession].AsBoolean( true )
             };
 
             // Get the rest of the parameters in easy to access variables.
             var mediaId = parms[ParameterKeys.Media].AsIntegerOrNull();
-            var mediaGuid = parms[ParameterKeys.Media].AsGuidOrNull();
             var autoResumeInDays = parms[ParameterKeys.AutoResumeInDays].AsIntegerOrNull() ?? 7;
             var combinePlayStatisticsInDays = parms[ParameterKeys.CombinePlayStatisticsInDays].AsIntegerOrNull() ?? 7;
             var primaryColor = parms[ParameterKeys.PrimaryColor];
             var width = parms[ParameterKeys.Width];
 
-            options.UpdateValuesFromMedia( mediaId, mediaGuid, autoResumeInDays, combinePlayStatisticsInDays, currentPerson );
+            options.UpdateValuesFromMedia( mediaId, options.MediaElementGuid, autoResumeInDays, combinePlayStatisticsInDays, currentPerson, personAliasId );
+
+            // Ensure the resume playing value is set.
+            options.ResumePlaying = options.ResumePlaying ?? true;
 
             var elementId = $"mediaplayer_{Guid.NewGuid()}";
 
             // Construct the CSS style for this media player.
-            var style = $"--plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--brand-primary)" )};";
+            var style = $"--plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--color-primary)" )};";
             style += ( width.IsNotNullOrWhiteSpace() ? $" width:{width}" : "" );
 
             // Construct the JavaScript to initialize the player.

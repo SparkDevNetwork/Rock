@@ -70,11 +70,12 @@
         {% if showfuturecontent == 'true' %}
             {% assign totalChildren = parentItem.Children | Size %}
         {% else %}
-            {% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:ss' %}
+            {% assign now = 'Now' | Date:'yyyyMMddTHHmmss' %}
             {% capture publishedItems -%}[
                 {%- for child in parentItem.Children -%}
-                    {%- if child.PublishDateTime <= now -%}
-                    {{ child | ToJSON | Append:',' }}
+                    {% assign publishedComparable = child.PublishDateTime | Date:'yyyyMMddTHHmmss' %}
+                    {%- if publishedComparable <= now -%}
+                        {{ child | ToJSON | Append:',' }}
                     {%- endif -%}
                 {%- endfor -%}
             ]{%- endcapture %}
@@ -165,7 +166,6 @@
                     <p id="video" class="text-center">
                         {[ wistiaButton id:'{{ Item.Video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'{{ Item.Id }}' entitytypeid:'' entityid:'' ]}
                     </p>
-
                 {% endif %}
 
                 {{ Item.Content | HtmlDecode }}
@@ -267,8 +267,8 @@
         "@type": "Organization",
         "name": "{{ 'Global' | Attribute:'OrganizationName' }}",
         "logo": {
-        "@type": "ImageObject",
-        "url": "https://newspring.cc/GetImage.ashx?id=661329"
+            "@type": "ImageObject",
+            "url": "https://newspring.cc/GetImage.ashx?id=661329"
         }
     },
     "author": {
@@ -289,9 +289,9 @@
 
     "datePublished": "{{ Item.PublishDateTime }}",
     "dateModified": "{{ Item.ModifiedDateTime }}",
-        {% if Item.ExpireDateTime %}
-        "expires": "{{ Item.ExpireDateTime }}",
-        {% endif %}
+    {% if Item.ExpireDateTime %}
+    "expires": "{{ Item.ExpireDateTime }}",
+    {% endif %}
 
     {% if Item.ImageLandscape and Item.ImageLandscape != empty %}
         "image": "{{ Item.ImageLandscape }}",

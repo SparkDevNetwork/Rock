@@ -21,9 +21,10 @@ import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/compa
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import FieldFilterContainer from "@Obsidian/Controls/fieldFilterContainer";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import FieldFilterContainer from "@Obsidian/Controls/fieldFilterContainer.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { DataEntryMode } from "@Obsidian/Utility/fieldTypes";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type ConfigurationValues = Record<string, string>;
@@ -40,6 +41,14 @@ type FieldEditorBaseProps = {
     configurationValues: {
         type: PropType<ConfigurationValues>;
         default: () => ConfigurationValues;
+    };
+
+    /**
+     * This is used internally by the fieldTypeEditor to allow controls to make adjustments based
+     * on how it's being used (e.g. to define a default value vs to edit a value)
+     */
+    dataEntryMode: {
+        type: PropType<DataEntryMode>;
     };
 };
 
@@ -71,6 +80,10 @@ export function getFieldEditorProps(): FieldEditorBaseProps {
         configurationValues: {
             type: Object as PropType<ConfigurationValues>,
             default: () => ({})
+        },
+
+        dataEntryMode: {
+            type: String as PropType<DataEntryMode>
         }
     };
 }

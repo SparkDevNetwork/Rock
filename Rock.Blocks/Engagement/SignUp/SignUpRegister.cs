@@ -20,6 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Engagement.SignUp;
@@ -36,12 +39,13 @@ namespace Rock.Blocks.Engagement.SignUp
     /// <summary>
     /// Block used to register for a sign-up group/project occurrence date time.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Sign-Up Register" )]
-    [Category( "Obsidian > Engagement > Sign-Up" )]
+    [Category( "Engagement > Sign-Up" )]
     [Description( "Block used to register for a sign-up group/project occurrence date time." )]
     [IconCssClass( "fa fa-clipboard-check" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -91,7 +95,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [Rock.SystemGuid.EntityTypeGuid( "ED7A31F2-8D4C-469A-B2D8-7E28B8717FB8" )]
     [Rock.SystemGuid.BlockTypeGuid( "161587D9-7B74-4D61-BF8E-3CDB38F16A12" )]
-    public class SignUpRegister : RockObsidianBlockType
+    public class SignUpRegister : RockBlockType
     {
         #region Keys
 
@@ -135,8 +139,6 @@ namespace Rock.Blocks.Engagement.SignUp
         #endregion
 
         #region Properties
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         public bool IsAuthenticated
         {
@@ -523,6 +525,13 @@ namespace Rock.Blocks.Engagement.SignUp
             // Create a registrant entry for each GroupMember.
             foreach ( var groupMember in groupMembers )
             {
+                // Since a person might belong to a group multiple times if they have multiple roles,
+                // ensure we add them to the registrants collection only once.
+                if ( registrationData.Registrants.Any( r => r.PersonIdKey == groupMember.Person.IdKey ) )
+                {
+                    continue;
+                }
+
                 var existingProjectGroupMember = registrationData.ExistingProjectMembers
                     .FirstOrDefault( pm => pm.GroupMember.Person.Id == groupMember.PersonId )
                     ?.GroupMember;
@@ -1264,7 +1273,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                 if ( !groupRoleId.HasValue )
                 {
-                    RockLogger.Log.Warning( RockLogDomains.Group, "Unable to register {@registrantsToRegister} to {Project} sign-up project as no group roles could be found.", registrantsToRegister, registrationData.Project.Name );
+                    Logger.LogWarning( $"Unable to register {registrantsToRegister} to {registrationData.Project.Name} sign-up project as no group roles could be found." );
 
                     errorMessage = $"{UnableToRegisterPrefix}.";
                     return null;

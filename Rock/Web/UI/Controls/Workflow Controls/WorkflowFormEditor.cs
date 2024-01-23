@@ -63,6 +63,7 @@ namespace Rock.Web.UI.Controls
         private RockDropDownList _ddlPersonEntryGenderEntryOption;
         private RockDropDownList _ddlPersonEntryEmailEntryOption;
         private RockDropDownList _ddlPersonEntryMobilePhoneEntryOption;
+        private RockDropDownList _ddlPersonEntrySmsOptInEntryOption;
         private RockDropDownList _ddlPersonEntryBirthdateEntryOption;
         private RockDropDownList _ddlPersonEntryAddressEntryOption;
         private RockDropDownList _ddlPersonEntryMaritalStatusEntryOption;
@@ -162,6 +163,7 @@ namespace Rock.Web.UI.Controls
             form.PersonEntryGenderEntryOption = _ddlPersonEntryGenderEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryEmailEntryOption = _ddlPersonEntryEmailEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryMobilePhoneEntryOption = _ddlPersonEntryMobilePhoneEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
+            form.PersonEntrySmsOptInEntryOption = _ddlPersonEntrySmsOptInEntryOption.SelectedValueAsEnum<WorkflowActionFormShowHideOption>();
             form.PersonEntryBirthdateEntryOption = _ddlPersonEntryBirthdateEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryAddressEntryOption = _ddlPersonEntryAddressEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
             form.PersonEntryMaritalStatusEntryOption = _ddlPersonEntryMaritalStatusEntryOption.SelectedValueAsEnum<WorkflowActionFormPersonEntryOption>();
@@ -243,6 +245,7 @@ namespace Rock.Web.UI.Controls
             _ddlPersonEntryGenderEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryGenderEntryOption );
             _ddlPersonEntryEmailEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryEmailEntryOption );
             _ddlPersonEntryMobilePhoneEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryMobilePhoneEntryOption );
+            _ddlPersonEntrySmsOptInEntryOption.SetValue( ( int ) workflowActionForm.PersonEntrySmsOptInEntryOption );
             _ddlPersonEntryBirthdateEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryBirthdateEntryOption );
             _ddlPersonEntryAddressEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryAddressEntryOption );
             _ddlPersonEntryMaritalStatusEntryOption.SetValue( ( int ) workflowActionForm.PersonEntryMaritalStatusEntryOption );
@@ -377,6 +380,7 @@ namespace Rock.Web.UI.Controls
             target.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
             target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             target.PersonEntryMobilePhoneEntryOption = source.PersonEntryMobilePhoneEntryOption;
+            target.PersonEntrySmsOptInEntryOption = source.PersonEntrySmsOptInEntryOption;
             target.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;
             target.PersonEntryAddressEntryOption = source.PersonEntryAddressEntryOption;
             target.PersonEntryMaritalStatusEntryOption = source.PersonEntryMaritalStatusEntryOption;
@@ -636,6 +640,14 @@ namespace Rock.Web.UI.Controls
 
             _ddlPersonEntryMobilePhoneEntryOption.BindToEnum<WorkflowActionFormPersonEntryOption>();
 
+            _ddlPersonEntrySmsOptInEntryOption = new RockDropDownList
+            {
+                ID = "_ddlPersonEntrySmsOptInEntryOption",
+                Label = "SMS Opt-In"
+            };
+
+            _ddlPersonEntrySmsOptInEntryOption.BindToEnum<WorkflowActionFormShowHideOption> ();
+
             _ddlPersonEntryBirthdateEntryOption = new RockDropDownList
             {
                 ID = "_ddlPersonEntryBirthdateEntryOption",
@@ -879,7 +891,8 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow3Col1.Controls.Add( _ddlPersonEntryGenderEntryOption );
             pnlPersonEntryRow3Col2.Controls.Add( _ddlPersonEntryEmailEntryOption );
             pnlPersonEntryRow3Col3.Controls.Add( _ddlPersonEntryMobilePhoneEntryOption );
-            pnlPersonEntryRow3Col4.Controls.Add( _ddlPersonEntryBirthdateEntryOption );
+            pnlPersonEntryRow3Col4.Controls.Add( _ddlPersonEntrySmsOptInEntryOption );
+            
 
             /* Person Entry - Row 4*/
             Panel pnlPersonEntryRow4 = new Panel
@@ -921,6 +934,7 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow4Col1.Controls.Add( _ddlPersonEntryAddressEntryOption );
             pnlPersonEntryRow4Col2.Controls.Add( _dvpPersonEntryGroupLocationType );
             pnlPersonEntryRow4Col3.Controls.Add( _ddlPersonEntryMaritalStatusEntryOption );
+            pnlPersonEntryRow4Col4.Controls.Add( _ddlPersonEntryBirthdateEntryOption );
 
             /* Person Entry - Row 5*/
             Panel pnlPersonEntryRow5 = new Panel

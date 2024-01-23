@@ -13,11 +13,11 @@
             </span>
         </div>
 
-        <div ref="sliderElement" class="d-flex" style="height: var(--slider-handle-height); align-items: center; position: relative;" @mousedown="onMouseDown" @touchdown="onTouchDown">
-            <span class="flex-grow-1" :style="leftSliderStyle" style="background-color: var(--slider-progress-bg); height: var(--slider-height); border-top-left-radius: calc(var(--slider-height) / 2); border-bottom-left-radius: calc(var(--slider-height) / 2);"></span>
-            <span class="flex-grow-1" :style="rightSliderStyle" style="background-color: var(--slider-bg); height: var(--slider-height); border-top-right-radius: calc(var(--slider-height) / 2); border-bottom-right-radius: calc(var(--slider-height) / 2);"></span>
+        <div ref="sliderElement" class="d-flex align-items-center position-relative" style="height: var(--slider-handle-height);" @mousedown="onMouseDown" @touchdown="onTouchDown">
+            <span :style="leftSliderStyle" style="background-color: var(--slider-progress-bg); height: var(--slider-height); border-top-left-radius: calc(var(--slider-height) / 2); border-bottom-left-radius: calc(var(--slider-height) / 2);"></span>
+            <span class="flex-grow-1" style="background-color: var(--slider-bg); height: var(--slider-height); border-top-right-radius: calc(var(--slider-height) / 2); border-bottom-right-radius: calc(var(--slider-height) / 2);"></span>
 
-            <span :style="thumbStyle" style="position: absolute; width: var(--slider-handle-height); height: var(--slider-handle-height); margin-left: calc(0px - calc(var(--slider-handle-height) / 2)); cursor: pointer; background: var(--slider-handle-bg); border: 1px solid var(--slider-handle-border-color); border-radius: var(--slider-handle-height);" @mousedown="onMouseDown" @mouseup="onMouseUp"></span>
+            <span class="position-absolute cursor-pointer" :style="thumbStyle" style="width: var(--slider-handle-height); height: var(--slider-handle-height); margin-left: calc(var(--slider-handle-height) * -.5)); background: var(--slider-handle-bg); border: 1px solid var(--slider-handle-border-color); border-radius: var(--slider-handle-height);transform: translateX(-50%);" @mousedown="onMouseDown" @mouseup="onMouseUp"></span>
         </div>
     </div>
 </template>
@@ -90,15 +90,6 @@
 
         return {
             flexBasis: `${value / 100}%`
-        };
-    });
-
-    /** The computed styles for the right slider track. */
-    const rightSliderStyle = computed((): Record<string, string> => {
-        const value = Math.round(percentValue.value * 10000);
-
-        return {
-            flexBasis: `${100 - (value / 100)}%`
         };
     });
 

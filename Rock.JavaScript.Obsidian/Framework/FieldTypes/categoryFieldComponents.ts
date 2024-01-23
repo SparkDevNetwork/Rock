@@ -17,9 +17,9 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import CategoryPicker from "@Obsidian/Controls/categoryPicker";
-import TextBox from "@Obsidian/Controls/textBox";
-import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
+import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import { ConfigurationValueKey } from "./categoryField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -149,7 +149,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <EntityTypePicker label="Entity Type" v-model="entityType" help="The type of entity to display categories for." />
+    <EntityTypePicker label="Entity Type" v-model="entityType" help="The type of entity to display categories for." showBlankItem />
     <TextBox v-model="qualifierColumn" label="Qualifier Column" help="Entity column qualifier."/>
     <TextBox v-model="qualifierValue" label="Qualifier Value" text="Yes" help="Entity column value." />
 </div>

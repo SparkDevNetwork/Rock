@@ -1,19 +1,8 @@
-{% capture staffGroupsString %}
-    [{% group where:'ParentGroupId == 1528254' iterator:'groups' %}
-        {% for group in groups %}{
-            "Id":{{ group.Id }},
-            "Name":{{ group.Name | ToJSON }},
-            "Staff":{{ group.Members | Select:'Person' | Sort:'LastName' | Select:'Id' | ToJSON }}
-        }{% unless forloop.last %},{% endunless %}{% endfor %}
-    {% endgroup %}]
-{% endcapture %}
-{% assign staffGroups = staffGroupsString | FromJSON %}
 [
     {% campus where:'IsActive == "True" && Public == "Yes"' sort:'Name' iterator:'campuses' %}
     {%- for campus in campuses -%}
         {% assign campusType = campus | Attribute:'CampusType','RawValue' %}
         {% if campusType == 'permanent' or campusType == 'portable' or campusType == 'community' %}
-            {% assign staffMembers = staffGroups | | Where:'Name', campus.Name | First | Property:'Staff' %}
             {
                 "Id": {{ campus.Id | ToJSON }},
                 "Guid": {{ campus.Guid | ToJSON }},
@@ -41,17 +30,26 @@
                 "MailingAddress": {{ campus | Attribute:'MailingAddress' | ToJSON }},
                 "OfficeAddress": {{ campus | Attribute:'OfficeAddress' | ToJSON }},
                 "CampusStaff": [
-                    {% for staff in staffMembers %}
-                        {% assign staffMember = staff | PersonById %}
-                        {
-                            "PersonId": {{ staffMember.Id }},
-                            "FullName": {{ staffMember.FullName | ToJSON }},
-                            "StaffImage": {{ staffMember | Attribute:'StaffImage','Url' | ToJSON }},
-                            "StaffTitle": {{ staffMember | Attribute:'StaffTitle' | ToJSON }},
-                            "StaffEmail": {{ staffMember | Attribute:'StaffEmail' | ToJSON }},
-                            "NickName": {{ staffMember.NickName | ToJSON }}
-                        }{%- unless forloop.last -%},{%- endunless -%}
-                    {% endfor %}
+                    {% group where:'ParentGroupId == 2084074 && Name == "{{ campus.Name }} Team"' iterator:'groups' securityenabled:'false' %}
+                        {% for group in groups %}
+                            {% assign staffPersonIds = group.Members | Select:'Person' | Sort:'LastName' | Select:'Id' %}
+                            {% for staffPersonId in staffPersonIds %}
+                                {% capture groupId %}{{ group.Id }}{% endcapture %}
+                                {% assign staffMember = staffPersonId | PersonById %}
+                                {% assign groupMember = staffMember | Group:groupId,'All' | First %}
+                                {
+                                    "GroupId": {{ groupId | ToJSON }},
+                                    "PersonId": {{ staffMember.Id }},
+                                    "FullName": {{ staffMember.FullName | ToJSON }},
+                                    "StaffImage": {{ staffMember | Attribute:'StaffImage','Url' | ToJSON }},
+                                    "StaffTitle": {{ staffMember | Attribute:'StaffTitle' | ToJSON }},
+                                    "StaffEmail": {{ staffMember | Attribute:'StaffEmail' | ToJSON }},
+                                    "NickName": {{ staffMember.NickName | ToJSON }},
+                                    "ShowOnWebsite": {{ groupMember | Attribute:'ShowOnWebsite' | ToJSON }}
+                                }{%- unless forloop.last -%},{%- endunless -%}
+                            {% endfor %}
+                        {% endfor %}
+                    {% endgroup %}
                 ]
             }{%- unless forloop.last -%},{%- endunless -%}
         {% endif %}

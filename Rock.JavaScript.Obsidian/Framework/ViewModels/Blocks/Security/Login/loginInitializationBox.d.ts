@@ -54,6 +54,9 @@ export type LoginInitializationBox = {
     /** Gets or sets a value indicating whether to hide the new account option. */
     hideNewAccountOption: boolean;
 
+    /** Gets or sets a value indicating whether two-factor authentication is not supported for the selected authentication factor. */
+    is2FANotSupportedForAuthenticationFactor?: boolean | null;
+
     /** Indicates whether internal database login is supported. */
     isInternalDatabaseLoginSupported: boolean;
 
@@ -90,6 +93,21 @@ export type LoginInitializationBox = {
 
     /** Gets or sets a value indicating whether the client should redirect to the Rock.ViewModels.Blocks.Security.Login.LoginInitializationBox.RedirectUrl. */
     shouldRedirect: boolean;
+
+    /** Gets or sets the two-factor email phone not available message. */
+    twoFactorEmailPhoneNotAvailableMessage?: string | null;
+
+    /** Gets or sets the two-factor email phone required message. */
+    twoFactorEmailPhoneRequiredMessage?: string | null;
+
+    /** Gets or sets the two-factor login not available message. */
+    twoFactorLoginNotAvailableMessage?: string | null;
+
+    /** Gets or sets the two-factor login required message. */
+    twoFactorLoginRequiredMessage?: string | null;
+
+    /** Gets or sets the two-factor not supported by authentication method message. */
+    twoFactorNotSupportedByAuthenticationMethodMessage?: string | null;
 
     /** Gets or sets the username field label. */
     usernameFieldLabel?: string | null;

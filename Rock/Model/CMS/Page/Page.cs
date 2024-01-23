@@ -41,7 +41,7 @@ namespace Rock.Model
     [Table( "Page" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PAGE )]
-    public partial class Page : Model<Page>, IOrdered, ICacheable
+    public partial class Page : Model<Page>, IOrdered, ICacheable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -386,8 +386,14 @@ namespace Rock.Model
         /// <value>
         /// The additional settings.
         /// </value>
+        [Obsolete( "Use AdditionalSettingsJson instead." )]
+        [RockObsolete( "1.16" )]
         [DataMember]
         public string AdditionalSettings { get; set; }
+
+        /// <inheritdoc/>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         /// <summary>
         /// Gets or sets the median page load time in seconds. Typically calculated from a set of

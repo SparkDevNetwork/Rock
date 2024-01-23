@@ -1,0 +1,337 @@
+<template>
+    <div v-if="isBlockVisible" class="panel panel-note">
+        <div v-if="config.title || config.titleIconCssClass || showAddNote" class="panel-heading clearfix">
+            <h3 class="panel-title">
+                <i v-if="config.titleIconCssClass" :class="config.titleIconCssClass"></i>
+                {{ config.title }}
+            </h3>
+
+            <button v-if="showAddNote && config.isDescending"
+                    class="add-note btn btn-xs btn-action btn-square"
+                    @click.prevent="onAddNoteClick">
+                <i class="fa fa-plus"></i>
+            </button>
+        </div>
+
+        <div class="panel-body">
+            <TransitionVerticalCollapse>
+                <div v-if="config.isDescending && isAddNoteVisible">
+                    <NoteEditor v-model="addNoteBag"
+                                :noteTypes="config.noteTypes ?? []"
+                                :showAlert="noteOptions.showAlert"
+                                :showDate="noteOptions.showCreateDate"
+                                :showPrivate="noteOptions.showPrivate"
+                                :showSecurity="noteOptions.showSecurity"
+                                :hideCancel="config.addAlwaysVisible"
+                                autoSize
+                                :autoFocus="!config.addAlwaysVisible"
+                                @cancel="onNoteAddCancel"
+                                @save="onNoteAddSave" />
+                </div>
+            </TransitionVerticalCollapse>
+
+            <NotesContainer :notes="notes" @beginEditNote="onBeginEditNote" @endEditNote="onEndEditNote" />
+
+            <TransitionVerticalCollapse>
+                <div v-if="!config.isDescending && isAddNoteVisible">
+                    <NoteEditor v-model="addNoteBag"
+                                :noteTypes="config.noteTypes ?? []"
+                                :showAlert="noteOptions.showAlert"
+                                :showDate="noteOptions.showCreateDate"
+                                :showPrivate="noteOptions.showPrivate"
+                                :showSecurity="noteOptions.showSecurity"
+                                :hideCancel="config.addAlwaysVisible"
+                                autoSize
+                                :autoFocus="!config.addAlwaysVisible"
+                                @cancel="onNoteAddCancel"
+                                @save="onNoteAddSave" />
+                </div>
+            </TransitionVerticalCollapse>
+
+            <button v-if="showAddNote && !config.isDescending"
+                    class="add-note btn btn-xs btn-action btn-square"
+                    @click.prevent="onAddNoteClick">
+                <i class="fa fa-plus"></i>
+            </button>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import Note from "./Notes/note.partial.obs";
+    import NotesContainer from "./Notes/notesContainer.partial.obs";
+    import NoteEditor from "./Notes/noteEditor.partial.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { noteOptionsSymbol, provideEmitter } from "./Notes/utils.partial";
+    import { ExpandedNoteBag, NoteOptions } from "./Notes/types.partial";
+    import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onBeforeUnmount, provide, reactive, ref } from "vue";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { NotesInitializationBox } from "@Obsidian/ViewModels/Blocks/Core/Notes/notesInitializationBox";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/saveNoteRequestBag";
+    import { NoteBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteBag";
+
+    const config = useConfigurationValues<NotesInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    // Only show the block if we have a context entity.
+    const isBlockVisible = !!config.entityIdKey;
+
+    const notes = reactive(getExpandedNotes().filter(n => !n.parentNoteIdKey));
+    const isAddNoteVisible = ref(config.showAdd && config.addAlwaysVisible);
+    const selectableNoteTypes = config.noteTypes?.filter(nt => nt.userSelectable) ?? [];
+    const showAddNote = selectableNoteTypes.length > 0 && !config.addAlwaysVisible && config.showAdd;
+    const addNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned: false });
+    const isSavingNote = ref(false);
+
+    // Construct our standard note options that will be used by child
+    // components rather than passing all the static information around
+    // inside properties.
+    const noteOptions: NoteOptions = {
+        autoExpandReplies: config.expandReplies,
+        avatarUrl: config.usePersonIcon ? config.personAvatarUrl : undefined,
+        isLightMode: config.isLightMode,
+        noteComponent: Note,
+        noteTypes: config.noteTypes ?? [],
+        selectableNoteTypes: selectableNoteTypes,
+        isDescending: config.isDescending,
+        showAdd: config.showAdd,
+        showAlert: config.showAlertCheckBox,
+        showAvatar: config.usePersonIcon,
+        showCreateDate: config.showCreateDateInput,
+        showNoteTypeHeading: config.displayNoteTypeHeading,
+        showPrivate: config.showPrivateCheckBox,
+        showSecurity: config.showSecurityButton
+    };
+
+    const emitter = provideEmitter();
+    const subscriberKey = emitter.subscribe();
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the set of initial expanded note bags from the configuration data.
+     */
+    function getExpandedNotes(): ExpandedNoteBag[] {
+        const expandedNotes: ExpandedNoteBag[] = [];
+
+        // If we don't have any notes or note types then we have nothing to do.
+        if (!config.notes || !config.noteTypes) {
+            return expandedNotes;
+        }
+
+        // Populate the basic expanded note data by associating each note with
+        // the note type it references.
+        for (const note of config.notes) {
+            const type = config.noteTypes.find(nt => nt.idKey === note.noteTypeIdKey);
+
+            if (type) {
+                expandedNotes.push({
+                    noteType: type,
+                    childNotes: [],
+                    ...note
+                });
+            }
+        }
+
+        // Populate the childNotes by finding all children of each note.
+        for (const note of expandedNotes) {
+            if (note.parentNoteIdKey) {
+                const parentNote = expandedNotes.find(n => n.idKey === note.parentNoteIdKey);
+
+                if (parentNote) {
+                    parentNote.childNotes.push(note);
+                }
+            }
+        }
+
+        return expandedNotes;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the person clicks the button to begin adding
+     * a new note to the list of notes.
+     */
+    function onAddNoteClick(): void {
+        // Make sure we start off on a clean slate.
+        addNoteBag.value = {
+            noteTypeIdKey: selectableNoteTypes[0].idKey,
+            text: "",
+            isAlert: false,
+            isPrivate: false,
+            isPinned: false,
+            attributeValues: {}
+        };
+
+        isAddNoteVisible.value = true;
+    }
+
+    /**
+     * Event handler for when the person clicks the cancel button while
+     * trying to add a new note.
+     */
+    function onNoteAddCancel(): void {
+        isAddNoteVisible.value = false;
+    }
+
+    /**
+     * Event handler for when the person clicks the save button while adding
+     * a new note.
+     */
+    async function onNoteAddSave(): Promise<void> {
+        if (isSavingNote.value) {
+            return;
+        }
+
+        // Make sure we don't try to save the same note twice.
+        isSavingNote.value = true;
+
+        try {
+            const request: SaveNoteRequestBag = {};
+
+            setPropertiesBoxValue(request, "idKey", addNoteBag.value.idKey);
+            setPropertiesBoxValue(request, "parentNoteIdKey", undefined);
+            setPropertiesBoxValue(request, "noteTypeIdKey", addNoteBag.value.noteTypeIdKey);
+            setPropertiesBoxValue(request, "text", addNoteBag.value.text);
+            setPropertiesBoxValue(request, "isAlert", addNoteBag.value.isAlert);
+            setPropertiesBoxValue(request, "isPrivate", addNoteBag.value.isPrivate);
+            setPropertiesBoxValue(request, "isPinned", addNoteBag.value.isPinned);
+            setPropertiesBoxValue(request, "attributeValues", addNoteBag.value.attributeValues);
+
+            if (addNoteBag.value.createdDateTime) {
+                setPropertiesBoxValue(request, "createdDateTime", addNoteBag.value.createdDateTime);
+            }
+
+            const result = await invokeBlockAction<NoteBag>("SaveNote", { request });
+
+            // Even though the note might have saved, if we don't have a type
+            // then we can't display it. This should never happen in production.
+            const type = config.noteTypes?.find(nt => nt.idKey === result.data?.noteTypeIdKey);
+
+            if (!result.isSuccess || !result.data || !type) {
+                await alert(result.errorMessage ?? "Unable to save the note.");
+                return;
+            }
+
+            // Convert the note to an expanded note so we can properly track
+            // all the associated data.
+            const expandedNote: ExpandedNoteBag = {
+                ...result.data,
+                noteType: type,
+                childNotes: []
+            };
+
+            // Either insert the note at the top or the bottom of the list
+            // depending on the current sort direction.
+            if (config.isDescending) {
+                let index = 0;
+
+                // If not an alert, put it at the top of the list after all
+                // other alerts.
+                if (!expandedNote.isAlert) {
+                    while (index < notes.length && notes[index].isAlert) {
+                        index++;
+                    }
+                }
+
+                // If not pinned to top, put it at the top of the list after all
+                // other pinned to top and alerts.
+                if (!expandedNote.isPinned) {
+                    while (index < notes.length && notes[index].isPinned) {
+                        index++;
+                    }
+                }
+
+                notes.splice(index, 0, expandedNote);
+            }
+            else {
+                let index = 0;
+
+                // If an alert and pinned item, put it at as the last alert and pinned item.
+                if (expandedNote.isAlert && expandedNote.isPinned) {
+                    while (index < notes.length && (notes[index].isAlert && notes[index].isPinned)) {
+                        index++;
+                    }
+                }
+                // If an alert but not a pinned item, put it at as the last alert item.
+                else if (expandedNote.isAlert && !expandedNote.isPinned) {
+                    while (index < notes.length && notes[index].isAlert) {
+                        index++;
+                    }
+                }
+                // If not an alert but a pinned item, put it at as the last item.
+                else if (!expandedNote.isAlert && expandedNote.isPinned) {
+                    while (index < notes.length && (notes[index].isAlert || notes[index].isPinned)) {
+                        index++;
+                    }
+                }
+                else {
+                    index = notes.length;
+                }
+
+                notes.splice(index, 0, expandedNote);
+            }
+
+            // Clear the UI.
+            addNoteBag.value = {
+                isAlert: false,
+                isPrivate: false,
+                isPinned: false
+            };
+
+            isAddNoteVisible.value = config.addAlwaysVisible;
+        }
+        finally {
+            isSavingNote.value = false;
+        }
+    }
+
+    /**
+     * Event handler for when any child note begins an edit operation.
+     */
+    function onBeginEditNote(): void {
+        // Clear any new note that was in progress.
+        addNoteBag.value = {
+            isAlert: false,
+            isPrivate: false,
+            isPinned: false
+        };
+
+        // Hide the UI for adding a new note.
+        isAddNoteVisible.value = false;
+    }
+
+    /**
+     * Event handler for when a child note has ended an editing operation.
+     */
+    function onEndEditNote(): void {
+        // If we are in always show "add" configuration state then show the
+        // add note UI again.
+        isAddNoteVisible.value = config.addAlwaysVisible;
+    }
+
+    // #endregion
+
+    // Unsubscribe when we unmount to prevent memory leaks.
+    onBeforeUnmount(() => {
+        emitter.unsubscribe(subscriberKey);
+    });
+
+    // Provide the options that child components will need.
+    provide(noteOptionsSymbol, noteOptions);
+
+    // Listen for child note component events.
+    emitter.on("beginEdit", subscriberKey, onBeginEditNote);
+    emitter.on("endEdit", subscriberKey, onEndEditNote);
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

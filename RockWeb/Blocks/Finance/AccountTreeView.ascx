@@ -250,7 +250,7 @@
                                  '<li id="divSearchItem_' + idx + '" class="preview-item">' +
                                  '   <a class="search-result-link" data-id="' + v.nodeId + '" href="javascript:void(0);">' +
                                  '              <span class="title">' + v.title + '</span>' +
-                                 '              <span class="subtitle">' + v.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') +
+                                 '              <span class="subtitle">' + v.path.replaceAll('^', '<i class="fa fa-chevron-right px-1" aria-hidden="true"></i>') +
                                  '   </span></a>' +
                                  '</li>';
                          });

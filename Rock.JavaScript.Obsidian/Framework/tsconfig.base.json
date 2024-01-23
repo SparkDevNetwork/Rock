@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "outDir": "../dist/Framework",
     "rootDir": ".",
     "incremental": true,
@@ -18,6 +19,7 @@
     "importHelpers": true,
     "lib": [
       "DOM",
+      "DOM.Iterable",
       "ES2016",
       "ES2020.Symbol.WellKnown" /* Fixes compile issue in Vue declaration files, not actually in use. */
     ],

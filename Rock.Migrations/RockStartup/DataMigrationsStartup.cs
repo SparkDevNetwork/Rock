@@ -33,6 +33,72 @@ namespace Rock.Migrations.RockStartup
     {
         public int StartupOrder => 0;
 
+
+        /// <summary>
+        /// A GUID list of data migration jobs that run automatically run once after an update and then delete themselves from the ServiceJob table.
+        /// </summary>
+        public static List<Guid> startupRunOnceJobGuids = new List<Guid>
+        {
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS.AsGuid(),
+            SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_125_UPDATE_STEP_PROGRAM_COMPLETION.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX.AsGuid(),
+			SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_140_CREATE_FK_INDEXES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_CURRENT_SESSIONS_1900.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_141_ADD_MISSING_INDEXES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_VALUEAS_ATTRIBUTE_VALUE_COLUMNS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_SLIDING_DATE_RANGE_VALUE.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_141_RECREATE_METRIC_ANALYTICS_VIEWS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_150_SYSTEM_PHONE_NUMBERS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_150_REPLACE_TRANSACTION_ENTRY_BLOCKS_WITH_UTILITY_PAYMENT_ENTRY_BLOCK.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_150_MOBILE_APPLICATION_USERS_REST_GROUP.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_151_DUPLICATE_MOBILE_INTERACTIONS_CLEANUP.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_152_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS.AsGuid(),
+			SystemGuid.ServiceJob.DATA_MIGRATIONS_152_IX_VALUE_AS_PERSON_ID.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_154_UPDATE_AGE_BRACKET_VALUES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_INTERACTION_SESSION_SESSION_START_DATE_KEY.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_INTERACTION_SESSION_INTERACTION_CHANNEL_ID.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_INTERACTION_SESSION_AND_INTERACTION_INDICES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_POPULATE_INTERACTION_SESSION_DATA.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_ID.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_WORKFLOWID_COLUMNS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_NOTE_DATA.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_SWAP_NOTES_BLOCK.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_CHOP_BLOCKS_GROUP_1.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_CHOP_BLOCKS_GROUP_REGISTRATION.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_160_UPDATE_MEDIA_ELEMENT_DEFAULT_URLS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_161_SWAP_FINANCIAL_BATCH_LIST.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_161_SWAP_BLOCK_GROUP_SCHEDULE_TOOLBOX_V1.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_161_CHOP_BLOCK_GROUP_SCHEDULE_TOOLBOX_V2.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_161_REMOVE_OBSIDIAN_GROUP_SCHEDULE_TOOLBOX_BACK_BUTTONS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_161_CHOP_ACCOUNTENTRY_AND_LOGIN.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_162_CHOP_EMAIL_PREFERENCE_ENTRY.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_COMMUNICATION_RECIPIENT_LIST_BLOCK.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES.AsGuid(),
+        };
+
+
+        /// <summary>
+        /// A GUID list of data migration jobs that are scheduled to run at 2 AM when usage is low because they would affect performance
+        /// </summary>
+        public static List<Guid> scheduledRunOnceJobGuids = new List<Guid>
+        {
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_122_INTERACTION_PERSONAL_DEVICE_ID.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_133_ADD_INTERACTION_SESSION_INTERACTION_SESSION_LOCATION_ID_INDEX.AsGuid()
+        };
+
         /// <summary>
         /// Method that will be run at Rock startup to run post update service jobs.
         /// These jobs are run asynchronously so Post update jobs must not be order dependent
@@ -54,8 +120,7 @@ namespace Rock.Migrations.RockStartup
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( !runJobsInContext )
             {
-                // RunJobsInIISContext isn't enabled on this server, so don't run these DataMigrationsStartups unless
-                // this is a developer environment
+                // RunJobsInIISContext isn't enabled on this server, so don't run these DataMigrationsStartups unless this is a developer environment
                 if ( !System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     // RunJobsInIISContext isn't enabled, and this isn't a developer environment so exit without running DataMigrationsStartups.
@@ -63,47 +128,9 @@ namespace Rock.Migrations.RockStartup
                 }
             }
 
-            List<Guid> runOnceJobGuids = new List<Guid>
-            {
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
-                
-                /* MDP 07-22-2021
-                
-                NOTE: We intentionally are excluding SystemGuid.ServiceJob.DATA_MIGRATIONS_122_INTERACTION_PERSONAL_DEVICE_ID
-                from DataMigrationStartup and will just wait for it to run at 2am.
-                See https://app.asana.com/0/0/1199506067368201/f
-
-                */
-                
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS.AsGuid(),
-                SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_125_UPDATE_STEP_PROGRAM_COMPLETION.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX.AsGuid(),
-				SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_CREATE_FK_INDEXES.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_CURRENT_SESSIONS_1900.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_ADD_MISSING_INDEXES.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_VALUEAS_ATTRIBUTE_VALUE_COLUMNS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_UPDATE_SLIDING_DATE_RANGE_VALUE.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_141_RECREATE_METRIC_ANALYTICS_VIEWS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_150_SYSTEM_PHONE_NUMBERS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_150_REPLACE_TRANSACTION_ENTRY_BLOCKS_WITH_UTILITY_PAYMENT_ENTRY_BLOCK.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_150_MOBILE_APPLICATION_USERS_REST_GROUP.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_151_DUPLICATE_MOBILE_INTERACTIONS_CLEANUP.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_150_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES.AsGuid(),
-            };
-
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
             var runOnceJobIds = new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable()
-                .Where( a => runOnceJobGuids.Contains( a.Guid ) )
+                .Where( a => startupRunOnceJobGuids.Contains( a.Guid ) )
                 .OrderBy( a => a.Id )
                 .Select( a => a.Id )
                 .ToList();

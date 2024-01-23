@@ -1,0 +1,120 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <div v-if="rebuildActionSuccessMessage" class="row">
+            <div class="col-md-12">
+                <NotificationBox alertType="success">{{ rebuildActionSuccessMessage }}</NotificationBox>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <ul v-html="options?.chartHTML" class="streak-chart margin-b-md">
+                </ul>
+            </div>
+        </div>
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { StreakBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakBag";
+    import { StreakDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<StreakBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<StreakDetailOptionsBag>,
+            required: true
+        },
+
+        rebuildActionSuccessMessage : String
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addHtmlValue("", props.options?.personHTML ?? "");
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addHtmlValue("Streak Type", props.modelValue?.streakType?.text ?? "");
+        valueBuilder.addTextValue("Enrollment Date", `${RockDateTime.parseISO(props.modelValue.enrollmentDate ?? "")?.toASPString("d") ?? ""}`);
+        if(props.modelValue?.location?.text) {
+            valueBuilder.addTextValue("Location", props.modelValue.location.text);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addHtmlValue("Current Streak", props.options.currentStreak ?? "");
+        valueBuilder.addHtmlValue("Longest Streak", props.options.longestStreak ?? "");
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

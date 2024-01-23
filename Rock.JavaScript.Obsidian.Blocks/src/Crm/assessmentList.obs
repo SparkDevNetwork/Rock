@@ -1,0 +1,47 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <div v-if="config.hasContent" v-html="assessmentList">
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { AssessmentListBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentList/assessmentListBag";
+
+
+    const config = useConfigurationValues<AssessmentListBag>();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const assessmentList = computed((): string => {
+        return config.assessmentList ?? "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+</script>

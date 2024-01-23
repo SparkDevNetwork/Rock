@@ -12,15 +12,15 @@
             <div v-for="value in displayedValues" class="checkbox">
                 <label>
                     <input type="checkbox" :checked="value.selected" @change="onSelected(value, $event)" />
-                    <span class="label-text"><component :is="column.condensedComponent" :row="value.row" :column="column" /></span>
+                    <span class="label-text"><component :is="column.condensedComponent" :row="value.row" :column="column" :grid="grid" /></span>
                 </label>
             </div>
     </div>
 </template>
 
 <script setup lang="ts">
-    import DropDownList from "@Obsidian/Controls/dropDownList";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { PickExistingFilterMethod, PickExistingFilterMethodDescription } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { ref, watch, computed } from "vue";

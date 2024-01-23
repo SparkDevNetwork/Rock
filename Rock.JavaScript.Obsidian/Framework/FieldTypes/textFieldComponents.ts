@@ -16,12 +16,25 @@
 //
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import TextBox from "@Obsidian/Controls/textBox";
-import CheckBox from "@Obsidian/Controls/checkBox";
-import NumberBox from "@Obsidian/Controls/numberBox";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
-import { ConfigurationValueKey } from "./textField.partial";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+// We can't import the ConfigurationValueKey from textField.partial.ts
+// because it causes a recursive import back to this file by way of
+// the fieldType.ts import in textField.partial.ts.
+export const enum ConfigurationValueKey {
+    /** Contains "True" if the text field is designed for password entry. */
+    IsPassword = "ispassword",
+
+    /** The maximum number of characters allowed in the text entry field. */
+    MaxCharacters = "maxcharacters",
+
+    /** Contains "True" if the text field should show the character countdown. */
+    ShowCountdown = "showcountdown"
+}
 
 export const EditComponent = defineComponent({
     name: "TextField.Edit",
@@ -146,7 +159,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

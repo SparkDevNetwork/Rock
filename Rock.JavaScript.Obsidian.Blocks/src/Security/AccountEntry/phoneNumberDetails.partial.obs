@@ -1,18 +1,40 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <PhoneNumberBox
-        v-model:modelValue="internalPhoneNumber"
-        v-model:countryCode="internalCountryCode"
-        :disabled="disabled"
-        :label="modelValue.label!"
-        :rules="phoneNumberRules"></PhoneNumberBox>
-    <InlineCheckBox :disabled="disabled" label="SMS" v-model="internalIsSmsEnabled"></InlineCheckBox>
-    <InlineCheckBox :disabled="disabled" label="Unlisted" v-model="internalIsUnlisted"></InlineCheckBox>
+    <div :class="['phonegroup clearfix form-group', modelValue.isRequired ? 'required' : '']">
+        <div v-if="!isMobile" class="control-label col-sm-1 phonegroup-label">{{ modelValue.label }}&nbsp;</div>
+        <div :class="['controls', !isMobile ? 'col-sm-11' : 'col-sm-12', 'phonegroup-number']">
+            <div :class="['row', !isMobile ? 'margin-l-sm' : '']">
+                <div class="col-sm-7">
+                    <PhoneNumberBox v-model:modelValue="internalPhoneNumber"
+                                    v-model:countryCode="internalCountryCode"
+                                    :disabled="disabled"
+                                    :disableLabel="!isMobile"
+                                    :label="modelValue.label!"
+                                    :rules="phoneNumberRules"
+                                    :validationTitle="`${modelValue.label} phone`" />
+                </div>
+                <div class="col-sm-5 margin-t-sm">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <InlineCheckBox v-model="internalIsSmsEnabled"
+                                            :disabled="disabled"
+                                            label="SMS" />
+                        </div>
+                        <div class="col-xs-6">
+                            <InlineCheckBox v-model="internalIsUnlisted"
+                                            :disabled="disabled"
+                                            label="Unlisted" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
 
@@ -22,6 +44,11 @@
             required: true
         },
         disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+        isMobile: {
             type: Boolean as PropType<boolean>,
             required: false,
             default: false

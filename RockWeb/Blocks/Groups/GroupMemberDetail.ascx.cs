@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Net.Http;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -53,14 +54,14 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 1 )]
 
-    [BooleanField( "Are Requirements Publicly Hidden",
-        Description = "Set to true to publicly show the group member's requirements.",
+    [BooleanField( "Hide Requirements",
+        Description = "When set to 'Yes', the group member's requirements section will be hidden.",
         Key = AttributeKey.AreRequirementsPubliclyHidden,
         DefaultBooleanValue = false,
         Order = 2 )]
 
-    [BooleanField( "Is Requirement Summary Hidden",
-        Description = "Set to true to hide the \"Summary\" field.",
+    [BooleanField( "Hide Requirement Type Summary",
+        Description = "If requirements are being shown, setting this to 'Yes' will hide the requirement type's \"Summary\" value.",
         Key = AttributeKey.IsSummaryHidden,
         DefaultBooleanValue = false,
         Order = 3 )]
@@ -321,16 +322,22 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
                 if ( groupMember != null )
                 {
-                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.PageCache, pageReference ).LastOrDefault();
+                    // This should be replaced with a block setting when converted to Obsidian. -dsh
+                    var pageReferenceHistory = ( Dictionary<int, List<BreadCrumb>> ) System.Web.HttpContext.Current.Session["RockPageReferenceHistory"];
 
-                    if ( parentPageReference != null )
+                    var queryString = pageReferenceHistory.Values
+                        .SelectMany( h => h )
+                        .Where( bc => bc.Url.IsNotNullOrWhiteSpace() && bc.Url.StartsWith( "/" ) )
+                        .Select( bc => Uri.TryCreate( "http://ignored" + bc.Url, UriKind.Absolute, out var uri ) ? uri : null )
+                        .Where( u => u != null && u.Query.IsNotNullOrWhiteSpace() && u.Query != "?" )
+                        .Select( u => u.ParseQueryString() )
+                        .FirstOrDefault( q => q.AllKeys.Contains( PageParameterKey.GroupId ) );
+
+                    var groupIdParam = queryString?[PageParameterKey.GroupId].AsIntegerOrNull();
+                    if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
                     {
-                        var groupIdParam = parentPageReference.QueryString[PageParameterKey.GroupId].AsIntegerOrNull();
-                        if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
-                        {
-                            // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
-                            breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
-                        }
+                        // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
+                        breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
                     }
 
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
@@ -408,7 +415,7 @@ namespace RockWeb.Blocks.Groups
         private bool LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
@@ -548,9 +555,6 @@ namespace RockWeb.Blocks.Groups
                 cbIsNotified.Visible = false;
             }
 
-            // render UI based on Authorized and IsSystem
-            bool readOnly = false;
-
             var group = groupMember.Group;
             var groupType = GroupTypeCache.Get( groupMember.Group.GroupTypeId );
             if ( !string.IsNullOrWhiteSpace( groupType.IconCssClass ) )
@@ -586,12 +590,16 @@ namespace RockWeb.Blocks.Groups
 
             hlArchived.Visible = groupMember.IsArchived;
 
-            // user has to have EDIT Auth to the Block OR the group
-            nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) && !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && !group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) )
+            bool readOnly = true;
+            nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
+
+            if ( IsUserAuthorized( Authorization.EDIT )
+                || group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson )
+                || ( IsSignUpMode && group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) ) )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
+                readOnly = false;
+                nbEditModeMessage.Text = string.Empty;
             }
 
             if ( groupMember.IsSystem )
@@ -601,6 +609,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             btnSave.Visible = !readOnly;
+            btnSaveThenAdd.Visible = !readOnly;
 
             if ( readOnly || groupMember.Id == 0 )
             {
@@ -639,6 +648,7 @@ namespace RockWeb.Blocks.Groups
             rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
             rblCommunicationPreference.SetValue( ( ( int ) groupMember.CommunicationPreference ).ToString() );
+            rblCommunicationPreference.Enabled = !readOnly;
 
             var registrations = new RegistrationRegistrantService( rockContext )
                 .Queryable().AsNoTracking()
@@ -1030,7 +1040,7 @@ namespace RockWeb.Blocks.Groups
             gmrcRequirements.RequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
 
             // Determine whether the current person is a leader of the chosen group.
-            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupMemberId.ValueAsInt() );
+            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupId.ValueAsInt() );
             var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
                 groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
 
@@ -2348,7 +2358,7 @@ namespace RockWeb.Blocks.Groups
             else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
             {
                 hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
-                var smsPhoneNumbers = SystemPhoneNumberCache.All()
+                var smsPhoneNumbers = SystemPhoneNumberCache.All( false )
                     .Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson )
                         && v.Id == hfFromSMSNumber.Value.AsInteger() )
                     .ToList();

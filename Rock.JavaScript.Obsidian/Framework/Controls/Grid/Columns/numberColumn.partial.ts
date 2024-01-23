@@ -43,6 +43,10 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
     return value;
 }
 
+/**
+ * Displays the cell value as a formatted number. This uses the browsers current
+ * locale to format the number with thousands and decimal separators.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,

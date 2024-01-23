@@ -191,13 +191,13 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
                 // in case called from CategoryTreeView
                 int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
-                MetricCategory metricCategory = null;
+
                 if ( metricCategoryId.HasValue )
                 {
                     if ( metricCategoryId.Value > 0 )
                     {
                         // editing a metric, but get the metricId from the metricCategory
-                        metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
+                        var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
                         if ( metricCategory != null )
                         {
                             hfMetricCategoryId.Value = metricCategory.Id.ToString();
@@ -224,19 +224,6 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 {
                     pnlDetails.Visible = false;
                 }
-            }
-            else
-            {
-                // Canceling on Edit.  Return to Details.
-                var metricService = new MetricService( new RockContext() );
-                var metric = metricService.Get( hfMetricId.Value.AsInteger() );
-
-                if ( metric == null )
-                {
-                    return;
-                }
-
-                CreateChart( metric );
             }
         }
 
@@ -563,8 +550,15 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 hfMetricCategoryId.Value = metricCategoryId.ToString();
             }
 
-            qryParams[PageParameterKey.MetricCategoryId] = hfMetricCategoryId.Value;
-            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            if ( hfMetricCategoryId.ValueAsInt() != 0 )
+            {
+                qryParams[PageParameterKey.MetricCategoryId] = hfMetricCategoryId.Value;
+            }
+
+            if ( PageParameter( PageParameterKey.ExpandedIds ).IsNotNullOrWhiteSpace() )
+            {
+                qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            }
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -651,10 +645,10 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             var qryParams = new Dictionary<string, string>();
             if ( parentCategoryId != null )
             {
-                qryParams["CategoryId"] = parentCategoryId.ToString();
+                qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
             }
 
-            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -1391,7 +1385,7 @@ The Lava can include Lava merge fields:";
                 foreach ( var datapoint in datapointsByMetricTypeValue )
                 {
                     var name = $"{metric.YAxisLabel ?? "value"}";
-                    var borderColor = chartStyle.SeriesColors[0];
+                    var borderColor = chartStyle.SeriesColors?[0] ?? null;
 
                     if ( datapoint.Key == MetricValueType.Goal )
                     {
@@ -1409,6 +1403,7 @@ The Lava can include Lava merge fields:";
                             .Cast<IChartJsTimeSeriesDataPoint>()
                             .ToList()
                     };
+
                     factory.Datasets.Add( dataset );
                 }
 
@@ -1427,7 +1422,7 @@ The Lava can include Lava merge fields:";
                     foreach ( var datapoint in datapointsByMetricTypeValue )
                     {
                         var name = $"{metric.YAxisLabel ?? "value"}";
-                        var fillColor = chartStyle.SeriesColors[0];
+                        var fillColor = chartStyle.SeriesColors?[0] ?? null;
 
                         if ( datapoint.Key == MetricValueType.Goal )
                         {
@@ -1445,6 +1440,7 @@ The Lava can include Lava merge fields:";
                                 .Cast<IChartJsTimeSeriesDataPoint>()
                                 .ToList()
                         };
+
                         factory.Datasets.Add( dataset );
                     }
                 }

@@ -5,38 +5,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        > Before opening your first issue we highly recommend reading [this blog post](https://www.snoyman.com/blog/2017/10/effective-ways-help-from-maintainers)
-  - type: markdown
-    attributes:
-      value: |
-        # Basic Information
-  - type: checkboxes
-    id: todo
-    attributes:
-      label: Please go through all the tasks below
-      description: |
-        - Perform a search on the [Github Issues](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock) to see if your bug or enhancement is already reported.
-        - Try to reproduce the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
-      options:
-        - label: Check this box only after you have successfully completed both the above tasks
-    validations:
-      required: true
+        > Before opening your first issue we highly recommend reading [this blog post](https://www.snoyman.com/blog/2017/10/effective-ways-help-from-maintainers). Also, please ensure your Github account is configured with your name, organization and a profile photo. This helps us to build community and communicate.
   - type: textarea
     id: summary
     attributes:
-      label: Please provide a brief description of the problem. Please do not forget to attach the relevant screenshots from your side.
-      description: Please write a clear and concise description and include full window non-partial screenshots. Please feel free to provide more than one screenshots if needed.
+      label: Description
+      description: Please write a clear and concise description and include full window non-partial screenshots.
       placeholder: Tell us what you see!
       value: "Tell us what you see!"
-    validations:
-      required: true
-  - type: textarea
-    id: expected-behavior
-    attributes:
-      label: Expected Behavior
-      description: Please provide a brief description of the expected behavior of the system.
-      placeholder: Expected Behavior
-      value: "Expected Behavior"
     validations:
       required: true
   - type: textarea
@@ -46,6 +22,15 @@ body:
       description: Please provide a brief description of the actual behavior or the bug that you see along with the screenshots.
       placeholder: Actual Behavior
       value: "Actual Behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: Please provide a brief description of the expected behavior of the system.
+      placeholder: Expected Behavior
+      value: "Expected Behavior"
     validations:
       required: true
   - type: textarea
@@ -60,6 +45,16 @@ body:
         - See error
     validations:
       required: true
+  - type: checkboxes
+    id: issue-confirmation
+    attributes:
+      label: Issue Confirmation
+      description: Check the boxes below to confirm each task has been completed.
+      options:
+        - label: Perform a search on the [Github Issues](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock) to see if your bug or enhancement is already reported.
+          required: true
+        - label: Try to reproduce the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
+          required: true
   - type: input
     id: version
     attributes:

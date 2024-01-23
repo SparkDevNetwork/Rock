@@ -3,7 +3,7 @@
 {% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
 
     {% if useNewStyles == 'Yes' %}
-        <section id="navigation-secondary" class="py-2 px-1 py-md-3 bring-forward drop-shadow">
+        <section id="navigation-secondary" class="py-3 px-2 py-md-4 px-md-3 bring-forward drop-shadow">
             <div class="d-flex flex-column flex-md-row justify-content-between align-content-center px-2">
 
                 <h2 class="h6 mb-0 d-flex justify-content-between" style="margin-top: 2px;">{{ Page.Title }} <i class="fas fa-caret-down hidden-md hidden-lg hidden-xl" role="button" data-toggle="collapse" href="#nav-secondary" aria-expanded="false" aria-controls="nav-secondary"></i></h2>
@@ -18,10 +18,14 @@
                             {% else %}
                                 {% assign value = parts.Value %}
                             {% endif %}
-                            <li class="d-flex flex-wrap align-content-center"><a href="{{ value }}" data-scroll class="d-flex w-100 py-1 py-md-0 height-max-content text-decoration-none font-sans font-medium {% if parts.Value == path %}text-white{% endif %}">{{ parts.Key }}</a></li>
+                            <li class="d-flex flex-wrap align-content-center">
+                                <a href="{{ value }}" data-scroll class="d-flex w-100 py-1 py-md-0 height-max-content text-decoration-none font-sans font-medium {% if parts.Value == path %}text-white{% endif %}">{{ parts.Key }}</a>
+                            </li>
                         {% endfor %}
                         {% for childPage in Page.Pages %}
-                            <li class="d-flex flex-wrap align-content-center"><a href="{{ childPage.Url }}" class="d-flex w-100 py-1 py-md-0  height-max-content text-decoration-none font-sans font-medium {% if childPage.Current == 'true' %}text-white{% endif %}">{{ childPage.Title }}</a></li>
+                            <li class="d-flex flex-wrap align-content-center">
+                                <a href="{{ childPage.Url }}" class="d-flex w-100 py-1 py-md-0 height-max-content text-decoration-none font-sans font-medium {% if childPage.Current == 'true' %}text-white{% endif %}">{{ childPage.Title }}</a>
+                            </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -31,12 +35,10 @@
     {% else %}
         <!-- Secondary Nav -->
         <section class="nav-secondary bg-gray-dark hard flush hidden-xs hidden-sm">
-            <div
-                class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
+            <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
                 <a href="{{ Page.Url }}" class="hidden-sm hidden-xs">
-                    <h2 class="h4 text-white flush pull-left"
-                        style="position: relative; top: 6px;">{{ Page.Title }}</h2>
+                    <h2 class="h4 text-white flush pull-left" style="position: relative; top: 6px;">{{ Page.Title }}</h2>
                 </a>
 
                 <ul class="list-inline flush">
@@ -48,13 +50,17 @@
                         {% else %}
                             {% assign value = parts.Value %}
                         {% endif %}
-                        <li><a href="{{ value }}" class="btn btn-sm btn-link text-hover-white {% if parts.Value == path %}text-white{% endif %}" data-scroll="">{{ parts.Key }}</a></li>
+                        <li>
+                            <a href="{{ value }}" class="btn btn-sm btn-link text-hover-white {% if parts.Value == path %}text-white{% endif %}"
+                            data-scroll="">{{ parts.Key }}</a>
+                        </li>
                     {% endfor %}
                     {% for childPage in Page.Pages %}
-                        <li><a href="{{ childPage.Url }}" class="btn btn-sm btn-link text-hover-white {% if childPage.Current == 'true' %}text-white{% endif %}" data-scroll="">{{ childPage.Title }}</a></li>
+                        <li>
+                            <a href="{{ childPage.Url }}" class="btn btn-sm btn-link text-hover-white {% if childPage.Current == 'true' %}text-white{% endif %}" data-scroll="">{{ childPage.Title }}</a>
+                        </li>
                     {% endfor %}
                 </ul>
-
             </div>
         </section>
 
@@ -62,15 +68,13 @@
         <section class="bg-primary hard flush hidden-md hidden-lg">
             <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
-                <a id="mobileSecondaryNavTrigger"
-                    class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-left flush-bottom" role="button" data-toggle="collapse" data-parent="#accordion" href="#mobileSecondaryNav" aria-expanded="false" aria-controls="mobileSecondaryNav">
+                <a id="mobileSecondaryNavTrigger" class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-left flush-bottom" role="button" data-toggle="collapse" data-parent="#accordion" href="#mobileSecondaryNav" aria-expanded="false" aria-controls="mobileSecondaryNav">
                     <span class="h5 text-white display-inline-block flush" style="padding: 4px 0;">{{ Page.Title }}</span>
-                    <i class="position-relative fas fa-angle-down fa-lg pull-right"
-                        style="top: 7px; font-size: 1.6em;"></i>
+                    <i class="position-relative fas fa-angle-down fa-lg pull-right" style="top: 7px; font-size: 1.6em;"></i>
                 </a>
 
                 {%- comment -%}
-                Flip the arrow on the dropdown when it is expaneded/collapsed
+                    Flip the arrow on the dropdown when it is expaneded/collapsed
                 {%- endcomment -%}
                 <script>
                     $('#mobileSecondaryNavTrigger').on('click', function (e) {
@@ -107,7 +111,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
     {% endif %}

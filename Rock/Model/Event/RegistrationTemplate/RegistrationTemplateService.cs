@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.ViewModels.Entities;
-
 namespace Rock.Model
 {
     /// <summary>
@@ -23,23 +21,5 @@ namespace Rock.Model
     /// </summary>
     public partial class RegistrationTemplateService
     {
-    }
-
-    /// <summary>
-    /// RegistrationTemplateViewModelHelper
-    /// </summary>
-    public partial class RegistrationTemplateViewModelHelper
-    {
-        /// <summary>
-        /// Applies the additional properties and security to view model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="viewModel">The view model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( RegistrationTemplate model, RegistrationTemplateBag viewModel, Person currentPerson = null, bool loadAttributes = true )
-        {
-            viewModel.PluralRegistrantTerm = model.RegistrantTerm.Pluralize();
-        }
     }
 }

@@ -21,6 +21,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Transactions
@@ -361,6 +364,8 @@ namespace Rock.Transactions
         /// <param name="transactions">The list of transactions ot be processed by this worker.</param>
         private static async Task FastQueueWorkerAsync( ConcurrentQueue<ITransaction> transactions )
         {
+            var logger = RockLogger.LoggerFactory.CreateLogger( "Rock.Transactions.RockQueue" );
+
             // We need to completely empty the queue, otherwise transactions
             // may be lost if the fast queue is shutdown.
             while ( transactions.TryDequeue( out var transaction ) )
@@ -385,19 +390,20 @@ namespace Rock.Transactions
                     // looked at later.
                     if ( durationMilliseconds > 2_500 )
                     {
-                        var level = Logging.RockLogLevel.Info;
                         var message = $"Fast execution of transaction {transaction.GetType().Name} took {durationMilliseconds:N0} ms.";
 
                         if ( durationMilliseconds > 10_000 )
                         {
-                            level = Logging.RockLogLevel.Error;
+                            logger.LogError( message );
                         }
                         else if ( durationMilliseconds > 5_000 )
                         {
-                            level = Logging.RockLogLevel.Warning;
+                            logger.LogWarning( message );
                         }
-
-                        Logging.RockLogger.Log.WriteToLog( level, Logging.RockLogDomains.Core, message );
+                        else
+                        {
+                            logger.LogInformation( message );
+                        }
                     }
                 }
                 catch ( Exception ex )

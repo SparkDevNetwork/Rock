@@ -37,6 +37,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
     [Category( "Reminders" )]
     [Description( "Allows management of the current person's reminders." )]
     [IconCssClass( "fa fa-list-alt" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     [LinkedPage(
         "Reminder Edit Page",
@@ -69,15 +70,12 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_REMINDERS_REMINDER_LIST )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_REMINDERS_REMINDER_LIST )]
-    public class ReminderList : RockMobileBlockType
+    public class ReminderList : RockBlockType
     {
         #region IRockMobileBlockType Implementation
 
-        /// <inheritdoc />
-        public override int RequiredMobileAbiVersion => 5;
-
-        /// <inheritdoc />
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Reminders.ReminderList";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 5 );
 
         /// <inheritdoc />
         public override object GetMobileConfigurationValues()
@@ -90,6 +88,8 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         }
 
         #endregion
+
+        #region Constants
 
         /// <summary>
         /// Keys for Block Attributes.
@@ -117,6 +117,10 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             public const string CompletionDisplayDelay = "CompletionDisplayDelay";
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Gets a number of reminder bags based on the start index and count.
         /// </summary>
@@ -134,7 +138,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             using ( var rockContext = new RockContext() )
             {
                 var reminderService = new ReminderService( rockContext );
-                var personService = new PersonService( rockContext );
+                var personAliasService = new PersonAliasService( rockContext );
                 var reminders = reminderService.GetReminders( personGuid, entityTypeGuid, entityGuid, reminderTypeGuid );
 
                 // If this block was specified to only include certain reminder types, limit to those.
@@ -154,13 +158,19 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 }
 
                 // Filter our reminders based on the Filter Bag provided.
-                var filteredReminders = FilterRemindersFromFilterBagValues( filter, reminders )
+                var filteredReminders = FilterReminders( filter, reminders )
                     .ToList();
 
+
                 // Order by modified date time if we're limiting to complete reminders.
-                if( filter.CompletionFilter == FilterBag.CompletionFilterValue.Complete )
+                if ( filter.CompletionFilter == FilterBag.CompletionFilterValue.Complete )
                 {
                     filteredReminders = filteredReminders.OrderByDescending( r => r.ModifiedDateTime )
+                        .ToList();
+                }
+                else
+                {
+                    filteredReminders = filteredReminders.OrderByDescending( r => r.Id )
                         .ToList();
                 }
 
@@ -176,18 +186,25 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                     IsComplete = r.IsComplete,
                     EntityTypeGuid = EntityTypeCache.GetGuid( r.ReminderType.EntityTypeId ).Value,
                     EntityGuid = Reflection.GetEntityGuidForEntityType( r.ReminderType.EntityType.Id, r.EntityId.ToStringSafe(), true, rockContext ).Value
-                } )
+                } );
+
+                List<ReminderInfoBag> reminderBagList = new List<ReminderInfoBag>();
 
                 // We do this so we can support querying sequential data.
-                .Skip( startIndex )
-                .Take( count )
-                .ToList();
+                if ( startIndex >= 0 && count > 0 )
+                {
+                    reminderBags = reminderBags
+                    .Skip( startIndex )
+                    .Take( count );
+                }
+
+                reminderBagList = reminderBags.ToList();
 
                 // We need some more data post query (such as a specific photo url generated based on the entity)
                 // so let's loop over our bags and populate those properties.
-                reminderBags.ForEach( ( bag ) => PopulateAdditionalPropertiesForReminderInfoBag( bag, personService ) );
+                reminderBagList.ForEach( ( bag ) => LoadAdditionalReminderData( bag, personAliasService ) );
 
-                return reminderBags;
+                return reminderBagList;
             }
         }
 
@@ -195,19 +212,24 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// Populates the additional properties for reminder information bag.
         /// </summary>
         /// <param name="bag">The bag.</param>
-        /// <param name="personService">The person service.</param>
-        private void PopulateAdditionalPropertiesForReminderInfoBag( ReminderInfoBag bag, PersonService personService )
+        /// <param name="personAliasService">The person service.</param>
+        private void LoadAdditionalReminderData( ReminderInfoBag bag, PersonAliasService personAliasService )
         {
             var entityType = EntityTypeCache.Get( bag.EntityTypeGuid );
 
             string name = "", path;
 
             // If this is a Person, use the Person properties.
-            if ( entityType != null && entityType.Guid == Rock.SystemGuid.EntityType.PERSON.AsGuid() )
+            if ( entityType != null && entityType.Guid == Rock.SystemGuid.EntityType.PERSON_ALIAS.AsGuid() )
             {
-                var person = personService.Get( bag.EntityGuid );
-                path = person.PhotoUrl;
-                name = person.FullName;
+                var personAlias = personAliasService.Get( bag.EntityGuid );
+                path = personAlias.Person.PhotoUrl;
+                name = personAlias.Person.FullName;
+
+                bag.EntityDetailParameters = new Dictionary<string, object>
+                {
+                    { "PersonGuid", personAlias.Person.Guid }
+                };
             }
             // Otherwise, use the first letter of the entity type.
             else
@@ -230,7 +252,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <param name="filter">The filter.</param>
         /// <param name="reminders">The reminders.</param>
         /// <returns>IQueryable&lt;Reminder&gt;.</returns>
-        private IQueryable<Reminder> FilterRemindersFromFilterBagValues( FilterBag filter, IQueryable<Reminder> reminders )
+        private IQueryable<Reminder> FilterReminders( FilterBag filter, IQueryable<Reminder> reminders )
         {
             if ( filter == null )
             {
@@ -252,7 +274,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 {
                     reminders = reminders.Where( r => r.IsComplete );
                 }
-                else if( filter.CompletionFilter == FilterBag.CompletionFilterValue.Incomplete )
+                else if ( filter.CompletionFilter == FilterBag.CompletionFilterValue.Incomplete )
                 {
                     reminders = reminders.Where( r => !r.IsComplete );
                 }
@@ -316,6 +338,23 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             return reminders;
         }
 
+        /// <summary>
+        /// Delete a reminder.
+        /// </summary>
+        /// <param name="reminderGuid">The reminder GUID.</param>
+        private static void DeleteReminderInternal( Guid reminderGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderService = new ReminderService( rockContext );
+                var reminder = reminderService.Get( reminderGuid );
+                reminderService.Delete( reminder );
+                rockContext.SaveChanges();
+            }
+        }
+
+        #endregion
+
         #region Block Actions
 
         /// <summary>
@@ -361,6 +400,19 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
                 rockContext.SaveChanges();
             }
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Deletes a specific reminder.
+        /// </summary>
+        /// <param name="reminderGuid"></param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult DeleteReminder( Guid reminderGuid )
+        {
+            DeleteReminderInternal( reminderGuid );
 
             return ActionOk();
         }

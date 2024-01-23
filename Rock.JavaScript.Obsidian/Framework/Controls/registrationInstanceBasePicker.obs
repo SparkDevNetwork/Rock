@@ -11,7 +11,7 @@
     import { RegistrationInstancePickerGetRegistrationInstancesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/registrationInstancePickerGetRegistrationInstancesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { Guid } from "@Obsidian/Types";
 

@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject } from "vue";
-import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm";
+import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm.obs";
 import { RegistrationEntryState } from "./types.partial";
 
 export default defineComponent({

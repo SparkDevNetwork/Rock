@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( groupHeaderLava.IsNotNullOrWhiteSpace() || groupFooterLava.IsNotNullOrWhiteSpace() )
                 {
                     // add header and footer information
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                     mergeFields.Add( "Group", group );
                     mergeFields.Add( "GroupMembers", members );
 
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 litGroupMemberInfo.Text = $@"
                     <div class=""{FormatPersonCssClass( groupMember.Person.IsDeceased ) }"">
                         <a href=""{personLink}"" class=""photo-link"">
-                            <img src=""{GetPersonPhotoUrl( groupMember.Person, 156 )}"" alt class=""img-cover inset-0"">
+                            <img src=""{GetPersonPhotoUrl( groupMember.Person, 400 )}"" alt class=""img-cover inset-0"">
                             <div class=""photo-shadow inset-0""></div>
                         </a>
                         <a href=""{personLink}"" class=""name-link"">
@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     group.Members.Add( groupMember );
                     _bindGroupsRockContext.SaveChanges();
 
-                    groups.Add( groupService.Get( group.Id ) );
+                    groups.Add( groupService.GetInclude( group.Id, g => g.GroupType ) );
                 }
 
                 rptrGroups.DataSource = groups;
@@ -721,18 +721,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 lblShowGroupAttributeTitle.Text = group.GroupType.Name + " Attributes <a class='js-show-more-family-attributes stretched-link' href='#' title='Show More " + group.GroupType.Name +" Attributes'><i class='fa fa-chevron-down'></i></a>";
                 lblShowGroupAttributeTitle.AddCssClass( "d-flex justify-content-between position-relative" );
             }
-            else 
+            else
             {
                 lblShowGroupAttributeTitle.Text = "<a class='js-show-more-family-attributes' href='#' title='Show More " + group.GroupType.Name +" Attributes'><i class='fa fa-chevron-down'></i></a>";
                 lblShowGroupAttributeTitle.AddCssClass( "pull-right" );
             }
 
-            if( litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() ) 
+            if( litMoreGroupAttributes.Text.IsNotNullOrWhiteSpace() )
             {
                 litMoreGroupAttributes.Text = $"<div class='js-more-group-attributes mt-2' style='display:none'><dl class='m-0'>{litMoreGroupAttributes.Text}</dl></div>";
             }
 
-            if( litGroupAttributes.Text.IsNotNullOrWhiteSpace()) 
+            if( litGroupAttributes.Text.IsNotNullOrWhiteSpace())
             {
                 litGroupAttributes.Text = $"<dl class='m-0'>{litGroupAttributes.Text}</dl>";
             }
@@ -745,7 +745,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var avatarStyle = GetAttributeValue( AttributeKey.AvatarStyle ).ConvertToEnum<AvatarStyle>( AvatarStyle.Icon );
             if ( avatarStyle == AvatarStyle.Icon )
             {
-                var iconUrlParameters = "&style=icon&BackgroundColor=E4E4E7&ForegroundColor=A1A1AA";
+                var iconUrlParameters = "&Style=icon&BackgroundColor=E4E4E7&ForegroundColor=A1A1AA";
                 personPhotoUrl += iconUrlParameters;
             }
 

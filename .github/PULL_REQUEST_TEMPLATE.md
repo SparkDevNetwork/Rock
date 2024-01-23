@@ -23,7 +23,7 @@ With the PR discussion we can assess your proposed changes before you start work
 - [ ] Set a relevant reviewer
 
 Please include screenshots if your pull request either alters existing UI or provides new UI. Arrows and labels are helpful.
---!>
+-->
 
 - [ ] Review code through the lens of being concise, simple, and well-documented
 - [ ] Manual QA to ensure the changes look/behave as expected

@@ -21,6 +21,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using EF6.TagWith;
+
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -187,7 +190,9 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Processes the sessions counts and durations.
+        /// <para>Processes interaction sessions that are yet to have their interaction count and duration properties updated.</para>
+        /// <para> If the job was run within the last 24 hours then all interaction sessions for interactions that happened within the last 24 hours are processed,</para>
+        /// <para>if not then sessions that happened an hour before the last time the job was run are processed.</para>
         /// </summary>
         /// <param name="settings">The settings.</param>
         /// <returns>System.String.</returns>
@@ -195,7 +200,7 @@ namespace Rock.Jobs
         {
             // This portion of the job looks for interaction sessions that need to have their interaction count and
             // duration properties updated. This de-normalization occurs to increase performance of the analytics.
-            // We'll be looking for sessions that have not been processed yet OR what have interactions written
+            // We'll be looking for sessions that have not been processed yet OR have had interactions written
             // since their last update.
 
             var stopwatch = Stopwatch.StartNew();
@@ -262,10 +267,12 @@ namespace Rock.Jobs
                             {
                                 Count = s.Interactions.Count(),
                                 MaxDateTime = s.Interactions.Max( i => ( DateTime? ) i.InteractionDateTime ),
-                                MinDateTime = s.Interactions.Min( i => ( DateTime? ) i.InteractionDateTime )
+                                MinDateTime = s.Interactions.Min( i => ( DateTime? ) i.InteractionDateTime ),
+                                InteractionChannelId = s.Interactions.FirstOrDefault().InteractionComponent.InteractionChannelId
                             } ).FirstOrDefault();
 
                             interactionSession.InteractionCount = interactionStats?.Count ?? 0;
+                            interactionSession.InteractionChannelId = interactionStats?.InteractionChannelId;
 
                             // Calculate the session duration depending on the number of interactions. Note that we won't know the
                             // duration of time spend on the last page so we'll assume 60 seconds as the average amount of time
@@ -319,9 +326,17 @@ namespace Rock.Jobs
             return $"<i class='fa fa-circle text-success'></i> Updated Interaction Count And Session Duration for {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )} in {Math.Round( stopwatch.Elapsed.TotalSeconds, 2 )} secs.";
         }
 
+        /// <summary>
+        /// Get recent sessions that have had new interactions since it was last processed and sessions that have not been processed yet.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="cutoffStartDateTime">The cutoff start date time.</param>
+        /// <param name="batchSize">Size of the batch.</param>
+        /// <returns></returns>
         private List<InteractionSession> GetInteractionSessionsForActivityUpdate( RockContext rockContext, DateTime startDate, DateTime? cutoffStartDateTime, int batchSize )
         {
-            // Get recent sessions there is a new interaction since it was last processed
+            // Get recent sessions that have had new interactions since it was last processed
             // and then also look for sessions that have not been processed yet (on first run this could be a lot)
 
             /* 2022-08-30 MDP
@@ -362,7 +377,7 @@ namespace Rock.Jobs
 
             if ( cutoffStartDateTime.HasValue )
             {
-                var recentInteractionSessionIdsQuery = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionDateTime > cutoffStartDateTime && a.InteractionSessionId.HasValue ).Select( a => a.InteractionSessionId.Value ).Distinct();
+                var recentInteractionSessionIdsQuery = new InteractionService( rockContext ).Queryable().Where( a => a.CreatedDateTime > cutoffStartDateTime && a.InteractionSessionId.HasValue ).Select( a => a.InteractionSessionId.Value ).Distinct();
                 interactionSessionsWithNullDurationLastCalculatedDateTimeQuery = new InteractionSessionService( rockContext )
                     .Queryable().Where( s => s.DurationLastCalculatedDateTime == null && recentInteractionSessionIdsQuery.Contains( s.Id ) );
             }
@@ -452,7 +467,7 @@ namespace Rock.Jobs
             var sessionBatchSize = 500;
 
             // Need to keep track of what sessions have been processed in the loop as we're not updating most sessions in the loop. That will be
-            // done in the proccess step.
+            // done in the process step.
             var minSessionId = 0;
 
             while ( true )
@@ -626,6 +641,7 @@ namespace Rock.Jobs
                     && s.Id > minId )
                 .OrderBy( s => s.Id )
                 .Take( maxRecordsToReturn )
+                .TagWith( this.GetType().FullName + $" ({this.GetJobId()})" )
                 .ToList();
 
                 return sessions;
@@ -675,7 +691,7 @@ namespace Rock.Jobs
         }
         private void LogDebugInfo( string taskName, string message )
         {
-            Log( RockLogLevel.Debug, $"({taskName}): {message}" );
+            Logger.LogDebug( $"({taskName}): {message}" );
         }
 
         internal class PopulateInteractionSessionDataJobSettings

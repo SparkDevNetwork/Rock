@@ -85,11 +85,12 @@
 .font-weight-lighter { font-weight: @font-weight-lighter !important; }
 .font-weight-normal,
 .text-normal  { font-weight: @font-weight-normal !important; }
+.text-semibold,
 .font-weight-semibold { font-weight: @font-weight-semibold !important; }
 .font-weight-bold,
-.text-semibold    { font-weight: @font-weight-bold !important; }
+.text-bold    { font-weight: @font-weight-bold !important; }
 .font-weight-bolder,
-.text-bold  { font-weight: @font-weight-bolder !important; }
+.text-bolder  { font-weight: @font-weight-bolder !important; }
 .font-italic         { font-style: italic !important; }
 
 // // Contextual colors
@@ -101,12 +102,13 @@
 .text-danger { color: @brand-danger !important; }
 .text-warning { color: @brand-warning !important; }
 .text-info { color: @brand-info !important; }
+.text-critical { color: @brand-critical !important; }
 
 // // Text Color is Legacy
 .text-color,
 .text-body { color: @text-color !important; }
 
-.text-muted { color: @text-muted !important; }
+.text-muted { color: inherit !important; opacity: .8; }
 
 .text-black-50 { color: fade(#000, 50%) !important; }
 .text-white-50 { color: fade(#fff, 50%) !important; }

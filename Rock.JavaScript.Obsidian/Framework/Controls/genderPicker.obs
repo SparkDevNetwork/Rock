@@ -1,0 +1,88 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :label="label || 'Gender'" :items="items" :showBlankItem="false" :rules="computedRules" :multiple="false" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps } from "@Obsidian/Utility/component";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<string>,
+            default: null
+        },
+
+        hideUnknown: {
+            type: Boolean,
+            default: false
+        },
+
+        showUnknownLabelInDropDown: {
+            type: Boolean,
+            default: false
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const internalValue = computed<ListItemBag | null>({
+        get() {
+            if (props.modelValue == null) {
+                return null;
+            }
+
+            if (props.modelValue == "0") {
+                return {
+                    text: unknownLabel.value,
+                    value: props.modelValue
+                };
+            }
+
+            return {
+                text: GenderDescription[props.modelValue],
+                value: props.modelValue
+            };
+        },
+        set(val) {
+            emit("update:modelValue", val?.value ?? "");
+        }
+    });
+
+    const standardProps = useStandardAsyncPickerProps(props);
+
+    const unknownLabel = computed(() =>
+        props.displayStyle === PickerDisplayStyle.List || props.showUnknownLabelInDropDown ? GenderDescription[Gender.Unknown] : " ");
+    const items = computed<ListItemBag[]>(() => {
+        const items: ListItemBag[] = [];
+
+        if (!props.hideUnknown) {
+            items.push({ text: unknownLabel.value, value: Gender.Unknown.toString() });
+        }
+
+        items.push({ text: GenderDescription[Gender.Male], value: Gender.Male.toString() });
+        items.push({ text: GenderDescription[Gender.Female], value: Gender.Female.toString() });
+
+        return items;
+    });
+
+    const computedRules = computed(() => {
+        const rules = normalizeRules(props.rules);
+        const notEqualRule = `notequal:${Gender.Unknown}`;
+
+        if (rules.includes("required") && !rules.includes(notEqualRule)) {
+            rules.push(notEqualRule);
+        }
+
+        return rules;
+    });
+</script>

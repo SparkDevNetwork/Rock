@@ -15,10 +15,10 @@
 // </copyright>
 //
 import { computed, defineComponent, ref, watch } from "vue";
-import CheckBox from "@Obsidian/Controls/checkBox";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import RockFormField from "@Obsidian/Controls/rockFormField";
-import TextBox from "@Obsidian/Controls/textBox";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./keyValueListField.partial";
@@ -238,7 +238,7 @@ export const ConfigurationComponent = defineComponent({
 
         /**
          * Emits the updateConfigurationValue if the value has actually changed.
-         * 
+         *
          * @param key The key that was possibly modified.
          * @param value The new value.
          */

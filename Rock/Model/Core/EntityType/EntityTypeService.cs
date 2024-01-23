@@ -224,25 +224,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets an entity by entity type guid and guid..
-        /// </summary>
-        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
-        /// <param name="entityGuid">The entity unique identifier.</param>
-        /// <returns>IEntity.</returns>
-        public IEntity GetEntity( Guid entityTypeGuid, Guid entityGuid )
-        {
-            var entityTypeId = EntityTypeCache.GetId( entityTypeGuid );
-            var entityId = Reflection.GetEntityIdForEntityType( entityTypeGuid, entityGuid );
-
-            if(  entityTypeId == null || entityId == null )
-            {
-                return null;
-            }
-
-            return GetEntity( entityTypeId.Value, entityId.Value );
-        }
-
-        /// <summary>
         /// Gets an Entity by type and entity Id, without loading the entity into EF ChangeTracking
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>

@@ -223,6 +223,7 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/Blocks/Communication/CommunicationDetail.css", true );
             InitializeAnalyticsPanelControls();
 
             InitializeInteractionsList();
@@ -2068,7 +2069,8 @@ namespace RockWeb.Blocks.Communication
         {
             if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
             {
-                sb.AppendFormat( "<div class='{2}'><div class='form-group static-control'><span class='control-label'>{0}</span><div class='control-wrapper'><div class='form-control-static'>{1}</div></div></div></div>", key, value, colclass );
+                var encodedValue = value.EncodeHtml().ConvertCrLfToHtmlBr();
+                sb.AppendFormat( "<div class='{2}'><div class='form-group static-control'><span class='control-label'>{0}</span><div class='control-wrapper'><div class='form-control-static'>{1}</div></div></div></div>", key, encodedValue, colclass );
             }
         }
 

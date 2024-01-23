@@ -90,6 +90,25 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        private List<string> RestrictedFileExtension
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    ".bin",
+                    ".png",
+                    ".jpg",
+                    ".ico",
+                    ".jpeg",
+                    ".config",
+                    ".eot",
+                    ".woff",
+                    ".woff2"
+                };
+            }
+        }
+
         #endregion
 
         #region Control Methods
@@ -179,17 +198,28 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void ShowDetail()
         {
+            nbWarningMessage.Visible = false;
+            pnlEditDetails.Visible = false;
             string fileUrl = Server.MapPath( _fileRelativePath );
             if ( string.IsNullOrWhiteSpace( _fileRelativePath )  || !File.Exists( fileUrl ) )
             {
                 nbWarningMessage.Text = "Invalid file relative path";
                 nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Visible = true;
+                return;
+            }
+
+            string ext = Path.GetExtension( _fileRelativePath );
+            if ( RestrictedFileExtension.Any( a => ext.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                nbWarningMessage.Text = "viewing/editing the file is not allowed.";
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Visible = true;
                 return;
             }
 
             hfRelativePath.Value = _fileRelativePath;
-            string ext = Path.GetExtension( _fileRelativePath );
-
+            pnlEditDetails.Visible = true;
             if ( EditorMode.ContainsKey( ext.ToLower() ) )
             {
                 ceFilerEditor.EditorMode = EditorMode[ext];

@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Core
                 ddlCategoryFilter.SetValue( gfSettings.GetFilterPreference( "Category" ) );
                 cbExcludeSystem.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetFilterPreference( "Exclude System" ) );
 
-                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
 
                 BindGrid();
             }
@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRefreshAll_Click( object sender, EventArgs e )
         {
-            BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, true );
+            BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), true );
             BindGrid();
         }
 

@@ -19,7 +19,10 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.Serialization;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 
@@ -115,17 +118,6 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsInstancePropertiesVerified { get; private set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [checked security actions].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [checked security actions]; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
-        [RockObsolete( "1.11" )]
-        public bool CheckedSecurityActions { get; private set; }
-
         private ConcurrentDictionary<string, string> _securityActions = null;
 
         /// <summary>
@@ -191,30 +183,6 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Public Methods
-
-        /// <summary>
-        /// Sets the security actions.
-        /// </summary>
-        /// <param name="blockControl">The block control.</param>
-        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
-        [RockObsolete( "1.11" )]
-        public void SetSecurityActions( Web.UI.RockBlock blockControl )
-        {
-            // SecurityActions is now loaded on demand, so we don't need to do anything here
-            return;
-        }
-
-        /// <summary>
-        /// Sets the security actions.
-        /// </summary>
-        /// <param name="blockType">The block type.</param>
-        [Obsolete( "SecurityActions is now loaded on demand, so this no longer applies" )]
-        [RockObsolete( "1.11" )]
-        public void SetSecurityActions( Type blockType )
-        {
-            // SecurityActions is now loaded on demand, so we don't need to do anything here
-            return;
-        }
 
         /// <summary>
         /// Copies from model.
@@ -319,7 +287,8 @@ namespace Rock.Web.Cache
                     // Added some diagnostics to record where this code is being called from
                     // since our current exceptions are missing this detail.
                     var stackTrace = new System.Diagnostics.StackTrace( true );
-                    Logging.RockLogger.Log.Debug( Logging.RockLogDomains.Other, $"Path: {Path}" + System.Environment.NewLine + stackTrace.ToString() );
+                    RockLogger.LoggerFactory.CreateLogger<BlockTypeCache>()
+                        .LogDebug( ex, $"Path: {Path}" + System.Environment.NewLine + stackTrace.ToString() );
                     ExceptionLogService.LogException( ex );
                     return null;
                 }

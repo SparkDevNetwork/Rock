@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -114,74 +110,6 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// Page View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Page ) )]
-    public partial class PageViewModelHelper : ViewModelHelper<Page, PageBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override PageBag CreateViewModel( Page model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new PageBag
-            {
-                IdKey = model.IdKey,
-                AdditionalSettings = model.AdditionalSettings,
-                AllowIndexing = model.AllowIndexing,
-                BodyCssClass = model.BodyCssClass,
-                BreadCrumbDisplayIcon = model.BreadCrumbDisplayIcon,
-                BreadCrumbDisplayName = model.BreadCrumbDisplayName,
-                BrowserTitle = model.BrowserTitle,
-                CacheControlHeaderSettings = model.CacheControlHeaderSettings,
-                Description = model.Description,
-                DisplayInNavWhen = ( int ) model.DisplayInNavWhen,
-                EnableViewState = model.EnableViewState,
-                HeaderContent = model.HeaderContent,
-                IconBinaryFileId = model.IconBinaryFileId,
-                IconCssClass = model.IconCssClass,
-                IncludeAdminFooter = model.IncludeAdminFooter,
-                InternalName = model.InternalName,
-                IsSystem = model.IsSystem,
-                KeyWords = model.KeyWords,
-                LayoutId = model.LayoutId,
-                MedianPageLoadTimeDurationSeconds = model.MedianPageLoadTimeDurationSeconds,
-                MenuDisplayChildPages = model.MenuDisplayChildPages,
-                MenuDisplayDescription = model.MenuDisplayDescription,
-                MenuDisplayIcon = model.MenuDisplayIcon,
-                Order = model.Order,
-                PageDisplayBreadCrumb = model.PageDisplayBreadCrumb,
-                PageDisplayDescription = model.PageDisplayDescription,
-                PageDisplayIcon = model.PageDisplayIcon,
-                PageDisplayTitle = model.PageDisplayTitle,
-                PageTitle = model.PageTitle,
-                ParentPageId = model.ParentPageId,
-                RateLimitPeriod = model.RateLimitPeriod,
-                RateLimitRequestPerPeriod = model.RateLimitRequestPerPeriod,
-                RequiresEncryption = model.RequiresEncryption,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
-
-    /// <summary>
     /// Generated Extension Methods
     /// </summary>
     public static partial class PageExtensionMethods
@@ -237,7 +165,10 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Page target, Page source )
         {
             target.Id = source.Id;
+            #pragma warning disable 612, 618
             target.AdditionalSettings = source.AdditionalSettings;
+            #pragma warning restore 612, 618
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AllowIndexing = source.AllowIndexing;
             target.BodyCssClass = source.BodyCssClass;
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
@@ -279,20 +210,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static PageBag ToViewModel( this Page model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new PageViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

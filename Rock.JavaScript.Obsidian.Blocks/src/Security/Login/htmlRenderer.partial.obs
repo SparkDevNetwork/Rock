@@ -1,0 +1,130 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :id="id" style="display: none;">
+        <!-- This will be removed once the component is mounted. -->
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        html: {
+            type: String as PropType<string>
+        }
+    });
+
+    const id = newGuid();
+
+    const mountPoint = ref<Node | undefined>();
+    const mountedWrapper = ref<HTMLElement | undefined>();
+    const mountedNodes = ref<Node[]>([]);
+
+    /**
+     * Mounts the supplied HTML onto the DOM between the mount points.
+     *
+     * If the supplied HTML has not been converted to HTMLElement objects
+     * or if the mount points are not in the DOM, then this method does nothing.
+     */
+    function mountHtml(): void {
+        const mountedWrapperElement = mountedWrapper.value;
+        const mountPointElement = mountPoint.value;
+
+        if (!mountedWrapperElement || !mountPointElement) {
+            // Cannot mount because the mount point or element to be mounted are not defined yet.
+            return;
+        }
+
+        const parentElement = mountPointElement.parentElement;
+
+        if (!parentElement) {
+            // Cannot mount because this component hasn't fully been mounted onto a parent element.
+            return;
+        }
+
+        if (mountedWrapperElement.childNodes.length === 0) {
+            // Nothing to mount.
+            return;
+        }
+
+        mountedNodes.value = [];
+        for (let i = 0; i < mountedWrapperElement.childNodes.length; i++) {
+            // Insert the HTML before the mount point element.
+            const childNode = mountedWrapperElement.childNodes[i];
+            parentElement.insertBefore(childNode, mountPointElement);
+            mountedNodes.value.push(childNode);
+        }
+
+        // Remove the comment node from the DOM (this will be added back when unmount is called);
+        parentElement.removeChild(mountPointElement);
+    }
+
+    /**
+     * Unmounts the supplied HTML from the DOM between the mount points.
+     *
+     * If the mount points are not in the DOM or if there is nothing to
+     * unmount, then this method does nothing.
+     */
+    function unmountHtml(): void {
+        const nodesToRemove = mountedNodes.value;
+
+        if (nodesToRemove.length === 0) {
+            // Nothing to unmount.
+            return;
+        }
+
+        const mountPointElement = mountPoint.value;
+
+        if (!mountPointElement) {
+            // Nothing to unmount because the mount point is not defined yet.
+            return;
+        }
+
+        // Clear mounted nodes.
+        const parentElement = nodesToRemove[0].parentElement;
+        if (!parentElement) {
+            // Nothing to unmount because this component hasn't fully been mounted, itself.
+            return;
+        }
+
+        // Add the comment before removing child nodes.
+        parentElement.insertBefore(mountPointElement, nodesToRemove[0]);
+
+        // Remove the child nodes.
+        for (const node of nodesToRemove) {
+            parentElement.removeChild(node);
+        }
+    }
+
+    watch([() => props.html, mountPoint], ([newHtml, newMount], [oldHtml, _oldMount]) => {
+        // If any changes are made, unmount the old HTML.
+        unmountHtml();
+
+        if (newHtml !== oldHtml) {
+            // Reset the mounted wrapper if the HTML was changed.
+            mountedWrapper.value = undefined;
+        }
+
+        // Create a new element to be mounted, if necessary.
+        if (!mountedWrapper.value && newHtml) {
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = newHtml;
+            mountedWrapper.value = tempDiv;
+        }
+
+        if (newMount) {
+            mountHtml();
+        }
+    });
+
+    onMounted(() => {
+        // Swap out the div placeholder for mount point comment node.
+        // The comment node is what will be used to dynamically insert the HTML
+        // into the correct location in the DOM without adding any rendered HTML elements.
+        const div = document.getElementById(id);
+        mountPoint.value = document.createComment("");
+        div?.parentElement?.insertBefore(mountPoint.value, div);
+        div?.remove();
+    });
+</script>

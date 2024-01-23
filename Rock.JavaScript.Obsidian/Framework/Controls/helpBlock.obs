@@ -1,0 +1,33 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <a href="javascript:void(0);"
+       ref="helpElement"
+       class="help"
+       tabindex="-1"
+       data-toggle="tooltip"
+       data-placement="auto"
+       data-container="body"
+       data-html="true"
+       title=""
+       :data-original-title="props.text">
+        <i class="fa fa-info-circle"></i>
+    </a>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref } from "vue";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+
+    const props = defineProps({
+        text: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const helpElement = ref<HTMLElement>();
+
+    onMounted(() => {
+        tooltip(helpElement.value!);
+    });
+</script>

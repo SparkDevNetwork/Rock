@@ -1,0 +1,264 @@
+<template>
+    <Panel title="Email Preference" type="block">
+        <template #default>
+            <fieldset>
+
+                <template v-if="config.successfullyUnsubscribedText">
+                    <h2>Unsubscribe Successful</h2>
+                    <p>{{ config.successfullyUnsubscribedText }}</p>
+
+                    <RockLabel >Other Actions</RockLabel>
+                </template>
+
+                <NotificationBox alertType="danger" v-if="errorMessage" v-html="errorMessage" />
+
+                <div v-if="noMassEmailsText" class="radio">
+                    <label :for="noMassEmails">
+                        <input :id="noMassEmails"
+                            :name="noMassEmails"
+                            type="radio"
+                            :value="noMassEmails"
+                            v-model="emailPreference" />
+                        <span class="label-text">{{ noMassEmailsText }}</span>
+                    </label>
+                </div>
+
+                <div v-if="emailsAllowedText" class="radio">
+                    <label :for="emailsAllowed">
+                        <input :id="emailsAllowed"
+                            :name="emailsAllowed"
+                            type="radio"
+                            :value="emailsAllowed"
+                            v-model="emailPreference" />
+                        <span class="label-text">{{ emailsAllowedText }}</span>
+                    </label>
+                </div>
+
+                <template v-if="unsubscribeFromListOptions.length > 0">
+                    <div class="radio">
+                        <label :for="unsubscribe">
+                            <input :id="unsubscribe"
+                                    :name="unsubscribe"
+                                    type="radio"
+                                    :value="unsubscribe"
+                                    v-model="emailPreference" />
+                            <span class="label-text">{{ unsubscribeText }}</span>
+                        </label>
+                    </div>
+                    <TransitionVerticalCollapse>
+                        <div v-if="showUnsubscribeList" class="margin-l-lg margin-t-sm">
+                            <CheckBoxList v-model="unsubscribeFromList"
+                                        :items="unsubscribeFromListOptions"
+                                        :horizontal="false" />
+                        </div>
+                    </TransitionVerticalCollapse>
+                </template>
+
+                <template v-if="updateEmailAddressText">
+                    <div class="radio">
+                        <label :for="updateEmailAddress">
+                            <input :id="updateEmailAddress"
+                                    :name="updateEmailAddress"
+                                    type="radio"
+                                    :value="updateEmailAddress"
+                                    v-model="emailPreference" />
+                            <span class="label-text">{{ updateEmailAddressText }}</span>
+                        </label>
+                    </div>
+                    <TransitionVerticalCollapse>
+                        <div v-if="showUpdateEmailInput">
+                            <EmailBox label="Email"
+                                    v-model="email"
+                                    class="input-width-xxl" />
+                        </div>
+                    </TransitionVerticalCollapse>
+                </template>
+
+                <div v-if="noEmailsText" class="radio">
+                    <label :for="noEmails">
+                        <input :id="noEmails"
+                               :name="noEmails"
+                               type="radio"
+                               :value="noEmails"
+                               v-model="emailPreference" />
+                        <span class="label-text">{{ noEmailsText }}</span>
+                    </label>
+                </div>
+
+                <template v-if="notInvolvedText">
+                    <div class="radio">
+                        <label :for="notInvolved">
+                            <input :id="notInvolved"
+                                    :name="notInvolved"
+                                    type="radio"
+                                    :value="notInvolved"
+                                    v-model="emailPreference" />
+                            <span class="label-text">{{ notInvolvedText }}</span>
+                        </label>
+                    </div>
+                    <TransitionVerticalCollapse>
+                        <div v-if="notInvolvedText && showNotInvolvedDetails" class="row">
+                            <div class="col-md-6">
+                                <DropDownList label="Reason"
+                                                v-model="inactiveReason"
+                                                :items="inactiveReasons"
+                                                :showBlankItem="false" />
+
+                                <div v-if="allowInactivatingFamily">
+                                    <RockLabel>Inactivate all individuals in my family</RockLabel>
+                                    <Switch v-model="inactivateAllFamily" />
+                                </div>
+
+                                <TextBox label="More Info (optional)"
+                                            v-model="inactiveNote"
+                                            textMode="MultiLine"
+                                            :rows="5"
+                                            :maxLength="100" />
+                            </div>
+                        </div>
+                    </TransitionVerticalCollapse>
+                </template>
+
+            </fieldset>
+
+            <RockButton v-if="!hideSubmitButton"
+                        :btnSize="BtnSize.Default"
+                        :btnType="BtnType.Primary"
+                        :disabled="isSaving"
+                        @click="onStartSubmitForm">
+                Submit
+            </RockButton>
+
+            <div class="mt-4">
+                <NotificationBox :alertType="emailPreferenceUpdateAlertType"
+                                 v-if="emailPreferenceUpdateMessage"
+                                 v-html="emailPreferenceUpdateMessage" />
+            </div>
+
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EmailPreferenceEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/emailPreferenceEntryInitializationBox";
+    import { EmailPreferenceEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/emailPreferenceEntrySaveRequestBag";
+    import { EmailPreferenceEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/emailPreferenceEntrySaveResponseBag";
+
+    const config = useConfigurationValues<EmailPreferenceEntryInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    //#region Values
+    const unsubscribe = "Unsubscribe";
+    const updateEmailAddress = "Update Email Address";
+    const emailsAllowed = "Emails Allowed";
+    const noMassEmails = "No Mass Emails";
+    const noEmails = "No Emails";
+    const notInvolved = "Not Involved";
+
+    const isSaving = ref(false);
+
+    const inactivateAllFamily = ref(false);
+    const submitForm = ref(false);
+    const allowInactivatingFamily = ref(config.allowInactivatingFamily);
+    const emailPreferenceUpdateAlertType = ref(config.emailPreferenceUpdateAlertType ?? "success");
+    const hideSubmitButton = ref(emailPreferenceUpdateAlertType.value == "danger");
+    const emailPreference = ref(config.emailPreference);
+    const email = ref(config.email ?? "");
+    const inactiveReasons = ref(config.inActiveReasons ?? []);
+    const unsubscribeFromListOptions = ref(config.unsubscribeFromListOptions ?? []);
+    const unsubscribeFromList = ref<string[]>([]);
+    const unsubscribeText = ref(config.unsubscribeText ?? "");
+    const updateEmailAddressText = ref(config.updateEmailAddressText ?? "");
+    const emailsAllowedText = ref(config.emailsAllowedText ?? "");
+    const noMassEmailsText = ref(config.noMassEmailsText ?? "");
+    const noEmailsText = ref(config.noEmailsText ?? "");
+    const notInvolvedText = ref(config.notInvolvedText ?? "");
+    const emailPreferenceUpdateMessage = ref(config.emailPreferenceUpdateMessage);
+    const inactiveReason = ref("");
+    const inactiveNote = ref("");
+    const errorMessage = ref("");
+    const showUnsubscribeList = ref(config.emailPreference === unsubscribe);
+    const showUpdateEmailInput = ref(config.emailPreference === updateEmailAddress);
+    const showNotInvolvedDetails = ref(config.emailPreference === notInvolved);
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the "Submit" button being clicked.
+     */
+    const onStartSubmitForm = (): void => {
+        errorMessage.value = "";
+        if (emailPreference.value === updateEmailAddress) {
+            if (!email.value) {
+                errorMessage.value = "Email is required.";
+            }
+            else {
+                submitForm.value = true;
+            }
+
+        }
+        else {
+            submitForm.value = true;
+        }
+    };
+
+    //#endregion
+
+    watch(() => submitForm.value, async () => {
+        if (submitForm.value === true) {
+            try {
+                isSaving.value = true;
+                const bag: EmailPreferenceEntrySaveRequestBag = {
+                    email: email.value,
+                    inActivateFamily: inactivateAllFamily.value,
+                    emailPreference: emailPreference.value,
+                    inaActiveReason: inactiveReason.value,
+                    inActiveReasonNote: inactiveNote.value,
+                    unsubscribeFromList: unsubscribeFromList.value
+                };
+
+                const result = await invokeBlockAction<EmailPreferenceEntrySaveResponseBag>("Save", { bag });
+
+                if (!result.isSuccess || !result.data) {
+                    errorMessage.value = result.errorMessage || "An unexpected error occurred.";
+                }
+                else if (result.data.errorMessage) {
+                    emailPreferenceUpdateMessage.value = result.data.errorMessage;
+                    emailPreferenceUpdateAlertType.value = result.data.alertType ?? "danger";
+                }
+                else {
+                    emailPreferenceUpdateMessage.value = result.data.successMessage;
+                    emailPreferenceUpdateAlertType.value = result.data.alertType ?? "success";
+                }
+            }
+            finally {
+                isSaving.value = false;
+                submitForm.value = false;
+            }
+        }
+    });
+
+    watch(() => emailPreference.value, () => {
+        showUpdateEmailInput.value = emailPreference.value == updateEmailAddress;
+        showNotInvolvedDetails.value = emailPreference.value == notInvolved;
+        showUnsubscribeList.value = emailPreference.value == unsubscribe;
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+</script>

@@ -8,16 +8,10 @@
     </button>
 </template>
 
-<script lang="ts">
-    // Define jQuery and Rock for showing security modal.
-    declare function $(value: unknown): unknown;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
-    declare const Rock: any;
-</script>
-
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { showSecurity } from "@Obsidian/Utility/dialogs";
     import { computed } from "vue";
 
     const props = defineProps(standardCellProps);
@@ -72,6 +66,6 @@
             return;
         }
 
-        Rock.controls.modal.show($(event.target), `/Secure/${props.grid.entityTypeGuid}/${key}?t=Secure ${itemTitle.value}&pb=&sb=Done`);
+        showSecurity(props.grid.entityTypeGuid, key, itemTitle.value);
     }
 </script>

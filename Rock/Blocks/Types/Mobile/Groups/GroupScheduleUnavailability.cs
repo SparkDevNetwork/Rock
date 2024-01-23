@@ -33,11 +33,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// A mobile block used to schedule unavailability (previously known as 'Blackout Dates').
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Schedule Unavailability" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows a user to schedule the dates that they are unavailable to serve." )]
     [IconCssClass( "fa fa-user-times" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -60,7 +61,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_SCHEDULE_UNAVAILABILITY )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_SCHEDULE_UNAVAILABILITY )]
-    public class GroupScheduleUnavailability : RockMobileBlockType
+    public class GroupScheduleUnavailability : RockBlockType
     {
 
         #region Block Attributes
@@ -93,21 +94,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 4;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device.
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupScheduleUnavailability";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 4 );
 
         /// <summary>
         /// Gets the mobile configuration.

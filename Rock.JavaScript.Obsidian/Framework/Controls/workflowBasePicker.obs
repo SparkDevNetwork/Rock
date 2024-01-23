@@ -11,7 +11,7 @@
     import { WorkflowPickerGetWorkflowsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowPickerGetWorkflowsOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
 
     const props = defineProps({
         modelValue: {

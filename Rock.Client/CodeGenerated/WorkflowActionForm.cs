@@ -144,6 +144,9 @@ namespace Rock.Client
         public bool PersonEntryShowHeadingSeparator { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormShowHideOption PersonEntrySmsOptInEntryOption { get; set; }
+
+        /// <summary />
         public Guid? PersonEntrySpouseAttributeGuid { get; set; }
 
         /// <summary />
@@ -222,6 +225,7 @@ namespace Rock.Client
             this.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
             this.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
             this.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;
+            this.PersonEntrySmsOptInEntryOption = source.PersonEntrySmsOptInEntryOption;
             this.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             this.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
             this.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;

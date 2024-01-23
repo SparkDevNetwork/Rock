@@ -58,9 +58,9 @@
     import ScheduledResource from "./scheduledResource.partial.obs";
     import SelectIndividuals from "./selectIndividuals.partial.obs";
     import { IScheduleProgress, ISchedulerResourceAttend, ReloadAllOccurrences, ReloadOccurrencesContainingResource, ReloadScheduleOccurrences, ResourceAction } from "./types.partial";
-    import Loading from "@Obsidian/Controls/loading";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { NoDragScroll as vNoDragScroll } from "@Obsidian/Directives/dragScroll";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { ScheduledAttendanceItemStatus, ScheduledAttendanceItemStatusDescription } from "@Obsidian/Enums/Event/scheduledAttendanceItemStatus";
@@ -116,16 +116,23 @@
     });
 
     const confirmedCount = computed((): number => {
-        var confirmed = ScheduledAttendanceItemStatusDescription[ScheduledAttendanceItemStatus.Confirmed].toLowerCase();
+        const confirmed = ScheduledAttendanceItemStatusDescription[ScheduledAttendanceItemStatus.Confirmed].toLowerCase();
         return resources.value
             .filter((r: ISchedulerResourceAttend) => r.ConfirmationStatus === confirmed)
             .length;
     });
 
     const pendingCount = computed((): number => {
-        var pending = ScheduledAttendanceItemStatusDescription[ScheduledAttendanceItemStatus.Pending].toLowerCase();
+        const pending = ScheduledAttendanceItemStatusDescription[ScheduledAttendanceItemStatus.Pending].toLowerCase();
         return resources.value
             .filter((r: ISchedulerResourceAttend) => r.ConfirmationStatus === pending)
+            .length;
+    });
+
+    const declinedCount = computed((): number => {
+        const declined = ScheduledAttendanceItemStatusDescription[ScheduledAttendanceItemStatus.Declined].toLowerCase();
+        return resources.value
+            .filter((r: ISchedulerResourceAttend) => r.ConfirmationStatus === declined)
             .length;
     });
 
@@ -149,7 +156,8 @@
             desiredCapacity,
             maximumCapacity,
             confirmedCount: confirmedCount.value,
-            pendingCount: pendingCount.value
+            pendingCount: pendingCount.value,
+            declinedCount: declinedCount.value
         };
 
         return progress;
@@ -206,6 +214,10 @@
     // #endregion
 
     getCurrentResources();
+
+    watch(() => props.occurrence, () => {
+        getCurrentResources();
+    });
 
     watch(isSelectingIndividuals, () => {
         if (!isSelectingIndividuals.value) {

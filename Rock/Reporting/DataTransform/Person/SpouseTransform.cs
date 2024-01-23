@@ -21,6 +21,8 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.SystemKey;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataTransform.Person
@@ -31,7 +33,7 @@ namespace Rock.Reporting.DataTransform.Person
     [Description( "Transform result to Spouse" )]
     [Export( typeof( DataTransformComponent ) )]
     [ExportMetadata( "ComponentName", "Person Spouse Transformation" )]
-    [Rock.SystemGuid.EntityTypeGuid( "EEA38696-F924-4014-BAD7-014B1638FF82")]
+    [Rock.SystemGuid.EntityTypeGuid( "EEA38696-F924-4014-BAD7-014B1638FF82" )]
     public class SpouseTransform : DataTransformComponent<Rock.Model.Person>
     {
         /// <summary>
@@ -95,6 +97,7 @@ namespace Rock.Reporting.DataTransform.Person
         {
             int adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
             int marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            var isBibleStrict = SystemSettings.GetValue( SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
 
             IQueryable<Model.Person> qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
                 .Where( p =>
@@ -118,7 +121,7 @@ namespace Rock.Reporting.DataTransform.Person
                             && origPerson.MaritalStatusValueId == marriedDefinedValueId
 
                             // person is not the same gender as spouse (if gender is known)
-                            && ( ( origPerson.Gender != p.Gender ) || origPerson.Gender == Gender.Unknown || p.Gender == Gender.Unknown )
+                            && ( !isBibleStrict || ( origPerson.Gender != p.Gender ) || origPerson.Gender == Gender.Unknown || p.Gender == Gender.Unknown )
 
                             // person isn't one of the spouses we are returning
                             && origPerson.Id != p.Id )

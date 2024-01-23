@@ -29,5 +29,13 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         /// The applied filters, to limit what is shown on the Group Scheduler.
         /// </value>
         public GroupSchedulerAppliedFiltersBag AppliedFilters { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to disallow group selection.
+        /// </summary>
+        /// <value>
+        /// Whether to disallow group selection.
+        /// </value>
+        public bool DisallowGroupSelection { get; set; }
     }
 }

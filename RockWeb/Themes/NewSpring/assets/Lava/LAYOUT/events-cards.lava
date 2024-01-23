@@ -1,5 +1,6 @@
 {% assign fallbackImage = 'Global' | Attribute:'ImageSquare','Url' %}
-{% assign displayCount = 0 %}
+{% assign displayCount = 0 | AsInteger %}
+{% assign campusid = campusid | AsInteger %}
 
 <div class="row">
     {%- for event in Items -%}
@@ -28,7 +29,8 @@
 
                         <div class="floating-item">
                             <h4 class="text-white push-quarter-bottom">{{ event.Name }}</h4>
-                            <p>{[ formatDate date:'{{ event.StartDateTime }}' ]} - {{ event.StartDateTime | Date:'h:mm tt' }}</p>
+                            {% assign time = event.StartDateTime | Date:'HHmmss' %}
+                            <p>{[ formatDate date:'{{ event.StartDateTime }}' ]}{% if time != '000000' %} - {{ event.StartDateTime | Date:'h:mm tt' }}{% endif %}</p>
                         </div>
                     </div>
 

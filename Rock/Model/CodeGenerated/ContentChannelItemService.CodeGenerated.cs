@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -64,56 +60,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// ContentChannelItem View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( ContentChannelItem ) )]
-    public partial class ContentChannelItemViewModelHelper : ViewModelHelper<ContentChannelItem, ContentChannelItemBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override ContentChannelItemBag CreateViewModel( ContentChannelItem model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new ContentChannelItemBag
-            {
-                IdKey = model.IdKey,
-                ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
-                ApprovedDateTime = model.ApprovedDateTime,
-                Content = model.Content,
-                ContentChannelId = model.ContentChannelId,
-                ContentChannelTypeId = model.ContentChannelTypeId,
-                ExpireDateTime = model.ExpireDateTime,
-                ItemGlobalKey = model.ItemGlobalKey,
-                Order = model.Order,
-                Permalink = model.Permalink,
-                Priority = model.Priority,
-                StartDateTime = model.StartDateTime,
-                Status = ( int ) model.Status,
-                StructuredContent = model.StructuredContent,
-                Title = model.Title,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -171,14 +117,22 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ContentChannelItem target, ContentChannelItem source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             target.ApprovedDateTime = source.ApprovedDateTime;
             target.Content = source.Content;
             target.ContentChannelId = source.ContentChannelId;
             target.ContentChannelTypeId = source.ContentChannelTypeId;
+            target.ContentLibraryContentTopicId = source.ContentLibraryContentTopicId;
+            target.ContentLibraryLicenseTypeValueId = source.ContentLibraryLicenseTypeValueId;
+            target.ContentLibrarySourceIdentifier = source.ContentLibrarySourceIdentifier;
+            target.ContentLibraryUploadedByPersonAliasId = source.ContentLibraryUploadedByPersonAliasId;
+            target.ContentLibraryUploadedDateTime = source.ContentLibraryUploadedDateTime;
+            target.ExperienceLevel = source.ExperienceLevel;
             target.ExpireDateTime = source.ExpireDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsContentLibraryOwner = source.IsContentLibraryOwner;
             target.ItemGlobalKey = source.ItemGlobalKey;
             target.Order = source.Order;
             target.Permalink = source.Permalink;
@@ -195,20 +149,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static ContentChannelItemBag ToViewModel( this ContentChannelItem model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new ContentChannelItemViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

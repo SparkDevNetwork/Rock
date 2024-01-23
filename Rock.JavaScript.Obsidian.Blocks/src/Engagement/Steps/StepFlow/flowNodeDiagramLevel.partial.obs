@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <g class="flow-level" v-if="levelNumber == 1">
+        <text v-for="node in visibleNodes" key="node.id + 'text'" :x="node.x - 6" :y="node.y" :transform="textTransform(node)" font-size="12" text-anchor="end">
+            {{ node.order }}
+        </text>
+    </g>
+    <g class="flow-edges" v-if="levelNumber > 1">
+        <template v-for="node in levelData" key="node.id + 'flows'">
+            <path
+                  v-for="(flow, index) in node.inFlows"
+                  key="node.id + 'flow' + index"
+                  :d="flowPoints(flow)"
+                  fill="rgb(170, 170, 170, 0.6)"
+                  @mousemove="onHoverFlow(flow, $event)"
+                  @mouseout="onUnHover"
+                  :class="flowClass(flow)"></path>
+        </template>
+    </g>
+    <g class="flow-sections">
+        <rect
+              v-for="node in levelData"
+              key="node.id" :x="node.x"
+              :y="node.y"
+              :width="node.width"
+              :height="node.height"
+              :fill="node.color ?? undefined"
+              :class="nodeClass(node)"
+              @mousemove="onHoverNode(node, $event)"
+              @mouseout="onUnHover"></rect>
+    </g>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { toDecimalPlaces } from "@Obsidian/Utility/numberUtils";
+    import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
+    import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramEdgeBag";
+
+    type Point = { x: number; y: number };
+    type Rectangle = Point & { width: number; height: number };
+    type Path = { sourcePoint: Point, targetPoint: Point, thickness: number };
+
+    type FlowDiagramInFlow = FlowNodeDiagramEdgeBag & Path;
+    type FlowDiagramLevelNode = FlowNodeDiagramNodeBag & Rectangle & {
+        totalUnits: number;
+        inFlows: FlowDiagramInFlow[];
+    };
+
+    type FlowDiagramLevel = FlowDiagramLevelNode[];
+
+    function round(num: number): number {
+        return toDecimalPlaces(num, 2);
+    }
+
+    const props = defineProps({
+        levelData: {
+            type: Array as PropType<FlowDiagramLevel>,
+            required: true
+        },
+        levelNumber: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "showTooltip", html?: string, event?: MouseEvent): void;
+    }>();
+
+    const visibleNodes = computed(() => {
+        return props.levelData.filter(node => node.height > 0);
+    });
+
+    // Construct path dimensions and coordinates for a flow
+    function flowPoints({ sourcePoint, targetPoint, thickness }: FlowDiagramInFlow): string {
+        const oneThirdX = round((targetPoint.x - sourcePoint.x) / 3) + sourcePoint.x;
+        const twoThirdsX = round((targetPoint.x - sourcePoint.x) * 2 / 3) + sourcePoint.x;
+        const sourceBottom = sourcePoint.y + thickness;
+        const targetBottom = targetPoint.y + thickness;
+
+        const start = `M${sourcePoint.x} ${sourcePoint.y}`;
+        const curve1 = `C${oneThirdX} ${sourcePoint.y} ${twoThirdsX} ${targetPoint.y} ${targetPoint.x} ${targetPoint.y}`;
+        const vertical1 = `V${targetBottom}`;
+        const curve2 = `C${twoThirdsX} ${targetBottom} ${oneThirdX} ${sourceBottom} ${sourcePoint.x} ${sourceBottom}`;
+        const vertical2 = `V${sourcePoint.y}`;
+        const end = "Z";
+
+        return start + curve1 + vertical1 + curve2 + vertical2 + end;
+    }
+
+    // Calculate the rotation transformation for the text label of the given node
+    function textTransform({ x, y }: Point): string {
+        return `rotate(-90, ${x - 6}, ${y})`;
+    }
+
+    function nodeClass(node: FlowDiagramLevelNode): string {
+        return `node node-${node.id} level-${props.levelNumber}`;
+    }
+
+    function flowClass(flow: FlowDiagramInFlow): string {
+        return `edge node-${flow.sourceId} node-${flow.targetId} level-${props.levelNumber - 1} level-${props.levelNumber - 1}_${props.levelNumber}`;
+    }
+
+    function onHoverFlow(flow: FlowDiagramInFlow, e: MouseEvent): void {
+        emit("showTooltip", flow.tooltip ?? undefined, e);
+    }
+
+    function onHoverNode(node: FlowDiagramLevelNode, e: MouseEvent): void {
+        emit("showTooltip", `<strong>${node.name}</strong><br>Total Steps Taken: ${node.totalUnits}`, e);
+    }
+
+    function onUnHover(): void {
+        emit("showTooltip");
+    }
+</script>

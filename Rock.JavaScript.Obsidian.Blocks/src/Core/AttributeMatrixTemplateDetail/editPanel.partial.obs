@@ -1,0 +1,322 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required"
+                         :disabled="!isEditable" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active"
+                          :disabled="!isEditable" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline"
+                 :disabled="!isEditable" />
+
+
+        <NotificationBox v-if="showNotification" alertType="warning">At least one item attribute needs to be defined</NotificationBox>
+        <RockLabel>Item Attributes</RockLabel>
+        <HelpBlock text="Item Attributes define the columns that each item row has" />
+        <div class="grid">
+            <Grid :data="attributesGridData" keyField="key" itemTerm="Matrix Attribute" liveUpdates light @addItem="onAddAttribute">
+                <ReorderColumn @orderChanged="onOrderChanged" />
+                <TextColumn field="name" name="attribute" title="Attribute" />
+                <TextColumn field="type" name="type" title="Type" />
+                <SecurityColumn />
+                <EditColumn @click="onEditAttribute" />
+                <DeleteColumn @click="onDeleteAttribute" />
+            </Grid>
+        </div>
+        <Modal v-model="isAttributeModalOpen" title="Matrix Template Attributes" saveText="Save" @save="onSaveAttribute">
+            <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
+                Please correct the following:
+                <ul>
+                    <li v-for="error of attributeErrors">
+                        {{ error }}
+                    </li>
+                </ul>
+            </NotificationBox>
+            <AttributeEditor v-model="templateAttribute" :reservedKeyNames="reservedKeyNames" />
+        </Modal>
+
+        <Panel title="Advanced" class="mb-0" :isDrawerOpen="false" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="minimumRows" :minimumValue="0" label="Minimum Rows" :disabled="!isEditable" />
+                </div>
+                <div class="col-md-6">
+                    <NumberBox v-model="maximumRows" :minimumValue="0" label="Maximum Rows" :disabled="!isEditable" />
+                </div>
+            </div>
+
+            <CodeEditor v-model="formattedLava"
+                        label="Formatted Lava"
+                        :editorHeight="400"
+                        theme="rock"
+                        mode="lava"
+                        help="This will determine how the Matrix Attribute Field will display its formatted value."
+                        :disabled="!isEditable" />
+        </Panel>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, reactive, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Grid, { EditColumn, TextColumn, DeleteColumn, SecurityColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AttributeMatrixTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateBag";
+    import { AttributeMatrixTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateDetailOptionsBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AttributeMatrixTemplateBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AttributeMatrixTemplateDetailOptionsBag>,
+            required: true
+        },
+
+        isEditable: {
+            type: Object as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AttributeMatrixTemplateBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const minimumRows = propertyRef(props.modelValue.minimumRows, "MinimumRows");
+    const maximumRows = propertyRef(props.modelValue.maximumRows, "MaximumRows");
+    const formattedLava = propertyRef(props.modelValue.formattedLava ?? "", "FormattedLava");
+
+    const templateAttributes = ref(props.modelValue.templateAttributes ?? []);
+    const isAttributeModalOpen = ref(false);
+    const templateAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const reservedKeyNames = ref<string[]>([]);
+    const attributeErrors = ref<string[]>([]);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, minimumRows, maximumRows, formattedLava];
+
+    // #endregion
+
+    // #region Computed Values
+    const attributesGridData: GridDataBag = reactive<GridDataBag>({
+        rows: templateAttributes.value.map(x => convertToAttributeGridRowItem(x))
+    });
+
+    const showNotification = computed((): boolean => {
+        if (props.modelValue.idKey && templateAttributes.value.length == 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    });
+    // #endregion
+
+    // #region Functions
+    function getFieldTypeByValue(value: string | null | undefined): string | undefined {
+        return Object.keys(FieldType).find(key => FieldType[key] === value?.toUpperCase());
+    }
+
+    function convertToAttributeGridRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
+
+        if (attribute.key && !reservedKeyNames.value.includes(attribute.key)) {
+            reservedKeyNames.value.push(attribute.key);
+        }
+
+        return {
+            key: attribute.key,
+            name: attribute.name,
+            type: splitPascalCase(getFieldTypeByValue(attribute.fieldTypeGuid)),
+            guid: attribute.guid
+        };
+    }
+
+    function splitPascalCase(input: string | undefined): string | undefined {
+        if (input) {
+            const regex = /($[a-z])|[A-Z][^A-Z]+/g;
+            return input.match(regex)?.join(" ");
+        }
+        else {
+            return input;
+        }
+
+    }
+    // #endregion
+
+    // #region Event Handlers
+    async function onAddAttribute(): Promise<void> {
+        templateAttribute.value = {} as PublicEditableAttributeBag;
+        isAttributeModalOpen.value = true;
+        attributeErrors.value = [];
+    }
+
+    const onEditAttribute = async (key: string): Promise<void> => {
+        attributeErrors.value = [];
+        const selectedAttribute = templateAttributes.value.find(x => x.key === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedAttribute) {
+            templateAttribute.value = selectedAttribute;
+            isAttributeModalOpen.value = true;
+        }
+        else {
+            onAddAttribute();
+        }
+    };
+
+    const onDeleteAttribute = async (key: string): Promise<void> => {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isAttributeModalOpen.value = false;
+        templateAttributes.value = templateAttributes.value.filter(s => s.key !== key);
+        reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== key);
+
+        // Update the grid.
+        if (attributesGridData.rows) {
+            const index = attributesGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                attributesGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    function onSaveAttribute(): void {
+        attributeErrors.value = [];
+        const isExistingKey = reservedKeyNames.value.includes(templateAttribute.value?.key ?? "") && !templateAttribute.value?.guid;
+
+        if (isExistingKey) {
+            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
+        else {
+
+
+            if (templateAttribute.value) {
+                const index = templateAttributes.value.findIndex(a => a.key === templateAttribute.value?.key);
+                if (index !== -1) {
+                    // Get the updated attribute and rowItem.
+                    let editedAttribute = templateAttributes.value.find(a => a.key == templateAttribute.value?.key);
+                    let rowItem = attributesGridData.rows?.find(x => x.key == templateAttribute.value?.key);
+
+                    if (editedAttribute) {
+                        // Replace old attribute with updated attribute.
+                        editedAttribute = templateAttribute.value;
+                        templateAttributes.value.splice(index, 1, editedAttribute);
+                    }
+
+                    if (rowItem && attributesGridData.rows && editedAttribute) {
+                        // Update GridRowItem so changes are reflected in the UI.
+                        const rowIndex = attributesGridData.rows.findIndex(r => r.key === templateAttribute.value?.key);
+                        rowItem = convertToAttributeGridRowItem(editedAttribute);
+                        attributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                    }
+                }
+                else {
+                    templateAttributes.value.push(templateAttribute.value);
+
+                    // Add new RowItem to the grid to represent the newly added attribute.
+                    const newRowItem = convertToAttributeGridRowItem(templateAttribute.value);
+                    attributesGridData.rows?.push(newRowItem);
+                }
+
+                isAttributeModalOpen.value = false;
+            }
+        }
+    }
+
+    /**
+    * Called when a row has been dragged from one position to a new position.
+    *
+    * @param item The item that was moved to a new position.
+    * @param beforeItem The item that the first item was dropped before.
+    *
+    * @returns `true` if the operation succeeded; otherwise `false`.
+    */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const data = {
+            idKey: props.modelValue?.idKey,
+            guid: item["guid"],
+            beforeGuid: beforeItem?.["guid"] ?? null
+        };
+
+        const result = await invokeBlockAction<string>("ReorderAttributes", data);
+
+        return result.isSuccess;
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(minimumRows, props.modelValue.minimumRows);
+        updateRefValue(maximumRows, props.modelValue.maximumRows);
+        updateRefValue(formattedLava, props.modelValue.formattedLava ?? "");
+        updateRefValue(templateAttributes, props.modelValue.templateAttributes ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, templateAttributes, ...propRefs], () => {
+        const newValue: AttributeMatrixTemplateBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            minimumRows: minimumRows.value,
+            maximumRows: maximumRows.value,
+            formattedLava: formattedLava.value,
+            templateAttributes: templateAttributes.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

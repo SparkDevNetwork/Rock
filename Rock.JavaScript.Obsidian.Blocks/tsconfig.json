@@ -1,67 +1,26 @@
 {
-  "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist",
-    "rootDir": "../",
-    "incremental": true,
-    "noImplicitAny": false,
-    "noImplicitOverride": true,
-    "noEmitOnError": false,
-    "removeComments": true,
-    "allowUnreachableCode": false,
-    "forceConsistentCasingInFileNames": true,
-    "sourceMap": true,
-    "target": "ES2016",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "strict": true,
-    "importHelpers": true,
-    "jsx": "preserve",
-    "lib": [
-      "DOM",
-      "ES2016",
-      "ES2020.Symbol.WellKnown" /* Fixes compile issue in Vue declaration files, not actually in use. */
-    ],
-    "paths": {
-      "@Obsidian/Controls/*": [ "../Rock.JavaScript.Obsidian/Framework/Controls/*" ],
-      "@Obsidian/Core/*": [ "../Rock.JavaScript.Obsidian/Framework/Core/*" ],
-      "@Obsidian/Directives/*": [ "../Rock.JavaScript.Obsidian/Framework/Directives/*" ],
-      "@Obsidian/Enums/*": [ "../Rock.JavaScript.Obsidian/Framework/Enums/*" ],
-      "@Obsidian/Libs/*": [ "../Rock.JavaScript.Obsidian/Framework/Libs/*" ],
-      "@Obsidian/PageState": [ "../Rock.JavaScript.Obsidian/Framework/PageState" ],
-      "@Obsidian/SystemGuids/*": [ "../Rock.JavaScript.Obsidian/Framework/SystemGuids/*" ],
-      "@Obsidian/Templates/*": [ "../Rock.JavaScript.Obsidian/Framework/Templates/*" ],
-      "@Obsidian/Types": [ "../Rock.JavaScript.Obsidian/Framework/Types" ],
-      "@Obsidian/Types/*": [ "../Rock.JavaScript.Obsidian/Framework/Types/*" ],
-      "@Obsidian/Utility": [ "../Rock.JavaScript.Obsidian/Framework/Utility" ],
-      "@Obsidian/Utility/*": [ "../Rock.JavaScript.Obsidian/Framework/Utility/*" ],
-      "@Obsidian/ValidationRules": [ "../Rock.JavaScript.Obsidian/Framework/ValidationRules" ],
-      "@Obsidian/ViewModels/*": [ "../Rock.JavaScript.Obsidian/Framework/ViewModels/*" ]
-    }
-  },
+  "files": [],
+  "include": [],
   "references": [
-    { "path": "../Rock.JavaScript.Obsidian/Framework/Controls" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/Core" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/Directives" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/Enums" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/Libs" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/PageState" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/SystemGuids" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/Templates" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/Utility" },
-    { "path": "../Rock.JavaScript.Obsidian/Framework/ValidationRules" }
-  ],
-  "vueCompilerOptions": {
-    "extensions": [
-      ".obs"
-    ]
-  },
-  "include": [
-    "./src/**/*.ts",
-    "./src/**/*.obs"
-  ],
-  "exclude": [
-    "./Tests/**/*"
+    { "path": "./src/Bus" },
+    { "path": "./src/CheckIn" },
+    { "path": "./src/Cms" },
+    { "path": "./src/Communication" },
+    { "path": "./src/Core" },
+    { "path": "./src/Crm" },
+    { "path": "./src/Engagement" },
+    { "path": "./src/Event" },
+    { "path": "./src/Event" },
+    { "path": "./src/Example" },
+    { "path": "./src/Finance" },
+    { "path": "./src/Group" },
+    { "path": "./src/Mobile" },
+    { "path": "./src/Prayer" },
+    { "path": "./src/Reporting" },
+    { "path": "./src/Security" },
+    { "path": "./src/Tv" },
+    { "path": "./src/Utility" },
+    { "path": "./src/WebFarm" },
+    { "path": "./src/WorkFlow" }
   ]
 }

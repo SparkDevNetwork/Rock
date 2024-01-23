@@ -22,29 +22,31 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                      <strong><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</strong>
-                     <p>As of Rock McKinley v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
+                     <p>As of Rock v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
                         This framework version was released by Microsoft on April 30th, 2018.</p>
                 </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                     <strong><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</strong>
                     <p>
-                        As of Rock McKinley v16, Rock requires Microsoft SQL Azure or SQL Server 2016 or greater.
-                        You will need to upgrade your database in order to proceed with that update.
+                        Rock now requires Microsoft Azure SQL or SQL Server 2016 (or higher), and it must be set to compatibility level 130 (SQL Server 2016) or higher.
+                        You will need to upgrade your database in order to proceed with additional updates.
                     </p>
                 </Rock:NotificationBox>
-                <Rock:NotificationBox ID="nbLegacyLavaIssue" runat="server" NotificationBoxType="Warning" Visible="false">
-                    <strong><i class="fa fa-exclamation-triangle"></i> 'Lava Support Level' Change is Needed</strong>
+                <Rock:NotificationBox ID="nbLavaEngineIssue" runat="server" NotificationBoxType="Warning" Visible="false">
+                    <strong><i class="fa fa-exclamation-triangle"></i> 'Lava Engine Liquid Framework' Change is Needed</strong>
                     <p>
-                        Rock v16 no longer supports "Legacy" Lava.
-                        In order to upgrade Rock to v16, your <strong> Lava Support Level </strong> Global Attribute must be set to "No Legacy".
+                        Rock v17 no longer supports the "DotLiquid" engine. In order to upgrade Rock to v17, your <strong> Lava Engine Liquid Framework </strong> Global Attribute must be set to "Fluid".
                     </p>
                 </Rock:NotificationBox>
-                <Rock:NotificationBox ID="nbCompileThreadsIssue" runat="server" NotificationBoxType="Warning" Visible="false">
+                <Rock:NotificationBox ID="nbCompileThreadsIssue" runat="server" NotificationBoxType="Warning" Visible="true">
                     <strong><i class="fa fa-exclamation-triangle"></i> Background Process Running</strong>
                     <p>
                         Rock is running one or more processes that may lock files that will be updated. These will be checked again after clicking the update button. If this message appears again wait a minute and try again.
                     </p>
                 </Rock:NotificationBox>
+
+                <Rock:NotificationBox ID="nbPendingMigrationJobs" runat="server" NotificationBoxType="Warning" Visible="false"></Rock:NotificationBox>
+
                 <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>

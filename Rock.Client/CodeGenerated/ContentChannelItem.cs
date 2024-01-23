@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary />
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -50,6 +53,24 @@ namespace Rock.Client
         public int ContentChannelTypeId { get; set; }
 
         /// <summary />
+        public int? ContentLibraryContentTopicId { get; set; }
+
+        /// <summary />
+        public int? ContentLibraryLicenseTypeValueId { get; set; }
+
+        /// <summary />
+        public Guid? ContentLibrarySourceIdentifier { get; set; }
+
+        /// <summary />
+        public int? ContentLibraryUploadedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? ContentLibraryUploadedDateTime { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.Cms.ContentLibraryItemExperienceLevel? ExperienceLevel { get; set; }
+
+        /// <summary />
         public DateTime? ExpireDateTime { get; set; }
 
         /// <summary />
@@ -57,6 +78,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public bool? IsContentLibraryOwner { get; set; }
 
         /// <summary />
         public string ItemGlobalKey { get; set; }
@@ -120,14 +144,22 @@ namespace Rock.Client
         public void CopyPropertiesFrom( ContentChannelItem source )
         {
             this.Id = source.Id;
+            this.AdditionalSettingsJson = source.AdditionalSettingsJson;
             this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             this.ApprovedDateTime = source.ApprovedDateTime;
             this.Content = source.Content;
             this.ContentChannelId = source.ContentChannelId;
             this.ContentChannelTypeId = source.ContentChannelTypeId;
+            this.ContentLibraryContentTopicId = source.ContentLibraryContentTopicId;
+            this.ContentLibraryLicenseTypeValueId = source.ContentLibraryLicenseTypeValueId;
+            this.ContentLibrarySourceIdentifier = source.ContentLibrarySourceIdentifier;
+            this.ContentLibraryUploadedByPersonAliasId = source.ContentLibraryUploadedByPersonAliasId;
+            this.ContentLibraryUploadedDateTime = source.ContentLibraryUploadedDateTime;
+            this.ExperienceLevel = source.ExperienceLevel;
             this.ExpireDateTime = source.ExpireDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsContentLibraryOwner = source.IsContentLibraryOwner;
             this.ItemGlobalKey = source.ItemGlobalKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;

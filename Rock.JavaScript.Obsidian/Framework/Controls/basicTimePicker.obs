@@ -1,13 +1,13 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="dropdown timepicker-input">
-        <div class="input-group input-width-md">
+        <div class="bootstrap-timepicker input-group input-width-md">
             <input class="form-control" type="text" v-model="internalValue" :disabled="disabled" @focus="focusInput" @click="focusInput" @blur="onInputBlur" @keydown="onMainInputKeyDown" ref="inputEl" />
-            <span class="input-group-btn">
-                <button class="btn btn-default btn-square" @click.prevent="showPickerWidget = !showPickerWidget" :disabled="disabled" ref="toggleBtnEl"><i class="fa fa-clock-o"></i></button>
+            <span class="input-group-addon" :class="{ 'disabled': disabled }" @click="showPickerWidget = !showPickerWidget" ref="toggleBtnEl">
+                <i class="fa fa-clock-o"></i>
             </span>
         </div>
-        <i class="fa fa-times js-timepicker-clear" v-if="internalValue && !disabled" @click.prevent="clearPicker"></i>
+        <i class="fa fa-times js-timepicker-clear" v-if="internalValue && !disabled && !hideClear" @click.prevent="clearPicker"></i>
         <TransitionVerticalCollapse>
             <div class="bootstrap-timepicker-widget dropdown-menu timepicker-orient-left timepicker-orient-top open" v-if="showPickerWidget" ref="widgetEl">
                 <table>
@@ -45,13 +45,18 @@
     import { PropType, ref } from "vue";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { padLeft } from "@Obsidian/Utility/stringUtils";
-    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue.d";
-    import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+    import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<TimePickerValue>,
             default: {}
+        },
+
+        hideClear: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         disabled: {
@@ -584,5 +589,5 @@
         document.removeEventListener("touchend", onClickOutsideWidget);
     });
 
-            // #endregion
+    // #endregion
 </script>

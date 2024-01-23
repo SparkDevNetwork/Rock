@@ -723,7 +723,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return ((CommunicationType?) _rblCommunicationPreference.SelectedValue.AsIntegerOrNull()) ?? CommunicationType.Email;
+                return ( ( CommunicationType? ) _rblCommunicationPreference.SelectedValue.AsIntegerOrNull() ) ?? CommunicationType.Email;
             }
             set
             {

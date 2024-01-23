@@ -694,101 +694,53 @@ mission. We are so grateful for your commitment.</p>
         private static class AttributeKey
         {
             public const string AccountsToDisplay = "AccountsToDisplay";
-
             public const string AllowImpersonation = "AllowImpersonation";
-
             public const string AllowScheduledTransactions = "AllowScheduledTransactions";
-
             public const string BatchNamePrefix = "BatchNamePrefix";
-
             public const string FinancialGateway = "FinancialGateway";
-
             public const string EnableACH = "EnableACH";
-
             public const string EnableCreditCard = "EnableCreditCard";
-
             public const string EnableCommentEntry = "EnableCommentEntry";
-
             public const string CommentEntryLabel = "CommentEntryLabel";
-
             public const string EnableBusinessGiving = "EnableBusinessGiving";
-
             public const string EnableAnonymousGiving = "EnableAnonymousGiving";
-
             public const string AnonymousGivingTooltip = "AnonymousGivingTooltip";
-
             public const string PaymentCommentTemplate = "PaymentCommentTemplate";
-
             public const string EnableInitialBackButton = "EnableInitialBackButton";
-
             public const string FinancialSourceType = "FinancialSourceType";
-
             public const string ShowScheduledTransactions = "ShowScheduledTransactions";
-
             public const string ScheduledTransactionsTemplate = "ScheduledTransactionsTemplate";
-
             public const string ScheduledTransactionEditPage = "ScheduledTransactionEditPage";
-
             public const string GiftTerm = "GiftTerm";
-
             public const string GiveButtonNowText = "GiveButtonNowText";
-
             public const string GiveButtonScheduledText = "GiveButtonScheduledText";
-
             public const string AccountHeaderTemplate = "AccountHeaderTemplate";
-
             public const string AmountSummaryTemplate = "AmountSummaryTemplate";
-
             public const string AskForCampusIfKnown = "AskForCampusIfKnown";
-
             public const string IncludeInactiveCampuses = "IncludeInactiveCampuses";
-
             public const string IncludedCampusTypes = "IncludedCampusTypes";
-
             public const string IncludedCampusStatuses = "IncludedCampusStatuses";
-
             public const string EnableMultiAccount = "EnableMultiAccount";
-
             public const string IntroMessageTemplate = "IntroMessageTemplate";
-
             public const string FinishLavaTemplate = "FinishLavaTemplate";
-
             public const string SaveAccountTitle = "SaveAccountTitle";
-
             public const string ConfirmAccountEmailTemplate = "ConfirmAccountEmailTemplate";
-
             public const string TransactionType = "Transaction Type";
-
             public const string TransactionEntityType = "TransactionEntityType";
-
             public const string EntityIdParam = "EntityIdParam";
-
             public const string AllowedTransactionAttributesFromURL = "AllowedTransactionAttributesFromURL";
-
             public const string AllowAccountOptionsInURL = "AllowAccountOptionsInURL";
-
             public const string OnlyPublicAccountsInURL = "OnlyPublicAccountsInURL";
-
             public const string InvalidAccountInURLMessage = "InvalidAccountInURLMessage";
-
             public const string ReceiptEmail = "ReceiptEmail";
-
             public const string PromptForPhone = "PromptForPhone";
-
             public const string PromptForEmail = "PromptForEmail";
-
             public const string PersonAddressType = "PersonAddressType";
-
             public const string PersonConnectionStatus = "PersonConnectionStatus";
-
             public const string PersonRecordStatus = "PersonRecordStatus";
-
             public const string EnableFeeCoverage = "EnableFeeCoverage";
-
             public const string FeeCoverageDefaultState = "FeeCoverageDefaultState";
-
             public const string FeeCoverageMessage = "FeeCoverageMessage";
-
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
@@ -1023,14 +975,19 @@ mission. We are so grateful for your commitment.</p>
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
-            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+            // Don't use captcha if the block is set to disable (DisableCaptchaSupport==true) it or if is not configured (IsAvailable==false)
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
+            cpCaptcha.Visible = !disableCaptchaSupport;
+            cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
+
+            var enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
                 _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
 
-                if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
+                if ( disableCaptchaSupport )
                 {
                     hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 }
@@ -1056,10 +1013,6 @@ mission. We are so grateful for your commitment.</p>
             // Evaluate if comment entry box should be displayed
             tbCommentEntry.Label = GetAttributeValue( AttributeKey.CommentEntryLabel );
             tbCommentEntry.Visible = GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean();
-
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
-            cpCaptcha.Visible = !disableCaptchaSupport;
-            cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
         }
 
         /// <summary>
@@ -1528,7 +1481,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             mergeFields.Add( "GiftTerm", this.GetAttributeValue( AttributeKey.GiftTerm ) ?? "Gift" );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
@@ -2232,7 +2185,8 @@ mission. We are so grateful for your commitment.</p>
                     acAddressIndividual.SetValues( null );
                 }
 
-                if ( GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean() )
+                var promptForPhone = GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean();
+                if ( promptForPhone )
                 {
                     var personPhoneNumber = targetPerson.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
 
@@ -2241,6 +2195,26 @@ mission. We are so grateful for your commitment.</p>
                     if ( personPhoneNumber == null || string.IsNullOrWhiteSpace( personPhoneNumber.Number ) || personPhoneNumber.IsUnlisted )
                     {
                         personPhoneNumber = targetPerson.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    }
+
+                    PhoneNumberBox pnbPhone = pnbPhoneIndividual;
+                    if ( targetPerson.IsBusiness() )
+                    {
+                        pnbPhone = pnbPhoneBusiness;
+                    }
+
+                    if ( personPhoneNumber != null )
+                    {
+                        if ( !personPhoneNumber.IsUnlisted )
+                        {
+                            pnbPhone.CountryCode = personPhoneNumber.CountryCode;
+                            pnbPhone.Number = personPhoneNumber.ToString();
+                        }
+                    }
+                    else
+                    {
+                        pnbPhone.CountryCode = PhoneNumber.DefaultCountryCode();
+                        pnbPhone.Number = string.Empty;
                     }
                 }
 
@@ -2287,27 +2261,16 @@ mission. We are so grateful for your commitment.</p>
         /// <returns></returns>
         private Person GetTargetPerson( RockContext rockContext )
         {
+            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
             string personActionId = PageParameter( PageParameterKey.Person );
-            if ( personActionId.IsNullOrWhiteSpace() )
+            if ( personActionId.IsNullOrWhiteSpace() && targetPersonValue.IsNullOrWhiteSpace() )
             {
                 // If there is no person action identifier, just use the currently logged in Person.
                 return CurrentPerson;
             }
 
-            var targetPersonValue = Rock.Security.Encryption.DecryptString( ViewState[ViewStateKey.TargetPersonGuid] as string );
-            if ( targetPersonValue.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            var targetPersonGuid = targetPersonValue.AsGuidOrNull();
-            if ( targetPersonGuid == null )
-            {
-                return null;
-            }
-
-            var targetPerson = new PersonService( rockContext ).Get( targetPersonGuid.Value );
-            return targetPerson;
+            var targetPersonGuid = targetPersonValue?.AsGuidOrNull();
+            return targetPersonGuid != null ? new PersonService( rockContext ).Get( targetPersonGuid.Value ) : null;
         }
 
         /// <summary>
@@ -2564,12 +2527,21 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void BindPersonSavedAccounts()
         {
-            ddlPersonSavedAccount.Visible = false;
+            // Get current selection before updating the drop down list items.
             var currentSavedAccountSelection = ddlPersonSavedAccount.SelectedValue;
-
+            ddlPersonSavedAccount.Visible = false;
+            ddlPersonSavedAccount.Items.Clear();
+            pnlSavedAccounts.Visible = false;
 
             var rockContext = new RockContext();
             var targetPerson = GetTargetPerson( rockContext );
+
+            // No person, no accounts
+            if ( targetPerson == null )
+            {
+                return;
+            }
+
             var personSavedAccountsQuery = new FinancialPersonSavedAccountService( rockContext )
                 .GetByPersonId( targetPerson.Id )
                 .Where( a => !a.IsSystem )
@@ -3097,7 +3069,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
             var transactionGuid = hfTransactionGuid.Value.AsGuid();
 
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
             IEntity transactionEntity = GetTransactionEntity();
             mergeFields.Add( "TransactionEntity", transactionEntity );
@@ -3147,7 +3119,7 @@ mission. We are so grateful for your commitment.</p>
 
             // If target person does not have a login, have them create a UserName and password
             var targetPerson = GetTargetPerson( rockContext );
-            var hasUserLogin = new UserLoginService( rockContext ).GetByPersonId( targetPerson.Id ).Any();
+            var hasUserLogin = targetPerson != null ? new UserLoginService( rockContext ).GetByPersonId( targetPerson.Id ).Any() : false;
             pnlCreateLogin.Visible = !hasUserLogin;
 
             NavigateToStep( EntryStep.ShowTransactionSummary );
@@ -3221,23 +3193,10 @@ mission. We are so grateful for your commitment.</p>
                 : null;
 
             // Get the batch
-            var batch = batchService.Get(
-                GetAttributeValue( AttributeKey.BatchNamePrefix ),
-                currencyTypeValue,
-                creditCardTypeValue,
-                transaction.TransactionDateTime.Value,
-                financialGateway.GetBatchTimeOffset() );
+            var batch = batchService.GetForNewTransaction( transaction, GetAttributeValue( AttributeKey.BatchNamePrefix ) );
 
             var batchChanges = new History.HistoryChangeList();
-
-            if ( batch.Id == 0 )
-            {
-                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
+            FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
             transaction.LoadAttributes( rockContext );
 
@@ -3538,8 +3497,8 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGiveNow_Click( object sender, EventArgs e )
         {
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
-            if ( !disableCaptchaSupport && cpCaptcha.Visible )
+            // Don't use captcha if the control is not visible
+            if ( cpCaptcha.Visible )
             {
                 nbPromptForAmountsWarning.Visible = true;
                 nbPromptForAmountsWarning.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";

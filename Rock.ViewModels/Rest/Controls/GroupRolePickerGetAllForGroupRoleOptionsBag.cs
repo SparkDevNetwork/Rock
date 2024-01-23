@@ -26,12 +26,13 @@ namespace Rock.ViewModels.Rest.Controls
     public class GroupRolePickerGetAllForGroupRoleOptionsBag
     {
         /// <summary>
-        /// 
+        /// Unique identifier of a group role. Used to get the rest of the data
+        /// about this role, and the group type it belongs to.
         /// </summary>
         public Guid GroupRoleGuid { get; set; }
 
         /// <summary>
-        /// 
+        /// Exclude group roles from the returned list that match any of the given identifiers.
         /// </summary>
         public List<Guid> ExcludeGroupRoles { get; set; } = new List<Guid>();
 

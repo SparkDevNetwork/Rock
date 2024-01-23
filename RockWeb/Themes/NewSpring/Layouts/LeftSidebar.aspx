@@ -20,9 +20,9 @@
         <div id="content" class="container-fluid">
 
             <div class="row">
-                <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
+                <div class="col-xs-12 col-sm-12 col-md-3 col-lg-4">
                     <Rock:Zone Name="Section A" runat="server" />
-                </div><div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
+                </div><div class="col-xs-12 col-sm-12 col-md-9 col-lg-8">
                     <Rock:Zone Name="Main" runat="server" />
                 </div>
             </div>

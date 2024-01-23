@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.Event;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -40,6 +41,8 @@ namespace Rock.Model
 
             private int? preSavePersonAliasId { get; set; }
 
+            private bool previousDidAttendValue { get; set; }
+
             /// <summary>
             /// Method that will be called on an entity immediately before the item is saved by context
             /// </summary>
@@ -49,7 +52,6 @@ namespace Rock.Model
 
                 _isDeleted = State == EntityContextState.Deleted;
 
-                bool previousDidAttendValue;
                 bool previouslyDeclined;
 
                 if ( State == EntityContextState.Added )
@@ -67,16 +69,44 @@ namespace Rock.Model
                 // if the record was changed to Declined, queue a GroupScheduleCancellationTransaction in PostSaveChanges
                 _declinedScheduledAttendance = ( previouslyDeclined == false ) && Entity.IsScheduledPersonDeclined();
 
-                if ( previousDidAttendValue == false && Entity.DidAttend == true )
-                {
-                    var launchMemberAttendedGroupWorkflowMsg = GetLaunchMemberAttendedGroupWorkflowMessage();
-                    launchMemberAttendedGroupWorkflowMsg.Send();
-                }
+                /*
+                    06/21/2023 ETD
+                    Launch the workflow in post save to avoid a race condition between the bus message and the saving of the Attendance record.
+                    The LaunchMemberAttendedGroupWorkflow needs to be run post save to work correctly.
+
+                    if ( previousDidAttendValue == false && Entity.DidAttend == true )
+                    {
+                        var launchMemberAttendedGroupWorkflowMsg = GetLaunchMemberAttendedGroupWorkflowMessage();
+                        launchMemberAttendedGroupWorkflowMsg.Send();
+                    }
+
+                */
+
 
                 var attendance = this.Entity;
 
-                if ( State == EntityContextState.Modified )
+                if ( State == EntityContextState.Added )
                 {
+                    if ( attendance.CheckInStatus != CheckInStatus.Unknown )
+                    {
+                        UpdateCheckInDatesFromCheckInStatus();
+                    }
+                    else
+                    {
+                        UpdateCheckInStatusFromCheckInDates();
+                    }
+                }
+                else if ( State == EntityContextState.Modified )
+                {
+                    if ( IsCheckInStatusModified() )
+                    {
+                        UpdateCheckInDatesFromCheckInStatus();
+                    }
+                    else if ( AreCheckInDatesModified() )
+                    {
+                        UpdateCheckInStatusFromCheckInDates();
+                    }
+
                     preSavePersonAliasId = attendance.PersonAliasId;
                     var originalOccurrenceId = ( int? ) OriginalValues[nameof( attendance.OccurrenceId )];
                     if ( originalOccurrenceId.HasValue && attendance.OccurrenceId != originalOccurrenceId.Value )
@@ -102,6 +132,12 @@ namespace Rock.Model
                             }
                         }
                     }
+
+                    // Add the checkin and the checkout to the history if
+                    var previousCheckInValue = ( DateTime? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "StartDateTime", null );
+                    var previousCheckOutValue = ( DateTime? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "EndDateTime", null );
+                    History.EvaluateChange( PersonAttendanceHistoryChangeList, "Check-in", previousCheckInValue?.ToShortDateTimeString(), attendance.StartDateTime.ToShortDateTimeString() );
+                    History.EvaluateChange( PersonAttendanceHistoryChangeList, "Check-out", previousCheckOutValue?.ToShortDateTimeString(), attendance.EndDateTime?.ToShortDateTimeString() );
                 }
                 else if ( State == EntityContextState.Deleted )
                 {
@@ -116,8 +152,7 @@ namespace Rock.Model
                     RockContext.ExecuteAfterCommit( () =>
                     {
                         // Use the fast queue for this because it is real-time.
-                        new SendAttendanceRealTimeNotificationsTransaction( Entity.Guid, State == EntityContextState.Deleted )
-                            .Enqueue( true );
+                        new SendAttendanceRealTimeNotificationsTransaction( Entity.Guid, State == EntityContextState.Deleted ).Enqueue( true );
                     } );
                 }
 
@@ -150,6 +185,13 @@ namespace Rock.Model
                     // If there are any, they need to be processed in this thread in case there are any achievement changes
                     // that need to be detected as a result of this attendance.
                     StreakTypeService.HandleAttendanceRecord( Entity.Id );
+                }
+
+                // Do this in post save to avoid a race condition between the bus message and the saving of the Attendance record. See engineering note in PreSave().
+                if ( previousDidAttendValue == false && Entity.DidAttend == true )
+                {
+                    var launchMemberAttendedGroupWorkflowMsg = GetLaunchMemberAttendedGroupWorkflowMessage();
+                    launchMemberAttendedGroupWorkflowMsg.Send();
                 }
 
                 var rockContext = ( RockContext ) this.RockContext;
@@ -223,47 +265,123 @@ namespace Rock.Model
                 return false;
             }
 
+            /// <summary>
+            /// Determines whether CheckInStatus property has been modified.
+            /// </summary>
+            /// <returns><c>true</c> if the property was modified; otherwise, <c>false</c>.</returns>
+            private bool IsCheckInStatusModified()
+            {
+                var originalCheckInStatus = ( CheckInStatus ) OriginalValues[nameof( Entity.CheckInStatus )];
+
+                return originalCheckInStatus != Entity.CheckInStatus;
+            }
+
+            /// <summary>
+            /// Determines whether any of the check-in DateTime properties
+            /// have been modified.
+            /// </summary>
+            /// <returns><c>true</c> if any properties were modified, <c>false</c> otherwise.</returns>
+            private bool AreCheckInDatesModified()
+            {
+                var originalStartDateTime = ( DateTime ) OriginalValues[nameof( Entity.StartDateTime )];
+                var originalEndDateTime = ( DateTime? ) OriginalValues[nameof( Entity.EndDateTime )];
+                var originalPresentDateTime = ( DateTime? ) OriginalValues[nameof( Entity.PresentDateTime )];
+
+                return originalStartDateTime != Entity.StartDateTime
+                    || originalEndDateTime != Entity.EndDateTime
+                    || originalPresentDateTime != Entity.PresentDateTime;
+            }
+
+            /// <summary>
+            /// Updates the check in dates from the CheckInStatus property. This
+            /// is called when the CheckInStatus has been modified.
+            /// </summary>
+            private void UpdateCheckInDatesFromCheckInStatus()
+            {
+                if ( Entity.CheckInStatus == CheckInStatus.CheckedOut )
+                {
+                    Entity.EndDateTime = Entity.EndDateTime ?? RockDateTime.Now;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.Present )
+                {
+                    Entity.PresentDateTime = Entity.PresentDateTime ?? RockDateTime.Now;
+                    Entity.EndDateTime = null;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.NotPresent )
+                {
+                    Entity.PresentDateTime = null;
+                    Entity.EndDateTime = null;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.Pending )
+                {
+                    Entity.PresentDateTime = null;
+                    Entity.EndDateTime = null;
+                }
+            }
+
+            /// <summary>
+            /// Updates the CheckInStatus property from the check in dates. This
+            /// is called if the CheckInStatus property has not changed but one
+            /// of the date values has.
+            /// </summary>
+            private void UpdateCheckInStatusFromCheckInDates()
+            {
+                if ( Entity.EndDateTime.HasValue )
+                {
+                    Entity.CheckInStatus = CheckInStatus.CheckedOut;
+                }
+                else if ( Entity.PresentDateTime.HasValue )
+                {
+                    Entity.CheckInStatus = CheckInStatus.Present;
+                }
+                else
+                {
+                    Entity.CheckInStatus = CheckInStatus.NotPresent;
+                }
+            }
+
             private LaunchMemberAttendedGroupWorkflow.Message GetLaunchMemberAttendedGroupWorkflowMessage()
             {
                 var launchMemberAttendedGroupWorkflowMsg = new LaunchMemberAttendedGroupWorkflow.Message();
-                if ( State != EntityContextState.Deleted )
+                if ( State == EntityContextState.Deleted )
                 {
-                    // Get the attendance record
-                    var attendance = Entity as Attendance;
+                    return launchMemberAttendedGroupWorkflowMsg;
+                }
 
-                    // If attendance record is valid and the DidAttend is true (not null or false)
-                    if ( attendance != null && ( attendance.DidAttend == true ) )
+                // Get the attendance record
+                var attendance = Entity as Attendance;
+
+                // If attendance record is not valid or the DidAttend is false
+                if ( attendance == null || ( attendance.DidAttend.GetValueOrDefault( false ) == false ) )
+                {
+                    return launchMemberAttendedGroupWorkflowMsg;
+                }
+
+                // Save for all adds
+                bool valid = State == EntityContextState.Added;
+
+                // If not an add, check previous DidAttend value
+                if ( !valid )
+                {
+                    // Only use changes where DidAttend was previously not true
+                    valid = ( bool? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "DidAttend", false ) != true;
+                }
+
+                if ( valid )
+                {
+                    var occ = attendance.Occurrence ?? new AttendanceOccurrenceService( new RockContext() ).Get( attendance.OccurrenceId );
+
+                    if ( occ != null )
                     {
-                        // Save for all adds
-                        bool valid = State == EntityContextState.Added;
+                        // Save the values
+                        launchMemberAttendedGroupWorkflowMsg.GroupId = occ.GroupId;
+                        launchMemberAttendedGroupWorkflowMsg.AttendanceDateTime = occ.OccurrenceDate;
+                        launchMemberAttendedGroupWorkflowMsg.PersonAliasId = attendance.PersonAliasId;
+                        launchMemberAttendedGroupWorkflowMsg.AttendanceId = attendance.Id;
 
-                        // If not an add, check previous DidAttend value
-                        if ( !valid )
+                        if ( occ.Group != null )
                         {
-                            // Only use changes where DidAttend was previously not true
-                            valid = ( bool? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "DidAttend", false ) != true;
-                        }
-
-                        if ( valid )
-                        {
-                            var occ = attendance.Occurrence;
-                            if ( occ == null )
-                            {
-                                occ = new AttendanceOccurrenceService( new RockContext() ).Get( attendance.OccurrenceId );
-                            }
-
-                            if ( occ != null )
-                            {
-                                // Save the values
-                                launchMemberAttendedGroupWorkflowMsg.GroupId = occ.GroupId;
-                                launchMemberAttendedGroupWorkflowMsg.AttendanceDateTime = occ.OccurrenceDate;
-                                launchMemberAttendedGroupWorkflowMsg.PersonAliasId = attendance.PersonAliasId;
-
-                                if ( occ.Group != null )
-                                {
-                                    launchMemberAttendedGroupWorkflowMsg.GroupTypeId = occ.Group.GroupTypeId;
-                                }
-                            }
+                            launchMemberAttendedGroupWorkflowMsg.GroupTypeId = occ.Group.GroupTypeId;
                         }
                     }
                 }

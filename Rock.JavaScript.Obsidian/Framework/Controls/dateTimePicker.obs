@@ -1,0 +1,207 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField formGroupClasses="date-time-picker" #default="{ uniqueId }" name="datepicker" v-model.lazy="internalDateValue">
+        <div class="control-wrapper">
+            <div class="form-control-group">
+                <div class="form-row">
+                    <div class="input-group input-width-md js-date-picker date">
+                        <input ref="input" type="text" :id="uniqueId" class="form-control" v-model.lazy="internalDateValue" :disabled="isDisabled" />
+                        <span class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </span>
+                    </div>
+                    <BasicTimePicker v-model="internalTimeValue" :disabled="isDisabled" hideClear />
+                    <div v-if="displayCurrentOption" class="input-group">
+                        <div class="checkbox">
+                            <label title="">
+                                <input type="checkbox" v-model="isCurrent" />
+                                <span class="label-text">Current Time</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="isCurrent && isCurrentDateOffset" class="form-row">
+                    <TextBox label="+- Minutes" v-model="currentDiff" inputClasses="input-width-md" help="Enter the number of minutes after the current time to use as the date. Use a negative number to specify minutes before." />
+                </div>
+            </div>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import RockFormField from "./rockFormField.obs";
+    import TextBox from "./textBox.obs";
+    import BasicTimePicker from "./basicTimePicker.obs";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+    import { padLeft } from "@Obsidian/Utility/stringUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+        displayCurrentOption: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        isCurrentDateOffset: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string | null): void;
+    }>();
+
+    const input = ref<HTMLInputElement>();
+    const internalDateValue = ref<string | null>(null);
+    const internalTimeValue = ref<TimePickerValue>({});
+    const isCurrent = ref(false);
+    const currentDiff = ref("0");
+    let skipEmit = false;
+
+    const asRockDateTimeOrNull = computed((): string | null => {
+        if (internalDateValue.value) {
+            const dateMatch = /^(\d+)\/(\d+)\/(\d+)/.exec(internalDateValue.value ?? "");
+
+            if (dateMatch === null) {
+                return null;
+            }
+
+            let date = RockDateTime.fromParts(toNumber(dateMatch[3]), toNumber(dateMatch[1]), toNumber(dateMatch[2]));
+
+            if (date === null) {
+                return null;
+            }
+
+            if (internalTimeValue.value.hour !== undefined && internalTimeValue.value.minute !== undefined) {
+                date = date?.addHours(internalTimeValue.value.hour).addMinutes(internalTimeValue.value.minute);
+            }
+
+            const year = date.year.toString();
+            const month = padLeft(date.month.toString(), 2, "0");
+            const day = padLeft(date.day.toString(), 2, "0");
+            const hour = padLeft(date.hour.toString(), 2, "0");
+            const minute = padLeft(date.minute.toString(), 2, "0");
+            const second = padLeft(date.second.toString(), 2, "0");
+            const millisecond = padLeft(date.millisecond.toString(), 3, "0");
+
+            // Construct it manually so it doesn't get converted to UTC.
+            return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}`;
+        }
+        else {
+            return null;
+        }
+    });
+
+    const asCurrentDateValue = computed((): string => {
+        const plusMinus = `${toNumber(currentDiff.value)}`;
+        return `CURRENT:${plusMinus}`;
+    });
+
+    const valueToEmit = computed((): string | null => {
+        if (isCurrent.value) {
+            return asCurrentDateValue.value;
+        }
+
+        return asRockDateTimeOrNull.value ?? "";
+    });
+
+    const isDisabled = computed((): boolean => {
+        return isCurrent.value || props.disabled;
+    });
+
+    watch(() => props.isCurrentDateOffset, () => {
+        if (!props.isCurrentDateOffset) {
+            currentDiff.value = "0";
+        }
+    }, { immediate: true });
+
+    watch(valueToEmit, () => {
+        if (!skipEmit) {
+            emit("update:modelValue", valueToEmit.value);
+        }
+    });
+
+    watch(() => props.modelValue, () => {
+        if (!props.modelValue) {
+            internalDateValue.value = null;
+            internalTimeValue.value = {};
+            isCurrent.value = false;
+            currentDiff.value = "0";
+            return;
+        }
+
+        if (props.modelValue.indexOf("CURRENT") === 0) {
+            const parts = props.modelValue.split(":");
+
+            if (parts.length === 2) {
+                currentDiff.value = `${toNumber(parts[1])}`;
+            }
+
+            isCurrent.value = true;
+
+            return;
+        }
+
+        const date = RockDateTime.parseISO(props.modelValue);
+
+        /*
+         * This is an anti-pattern, but I couldn't find a quick way
+         * around this. Without this, we would set the date and then
+         * emit just the date part before we had a chance to set the
+         * time. There is likely a better way to do this. -dsh.
+         */
+        skipEmit = true;
+        if (date === null) {
+            internalDateValue.value = null;
+            internalTimeValue.value = {};
+        }
+        else {
+            internalDateValue.value = `${date.month}/${date.day}/${date.year}`;
+            internalTimeValue.value = {
+                hour: date.hour,
+                minute: date.minute
+            };
+        }
+        skipEmit = false;
+    }, { immediate: true });
+
+    watch(() => props.displayCurrentOption, () => {
+        if (!props.displayCurrentOption && isCurrent.value) {
+            internalDateValue.value = null;
+            internalTimeValue.value = {};
+            isCurrent.value = false;
+            currentDiff.value = "0";
+        }
+    });
+
+    onMounted(() => {
+        const inputElement = input.value;
+
+        if (!inputElement) {
+            return;
+        }
+
+        window.Rock.controls.datePicker.initialize({
+            id: inputElement.id,
+            startView: 0,
+            showOnFocus: true,
+            format: "mm/dd/yyyy",
+            todayHighlight: true,
+            forceParse: true,
+            onChangeScript: () => {
+                if (!isCurrent.value) {
+                    internalDateValue.value = inputElement.value;
+                }
+            }
+        });
+    });
+</script>

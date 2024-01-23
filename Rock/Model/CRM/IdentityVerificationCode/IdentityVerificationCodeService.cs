@@ -16,6 +16,9 @@
 
 using System;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
 using Rock.Logging;
 
@@ -52,7 +55,8 @@ namespace Rock.Model
 
                         if ( !hasUsableRecords )
                         {
-                            RockLogger.Log.Warning( RockLogDomains.Core, "All of the available phone verification codes have been used." );
+                            RockLogger.LoggerFactory.CreateLogger<IdentityVerificationCodeService>()
+                                .LogWarning( "All of the available phone verification codes have been used." );
                             ExceptionLogService.LogException( "All of the available phone verification codes have been used." );
 
                             availableCodeCount = identityVerificationService

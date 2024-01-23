@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -58,70 +54,6 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// Attendance View Model Helper
-    /// </summary>
-    [DefaultViewModelHelper( typeof( Attendance ) )]
-    public partial class AttendanceViewModelHelper : ViewModelHelper<Attendance, AttendanceBag>
-    {
-        /// <summary>
-        /// Converts the model to a view model.
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public override AttendanceBag CreateViewModel( Attendance model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return default;
-            }
-
-            var viewModel = new AttendanceBag
-            {
-                IdKey = model.IdKey,
-                AttendanceCheckInSessionId = model.AttendanceCheckInSessionId,
-                AttendanceCodeId = model.AttendanceCodeId,
-                CampusId = model.CampusId,
-                CheckedInByPersonAliasId = model.CheckedInByPersonAliasId,
-                CheckedOutByPersonAliasId = model.CheckedOutByPersonAliasId,
-                DeclineReasonValueId = model.DeclineReasonValueId,
-                DeviceId = model.DeviceId,
-                DidAttend = model.DidAttend,
-                EndDateTime = model.EndDateTime,
-                IsFirstTime = model.IsFirstTime,
-                Note = model.Note,
-                OccurrenceId = model.OccurrenceId,
-                PersonAliasId = model.PersonAliasId,
-                PresentByPersonAliasId = model.PresentByPersonAliasId,
-                PresentDateTime = model.PresentDateTime,
-                Processed = model.Processed,
-                QualifierValueId = model.QualifierValueId,
-                RequestedToAttend = model.RequestedToAttend,
-                RSVP = ( int ) model.RSVP,
-                RSVPDateTime = model.RSVPDateTime,
-                ScheduleConfirmationSent = model.ScheduleConfirmationSent,
-                ScheduledByPersonAliasId = model.ScheduledByPersonAliasId,
-                ScheduledToAttend = model.ScheduledToAttend,
-                ScheduleReminderSent = model.ScheduleReminderSent,
-                SearchResultGroupId = model.SearchResultGroupId,
-                SearchTypeValueId = model.SearchTypeValueId,
-                SearchValue = model.SearchValue,
-                StartDateTime = model.StartDateTime,
-                CreatedDateTime = model.CreatedDateTime,
-                ModifiedDateTime = model.ModifiedDateTime,
-                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
-                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
-            };
-
-            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
-            return viewModel;
-        }
-    }
-
 
     /// <summary>
     /// Generated Extension Methods
@@ -184,6 +116,7 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
             target.CheckedOutByPersonAliasId = source.CheckedOutByPersonAliasId;
+            target.CheckInStatus = source.CheckInStatus;
             target.DeclineReasonValueId = source.DeclineReasonValueId;
             target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;
@@ -217,20 +150,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
-        /// <summary>
-        /// Creates a view model from this entity
-        /// </summary>
-        /// <param name="model">The entity.</param>
-        /// <param name="currentPerson" >The currentPerson.</param>
-        /// <param name="loadAttributes" >Load attributes?</param>
-        public static AttendanceBag ToViewModel( this Attendance model, Person currentPerson = null, bool loadAttributes = false )
-        {
-            var helper = new AttendanceViewModelHelper();
-            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
-
     }
-
 }

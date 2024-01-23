@@ -2,7 +2,7 @@
 <template>
 
     <RockButton
-        v-if="isCredentialLoginSupported && !loginMethodWrapper.isCredential"
+        v-if="isCredentialLoginSupported && internalLoginMethod !== LoginMethod.InternalDatabase"
         :btnType="BtnType.Default"
         class="btn-block"
         :disabled="disabled"
@@ -10,7 +10,7 @@
         @click="onSignInWithAccountClicked()">Sign in with Account</RockButton>
 
     <RockButton
-        v-else-if="isPasswordlessLoginSupported && !loginMethodWrapper.isPasswordless"
+        v-else-if="isPasswordlessLoginSupported && internalLoginMethod !== LoginMethod.Passwordless"
         :btnType="BtnType.Default"
         class="btn-block"
         :disabled="disabled"
@@ -19,14 +19,15 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import { PropType } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { LoginMethod } from "@Obsidian/Enums/Blocks/Security/Login/loginMethod";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<LoginMethod>,
+            type: Object as PropType<LoginMethod | undefined>,
             required: true
         },
         isCredentialLoginSupported: {
@@ -45,7 +46,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", _value: LoginMethod): void
+        (e: "update:modelValue", _value: LoginMethod | undefined): void
     }>();
 
     //#region Values
@@ -54,19 +55,7 @@
 
     //#region Computed Values
 
-    const loginMethodWrapper = computed(() => ({
-        isCredential: internalLoginMethod.value === LoginMethod.InternalDatabase,
-        isPasswordless: internalLoginMethod.value === LoginMethod.Passwordless
-    }));
-
-    const internalLoginMethod = computed({
-        get() {
-            return props.modelValue;
-        },
-        set(newValue: LoginMethod) {
-            emit("update:modelValue", newValue);
-        }
-    });
+    const internalLoginMethod = useVModelPassthrough(props, "modelValue", emit);
 
     //#endregion
 

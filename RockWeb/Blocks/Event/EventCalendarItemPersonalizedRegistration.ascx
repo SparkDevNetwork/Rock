@@ -1,5 +1,23 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventCalendarItemPersonalizedRegistration.ascx.cs" Inherits="RockWeb.Blocks.Event.EventCalendarItemPersonalizedRegistration" %>
 
+<style>
+.eventitem {
+  cursor: pointer;
+}
+
+.eventitem-select {
+  font-size: 38px;
+}
+
+.eventitem-select::after {
+  content: "\f0c8";
+}
+
+.eventitem.selected .eventitem-select::after {
+  content: "\f14a";
+}
+</style>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -23,14 +41,14 @@
                     <asp:Repeater ID="rptEvents" runat="server" OnItemDataBound="rptEvents_ItemDataBound">
                          <ItemTemplate>
                              <div class="well eventitem js-eventitem <%# Container.ItemIndex == 0 ? "selected" : "" %>">
-                                 <div class="row">
-                                     <div class="col-xs-1">
-                                         <div class="eventitem-select"></div>
+                                 <div class="d-flex">
+                                     <div class="flex-shrink-0 mr-3">
+                                         <div class="eventitem-select fa"></div>
                                      </div>
-                                     <div class="col-xs-11">
+                                     <div class="flex-fill">
                                          <div class="row">
                                              <div class="col-md-4 col-sm-8">
-                                                 <h5 class="margin-t-none"><%# Eval("StartDate", "{0:M/d/yyyy (dddd)}")  %></h5>
+                                                 <h5 class="margin-t-none"><%# DateTime.Parse(Eval("StartDate").ToString()).ToString("d") + " " + DateTime.Parse(Eval("StartDate").ToString()).ToString(" (dddd)") %></h5>
 
                                                  <p>
                                                     <%# string.Format(Eval("Location").ToString().Length > 0 ? "Location: {0}" : "", Eval("Location").ToString())  %>

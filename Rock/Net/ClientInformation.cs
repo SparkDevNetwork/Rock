@@ -15,8 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
-using System.Net.Http;
 using System.Web;
 
 using UAParser;
@@ -31,15 +31,14 @@ namespace Rock.Net
         #region Private Fields
 
         /// <summary>
+        /// Cached copies of the client info for a given user agent string.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, ClientInfo> _cachedBrowserInfo = new ConcurrentDictionary<string, ClientInfo>();
+
+        /// <summary>
         /// The shared UA parser that will be used.
         /// </summary>
         private static readonly Parser _uaParser = Parser.GetDefault();
-
-        /// <summary>
-        /// The browser information is lazy loaded since it can take a few
-        /// milliseconds to parse the regex and is only rarely used.
-        /// </summary>
-        private readonly Lazy<ClientInfo> _browser;
 
         #endregion
 
@@ -59,7 +58,7 @@ namespace Rock.Net
         /// <value>
         /// The browser object that identifies what we know about the browser.
         /// </value>
-        public ClientInfo Browser => _browser.Value;
+        public ClientInfo Browser => GetClientInfoForUserAgent( UserAgent );
 
         /// <summary>
         /// Gets the user agent identifier string.
@@ -91,7 +90,6 @@ namespace Rock.Net
             }
 
             UserAgent = request.UserAgent;
-            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
         }
 
         /// <summary>
@@ -111,7 +109,32 @@ namespace Rock.Net
             }
 
             UserAgent = request.Headers.GetValues( "USER-AGENT" )?.FirstOrDefault() ?? string.Empty;
-            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( UserAgent ) );
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the client information from the user agent string. This uses
+        /// caching to reduce overhead from parsing.
+        /// </summary>
+        /// <param name="userAgent">The user agent string.</param>
+        /// <returns>The details from the user agent string.</returns>
+        internal static ClientInfo GetClientInfoForUserAgent( string userAgent )
+        {
+            if ( userAgent.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // Prevent abuse of cache.
+            if ( _cachedBrowserInfo.Count > 10_000 )
+            {
+                _cachedBrowserInfo.Clear();
+            }
+
+            return _cachedBrowserInfo.GetOrAdd( userAgent, ua => _uaParser.Parse( ua ) );
         }
 
         #endregion

@@ -15,8 +15,8 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Panel from "@Obsidian/Controls/panel";
-import Modal from "@Obsidian/Controls/modal";
+import Panel from "@Obsidian/Controls/panel.obs";
+import Modal from "@Obsidian/Controls/modal.obs";
 import { Guid } from "@Obsidian/Types";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -24,22 +24,17 @@ import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUti
 import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
 import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
 import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingSetFollowingOptionsBag";
-import AuditDetail from "@Obsidian/Controls/auditDetail";
-import BadgeList from "@Obsidian/Controls/badgeList";
-import EntityTagList from "@Obsidian/Controls/entityTagList";
-import RockButton from "@Obsidian/Controls/rockButton";
-import RockForm from "@Obsidian/Controls/rockForm";
-import RockSuspense from "@Obsidian/Controls/rockSuspense";
+import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+import BadgeList from "@Obsidian/Controls/badgeList.obs";
+import EntityTagList from "@Obsidian/Controls/tagList.obs";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
+import RockSuspense from "@Obsidian/Controls/rockSuspense.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+import { alert, confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
 import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
-
-// Define jQuery and Rock for showing security modal.
-declare function $(value: unknown): unknown;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
-declare const Rock: any;
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -228,6 +223,15 @@ export default defineComponent({
         onDelete: {
             type: Function as PropType<() => false | string | PromiseLike<false | string>>,
             required: false
+        },
+
+        /**
+         * An optional string that may be displayed along with the confirmation
+         * question in the modal after the delete is clicked on the entity.
+         */
+        additionalDeleteMessage: {
+            type: String as PropType<string | null>,
+            required: false
         }
     },
 
@@ -306,7 +310,7 @@ export default defineComponent({
         const internalHeaderSecondaryActions = computed((): PanelAction[] => {
             const actions: PanelAction[] = [];
 
-            if (!props.isAuditHidden) {
+            if (!props.isAuditHidden && internalMode.value !== DetailPanelMode.Add) {
                 actions.push({
                     type: "default",
                     title: "Audit Details",
@@ -478,8 +482,10 @@ export default defineComponent({
          *
          * @param event The event that triggered this handler.
          */
-        const onSecurityClick = (event: Event): void => {
-            Rock.controls.modal.show($(event.target), `/Secure/${props.entityTypeGuid}/${props.entityKey}?t=Secure ${props.entityTypeName}&pb=&sb=Done`);
+        const onSecurityClick = (): void => {
+            if (props.entityKey) {
+                showSecurity(props.entityTypeGuid, props.entityKey, props.entityTypeName);
+            }
         };
 
         /**
@@ -638,7 +644,7 @@ export default defineComponent({
          */
         const onDeleteClick = async (): Promise<void> => {
             if (props.onDelete) {
-                if (!await confirmDelete(props.entityTypeName)) {
+                if (!await confirmDelete(props.entityTypeName, props.additionalDeleteMessage ?? "")) {
                     return;
                 }
 

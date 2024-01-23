@@ -26,6 +26,7 @@ using System.Web.Http.OData;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Rest.Utility;
 
 namespace Rock.Rest
 {
@@ -55,13 +56,18 @@ namespace Rock.Rest
         private Lazy<RockRequestContext> _rockRequestContext;
 
         /// <inheritdoc/>
-        public override Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
+        public override async Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
         {
             // Initialize as lazy since very few API calls use this yet. Once
             // it becomes more common the lazy part can be removed.
-            _rockRequestContext = new Lazy<RockRequestContext>( () => new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ) ) );
+            var responseContext = new RockMessageResponseContext();
+            _rockRequestContext = new Lazy<RockRequestContext>( () => new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ), responseContext, UserLoginService.GetCurrentUser( false ) ) );
 
-            return base.ExecuteAsync( controllerContext, cancellationToken );
+            var responseMessage = await base.ExecuteAsync( controllerContext, cancellationToken );
+
+            responseContext.Update( responseMessage );
+
+            return responseMessage;
         }
 
         /// <summary>

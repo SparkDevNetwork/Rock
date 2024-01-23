@@ -309,12 +309,11 @@ namespace Rock.Reporting.DataFilter.Person
                 return null;
             }
 
-            string[] listOfGroupTypeIds = options[0].Split( ',' );
-            var listOfGuidTypes = new List<Guid>();
-            foreach ( string groupTypeId in listOfGroupTypeIds )
-            {
-                listOfGuidTypes.Add( groupTypeId.AsGuid() );
-            }
+            var groupTypeGuids = options[0]
+                .SplitDelimitedValues( "," )
+                .Select( g => g.AsGuidOrNull() )
+                .Where( g => g.HasValue )
+                .Select( g => g.Value );
 
             ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
             int? attended = options[2].AsIntegerOrNull();
@@ -338,18 +337,35 @@ namespace Rock.Reporting.DataFilter.Person
 
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDelimitedValues );
 
-            bool includeChildGroupTypes = options.Length >= 5 ? options[4].AsBooleanOrNull() ?? false : false;
+            var includeChildGroupTypes = options.Length >= 5 ? options[4].AsBooleanOrNull() ?? false : false;
 
-            var groupTypeIds = new List<int?>();
-            if ( listOfGuidTypes != null )
+            var rockContext = serviceInstance.Context as RockContext;
+            var groupTypeService = new GroupTypeService( rockContext );
+
+            var groupTypeIds = new List<int>();
+            foreach ( var groupTypeGuid in groupTypeGuids )
             {
-                foreach ( Guid guid in listOfGuidTypes )
+                var groupTypeId = GroupTypeCache.GetId( groupTypeGuid );
+                if ( !groupTypeId.HasValue )
                 {
-                    groupTypeIds.Add( GroupTypeCache.GetId( guid ) );
+                    continue;
+                }
+
+                groupTypeIds.Add( groupTypeId.Value );
+
+                if ( includeChildGroupTypes )
+                {
+                    var childGroupTypes = groupTypeService.GetCheckinAreaDescendants( groupTypeId.Value );
+                    if ( childGroupTypes.Any() )
+                    {
+                        groupTypeIds.AddRange( childGroupTypes.Select( gt => gt.Id ) );
+                    }
                 }
             }
 
-            var rockContext = serviceInstance.Context as RockContext;
+            // Get rid of any duplicates.
+            groupTypeIds = groupTypeIds.Distinct().ToList();
+
             var attendanceQry = new AttendanceService( rockContext ).Queryable().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
 
             if ( dateRange.Start.HasValue )

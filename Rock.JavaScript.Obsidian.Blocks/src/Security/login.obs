@@ -1,95 +1,109 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="isCompleted">
-        <NotificationBox alertType="warning" v-html="completedCaption">
-        </NotificationBox>
-    </div>
-    <div v-else class="login-block">
-        <fieldset>
-            <legend>Log In</legend>
-        </fieldset>
-
-        <template v-if="config.configurationErrors?.length">
-            <NotificationBox
-                             v-for="configError in config.configurationErrors"
-                             alertType="warning"
-                             v-text="configError" />
-        </template>
-
-        <div :class="isMobileForced ? 'mobile-layout' : 'row d-sm-flex'">
-            <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible" :class="isMobileForced ? 'login-methods' : 'login-methods col-12 col-xs-12 col-sm'">
-                <ExternalLogin
-                               v-if="isAnyExternalAuthProviderVisible"
-                               :modelValue="config.externalAuthProviderButtons || []"
-                               :caption="config.remoteAuthorizationPromptMessage ?? ''"
-                               :disabled="isAuthenticating || isNavigating"
-                               @login="onExternalLogin($event)" />
-
-                <LoginMethodPicker
-                                   v-if="areBothInternalAuthProvidersVisible"
-                                   v-model="internalLoginMethod"
-                                   :disabled="isAuthenticating || isNavigating"
-                                   :isCredentialLoginSupported="config.isInternalDatabaseLoginSupported"
-                                   :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported" />
-
+    <BreakpointObserver @breakpoint="value => breakpoint = value">
+        <div>
+            <div v-if="criticalErrorMessage">
+                <NotificationBox alertType="danger" v-html="criticalErrorMessage" />
             </div>
+            <div v-else-if="isCompleted">
+                <NotificationBox alertType="warning" v-html="completedCaption" />
+            </div>
+            <div v-else class="login-block">
+                <fieldset>
+                    <legend>Log In</legend>
 
-            <Divider
-                     v-if="areSecondaryAndPrimaryAuthVisible"
-                     :class="isMobileForced ? '' : 'd-flex d-sm-none col-xs-12 col-sm-1'"
-                     content="or" />
+                    <template v-if="config.configurationErrors?.length">
+                        <NotificationBox v-for="configError in config.configurationErrors"
+                                         alertType="warning"
+                                         v-text="configError" />
+                    </template>
 
-            <Divider
-                     v-if="!isMobileForced && areSecondaryAndPrimaryAuthVisible"
-                     class="d-none d-sm-flex col-sm flex-grow-0"
-                     content="or"
-                     :isVertical="true" />
+                    <div v-if="config.errorMessage" class="row">
+                        <NotificationBox alertType="danger"
+                                         class="col-sm-12"
+                                         v-html="config.errorMessage" />
+                    </div>
 
-            <div :class="isMobileForced ? 'login-entry' : areSecondaryAndPrimaryAuthVisible ? 'login-entry col-12 col-xs-12 col-sm' : 'login-entry col-sm-12'">
-                <CredentialLogin
-                                 v-if="config.isInternalDatabaseLoginSupported && loginMethodWrapper.isCredential"
-                                 :config="config"
-                                 :disabled="isAuthenticating || isNavigating"
-                                 :isMobileForced="isMobileForced"
-                                 @forgotAccount="onForgotAccount()"
-                                 @login="onCredentialLogin($event)"
-                                 @register="onRegister()" />
+                    <div :class="['row', isMobile ? 'mobile-layout' : 'd-flex']">
+                        <div v-if="isAnyExternalAuthProviderVisible || areBothInternalAuthProvidersVisible"
+                            :class="['login-methods', isMobileForced ? 'col-sm-12' : 'col-sm-5', 'remote-logins']">
+                            <ExternalLogin v-if="isAnyExternalAuthProviderVisible"
+                                           :modelValue="config.externalAuthProviderButtons || []"
+                                           :caption="config.remoteAuthorizationPromptMessage ?? ''"
+                                           :disabled="isAuthenticating || isNavigating"
+                                           @login="onExternalLogin($event)" />
 
-                <PasswordlessLogin
-                                   v-else-if="config.isPasswordlessLoginSupported && loginMethodWrapper.isPasswordless"
-                                   v-model="passwordlessLoginOptions"
-                                   :config="config"
-                                   :disabled="isAuthenticating || isNavigating"
-                                   :isMobileForced="isMobileForced"
-                                   @start="onPasswordlessLoginStart($event)"
-                                   @verify="onPasswordlessLoginVerify($event)" />
+                            <LoginMethodPicker v-if="areBothInternalAuthProvidersVisible"
+                                               :modelValue="loginMethod"
+                                               :disabled="isAuthenticating || isNavigating"
+                                               :isCredentialLoginSupported="config.isInternalDatabaseLoginSupported"
+                                               :isPasswordlessLoginSupported="config.isPasswordlessLoginSupported"
+                                               @update:modelValue="onLoginMethodPickerChanged" />
+                        </div>
 
-                <div v-if="errorMessage" class="mt-3">
-                    <NotificationBox alertType="warning" v-html="errorMessage">
-                    </NotificationBox>
-                </div>
+                        <Divider v-if="areSecondaryAndPrimaryAuthVisible"
+                                 :class="isMobileForced ? 'col-sm-12' : 'col-sm-1'"
+                                 content="or"
+                                 :isVertical="!isMobile" />
+
+                        <div :class="['login-entry', isMobileForced || (!isAnyExternalAuthProviderVisible && !areBothInternalAuthProvidersVisible) ? 'col-sm-12' : 'col-sm-6']">
+                            <div v-if="mfaMessage" v-html="mfaMessage"></div>
+
+                            <CredentialLogin v-if="loginMethod === LoginMethod.InternalDatabase
+                                                   && ((config.isInternalDatabaseLoginSupported && !mfa?.credentialLogin) || mfa?.credentialLogin?.isError === false)"
+                                            :disabled="isAuthenticating || isNavigating"
+                                            :isMobileForced="isMobileForced"
+                                            :isNewAccountHidden="currentMfaFactor === LoginMethod.InternalDatabase || config.hideNewAccountOption"
+                                            :isRememberMeHidden="currentMfaFactor === LoginMethod.InternalDatabase"
+                                            :newAccountButtonText="config.newAccountButtonText"
+                                            :promptMessage="config.promptMessage"
+                                            :usernameFieldLabel="config.usernameFieldLabel"
+                                            @forgotAccount="onForgotAccount()"
+                                            @login="onCredentialLogin($event)"
+                                            @register="onRegister()" />
+
+                            <PasswordlessLogin v-else-if="loginMethod !== LoginMethod.InternalDatabase
+                                                          && ((config.isPasswordlessLoginSupported && !mfa?.passwordless) || mfa?.passwordless?.isError === false)"
+                                            v-model="passwordlessLoginOptions"
+                                            :config="config"
+                                            :disabled="isAuthenticating || isNavigating"
+                                            :isMobileForced="isMobileForced"
+                                            @start="onPasswordlessLoginStart($event)"
+                                            @verify="onPasswordlessLoginVerify($event)" />
+
+                            <NotificationBox v-if="errorMessage"
+                                             alertType="warning"
+                                             class="block-message margin-t-md"
+                                             v-html="errorMessage" />
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div v-if="config.contentText" class="mt-3" v-html="config.contentText"></div>
             </div>
         </div>
-
-        <div v-if="config.contentText" class="mt-3" v-html="config.contentText"></div>
-    </div>
+    </BreakpointObserver>
 </template>
 
 <script setup lang="ts">
     import { computed, onMounted, ref } from "vue";
+    import BreakpointObserver from "./breakpointObserver.partial.obs";
     import CredentialLogin from "./Login/credentialLogin.partial.obs";
-    import Divider from "./divider.obs";
+    import Divider from "./Login/divider.partial.obs";
     import ExternalLogin from "./Login/externalLogin.partial.obs";
     import LoginMethodPicker from "./Login/loginMethodPicker.partial.obs";
     import PasswordlessLogin from "./Login/passwordlessLogin.partial.obs";
+    import { Breakpoint } from "./types.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { LoginMethod } from "@Obsidian/Enums/Blocks/Security/Login/loginMethod";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
+    import { CredentialLoginMfaBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginMfaBag";
     import { CredentialLoginRequestBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginRequestBag";
     import { CredentialLoginResponseBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginResponseBag";
     import { ExternalAuthenticationButtonBag } from "@Obsidian/ViewModels/Blocks/Security/Login/externalAuthenticationButtonBag";
     import { LoginInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/Login/loginInitializationBox";
+    import { PasswordlessLoginMfaBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginMfaBag";
     import { PasswordlessLoginOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginOptionsBag";
     import { PasswordlessLoginStartRequestBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginStartRequestBag";
     import { PasswordlessLoginStartResponseBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginStartResponseBag";
@@ -102,13 +116,26 @@
     const config = useConfigurationValues<LoginInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
 
+    // #region Types
+
+    type Mfa = {
+        passwordless?: Omit<PasswordlessLoginMfaBag, "ticket"> | null | undefined;
+        credentialLogin?: Omit<CredentialLoginMfaBag, "ticket"> | null | undefined;
+        ticket: string | null;
+        is2FANotSupportedForAuthenticationFactor?: boolean | undefined;
+    };
+
+    // #endregion
+
     // #region Values
 
+    const breakpoint = ref<Breakpoint>("unknown");
     const isMobileForced = !!document.getElementById("splash");
 
     const isAuthenticating = ref(config.shouldRedirect);
     const completedCaption = ref<string | null>(null);
     const errorMessage = ref<string | null>(config.errorMessage || null);
+    const criticalErrorMessage = ref<string | null>(null);
     const isNavigating = ref(false);
 
     const passwordlessLoginOptions = ref<PasswordlessLoginOptionsBag>({
@@ -121,6 +148,13 @@
     });
 
     const isCompleted = ref<boolean>(false);
+
+    const mfa = ref<Mfa | null | undefined>();
+    const twoFactorEmailPhoneNotAvailableMessage = ref<string>(config.twoFactorEmailPhoneNotAvailableMessage ?? "");
+    const twoFactorEmailPhoneRequiredMessage = ref<string>(config.twoFactorEmailPhoneRequiredMessage ?? "");
+    const twoFactorLoginNotAvailableMessage = ref<string>(config.twoFactorLoginNotAvailableMessage ?? "");
+    const twoFactorLoginRequiredMessage = ref<string>(config.twoFactorLoginRequiredMessage ?? "");
+    const twoFactorNotSupportedByAuthenticationMethodMessage = ref<string>(config.twoFactorNotSupportedByAuthenticationMethodMessage ?? "");
 
     // #endregion
 
@@ -139,19 +173,53 @@
         return (isAnyExternalAuthProviderVisible.value && isAnyInternalAuthProviderVisible) || areBothInternalAuthProvidersVisible.value;
     });
 
-    const loginMethod = ref(getInitialLoginMethod());
-    const internalLoginMethod = computed<LoginMethod>({
-        get() {
-            return passwordlessLoginOptions.value.isAutomaticVerificationRequired ? LoginMethod.Passwordless : loginMethod.value;
-        },
-        set(newValue) {
-            loginMethod.value = newValue;
+    const loginMethod = ref<LoginMethod | undefined>();
+
+    const isMobile = computed<boolean>(() => isMobileForced || breakpoint.value === "xs");
+
+    const mfaMessage = computed<string | null>(() => {
+        if (!mfa.value) {
+            return null;
+        }
+        else if (mfa.value.passwordless && !mfa.value.passwordless.isError) {
+            return twoFactorEmailPhoneRequiredMessage.value;
+        }
+        else if (mfa.value.passwordless?.isEmailAndMobilePhoneMissing) {
+            return twoFactorEmailPhoneNotAvailableMessage.value;
+        }
+        else if (mfa.value.credentialLogin && !mfa.value.credentialLogin.isError) {
+            return twoFactorLoginRequiredMessage.value;
+        }
+        else if (mfa.value.credentialLogin?.isUsernameAndPasswordMissing) {
+            return twoFactorLoginNotAvailableMessage.value;
+        }
+        else if (mfa.value.is2FANotSupportedForAuthenticationFactor) {
+            return twoFactorNotSupportedByAuthenticationMethodMessage.value;
+        }
+        else {
+            return null;
         }
     });
-    const loginMethodWrapper = computed(() => ({
-        isCredential: internalLoginMethod.value === LoginMethod.InternalDatabase,
-        isPasswordless: internalLoginMethod.value === LoginMethod.Passwordless
-    }));
+
+    const currentMfaFactor = computed<LoginMethod | null>(() => {
+        const mfaDetails = mfa.value;
+
+        if (!mfaDetails) {
+            return null;
+        }
+
+        if (mfaDetails.credentialLogin) {
+            return LoginMethod.InternalDatabase;
+        }
+
+        if (mfaDetails.passwordless) {
+            return LoginMethod.Passwordless;
+        }
+
+        // This would only occur if a new auth factor if block is not added here.
+        console.error("Unknown MFA factor");
+        return null;
+    });
 
     // #endregion
 
@@ -165,24 +233,52 @@
         isAuthenticating.value = true;
 
         try {
+            // Attach the MFA state to the request.
+            bag.mfaTicket = mfa.value?.ticket;
             const response = await invokeBlockAction<CredentialLoginResponseBag>("CredentialLogin", { bag });
+            const responseBag = response?.data;
 
-            if (!response?.isSuccess || !response.data) {
-                showError(response?.errorMessage || "Something went wrong. Please try again.");
+            if (!response?.isSuccess || !responseBag) {
+                uiState.error({
+                    errorMessage: response?.errorMessage || "Something went wrong. Please try again."
+                });
                 return;
             }
 
-            if (response.data.isAuthenticated) {
-                await navigate(response.data.redirectUrl || "/");
+            if (responseBag.isLockedOut) {
+                uiState.criticalError({
+                    errorMessage: responseBag.errorMessage ?? null
+                });
                 return;
             }
 
-            if (response.data.isConfirmationRequired) {
-                showCompleted(response.data.errorMessage || response.errorMessage);
+            if (responseBag.isAuthenticated) {
+                uiState.valid();
+                await navigate(responseBag.redirectUrl || "/");
                 return;
             }
 
-            showError(response.data.errorMessage || "Authentication failed. Please try again.");
+            if (responseBag.isConfirmationRequired) {
+                uiState.confirmationRequired({
+                    caption: responseBag.errorMessage || response.errorMessage
+                });
+                return;
+            }
+
+            if (responseBag.mfa) {
+                uiState.initMfaFactor({
+                    mfa: {
+                        passwordless: responseBag.mfa,
+                        ticket: responseBag.mfa.ticket ?? null
+                    },
+                    loginMethod: LoginMethod.Passwordless,
+                });
+                return;
+            }
+
+            uiState.error({
+                errorMessage: responseBag.errorMessage || "Authentication failed. Please try again."
+            });
         }
         finally {
             // Reset isAuthenticating in the event there is an error so the user can resubmit.
@@ -196,7 +292,8 @@
     async function onExternalLogin(externalLogin: ExternalAuthenticationButtonBag): Promise<void> {
         isAuthenticating.value = true;
         const bag: RemoteLoginStartRequestBag = {
-            authenticationType: externalLogin.authenticationType
+            authenticationType: externalLogin.authenticationType,
+            route: location.pathname
         };
 
         try {
@@ -207,7 +304,9 @@
                 return;
             }
 
-            showError(response?.errorMessage);
+            uiState.error({
+                errorMessage: response?.errorMessage
+            });
             return;
         }
         finally {
@@ -223,18 +322,33 @@
     }
 
     /**
+     * Event handler for the login method picker being changed.
+     */
+    function onLoginMethodPickerChanged(value: LoginMethod | undefined): void {
+        if (typeof value !== "undefined") {
+            uiState.init({
+                loginMethod: value
+            });
+        }
+    }
+
+    /**
      * Event handler for the Passwordless Login being started.
      */
     async function onPasswordlessLoginStart(bag: PasswordlessLoginStartRequestBag): Promise<void> {
         isAuthenticating.value = true;
 
-        clearError();
+        uiState.valid();
 
         try {
+            // Attach the MFA state to the request.
+            bag.mfaTicket = mfa.value?.ticket;
             const response = await invokeBlockAction<PasswordlessLoginStartResponseBag>("PasswordlessLoginStart", { bag });
 
             if (!response?.isSuccess || !response.data) {
-                showError(response?.errorMessage || "Something went wrong. Please try again.");
+                uiState.error({
+                    errorMessage: response?.errorMessage || "Something went wrong. Please try again."
+                });
                 return;
             }
 
@@ -244,6 +358,7 @@
                     state: response.data.state || "",
                     step: PasswordlessLoginStep.Verify
                 };
+                loginMethod.value = LoginMethod.Passwordless;
                 return;
             }
 
@@ -251,7 +366,11 @@
                 ...passwordlessLoginOptions.value,
                 step: PasswordlessLoginStep.Start
             };
-            showError(response?.data?.errorMessage || response?.errorMessage || "An unknown error occurred. Please submit email or phone number again.");
+            loginMethod.value = LoginMethod.Passwordless;
+
+            uiState.error({
+                errorMessage: response?.data?.errorMessage || response?.errorMessage || "An unknown error occurred. Please submit email or phone number again."
+            });
             return;
         }
         finally {
@@ -265,24 +384,40 @@
      */
     async function onPasswordlessLoginVerify(bag: PasswordlessLoginVerifyRequestBag): Promise<void> {
         isAuthenticating.value = true;
-        clearError();
+        uiState.valid();
 
         try {
+            // Attach the MFA state to the request.
+            bag.mfaTicket = mfa.value?.ticket;
             var response = await invokeBlockAction<PasswordlessLoginVerifyResponseBag>("PasswordlessLoginVerify", { bag });
 
             if (!response || !response.isSuccess || !response.data) {
-                showError("Something went wrong. Please try again.");
+                uiState.error({
+                    errorMessage: "Something went wrong. Please try again.",
+                });
                 return;
             }
 
             if (response.data.isAuthenticated) {
+                uiState.valid();
                 await navigate(config.redirectUrl || "/");
+                return;
+            }
+
+            if (response.data.mfa) {
+                uiState.initMfaFactor({
+                    mfa: {
+                        credentialLogin: response.data.mfa,
+                        ticket: response.data.mfa.ticket ?? null,
+                    },
+                    loginMethod: LoginMethod.InternalDatabase,
+                });
                 return;
             }
 
             if (response.data.isRegistrationRequired) {
                 if (!response.data.registrationUrl) {
-                    showError("Redirecting to default registration page");
+                    uiState.error({ errorMessage: "Redirecting to default registration page" });
                 }
                 await navigate(response.data.registrationUrl || "/NewAccount");
                 return;
@@ -294,10 +429,13 @@
                     isPersonSelectionRequired: true,
                     matchingPeople: response.data.matchingPeople || []
                 };
+                loginMethod.value = LoginMethod.Passwordless;
                 return;
             }
 
-            showError(response.data.errorMessage ?? "Authentication failed. Please try again.");
+            uiState.error({
+                errorMessage: response.data.errorMessage ?? "Authentication failed. Please try again."
+            });
         }
         finally {
             // Reset isAuthenticating in the event there is an error so the user can resubmit.
@@ -317,17 +455,16 @@
     //#region Functions
 
     /**
-     * Clears the error message.
-     */
-    function clearError(): void {
-        errorMessage.value = null;
-    }
-
-    /**
      * Gets the initial login method to display.
      */
     function getInitialLoginMethod(): LoginMethod {
         const configuredDefaultLoginMethod = config.defaultLoginMethod;
+
+        // If the block loaded as a response to a passwordless verification,
+        // then the initial login method should be passwordless.
+        if (config.passwordlessAutoVerifyOptions) {
+            return LoginMethod.Passwordless;
+        }
 
         switch (configuredDefaultLoginMethod) {
             case LoginMethod.InternalDatabase: {
@@ -382,26 +519,104 @@
         isCompleted.value = true;
     }
 
-    /**
-     * Displays an error message.
-     * If no error message is provided, then a generic error is displayed.
-     *
-     * @param error The optional error message.
-     */
-    function showError(error?: string | null | undefined): void {
-        errorMessage.value = error || "An unknown error occurred";
+    function getErrorOrDefault(error?: string | null | undefined): string {
+        return error || "An unknown error occurred";
     }
+
+    const uiState = {
+        init(state: { loginMethod: LoginMethod }): void {
+            // Clear the error, switch the login method, and set the MFA state.
+            errorMessage.value = null;
+            loginMethod.value = state.loginMethod;
+            mfa.value = null;
+        },
+
+        initMfaFactor(state: { loginMethod: LoginMethod, mfa: Mfa }): void {
+            // Clear the error, switch the login method, and set the MFA state.
+            errorMessage.value = null;
+            loginMethod.value = state.loginMethod;
+            mfa.value = state.mfa;
+        },
+
+        criticalError(state: { errorMessage: string | null }): void {
+            // Set the critical error message and leave everything else untouched.
+            criticalErrorMessage.value = state.errorMessage;
+        },
+
+        error(state: { errorMessage: string | null }): void {
+            // Set the error but do not modify the login method or MFA state.
+            errorMessage.value = getErrorOrDefault(state.errorMessage);
+        },
+
+        valid(): void {
+            // Clear the error but do not modify the login method or MFA state.
+            errorMessage.value = null;
+        },
+
+        confirmationRequired(state: { caption: string | null }): void {
+            // Clear the error and MFA state even though
+            // this will transition to the completed state
+            // where those fields are hidden.
+            errorMessage.value = null;
+            mfa.value = null;
+            showCompleted(state.caption);
+        },
+
+        passwordlessCodeSent(): void {
+            // Clear the error but do not modify the MFA state.
+            errorMessage.value = null;
+        },
+
+        passwordlessResendCode(): void {
+            // Clear the error but do not modify the MFA state.
+            errorMessage.value = null;
+        },
+
+        unsupportedMfaFactor(): void {
+            errorMessage.value = null;
+            mfa.value = {
+                is2FANotSupportedForAuthenticationFactor: true,
+                ticket: null,
+                credentialLogin: null,
+                passwordless: null
+            };
+        }
+    };
 
     //#endregion
 
     onMounted(() => {
         // Redirect since already authenticated.
-        if (config.shouldRedirect && config.redirectUrl) {
-            navigate(config.redirectUrl);
+        if (config.shouldRedirect) {
+            // If the redirect URL is not set, then redirect to the default route.
+            navigate(config.redirectUrl ? config.redirectUrl : "/");
+            return;
+        }
+
+        if (mfaParameter) {
+            uiState.initMfaFactor({
+                mfa: {
+                    credentialLogin: null,
+                    passwordless: {
+                        isEmailAndMobilePhoneMissing: false,
+                        isError: false
+                    },
+                    ticket: mfaParameter,
+                },
+                loginMethod: LoginMethod.Passwordless
+            });
+        }
+        else if (config.is2FANotSupportedForAuthenticationFactor) {
+            uiState.unsupportedMfaFactor();
+        }
+        else {
+            uiState.init({
+                loginMethod: getInitialLoginMethod()
+            });
         }
     });
 
-    removeCurrentUrlQueryParams("State", "Code", "IsPasswordless");
+    const [ mfaParameter, ..._ ] = removeCurrentUrlQueryParams("Mfa", "State", "Code", "IsPasswordless", "state", "code", "scope", "authuser", "prompt");
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

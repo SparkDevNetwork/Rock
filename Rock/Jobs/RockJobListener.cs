@@ -15,16 +15,21 @@
 // </copyright>
 //
 using System;
+using System.Diagnostics;
 using System.Linq;
-using Quartz;
 
 using DotLiquid;
+
+using Microsoft.Extensions.Logging;
+
+using Quartz;
 
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Observability;
 
 namespace Rock.Jobs
 {
@@ -34,6 +39,11 @@ namespace Rock.Jobs
     public class RockJobListener : IJobListener
     {
         /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
         /// Get the name of the <see cref="IJobListener"/>.
         /// </summary>
         public string Name
@@ -41,6 +51,23 @@ namespace Rock.Jobs
             get
             {
                 return "RockJobListener";
+            }
+        }
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
             }
         }
 
@@ -68,7 +95,7 @@ namespace Rock.Jobs
             // get job type id
             int jobId = context.JobDetail.Description.AsInteger();
 
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job is about to be executed.", jobId, context.JobDetail?.Key );
+            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job is about to be executed.", jobId, context.JobDetail?.Key );
 
             // load job
             var rockContext = new RockContext();
@@ -109,6 +136,16 @@ namespace Rock.Jobs
 #pragma warning disable CS0612 // Type or member is obsolete
             context.JobDetail.JobDataMap.LoadFromJobAttributeValues( job );
 #pragma warning restore CS0612 // Type or member is obsolete
+
+            // Add job observability if this is a legacy job.
+            if ( !( context.JobInstance is RockJob ) )
+            {
+                var activity = ObservabilityHelper.StartActivity( $"JOB: {job.Class.Replace( "Rock.Jobs.", "" )} - {job.Name}" );
+                activity?.AddTag( "rock-otel-type", "rock-job" );
+                activity?.AddTag( "rock-job-id", job.Id );
+                activity?.AddTag( "rock-job-type", job.Class.Replace( "Rock.Jobs.", "" ) );
+                activity?.AddTag( "rock-job-description", job.Description );
+            }
         }
 
         /// <summary>
@@ -122,7 +159,7 @@ namespace Rock.Jobs
         /// <seealso cref="M:Quartz.IJobListener.JobToBeExecuted(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
         public void JobExecutionVetoed( IJobExecutionContext context )
         {
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was vetoed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was vetoed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
         }
 
         /// <summary>
@@ -142,6 +179,15 @@ namespace Rock.Jobs
 
             var rockJobInstance = context.JobInstance as RockJob;
 
+            // Complete the observability if this is a legacy job.
+            if ( !( context.JobInstance is RockJob ) )
+            {
+                Activity.Current?.AddTag( "rock-job-duration", context.JobRunTime.TotalSeconds );
+                Activity.Current?.AddTag( "rock-job-message", rockJobInstance?.Result ?? context.Result as string );
+                Activity.Current?.AddTag( "rock-job-result", jobException == null ? "Success" : "Failed" );
+                Activity.Current?.Dispose();
+            }
+
             // load job
             var rockContext = new RockContext();
             var jobService = new ServiceJobService( rockContext );
@@ -150,7 +196,7 @@ namespace Rock.Jobs
             if ( job == null )
             {
                 // if job was deleted or wasn't found, just exit
-                RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was not found.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was not found.", jobId, context.JobDetail?.Key );
                 return;
             }
 
@@ -181,7 +227,7 @@ namespace Rock.Jobs
                     sendMessage = true;
                 }
 
-                RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job was executed.", jobId, context.JobDetail?.Key );
             }
             else
             {
@@ -220,7 +266,7 @@ namespace Rock.Jobs
                     sendMessage = true;
                 }
 
-                RockLogger.Log.Debug( RockLogDomains.Jobs, exceptionToLog, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed with an exception.", jobId, context.JobDetail?.Key );
+                Logger.LogDebug( exceptionToLog, "Job ID: {jobId}, Job Key: {jobKey}, Job was executed with an exception.", jobId, context.JobDetail?.Key );
             }
 
             rockContext.SaveChanges();
@@ -239,7 +285,7 @@ namespace Rock.Jobs
 
         private static void SendNotificationMessage( JobExecutionException jobException, ServiceJob job )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "Job", job );
             try
             {

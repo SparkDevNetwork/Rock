@@ -62,34 +62,6 @@ namespace Rock.Model
         private int? _givingGroupId;
 
         /// <summary>
-        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
-        /// </summary>
-        /// <value>
-        /// The primary alias identifier.
-        /// </value>
-        [DataMember]
-        [NotMapped]
-        [RockClientInclude( "The Primary PersonAliasId of the Person" )]
-        public virtual int? PrimaryAliasId
-        {
-            get
-            {
-                var primaryAlias = PrimaryAlias;
-                if ( primaryAlias != null )
-                {
-                    return primaryAlias.Id;
-                }
-
-                return null;
-            }
-
-            private set
-            {
-                // intentionally blank
-            }
-        }
-
-        /// <summary>
         /// Gets the Full Name of the Person using the NickName LastName Suffix format.
         /// </summary>
         /// <value>
@@ -1817,9 +1789,13 @@ namespace Rock.Model
                 return AgeBracket.Unknown;
             }
 
-            if ( age >= 0 && age <= 12 )
+            if ( age >= 0 && age <= 5 )
             {
-                return Enums.Crm.AgeBracket.ZeroToTwelve;
+                return Enums.Crm.AgeBracket.ZeroToFive;
+            }
+            else if ( age >= 6 && age <= 12 )
+            {
+                return Enums.Crm.AgeBracket.SixToTwelve;
             }
             else if ( age >= 13 && age <= 17 )
             {

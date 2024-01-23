@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Finder" )]
     [Category( "Groups" )]
     [Description( "Block for people to find a group that matches their search parameters." )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
     // Linked Pages
@@ -1721,7 +1722,7 @@ namespace RockWeb.Blocks.Groups
                         IsActive = g.IsActive,
                         GroupRole = string.Empty,
                         DateAdded = DateTime.MinValue,
-                        Schedule = g.Schedule,
+                        Schedule = g.Schedule?.ToFriendlyScheduleText( true ),
                         MemberCount = qryMembers.Count(),
                         AverageAge = Math.Round( qryMembers.Select( m => new { m.Person.BirthDate, m.Person.DeceasedDate } ).ToList().Select( a => Person.GetAge( a.BirthDate, a.DeceasedDate ) ).Average() ?? 0.0D ),
                         Campus = g.Campus != null ? g.Campus.Name : string.Empty,

@@ -1,0 +1,134 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <nav class="progress-tracker d-none d-md-flex" style="margin: 20px auto; max-width: 1200px; width:100%">
+        <div :id="progressTrackerContainerElementId" class="progress-tracker-container">
+            <ul :id="progressTrackerElementId" class="progress-steps">
+                <template v-for="(item, index) in items" :key="item.key">
+                    <li v-if="isCollapsed(index)" class="progress-step progress-tracker-more">
+                        <div class="progress-step-link">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </div>
+                        <div class="progress-tracker-arrow">
+                            <svg viewBox="0 0 22 80" fill="none" preserveAspectRatio="none">
+                                <path d="M0 -2L20 40L0 82" vector-effect="non-scaling-stroke" stroke="currentcolor" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                    </li>
+                    <ProgressTrackerSegment
+                                            v-else
+                                            :item="item"
+                                            :isPast="index < currentIndex"
+                                            :isPresent="index === currentIndex"
+                                            :isFuture="index > currentIndex"
+                                            :isLast="index === lastIndex" />
+                </template>
+            </ul>
+        </div>
+        <slot name="aside" />
+    </nav>
+</template>
+
+<script setup lang="ts">
+    import ProgressTrackerSegment from "./progressTrackerSegment.obs";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+
+
+    const props = defineProps({
+        currentIndex: {
+            type: Number as PropType<number>,
+            required: true
+        },
+        items: {
+            type: Array as PropType<ProgressTrackerItem[]>,
+            required: true
+        }
+    });
+
+    const guid = newGuid();
+    /** The element id of the progress tracker (child) */
+    const progressTrackerElementId = `progress-tracker-${guid}`;
+    /** The element id of the progress tracker container (parent) */
+    const progressTrackerContainerElementId = `progress-tracker-container-${guid}`;
+    const collapsedIndexes = ref<number[]>([]);
+
+    /** Is the given index collapsed? */
+    function isCollapsed(index: number): boolean {
+        return collapsedIndexes.value.indexOf(index) !== -1;
+    }
+
+    /** A list of indexes that should not be collapsed. These are not guaranteed to be valid or unique
+     *  indexes, but rather a collection to check existance before collapsing a particular index. */
+    const doNotCollapseIndexes = computed((): number[] => {
+        return [0, props.currentIndex - 1, props.currentIndex, props.currentIndex + 1, lastIndex.value];
+
+    });
+
+    /** The last index of the items (prop) */
+    const lastIndex = computed((): number => {
+        return props.items.length - 1;
+    });
+
+    /** Expand all items and then collapse some to fit if needed */
+    function expandAndCollapseItemsBecauseOfWidth(): void {
+        collapsedIndexes.value = [];
+        nextTick(() => collapseItemsBecauseOfWidth());
+    }
+
+    /** Collapse some items if needed to make fit */
+    function collapseItemsBecauseOfWidth(): void {
+        // Using the DOM query getElementById because Vue refs were not conveying the changing width
+        const progressTracker = document.getElementById(progressTrackerElementId);
+        const progressTrackerContainer = document.getElementById(progressTrackerContainerElementId);
+
+        const containerWidth = progressTrackerContainer?.clientWidth;
+        const childWidth = progressTracker?.scrollWidth;
+
+        if (!containerWidth || !childWidth || childWidth <= containerWidth) {
+            return;
+        }
+
+        // Collapse the furthest away index that can be collapsed
+        const midPoint = lastIndex.value / 2;
+
+        if (props.currentIndex > midPoint) {
+            for (let i = 0; i <= lastIndex.value; i++) {
+                if (doNotCollapseIndexes.value.indexOf(i) !== -1) {
+                    continue;
+                }
+
+                if (isCollapsed(i)) {
+                    continue;
+                }
+
+                // After collapsing the first index that can be, then wait for the DOM to update (nexttick) and
+                // collapse more if needed
+                collapsedIndexes.value.push(i);
+                nextTick(() => collapseItemsBecauseOfWidth());
+                return;
+            }
+        }
+        else {
+            for (let i = lastIndex.value; i >= 0; i--) {
+                if (doNotCollapseIndexes.value.indexOf(i) !== -1) {
+                    continue;
+                }
+
+                if (isCollapsed(i)) {
+                    continue;
+                }
+
+                // After collapsing the first index that can be, then wait for the DOM to update (nexttick) and
+                // collapse more if needed
+                collapsedIndexes.value.push(i);
+                nextTick(() => collapseItemsBecauseOfWidth());
+                return;
+            }
+        }
+    }
+
+    watch(() => props.currentIndex, () => {
+        expandAndCollapseItemsBecauseOfWidth();
+    }, { immediate: true });
+</script>

@@ -171,21 +171,21 @@
             styles["--experience-visualizer-primary-color"] = style.visualizer.primaryColor;
         }
         else {
-            styles["--experience-visualizer-primary-color"] = "var(--brand-primary)";
+            styles["--experience-visualizer-primary-color"] = "var(--color-primary)";
         }
 
         if (style?.visualizer?.secondaryColor) {
             styles["--experience-visualizer-secondary-color"] = style.visualizer.secondaryColor;
         }
         else {
-            styles["--experience-visualizer-secondary-color"] = "var(--brand-success)";
+            styles["--experience-visualizer-secondary-color"] = "var(--color-success)";
         }
 
         if (style?.visualizer?.accentColor) {
             styles["--experience-visualizer-accent-color"] = style.visualizer.accentColor;
         }
         else {
-            styles["--experience-visualizer-accent-color"] = "var(--brand-info)";
+            styles["--experience-visualizer-accent-color"] = "var(--color-info)";
         }
 
         return styles;

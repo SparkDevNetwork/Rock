@@ -37,12 +37,13 @@ namespace Rock.Blocks.Utility
     /// <summary>
     /// Displays RealTime events from Rock with custom formatting options.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "RealTime Visualizer" )]
     [Category( "Utility" )]
     [Description( "Displays RealTime events from Rock with custom formatting options." )]
     [IconCssClass( "fa fa-chart-bar" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -86,7 +87,7 @@ namespace Rock.Blocks.Utility
 
     [Rock.SystemGuid.EntityTypeGuid( "77f4ea4a-ce87-4309-a7a0-2a1a75ab61cd" )]
     [Rock.SystemGuid.BlockTypeGuid( "ce185083-df13-48f9-8c97-83eda1ca65c2" )]
-    public class RealTimeVisualizer : RockObsidianDetailBlockType, IHasCustomActions
+    public class RealTimeVisualizer : RockDetailBlockType, IHasCustomActions
     {
         #region Keys
 
@@ -103,8 +104,6 @@ namespace Rock.Blocks.Utility
         #endregion
 
         #region Properties
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
 
         /// <summary>
         /// Gets the lava template to use when displaying messages.

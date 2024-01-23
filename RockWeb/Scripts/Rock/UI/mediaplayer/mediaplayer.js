@@ -80,7 +80,10 @@ var Rock;
                     volume: this.options.volume,
                     muted: this.options.muted,
                     clickToPlay: this.options.clickToPlay,
-                    hideControls: this.options.hideControls
+                    hideControls: this.options.hideControls,
+                    fullscreen: {
+                        iosNative: true
+                    }
                 };
                 if (!this.isHls(this.options.mediaUrl)) {
                     this.initializePlayer(mediaElement, plyrOptions);
@@ -123,6 +126,15 @@ var Rock;
             }
             initializePlayer(mediaElement, plyrOptions) {
                 this.player = new Plyr(mediaElement, plyrOptions);
+                if (this.isYouTubeEmbed(this.options.mediaUrl)) {
+                    let listenrsready = false;
+                    this.player.on("statechange", () => {
+                        if (!listenrsready) {
+                            listenrsready = true;
+                            this.player.listeners.media();
+                        }
+                    });
+                }
                 this.writeDebugMessage(`Setting media URL to ${this.options.mediaUrl}`);
                 let sourceInfo = {
                     type: this.options.type === "audio" ? "audio" : "video",
@@ -294,11 +306,11 @@ var Rock;
             wireEvents() {
                 const self = this;
                 const pageHideHandler = function () {
-                    self.writeInteraction(false);
+                    self.writeInteraction(true);
                 };
                 const visibilityChangeHandler = function () {
                     if (document.visibilityState === "hidden") {
-                        self.writeInteraction(false);
+                        self.writeInteraction(true);
                     }
                 };
                 this.player.on("play", () => {
@@ -317,6 +329,10 @@ var Rock;
                     window.addEventListener("pagehide", pageHideHandler);
                     window.addEventListener("visibilitychange", visibilityChangeHandler);
                     this.writeDebugMessage("Event 'play' called.");
+                    if (!this.options.interactionGuid) {
+                        this.watchBitsDirty = true;
+                        this.writeInteraction(false);
+                    }
                 });
                 this.player.on("pause", () => {
                     if (this.timerId) {
@@ -326,7 +342,7 @@ var Rock;
                     window.removeEventListener("pagehide", pageHideHandler);
                     window.removeEventListener("visibilitychange", visibilityChangeHandler);
                     this.emit("pause");
-                    this.writeInteraction(true);
+                    this.writeInteraction(false);
                     this.writeDebugMessage("Event 'pause' called.");
                 });
                 this.player.on("ended", () => {
@@ -335,6 +351,14 @@ var Rock;
                 });
                 this.player.on("ready", () => {
                     this.writeDebugMessage(`Event 'ready' called: ${this.player.duration}`);
+                    if (!this.player.download) {
+                        const canDownload = !this.isYouTubeEmbed(this.options.mediaUrl)
+                            && !this.isVimeoEmbed(this.options.mediaUrl)
+                            && !this.isHls(this.options.mediaUrl);
+                        if (canDownload) {
+                            this.player.download = this.options.mediaUrl;
+                        }
+                    }
                     if (this.player.duration > 0) {
                         this.prepareForPlay();
                     }
@@ -349,7 +373,7 @@ var Rock;
                     }
                 });
             }
-            writeInteraction(async) {
+            writeInteraction(beacon) {
                 if (this.options.writeInteraction === false || this.options.mediaElementGuid === undefined || this.options.mediaElementGuid.length === 0) {
                     return;
                 }
@@ -367,9 +391,14 @@ var Rock;
                     OriginalUrl: window.location.href,
                     PageId: Rock.settings.get("pageId")
                 };
+                if (typeof navigator.sendBeacon !== "undefined" && beacon && this.options.interactionGuid) {
+                    var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
+                    navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
+                    return;
+                }
                 const xmlRequest = new XMLHttpRequest();
                 const self = this;
-                xmlRequest.open("POST", "/api/MediaElements/WatchInteraction", async);
+                xmlRequest.open("POST", "/api/MediaElements/WatchInteraction");
                 xmlRequest.setRequestHeader("Content-Type", "application/json");
                 xmlRequest.onreadystatechange = function () {
                     if (xmlRequest.readyState === 4) {

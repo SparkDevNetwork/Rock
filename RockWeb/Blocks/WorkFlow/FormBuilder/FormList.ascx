@@ -1,5 +1,35 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FormList.ascx.cs" Inherits="RockWeb.Blocks.WorkFlow.FormBuilder.FormList" %>
 <style>
+    .block-instance.form-list .panel-body {
+        flex: 1 0 0;
+        overflow: hidden;
+    }
+    .block-instance.form-list .filter-options, .block-instance.form-list .form-category-display {
+        overflow-y: auto;
+    }
+    .block-instance.form-list .filter-options {
+        min-width: 320px;
+        padding: 0 !important;
+    }
+    .block-instance.form-list .filter-options .category-header {
+        padding: 18px 18px 12px;
+    }
+    @media (max-width: 1199px) {
+        .block-instance.form-list .filter-options {
+            border-right: 0;
+            border-bottom: 1px solid var(--panel-border);
+    }
+    }
+    .block-instance.form-list .form-actions {
+        margin-top: 12px;
+    }
+    .block-instance.form-list .btn-link-spaced {
+        padding: 0;
+        margin-right: 8px;
+    }
+    .block-instance.form-list .btn-link-spaced + .btn-link-spaced {
+        margin-left: 8px;
+    }
     .aspNetDisabled.btn-category-delete {
         pointer-events: auto;
     }

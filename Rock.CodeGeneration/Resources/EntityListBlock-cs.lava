@@ -39,6 +39,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     [Category( "{{ Domain }}" )]
     [Description( "Displays a list of {{ EntityName | SplitCase | Downcase | Pluralize }}." )]
     [IconCssClass( "fa fa-list" )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the {{ EntityName | SplitCase | Downcase }} details.",
@@ -47,7 +48,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
     [Rock.SystemGuid.EntityTypeGuid( "{{ '' | UniqueIdentifier }}" )]
     [Rock.SystemGuid.BlockTypeGuid( "{{ '' | UniqueIdentifier }}" )]
     [CustomizedGrid]
-    public class {{ EntityName }}List : RockObsidianEntityListBlockType<{{ EntityName }}>
+    public class {{ EntityName }}List : RockEntityListBlockType<{{ EntityName }}>
     {
         #region Keys
 
@@ -63,12 +64,6 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
         #endregion Keys
 
-        #region Properties
-
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -79,7 +74,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
             box.IsAddEnabled = GetIsAddEnabled();
             box.IsDeleteEnabled = {% if ShowDelete == true %}{% if UseEntitySecurity == true %}true{% else %}BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ){% endif %}{% else %}false{% endif %};
-            box.ExpectedRowCount = {% if ExpectedRowCount == null %}null{% else %}{{ ExpectedRowCount }}{% endif %}
+            box.ExpectedRowCount = {% if ExpectedRowCount == null %}null{% else %}{{ ExpectedRowCount }}{% endif %};
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();

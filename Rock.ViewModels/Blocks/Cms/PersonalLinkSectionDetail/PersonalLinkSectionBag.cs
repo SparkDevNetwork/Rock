@@ -35,5 +35,13 @@ namespace Rock.ViewModels.Blocks.Cms.PersonalLinkSectionDetail
         /// Gets or sets a flag indicating if this Link Section is shared.
         /// </summary>
         public bool IsShared { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current user can take administrative actions.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can administrate; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAdministrate { get; set; }
     }
 }

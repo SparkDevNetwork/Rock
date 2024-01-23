@@ -679,15 +679,6 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
-                if ( isSecurityRoleGroup )
-                {
-                    foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
-                    {
-                        authService.Delete( auth );
-                    }
-                }
-
                 // If group has a non-named schedule, delete the schedule record.
                 if ( group.ScheduleId.HasValue )
                 {
@@ -704,14 +695,16 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // NOTE: groupService.Delete will automatically Archive instead Delete if this Group has GroupHistory enabled, but since this block has UI logic for Archive vs Delete, we can do a direct Archive in btnArchive_Click
-                groupService.Delete( group );
+                if ( group.IsSecurityRoleOrSecurityGroupType() )
+                {
+                    GroupService.DeleteSecurityRoleGroup( group.Id );
+                }
+                else
+                {
+                    groupService.Delete( group );
+                }
 
                 rockContext.SaveChanges();
-
-                if ( isSecurityRoleGroup )
-                {
-                    Rock.Security.Authorization.Clear();
-                }
             }
 
             NavigateAfterDeleteOrArchive( parentGroupId );
@@ -1635,7 +1628,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     string lava = "{{ Group.Name | AddQuickReturn:'Groups', 20 }}";
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
                     mergeFields.Add( "Group", group );
                     lava.ResolveMergeFields( mergeFields );
                 }

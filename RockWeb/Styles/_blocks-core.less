@@ -66,6 +66,11 @@
   margin-top: 16px;
 }
 
+.section-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
 .rock-header {
   .title {
     margin: 0;
@@ -522,7 +527,8 @@
       line-height: 24px;
     }
 
-    .hidden + .checkbox {
+    .hidden + .checkbox,
+    .checkbox:first-child {
       margin-left: 0 !important;
     }
 
@@ -608,7 +614,7 @@
 .recurrence-pattern-monthly,
 .continue-until {
   .form-control-group {
-    display: block;
+    align-items: center;
     min-height: @input-height-base;
     margin-bottom: 3px;
   }
@@ -932,18 +938,6 @@
 .rock-fullname {
   display: none !important;
   visibility: hidden !important;
-}
-
-// rockslide Vue transition
-.rockslide-enter-active,
-.rockslide-leave-active {
-  transition: all .6s ease;
-}
-
-.rockslide-enter,
-.rockslide-leave-to {
-  opacity: 0;
-  transform: translateY(-100%);
 }
 
 // 4. Electronic Signatures

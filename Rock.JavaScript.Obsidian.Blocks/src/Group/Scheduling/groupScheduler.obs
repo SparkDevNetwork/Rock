@@ -32,7 +32,7 @@
                             <p>The invite status is shown by a border around the individual's avatar.</p>
                             <p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
                             <ul>
-                                <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
+                                <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
                                 <li><i class="fa fa-minus-circle"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
                             </ul>
                             <p>For both notification icon types, additional details can be viewed by hovering over the icon.</p>
@@ -184,6 +184,7 @@
 
             <SelectFilters v-model:isVisible="isSelectingFilters"
                            :filters="filters"
+                           :disallowGroupSelection="disallowGroupSelection"
                            @filtersApplied="onFiltersApplied" />
 
             <CloneSchedules v-model:isVisible="isSelectingCloneSettings"
@@ -234,13 +235,7 @@
                     </ul>
                 </div>
 
-                <p v-if="sendNowResponse?.anyCommunicationsToSend === false">
-                    Everybody has already been sent a confirmation. No additional confirmations sent.
-                </p>
-
-                <p v-else-if="sentConfirmationsMessage">
-                    {{ sentConfirmationsMessage }}
-                </p>
+                <div v-html="sendNowOutcomeMessage"></div>
 
             </ModalAlert>
         </Panel>
@@ -252,12 +247,18 @@
     import CloneSchedules from "./GroupScheduler/cloneSchedules.partial.obs";
     import OccurrenceDate from "./GroupScheduler/occurrenceDate.partial.obs";
     import SelectFilters from "./GroupScheduler/selectFilters.partial.obs";
-    import { NavigationUrlKey, ReloadAllOccurrences, ReloadOccurrencesContainingResource } from "./GroupScheduler/types.partial";
-    import Loading from "@Obsidian/Controls/loading";
+    import {
+        NavigationUrlKey,
+        ReloadAllOccurrences,
+        ReloadOccurrencesContainingResource,
+        ReportAssignedResources,
+        UnassignedResourceCounts
+    } from "./GroupScheduler/types.partial";
+    import Loading from "@Obsidian/Controls/loading.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Panel from "@Obsidian/Controls/panel";
-    import RockButton from "@Obsidian/Controls/rockButton";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { DragScroll as vDragScroll } from "@Obsidian/Directives/dragScroll";
@@ -265,13 +266,15 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { GroupSchedulerAppliedFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerAppliedFiltersBag";
     import { GroupSchedulerCloneSchedulesResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSchedulesResponseBag";
     import { GroupSchedulerCloneSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSettingsBag";
     import { GroupSchedulerFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerFiltersBag";
-    import { GroupSchedulerInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/GroupSchedulerInitializationBox";
+    import { GroupSchedulerInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerInitializationBox";
     import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
     import { GroupSchedulerSendNowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerSendNowResponseBag";
+    import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<GroupSchedulerInitializationBox>();
@@ -297,7 +300,9 @@
 
     const filters = ref<GroupSchedulerFiltersBag | null | undefined>(config.appliedFilters?.filters);
     const scheduleOccurrences = ref<GroupSchedulerOccurrenceBag[] | null | undefined>(config.appliedFilters?.scheduleOccurrences);
+    const unassignedResourceCounts = ref<GroupSchedulerUnassignedResourceCountBag[]>(config.appliedFilters?.unassignedResourceCounts ?? []);
     const navigationUrls = ref<Record<string, string> | null | undefined>(config.appliedFilters?.navigationUrls);
+    const disallowGroupSelection = ref<boolean>(config.disallowGroupSelection);
 
     const isSelectingFilters = ref(false);
 
@@ -340,7 +345,7 @@
                 iconCssClass: "fa fa-clipboard",
                 type: "default",
                 handler: onCopyToClipboardClick,
-                disabled: isSchedulingDisabled.value
+                disabled: isBusy.value || !anyGroupsSelected.value
             });
         }
 
@@ -459,22 +464,49 @@
         return navigationUrls.value?.[NavigationUrlKey.RosterPage] ?? null;
     });
 
+    const toSendCount = computed((): number => {
+        return sendNowResponse.value?.communicationsToSendCount ?? 0;
+    });
+
+    const sentCount = computed((): number => {
+        return sendNowResponse.value?.communicationsSentCount ?? 0;
+    });
+
+    const failedToSendCount = computed((): number => {
+        return toSendCount.value - sentCount.value;
+    });
+
     const sendNowModalAlertType = computed((): ModalAlertType => {
         if (sendNowResponse.value?.errors?.length) {
             return ModalAlertType.Alert;
         }
-        else if (sendNowResponse.value?.warnings?.length) {
+        else if (sendNowResponse.value?.warnings?.length || failedToSendCount.value > 0) {
             return ModalAlertType.Warning;
         }
 
         return ModalAlertType.Information;
     });
 
-    const sentConfirmationsMessage = computed((): string | null => {
-        const count = sendNowResponse.value?.communicationsSentCount ?? 0;
-        return count
-            ? `Successfully sent ${count} confirmation${(count > 1 ? "s" : "")}.`
-            : null;
+    const sendNowOutcomeMessage = computed((): string => {
+        const messageParts: string[] = [];
+
+        if (toSendCount.value === 0) {
+            messageParts.push("Everybody has already been sent a confirmation. No additional confirmations sent.");
+        }
+        else {
+            if (sentCount.value > 0) {
+                messageParts.push(`Successfully sent ${sentCount.value} ${pluralize("confirmation", sentCount.value)}.`);
+            }
+
+            if (failedToSendCount.value > 0) {
+                messageParts.push(`Failed to send ${failedToSendCount.value} ${pluralize("confirmation", failedToSendCount.value)}.`);
+            }
+        }
+
+        let message = "";
+        messageParts.forEach((messagePart: string) => message += `<p>${messagePart}</p>`);
+
+        return message || "<p>Unknown error while trying to send confirmations.</p>";
     });
 
     const isBusy = computed((): boolean => {
@@ -674,6 +706,35 @@
         });
     }
 
+    /**
+     * A function that can be used to report unassigned resources as assigned.
+     *
+     * @param unassignedResourceCountGuid The targeted "unassigned resource count" unique identifier.
+     * @param assignedCount The count of resources that have been assigned.
+     */
+    function reportAssignedResources(unassignedResourceCountGuid: string | null | undefined, assignedCount: number): void {
+        if (!unassignedResourceCountGuid || assignedCount <= 0 || !unassignedResourceCounts.value?.length) {
+            return;
+        }
+
+        // Only re-include the targeted count in the array if it still has unassigned resources.
+        unassignedResourceCounts.value = unassignedResourceCounts.value
+            .filter((c: GroupSchedulerUnassignedResourceCountBag) =>
+                c.guid !== unassignedResourceCountGuid || c.resourceCount - assignedCount > 0
+            )
+            .map((c: GroupSchedulerUnassignedResourceCountBag) => {
+                if (c.guid !== unassignedResourceCountGuid) {
+                    return c;
+                }
+                else {
+                    return {
+                        ...c,
+                        resourceCount: c.resourceCount - assignedCount
+                    };
+                }
+            }) ?? [];
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -766,6 +827,7 @@
 
         filters.value = result.data?.filters;
         scheduleOccurrences.value = result.data?.scheduleOccurrences;
+        unassignedResourceCounts.value = result.data?.unassignedResourceCounts ?? [];
         navigationUrls.value = result.data?.navigationUrls;
 
         reloadAllScheduleOccurrences();
@@ -806,6 +868,7 @@
 
         filters.value = appliedFilters?.filters;
         scheduleOccurrences.value = appliedFilters?.scheduleOccurrences;
+        unassignedResourceCounts.value = appliedFilters?.unassignedResourceCounts ?? [];
         navigationUrls.value = appliedFilters?.navigationUrls;
 
         nextTick(() => {
@@ -863,6 +926,8 @@
 
     // #endregion
 
+    provide(UnassignedResourceCounts, unassignedResourceCounts);
+    provide(ReportAssignedResources, reportAssignedResources);
     provide(ReloadAllOccurrences, reloadAllOccurrences);
     provide(ReloadOccurrencesContainingResource, reloadOccurrencesContainingResource);
     provideSecurityGrant(securityGrant);

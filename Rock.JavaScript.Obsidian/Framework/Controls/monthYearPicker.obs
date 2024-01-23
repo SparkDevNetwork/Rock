@@ -5,30 +5,40 @@
 
 <script setup lang="ts">
     import { PropType, computed } from "vue";
-    import DatePartsPicker, { DatePartsPickerValue, getDefaultDatePartsPickerModel } from "./datePartsPicker";
+    import DatePartsPicker from "./datePartsPicker.obs";
     import { MonthYearValue } from "@Obsidian/ViewModels/Controls/monthYearValue";
+    import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<MonthYearValue>,
-            default: getDefaultDatePartsPickerModel
+            required: false
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", _value: MonthYearValue): void
+        (e: "update:modelValue", _value: MonthYearValue | undefined): void
     }>();
 
-    const internalValue = computed<DatePartsPickerValue>({
+    const internalValue = computed<DatePartsPickerValue | undefined>({
         get() {
+            if (!props.modelValue) {
+                return undefined;
+            }
+
             return Object.assign({}, props.modelValue, { day: 0 });
         },
         set(newVal) {
+            if (!newVal) {
+                emit("update:modelValue", undefined);
+            }
+            else {
             const value: MonthYearValue = {
                 month: newVal.month,
                 year: newVal.year
             };
             emit("update:modelValue", value);
+        }
         }
     });
 </script>

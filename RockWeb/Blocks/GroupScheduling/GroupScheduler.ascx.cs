@@ -446,66 +446,73 @@ btnCopyToClipboard.ClientID );
             }
 
             int? selectedGroupId = null;
-            List<int> pickerGroupIds = new List<int>();
+            List<int> pickerGroupIds;
             bool showChildGroups;
             var preferences = GetBlockPersonPreferences();
 
             if ( this.PageParameter( PageParameterKey.GroupIds ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.GroupId ).IsNotNullOrWhiteSpace() )
             {
-                // disable the groups picker if groupId(s) are specified in the URL
                 var pageParameterGroupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
                 var pageParameterGroupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
                 if ( pageParameterGroupId.HasValue )
                 {
-                    /*
-                      SK - 11/09/2022
-                      This will hide the group picker if there is a GroupId in the query string.
-                      If there is a GroupIds query string parm. This will not lock the group selection.
-                     */
-                    gpPickedGroups.Enabled = !GetAttributeValue( AttributeKey.DisallowGroupSelectionIfSpecified ).AsBoolean() || pageParameterGroupIds.Any();
+                    // Disable the group picker if there is a singular group ID value in the query string AND
+                    // both of the following are true:
+                    //  1. There is NOT a plural group IDs value in the query string;
+                    //  2. The DisallowGroupSelectionIfSpecified block setting is true.
+                    if ( pageParameterGroupIds.Any() )
+                    {
+                        gpPickedGroups.Enabled = true;
+                    }
+                    else
+                    {
+                        gpPickedGroups.Enabled = GetAttributeValue( AttributeKey.DisallowGroupSelectionIfSpecified ).AsBoolean() == false;
+                    }
+
+                    // Set the block's selected group ID from the singular page parameter and ensure
+                    // it is also in the plural list of group IDs (so it will be included when pre-loading
+                    // the group picker).
                     selectedGroupId = pageParameterGroupId.Value;
                     if ( !pageParameterGroupIds.Contains( selectedGroupId.Value ) )
                     {
                         pageParameterGroupIds.Add( selectedGroupId.Value );
                     }
                 }
+                else
+                {
+                    // Since a singular group ID was not provided in the query string, set the
+                    // selected value from the individual's preferences IF the previously-selected
+                    // value is in the current list of plural group IDs provided in the query string.
+                    var preferenceSelectedGroupId = preferences.GetValue( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
+                    if ( preferenceSelectedGroupId.HasValue && pageParameterGroupIds.Contains( preferenceSelectedGroupId.Value ) )
+                    {
+                        selectedGroupId = preferenceSelectedGroupId;
+                    }
+                }
 
+                // Pre-load the group picker with all groups specified in the query string.
                 pickerGroupIds = pageParameterGroupIds;
                 btnShowChildGroups.Enabled = false;
+
+                // In this case, we'll only show child groups if explicitly dictated in the query string,
+                // regardless of whether this individual has previously opted to show child groups.
                 showChildGroups = this.PageParameter( PageParameterKey.ShowChildGroups ).AsBoolean();
             }
             else
             {
+                // Neither a singular group ID nor plural group IDs were provided in the query string.
+                // Simply load previously-selected values according to person preferences.
                 selectedGroupId = preferences.GetValue( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
+                pickerGroupIds = ( preferences.GetValue( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
                 showChildGroups = preferences.GetValue( UserPreferenceKey.ShowChildGroups ).AsBoolean();
             }
 
-            var userPreferenceGroupIds = ( preferences.GetValue( UserPreferenceKey.PickerGroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
-            if ( pickerGroupIds.Any() )
-            {
-                var pickerSelectedGroupIds = userPreferenceGroupIds.Where( a => pickerGroupIds.Contains( a ) ).ToList();
-                if ( pickerSelectedGroupIds.Any() )
-                {
-                    pickerGroupIds = pickerSelectedGroupIds;
-                }
-                else
-                {
-                    pickerGroupIds = pickerGroupIds.Take( 1 ).ToList();
-                }
-            }                                       
-            else
-            {
-                pickerGroupIds = userPreferenceGroupIds;
-            }
-
-            // if there is a 'GroupIds' parameter/userpreference, that defines what groups are shown.
-            // However, only one group can be selected/active at a time
             gpPickedGroups.SetValues( pickerGroupIds );
 
-            // if there is a 'GroupId' parameter/userpreference that will define active/selected group
+            // If there is a singular group ID parameter/preference value, that will define active/selected group.
             if ( selectedGroupId.HasValue )
             {
-                // make sure a valid group was specified
+                // Make sure a valid group was specified.
                 selectedGroupId = new GroupService( new RockContext() ).GetSelect( selectedGroupId.Value, s => ( int? ) s.Id );
             }
 
@@ -1306,7 +1313,7 @@ btnCopyToClipboard.ClientID );
                      }
                  } ).ToList();
 
-            // if there are any people that signed up with no location preference, add the to a special list of "No Location Preference" occurrences to the top of the list
+            // if there are any people that signed up with no location preference, add them to a special list of "No Location Preference" occurrences to the top of the list
             var unassignedLocationOccurrenceList = attendanceOccurrenceService.Queryable()
                 .Where( a => occurrenceDateList.Contains( a.OccurrenceDate )
                     && a.ScheduleId.HasValue
@@ -2049,9 +2056,36 @@ btnCopyToClipboard.ClientID );
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 
-            var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery );
-            var isSendConfirmationAttendancesFound = sendConfirmationAttendancesQuery.Any();
+            // Take note of how many communications we expect to send.
+            var toSendCount = sendConfirmationAttendancesQuery.Count();
+
+            // Make sure we save changes after calling the following method, to mark successful sends in the database
+            // and prevent duplicate sends the next time this method is called.
+            var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, true );
             rockContext.SaveChanges();
+
+            var sentCount = sendMessageResult.MessagesSent;
+            var failedToSendCount = toSendCount - sentCount;
+
+            if ( failedToSendCount > 0 )
+            {
+                // Check to see if any un-sent attendances belong to a group type without a system communication specified.
+                var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
+                    .Where( a =>
+                        a.Occurrence.Group.GroupType != null
+                        && !a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue
+                    )
+                    .Select( a => a.Occurrence.Group.GroupType.Name )
+                    .Distinct()
+                    .ToList();
+
+                if ( groupTypeNamesWithoutSystemCommunication.Any() )
+                {
+                    sendMessageResult.Warnings.InsertRange( 0, groupTypeNamesWithoutSystemCommunication.Select( name =>
+                        $@"Group Type ""{name}"" does not have a ""Schedule Confirmation Communication"" specified."
+                    ) );
+                }
+            }
 
             var summaryMessageBuilder = new StringBuilder();
             var alertType = ModalAlertType.Information;
@@ -2064,7 +2098,16 @@ btnCopyToClipboard.ClientID );
 
                 ExceptionLogService.LogException( logException );
 
-                summaryMessageBuilder.AppendLine( logException.Message );
+                var htmlErrorsSb = new StringBuilder ( "<div>One or more errors occurred when sending confirmations:<ul>" );
+
+                foreach ( var error in sendMessageResult.Errors )
+                {
+                    htmlErrorsSb.Append( $"<li>{error}</li>" );
+                }
+
+                htmlErrorsSb.Append( "</ul></div>" );
+
+                summaryMessageBuilder.Append( htmlErrorsSb.ToString() );
             }
 
             if ( sendMessageResult.Warnings.Any() )
@@ -2074,21 +2117,41 @@ btnCopyToClipboard.ClientID );
                     alertType = ModalAlertType.Warning;
                 }
 
-                var warningMessage = "One or more warnings occurred when sending confirmations: " + Environment.NewLine + sendMessageResult.Warnings.AsDelimited( Environment.NewLine );
+                var htmlWarningsSb = new StringBuilder ( "<div>One or more warnings occurred when sending confirmations:<ul>" );
 
-                summaryMessageBuilder.AppendLine( warningMessage );
+                foreach ( var warning in sendMessageResult.Warnings )
+                {
+                    htmlWarningsSb.Append( $"<li>{warning}</li>" );
+                }
+
+                htmlWarningsSb.Append( "</ul></div>" );
+
+                summaryMessageBuilder.Append( htmlWarningsSb.ToString() );
             }
 
-            if ( sendMessageResult.MessagesSent > 0 && isSendConfirmationAttendancesFound )
+            if ( toSendCount == 0 )
             {
-                summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} {1}.", sendMessageResult.MessagesSent, "confirmation".PluralizeIf( sendMessageResult.MessagesSent != 1 ) ) );
+                summaryMessageBuilder.Append( "<p>Everybody has already been sent a confirmation. No additional confirmations sent.</p>" );
             }
-            else if ( !isSendConfirmationAttendancesFound )
+            else
             {
-                summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation. No additional confirmations sent." );
+                if ( sentCount > 0 )
+                {
+                    summaryMessageBuilder.Append( $"<p>Successfully sent {sentCount} {"confirmation".PluralizeIf( sentCount > 1 )}.</p>" );
+                }
+
+                if ( failedToSendCount > 0 )
+                {
+                    if ( alertType != ModalAlertType.Alert )
+                    {
+                        alertType = ModalAlertType.Warning;
+                    }
+
+                    summaryMessageBuilder.Append( $"<p>Failed to send {failedToSendCount} {"confirmation".PluralizeIf( failedToSendCount > 1 )}.</p>" );
+                }
             }
 
-            maSendNowResults.Show( summaryMessageBuilder.ToString().ConvertCrLfToHtmlBr(), alertType );
+            maSendNowResults.Show( summaryMessageBuilder.ToString(), alertType );
         }
 
         /// <summary>

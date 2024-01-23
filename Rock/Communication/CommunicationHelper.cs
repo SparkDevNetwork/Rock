@@ -17,6 +17,9 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -38,15 +41,16 @@ namespace Rock.Communication
         /// <returns></returns>
         public static SendMessageResult SendMessage( Person person, int mediumType, SystemCommunication systemCommunication, Dictionary<string, object> mergeObjects )
         {
+            var logger = RockLogger.LoggerFactory.CreateLogger<CommunicationHelper>();
             var results = new SendMessageResult();
             CreateMessageResult createMessageResults;
             switch ( mediumType )
             {
                 case ( int ) CommunicationType.SMS:
-                    createMessageResults = CreateSmsMessage( person, mergeObjects, systemCommunication );
+                    createMessageResults = CreateSmsMessage( person, mergeObjects, systemCommunication, logger );
                     break;
                 default:
-                    createMessageResults = CreateEmailMessage( person, mergeObjects, systemCommunication );
+                    createMessageResults = CreateEmailMessage( person, mergeObjects, systemCommunication, logger );
                     break;
             }
 
@@ -124,7 +128,7 @@ namespace Rock.Communication
             return results;
         }
 
-        private static CreateMessageResult CreateSmsMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication )
+        private static CreateMessageResult CreateSmsMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, ILogger logger )
         {
             var isSmsEnabled = MediumContainer.HasActiveSmsTransport() && !string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
             var createMessageResult = new CreateMessageResult();
@@ -139,7 +143,7 @@ namespace Rock.Communication
                     smsWarningMessage = $"SMS is not enabled. {person.FullName} did not receive a notification.";
                 }
 
-                RockLogger.Log.Warning( RockLogDomains.Jobs, smsWarningMessage );
+                logger.LogWarning( smsWarningMessage );
                 createMessageResult.Warnings.Add( smsWarningMessage );
                 return createMessageResult;
             }
@@ -148,11 +152,12 @@ namespace Rock.Communication
 
             var message = new RockSMSMessage( systemCommunication );
             message.SetRecipients( recipients );
+            message.AdditionalMergeFields = mergeObjects;
             createMessageResult.Message = message;
             return createMessageResult;
         }
 
-        private static CreateMessageResult CreateEmailMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication )
+        private static CreateMessageResult CreateEmailMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, ILogger logger )
         {
             var createMessageResult = new CreateMessageResult();
 
@@ -160,7 +165,7 @@ namespace Rock.Communication
             {
                 var warning = $"{person.FullName} does not have an email address entered.";
                 createMessageResult.Warnings.Add( warning );
-                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                logger.LogWarning( warning );
                 return createMessageResult;
             }
 
@@ -168,7 +173,7 @@ namespace Rock.Communication
             {
                 var warning = $"{person.FullName.ToPossessive()} email address is inactive.";
                 createMessageResult.Warnings.Add( warning );
-                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                logger.LogWarning( warning );
                 return createMessageResult;
             }
 
@@ -176,7 +181,7 @@ namespace Rock.Communication
             {
                 var warning = $"{person.FullName} is marked as do not email.";
                 createMessageResult.Warnings.Add( warning );
-                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
+                logger.LogWarning( warning );
                 return createMessageResult;
             }
 
@@ -187,6 +192,7 @@ namespace Rock.Communication
 
             var message = new RockEmailMessage( systemCommunication );
             message.SetRecipients( recipients );
+            message.AdditionalMergeFields = mergeObjects;
             createMessageResult.Message = message;
             return createMessageResult;
         }

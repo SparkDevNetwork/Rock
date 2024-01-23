@@ -1,0 +1,456 @@
+<template>
+    <div class="note-editor meta" :class="additionalNoteEditorClasses">
+        <div v-if="avatarUrl" class="meta-figure">
+            <div class="avatar avatar-lg">
+                <img :src="avatarUrl" />
+            </div>
+        </div>
+
+        <div ref="metaBodyElement" class="meta-body">
+            <RockForm @submit="onFormSubmit">
+                <div class="noteentry-control">
+                    <NoteTextEditor v-model="noteText"
+                                    validationTitle="Note"
+                                    rules="required"
+                                    :formGroupClasses="noteTextEditorFormGroupClasses"
+                                    placeholder="Write a note..."
+                                    :mentionEnabled="isMentionEnabled" />
+
+                    <div v-if="hasAttributes" class="noteentry-attributes">
+                        <AttributeValuesContainer v-model="attributeValues"
+                                                  :attributes="attributes"
+                                                  :showCategoryLabel="false"
+                                                  isEditMode />
+                    </div>
+                </div>
+
+                <div class="settings clearfix">
+                    <div v-if="showDate" class="createDate">
+                        <DateTimePicker v-model="createdDateTime" label="Note Created Date" />
+                    </div>
+
+                    <select v-if="noteTypeItems.length > 1"
+                            v-model="noteTypeIdKey"
+                            class="form-control input-sm input-width-lg noteentry-notetype">
+                        <option v-for="item in noteTypeItems" :value="item.value">{{ item.text }}</option>
+                    </select>
+
+                    <InlineCheckBox v-if="showAlert" v-model="isAlert" label="Alert" />
+                    <InlineCheckBox v-if="showPrivate" v-model="isPrivate" label="Private" />
+                    <InlineCheckBox v-model="isPinned" label="Pin to Top" />
+
+                    <div class="commands">
+                        <button v-if="showSecurity && modelValue?.idKey"
+                                class="btn btn-security btn-xs btn-square security"
+                                @click.prevent="onSecurityClick">
+                            <i class="fa fa-lock"></i>
+                        </button>
+
+                        <button v-if="!hideCancel" class="edit-note-cancel btn btn-link btn-xs"
+                                @click.prevent="onCancelClick">
+                            Cancel
+                        </button>
+
+                        <RockButton class="btn btn-primary btn-xs"
+                                    type="submit">
+                            Save Note
+                        </RockButton>
+                    </div>
+                </div>
+            </RockForm>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.note-editor.auto-size .meta-body {
+    height: 36px;
+    overflow-y: hidden;
+    transition: height 250ms ease;
+}
+
+/* Make the overall container look like a single control when focused. */
+.note-editor .meta-body.focus-within {
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+}
+
+/* Override normal .note-text styles so it looks like it's part of this control. */
+.note-editor .noteentry-control :deep(.note-text),
+.note-editor .noteentry-control :deep(.note-text:focus) {
+    border: none;
+    border-bottom: 1px solid #d2d2d2;
+    box-shadow: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.note-editor.auto-size .noteentry-control :deep(.note-text) {
+    background-color: #f8f9fa;
+    transition: background-color 250ms ease;
+}
+
+.note-editor.auto-size .meta-body.focus-within :deep(.note-text),
+.note-editor.auto-size .meta-body:hover :deep(.note-text) {
+    background-color: transparent;
+}
+
+.noteentry-attributes {
+    padding: 6px 24px;
+}
+
+/* Override theme style so it doesn't put extra padding when showing attributes. */
+.note-editor-attributes .noteentry-control {
+    padding: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { showSecurity as showSecurityModal } from "@Obsidian/Utility/dialogs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
+    import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteTypeBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<NoteEditBag>,
+            required: false
+        },
+
+        hideCancel: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        noteTypes: {
+            type: Array as PropType<NoteTypeBag[]>,
+            required: true
+        },
+
+        avatarUrl: {
+            type: String as PropType<string | null>,
+            required: false
+        },
+
+        showAlert: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        showDate: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        showPrivate: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        showSecurity: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        autoSize: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        autoFocus: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: NoteEditBag): void,
+        (e: "save"): void,
+        (e: "cancel"): void
+    }>();
+
+    // #region Values
+
+    const metaBodyElement = ref<HTMLElement>();
+
+    const noteTypeIdKey = ref(props.modelValue?.noteTypeIdKey ?? "");
+    const noteText = ref(props.modelValue?.text ?? "");
+    const isAlert = ref(props.modelValue?.isAlert ?? false);
+    const isPinned = ref(props.modelValue?.isPinned ?? false);
+    const isPrivate = ref(props.modelValue?.isPrivate ?? false);
+    const createdDateTime = ref(props.modelValue?.createdDateTime ?? "");
+    const attributes = ref<Record<string, PublicAttributeBag>>({});
+    const attributeValues = ref<Record<string, string>>(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    /**
+     * Contains any additional CSS class names that need to be applied to the
+     * main container `div`.
+     */
+    const additionalNoteEditorClasses = computed((): string => {
+        let classes = "";
+
+        if (props.autoSize) {
+            classes += " auto-size";
+        }
+
+        if (hasAttributes) {
+            classes += " note-editor-attributes";
+        }
+        else {
+            classes += " note-editor-standard";
+        }
+
+        if (!props.modelValue?.idKey) {
+            classes += " note-new";
+        }
+
+        return classes.trim();
+    });
+
+    /**
+     * Contains the form group CSS classes that should be applied to the
+     * `NoteTextEditor` component.
+     */
+    const noteTextEditorFormGroupClasses = computed((): string => {
+        return Object.keys(attributes.value).length > 0
+            ? "note-editor-text"
+            : "";
+    });
+
+    /**
+     * Contains the {@link ListItemBag} objects that represent the note types
+     * to be displayed in the drop down list.
+     */
+    const selectableNoteTypes = computed((): NoteTypeBag[] => {
+        return props.noteTypes
+            .filter(nt => nt.userSelectable);
+    });
+
+    /**
+     * Contains the {@link ListItemBag} objects that represent the note types
+     * to be displayed in the drop down list.
+     */
+    const noteTypeItems = computed((): ListItemBag[] => {
+        return selectableNoteTypes.value
+            .map(nt => {
+                return {
+                    value: nt.idKey,
+                    text: nt.name
+                };
+            });
+    });
+
+    /**
+     * Contains the currently selected note type or `undefined` if it could not
+     * be determined which one is selected.
+     */
+    const selectedNoteType = computed((): NoteTypeBag | undefined => {
+        return selectableNoteTypes.value.find(nt => nt.idKey === noteTypeIdKey.value);
+    });
+
+    /** Determines if the currently selected note type supports mentions. */
+    const isMentionEnabled = computed((): boolean => {
+        return selectedNoteType.value?.isMentionEnabled === true;
+    });
+
+    /** The default note type to select. */
+    const defaultNoteTypeIdKey = computed((): string => {
+        return selectableNoteTypes.value.length > 0 ? selectableNoteTypes.value[0].idKey ?? "" : "";
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the security button has been clicked. Shows the
+     * edit security modal.
+     *
+     * @param event The event that triggered this handler.
+     */
+    function onSecurityClick(): void {
+        if (props.modelValue?.idKey) {
+            showSecurityModal(EntityType.Note, props.modelValue.idKey, "Note");
+        }
+    }
+
+    /**
+     * Event handler for when the cancel button is clicked.
+     */
+    function onCancelClick(): void {
+        emit("cancel");
+    }
+
+    /**
+     * Event handler for when the save button has been clicked and validation
+     * has succeeded.
+     */
+    function onFormSubmit(): void {
+        emit("save");
+    }
+
+    /**
+     * Event handler for when the `transitionend` event has fired on the
+     * `meta-body` element.
+     */
+    function onMetaBodyTransitionEnd(event: TransitionEvent): void {
+        if (!props.autoSize || event.target !== metaBodyElement.value || event.propertyName !== "height") {
+            return;
+        }
+
+        if (metaBodyElement.value?.classList.contains("focus-within")) {
+            metaBodyElement.value.classList.add("overflow-visible");
+            metaBodyElement.value.style.height = "auto";
+        }
+        else if (metaBodyElement.value) {
+            metaBodyElement.value.style.height = "";
+        }
+    }
+
+    /**
+     * Event handler for when the `focusin` event has fired on the meta body
+     * element.
+     *
+     * @param ev The object that describes this event.
+     */
+    function onMetaBodyFocusIn(ev: FocusEvent): void {
+        if (!props.autoSize || !(ev.target instanceof HTMLElement) || !metaBodyElement.value) {
+            return;
+        }
+
+        // Check if the new focus target is a child of the meta-body element.
+        if (metaBodyElement.value.contains(ev.target)) {
+            if (!metaBodyElement.value.classList.contains("focus-within")) {
+                metaBodyElement.value.classList.add("focus-within");
+                metaBodyElement.value.style.height = `${metaBodyElement.value.scrollHeight}px`;
+
+                setTimeout(() => document.addEventListener("click", onDocumentClick), 0);
+            }
+        }
+    }
+
+    /**
+     * Event handler for when the `click` event has fired on the document.
+     *
+     * @param ev The object that describes this event.
+     */
+    function onDocumentClick(ev: MouseEvent): void {
+        if (!(ev.target instanceof Node) || !metaBodyElement.value) {
+            return;
+        }
+
+        if (!metaBodyElement.value.contains(ev.target)) {
+            document.removeEventListener("click", onDocumentClick);
+
+            metaBodyElement.value.classList.remove("focus-within", "overflow-visible");
+            metaBodyElement.value.style.height = `${metaBodyElement.value.scrollHeight}px`;
+
+            // Force the browser to recalculate the layout based on the
+            // fixed height.
+            metaBodyElement.value.getBoundingClientRect();
+
+            metaBodyElement.value.style.height = "36px";
+        }
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        // This code is for the person profile page...
+        if (metaBodyElement.value) {
+            metaBodyElement.value.addEventListener("focusin", onMetaBodyFocusIn);
+            metaBodyElement.value.addEventListener("transitionend", onMetaBodyTransitionEnd);
+
+            if (props.autoFocus) {
+                metaBodyElement.value.classList.add("focus-within");
+                metaBodyElement.value.style.height = `${metaBodyElement.value.scrollHeight}px`;
+                const textEditor = metaBodyElement.value.querySelector(".note-text");
+
+                if (textEditor && textEditor instanceof HTMLElement) {
+                    textEditor.focus();
+                }
+
+                setTimeout(() => document.addEventListener("click", onDocumentClick), 0);
+            }
+        }
+    });
+
+    onBeforeUnmount(() => {
+        if (metaBodyElement.value) {
+            metaBodyElement.value.removeEventListener("focusin", onMetaBodyFocusIn);
+            metaBodyElement.value.removeEventListener("transitionend", onMetaBodyTransitionEnd);
+        }
+
+        document.removeEventListener("click", onDocumentClick);
+    });
+
+    // Set the default note type to the first one if not already selected.
+    // Do this before the watch events below.
+    if (!noteTypeIdKey.value) {
+        noteTypeIdKey.value = defaultNoteTypeIdKey.value;
+    }
+
+    // Set initially selected note type attributes.
+    // Do this before the watch events below.
+    attributes.value = selectedNoteType.value?.attributes ?? {};
+
+    watch(selectedNoteType, () => {
+        attributes.value = selectedNoteType.value?.attributes ?? {};
+
+        // Always reset the attribute values when the person changes the
+        // note type.
+        attributeValues.value = {};
+    });
+
+    // Watch for changes in our model value and update the UI.
+    watch(() => props.modelValue, () => {
+        // If the new modelValue does not have a noteTypeIdKey defined then
+        // we try to use the existing note type id key, otherwise we fall back
+        // to the default. If the modelValue provides an empty string for
+        // noteTypeIdKey then it will be honored.
+        updateRefValue(noteTypeIdKey, props.modelValue?.noteTypeIdKey ?? noteTypeIdKey.value ?? defaultNoteTypeIdKey.value);
+        updateRefValue(noteText, props.modelValue?.text ?? "");
+        updateRefValue(isAlert, props.modelValue?.isAlert ?? false);
+        updateRefValue(isPinned, props.modelValue?.isPinned ?? false);
+        updateRefValue(isPrivate, props.modelValue?.isPrivate ?? false);
+        updateRefValue(createdDateTime, props.modelValue?.createdDateTime ?? "");
+        updateRefValue(attributeValues, props.modelValue?.attributeValues ?? {});
+    });
+
+    // Watch for changes in the UI and update the model value.
+    watch([noteTypeIdKey, noteText, isAlert, isPinned, isPrivate, createdDateTime, attributeValues], () => {
+        const newBag: NoteEditBag = {
+            ...(props.modelValue ?? {}),
+            noteTypeIdKey: noteTypeIdKey.value,
+            text: noteText.value,
+            isAlert: isAlert.value,
+            isPinned: isPinned.value,
+            isPrivate: isPrivate.value,
+            createdDateTime: createdDateTime.value || null,
+            attributeValues: attributeValues.value
+        };
+
+        if (!deepEqual(props.modelValue, newBag, true)) {
+            emit("update:modelValue", newBag);
+        }
+    });
+</script>

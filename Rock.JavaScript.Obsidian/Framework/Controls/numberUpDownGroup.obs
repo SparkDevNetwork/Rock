@@ -1,0 +1,73 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="total"
+                   formGroupClasses="margin-b-md number-up-down-group"
+                   name="numberupdowngroup">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div v-for="option in options" :key="option.key" class="margin-l-sm margin-b-sm">
+                    <div v-if="option.label" class="margin-b-sm">
+                        {{ option.label }}
+                    </div>
+                    <NumberUpDownBase :modelValue="internalValue[option.key] ?? 0" @update:modelValue="setValue(option.key, $event)" :min="option.min" :max="option.max" class="margin-t-sm" />
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import NumberUpDownBase from "./numberUpDownBase.obs";
+    import RockFormField from "./rockFormField.obs";
+    import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<Record<string, number>>,
+            required: true
+        },
+        options: {
+            type: Array as PropType<NumberUpDownGroupOption[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, number>)
+    }>();
+
+    const internalValue = ref({ ...props.modelValue });
+
+    const total = computed((): number => {
+        let total = 0;
+
+        for (const option of props.options) {
+            total += (internalValue.value[option.key] || 0);
+        }
+
+        return total;
+    });
+
+    function setValue(key: string, value: number): void {
+        const newValue: Record<string, number> = {};
+
+        for (const option of props.options) {
+            newValue[option.key] = key === option.key
+                ? value
+                : internalValue.value[option.key] ?? 0;
+        }
+
+        internalValue.value = newValue;
+    }
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, props.modelValue);
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value);
+    });
+</script>

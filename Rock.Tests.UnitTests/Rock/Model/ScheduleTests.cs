@@ -136,12 +136,13 @@ namespace Rock.Tests.Rock.Model
         {
             DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
             {
-                var singleDayEvent = ScheduleTestHelper.GetCalendarEvent( GetFirstTestScheduleDate(), new TimeSpan( 24, 0, 0 ) );
+                // Create an event that has a duration of more than 1 day.
+                var eventDate = GetFirstTestScheduleDate();
+                var singleDayEvent = ScheduleTestHelper.GetCalendarEvent( eventDate, new TimeSpan( 25, 0, 0 ) );
 
                 var schedule = ScheduleTestHelper.GetSchedule( ScheduleTestHelper.GetCalendar( singleDayEvent ) );
 
-                var endDateExpected = _specificDates.FirstOrDefault().AddDays( 1 );
-
+                var endDateExpected = eventDate.AddDays( 1 );
                 var endDateReturned = schedule.EffectiveEndDate;
 
                 Assert.That.IsNotNull( endDateReturned );
@@ -387,6 +388,32 @@ namespace Rock.Tests.Rock.Model
             } );
         }
 
+        [TestMethod]
+        public void Schedule_WasScheduleActive_ScheduleThatSpillsToASecondDay()
+        {
+            // Sunday, Thursday 11AM to 2AM
+            var schedule = ScheduleWithCheckOut11PMto2AM();
+
+            Assert.That.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 11:01PM" ) ) );
+            Assert.That.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 1:00AM" ) ) );
+            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 3:00AM" ) ) );
+            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 2:00PM" ) ) );
+            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-08 10:00PM" ) ) );
+        }
+
+        [TestMethod]
+        public void Schedule_WasScheduleActive_ScheduleOnSameDay()
+        {
+            // Sunday, 9AM to 10AM
+            var schedule = Standard9AMto10AMSchedule();
+
+            Assert.That.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 9:00AM" ) ) );
+            Assert.That.IsTrue( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 9:01AM" ) ) );
+            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 10:01AM" ) ) );
+            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-04 8:00AM" ) ) );
+            Assert.That.IsFalse( schedule.WasScheduleActive( DateTime.Parse( "2019-08-03 9:00AM" ) ) );
+        }
+
         /// <summary>
         /// Get the current Rock date and time as an Unspecified DateTime type.
         /// </summary>
@@ -395,6 +422,47 @@ namespace Rock.Tests.Rock.Model
         {
             var now = DateTime.SpecifyKind( RockDateTime.Now, DateTimeKind.Unspecified );
             return now;
+        }
+
+        private static Schedule ScheduleWithCheckOut11PMto2AM()
+        {
+            var iCalendarContent = @"
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ddaysoftware.com//NONSGML DDay.iCal 1.0//EN
+BEGIN:VEVENT
+DTEND:20130502T020000
+DTSTAMP:20190808T202903Z
+DTSTART:20130501T230000
+RRULE:FREQ=WEEKLY;BYDAY=SU,TH
+SEQUENCE:0
+UID:37e42e3e-017c-4317-a79e-e738ce6504ec
+END:VEVENT
+END:VCALENDAR
+";
+            var schedule = new Schedule();
+            schedule.iCalendarContent = iCalendarContent;
+            schedule.CheckInStartOffsetMinutes = 0;
+            schedule.CheckInEndOffsetMinutes = 0;
+            return schedule;
+        }
+
+        private static Schedule Standard9AMto10AMSchedule()
+        {
+            var iCalendarContent = @"
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+DTEND:20130501T100000
+DTSTART:20130501T090000
+RRULE:FREQ=WEEKLY;BYDAY=SU
+END:VEVENT
+END:VCALENDAR
+";
+            var schedule = new Schedule();
+            schedule.iCalendarContent = iCalendarContent;
+            schedule.CheckInStartOffsetMinutes = 30;
+            schedule.CheckInEndOffsetMinutes = 30;
+            return schedule;
         }
     }
 }

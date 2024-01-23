@@ -124,61 +124,52 @@
 
                 <CheckBox Grid.Row="1"
                           Grid.Column="0"
-                          IsChecked="{Binding IsViewModelsChecked}">View Models (C#)</CheckBox>
-                <TextBox Grid.Row="1"
-                         Grid.Column="1"
-                         Margin="5,0,0,5"
-                         MouseDoubleClick="ViewModelsFolderTextBox_MouseDoubleClick"
-                         Text="{Binding ViewModelsFolder}" />
-
-                <CheckBox Grid.Row="2"
-                          Grid.Column="0"
                           IsChecked="{Binding IsRestChecked}">Rest</CheckBox>
-                <TextBox Grid.Row="2"
+                <TextBox Grid.Row="1"
                          Grid.Column="1"
                          Margin="5,0,0,5"
                          MouseDoubleClick="RestFolderTextBox_MouseDoubleClick"
                          Text="{Binding RestFolder}" />
 
-                <CheckBox Grid.Row="3"
+                <CheckBox Grid.Row="2"
                           Grid.Column="0"
                           IsChecked="{Binding IsClientChecked}">Client</CheckBox>
-                <TextBox Grid.Row="3"
+                <TextBox Grid.Row="2"
                          Grid.Column="1"
                          Margin="5,0,0,5"
                          MouseDoubleClick="ClientFolderTextBox_MouseDoubleClick"
                          Text="{Binding ClientFolder}" />
 
-                <CheckBox Grid.Row="4"
+                <CheckBox Grid.Row="3"
                           Grid.Column="0"
                           IsChecked="{Binding IsDatabaseProcsChecked}">Database Procs</CheckBox>
-                <TextBox Grid.Row="4"
+                <TextBox Grid.Row="3"
                          Grid.Column="1"
                          Margin="5,0,0,5"
                          Text="{Binding DatabaseFolder}" />
 
-                <CheckBox Grid.Row="5"
+                <CheckBox Grid.Row="4"
                           Grid.Column="0"
                           Grid.ColumnSpan="2"
                           HorizontalAlignment="Left"
                           Margin="0,0,0,5"
                           IsChecked="{Binding IsRockGuidsChecked}">Rock Guids</CheckBox>
 
-                <CheckBox Grid.Row="6"
+                <CheckBox Grid.Row="5"
                           Grid.Column="0"
                           Grid.ColumnSpan="2"
                           HorizontalAlignment="Left"
                           Margin="0,0,0,5"
                           IsChecked="{Binding IsReportObsoleteChecked}">Report Obsolete</CheckBox>
 
-                <CheckBox Grid.Row="7"
+                <CheckBox Grid.Row="6"
                           Grid.Column="0"
                           Grid.ColumnSpan="2"
                           HorizontalAlignment="Left"
                           Margin="0,0,0,5"
                           IsChecked="{Binding IsEnsureCopyrightHeadersChecked}">Ensure Copyright Headers</CheckBox>
 
-                <CheckBox Grid.Row="8"
+                <CheckBox Grid.Row="7"
                           Grid.Column="0"
                           Grid.ColumnSpan="2"
                           Margin="0,0,0,5"

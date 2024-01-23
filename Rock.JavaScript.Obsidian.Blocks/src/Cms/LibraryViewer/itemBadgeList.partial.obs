@@ -1,0 +1,30 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="library-viewer-item-badge-list">
+        <span v-for="item of items" :class="['badge badge-default', theme === 'medium' ? 'font-weight-medium' : '']">{{ item }}</span>
+    </span>
+</template>
+
+<style scoped>
+    .library-viewer-item-badge-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        items: {
+            type: Object as PropType<string[]>,
+            required: true
+        },
+
+        theme: {
+            type: String as PropType<"light" | "medium">,
+            default: "light"
+        }
+    });
+</script>

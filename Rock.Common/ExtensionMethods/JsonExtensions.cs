@@ -133,9 +133,8 @@ namespace Rock
             {
                 return val.FromJsonOrThrow<T>();
             }
-            catch ( Exception ex )
+            catch
             {
-                System.Diagnostics.Debug.WriteLine( ex.Message );
                 return default( T );
             }
         }
@@ -248,7 +247,7 @@ namespace Rock
         /// <param name="ignoreErrors"><c>true</c> if errors should be silently ignored.</param>
         /// <param name="camelCase"><c>true</c> if key names should be in camel case.</param>
         /// <returns>A cached instance of <see cref="JsonSerializerSettings"/> to be used.</returns>
-        private static JsonSerializerSettings GetSerializeSettings( bool indentOutput, bool ignoreErrors, bool camelCase )
+        internal static JsonSerializerSettings GetSerializeSettings( bool indentOutput, bool ignoreErrors, bool camelCase )
         {
             var settingsKey = $"{indentOutput}_{ignoreErrors}_{camelCase}";
 

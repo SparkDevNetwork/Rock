@@ -64,6 +64,9 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
+        public bool IsValidInFuture { get; set; }
+
+        /// <summary />
         public string LavaTemplate { get; set; }
 
         /// <summary>
@@ -82,6 +85,9 @@ namespace Rock.Client
 
         /// <summary />
         public Rock.Client.Enums.SignatureType SignatureType { get; set; }
+
+        /// <summary />
+        public int? ValidityDurationInDays { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -124,12 +130,14 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
             this.IsActive = source.IsActive;
+            this.IsValidInFuture = source.IsValidInFuture;
             this.LavaTemplate = source.LavaTemplate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.ProviderEntityTypeId = source.ProviderEntityTypeId;
             this.ProviderTemplateKey = source.ProviderTemplateKey;
             this.SignatureType = source.SignatureType;
+            this.ValidityDurationInDays = source.ValidityDurationInDays;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

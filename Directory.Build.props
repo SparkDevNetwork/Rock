@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<Project>
+  <PropertyGroup Label="Normalise stack trace file locations">
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=\</PathMap>
+  </PropertyGroup>
+</Project>

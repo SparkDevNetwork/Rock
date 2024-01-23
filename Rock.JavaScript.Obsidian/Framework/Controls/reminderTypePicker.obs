@@ -14,7 +14,7 @@
     import { ReminderTypePickerGetReminderTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/reminderTypePickerGetReminderTypesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, ref, watch } from "vue";
-    import BaseAsyncPicker from "./baseAsyncPicker";
+    import BaseAsyncPicker from "./baseAsyncPicker.obs";
 
     const props = defineProps({
         /** The currently selected value(s). */

@@ -20,6 +20,7 @@ using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
 
@@ -567,6 +568,8 @@ namespace Rock.Web.Cache
         [DataContract]
         public class PageRouteInfo
         {
+            private string _route;
+
             /// <summary>
             /// The id
             /// </summary>
@@ -580,10 +583,26 @@ namespace Rock.Web.Cache
             public Guid Guid { get; internal set; }
 
             /// <summary>
+            /// Gets the page identifier.
+            /// </summary>
+            /// <value>The page identifier.</value>
+            [DataMember]
+            public int PageId { get; internal set; }
+
+            /// <summary>
             /// The route
             /// </summary>
             [DataMember]
-            public string Route { get; internal set; }
+            public string Route
+            {
+                get => _route;
+                internal set
+                {
+                    _route = value;
+
+                    UpdateRouteParameters();
+                }
+            }
 
             /// <summary>
             /// If true then the route should work on all sites regardless of the site exclusive setting.
@@ -593,6 +612,34 @@ namespace Rock.Web.Cache
             /// </value>
             [DataMember]
             public bool IsGlobal { get; internal set; }
+
+            /// <summary>
+            /// Gets a copy of <see cref="Route"/> with parameters replaced with
+            /// empty <c>{}</c> instead of the full parameter name. This can be
+            /// used for comparison purposes.
+            /// </summary>
+            /// <value>The route with empty parameter placeholders.</value>
+            internal string RouteWithEmptyParameters { get; private set; }
+
+            /// <summary>
+            /// Gets the route parameter names. The set is configured to be
+            /// case-insensitive.
+            /// </summary>
+            /// <value>The route parameter names.</value>
+            internal HashSet<string> Parameters { get; private set; } = new HashSet<string>();
+
+            /// <summary>
+            /// Updates parameters related to the route. This should be called
+            /// whenever the <see cref="Route"/> property changes.
+            /// </summary>
+            private void UpdateRouteParameters()
+            {
+                var parameterRegex = new Regex( @"(?<={)[A-Za-z0-9\-]+(?=})" );
+                var matches = parameterRegex.Matches( Route ?? string.Empty ).OfType<Match>().ToList();
+
+                Parameters = new HashSet<string>( matches.Select( m => m.Value ), StringComparer.OrdinalIgnoreCase );
+                RouteWithEmptyParameters = parameterRegex.Replace( Route ?? string.Empty, m => string.Empty );
+            }
         }
 
         /// <summary>
@@ -726,7 +773,9 @@ namespace Rock.Web.Cache
             AllowIndexing = page.AllowIndexing;
             BodyCssClass = page.BodyCssClass;
             IconBinaryFileId = page.IconBinaryFileId;
+#pragma warning disable CS0618
             AdditionalSettings = page.AdditionalSettings;
+#pragma warning restore CS0618
             MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
             RateLimitPeriod = page.RateLimitPeriod;
             RateLimitRequestPerPeriod = page.RateLimitRequestPerPeriod;
@@ -735,7 +784,7 @@ namespace Rock.Web.Cache
             page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );
 
             PageRoutes = new List<PageRouteInfo>();
-            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route, IsGlobal = r.IsGlobal } ) );
+            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, PageId = page.Id, Route = r.Route, IsGlobal = r.IsGlobal } ) );
         }
 
         /// <summary>
@@ -788,6 +837,57 @@ namespace Rock.Web.Cache
         public void RemoveChildPages()
         {
             _pageIds = null;
+        }
+
+        /// <summary>
+        /// Gets all routes that match the given parameters. A route is considered
+        /// matching if the parameters contains all the parameter names of the route.
+        /// If there are extra parameters the route is still considered a match.
+        /// </summary>
+        /// <param name="parameters">The parameters that contain the route and query string data.</param>
+        /// <returns>A collection of matching page routes.</returns>
+        internal List<PageRouteInfo> GetAllMatchingRoutes( Dictionary<string, string> parameters )
+        {
+            var matchingRoutes = new List<PageRouteInfo>();
+
+            foreach ( var route in PageRoutes )
+            {
+                // If the route has no parameters, we take it.
+                if ( route.Parameters.Count == 0 )
+                {
+                    matchingRoutes.Add( route );
+                    continue;
+                }
+
+                // See how many parameters we have that match route parameter names.
+                var foundParameterCount = route.Parameters
+                    .Where( p => parameters.ContainsKey( p ) )
+                    .Count();
+
+                // If we have values for all the route parameters, take it.
+                if ( route.Parameters.Count == foundParameterCount )
+                {
+                    matchingRoutes.Add( route );
+                    continue;
+                }
+            }
+
+            return matchingRoutes;
+        }
+
+        /// <summary>
+        /// Gets the best matching route to the given set of parameters. If no
+        /// matching route is found then <c>null</c> is returned.
+        /// </summary>
+        /// <param name="parameters">The parameters that contain the route and query string data.</param>
+        /// <returns>A single matching route.</returns>
+        internal PageRouteInfo GetBestMatchingRoute( Dictionary<string, string> parameters )
+        {
+            // Takes all the matching routes and orders them in descending order
+            // by parameter count. This is our best guess as the best match.
+            return GetAllMatchingRoutes( parameters )
+                .OrderByDescending( r => r.Parameters.Count )
+                .FirstOrDefault();
         }
 
         /// <summary>

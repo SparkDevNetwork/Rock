@@ -30,12 +30,13 @@ namespace Rock.Blocks.Utility
     /// <summary>
     /// Allows interaction with the SMS Test transport.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
+    /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "SMS Test Transport" )]
     [Category( "Utility" )]
     [Description( "Allows interaction with the SMS Test transport." )]
     [IconCssClass( "fa fa-chat" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -43,16 +44,14 @@ namespace Rock.Blocks.Utility
 
     [Rock.SystemGuid.EntityTypeGuid( "803db5ae-0a92-4b6d-a5bd-81845d1202ae" )]
     [Rock.SystemGuid.BlockTypeGuid( "2c2d6bc3-8257-4e23-8fe7-06e744d58ac0" )]
-    public class SmsTestTransport : RockObsidianDetailBlockType
+    public class SmsTestTransport : RockDetailBlockType
     {
-        public override string BlockFileUrl => $"{base.BlockFileUrl}.obs";
-
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var phoneNumbers = SystemPhoneNumberCache.All()
+            var phoneNumbers = SystemPhoneNumberCache.All( false )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )

@@ -33,11 +33,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// A block used to accept, decline or cancel group serving opportunities.
     /// </summary>
-    /// <seealso cref="RockMobileBlockType" />
+    /// <seealso cref="RockBlockType" />
     [DisplayName( "Schedule Toolbox" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows management of group scheduling for a specific person (worker)." )]
     [IconCssClass( "fa fa-user-check" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -61,7 +62,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_SCHEDULE_TOOLBOX )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_SCHEDULE_TOOLBOX )]
-    public class GroupScheduleToolbox : RockMobileBlockType
+    public class GroupScheduleToolbox : RockBlockType
     {
 
         #region Block Attributes
@@ -104,21 +105,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 4;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device.
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupScheduleToolbox";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 4 );
 
         /// <summary>
         /// Gets the mobile configuration.

@@ -20,12 +20,14 @@ using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
+using Newtonsoft.Json.Linq;
 #endif
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +36,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as comma-delimited list of Category.Guids
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CATEGORIES )]
     public class CategoriesFieldType : CategoryFieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType
     {
@@ -73,6 +75,72 @@ namespace Rock.Field.Types
         #endregion
 
         #region EditControl
+
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var categories = GetCategories( privateValue );
+
+            return categories.Select( c => c.Name ).JoinStrings( "," );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( publicValue ) )
+            {
+                return string.Empty;
+            }
+
+            var token = JToken.Parse( publicValue );
+
+            if ( token is JArray )
+            {
+                var categoryValues = publicValue.FromJsonOrNull<List<ListItemBag>>();
+                return categoryValues.ConvertAll( c => c.Value ).AsDelimited( "," );
+            }
+            else if ( token is JObject )
+            {
+                var categoryValue = publicValue.FromJsonOrNull<ListItemBag>();
+                return categoryValue.Value;
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var categories = GetCategories( privateValue ).ConvertAll( c => new ListItemBag() { Text = c.Name, Value = c.Guid.ToString() } );
+
+            return categories.ToCamelCaseJson( false, true );
+        }
+
+        /// <summary>
+        /// Converts the saved private value into categories
+        /// </summary>
+        /// <param name="privateValue">The private value.</param>
+        /// <returns></returns>
+        private List<CategoryCache> GetCategories( string privateValue )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return new List<CategoryCache>();
+            }
+
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
+
+            if ( guids.Count == 0 )
+            {
+                return new List<CategoryCache>();
+            }
+
+            var categories = guids.ConvertAll( c => CategoryCache.Get( c ) )
+                .ToList();
+
+            return categories;
+        }
 
         #endregion
 

@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -89,6 +85,42 @@ namespace Rock.Model
             if ( new Service<AchievementTypePrerequisite>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AchievementTypePrerequisite.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessage>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessage.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessage>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessage.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessageAdaptation>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessageAdaptation.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessageAdaptation>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessageAdaptation.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessageAdaptationSegment>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessageAdaptationSegment.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AdaptiveMessageAdaptationSegment>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AdaptiveMessageAdaptationSegment.FriendlyTypeName );
                 return false;
             }
 
@@ -837,6 +869,12 @@ namespace Rock.Model
             }
 
             if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ApprovedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ContentLibraryUploadedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
                 return false;
@@ -3448,7 +3486,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
     }
-
 }

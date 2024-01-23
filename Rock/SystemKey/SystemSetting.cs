@@ -307,5 +307,77 @@ namespace Rock.SystemKey
         /// The Captcha secret key.
         /// </summary>
         public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
+
+        /// <summary>
+        /// The protocol to use for sending telemetry for observability.
+        /// </summary>
+        public const string OBSERVABILITY_ENDPOINT_PROTOCOL = "core_ObservabilityEndpointProtocol";
+
+        /// <summary>
+        /// The URL to use for sending telemetry for observability.
+        /// </summary>
+        public const string OBSERVABILITY_ENDPOINT = "core_ObservabilityEndpoint";
+
+        /// <summary>
+        /// Determines if observability is enabled.
+        /// </summary>
+        public const string OBSERVABILITY_ENABLED = "core_ObservabilityEnabled";
+
+        /// <summary>
+        /// The headers to send with telemetry requests for observability.
+        /// </summary>
+        public const string OBSERVABILITY_ENDPOINT_HEADERS = "core_ObservabilityEndpointHeaders";
+
+        /// <summary>
+        /// The protocol to use for sending telemetry for observability.
+        /// </summary>
+        public const string OBSERVABILITY_TARGETED_QUERIES = "core_ObservabilityTargetedQueries";
+
+        /// <summary>
+        /// The maximum number of spans that can be created for a single trace
+        /// in observability.
+        /// </summary>
+        public const string OBSERVABILITY_SPAN_COUNT_LIMIT = "core_ObservabilitySpanCountLimit";
+
+        /// <summary>
+        /// The maximum length of any single attribute value in observability
+        /// traces.
+        /// </summary>
+        public const string OBSERVABILITY_MAX_ATTRIBUTE_LENGTH = "core_ObservabilityMaxAttributeLength";
+
+        /// <summary>
+        /// The label text for the SMS Opt-In checkbox
+        /// </summary>
+        public const string SMS_OPT_IN_MESSAGE_LABEL = "core_SmsOptInMessageLabel";
+
+        /// <summary>
+        /// The content library data (JSON).
+        /// </summary>
+        public const string CONTENT_LIBRARY_DATA_JSON = "core_ContentLibraryDataJson";
+
+        /// <summary>
+        /// Determine if Same Sex Couples are allowed.
+        /// </summary>
+        public const string BIBLE_STRICT_SPOUSE = "core_BibleStrictSpouse";
+
+        /// <summary>
+        /// The start date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_START_DATE = "core_AnalyticsCalendarDimensionStartDate";
+
+        /// <summary>
+        /// The end date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_END_DATE = "core_AnalyticsCalendarDimensionEndDate";
+
+        /// <summary>
+        /// The fiscal start month for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_FISCAL_START_MONTH = "core_AnalyticsCalendarDimensionFiscalStartMonth";
+
+        /// <summary>
+        /// Whether the giving month should use Sunday date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE = "core_AnalyticsCalendarDimensionGivingMonthUseSundayDate";
     }
 }

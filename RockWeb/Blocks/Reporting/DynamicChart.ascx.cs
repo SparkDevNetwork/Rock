@@ -41,51 +41,41 @@ namespace RockWeb.Blocks.Reporting
         Description = "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have its value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id.",
         IsRequired = false )]
     [CodeEditorField( "SQL",
-        Description = @"The SQL for the datasource. Output columns must be as follows:
-<ul>
-    <li>Bar or Line Chart
-        <ul>
-           <li>[SeriesName] : string or numeric </li>
-           <li>[DateTime] : DateTime </li>
-           <li>[YValue] : numeric </li>
-        </ul>
-    </li>
-    <li>Pie Chart
-        <ul>
-           <li>[MetricTitle] : string </li>
-           <li>[YValueTotal] : numeric </li>
-        </ul>
-    </li>
-</ul>
+        Description = "See the code example in the default text of the block.",
+        DefaultValue = @"/*The SQL for the datasource. Output columns must be as follows:
+Bar or Line Chart
+    [SeriesName] : string or numeric
+    [DateTime] : DateTime
+    [YValue] : numeric
 
-Example: 
-<code>
-    <pre>
-        -- Get Exception count per day for the last 10 days.
-        WITH [Last10Days]
-        AS
-        (
-            SELECT CONVERT(date, GETDATE()) [Date]
-            UNION ALL
-            SELECT DATEADD(day, -1, [Date])
-            FROM [Last10Days]
-            WHERE ([Date] > GETDATE() - 9)
-        )
-        SELECT 'Exception Count' [SeriesName]
-            , d.[Date] [DateTime]
-            , CASE WHEN exceptions.[ExceptionCount] IS NOT NULL THEN exceptions.[ExceptionCount] ELSE 0 END [YValue]
-        FROM [Last10Days] d
-        LEFT OUTER JOIN
-        (
-            SELECT CONVERT(date, [CreatedDateTime]) [Date]
-                , COUNT(*) [ExceptionCount]
-            FROM [ExceptionLog]
-            GROUP BY CONVERT(date, [CreatedDateTime])
-        ) exceptions
-            ON d.[Date] = exceptions.[Date]
-        ORDER BY d.[Date];
-    </pre>
-</code>",
+Pie Chart
+[MetricTitle] : string
+[YValueTotal] : numeric
+*/
+
+-- Get Exception count per day for the last 10 days.
+WITH [Last10Days]
+AS
+(
+    SELECT CONVERT(date, GETDATE()) [Date]
+    UNION ALL
+    SELECT DATEADD(day, -1, [Date])
+    FROM [Last10Days]
+    WHERE ([Date] > GETDATE() - 9)
+)
+SELECT 'Exception Count' [SeriesName]
+    , d.[Date] [DateTime]
+    , CASE WHEN exceptions.[ExceptionCount] IS NOT NULL THEN exceptions.[ExceptionCount] ELSE 0 END [YValue]
+FROM [Last10Days] d
+LEFT OUTER JOIN
+(
+    SELECT CONVERT(date, [CreatedDateTime]) [Date]
+        , COUNT(*) [ExceptionCount]
+    FROM [ExceptionLog]
+    GROUP BY CONVERT(date, [CreatedDateTime])
+) exceptions
+    ON d.[Date] = exceptions.[Date]
+ORDER BY d.[Date];",
         EditorMode = CodeEditorMode.Sql )]
     [TextField( "Title",
         Description = "The title of the widget",
@@ -315,7 +305,7 @@ Example:
             var categoryFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "Category", "MetricTitle" } );
             var yValueFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "Value", "YValue", "YValueTotal" } );
             var xValueFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "XValue", "XValueTotal" } );
-            var dateTimeFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "DateTimeValue", "DateTime", "XValue" } );
+            var dateTimeFieldName = GetFirstMatchedFieldName( sampleRow, new List<string> { "DateTimeValue", "DateTime" } );
 
             if ( _chartType == "pie" )
             {
@@ -324,7 +314,22 @@ Example:
                 // It can only be used to plot category data, not a time series.
                 if ( categoryFieldName == null )
                 {
-                    SetBlockConfigurationError( "[Dynamic Chart]: Pie Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                    if ( !string.IsNullOrWhiteSpace( seriesFieldName ) )
+                    {
+                        // Assume that each series is intended to be plotted as a pie category.
+                        categoryFieldName = seriesFieldName;
+                        seriesFieldName = null;
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( xValueFieldName ) )
+                    {
+                        // Assume that the XValue is intended to be plotted as a pie category.
+                        categoryFieldName = xValueFieldName;
+                        xValueFieldName = null;
+                    }
+                    else
+                    {
+                        SetBlockConfigurationError( "[Dynamic Chart]: Pie Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                    }
                 }
                 if ( yValueFieldName == null )
                 {
@@ -338,7 +343,22 @@ Example:
                 // It can only be used to plot category data, not a time series.
                 if ( categoryFieldName == null )
                 {
-                    SetBlockConfigurationError( "[Dynamic Chart]: Bar Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                    if ( !string.IsNullOrWhiteSpace( xValueFieldName ) )
+                    {
+                        // Assume that the X-axis values represent the bar categories.
+                        categoryFieldName = xValueFieldName;
+                        xValueFieldName = null;
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( seriesFieldName ) )
+                    {
+                        // Assume that each series is intended to be plotted as a bar category.
+                        categoryFieldName = seriesFieldName;
+                        seriesFieldName = null;
+                    }
+                    else
+                    {
+                        SetBlockConfigurationError( "[Dynamic Chart]: Bar Chart dataset must contain a category field: [Category] or [MetricTitle]" );
+                    }
                 }
                 if ( yValueFieldName == null )
                 {
@@ -347,8 +367,8 @@ Example:
             }
             else
             {
-                // The Line Chart can represent a time series or an x vs Y graph.
-                // The data set requires the following columns:
+                // The Line Chart can represent a time series or an X vs Y graph.
+                // The data set may contain the following columns:
                 // SeriesName (string,optional), XValue (numeric) or DateTime (datetime), YValue (numeric).
                 // If DateTime exists, the chart will be plotted as a time series.
                 // If XValue exists, the chart will be plotted as an X vs Y graph.
@@ -395,6 +415,11 @@ Example:
             }
             else
             {
+                // If a category field name is not specified, use the XValue.
+                if ( string.IsNullOrWhiteSpace( categoryFieldName ) )
+                {
+                    categoryFieldName = xValueFieldName;
+                }
                 var categoryData = GetChartDataForCategorySeries( dataTable, seriesFieldName, categoryFieldName, yValueFieldName );
                 chartControl.SetChartDataItems( categoryData );
             }
@@ -552,7 +577,7 @@ Example:
             {
                 if ( hasSeries )
                 {
-                    var seriesName = Convert.ToString( row[seriesFieldName] ).Trim();
+                    var seriesName = row[seriesFieldName].ToStringOrDefault("").Trim();
                     if ( datasetsMap.ContainsKey( seriesName ) )
                     {
                         seriesDataset = datasetsMap[seriesName];
@@ -567,8 +592,9 @@ Example:
                 }
 
                 var dataPoint = new ChartJsCategorySeriesDataPoint();
-                dataPoint.Category = Convert.ToString( row[categoryFieldName] );
-                dataPoint.Value = Convert.ToDecimal( row[valueFieldName] );
+
+                dataPoint.Category = row[categoryFieldName].ToStringOrDefault("").Trim();
+                dataPoint.Value = row[valueFieldName].ToStringOrDefault("0").AsDecimal();
 
                 seriesDataset.DataPoints.Add( dataPoint );
             }
@@ -617,7 +643,7 @@ Example:
             {
                 if ( hasSeries )
                 {
-                    var seriesName = Convert.ToString( row[seriesFieldName] ).Trim();
+                    var seriesName = row[seriesFieldName].ToStringOrDefault("").Trim();
                     if ( datasetsMap.ContainsKey( seriesName ) )
                     {
                         seriesDataset = datasetsMap[seriesName];
@@ -634,13 +660,19 @@ Example:
                 var dataPoint = new ChartJsTimeSeriesDataPoint();
                 if ( datetimeFieldName == "DateTime" )
                 {
-                    dataPoint.DateTimeStamp = ( row["DateTime"] as DateTime? ).Value.ToJavascriptMilliseconds();
+                    var dateTimeValue = row["DateTime"].ToStringOrDefault( "" ).AsDateTime();
+                    if ( dateTimeValue != null )
+                    {
+                        dataPoint.DateTimeStamp = dateTimeValue.Value.ToJavascriptMilliseconds();
+                    }
                 }
                 else if ( datetimeFieldName == "XValue" )
                 {
-                    dataPoint.DateTimeStamp = ( row["XValue"] as int? ).Value;
+                    // Try to convert the field to a datestamp.
+                    dataPoint.DateTimeStamp = row["XValue"].ToStringOrDefault( "0" ).AsInteger();
                 }
-                dataPoint.Value = Convert.ToDecimal( row[valueFieldName] );
+
+                dataPoint.Value = row[valueFieldName].ToStringOrDefault("0").AsDecimal();
 
                 seriesDataset.DataPoints.Add( dataPoint );
             }

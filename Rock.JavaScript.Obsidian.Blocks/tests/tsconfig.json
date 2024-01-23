@@ -1,0 +1,28 @@
+{
+    "extends": "../tsconfig.base.json",
+    "include": [
+        "./**/*.ts"
+    ],
+    "exclude": [],
+    "references": [
+        { "path": "../src/Bus" },
+        { "path": "../src/Cms" },
+        { "path": "../src/Communication" },
+        { "path": "../src/Core" },
+        { "path": "../src/Crm" },
+        { "path": "../src/Engagement" },
+        { "path": "../src/Event" },
+        { "path": "../src/Event" },
+        { "path": "../src/Example" },
+        { "path": "../src/Finance" },
+        { "path": "../src/Group" },
+        { "path": "../src/Mobile" },
+        { "path": "../src/Prayer" },
+        { "path": "../src/Reporting" },
+        { "path": "../src/Security" },
+        { "path": "../src/Tv" },
+        { "path": "../src/Utility" },
+        { "path": "../src/WebFarm" },
+        { "path": "../src/WorkFlow" }
+    ]
+}

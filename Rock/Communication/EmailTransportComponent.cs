@@ -22,12 +22,16 @@ using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.Transactions;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Communication
@@ -192,7 +196,7 @@ namespace Rock.Communication
                     {
                         var getRecipientTimer = System.Diagnostics.Stopwatch.StartNew();
                         var recipient = GetNextPending( communication.Id, mediumEntityTypeId, communication.IsBulkCommunication );
-                        RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: It took {1} ticks to get the next pending recipient.", nameof( SendAsync ), getRecipientTimer.ElapsedTicks );
+                        Logger.LogDebug( "{0}: It took {1} ticks to get the next pending recipient.", nameof( SendAsync ), getRecipientTimer.ElapsedTicks );
 
                         // This means we are done, break the loop
                         if ( recipient == null )
@@ -204,7 +208,7 @@ namespace Rock.Communication
                         var startMutexWait = System.Diagnostics.Stopwatch.StartNew();
                         await mutex.WaitAsync().ConfigureAwait( false );
 
-                        RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Starting to send {1} to {2} with a {3} tick wait.", nameof( SendAsync ), communication.Name, recipient.Id, startMutexWait.ElapsedTicks );
+                        Logger.LogDebug( "{0}: Starting to send {1} to {2} with a {3} tick wait.", nameof( SendAsync ), communication.Name, recipient.Id, startMutexWait.ElapsedTicks );
                         sendingTask.Add( ThrottleHelper.ThrottledExecute( () => SendToRecipientAsync( recipient.Id, communication, mediumEntityTypeId, mediumAttributes, mergeFields, templateEmailMessage, organizationEmail ), mutex ) );
                     }
 
@@ -774,6 +778,9 @@ namespace Rock.Communication
             Guid? recipientGuid = null;
             recipientEmail.SystemCommunicationId = emailMessage.SystemCommunicationId;
             recipientEmail.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
+
+            // Headers
+
             if ( emailMessage.CreateCommunicationRecord )
             {
                 recipientGuid = Guid.NewGuid();
@@ -921,9 +928,80 @@ namespace Rock.Communication
                 recipientEmail.Message = htmlBody;
             }
 
+            // Headers
+            var globalAttributes = GlobalAttributesCache.Get();
+
+            // communication_recipient_guid
             recipientEmail.MessageMetaData["communication_recipient_guid"] = communicationRecipient.Guid.ToString();
 
+            // List-Unsubscribe & List-Unsubscribe-Post
+            AddListUnsubscribeEmailHeaders( recipientEmail, communication, communicationRecipient, mediumAttributes, globalAttributes, mergeFields );
+
+            // List-Id
+            AddListIdEmailHeaders( recipientEmail, communication, globalAttributes );
+
             return recipientEmail;
+        }
+
+        private void AddListIdEmailHeaders( RockEmailMessage recipientEmail, Rock.Model.Communication communication, GlobalAttributesCache globalAttributes )
+        {
+            const string ListIdHeaderKey = "List-Id";
+            var hostDomain = new UriBuilder( globalAttributes.GetValue( "PublicApplicationRoot" ) ).Host;
+            
+            if ( communication.ListGroupId.HasValue )
+            {
+                recipientEmail.MessageMetaData[ListIdHeaderKey] = $"{communication.ListGroup?.Name ?? globalAttributes.GetValue( "OrganizationName" )} <{communication.ListGroupId.Value}.{hostDomain}>";
+            }
+            else
+            {
+                recipientEmail.MessageMetaData[ListIdHeaderKey] = $"{globalAttributes.GetValue( "OrganizationName" )} <general.{hostDomain}>";
+            }
+        }
+
+        private void AddListUnsubscribeEmailHeaders( RockEmailMessage recipientEmail, Rock.Model.Communication communication, CommunicationRecipient communicationRecipient, IDictionary<string, string> mediumAttributes, GlobalAttributesCache globalAttributes, IDictionary<string, object> mergeFields )
+        {
+            var listUnsubscribeHeaderValues = new List<string>();
+
+            var unsubscribeEmail = mediumAttributes.GetValueOrNull( "RequestUnsubscribeEmail" );
+            if ( unsubscribeEmail.IsNullOrWhiteSpace() )
+            {
+                // Default to the organization email if the RequestUnsubscribeEmail attribute value is missing or white space.
+                unsubscribeEmail = globalAttributes.GetValue( "OrganizationEmail" );
+            }
+            if ( unsubscribeEmail.IsNotNullOrWhiteSpace() )
+            {
+                listUnsubscribeHeaderValues.Add( $"<mailto:{unsubscribeEmail}>" );
+            }
+
+            var isOneClickUnsubscribeEnabled = mediumAttributes.GetValueOrNull( "EnableOneClickUnsubscribe" ).AsBoolean();
+            if ( isOneClickUnsubscribeEnabled )
+            {
+                // If Enable One-Click Unsubscribe is true, then the URL should be the People API Unsubscribe endpoint.
+                var personActionIdentifier = communicationRecipient.PersonAlias.Person.GetPersonActionIdentifier( "Unsubscribe" );
+                var rootUrl = globalAttributes.GetValue( "PublicApplicationRoot" ).RemoveTrailingForwardslash();
+                listUnsubscribeHeaderValues.Add( $"<{rootUrl}/api/People/OneClickUnsubscribe/{personActionIdentifier}{(communication?.ListGroupId.HasValue == true ? $"?communicationListIdKey={communication.ListGroupId}" : string.Empty)}>" );
+            }
+            else if ( mediumAttributes.TryGetValue( "UnsubscribeURL", out var unsubscribeUrl )
+                      && unsubscribeUrl.IsNotNullOrWhiteSpace() )
+            {
+                // If Enable One-Click Unsubscribe is false, then use the UnsubscribeURL value.
+                var httpValue = unsubscribeUrl.ResolveMergeFields( mergeFields, recipientEmail.CurrentPerson, recipientEmail.EnabledLavaCommands );
+                if ( httpValue.IsNotNullOrWhiteSpace() )
+                {
+                    listUnsubscribeHeaderValues.Add( $"<{httpValue}>" );
+                }
+            }
+
+            if ( listUnsubscribeHeaderValues.Any() )
+            {
+                recipientEmail.MessageMetaData["List-Unsubscribe"] = string.Join( ", ", listUnsubscribeHeaderValues );
+
+                // Only add the post header if the List-Unsubscribe header is added.
+                if ( isOneClickUnsubscribeEnabled )
+                {
+                    recipientEmail.MessageMetaData["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+                }
+            }
         }
 
         /// <summary>
@@ -1054,7 +1132,7 @@ namespace Rock.Communication
                 rockContext.SaveChanges();
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Took {1} ticks to retrieve and send the email.", nameof( SendToRecipientAsync ), methodTimer.ElapsedTicks );
+            Logger.LogDebug( "{0}: Took {1} ticks to retrieve and send the email.", nameof( SendToRecipientAsync ), methodTimer.ElapsedTicks );
         }
 
         /// <summary>

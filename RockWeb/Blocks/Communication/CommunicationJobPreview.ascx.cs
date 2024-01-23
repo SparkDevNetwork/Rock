@@ -70,6 +70,14 @@ namespace RockWeb.Blocks.Communication
         IsRequired = false,
         Key = AttributeKey.EnabledLavaCommands,
         Order = 5 )]
+
+    [CodeEditorField( "Lava Template Append",
+        Description = "This Lava will be appended to the system communication template to help setup any data that the template needs. This data would typically be passed to the template by a job or other means.",
+        DefaultValue = "",
+        IsRequired = false,
+        Key = AttributeKey.LavaTemplateAppend,
+        Order = 6)]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "95366DA1-D878-4A9A-A26F-83160DBE784F" )]
@@ -92,7 +100,7 @@ namespace RockWeb.Blocks.Communication
                                     class='email-preview js-email-preview overflow-auto' style='position: relative; height: 720px;'>
                                     <iframe name='emailPreview' src='javascript: window.frameElement.getAttribute('srcdoc');'
                                         id='ifEmailPreview' name='emailpreview-iframe'
-                                        class='emaileditor-iframe js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll' frameborder='0' border='0' cellspacing='0'
+                                        class='emaileditor-iframe inset-0 w-100 js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll' frameborder='0' border='0' cellspacing='0'
                                         scrolling='no' srcdoc='[SOURCE_REPLACEMENT]''></iframe>
                                     <div class='resize-sensor'
                                         style='position: absolute; inset: 0px; overflow: scroll; z-index: -1; visibility: hidden;'>
@@ -130,6 +138,7 @@ namespace RockWeb.Blocks.Communication
             public const string PreviousWeeksToShow = "PreviousWeeksToShow";
             public const string FutureWeeksToShow = "FutureWeeksToShow";
             public const string EnabledLavaCommands = "EnabledLavaCommands";
+            public const string LavaTemplateAppend = "LavaTemplateAppend";
         }
 
         #endregion Attribute Keys
@@ -337,7 +346,7 @@ namespace RockWeb.Blocks.Communication
                 lavaDebug.Visible = true;
                 lavaDebug.Text = mergeFields.lavaDebugInfo();
 
-                // Remove Lava Debug from the message content before it getss sent
+                // Remove Lava Debug from the message content before it gets sent
                 rockEmailMessage.Message = rockEmailMessage.Message.Replace( PageConstants.LavaDebugCommand, string.Empty );
             }
             else
@@ -609,6 +618,14 @@ namespace RockWeb.Blocks.Communication
                     AppRoot = ResolveRockUrl( "~/" ),
                     ThemeRoot = ResolveRockUrl( "~~/" )
                 };
+
+                // Append the Lava from the block settings that will be used to setup any data that a job
+                // or other code would typically provide.
+                var appendTemplate = GetAttributeValue( AttributeKey.LavaTemplateAppend );
+                if ( appendTemplate.IsNotNullOrWhiteSpace() )
+                {
+                    rockMessage.Message = appendTemplate + rockMessage.Message;
+                }
 
                 return rockMessage;
             }

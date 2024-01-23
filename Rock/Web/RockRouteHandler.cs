@@ -23,6 +23,8 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Message;
 using Rock.Logging;
 using Rock.Model;
@@ -337,7 +339,8 @@ namespace Rock.Web
 
                     var defaultLayoutPath = PageCache.FormatPath( theme, layout );
 
-                    RockLogger.Log.Error( RockLogDomains.Cms, $"Page Layout \"{ layoutPath }\" is invalid. Reverting to default layout \"{ defaultLayoutPath }\"..." );
+                    RockLogger.LoggerFactory.CreateLogger<RockRouteHandler>()
+                        .LogError( $"Page Layout \"{ layoutPath }\" is invalid. Reverting to default layout \"{ defaultLayoutPath }\"..." );
 
                     return CreateRockPage( page, defaultLayoutPath, routeId, parms, routeHttpRequest );
                 }
@@ -441,7 +444,11 @@ namespace Rock.Web
             routesToInsert.Ignore( "{resource}.axd/{*pathInfo}" );
 
             //Add page routes, order is very important here as IIS takes the first match
-            IOrderedEnumerable<PageRoute> pageRoutes = pageRouteService.Queryable().AsNoTracking().ToList().OrderBy( r => r.Route, StringComparer.OrdinalIgnoreCase );
+            IOrderedEnumerable<PageRoute> pageRoutes = pageRouteService.Queryable()
+                .AsNoTracking()
+                .Where( r => r.Page.Layout.Site.SiteType == SiteType.Web )
+                .ToList()
+                .OrderBy( r => r.Route, StringComparer.OrdinalIgnoreCase );
 
             foreach ( var pageRoute in pageRoutes )
             {

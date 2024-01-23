@@ -16,7 +16,7 @@
 //
 import { defineComponent, computed } from "vue";
 import { getFieldEditorProps } from "./utils";
-import DropDownList from "@Obsidian/Controls/dropDownList";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey, ReminderTypeFieldItem } from "./reminderTypeField.partial";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";

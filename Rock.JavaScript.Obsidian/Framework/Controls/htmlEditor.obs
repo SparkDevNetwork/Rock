@@ -1,0 +1,549 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-model="internalValue"
+                   :formGroupClasses="`html-editor ${formGroupClasses}`"
+                   name="html-editor">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="note-editor-container">
+                    <div class="note-editor note-frame panel panel-default">
+                        <div :id="assignToolbarId(uniqueId)"
+                             class="panel-heading note-toolbar"
+                             ref="toolbarElement"></div>
+
+                        <div class="note-editing-area">
+                            <EditSourceCodePlugin v-model="internalValue"
+                                                  :disabled="disabled"
+                                                  :editorHeight="editorHeight + yOffset"
+                                                  :mergeFields="mergeFields"
+                                                  ref="editSourceCodePlugin"
+                                                  :startInCodeEditorMode="startInCodeEditorMode"
+                                                  :tinyMceInstance="tinyMceInstance"
+                                                  :toolbarElement="toolbarElement">
+                                <template v-slot="{ isEditorShown }">
+                                    <div v-show="!updateIsEditorShown(isEditorShown)"
+                                         class="note-editable"
+                                         :id="assignEditorId(uniqueId)"
+                                         ref="editorElement"></div>
+                                </template>
+                            </EditSourceCodePlugin>
+                        </div>
+
+                        <div class="note-statusbar" ref="resizerElement" role="status">
+                            <div aria-label="Resize" class="note-resizebar">
+                                <div class="note-icon-bar"></div>
+                                <div class="note-icon-bar"></div>
+                                <div class="note-icon-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ParagraphPlugin ref="paragraphPlugin"
+                             :tinyMceInstance="tinyMceInstance"
+                             :toolbarElement="toolbarElement" />
+
+            <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin"
+                                    :tinyMceInstance="tinyMceInstance"
+                                    :toolbarElement="toolbarElement" />
+
+            <MergeFieldPlugin :mergeFields="mergeFields"
+                              ref="mergeFieldPlugin"
+                              :tinyMceInstance="tinyMceInstance"
+                              :toolbarElement="toolbarElement" />
+
+            <ImageBrowserPlugin v-if="false"
+                                ref="imageBrowserPlugin"
+                                :tinyMceInstance="tinyMceInstance"
+                                :toolbarElement="toolbarElement" />
+
+            <FileBrowserPlugin v-if="false"
+                               ref="fileBrowserPlugin"
+                               :tinyMceInstance="tinyMceInstance"
+                               :toolbarElement="toolbarElement" />
+
+            <AssetManagerPlugin v-if="false"
+                                ref="assetManagerPlugin"
+                                :tinyMceInstance="tinyMceInstance"
+                                :toolbarElement="toolbarElement" />
+        </template>
+    </RockFormField>
+</template>
+
+<style scoped>
+:deep(.tox.tox-tinymce-inline .tox-editor-header) {
+    border: none;
+}
+
+.note-editable {
+    height: v-bind(editorHeightCss);
+}
+
+.note-editor-container {
+    position: relative;
+}
+
+.note-editor .note-toolbar {
+    padding: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import AssetManagerPlugin from "./HtmlEditor/assetManagerPlugin.partial.obs";
+    import EditSourceCodePlugin from "./HtmlEditor/editSourceCodePlugin.partial.obs";
+    import FileBrowserPlugin from "./HtmlEditor/fileBrowserPlugin.partial.obs";
+    import ImageBrowserPlugin from "./HtmlEditor/imageBrowserPlugin.partial.obs";
+    import MergeFieldPlugin from "./HtmlEditor/mergeFieldPlugin.partial.obs";
+    import ParagraphPlugin from "./HtmlEditor/paragraphPlugin.partial.obs";
+    import PasteAsPlainTextPlugin from "./HtmlEditor/pasteAsPlainTextPlugin.partial.obs";
+    import { tinymce, Editor, EditorEvent, Events } from "@Obsidian/Libs/tinymce";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { scopeStyleSheets, unscopeStyleSheets } from "./HtmlEditor/utils.partial";
+
+    type ToolbarConfig = "light" | "full";
+
+    const props = defineProps({
+        /** The HTML value. */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** Custom classes to add to the form group. */
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** Whether or not to disable the control. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Comma-delimited merge fields available for selection.
+         * This should include either a list of entity type names (full name), or other non-object string values.
+         *
+         * Format should be one of the following:
+         * @example
+         * "FieldName" // Label will be a case-delimited version of FieldName (i.e. "Field Name")
+         * "FieldName|Label" // Same as previous but with a custom label.
+         * "FieldName^EntityType" // Will evaluate the entity type and add a navigable tree for the object's properties and attributes. Label will be a case delimited version of FieldName (i.e. "Field Name").
+         * "FieldName^EntityType|Label" // Same as previous but with a custom label.
+         */
+        mergeFields: {
+            type: Array as PropType<string[] | undefined>,
+            required: false
+        },
+
+        /** Editor height in pixels (not including toolbar). */
+        editorHeight: {
+            type: Number as PropType<number>,
+            default: 600
+        },
+
+        /** When set to `true`, the code editor will be shown instead on initialization. */
+        startInCodeEditorMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The toolbar mode.
+         * When set to "light", the toolbar will be a lighter more airy view.
+         * When set to "full", the toolbar will display the full monty.
+         */
+        toolbar: {
+            type: String as PropType<ToolbarConfig>,
+            default: "light"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const editorId = ref<string>();
+    const editorElement = ref<HTMLElement>();
+    const toolbarId = ref<string>();
+    const toolbarElement = ref<HTMLElement>();
+    const tinyMceInstance = ref<Editor>();
+    // Keep track of the TinyMCE value to compare with the modelValue.
+    const tinyMceValue = ref<string>();
+    const resizerElement = ref<HTMLElement>();
+    const yOffset = ref<number>(0);
+    const isEditorShown = ref<boolean>(false);
+
+    // Plugins
+    const pasteAsPlainTextPlugin = ref<InstanceType<typeof PasteAsPlainTextPlugin> | undefined>();
+    const mergeFieldPlugin = ref<InstanceType<typeof MergeFieldPlugin> | undefined>();
+    const paragraphPlugin = ref<InstanceType<typeof ParagraphPlugin> | undefined>();
+    const editSourceCodePlugin = ref<InstanceType<typeof EditSourceCodePlugin> | undefined>();
+    const imageBrowserPlugin = ref<InstanceType<typeof ImageBrowserPlugin> | undefined>();
+    const fileBrowserPlugin = ref<InstanceType<typeof FileBrowserPlugin> | undefined>();
+    const assetManagerPlugin = ref<InstanceType<typeof AssetManagerPlugin> | undefined>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const editorHeightCss = computed<string>(() => `${props.editorHeight + yOffset.value}px`);
+
+    // #endregion
+
+    // #region Functions
+
+    /** Returns the ID assigned to the editor HTML element. */
+    function assignEditorId(uniquePart: string): string {
+        editorId.value = `html-editor-container-${uniquePart}`;
+        return editorId.value;
+    }
+
+    /** Returns the ID assigned to the editor toolbar HTML element. */
+    function assignToolbarId(uniquePart: string): string {
+        toolbarId.value = `html-editor-toolbar-container-${uniquePart}`;
+        return toolbarId.value;
+    }
+
+    /** Updates and returns the isEditorShown value. */
+    function updateIsEditorShown(isShown: boolean): boolean {
+        isEditorShown.value = isShown;
+        return isEditorShown.value;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Event handler for the mouse being pressed while the pointer is inside the resize element. This starts the resize behavior. */
+    function onResizeStart(_event: MouseEvent): void {
+        document.addEventListener("mousemove", onResize);
+        document.addEventListener("mouseup", onResizeEnd, { once: true });
+    }
+
+    /** Event handler for the mouse being moved while the resizer is being dragged. This resizes the editor. */
+    function onResize(event: MouseEvent): void {
+        yOffset.value += event.movementY;
+    }
+
+    /** Event handler for the mouse being released while the resizer is being dragged. This ends the resize behavior. */
+    function onResizeEnd(_event: MouseEvent): void {
+        document.removeEventListener("mousemove", onResize);
+        resizerElement.value?.addEventListener("mousedown", onResizeStart, { once: true });
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Update the editor content when the model value changes externally.
+    watchEffect(() => {
+        if (tinyMceInstance.value && !isEditorShown.value && tinyMceValue.value !== internalValue.value) {
+            tinyMceInstance.value.setContent(internalValue.value);
+
+            // Get the new content from the editor after setting it
+            // just in case it gets manipulated by plugins.
+            tinyMceValue.value = tinyMceInstance.value.getContent();
+        }
+    }, {
+        // "post" will cause the effect to initially execute after the DOM is updated (after the editor is initialized).
+        flush: "post"
+    });
+
+    // Clear the resize offset when the `editorHeight` prop changes.
+    watch(() => props.editorHeight, () => {
+        yOffset.value = 0;
+    });
+
+    // Disable the editor when the `disabled` prop changes.
+    watch(() => props.disabled, () => {
+        setEnabled(!props.disabled);
+    }, {
+        // "post" will cause the effect to initially execute after the DOM is updated (after the editor is initialized).
+        flush: "post"
+    });
+
+    /** Sets the enabled state of the editor. */
+    function setEnabled(isEnabled: boolean): void {
+        if (tinyMceInstance.value && !isEditorShown.value) {
+            // Enable/disable the toolbar and border.
+            tinyMceInstance.value.ui?.setEnabled(isEnabled);
+
+            // Enable/disable the content.
+            const editorBody = tinyMceInstance.value.getBody();
+            if (editorBody) {
+                editorBody.setAttribute("contenteditable", `${isEnabled}`);
+            }
+        }
+    }
+
+    // Initialize the editor.
+    onMounted(() => {
+        if (editorId.value && toolbarId.value) {
+            // Define the toolbar buttons depending on the toolbar config (light or full).
+            // They are displayed in the order in which they are defined
+            // and grouped using pipe (|) characters; e.g.,
+            // {
+            //   "ToolbarConfig": "spaceDelimitedButtonsInGroup1 | spaceDelimitedButtonsInGroup2 | ... | spaceDelimitedButtonsInGroupN"
+            // }
+            // FYI: Pasting from Word directly in the content area formats correctly,
+            // so no need to create a rockpastefromword plugin at this point.
+            // https://www.tiny.cloud/docs/tinymce/6/available-toolbar-buttons/
+            const toolbarConfigs: Record<ToolbarConfig, string> = {
+                "light": `${editSourceCodePlugin.value?.id} | bold italic strikethrough link forecolor backcolor styles numlist bullist | removeformat | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | undo redo`,
+                "full": `${editSourceCodePlugin.value?.id} | bold italic underline strikethrough numlist bullist link | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | help`,
+            };
+
+            // Get the default system font.
+            // This will add the "Default" option to the Font Family toolbar button.
+            let defaultSystemFont: string = "";
+            if (editorElement.value) {
+                try {
+                    defaultSystemFont = getComputedStyle(editorElement.value)?.fontFamily ?? "";
+                }
+                catch {
+                    // Ignore error if unable to retrieve the default system font.
+                }
+            }
+
+            tinymce.init({
+                // Add the editor directly to the target element (instead of in an iframe)
+                // by configuring an inline editor with a fixed toolbar.
+                // An inline editor is preferred so the editor will inherit the Rock styles
+                // and have access to the same APIs loaded in the page.
+                // https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#persistent-inline-editor-toolbar-options
+                selector: `#${editorId.value}`,
+                inline: true,
+                fixed_toolbar_container: `#${toolbarId.value}`,
+                toolbar_persist: true,
+                toolbar_mode: "wrap",
+
+                // The default skin CSS is loaded manually as an import in
+                // @Obsidian/Libs/tinymce.ts, so no need to specify one here.
+                skin: false,
+
+                // Content CSS is not needed since TinyMCE is loaded inline (instead of in an iframe)
+                // and will inherit global Rock styles.
+                content_css: false,
+
+                // Hide the header menu bar and the footer status bar (which includes the TinyMCE attribution).
+                menubar: false,
+                statusbar: false,
+
+                // Allow the editor to be resizable: true - vertical, false - none, 'both' - horizontal & vertical
+                resize: "both",
+
+                // Only include the plugins that are needed to keep TinyMCE leaner.
+                plugins: "image link lists media searchreplace table help",
+
+                // Enable the use of <style> tags.
+                // "+" means "add this to the existing list of valid elements".
+                // "div[style]" means "allow <style> elements as child elements of <div> elements".
+                // Since this is an inline editor (not in an iframe), we need to use `+div[style]` instead of `+body[style]`.
+                // https://www.tiny.cloud/docs/tinymce/latest/content-filtering/#valid_children
+                valid_children: "+div[style]",
+
+                // Set the toolbar buttons.
+                toolbar: toolbarConfigs[props.toolbar],
+
+                // Define the options for the `fontfamily` toolbar button.
+                // https://www.tiny.cloud/docs/tinymce/latest/user-formatting-options/#font_family_formats
+                font_family_formats: `Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier;${defaultSystemFont ? ` Default=${defaultSystemFont};` : ""} Helvetica=helvetica; Impact=impact,chicago; Tahoma=tahoma,arial,helvetica,sans-serif; Times New Roman=times new roman,times; Verdana=verdana,geneva;`,
+
+                // Define the options for the `fontsize` toolbar button.
+                // https://www.tiny.cloud/docs/tinymce/latest/user-formatting-options/#font_size_formats
+                font_size_formats: "8px 9px 10px 11px 12px 14px 16px 18px 24px 36px",
+
+                // Define the options for the `styles` toolbar button.
+                // This were chosen to match the previous HTML Editor control.
+                // https://www.tiny.cloud/docs/tinymce/6/user-formatting-options/#style_formats
+                style_formats: [
+                    { title: "Normal", format: "p" },
+                    // TODO There is a TinyMCE style that hides the left border for the <blockquote> format option.
+                    { title: "Quote", block: "blockquote" },
+                    { title: "Code", format: "pre" },
+                    { title: "Heading 1", format: "h1" },
+                    { title: "Heading 2", format: "h2" },
+                    { title: "Heading 3", format: "h3" },
+                    { title: "Heading 4", format: "h4" },
+                    { title: "Heading 5", format: "h5" },
+                    { title: "Heading 6", format: "h6" }
+                ],
+
+                // Define the options for the `forecolor` and `backcolor` toolbar buttons.
+                // https://www.tiny.cloud/docs/tinymce/6/user-formatting-options/#text-color-options
+                color_map: [
+                    "#000000", "Black",
+                    "#424242", "Tundora",
+                    "#636363", "Dove Gray",
+                    "#9C9C94", "Star Dust",
+                    "#CEC6CE", "Pale Slate",
+                    "#EFEFEF", "Gallery",
+                    "#F7F7F7", "Alabaster",
+                    "#FFFFFF", "White",
+
+                    "#FF0000", "Red",
+                    "#FF9C00", "Orange Peel",
+                    "#FFFF00", "Yellow",
+                    "#00FF00", "Green",
+                    "#00FFFF", "Cyan",
+                    "#0000FF", "Blue",
+                    "#9C00FF", "Electric Violet",
+                    "#FF00FF", "Magenta",
+
+                    "#F7C6CE", "Azalea",
+                    "#FFE7CE", "Karry",
+                    "#FFEFC6", "Egg White",
+                    "#D6EFD6", "Zanah",
+                    "#CEDEE7", "Botticelli",
+                    "#CEE7F7", "Tropical Blue",
+                    "#D6D6E7", "Mischka",
+                    "#E7D6DE", "Twilight",
+
+                    "#E79C9C", "Tonys Pink",
+                    "#FFC69C", "Peach Orange",
+                    "#FFE79C", "Cream Brulee",
+                    "#B5D6A5", "Sprout",
+                    "#A5C6CE", "Casper",
+                    "#9CC6EF", "Perano",
+                    "#B5A5D6", "Cold Purple",
+                    "#D6A5BD", "Careys Pink",
+
+                    "#E76363", "Mandy",
+                    "#F7AD6B", "Rajah",
+                    "#FFD663", "Dandelion",
+                    "#94BD7B", "Olivine",
+                    "#73A5AD", "Gulf Stream",
+                    "#6BADDE", "Viking",
+                    "#8C7BC6", "Blue Marguerite",
+                    "#C67BA5", "Puce",
+
+                    "#CE0000", "Guardsman Red",
+                    "#E79439", "Fire Bush",
+                    "#EFC631", "Golden Dream",
+                    "#6BA54A", "Chelsea Cucumber",
+                    "#4A7B8C", "Smalt Blue",
+                    "#3984C6", "Boston Blue",
+                    "#634AA5", "Butterfly Bush",
+                    "#A54A7B", "Cadillac",
+
+                    "#9C0000", "Sangria",
+                    "#B56308", "Mai Tai",
+                    "#BD9400", "Buddha Gold",
+                    "#397B21", "Forest Green",
+                    "#104A5A", "Eden",
+                    "#085294", "Venice Blue",
+                    "#311873", "Meteorite",
+                    "#731842", "Claret",
+
+                    "#630000", "Rosewood",
+                    "#7B3900", "Cinnamon",
+                    "#846300", "Olive",
+                    "#295218", "Parsley",
+                    "#083139", "Tiber",
+                    "#003163", "Midnight Blue",
+                    "#21104A", "Valentino",
+                    "#4A1031", "Loulou"
+                ],
+                color_default_background: "#FFFF00",
+                color_default_foreground: "#000000",
+
+                // Define the options for the `link` toolbar button.
+                // https://www.tiny.cloud/docs/plugins/opensource/link/
+                link_context_toolbar: true,
+                link_assume_external_targets: "https",
+                link_title: false,
+                default_link_target: "_blank",
+                target_list: [
+                    { title: "New window", value: "_blank" },
+                    { title: "Current window", value: "" },
+                ],
+
+                // The callback that is executed when the editor is initialized.
+                setup: (editor): void => {
+                    // Keep track of the editor instance.
+                    tinyMceInstance.value = editor;
+
+                    // Add shortcuts that were available with the previous editor library.
+                    // Adding all valid shortcut combinations so we can overwrite shortcuts
+                    // that may have been assigned by other plugins.
+                    // https://www.tiny.cloud/docs/tinymce/6/shortcuts/
+                    // https://www.tiny.cloud/docs/tinymce/6/keyboard-shortcuts/
+
+                    // Insert list shortcuts.
+                    // https://www.tiny.cloud/docs/tinymce/6/lists/#commands
+                    editor.addShortcut("access+8,shift+alt+8,alt+shift+8", "Inserts an ordered list into the editor.", (): void => {
+                        editor.execCommand("InsertOrderedList", false, {
+                            "list-style-type": "decimal"
+                        });
+                    });
+                    editor.addShortcut("access+9,shift+alt+9,alt+shift+9", "Inserts an unordered list into the editor.", (): void => {
+                        editor.execCommand("InsertUnorderedList", false, {
+                            "list-style-type": "disc"
+                        });
+                    });
+
+                    // Handle behavior that should occur after the editor is initialized.
+                    editor.on("init", () => {
+                        if (tinyMceInstance.value) {
+                            // Set the initial value.
+                            if (tinyMceValue.value !== internalValue.value) {
+                                tinyMceInstance.value.setContent(internalValue.value);
+
+                                // Get the new content from the editor after setting it
+                                // just in case it gets manipulated by plugins.
+                                tinyMceValue.value = tinyMceInstance.value.getContent();
+                            }
+
+                            // Set initial enabled state.
+                            setEnabled(!props.disabled);
+                        }
+                    });
+
+                    // Emit model updates when the editor content changes.
+                    // https://www.tiny.cloud/docs/tinymce/6/events/
+                    editor.on("change redo undo", (_e: EditorEvent<Events.ChangeEvent>): void => {
+                        const newValue = editor.getContent();
+
+                        if (tinyMceValue.value !== newValue) {
+                            tinyMceValue.value = newValue;
+                            internalValue.value = newValue;
+                        }
+                    });
+
+                    // Since the editor is inline (not in an iframe), <style> elements
+                    // added to the code editor can leak CSS styles to the rest of the page.
+                    // To prevent this, scope the style sheets before setting the editor content,
+                    // and unscope when retrieving the content.
+                    // The "scoped" behavior is very similar to the SFC `scoped` directive; i.e. `<style scoped>`
+                    // in that this will add run-time specificity to the style rule selectors so the styles
+                    // are only isolated to this HTML Editor control instance.
+                    editor.on("BeforeSetContent", (e: EditorEvent<Events.BeforeSetContentEvent>) => {
+                        e.content = scopeStyleSheets(e.content, `#${editorId.value}`);
+                    });
+                    editor.on("GetContent", (e: EditorEvent<Events.GetContentEvent>) => {
+                        e.content = unscopeStyleSheets(e.content, `#${editorId.value}`);
+                    });
+                }
+            });
+        }
+
+        // Add vertical resizing.
+        resizerElement.value?.addEventListener("mousedown", onResizeStart, { once: true });
+    });
+
+    // #endregion
+
+    onUnmounted(() => {
+        if (tinyMceInstance.value) {
+            tinyMceInstance.value.destroy();
+        }
+    });
+</script>

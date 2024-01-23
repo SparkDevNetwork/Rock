@@ -75,8 +75,57 @@ export const ServiceJob = {
     DataMigrations150SystemPhoneNumbers: "6DFE731E-F28B-40B3-8383-84212A301214",
     /** The Job to run Post v15.1 Data Migrations to cleanup duplicate mobile interaction entries. */
     DataMigrations151DuplicateMobileInteractionsCleanup: "D3D60B90-48D1-4718-905E-39638B44C665",
+    /** The Job to run Post v15.2 Data Migrations for the AttributeValue.IX_ValueAsPersonId index. */
+    DataMigrations152IxValueAsPersonId: "5DC19FB3-AB0B-48F3-817D-9023C65C5F8A",
+    /** The Job to run Post v15.2 to replace web forms blocks with Obsidian blocks. */
+    DataMigrations152ReplaceWebFormsBlocksWithObsidianBlocks: "4232194C-90AE-4B44-93E7-1E5DE984A9E1",
+    /** The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket. */
+    DataMigrations154UpdateAgeBracketValues: "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1",
+    /** The post update data migration job to chop the Group Registration block */
+    DataMigrations160ChopBlocksGroupRegistration: "72D9EC04-517A-4CA0-B631-9F9A41F1790D",
     /** The Job to run Post v16.0 Move Person Preferences. */
     DataMigrations160MovePersonPreferences: "C8591D15-9D37-49D3-8DF8-1DB72EE42D29",
+    /** The Job to run v16.0 - Add New Indices To Interaction and InteractionSession. */
+    DataMigrations160PopulateInteractionSessionData: "4C734B0E-8024-4600-99F9-B6CFEE9F8250",
+    /** The Job to run v16.0 - Add New Indices To Interaction and InteractionSession. */
+    DataMigrations160UpdateInteractionSessionAndInteractionIndices: "30A8FE3D-8C2B-413E-9B94-F4B9212904B1",
+    /** The Job to run Post v16.0 Update InteractionSession InteractionChannelId. */
+    DataMigrations160UpdateInteractionSessionInteractionChannelId: "3BC5124D-0ED1-4D90-A9ED-D858FA4B5051",
+    /** The Job to run Post v16.0 Update InteractionSession SessionStartDateKey. */
+    DataMigrations160UpdateInteractionSessionSessionStartDateKey: "EBAD6B4D-D928-41FD-A0DD-445060810504",
+    /** The Job to run Post v16.0 Data Migrations to update the media element default urls. */
+    DataMigrations160UpdateMediaElementDefaultUrls: "3f2a18ce-882d-4687-a4e4-b2a34af2777d",
+    /** The Job to run Post v16.0 Data Migrations to update the note data to match the new formatting. */
+    DataMigrations160UpdateNoteData: "3768889a-ba73-4cff-91f9-cc0f92780745",
+    /** The Job to run Post v16.0 Update Person PrimaryPersonAliasId. */
+    DataMigrations160UpdatePersonPrimaryPersonAliasId: "BC7564DC-594F-4B50-8988-1594849515F1",
+    /** The Job to run Post v16.0 Data Migrations to update the newly persisted WorkflowId column on Workflow entity with their correct values. */
+    DataMigrations160UpdateWorkflowidColumns: "2222F9D2-4771-4B21-A630-E696DB0C329A",
+    /** The Job to run Post v16.1 Data Migrations to swap AccountEntry and Login web forms blocks with obisdian blocks. */
+    DataMigrations161ChopAccountentryAndLogin: "A65D26C1-229E-4198-B388-E269C3534BC0",
+    /** The post update data migration job to chop the Group Schedule Toolbox V2. */
+    DataMigrations161ChopBlockGroupScheduleToolboxV2: "7F989E9F-913C-45E4-9EB1-EC70AC220939",
+    /** The post update data migration job to chop the Login and Account Entry blocks. */
+    DataMigrations161ChopSecurityBlocks: "A65D26C1-229E-4198-B388-E269C3534BC0",
+    /** The post update data migration job to remove obsidian group schedule toolbox back buttons. */
+    DataMigrations161RemoveObsidianGroupScheduleToolboxBackButtons: "781F2D3B-E5E4-41D5-9145-1D70DDB3EE04",
+    /** The post update data migration job to swap the Group Schedule Toolbox V1. */
+    DataMigrations161SwapBlockGroupScheduleToolboxV1: "22DBD648-79C0-40C7-B561-094E4E7637E5",
+    /** The Job to run Post v16.1 Data Migrations to swap Financial Batch List web forms block with obsidian block. */
+    DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
+    /** The post update data migration job to chop the Email Preference Entry block. */
+    DataMigrations162ChopEmailPreferenceEntry: "AE07C80A-80A4-48FD-908C-56DDB1CAA322",
+    /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
+    DataMigrations170RemoveCommunicationRecipientListBlock: "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6",
+    /** The post update data migration job to remove legacy preference attributes. */
+    DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
+    /**
+     * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
+     * Following Event Type Detail, Financial Batch Detail
+     */
+    DataMigrationsChopBlocksGroup1: "54FACAE5-2175-4FE0-AC9F-5CDA957BCFB5",
+    /** The Post Update Data Migration Job to swap the Notes Block */
+    DataMigrationsSwapNotesBlock: "8390C1AC-88D6-474A-AC05-8FFBD358F75D",
     /** The Job to get NCOA */
     GetNcoa: "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */
@@ -108,6 +157,8 @@ export const ServiceJob = {
     SyncMedia: "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
     /** The Update Persisted Attribute Values job. */
     UpdatePersistedAttributeValue: "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70",
+    /** The Rock.Jobs.UpdatePersistedDatasets job. */
+    UpdatePersistedDatasets: "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
 };

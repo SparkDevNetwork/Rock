@@ -1,0 +1,185 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span ref="anchorElement" @click.prevent="onAnchorClick">
+        <slot name="anchor">
+            <i class="fa fa-ellipsis-v"></i>
+        </slot>
+    </span>
+
+    <div v-if="isDropDownOpen" ref="dropdownElement" :style="floatingStyles" class="floating-dropdown">
+        <svg v-if="showArrow" ref="arrowElement" class="arrow">
+            <path d="M0,7L5,0L10,7"></path>
+        </svg>
+        <div class="body">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.floating-dropdown {
+    z-index: 3;
+    filter: drop-shadow(rgba(51, 51, 51, 0.533) 0 0 2px);
+}
+
+.floating-dropdown > .body {
+    background-color: white;
+    margin-top: 6px;
+    border-radius: 4px;
+    overflow: clip;
+}
+
+.floating-dropdown > .arrow {
+    position: absolute;
+    width: 10px;
+    height: 7px;
+    fill: white;
+}
+</style>
+
+<script setup lang="ts">
+    import { arrow, autoUpdate, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true then the arrow will be visible pointing to the anchor. */
+        showArrow: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Any elements (or child elements) that match these selectors will not cause the drop-down content to close when clicked. */
+        preventCloseOnClickSelectors: {
+            type: Object as PropType<string[]>,
+            default: [".datepicker"]
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", v: boolean): void;
+    }>();
+
+    // #region Values
+
+    const dropdownElement = ref<HTMLElement>();
+    const arrowElement = ref<HTMLElement>();
+    const anchorElement = ref<HTMLElement>();
+    const isDropDownOpen = useVModelPassthrough(props, "modelValue", emit);
+
+    const { floatingStyles, middlewareData } = useFloating(anchorElement, dropdownElement, {
+        middleware: [
+            shift({
+                // Add 1 pixel padding to handle partial DPI zoom jitter.
+                // Otherwise the position will be at a partial pixel boundary
+                // which works for rending but not scrolling so it can cause
+                // loops where the scroll bar appears, we adjust postition, and
+                // then the scroll bar vanishes and we adjust position again.
+                padding: 1
+            }),
+            arrow({
+                element: arrowElement
+            })
+        ],
+        whileElementsMounted: (r, f, u) => {
+            // This chunk of code fixes an issue with the ANT select, and
+            // possibly other elements. When you click on an ANT select it
+            // briefly renders an element out of position. Possibly to calculate
+            // size information, and then hides it/fixes the position. Since we
+            // normally update instantly, this causes the popup to jitter
+            // briefly. So we add a 25ms delay to the position update to give
+            // a chance for the DOM to settle.
+            let first = true;
+
+            function delayUpdate(): void {
+                if (first) {
+                    first = false;
+                    u();
+                }
+                else {
+                    setTimeout(u, 25);
+                }
+            }
+
+            return autoUpdate(r, f, delayUpdate);
+        }
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the drop down anchor element has been clicked.
+     */
+    function onAnchorClick(): void {
+        isDropDownOpen.value = !isDropDownOpen.value;
+    }
+
+    /**
+     * Event handler for when the mouse is pressed down somewhere in the
+     * document.
+     *
+     * @param event The current event.
+     */
+    function onDocumentMouseDown(event: MouseEvent): void {
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+
+        if (dropdownElement.value?.contains(event.target) === true) {
+            return;
+        }
+
+        if (props.preventCloseOnClickSelectors.some(selector => Array.from(document.querySelectorAll(selector)).some(element => element.contains(event.target as HTMLElement)))) {
+            return;
+        }
+
+        // Catch cases where the element was removed before the event
+        // reached us. Try to find the element that exists at the mouse
+        // position instead.
+        if (!document.body.contains(event.target)) {
+            const positionElement = document.elementFromPoint(event.clientX, event.clientY);
+
+            if (positionElement && dropdownElement.value?.contains(positionElement) === true) {
+                return;
+            }
+        }
+
+        // If they clicked on the anchor element, ignore it so that the anchor
+        // handler can deal with it.
+        if (anchorElement.value && anchorElement.value.contains(event.target)) {
+            return;
+        }
+
+        isDropDownOpen.value = false;
+    }
+
+    // #endregion
+
+    // Watch for the drop down being opened or closed and add/remove the
+    // event handler for detecting clicks outside the dropdown.
+    watch(isDropDownOpen, () => {
+        if (isDropDownOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+        }
+        else {
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+        }
+    }, {
+        immediate: true
+    });
+
+    // Watch for the middleware data about the arrow to change and then
+    // update the arrow position.
+    watch(middlewareData, () => {
+        if (middlewareData.value.arrow && arrowElement.value) {
+            arrowElement.value.style.left = `${middlewareData.value.arrow.x ?? 0}px`;
+        }
+    });
+</script>

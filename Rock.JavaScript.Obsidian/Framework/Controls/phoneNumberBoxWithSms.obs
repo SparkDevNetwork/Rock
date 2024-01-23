@@ -1,0 +1,188 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-model="number"
+                   v-bind="formFieldProps"
+                   @change="onChange"
+                   formGroupClasses="rock-phonenumber-box"
+                   :rules="rules"
+                   name="phonenumberbox">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="input-group phone-number-box" :class="inputGroupClasses">
+                    <span v-if="availableCountryCodeOptions.length < 2" class="input-group-addon">
+                        <i class="fa fa-phone-square"></i>
+                    </span>
+                    <InputGroupDropDown v-else :items="availableCountryCodeOptions" v-model="countryCode" inputGroupClasses="input-group-addon" />
+                    <input v-model="number" :id="uniqueId" type="text" class="form-control" v-bind="field" />
+                </div>
+                <div v-if="showSmsOptIn ?? false">
+                    <CheckBox
+                              v-model="isMessagingEnabled"
+                              label=""
+                              :text="smsOptInText ?? ''" />
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script lang="ts" setup>
+    import { computed, PropType, ref, watch } from "vue";
+    import { PhoneNumberBoxGetConfigurationResultsBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberBoxGetConfigurationResultsBag";
+    import { PhoneNumberCountryCodeRulesConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/phoneNumberCountryCodeRulesConfigurationBag";
+    import { PhoneNumberBoxWithSmsControlBag } from "@Obsidian/ViewModels/Controls/phoneNumberBoxWithSmsControlBag";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
+    import { getPhoneNumberAndSmsConfiguration, formatPhoneNumber, stripPhoneNumber } from "@Obsidian/Utility/phone";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import RockFormField from "./rockFormField.obs";
+    import InputGroupDropDown from "./inputGroupDropDown.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+
+    const props = defineProps({
+        /** v-model of Phone Number */
+        modelValue: {
+            type: Object as PropType<PhoneNumberBoxWithSmsControlBag>,
+            required: false
+        },
+
+        inputGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PhoneNumberBoxWithSmsControlBag): void
+    }>();
+
+    // #region Values
+
+    const formFieldProps = useStandardRockFormFieldProps(props);
+    const configuration = ref<PhoneNumberBoxGetConfigurationResultsBag | null>(null);
+    const number = ref(formatPhoneNumber(props.modelValue?.number?.toString() ?? ""));
+    const countryCode = ref(props.modelValue?.countryCode?.toString() ?? "");
+    const isMessagingEnabled = ref(props.modelValue?.isMessagingEnabled ?? false);
+
+    /** Used to temporarily disable emitting the modelValue when something changes. */
+    let autoSyncModelValue = true;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const rules = computed(() => {
+        const rules = normalizeRules(props.rules);
+        rules.push(validatePhoneNumber);
+        return rules;
+    });
+
+    const availableCountryCodes = computed<string[]>(() => {
+        return Object.keys(configuration.value?.rules ?? {});
+    });
+
+    const availableCountryCodeOptions = computed<ListItemBag[]>(() => {
+        if (availableCountryCodes.value.length == 0) {
+            return [{ value: "1", text: "1" }];
+        }
+
+        return availableCountryCodes.value.map((val) => ({ value: val, text: val }));
+    });
+
+    const smsOptInText = computed((): string => {
+        return configuration.value?.smsOptInText ?? "";
+    });
+
+    const showSmsOptIn = computed((): boolean => {
+        return smsOptInText.value.length > 0;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Uses the configuration we received from the server to determine whether the entered number is valid */
+    function validatePhoneNumber(value: unknown): string | boolean {
+        const rules = getConfiguredRules();
+
+        if (!value || typeof (value) !== "string" || rules.length == 0) {
+            return true;
+        }
+
+        for (let rule of rules) {
+            const regex = new RegExp(rule.match ?? "");
+            const unformattedPhoneNumberToValidate = stripPhoneNumber(value);
+            if (regex.test(unformattedPhoneNumberToValidate)) {
+                return true;
+            }
+        }
+
+        return `The phone number '${value}' is not a valid phone number.`;
+    }
+
+    /** Retrieve the country code data, validation data, and formatting data from the server */
+    async function loadConfiguration(): Promise<void> {
+        try {
+            const result = await getPhoneNumberAndSmsConfiguration();
+
+            if (result) {
+                configuration.value = result;
+                countryCode.value ||= result.defaultCountryCode ?? "";
+            }
+            else {
+                console.error("Unknown error while loading phone number configuration.");
+            }
+        }
+        catch (e) {
+            console.error(e ?? "Unknown error while loading phone number configuration.");
+        }
+    }
+
+    /** Get the rules for the selected countryCode */
+    function getConfiguredRules(): PhoneNumberCountryCodeRulesConfigurationBag[] {
+        const temp = configuration.value?.rules?.[countryCode.value] ?? [];
+        return temp;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onChange(): void {
+        number.value = formatPhoneNumber(number.value);
+    }
+
+    // #endregion
+
+    // #region Watchers
+    watch(() => props.modelValue, () => {
+        console.log("watch() props.modelValue");
+        autoSyncModelValue = false;
+        countryCode.value = props.modelValue?.countryCode?.toString() ?? "";
+        number.value = formatPhoneNumber(props.modelValue?.number?.toString() ?? "");
+        isMessagingEnabled.value = props.modelValue?.isMessagingEnabled ?? false;
+        autoSyncModelValue = true;
+    });
+
+    watch([countryCode, number, isMessagingEnabled], () => {
+        console.log("watch([countryCode, number, isMessagingEnabled]");
+        if (!autoSyncModelValue) {
+            return;
+        }
+
+        const value: PhoneNumberBoxWithSmsControlBag = {
+            countryCode: countryCode.value ?? undefined,
+            number: number.value ?? undefined,
+            isMessagingEnabled: isMessagingEnabled.value
+        };
+
+        emit("update:modelValue", value);
+    });
+
+    // #endregion
+
+    loadConfiguration();
+
+</script>

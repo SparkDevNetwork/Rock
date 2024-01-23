@@ -350,13 +350,22 @@
                             </div>
                         </div>
 
-                         <div class="row">
+                        <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbAuth0ClientId" runat="server" Label="Auth0 Client ID" Help="Set this to reflect the value in your configured Auth0 application to add support for Auth0 based login in your mobile application." />
                             </div>
 
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbAuth0ClientDomain" runat="server" Label="Auth0 Domain" Help="Set this to reflect the value in your configured Auth0 application to add support for Auth0 based login in your mobile application." />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbEnablePageViewGeoTracking" runat="server" Label="Enable Page View Geo Tracking" Help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />                                                                                                
                             </div>
                         </div>
                     </Rock:PanelWidget>

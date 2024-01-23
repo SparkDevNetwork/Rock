@@ -303,7 +303,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Persists the DataView to the database by updating the DataViewPersistedValues for this DataView. Returns true if successful
+        /// Persists the DataView to the database by updating the DataViewPersistedValues for this DataView.
         /// </summary>
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         public void PersistResult( int? databaseTimeoutSeconds = null )
@@ -316,44 +316,10 @@ namespace Rock.Model
             */
             using ( var rockContext = new RockContext() )
             {
+                var dataViewService = new DataViewService( rockContext );
                 var persistStopwatch = Stopwatch.StartNew();
-                var dataViewFilterOverrides = new DataViewFilterOverrides();
 
-                dataViewFilterOverrides.ShouldUpdateStatics = false;
-
-                // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
-                dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
-                var dataViewGetQueryArgs = new DataViewGetQueryArgs
-                {
-                    DbContext = rockContext,
-                    DataViewFilterOverrides = dataViewFilterOverrides,
-                    DatabaseTimeoutSeconds = databaseTimeoutSeconds,
-                };
-
-                var qry = this.GetQuery( dataViewGetQueryArgs );
-
-                rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
-                var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
-
-                var updatedEntityIdsQry = qry.Select( a => a.Id );
-
-                var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
-                var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
-
-                int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove );
-
-                if ( persistedEntityIdsToInsert.Any() )
-                {
-                    List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert.OrderBy( a => a )
-                        .Select( a =>
-                        new DataViewPersistedValue
-                        {
-                            DataViewId = this.Id,
-                            EntityId = a
-                        } ).ToList();
-
-                    rockContext.BulkInsert( persistedValuesToInsert );
-                }
+                dataViewService.UpdateDataViewPersistedValues( this, databaseTimeoutSeconds );
 
                 persistStopwatch.Stop();
 

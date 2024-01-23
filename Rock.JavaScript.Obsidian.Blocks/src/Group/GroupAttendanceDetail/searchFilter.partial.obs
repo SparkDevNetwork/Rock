@@ -8,7 +8,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { createFilter, getAttendanceFullName, IAttendanceFilter, NoFilter } from "./utils.partial";
-    import TextBox from "@Obsidian/Controls/textBox";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { debounce } from "@Obsidian/Utility/util";
     import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
 

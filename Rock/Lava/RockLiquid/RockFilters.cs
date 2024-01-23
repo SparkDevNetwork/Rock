@@ -30,30 +30,35 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 using DotLiquid;
-using Context = DotLiquid.Context;
-using Condition = DotLiquid.Condition;
 
 using Humanizer;
 using Humanizer.Localisation;
+
 using ImageResizer;
+
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Data;
+using Rock.Lava.DotLiquid;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using UAParser;
-using Ical.Net;
 using Rock.Web.UI.Controls;
-using System.Web.UI;
-using Rock.Lava.DotLiquid;
-using Rock.Cms.StructuredContent;
+
+using UAParser;
+
+using Condition = DotLiquid.Condition;
+using Context = DotLiquid.Context;
 
 namespace Rock.Lava
 {
@@ -67,6 +72,13 @@ namespace Rock.Lava
     public static class RockFilters
     {
         static Random _randomNumberGenerator = new Random();
+
+        /// <summary>
+        /// The logger to use for the static methods of this class.
+        /// This is not normal initialization, but we have to do it this way
+        /// since we are in a static class.
+        /// </summary>
+        private static readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger( "Rock.Lava.RockFilters" );
 
         #region String Filters
 
@@ -389,7 +401,7 @@ namespace Rock.Lava
                 catch { }
             }
 
-            if ( numericQuantity > 1 )
+            if ( numericQuantity != 1 && numericQuantity != -1 )
             {
                 return input.Pluralize();
             }
@@ -2318,7 +2330,7 @@ namespace Rock.Lava
                     // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
                     if (qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ))
                     {
-                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                        return item.AttributeValues[attributeKey].PersistedHtmlValue;
                     }
 
                     // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
@@ -3609,6 +3621,19 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns the list of campuses closest to the target person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">A Person entity object or identifier.</param>
+        /// <param name="maximumCount">The maximum number of campuses to return.</param>
+        /// <returns>A single Campus, or a list of Campuses in ascending order of distance from the target Person.</returns>
+        public static object NearestCampus( Context context, object input, object maximumCount = null )
+        {
+            // Call the newer Lava Filter implementation, and inject a null Lava context.
+            return LavaFilters.NearestCampus( null, input, maximumCount );
+        }
+
+        /// <summary>
         /// Returns the Campus (or Campuses) that the Person belongs to
         /// </summary>
         /// <param name="context">The context.</param>
@@ -4236,7 +4261,7 @@ namespace Rock.Lava
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Lava, ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
+                    _logger.LogError( ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
 
                     return null;
                 }
@@ -5158,7 +5183,7 @@ namespace Rock.Lava
             {
                 return null;
             }
-            return (int?)input.ToString().AsDecimalOrNull();
+            return ( int? ) input.ToString().AsDecimalOrNull();
         }
 
         /// <summary>
@@ -5355,7 +5380,7 @@ namespace Rock.Lava
 
                 if ( !inputString.AsGuidOrNull().HasValue )
                 {
-                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
+                    _logger.LogInformation( $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
                     useFallbackUrl = true;
                 }
             }
@@ -6268,6 +6293,26 @@ namespace Rock.Lava
             var entityType = cache.GetType().GetGenericArgumentsOfBaseType( entityCacheType )[1];
 
             return Rock.Reflection.GetIEntityForEntityType( entityType, cache.Id );
+        }
+
+        /// <summary>
+        /// Gets the IdKey hash from IEntity or an integer Id value.
+        /// </summary>
+        /// <param name="input">The input object.</param>
+        /// <returns>An <see cref="IEntity"/> object or the original <paramref name="input"/>.</returns>
+        public static string ToIdHash( object input )
+        {
+            return LavaFilters.ToIdHash( input );
+        }
+
+        /// <summary>
+        /// Gets the integer value from from a key-hash string.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int? FromIdHash( string input )
+        {
+            return LavaFilters.FromIdHash( input );
         }
 
         /// <summary>

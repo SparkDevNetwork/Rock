@@ -1,0 +1,8 @@
+{% tag where:'CategoryId == 979' sort:'Name' iterator:'tags' %}
+    [    {% for tag in tags %}{
+            "Id": {{ tag.Id }},
+            "Name": {{ tag.Name | ToJSON }},
+            {% taggeditem where:'TagId == {{ tag.Id }}' iterator:'items' %}{% assign tiSize = items | Size %}{% if tiSize > 0 %}"TaggedItems": "{% for item in items %}{{ item.Id }}{%- unless forloop.last -%},{%- endunless -%}{% endfor %}"{% endif %}{% endtaggeditem %}
+        }{%- unless forloop.last -%},{%- endunless -%}{% endfor %}
+    ]
+{% endtag %}

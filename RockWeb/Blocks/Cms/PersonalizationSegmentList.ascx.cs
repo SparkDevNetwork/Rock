@@ -267,12 +267,12 @@ namespace RockWeb.Blocks.Cms
                 Name = a.Name,
                 FilterDataViewName = a.FilterDataViewId.HasValue ? a.FilterDataView.Name : null,
                 IsActive = a.IsActive,
-                AnonymousIndividualsCount =
+                AnonymousIndividualsCount = a.IsDirty ? "Loading..." :
                      personAliasPersonalizationsSegmentsQry
-                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId == anonymousVisitorPersonId ).Count(),
-                KnownIndividualsCount =
+                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId == anonymousVisitorPersonId ).Count().ToString(),
+                KnownIndividualsCount = a.IsDirty ? "Loading..." :
                      personAliasPersonalizationsSegmentsQry
-                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count(),
+                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count().ToString(),
                 Guid = a.Guid
             } );
 
@@ -299,8 +299,8 @@ namespace RockWeb.Blocks.Cms
             public string Name { get; set; }
             public string FilterDataViewName { get; set; }
             public bool IsActive { get; set; }
-            public int AnonymousIndividualsCount { get; set; }
-            public int KnownIndividualsCount { get; set; }
+            public string AnonymousIndividualsCount { get; set; }
+            public string KnownIndividualsCount { get; set; }
             public Guid Guid { get; set; }
         }
     }

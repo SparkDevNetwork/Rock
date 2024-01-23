@@ -1,0 +1,131 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   :modelValue="internalValue"
+                   formGroupClasses="rock-number-box"
+                   name="numberbox"
+                   :rules="computedRules">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <slot name="prepend" />
+                <div :class="controlContainerClass">
+                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                    <input
+                           v-model="internalValue"
+                           :id="uniqueId"
+                           type="number"
+                           class="form-control"
+                           :class="inputClasses"
+                           v-bind="field"
+                           inputmode="decimal"
+                           :placeholder="placeholder"
+                           :step="internalStep"
+                           :min="minimumValue"
+                           :max="maximumValue"
+                           @change="formatInternalValue"
+                           @blur="formatInternalValue" />
+                    <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                </div>
+                <slot name="append" />
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, useSlots, watch } from "vue";
+    import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
+    import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import RockFormField from "./rockFormField.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+        placeholder: {
+            type: String as PropType<string>,
+            default: ""
+        },
+        /** The minimum allowed value to be entered. */
+        minimumValue: {
+            type: Number as PropType<number | null>
+        },
+        maximumValue: {
+            type: Number as PropType<number | null>
+        },
+        /** The number of decimal places allowed. */
+        decimalCount: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+        inputClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+        inputGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+        rules: rulesPropType
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number | null): void;
+    }>();
+
+    const slots = useSlots();
+    const internalValue = ref(formatNumber(props.modelValue));
+
+    const internalNumberValue = computed((): number | null => {
+        return toNumberOrNull(internalValue.value);
+    });
+
+    const internalStep = computed((): string => {
+        return props.decimalCount === null ? "any" : (1 / Math.pow(10, props.decimalCount)).toString();
+    });
+
+    const isInputGroup = computed((): boolean => {
+        return !!slots.inputGroupPrepend || !!slots.inputGroupAppend;
+    });
+
+    const controlContainerClass = computed((): string => {
+        return isInputGroup.value ? `input-group ${props.inputGroupClasses}` : "";
+    });
+
+    const computedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (props.maximumValue != null) {
+            rules.push(`lte:${props.maximumValue}`);
+        }
+
+        if (props.minimumValue != null) {
+            rules.push(`gte:${props.minimumValue}`);
+        }
+
+        return rules;
+    });
+
+    function formatNumber(num: number | null): string {
+        return asFormattedString(num, props.decimalCount ?? undefined, { useGrouping: false });
+    }
+
+    function formatInternalValue(): void {
+        internalValue.value = formatNumber(internalNumberValue.value);
+    }
+
+    watch(() => props.modelValue, () => {
+        if (props.modelValue !== internalNumberValue.value) {
+            internalValue.value = formatNumber(props.modelValue);
+        }
+    });
+
+    watch(internalNumberValue, () => {
+        emit("update:modelValue", internalNumberValue.value);
+    });
+
+    watch(() => props.decimalCount, () => {
+        formatInternalValue();
+    });
+</script>

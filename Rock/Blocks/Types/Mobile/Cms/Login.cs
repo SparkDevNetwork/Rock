@@ -34,12 +34,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// <summary>
     /// Allows the user to log in on a mobile application.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Log In" )]
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to log in on a mobile application." )]
     [IconCssClass( "fa fa-user-lock" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -80,34 +81,48 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.CancelPage,
         Order = 5 )]
 
+    [CodeEditorField( "Header Content",
+        Key = AttributeKeys.HeaderContent,
+        Description = "The content to display for the header. This only works if the block isn't in a ScrollView.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 6 )]
+
+    [CodeEditorField( "Footer Content",
+        Key = AttributeKeys.FooterContent,
+        Description = "The content to display for the footer. This only works if the block isn't in a ScrollView. Disappears when the keyboard is shown.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 7 )]
+
     [BooleanField(
         "Enable Auth0 Login",
         Key = AttributeKeys.EnableAuth0Login,
         Description = "Whether or not to enable Auth0 as an authentication provider. This must be configured in `Security > Authentication Services` beforehand.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        Order = 6 )]
+        Order = 8 )]
 
     [BooleanField( "Enable Database Login",
         Key = AttributeKeys.EnableDatabaseLogin,
         Description = "Whether or not to enable `Database` as an authentication provider.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        Order = 7 )]
+        Order = 9 )]
 
     [TextField( "Auth0 Login Button Text",
         Key = AttributeKeys.Auth0LoginButtonText,
         Description = "The text of the Auth0 login button.",
         IsRequired = false,
         DefaultValue = "Login With Auth0",
-        Order = 8 )]
+        Order = 10 )]
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_LOGIN_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "6006FE32-DC01-4B1C-A9B8-EE172451F4C5" )]
 
-    public class Login : RockMobileBlockType
+    public class Login : RockBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileLogin block.
@@ -158,25 +173,22 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The auth0 login button text.
             /// </summary>
             public const string Auth0LoginButtonText = "Auth0LoginButtonText";
+
+            /// <summary>
+            /// The header content key.
+            /// </summary>
+            public const string HeaderContent = "HeaderContent";
+
+            /// <summary>
+            /// The footer content key.
+            /// </summary>
+            public const string FooterContent = "FooterContent";
         }
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Login";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -195,7 +207,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 CancelPageGuid = GetAttributeValue( AttributeKeys.CancelPage ).AsGuidOrNull(),
                 EnableAuth0Login = GetAttributeValue( AttributeKeys.EnableAuth0Login ).AsBoolean(),
                 EnableDatabaseLogin = GetAttributeValue( AttributeKeys.EnableDatabaseLogin ).AsBoolean(),
-                Auth0LoginButtonText = GetAttributeValue( AttributeKeys.Auth0LoginButtonText )
+                Auth0LoginButtonText = GetAttributeValue( AttributeKeys.Auth0LoginButtonText ),
+                HeaderContent = GetAttributeValue( AttributeKeys.HeaderContent ),
+                FooterContent = GetAttributeValue( AttributeKeys.FooterContent )
             };
         }
 

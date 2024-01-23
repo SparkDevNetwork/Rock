@@ -493,7 +493,7 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Page.IsPostBack )
             {
-                // RouteCustomAction handles ApproveNote, DenyApproveNote, WatchNote or UnwatchNote actions.
+                // RouteCustomAction handles WatchNote or UnwatchNote actions.
                 // but Add, Edit, Delete and ReplyTo are handled with regular postback events
                 RouteCustomAction();
             }
@@ -522,16 +522,6 @@ namespace Rock.Web.UI.Controls
 
             switch ( action )
             {
-                case "ApproveNote":
-                    noteId = parameters.AsIntegerOrNull();
-                    ApproveNote( noteId, true );
-                    break;
-
-                case "DenyApproveNote":
-                    noteId = parameters.AsIntegerOrNull();
-                    ApproveNote( noteId, false );
-                    break;
-
                 case "WatchNote":
                     noteId = parameters.AsIntegerOrNull();
                     WatchNote( noteId, true );
@@ -710,45 +700,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Approves the note.
-        /// </summary>
-        /// <param name="noteId">The note identifier.</param>
-        /// <param name="approved">if set to <c>true</c> [approved].</param>
-        private void ApproveNote( int? noteId, bool approved )
-        {
-            var rockPage = this.Page as RockPage;
-            if ( rockPage != null )
-            {
-                var currentPerson = rockPage.CurrentPerson;
-
-                var rockContext = new RockContext();
-                var service = new NoteService( rockContext );
-                Note note = null;
-
-                if ( noteId.HasValue )
-                {
-                    note = service.Get( noteId.Value );
-                    if ( note != null && note.IsAuthorized( Authorization.APPROVE, currentPerson ) )
-                    {
-                        if ( approved )
-                        {
-                            note.ApprovalStatus = NoteApprovalStatus.Approved;
-                        }
-                        else
-                        {
-                            note.ApprovalStatus = NoteApprovalStatus.Denied;
-                        }
-
-                        note.ApprovedByPersonAliasId = currentPerson?.PrimaryAliasId;
-
-                        note.ApprovedDateTime = RockDateTime.Now;
-                        rockContext.SaveChanges();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Adds the note.
         /// </summary>
         private void AddNote()
@@ -913,7 +864,7 @@ namespace Rock.Web.UI.Controls
                     }
 
                     var rockBlock = this.RockBlock();
-                    var noteMergeFields = LavaHelper.GetCommonMergeFields( rockBlock?.RockPage, currentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    var noteMergeFields = LavaHelper.GetCommonMergeFields( rockBlock?.RockPage, currentPerson, new CommonMergeFieldsOptions() );
                     noteMergeFields.Add( "NoteOptions", this.NoteOptions );
                     noteMergeFields.Add( "NoteList", viewableNoteList );
                     List<int> expandedNoteIdList = _hfExpandedNoteIds.Value.SplitDelimitedValues().AsIntegerList();

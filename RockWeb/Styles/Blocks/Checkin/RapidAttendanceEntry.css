@@ -1,0 +1,19 @@
+.rapid-attendance-entry .mh-300 {
+  min-height: 300px;
+}
+
+.family-select-item {
+  margin-bottom: 12px;
+  color: #2d2e31;
+  border: 1px solid #eee;
+}
+
+.family-select-item.active {
+  border-color: var(--color-primary);
+}
+
+.family-select-item a {
+  display: block;
+  padding: 15px 18px;
+  color: #2d2e31 !important;
+}

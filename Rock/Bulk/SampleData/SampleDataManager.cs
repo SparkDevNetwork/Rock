@@ -27,6 +27,8 @@ using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -46,16 +48,26 @@ namespace Rock.Utility
         /// <summary>
         /// Create a new instance.
         /// </summary>
-        public SampleDataManager() : this( null )
+        public SampleDataManager() : this( ( ILogger ) null )
         {
         }
 
         /// <summary>
         /// Create a new instance.
         /// </summary>
-        public SampleDataManager( IRockLogger logDevice )
+        public SampleDataManager( ILogger logger )
         {
-            _taskLog = logDevice ?? new RockLoggerMemoryBuffer( new RockLogConfiguration() );
+            _taskLog = logger ?? new RockLoggerMemoryBuffer();
+        }
+
+        /// <summary>
+        /// Create a new instance.
+        /// </summary>
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
+        public SampleDataManager( IRockLogger logDevice )
+            : this( ( ILogger ) null )
+        {
         }
 
         #endregion
@@ -63,7 +75,7 @@ namespace Rock.Utility
         #region Fields
 
         private SampleDataImportActionArgs _args = new SampleDataImportActionArgs();
-        private readonly IRockLogger _taskLog;
+        private readonly ILogger _taskLog;
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -252,13 +264,15 @@ namespace Rock.Utility
         /// <summary>
         /// The log device used to record processing details.
         /// </summary>
-        public IRockLogger LogDevice
-        {
-            get
-            {
-                return _taskLog;
-            }
-        }
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
+        public IRockLogger LogDevice => null;
+
+        /// <summary>
+        /// Gets the logger associated with this instance.
+        /// </summary>
+        /// <value>The logger.</value>
+        public ILogger Logger => _taskLog;
 
         /// <summary>
         /// Process all the data in the XML file; deleting stuff and then adding stuff.
@@ -457,7 +471,7 @@ namespace Rock.Utility
 
                 if ( _args.EnableStopwatch )
                 {
-                    _taskLog.WriteToLog( RockLogLevel.Debug, _sb.ToString() );
+                    Logger.LogDebug( _sb.ToString() );
                 }
 
                 // Clear the static objects that contains all security roles and auth rules (so that it will be refreshed)
@@ -499,7 +513,7 @@ namespace Rock.Utility
             {
                 var x = string.Format( format, args );
                 _sb.Append( x );
-                _taskLog.WriteToLog( RockLogLevel.Debug, x );
+                Logger.LogDebug( x );
             }
         }
 
@@ -793,7 +807,7 @@ namespace Rock.Utility
                         fee.DiscountApplies = GetBooleanValueSafe( feeElement, "discountApplies" );
                         fee.IsRequired = GetBooleanValueSafe( feeElement, "isRequired" );
                         fee.HideWhenNoneRemaining = GetBooleanValueSafe( feeElement, "hideWhenNoneRemaining" );
-                        fee.IsActive = GetBooleanValueSafe( feeElement, "isActive" );
+                        fee.IsActive = GetBooleanValueSafe( feeElement, "isActive", true );
                         registrationTemplate.Fees.Add( fee );
 
                         switch ( feeElement.Attribute( "type" ).Value.Trim().ToLowerInvariant() )
@@ -1019,9 +1033,9 @@ namespace Rock.Utility
             }
         }
 
-        private bool GetBooleanValueSafe( XElement element, string name )
+        private bool GetBooleanValueSafe( XElement element, string name, bool defaultValue = false)
         {
-            return element.Attribute( name ) != null && element.Attribute( name ).Value.AsBoolean();
+            return  element?.Attribute( name )?.Value?.AsBoolean() ?? defaultValue;
         }
 
         private int? GetNullableIntegerValueSafe( XElement element, string name )
@@ -2877,7 +2891,7 @@ namespace Rock.Utility
                     if ( personElem.Attribute( "age" ) != null )
                     {
                         int age = int.Parse( personElem.Attribute( "age" ).Value.Trim() );
-                        int ageDiff = person.Age - age ?? 0;
+                        int ageDiff = Person.GetAge( person.BirthDate, null ) - age ?? 0;
                         person.SetBirthDate( person.BirthDate.Value.AddYears( ageDiff ) );
                     }
 

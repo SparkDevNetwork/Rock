@@ -1,0 +1,280 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="ipAddress"
+                         help="What is the IP Address or Hostname of this device? Note: when using Hostname to match a Check-in Kiosk to this device, the 'Enable Kiosk Match By Name' setting on the check-in Admin block must be enabled."
+                         label="IP Address / Hostname" />
+                <DefinedValuePicker v-model="deviceType"
+                                    label="Device Type"
+                                    rules="required"
+                                    help="What type of device is this?"
+                                    :definedTypeGuid="DefinedType.DeviceType" />
+                <GeoPicker v-model="geoPoint" label="Point" drawingMode="Point" :mapStyleValueGuid="mapStyleValueGuid" />
+                <GeoPicker v-model="geoFence" label="Geo-fence" drawingMode="Polygon" :mapStyleValueGuid="mapStyleValueGuid" />
+            </div>
+            <div class="col-md-6">
+                <div v-if="showCheckInKioskSettings">
+                    <div class="well">
+                        <h4>Print Settings</h4>
+                        <DropDownList v-model="printTo"
+                                      :items="printToOptions"
+                                      label="Print Using"
+                                      help="When this device needs to print, should it use the printer configured in next setting (Device Printer), the printer configured for the location (Location Printer), or should the Group Type's 'Print Using' setting determine the printer to use (Group Type)?" />
+                        <DropDownList v-if="printTo !== '2'"
+                                      v-model="printerDevice"
+                                      :items="printerOptions"
+                                      label="Printer"
+                                      enhanceForLongLists
+                                      help="The printer that this device should use for printing" />
+                        <DropDownList v-model="printFrom"
+                                      :items="printFromOptions"
+                                      label="Print From"
+                                      help="When this device needs to print, where should the printing be initiated from? Either the server running Rock, or from the actual client device? " />
+                    </div>
+
+                    <RadioButtonList v-model="kioskType"
+                                     :items="kioskTypeOptions"
+                                     horizontal
+                                     label="Kiosk Type"
+                                     rules="required" />
+                </div>
+                <CheckBox v-model="hasCamera"
+                          label="Has Camera"
+                          help="Determines if the device has a camera. This is currently only used for reading barcodes on kiosks." />
+
+                <DropDownList v-if="showCameraBarCodeConfiguration"
+                              v-model="cameraBarcodeConfigurationType"
+                              :items="cameraBarcodeConfigurationOptions"
+                              label="iPad Camera Barcode Configuration"
+                              help="If set, this value will override any block setting for check-in." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="attributeValues" :showCategoryLabel="false" :attributes="attributes" isEditMode :numberOfColumns="2" />
+            </div>
+        </div>
+
+        <h3>Locations</h3>
+        <div>
+            <Grid :data="locationGridData" keyField="key" itemTerm="Location" liveUpdates light @addItem="onAddLocation">
+                <TextColumn name="name" field="name" title="Name" />
+                <DeleteColumn @click="onDeleteLocation" disableConfirmation />
+            </Grid>
+            <Modal v-model="isModalOpen" title="Select Check-in Location" saveText="Save" @save="onSaveLocation">
+                <LocationItemPicker v-model="location" label="Check-in Location" rules="required" />
+            </Modal>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, reactive, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import GeoPicker from "@Obsidian/Controls/geoPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import Grid, { DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { DeviceBag } from "@Obsidian/ViewModels/Blocks/Core/DeviceDetail/deviceBag";
+    import { DeviceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DeviceDetail/deviceDetailOptionsBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { KioskType } from "@Obsidian/Enums/Core/kioskType";
+    import { PrintFrom } from "@Obsidian/Enums/Core/printFrom";
+    import { PrintTo } from "@Obsidian/Enums/Core/printTo";
+    import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<DeviceBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<DeviceDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DeviceBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const ipAddress = propertyRef(props.modelValue.ipAddress ?? "", "IPAddress");
+    const hasCamera = propertyRef(props.modelValue.hasCamera ?? "", "HasCamera");
+    const deviceType = propertyRef(props.modelValue.deviceType ?? {}, "DeviceTypeValueId");
+    const geoFence = ref(props.modelValue.geoFence ?? "");
+    const geoPoint = ref(props.modelValue.geoPoint ?? "");
+    const printFrom = propertyRef(props.modelValue.printFrom?.toString() ?? "", "PrintFrom");
+    const printTo = propertyRef(props.modelValue.printToOverride?.toString() ?? "", "PrintToOverride");
+    const printerDevice = propertyRef(props.modelValue.printerDevice?.value ?? "", "PrinterDeviceId");
+    const kioskType = propertyRef(props.modelValue.kioskType?.toString(), "KioskType");
+    const cameraBarcodeConfigurationType = propertyRef(props.modelValue.cameraBarcodeConfigurationType?.toString() ?? "", "CameraBarcodeConfigurationType");
+    const cameraBarcodeConfigurationOptions = ref(props.options.cameraBarcodeConfigurationOptions ?? []);
+    const kioskTypeOptions = ref(props.options.kioskTypeOptions ?? []);
+    const printFromOptions = ref(props.options.printFromOptions ?? []);
+    const printToOptions = ref(props.options.printToOptions ?? []);
+    const printerOptions = ref(props.options.printerOptions ?? []);
+    const mapStyleValueGuid = ref(props.options.mapStyleValueGuid ?? "");
+    const isModalOpen = ref<boolean>(false);
+    const location = ref<ListItemBag | null>(null);
+    const locations = ref(props.modelValue.locations ?? []);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, isActive, description, ipAddress, hasCamera, deviceType, printFrom, printTo, printerDevice, kioskType, cameraBarcodeConfigurationType];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const locationGridData: GridDataBag = reactive<GridDataBag>({
+        rows: locations.value.map(x => convertToGridRowItem(x))
+    });
+
+    const showCheckInKioskSettings = computed((): boolean => {
+        const showSettings = deviceType.value.value?.toUpperCase() === DefinedValue.DeviceTypeCheckinKiosk;
+        if (!showSettings) {
+            kioskType.value = "";
+        }
+        return showSettings;
+    });
+
+    const showCameraBarCodeConfiguration = computed((): boolean => {
+        return kioskType.value == "0" && hasCamera.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function convertToGridRowItem(attribute: ListItemBag): Record<string, unknown> {
+        return {
+            key: attribute.value,
+            name: attribute.text,
+        };
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onAddLocation(): void {
+        location.value = null;
+        isModalOpen.value = true;
+    }
+
+    function onDeleteLocation(key: string): void {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isModalOpen.value = false;
+        locations.value = locations.value.filter(s => s.value !== key);
+
+        // Update the grid.
+        if (locationGridData.rows) {
+            const index = locationGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                locationGridData.rows?.splice(index, 1);
+            }
+        }
+    }
+
+    function onSaveLocation(): void {
+
+        if (location?.value?.value) {
+            locations.value.push(location.value);
+            // Add new RowItem to the grid to represent the newly added attribute.
+            const newRowItem = convertToGridRowItem(location.value);
+            locationGridData.rows?.push(newRowItem);
+        }
+
+        location.value = {};
+        isModalOpen.value = false;
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(ipAddress, props.modelValue.ipAddress ?? "");
+        updateRefValue(hasCamera, props.modelValue.hasCamera ?? false);
+        updateRefValue(deviceType, props.modelValue.deviceType ?? {});
+        updateRefValue(printFrom, props.modelValue.printFrom?.toString());
+        updateRefValue(printTo, props.modelValue.printToOverride?.toString());
+        updateRefValue(printerDevice, props.modelValue.printerDevice?.value ?? "");
+        updateRefValue(kioskType, props.modelValue.kioskType?.toString() ?? "");
+        updateRefValue(cameraBarcodeConfigurationType, props.modelValue.cameraBarcodeConfigurationType?.toString() ?? "");
+        updateRefValue(locations, props.modelValue.locations ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, locations, ...propRefs], () => {
+        const newValue: DeviceBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            name: name.value,
+            isActive: isActive.value,
+            description: description.value,
+            ipAddress: ipAddress.value,
+            hasCamera: hasCamera.value,
+            deviceType: deviceType.value,
+            printFrom: toNumber(printFrom.value) as PrintFrom,
+            printToOverride: toNumber(printTo.value) as PrintTo,
+            printerDevice: { text: "", value: printerDevice.value },
+            kioskType: toNumberOrNull(kioskType.value) as KioskType | null,
+            cameraBarcodeConfigurationType: toNumberOrNull(cameraBarcodeConfigurationType.value) as CameraBarcodeConfiguration | null,
+            locations: locations.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

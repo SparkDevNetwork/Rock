@@ -209,7 +209,10 @@ export function dispatchBlockEvent(eventName: string, blockGuid: Guid, eventData
  * @returns true if the event is a block event.
  */
 export function isBlockEvent<TData = undefined>(event: Event): event is CustomEvent<BlockEvent<TData>> {
-    return "guid" in event && "data" in event;
+    return event instanceof CustomEvent
+        && typeof event.detail === "object"
+        && "guid" in event.detail
+        && "data" in event.detail;
 }
 
 

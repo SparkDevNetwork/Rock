@@ -18,23 +18,20 @@
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType } from "vue";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
-import { getDefaultAddressControlModel } from "@Obsidian/Utility/address";
-import TextBox from "@Obsidian/Controls/textBox";
-import EmailBox from "@Obsidian/Controls/emailBox";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
-import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+import EmailBox from "@Obsidian/Controls/emailBox.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
+import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-import ComponentFromUrl from "@Obsidian/Controls/componentFromUrl";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { getDefaultDatePartsPickerModel } from "@Obsidian/Controls/datePartsPicker";
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType, RegistrationEntryState } from "./types.partial";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.RegistrantPersonField",
     components: {
-        NotificationBox,
-        ComponentFromUrl
+        NotificationBox
     },
     props: {
         field: {
@@ -72,7 +69,7 @@ export default defineComponent({
                     return EmailBox;
 
                 case RegistrationPersonFieldType.Gender:
-                    return GenderDropDownList;
+                    return GenderPicker;
 
                 case RegistrationPersonFieldType.Birthdate:
                     return BirthdayPicker;
@@ -99,6 +96,10 @@ export default defineComponent({
                     return PhoneNumberBox;
 
                 case RegistrationPersonFieldType.MobilePhone:
+                    if(registrationEntryState.viewModel?.showSmsOptIn ?? false) {
+                        return PhoneNumberBoxWithSms;
+                    }
+
                     return PhoneNumberBox;
 
                 case RegistrationPersonFieldType.Race:
@@ -200,15 +201,16 @@ export default defineComponent({
 
             switch (props.field.personFieldType) {
                 case RegistrationPersonFieldType.Birthdate:
-                    defaultValue = getDefaultDatePartsPickerModel();
+                    defaultValue = undefined;
                     break;
 
                 case RegistrationPersonFieldType.AnniversaryDate:
-                    defaultValue = getDefaultDatePartsPickerModel();
+                    defaultValue = undefined;
                     break;
 
                 case RegistrationPersonFieldType.Address:
-                    defaultValue = getDefaultAddressControlModel();
+                    // Address Control now handles the default value itself.
+                    defaultValue = {};
                     break;
             }
 

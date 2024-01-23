@@ -186,13 +186,6 @@
                         self.createSearchControl();
                         self.showActiveMenu();
                         self.scrollToSelectedItem();
-
-                        if ($hfItemIds && $hfItemIds.val().length > 0) {
-                            var itemIds = $hfItemIds.val().split(',');
-
-                            rockTree.setSelected(itemIds);
-                        }
-
                         self.togglePickerElements();
 
                         if (self.getViewMode() === 'selecting') {
@@ -201,14 +194,21 @@
                         }
 
                         if (self.getViewMode() === 'selected') {
+                            if ($hfItemIds.val() === '0' && !$control.find('.picker-menu').is(':visible') ) {
+                                return;
+                            }
+
                             $control.find('.picker-cancel').trigger('click');
                         }
                     })
                     .on('rockTree:fetchCompleted', function (evt, data) {
                         // intentionally empty
+                    })
+                    .on('rockTree:childrenSelected', function (evt, data) {
+                        self.setViewMode('clear');
                     });
 
-                $control.find('a.picker-label').on('click', function (e) {
+                $control.find('.picker-label').on('click', function (e) {
                     e.preventDefault();
                     $(this).toggleClass("active");
                     $control.find('.picker-menu').first().toggle(0, function () {
@@ -219,10 +219,10 @@
 
                 $control.find('.picker-cancel').on('click', function () {
                     $(this).toggleClass("active");
-                    $(this).closest('.picker-menu').toggle(0, function () {
+                    $control.find('.picker-menu').hide(0, function () {
                         self.updateScrollbar();
                     });
-                    $(this).closest('a.picker-label').toggleClass("active");
+                    $(this).closest('.picker-label').toggleClass("active");
 
                     //cleanup
                     self.setViewMode('clear');
@@ -426,8 +426,8 @@
                     $spanNames.text(selectedNames.join(', '));
                     $spanNames.attr('title', $spanNames.text());
 
-                    $control.find('a.picker-label').toggleClass("active");
-                    $control.find('.picker-menu').toggle(0, function () {
+                    $control.find('.picker-label').toggleClass("active");
+                    $control.find('.picker-menu').hide(0, function () {
                         self.updateScrollbar();
                     });
 
@@ -443,15 +443,17 @@
                 });
 
                 $control.find('.picker-select-none').on("click", function (e) {
+                    e.preventDefault();
                     e.stopImmediatePropagation();
-                    var rockTree = $control.find('.treeview').data('rockTree');
-                    rockTree.clear();
+
                     $hfItemIds.val('0').trigger('change'); // .trigger('change') is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
                     $hfItemNames.val('');
 
+                    var rockTree = $control.find('.treeview').data('rockTree');
+                    rockTree.clear();
+
                     // don't have the X appear on hover. nothing is selected
-                    $control.find('.picker-select-none').removeClass('rollover-item');
-                    $control.find('.picker-select-none').hide();
+                    $control.find('.picker-select-none').removeClass('rollover-item').hide();
 
                     $control.siblings('.js-hide-on-select-none').hide();
 

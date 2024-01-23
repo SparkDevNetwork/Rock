@@ -10,8 +10,10 @@
                         <a class="picker-label form-control" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend, 'text-gray-400': disabled }" v-bind="disabledBinding">
                             <i :class="pickerIconClass"></i>
                             <slot name="innerLabel"><span class="selected-names">{{ innerLabel }}</span></slot>
-                            <b class="fa fa-caret-down pull-right"></b>
-                            <b v-if="showClear && !disabled" class="fa fa-times pull-right" @click.prevent.stop="onAction('clear')"></b>
+                            <button type="button" role="button" aria-label="Clear selection" class="btn picker-select-none" v-if="showClear && !disabled" @click.prevent.stop="onAction('clear')">
+                                <i class="fa fa-times"></i>
+                            </button>
+                            <b class="fa fa-caret-down"></b>
                         </a>
 
                         <Fullscreen v-show="internalShowPopup" v-if="internalShowPopup || !forceContentReloadOnOpen" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
@@ -129,13 +131,13 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import RockButton from "./rockButton";
+    import RockButton from "./rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import RockFormField from "./rockFormField";
+    import RockFormField from "./rockFormField.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import Fullscreen from "@Obsidian/Controls/fullscreen";
+    import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 
     const props = defineProps({
         /**

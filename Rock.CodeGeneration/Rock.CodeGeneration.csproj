@@ -221,6 +221,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop">
       <Version>17.1.32210.191</Version>
     </PackageReference>
+    <PackageReference Include="System.Memory">
+      <Version>4.5.5</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">

@@ -15,22 +15,27 @@
 // </copyright>
 //
 import { computed, defineComponent, inject, PropType, ref, watch } from "vue";
-import CheckBox from "@Obsidian/Controls/checkBox";
-import CheckBoxList from "@Obsidian/Controls/checkBoxList";
-import DropDownList from "@Obsidian/Controls/dropDownList";
-import NumberBox from "@Obsidian/Controls/numberBox";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+import DefinedValueEditor from "@Obsidian/Controls/Internal/definedValueEditor.obs";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueField.partial";
 import { getFieldEditorProps } from "./utils";
+import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+import { useFieldTypeAttributeGuid } from "@Obsidian/Utility/fieldTypes";
 
 function parseModelValue(modelValue: string | undefined): string {
     try {
         const clientValue = JSON.parse(modelValue ?? "") as ClientValue;
 
-        return clientValue.value;
+        return clientValue.value ?? "";
     }
     catch {
         return "";
@@ -61,8 +66,11 @@ export const EditComponent = defineComponent({
     name: "DefinedValueField.Edit",
 
     components: {
+        RockFormField,
         DropDownList,
-        CheckBoxList
+        RockButton,
+        CheckBoxList,
+        DefinedValueEditor
     },
 
     props: getFieldEditorProps(),
@@ -70,17 +78,31 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref(parseModelValue(props.modelValue));
         const internalValues = ref(parseModelValue(props.modelValue).split(",").filter(v => v !== ""));
-
+        const isShowingAddForm = ref(false);
+        const fetchError = ref<false | string>(false);
+        const saveError = ref<false | string>(false);
         const valueOptions = computed((): ValueItem[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
+                const valueOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
+                addedOptions.value.forEach(addedOption => {
+                    if(valueOptions.find(a=>a.value == addedOption.value) == null){
+                        valueOptions.push(addedOption);
+                    }
+                });
+
+                return valueOptions;
             }
             catch {
                 return [];
             }
         });
 
-        const displayDescription = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]));
+        const addedOptions = ref<ValueItem[]>([]);
+
+        const displayDescription = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]));
+        const allowAdd = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.AllowAddingNewValues]));
+        const definedTypeGuid = computed(() => props.configurationValues[ConfigurationValueKey.DefinedType]);
+        const updateAttributeGuid = useFieldTypeAttributeGuid();
 
         /** The options to choose from */
         const options = computed((): ListItemBag[] => {
@@ -92,18 +114,8 @@ export const EditComponent = defineComponent({
             });
         });
 
-        const isMultiple = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]));
-
-        const configAttributes = computed((): Record<string, unknown> => {
-            const attributes: Record<string, unknown> = {};
-
-            const enhancedConfig = props.configurationValues[ConfigurationValueKey.EnhancedSelection];
-            if (enhancedConfig) {
-                attributes.enhanceForLongLists = asBoolean(enhancedConfig);
-            }
-
-            return attributes;
-        });
+        const isMultiple = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]));
+        const enhanceForLongLists = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.EnhancedSelection]));
 
         /** The number of columns wide the checkbox list will be. */
         const repeatColumns = computed((): number => toNumber(props.configurationValues[ConfigurationValueKey.RepeatColumns]));
@@ -129,20 +141,105 @@ export const EditComponent = defineComponent({
             }
         });
 
+        async function showAddForm(): Promise<void> {
+            if (!allowAdd.value) return;
+
+            isShowingAddForm.value = true;
+        }
+
+        function hideAddForm(): void {
+            isShowingAddForm.value = false;
+            fetchError.value = false;
+            saveError.value = false;
+        }
+
+        function selectNewValue(newValue: ListItemBag | null): void {
+            if (!newValue) {
+                return;
+            }
+
+            addedOptions.value.push({value: newValue.value ?? "", text: newValue.text ?? "", description: ""});
+            if (isMultiple.value) {
+                if (Array.isArray(internalValues.value)) {
+                    internalValues.value.push(newValue.value ?? "");
+                    const clientValue = getClientValue(internalValues.value, valueOptions.value);
+                    emit("update:modelValue", JSON.stringify(clientValue));
+                }
+                else {
+                    internalValue.value = newValue.value ?? "";
+                    const clientValue = getClientValue(internalValue.value, valueOptions.value);
+                    emit("update:modelValue", JSON.stringify(clientValue));
+
+                }
+            }
+            else {
+                internalValue.value = newValue.value ?? "";
+            }
+
+            const selectableValues = (props.configurationValues[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
+            if(selectableValues.length > 0 && newValue.value){
+                selectableValues.push(newValue.value);
+
+                emit("updateConfigurationValue", "selectableValues", selectableValues.join(","));
+            }
+
+            emit("updateConfiguration");
+
+            hideAddForm();
+        }
+
         return {
-            configAttributes,
+            enhanceForLongLists,
             internalValue,
             internalValues,
             isMultiple,
             isRequired: inject("isRequired") as boolean,
             options,
-            repeatColumns
+            repeatColumns,
+            allowAdd,
+            BtnType,
+            showAddForm,
+            isShowingAddForm,
+            hideAddForm,
+            selectNewValue,
+            definedTypeGuid,
+            updateAttributeGuid
         };
     },
 
     template: `
-<DropDownList v-if="!isMultiple || configAttributes.enhanceForLongLists" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired" />
-<CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns" />
+<template v-if="allowAdd && isShowingAddForm">
+    <DefinedValueEditor :definedTypeGuid="definedTypeGuid" :updateAttributeGuid="updateAttributeGuid" :label="label" :help="help" @save="selectNewValue" @cancel="hideAddForm" />
+</template>
+<template v-else>
+    <RockFormField v-model="internalValue"
+                formGroupClasses="rock-defined-value"
+                name="definedvalue"
+                #default="{uniqueId}"
+                :rules="computedRules">
+        <div :id="uniqueId">
+            <DropDownList v-if="!isMultiple" :multiple="isMultiple" v-model="internalValue" :items="options">
+                <template #inputGroupAppend v-if="allowAdd">
+                    <span class="input-group-btn">
+                        <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    </span>
+                </template>
+            </DropDownList>
+            <DropDownList v-else-if="isMultiple && enhanceForLongLists" :multiple="isMultiple" v-model="internalValues" enhanceForLongLists :items="options">
+                <template #inputGroupAppend v-if="allowAdd">
+                    <span class="input-group-btn">
+                        <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    </span>
+                </template>
+            </DropDownList>
+            <CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns">
+                <template #append v-if="allowAdd">
+                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                </template>
+            </CheckBoxList>
+        </div>
+    </RockFormField>
+</template>
 `
 });
 
@@ -207,6 +304,7 @@ export const ConfigurationComponent = defineComponent({
         const includeInactive = ref(false);
         const repeatColumns = ref<number | null>(null);
         const selectableValues = ref<string[]>([]);
+        const allowAddingNewValues = ref(false);
 
         /** The defined types that are available to be selected from. */
         const definedTypeItems = ref<ListItemBag[]>([]);
@@ -249,6 +347,7 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
             newValue[ConfigurationValueKey.IncludeInactive] = asTrueFalseOrNull(includeInactive.value) ?? "False";
             newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationValueKey.AllowAddingNewValues] = asTrueFalseOrNull(allowAddingNewValues.value) ?? "False";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== props.modelValue[ConfigurationValueKey.DefinedType]
@@ -257,7 +356,8 @@ export const ConfigurationComponent = defineComponent({
                 || newValue[ConfigurationValueKey.DisplayDescription] !== (props.modelValue[ConfigurationValueKey.DisplayDescription] ?? "False")
                 || newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
                 || newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive] ?? "False")
-                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "");
+                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "")
+                || newValue[ConfigurationValueKey.AllowAddingNewValues] !== (props.modelValue[ConfigurationValueKey.AllowAddingNewValues ?? "False"]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -297,6 +397,7 @@ export const ConfigurationComponent = defineComponent({
             includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
             repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
             selectableValues.value = (props.modelValue[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
+            allowAddingNewValues.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowAddingNewValues]);
         }, {
             immediate: true
         });
@@ -313,6 +414,7 @@ export const ConfigurationComponent = defineComponent({
         watch(allowMultipleValues, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultiple, asTrueFalseOrNull(allowMultipleValues.value) ?? "False"));
         watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationValueKey.EnhancedSelection, asTrueFalseOrNull(enhanceForLongLists.value) ?? "False"));
         watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(allowAddingNewValues, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowAddingNewValues, asTrueFalseOrNull(allowAddingNewValues.value) ?? "False"));
 
         return {
             allowMultipleValues,
@@ -325,7 +427,8 @@ export const ConfigurationComponent = defineComponent({
             hasValues,
             includeInactive,
             repeatColumns,
-            selectableValues
+            selectableValues,
+            allowAddingNewValues
         };
     },
 
@@ -336,8 +439,9 @@ export const ConfigurationComponent = defineComponent({
     <CheckBox v-model="displayDescriptions" label="Display Descriptions" text="Yes" help="When set, the defined value descriptions will be displayed instead of the values." />
     <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" text="Yes" />
     <CheckBox v-model="includeInactive" label="Include Inactive" text="Yes" />
+    <CheckBox v-model="allowAddingNewValues" label="Allow Adding New Values" text="Yes" help="When set the defined type picker can be used to add new defined types." />
     <NumberBox v-model="repeatColumns" label="Repeat Columns" />
-    <CheckBoxList v-if="hasValues" v-model="selectableValues" label="Selectable Values" :items="definedValueOptions" :horizontal="true" />
+    <CheckBoxList v-if="hasValues" v-model="selectableValues" label="Selectable Values" :items="definedValueOptions" :horizontal="true" :repeatColumns="4" />
 </div>
 `
 });

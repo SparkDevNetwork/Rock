@@ -1,7 +1,7 @@
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
 {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
 
-<section {% if id %}id="{{ id }}"{% endif %} class="position-relative shell bg-white flush-sides push-bottom xs-push-half-bottom {% if fullwidth == 'false' %}rounded-lg{% else %}hard-sides{% endif %} overflow-hidden {% if imageurl and imageurl != empty or backgroundcolor and backgroundcolor != empty %}text-white{% endif %} {{ classes }}" style="{% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }} !important; {% endif %}">
+<section {% if id %}id="{{ id }}"{% endif %} class="position-relative shell bg-white {% if fullwidth == 'true' %}flush-sides{% endif %} push-bottom xs-push-half-bottom {% if fullwidth == 'false' %}rounded-lg{% else %}hard-sides{% endif %} overflow-hidden {% if imageurl and imageurl != empty or backgroundcolor and backgroundcolor != empty %}text-white{% endif %} {{ classes }}" style="{% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }} !important; {% endif %}">
 
     {% if linkcolor and linkcolor != empty %}
         <style>
@@ -32,11 +32,15 @@
         <div class="bring-forward">
     {% endif %}
 
-    {% if title and title != empty %}
-        <div class="text-center">
-            <h2 class="{{ titlesize }}">{{ title }}</h2>
-        </div>
-    {% endif %}
+    <div class="text-center">
+        {% if title and title != empty %}
+            <h2 class="{{ titlesize }} {% if subtitle and subtitle != empty %}push-half-bottom{% endif %}">{{ title }}</h2>
+        {% endif %}
+
+        {% if subtitle and subtitle != empty %}
+            <p class="lead italic text-primary">{{ subtitle }}</p>
+        {% endif %}
+    </div>
 
     {{ blockContent }}
 

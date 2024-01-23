@@ -1,0 +1,314 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="currentStep.type !== StepType.Begin && currentStep.type !== StepType.End">
+        <h3 class="mt-0">Select {{ currentStep.type }}:</h3>
+        <Loading :isLoading="currentStep.isLoading">
+            <RockButton v-for="option of currentStep.options"
+                        btnType="default"
+                        class="btn-block"
+                        @click="onSelectionChanged(option.value)">{{ option.text }}</RockButton>
+        </Loading>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ComputedRef, PropType, UnwrapNestedRefs, computed, onMounted, ref, watch } from "vue";
+    import { StepperController } from "./types.partial";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    enum StepType {
+        Begin = "Begin",
+        Location = "Location",
+        WeekOf = "Week of",
+        ServiceTime = "Service Time",
+        End = "End",
+    }
+
+    const props = defineProps({
+        campusGuid: {
+            type: String as PropType<string | null | undefined>
+        },
+        weekendDate: {
+            type: String as PropType<string | null | undefined>
+        },
+        scheduleGuid: {
+            type: String as PropType<string | null | undefined>
+        },
+        campuses: {
+            type: Object as PropType<ListItemBag[] | undefined>
+        },
+        weekendDates: {
+            type: Object as PropType<ListItemBag[] | undefined>
+        },
+        serviceTimes: {
+            type: Object as PropType<ListItemBag[] | undefined>
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:campusGuid", value: string | null | undefined): void;
+        (e: "update:weekendDate", value: string | null | undefined): void;
+        (e: "update:scheduleGuid", value: string | null | undefined): void;
+        (e: "loadCampuses"): void;
+        (e: "loadWeekendDates"): void;
+        (e: "loadServiceTimes"): void;
+        (e: "ready", value: StepperController): void;
+        (e: "complete"): void;
+    }>();
+
+    type Step = {
+        type: StepType;
+        options: ComputedRef<ListItemBag[]>;
+        setValue(value: string | null | undefined): void;
+        showStep(): void;
+        moveNext(): void;
+        isLoading: ComputedRef<boolean>;
+    };
+
+    // The delay (in ms) to show the loading indicator when loading data.
+    const loadingIndicatorDelayMs = 500;
+
+    //#region Values
+
+    const beginStep = ref<Step>({
+        type: StepType.Begin,
+        options: computed(() => []),
+        setValue: (_value: string | null | undefined): void => {
+            // Do nothing
+        },
+        showStep(): void {
+            currentStep.value = beginStep.value;
+        },
+        moveNext() {
+            // Show the Location step.
+            campusStep.value.showStep();
+        },
+        isLoading: computed(() => false)
+    });
+
+    const campusStep = ref<Step>({
+        type: StepType.Location,
+        options: computed(() => props.campuses ?? []),
+        setValue: (value: string | null | undefined): void => {
+            emit("update:campusGuid", value);
+        },
+        showStep(): void {
+            // Emit the event to load the data for this step.
+            loadCampuses();
+
+            // Show this step.
+            currentStep.value = campusStep.value;
+        },
+        moveNext(): void {
+            // Move to the Week Of step.
+            weekendDateStep.value.showStep();
+        },
+        isLoading: computed(() => isLoadingCampuses.value)
+    });
+
+    const weekendDateStep = ref<Step>({
+        type: StepType.WeekOf,
+        options: computed(() => props.weekendDates ?? []),
+        setValue: (value: string | null | undefined) => {
+            emit("update:weekendDate", value);
+        },
+        showStep(): void {
+            // Emit the event to load the data for this step.
+            loadWeekendDates();
+
+            // Show this step.
+            currentStep.value = weekendDateStep.value;
+        },
+        moveNext(): void {
+            // Move to the Service Times step.
+            scheduleStep.value.showStep();
+        },
+        isLoading: computed(() => isLoadingWeekendDates.value)
+    });
+
+    const scheduleStep = ref<Step>({
+        type: StepType.ServiceTime,
+        options: computed(() => props.serviceTimes ?? []),
+        setValue: (value: string | null | undefined) => {
+            emit("update:scheduleGuid", value);
+        },
+        showStep(): void {
+            // Emit the event to load the data for this step.
+            loadServiceTimes();
+
+            // Show this step.
+            currentStep.value = scheduleStep.value;
+        },
+        moveNext(): void {
+            // Move to the last (pseudo) step to complete the stepper.
+            endStep.value.showStep();
+        },
+        isLoading: computed(() => isLoadingServiceTimes.value)
+    });
+
+    const endStep = ref<Step>({
+        type: StepType.End,
+        options: computed(() => []),
+        setValue: (_value: string | null | undefined) => {
+            // Do nothing.
+        },
+        showStep: () => {
+            // Show this step.
+            currentStep.value = endStep.value;
+
+            // Once this step is shown, emit the "complete" event.
+            emit("complete");
+
+            // Return an empty promise.
+            return Promise.resolve();
+        },
+        moveNext(): void {
+            // Already on the last (pseudo) step so do nothing.
+        },
+        isLoading: computed(() => false)
+    });
+
+    const currentStep = ref<UnwrapNestedRefs<Step>>(beginStep.value);
+    const isLoadingCampuses = ref<boolean>(false);
+    const isLoadingWeekendDates = ref<boolean>(false);
+    const isLoadingServiceTimes = ref<boolean>(false);
+
+    //#endregion
+
+    //#region Functions
+
+    /** Emits the loadCampuses event. */
+    function loadCampuses(): void {
+        emit("loadCampuses");
+
+        // Delay setting the loading state so we avoid flashes of the loading indicator.
+        debounceIfUnchanged(() => props.campuses, () => isLoadingCampuses.value = true, loadingIndicatorDelayMs);
+    }
+
+    /** Emits the loadWeekendDates event. */
+    function loadWeekendDates(): void {
+        emit("loadWeekendDates");
+
+        // Delay setting the loading state so we avoid flashes of the loading indicator.
+        debounceIfUnchanged(() => props.weekendDates, () => isLoadingWeekendDates.value = true, loadingIndicatorDelayMs);
+    }
+
+    /** Emits the loadServiceTimes event. */
+    function loadServiceTimes(): void {
+        emit("loadServiceTimes");
+
+        // Delay setting the loading state so we avoid flashes of the loading indicator.
+        debounceIfUnchanged(() => props.serviceTimes, () => isLoadingServiceTimes.value = true, loadingIndicatorDelayMs);
+    }
+
+    /** Invokes the callback if a value is unchanged after a given delay. */
+    function debounceIfUnchanged(callbackReturningValueToCheck: () => unknown, callbackToExecuteIfValueUnchanged: () => void, delay: number): void {
+        const oldValue = callbackReturningValueToCheck();
+
+        setTimeout(() => {
+            const newValue = callbackReturningValueToCheck();
+
+            if (newValue === oldValue) {
+                callbackToExecuteIfValueUnchanged();
+            }
+        }, delay);
+    }
+
+    //#endregion
+
+    //#region Events
+
+    /** Event handler for the current step selection being changed. */
+    async function onSelectionChanged(value: string | null | undefined): Promise<void> {
+        // Set the selected value for the step.
+        currentStep.value.setValue(value);
+
+        // Move to the next step.
+        await currentStep.value.moveNext();
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => props.campuses, async () => {
+        isLoadingCampuses.value = false;
+
+        if (props.campuses && currentStep.value.type === StepType.Location) {
+            // Automatically select the campus if there is only one.
+            if (props.campuses.length === 1) {
+                await onSelectionChanged(props.campuses[0].value);
+                return;
+            }
+
+            // Automatically select the campus if a valid campus guid was supplied.
+            const selected = props.campuses.find(c => c.value === props.campusGuid);
+            if (selected) {
+                await onSelectionChanged(selected.value);
+            }
+        }
+    });
+
+    watch(() => props.weekendDates, async () => {
+        isLoadingWeekendDates.value = false;
+
+        if (props.weekendDates && currentStep.value.type === StepType.WeekOf) {
+            // Automatically select the weekend date if there is only one.
+            if (props.weekendDates.length === 1) {
+                await onSelectionChanged(props.weekendDates[0].value);
+            }
+
+            if (props.weekendDate) {
+                const weekendDateIso = RockDateTime.parseISO(props.weekendDate);
+                if (weekendDateIso) {
+                    // Automatically select the weekend date if a valid weekend date was supplied.
+                    const selected = props.weekendDates.find(c => {
+                        if (!c.value) {
+                            return false;
+                        }
+
+                        const valueIso = RockDateTime.parseISO(c.value);
+
+                        if (!valueIso) {
+                            return false;
+                        }
+
+                        return weekendDateIso.isEqualTo(valueIso);
+                    });
+                    if (selected) {
+                        await onSelectionChanged(selected.value);
+                    }
+                }
+            }
+        }
+    });
+
+    watch(() => props.serviceTimes, async () => {
+        isLoadingServiceTimes.value = false;
+
+        if (props.serviceTimes && currentStep.value.type === StepType.ServiceTime) {
+            // Automatically select the service if there is only one.
+            if (props.serviceTimes.length <= 1) {
+                await onSelectionChanged(props.serviceTimes[0]?.value);
+            }
+
+            // Automatically select the schedule if a valid schedule guid was supplied.
+            const selected = props.serviceTimes.find(c => c.value === props.scheduleGuid);
+            if (selected) {
+                await onSelectionChanged(selected.value);
+            }
+        }
+    });
+
+    //#endregion
+
+    onMounted(() => {
+        // Emit the "ready" event with an object that can be used to start the stepper.
+        emit("ready", {
+            start: () => beginStep.value.moveNext()
+        });
+    });
+</script>

@@ -23,11 +23,7 @@
 using System;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModels;
-using Rock.ViewModels.Entities;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -126,6 +122,8 @@ namespace Rock.Model
             target.LastRefreshDateTime = source.LastRefreshDateTime;
             target.MemoryCacheDurationMS = source.MemoryCacheDurationMS;
             target.Name = source.Name;
+            target.PersistedScheduleId = source.PersistedScheduleId;
+            target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             target.RefreshIntervalMinutes = source.RefreshIntervalMinutes;
             target.ResultData = source.ResultData;
             target.ResultFormat = source.ResultFormat;
@@ -134,7 +132,5 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
-
     }
-
 }

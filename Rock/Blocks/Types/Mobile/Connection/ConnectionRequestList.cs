@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,12 +30,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
     /// <summary>
     /// Displays the list of connection requests for a single opportunity.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Connection Request List" )]
     [Category( "Mobile > Connection" )]
     [Description( "Displays the list of connection requests for a single opportunity." )]
     [IconCssClass( "fa fa-list" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -74,7 +75,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_LIST_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CONNECTION_CONNECTION_REQUEST_LIST )]
-    public class ConnectionRequestList : RockMobileBlockType
+    public class ConnectionRequestList : RockBlockType
     {
         #region Block Attributes
 
@@ -129,10 +130,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         #region IRockMobileBlockType Implementation
 
         /// <inheritdoc/>
-        public override int RequiredMobileAbiVersion => 3;
-
-        /// <inheritdoc/>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Connection.ConnectionRequestList";
+        public override Version RequiredMobileVersion => new Version( 1, 3 );
 
         /// <inheritdoc/>
         public override object GetMobileConfigurationValues()

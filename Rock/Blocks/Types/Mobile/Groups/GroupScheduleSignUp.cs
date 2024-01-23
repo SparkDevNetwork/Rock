@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Groups.GroupScheduleSignup;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Group;
@@ -33,11 +34,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
     /// <summary>
     /// A way for users to sign up for additional serving times on mobile.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Schedule Sign Up" )]
     [Category( "Mobile > Groups" )]
     [Description( "A way for individuals to sign up for additional serving times on mobile." )]
     [IconCssClass( "fa fa-user-plus" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -61,7 +63,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_SCHEDULE_SIGNUP )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_SCHEDULE_SIGNUP )]
-    public class GroupScheduleSignUp : RockMobileBlockType
+    public class GroupScheduleSignUp : RockBlockType
     {
 
         #region Block Attributes
@@ -103,21 +105,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 4;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupScheduleSignUp";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 4 );
 
         /// <summary>
         /// Gets the mobile configuration.
@@ -127,6 +116,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             return new
             {
+                FutureWeeksToShow = FutureWeeksToShow
             };
         }
 
@@ -200,9 +190,154 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         /// <summary>
+        /// Gets a list of schedule sign up data.
+        /// </summary>
+        /// <remarks>This method is carefully designed to return a smaller payload, since it
+        /// was written to be received on a remote client through a BlockAction. It loads future weeks between the
+        /// <paramref name="startWeekIndex"/> and <paramref name="endWeekIndex"/>, while making sure not to exceed
+        /// the <see cref="FutureWeeksToShow" />.
+        /// </remarks>
+        /// <param name="signUpGroupGuid">The sign-up group. Checks should be done beforehand that this group is
+        /// configured correctly.</param>
+        /// <param name="selectedSignupPersonId">The person requesting the sign up data.</param>
+        /// <param name="startWeekIndex">The starting index of the next weeks to load.</param>
+        /// <param name="endWeekIndex">The ending index of the next weeks to load.</param>
+        /// <returns></returns>
+        private List<GroupScheduleSignUpBag> GetSequentialScheduleSignupDataFromGroup( Guid signUpGroupGuid, int selectedSignupPersonId, int startWeekIndex, int endWeekIndex )
+        {
+            List<GroupScheduleSignUpBag> groupScheduleSignups = new List<GroupScheduleSignUpBag>();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var scheduleService = new ScheduleService( rockContext );
+                var attendanceService = new AttendanceService( rockContext );
+                var groupService = new GroupService( rockContext );
+                var personScheduleExclusionService = new PersonScheduleExclusionService( rockContext );
+
+                // Take whichever value is smaller between the current week
+                // we are loading and the max number of weeks to show.
+                var endWeekCurrentIndex = Math.Min( endWeekIndex, FutureWeeksToShow );
+                var indexedStartDateTime = startWeekIndex > 0 ? RockDateTime.Now.AddDays( ( startWeekIndex ) * 7 ) : RockDateTime.Now.AddDays( 1 );
+                var indexedEndDateTime = RockDateTime.Now.AddDays( endWeekCurrentIndex * 7 );
+
+                var groupLocationService = new GroupLocationService( rockContext );
+                var group = groupService.Get( signUpGroupGuid );
+
+                bool personDoesntMeetRequirements = group.SchedulingMustMeetRequirements
+                    && groupService.GroupMembersNotMeetingRequirements( group, false, false )
+                        .Where( a => a.Key.PersonId == selectedSignupPersonId )
+                        .Any();
+
+                if ( personDoesntMeetRequirements )
+                {
+                    return new List<GroupScheduleSignUpBag>();
+                }
+
+                foreach ( var personGroupLocation in group.GroupLocations )
+                {
+                    foreach ( var schedule in personGroupLocation.Schedules.Where( a => ( a.IsPublic ?? true ) && a.IsActive ) )
+                    {
+                        // Calculate capacities for this location (from the GroupLocationScheduleConfigs).
+                        int maximumCapacitySetting = 0;
+                        int desiredCapacitySetting = 0;
+                        int minimumCapacitySetting = 0;
+                        int desiredOrMinimumNeeded = 0;
+
+                        if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
+                        {
+                            foreach ( var config in personGroupLocation.GroupLocationScheduleConfigs )
+                            {
+                                // There should only be one GroupLocationScheduleConfig for this location.
+                                if ( config.ScheduleId == schedule.Id )
+                                {
+                                    maximumCapacitySetting = config.MaximumCapacity ?? 0;
+                                    desiredCapacitySetting = config.DesiredCapacity ?? 0;
+                                    minimumCapacitySetting = config.MinimumCapacity ?? 0;
+                                }
+                            }
+
+                            // Use the higher value (between "minimum" and "desired") to calculate "people needed".
+                            desiredOrMinimumNeeded = Math.Max( desiredCapacitySetting, minimumCapacitySetting );
+                        }
+
+                        var startDateTimeList = schedule.GetScheduledStartTimes( indexedStartDateTime, indexedEndDateTime );
+                        foreach ( var startDateTime in startDateTimeList )
+                        {
+                            var occurrenceDate = startDateTime.Date;
+                            bool alreadyScheduled = attendanceService.IsScheduled( occurrenceDate, schedule.Id, selectedSignupPersonId );
+                            if ( alreadyScheduled )
+                            {
+                                continue;
+                            }
+
+                            if ( personScheduleExclusionService.IsExclusionDate( selectedSignupPersonId, personGroupLocation.GroupId, occurrenceDate ) )
+                            {
+                                // Don't show dates they have blacked out
+                                continue;
+                            }
+
+                            // Get count of scheduled Occurrences with RSVP "Yes" for the group/schedule
+                            var currentlyScheduledQry = attendanceService
+                                .Queryable()
+                                .Where( a => a.Occurrence.OccurrenceDate == startDateTime.Date
+                                    && a.Occurrence.ScheduleId == schedule.Id
+                                    && a.RSVP == RSVP.Yes
+                                    && a.Occurrence.GroupId == personGroupLocation.GroupId );
+
+                            int currentlyScheduledAtLocation = currentlyScheduledQry
+                                .Where( a => a.Occurrence.LocationId == personGroupLocation.Location.Id )
+                                .Count();
+
+                            int peopleNeededAtLocation = desiredOrMinimumNeeded != 0 ? desiredOrMinimumNeeded - currentlyScheduledAtLocation : 0;
+
+                            // If this is a new location for an existing group/schedule, find it.
+                            var groupScheduleSignup = groupScheduleSignups
+                                .Where( x => signUpGroupGuid == personGroupLocation.Group.Guid
+                                    && x.ScheduleGuid == schedule.Guid
+                                    && x.ScheduledDateTime == startDateTime )
+                                .FirstOrDefault();
+
+                            if ( groupScheduleSignup == null )
+                            {
+                                var currentlyScheduledWithoutLocationQry = currentlyScheduledQry.Where( a => !a.Occurrence.LocationId.HasValue );
+                                int currentlyScheduledWithoutLocation = currentlyScheduledWithoutLocationQry.Count();
+
+                                // Add to master list groupScheduleSignups
+                                groupScheduleSignup = new GroupScheduleSignUpBag
+                                {
+                                    ScheduleGuid = schedule.Guid,
+                                    ScheduledDateTime = startDateTime.ToRockDateTimeOffset(),
+                                    ScheduledWithoutLocation = currentlyScheduledWithoutLocation,
+                                };
+
+                                groupScheduleSignups.Add( groupScheduleSignup );
+                            }
+
+                            // add the location to this group/schedule.
+                            var groupSignupLocation = new GroupScheduleSignUpLocationBag
+                            {
+                                LocationGuid = personGroupLocation.Location.Guid,
+                                LocationName = personGroupLocation.Location.Name,
+                                LocationOrder = personGroupLocation.Order,
+                                MaximumCapacity = maximumCapacitySetting,
+                                ScheduledAtLocation = currentlyScheduledAtLocation,
+                                PeopleNeeded = peopleNeededAtLocation < 0 ? 0 : peopleNeededAtLocation
+                            };
+
+                            groupScheduleSignup.Locations.Add( groupSignupLocation );
+                        }
+                    }
+                }
+
+                return groupScheduleSignups;
+            }
+        }
+
+        /// <summary>
         /// Gets a list of available schedules for the group the selected sign-up person belongs to.
         /// </summary>
         /// <param name="groupGuid"></param>
+        /// <remarks>This is only called in the legacy block action.</remarks>
         /// <returns></returns>
         private PersonScheduleSignupBag GetScheduleSignupData( Guid groupGuid )
         {
@@ -334,39 +469,6 @@ namespace Rock.Blocks.Types.Mobile.Groups
         #region Block Actions
 
         /// <summary>
-        /// Gets a list of the schedule assignment locations.
-        /// </summary>
-        /// <param name="groupGuid">The group identifier.</param>
-        /// <param name="scheduleGuid">The schedule identifier.</param>
-        [BlockAction]
-        public BlockActionResult GetGroupScheduleAssignmentLocations( Guid groupGuid, Guid scheduleGuid )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                // Get the group & schedule from the corresponding Guids.
-                var group = new GroupService( rockContext ).Get( groupGuid );
-                var groupSchedule = new ScheduleService( rockContext ).Get( scheduleGuid );
-
-                if ( groupSchedule == null )
-                {
-                    return ActionNotFound();
-                }
-
-                var locations = new LocationService( rockContext ).GetByGroupSchedule( groupSchedule.Id, group.Id )
-                    .OrderBy( a => a.Name )
-                    .ToList()
-                    .Select( a => new ListItemBag
-                    {
-                        Text = a.Name,
-                        Value = a.Guid.ToStringSafe()
-                    } )
-                    .ToList();
-
-                return ActionOk( locations );
-            }
-        }
-
-        /// <summary>
         /// Gets the landing page information to be displayed.
         /// </summary>
         /// <returns>A response that describes the result of the operation.</returns>
@@ -377,11 +479,131 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         /// <summary>
+        /// Gets the schedule sign up data.
+        /// </summary>
+        /// <param name="groupGuid">The group to get schedules for. Checks to ensure
+        /// the group is a scheduling group should be done beforehand.</param>
+        /// <param name="startWeekIndex">The starting index of the next weeks to load.</param>
+        /// <param name="endWeekIndex">The ending index of the next weeks to load.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetScheduleSignUpData( Guid groupGuid, int startWeekIndex, int endWeekIndex )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var requestPersonId = RequestContext.CurrentPerson?.Id;
+
+                if ( requestPersonId == null )
+                {
+                    return ActionForbidden();
+                }
+
+                var groupService = new GroupService( rockContext );
+                var group = groupService.Get( groupGuid );
+
+                if ( group == null )
+                {
+                    return ActionNotFound();
+                }
+
+                var availableSchedules = GetSequentialScheduleSignupDataFromGroup( groupGuid, requestPersonId.Value, startWeekIndex, endWeekIndex );
+
+                if ( availableSchedules == null )
+                {
+                    return ActionBadRequest( "Failed to get any scheduling data." );
+                }
+
+                return ActionOk( new GroupScheduleSignUpResponseBag
+                {
+                    GroupName = group.Name,
+                    Schedules = availableSchedules
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Saves a specific sign-up schedule.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns>BlockActionResult.</returns>
+        [BlockAction]
+        public BlockActionResult SaveSignUpSchedule( ScheduleSignUpRequestBag schedule )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupId = new GroupService( rockContext ).GetNoTracking( schedule.GroupGuid ).Id;
+
+                int? locationId = null;
+                if ( schedule.LocationGuid.HasValue )
+                {
+                    locationId = new LocationService( rockContext ).GetNoTracking( schedule.LocationGuid.Value ).Id;
+                }
+
+                var scheduleId = new ScheduleService( rockContext ).GetNoTracking( schedule.ScheduleGuid ).Id;
+
+                var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( schedule.ScheduledDateTime.DateTime, groupId, locationId, scheduleId );
+                var personAlias = new PersonAliasService( rockContext ).Get( CurrentPersonPrimaryAliasId );
+
+                var attendanceService = new AttendanceService( rockContext );
+                var attendance = attendanceService.ScheduledPersonAddPending( CurrentPersonId, attendanceOccurrence.Id, personAlias );
+
+                if ( attendance == null )
+                {
+                    return ActionBadRequest( "Failed to schedule that particular date. Please try again." );
+                }
+
+                rockContext.SaveChanges();
+
+                attendanceService.ScheduledPersonConfirm( attendance.Id );
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Deletes a particular attendance.
+        /// </summary>
+        /// <param name="schedule"></param>
+        /// <returns>A response that describes the result of the operation.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteSignUpSchedule( ScheduleSignUpRequestBag schedule )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceService = new AttendanceService( rockContext );
+
+                int? locationId = null;
+                if ( schedule.LocationGuid.HasValue )
+                {
+                    locationId = new LocationService( rockContext ).GetNoTracking( schedule.LocationGuid.Value ).Id;
+                }
+
+                var scheduleId = new ScheduleService( rockContext ).GetNoTracking( schedule.ScheduleGuid ).Id;
+                var groupId = new GroupService( rockContext ).GetNoTracking( schedule.GroupGuid ).Id;
+
+                var attendance = attendanceService.Get( schedule.ScheduledDateTime.DateTime, locationId, scheduleId, groupId, CurrentPersonId );
+
+                if ( attendance == null )
+                {
+                    return ActionBadRequest( "Failed to remove attendance." );
+                }
+
+                attendanceService.ScheduledPersonClear( attendance.Id );
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
         /// Saves a particular attendance.
         /// </summary>
         /// <param name="schedule"></param>
         /// <returns>A response that describes the result of the operation.</returns>
         [BlockAction]
+        [RockObsolete( "1.15.2" )]
+        [Obsolete]
         public BlockActionResult SaveSchedule( PersonScheduleSignupDataBag schedule )
         {
             using ( var rockContext = new RockContext() )
@@ -416,6 +638,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <param name="schedule"></param>
         /// <returns>A response that describes the result of the operation.</returns>
         [BlockAction]
+        [RockObsolete( "1.15.2" )]
+        [Obsolete]
         public BlockActionResult DeleteSchedule( PersonScheduleSignupDataBag schedule )
         {
             using ( var rockContext = new RockContext() )
@@ -441,10 +665,47 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         /// <summary>
+        /// Gets a list of the schedule assignment locations.
+        /// </summary>
+        /// <param name="groupGuid">The group identifier.</param>
+        /// <param name="scheduleGuid">The schedule identifier.</param>
+        [BlockAction]
+        [RockObsolete( "1.15.2" )]
+        [Obsolete]
+        public BlockActionResult GetGroupScheduleAssignmentLocations( Guid groupGuid, Guid scheduleGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Get the group & schedule from the corresponding Guids.
+                var group = new GroupService( rockContext ).Get( groupGuid );
+                var groupSchedule = new ScheduleService( rockContext ).Get( scheduleGuid );
+
+                if ( groupSchedule == null )
+                {
+                    return ActionNotFound();
+                }
+
+                var locations = new LocationService( rockContext ).GetByGroupSchedule( groupSchedule.Id, group.Id )
+                    .OrderBy( a => a.Name )
+                    .ToList()
+                    .Select( a => new ListItemBag
+                    {
+                        Text = a.Name,
+                        Value = a.Guid.ToStringSafe()
+                    } )
+                    .ToList();
+
+                return ActionOk( locations );
+            }
+        }
+
+        /// <summary>
         /// Gets the available schedule information for the current person.
         /// </summary>
         /// <returns>A response that describes the result of the operation.</returns>
         [BlockAction]
+        [RockObsolete( "1.15.2" )]
+        [Obsolete]
         public BlockActionResult GetAvailableScheduleData( Guid groupGuid )
         {
             var availableSchedules = GetScheduleSignupData( groupGuid );
@@ -456,10 +717,6 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             return ActionOk( availableSchedules );
         }
-
-        #endregion
-
-        #region Helper Classes
 
         #endregion
 

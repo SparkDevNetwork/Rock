@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ConfigurableZone class="zone-section" :modelValue="isSectionActive">
+        <div class="zone-body">
+            <div class="d-flex flex-column" :class="sectionTypeClass" style="flex-grow: 1;">
+                <div>
+                    <h3 v-if="title">{{ title }}</h3>
+                    <div v-if="description" class="mb-2">{{ description }}</div>
+                    <hr v-if="showSeparator" />
+                </div>
+
+                <div class="form-section" v-drag-source="reorderDragOptions" v-drag-target="reorderDragOptions.id" v-drag-target:2="dragTargetId" :data-section-id="sectionGuid">
+                    <ConfigurableZone v-for="field in fields"
+                                      :key="field.guid"
+                                      :modelValue="isFieldActive(field)"
+                                      :class="getFieldColumnSize(field)"
+                                      :data-field-id="field.guid"
+                                      clickBodyToConfigure
+                                      @configure="onConfigureField(field)">
+                        <div class="zone-body">
+                            <FieldWrapper :modelValue="field" />
+                        </div>
+
+                        <template #preActions>
+                            <div class="zone-action zone-action-move"><i class="fa fa-bars fa-fw"></i></div>
+                        </template>
+                        <template #postActions>
+                            <i class="fa fa-times fa-fw zone-action zone-action-delete" @click.stop="onDeleteField(field)"></i>
+                        </template>
+                    </ConfigurableZone>
+                </div>
+            </div>
+        </div>
+        <template #preActions>
+            <div class="zone-action zone-action-move"><i class="fa fa-bars fa-fw "></i></div>
+        </template>
+        <template #postActions>
+            <div class="zone-action zone-action-delete" @click.stop="onDelete"><i class="fa fa-times fa-fw"></i></div>
+        </template>
+    </ConfigurableZone>
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { computed, PropType, ref, watch } from "vue";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import ConfigurableZone from "./configurableZone.partial.obs";
+    import FieldWrapper from "./fieldWrapper.partial.obs";
+    import { FormField, FormSection } from "../Shared/types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FormSection>,
+            required: true
+        },
+
+        dragTargetId: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        reorderDragOptions: {
+            type: Object as PropType<IDragSourceOptions>,
+            required: true
+        },
+
+        activeZone: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        sectionTypeOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "configureField", value: FormField): void;
+        (e: "delete", value: Guid): void;
+        (e: "deleteField", value: Guid): void;
+    }>();
+
+    /** The unique identifier of the section being rendered. */
+    const sectionGuid = ref(props.modelValue.guid);
+
+    /** The title to display at the top of the section. */
+    const title = ref(props.modelValue.title);
+
+    /** The description to display at the top of the section. */
+    const description = ref(props.modelValue.description);
+
+    /** True if the header separator line should be displayed. */
+    const showSeparator = ref(props.modelValue.showHeadingSeparator);
+
+    /** The visual type of the section. */
+    const sectionType = ref(props.modelValue.type);
+
+    /** The fields that exist in this section. */
+    const fields = ref(props.modelValue.fields);
+
+    /** The CSS class name to apply to the section. */
+    const sectionTypeClass = computed((): string => {
+        if (sectionType.value) {
+            const sectionTypeValue = sectionType.value;
+            const matches = props.sectionTypeOptions.filter(t => areEqual(sectionTypeValue, t.value));
+
+            if (matches.length > 0) {
+                return matches[0].category ?? "";
+            }
+        }
+
+        return "";
+    });
+
+    /** True if the section is active, that is highlighted. */
+    const isSectionActive = computed((): boolean => props.activeZone === sectionGuid.value);
+
+    /**
+     * Determines the column size CSS class to use for the given field.
+     *
+     * @param field The field to be rendered.
+     *
+     * @returns The CSS classes to apply to the element.
+     */
+    const getFieldColumnSize = (field: FormField): string => `flex-col flex-col-${field.size}`;
+
+    /**
+     * Checks if the field is active, that is currently being edited.
+     *
+     * @param field The field in question.
+     *
+     * @returns true if the field is active and should be highlighted.
+     */
+    const isFieldActive = (field: FormField): boolean => {
+        return field.guid === props.activeZone;
+    };
+
+    /**
+     * Event handler for when a field is requesting edit mode.
+     *
+     * @param field The field requesting to being edit mode.
+     */
+    const onConfigureField = (field: FormField): void => {
+        emit("configureField", field);
+    };
+
+    /**
+     * Event handler for when the delete button of the section is clicked.
+     */
+    const onDelete = (): void => {
+        emit("delete", props.modelValue.guid);
+    };
+
+    /**
+     * Event handler for when the delete button of a field is clicked.
+     *
+     * @param field The field to be deleted.
+     */
+    const onDeleteField = (field: FormField): void => {
+        emit("deleteField", field.guid);
+    };
+
+    // Watch for changes in the model properties. We don't do a deep watch
+    // on props.modelValue because we don't want to re-render everything
+    // if, for example, a field configuration value changes. That is handled
+    // by other components already.
+    watch(() => [props.modelValue.guid, props.modelValue.title, props.modelValue.description, props.modelValue.showHeadingSeparator, props.modelValue.type, props.modelValue.fields], () => {
+        console.log("section changed");
+        sectionGuid.value = props.modelValue.guid;
+        title.value = props.modelValue.title;
+        description.value = props.modelValue.description;
+        showSeparator.value = props.modelValue.showHeadingSeparator;
+        sectionType.value = props.modelValue.type;
+        fields.value = props.modelValue.fields;
+    });
+</script>

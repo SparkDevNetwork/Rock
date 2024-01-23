@@ -226,6 +226,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether validation is disabled for this control.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if validation is disabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool ValidationIsDisabled
+        {
+            get
+            {
+                return ViewState["ValidationIsDisabled"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ValidationIsDisabled"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -235,7 +254,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ( !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid ) && _addressRequirementsValidator.IsValid;
+                return _acAddress.IsValid && _addressRequirementsValidator.IsValid;
             }
         }
 
@@ -278,7 +297,7 @@ namespace Rock.Web.UI.Controls
         private Panel _pnlPickerActions;
         private LinkButton _btnSelect;
         private LinkButton _btnCancel;
-        private HtmlAnchor _btnSelectNone;
+        private HtmlButton _btnSelectNone;
 
         #endregion
 
@@ -350,13 +369,13 @@ namespace Rock.Web.UI.Controls
 
                 if ( value != null )
                 {
-                    _btnSelectNone.Attributes["class"] = "picker-select-none rollover-item";
+                    _btnSelectNone.Attributes["class"] = "btn picker-select-none rollover-item";
                     _btnSelectNone.Style[HtmlTextWriterStyle.Display] = string.Empty;
                     _hfLocationId.Value = value.Id.ToString();
                 }
                 else
                 {
-                    _btnSelectNone.Attributes["class"] = "picker-select-none";
+                    _btnSelectNone.Attributes["class"] = "btn picker-select-none";
                     _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
                     _hfLocationId.Value = string.Empty;
                 }
@@ -433,8 +452,18 @@ namespace Rock.Web.UI.Controls
 
             EnsureChildControls();
 
+            _acAddress.ValidationIsDisabled = this.ValidationIsDisabled;
+
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelect );
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelectNone );
+        }
+
+        /// <inheritdoc />
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            _acAddress.Required = this.Required;
         }
 
         /// <summary>
@@ -448,7 +477,7 @@ namespace Rock.Web.UI.Controls
                 _pnlPickerMenu.Controls.AddAt( 0, ModePanel );
             }
 
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i><span>{0}</span><b class='fa fa-caret-down'></b>", this.AddressSummaryText );
 
             base.Render( writer );
         }
@@ -468,8 +497,11 @@ namespace Rock.Web.UI.Controls
             _btnPickerLabel.Attributes["class"] = "picker-label";
             this.Controls.Add( _btnPickerLabel );
 
-            _btnSelectNone = new HtmlAnchor();
-            _btnSelectNone.Attributes["class"] = "picker-select-none";
+            _btnSelectNone = new HtmlButton();
+            _btnSelectNone.Attributes["role"] = "button";
+            _btnSelectNone.Attributes["type"] = "button";
+            _btnSelectNone.Attributes["aria-label"] = "Clear selection";
+            _btnSelectNone.Attributes["class"] = "btn picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
             _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
             _btnSelectNone.CausesValidation = false;
@@ -507,8 +539,8 @@ namespace Rock.Web.UI.Controls
             _pnlPickerActions.Controls.Add( _btnCancel );
 
             _addressRequirementsValidator.ID = ID + "_addressrequirementsvalidator";
-            _addressRequirementsValidator.CssClass = "validation-error help-inline";
-            _addressRequirementsValidator.Enabled = true;
+            _addressRequirementsValidator.CssClass = "validation-error";
+            _addressRequirementsValidator.Enabled = !this.ValidationIsDisabled;
             _addressRequirementsValidator.Display = ValidatorDisplay.None;
             _addressRequirementsValidator.ValidationGroup = ValidationGroup;
             this.Controls.Add( _addressRequirementsValidator );
@@ -522,12 +554,10 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); $('#{1}').val($('#{0}').is(':visible').toString()); Rock.dialogs.updateModalScrollBar('{2}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID, this.ClientID );
-                _btnPickerLabel.HRef = "#";
             }
             else
             {
                 _btnPickerLabel.Attributes["onclick"] = string.Empty;
-                _btnPickerLabel.HRef = string.Empty;
             }
         }
 
@@ -568,7 +598,7 @@ namespace Rock.Web.UI.Controls
 
             this.Location = location;
 
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i><span>{0}</span><b class='fa fa-caret-down'></b>", this.AddressSummaryText );
 
             ShowDropDown = false;
 
@@ -586,7 +616,7 @@ namespace Rock.Web.UI.Controls
         protected void _btnSelectNone_ServerClick( object sender, EventArgs e )
         {
             Location = null;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", string.Empty );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i><span>{0}</span><b class='fa fa-caret-down'></b>", string.Empty );
         }
 
         /// <summary>

@@ -1,0 +1,156 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValues"
+                   formGroupClasses="key-value-list"
+                   name="key-value-list">
+        <template #default="{ uniqueId }">
+            <div class="control-wrapper">
+                <span :id="uniqueId">
+                    <span class="key-value-rows">
+                        <div v-for="(value, valueIndex) in internalValues" :class="rowClasses">
+                            <template v-if="!displayValueFirst">
+                                <select v-if="hasKeys" v-model="value.key" :class="valueInputClasses">
+                                    <option v-for="option in keyOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                </select>
+                                <input v-else v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
+
+                                <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
+                                    <option v-for="option in valueOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                </select>
+                                <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
+                            </template>
+                            <template v-else>
+                                <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
+                                    <option v-for="option in valueOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                </select>
+                                <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
+
+                                <select v-if="hasKeys" v-model="value.key" :class="valueInputClasses">
+                                    <option v-for="option in keyOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                </select>
+                                <input v-else v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
+                            </template>
+
+                            <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
+                        </div>
+                    </span>
+                    <div class="control-actions">
+                        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="fa fa-plus-circle"></i></a>
+                    </div>
+                </span>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<KeyValueItem[]>,
+            required: false
+        },
+
+        valueOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+
+        keyOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+
+        keyPlaceholder: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        valuePlaceholder: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        displayValueFirst: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        fullWidth: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: KeyValueItem[]): void;
+    }>();
+
+    const internalValues = ref(props.modelValue ?? []);
+
+    const hasKeys = computed((): boolean => props.keyOptions.length > 0);
+    const hasValues = computed((): boolean => props.valueOptions.length > 0);
+
+    const rowClasses = computed((): string => {
+        let classes = "controls controls-row form-control-group";
+
+        if (props.fullWidth) {
+            classes += " controls-row-full-width";
+        }
+
+        return classes;
+    });
+
+    const keyInputClasses = computed((): string => {
+        let classes = "key-value-key form-control";
+
+        if (!props.fullWidth) {
+            classes += " input-width-md";
+        }
+
+        return classes;
+    });
+
+    const valueInputClasses = computed((): string => {
+        let classes = "key-value-value form-control";
+
+        if (!props.fullWidth) {
+            classes += hasValues.value ? " input-width-lg" : " input-width-md";
+        }
+
+        return classes;
+    });
+
+    watch(() => props.modelValue, () => {
+        internalValues.value = props.modelValue ?? [];
+    });
+
+    watch(() => internalValues.value, () => {
+        emit("update:modelValue", internalValues.value);
+    }, {
+        deep: true
+    });
+
+    function onAddClick(): void {
+        let defaultKey = "";
+        let defaultValue = "";
+
+        if (hasKeys.value) {
+            defaultKey = props.keyOptions[0].value ?? "";
+        }
+
+        if (hasValues.value) {
+            defaultValue = props.valueOptions[0].value ?? "";
+        }
+
+        internalValues.value.push({ key: defaultKey, value: defaultValue });
+    }
+
+    function onRemoveClick(index: number): void {
+        internalValues.value.splice(index, 1);
+    }
+</script>

@@ -69,6 +69,7 @@ export type SessionRenewalResult = {
 };
 
 export type RegistrationEntryBlockViewModel = {
+    currentPersonFamilyGuid?: Guid | null;
     timeoutMinutes: number | null;
     registrantsSameFamily: RegistrantsSameFamily;
     maxRegistrants: number;
@@ -114,11 +115,15 @@ export type RegistrationEntryBlockViewModel = {
     registrationInstanceNotFoundMessage: string | null;
     races: ListItemBag[];
     ethnicities: ListItemBag[];
+    showSmsOptIn: boolean;
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;
     signatureDocumentTerm?: string | null;
     signatureDocumentTemplateName?: string | null;
+
+    hideProgressBar: boolean;
+    disableCaptchaSupport: boolean;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
@@ -135,12 +140,14 @@ export type RegistrationEntryBlockFeeViewModel = {
     isRequired: boolean;
     items: RegistrationEntryBlockFeeItemViewModel[];
     discountApplies: boolean;
+    hideWhenNoneRemaining?: boolean;
 };
 
 export type RegistrationEntryBlockFeeItemViewModel = {
     name: string;
     guid: Guid;
     cost: number;
+    originalCountRemaining: number | null;
     countRemaining: number | null;
 };
 
@@ -171,7 +178,7 @@ export type RegistrantInfo = {
     isOnWaitList: boolean;
 
     /** The family guid that this person is to be a part of */
-    familyGuid: Guid;
+    familyGuid: Guid | null;
 
     /** If the person were an existing person, this is his/her guid */
     personGuid: Guid | null;
@@ -179,6 +186,7 @@ export type RegistrantInfo = {
     fieldValues: Record<Guid, unknown>;
     cost: number;
     feeItemQuantities: Record<Guid, number>;
+    existingSignatureDocumentGuid?: Guid | null,
     signatureData?: string | null;
 
     guid: Guid;
@@ -203,18 +211,20 @@ export type RegistrationEntryBlockArgs = {
     registrationGuid: Guid | null;
     registrationSessionGuid: Guid | null;
     registrants: RegistrantInfo[];
-    fieldValues: Record<Guid, unknown>;
-    registrar: RegistrarInfo;
+    fieldValues: Record<Guid, unknown> | null;
+    registrar: RegistrarInfo | null;
     savedAccountGuid: Guid | null;
-    gatewayToken: string;
-    discountCode: string;
+    gatewayToken: string | null;
+    discountCode: string | null;
     amountToPayNow: number;
+    isCaptchaValid: boolean;
 };
 
 export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
     discountAmount: number;
     discountPercentage: number;
     previouslyPaid: number;
+    discountMaxRegistrants: number;
 };
 
 export const enum Step {
@@ -250,9 +260,11 @@ export type RegistrationEntryState = {
     discountCode: string;
     discountAmount: number;
     discountPercentage: number;
+    discountMaxRegistrants: number;
     successViewModel: RegistrationEntryBlockSuccessViewModel | null;
     amountToPayToday: number;
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;
     ownFamilyGuid: Guid;
+    isCaptchValid: boolean;
 };

@@ -16,10 +16,11 @@
 //
 
 import { defineComponent, inject } from "vue";
-import Loading from "@Obsidian/Controls/loading";
+import Loading from "@Obsidian/Controls/loading.obs";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import CurrencyBox from "@Obsidian/Controls/currencyBox";
-import HelpBlock from "@Obsidian/Controls/helpBlock";
+import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { ValidationRule } from "@Obsidian/ValidationRules";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types.partial";
@@ -52,8 +53,12 @@ export default defineComponent({
     components: {
         Loading,
         CurrencyBox,
-        HelpBlock
+        HelpBlock,
+        NotificationBox
     },
+    emits: [
+        "errorState"
+    ],
     setup() {
         return {
             getRegistrationEntryBlockArgs: inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs,
@@ -63,6 +68,7 @@ export default defineComponent({
     },
     data() {
         return {
+            errorMessage: "",
             isLoading: false,
             lineItems: [] as LineItem[]
         };
@@ -223,14 +229,20 @@ export default defineComponent({
         async fetchData(): Promise<void> {
             this.isLoading = true;
             this.lineItems = [];
+            this.errorMessage = "";
 
             try {
                 const response = await this.invokeBlockAction<LineItem[]>("CalculateCost", {
                     args: this.getRegistrationEntryBlockArgs()
                 });
 
-                if (response.data) {
+                if (response.isSuccess && response.data) {
                     this.lineItems = response.data;
+                    this.$emit("errorState", false);
+                }
+                else {
+                    this.errorMessage = response.errorMessage ?? "Unexpected error trying to calculate final cost.";
+                    this.$emit("errorState", true);
                 }
             }
             finally {
@@ -255,47 +267,51 @@ export default defineComponent({
     },
     template: `
 <Loading :isLoading="isLoading">
-    <div class="fee-table">
+    <NotificationBox v-if="errorMessage" alertType="warning">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <div v-if="!errorMessage" class="fee-table">
         <div class="row hidden-xs fee-header">
-            <div class="col-sm-6">
+            <div :class="{ 'col-sm-6': hasDiscount, 'col-sm-9': !hasDiscount }">
                 <strong>Description</strong>
-            </div>
-            <div v-if="hasDiscount" class="col-sm-3 fee-value">
-                <strong>Discounted Amount</strong>
             </div>
             <div class="col-sm-3 fee-value">
                 <strong>Amount</strong>
             </div>
+            <div v-if="hasDiscount" class="col-sm-3 fee-value">
+                <strong>Discounted Amount</strong>
+            </div>
         </div>
         <div v-for="lineItem in augmentedLineItems" class="row" :class="lineItem.isFee ? 'fee-row-fee' : 'fee-row-cost'">
-            <div class="col-sm-6 fee-caption">
+            <div :class="{ 'col-sm-6 fee-caption': hasDiscount, 'col-sm-9 fee-caption': !hasDiscount }">
                 {{lineItem.description}}
+            </div>
+            <div class="col-sm-3 fee-value">
+                <span class="visible-xs-inline">Amount:</span>
+                $ {{lineItem.amountFormatted}}
             </div>
             <div v-if="hasDiscount" class="col-sm-3 fee-value">
                 <HelpBlock v-if="lineItem.discountHelp" :text="lineItem.discountHelp" />
                 <span class="visible-xs-inline">Discounted Amount:</span>
                 $ {{lineItem.discountedAmountFormatted}}
             </div>
-            <div class="col-sm-3 fee-value">
-                <span class="visible-xs-inline">Amount:</span>
-                $ {{lineItem.amountFormatted}}
-            </div>
         </div>
         <div class="row fee-row-total">
-            <div class="col-sm-6 fee-caption">
+            <div :class="{ 'col-sm-6 fee-caption': hasDiscount, 'col-sm-9 fee-caption': !hasDiscount }">
                 Total
-            </div>
-            <div v-if="hasDiscount" class="col-sm-3 fee-value">
-                <span class="visible-xs-inline">Discounted Amount:</span>
-                {{discountedTotalFormatted}}
             </div>
             <div class="col-sm-3 fee-value">
                 <span class="visible-xs-inline">Amount:</span>
                 {{totalFormatted}}
             </div>
+            <div v-if="hasDiscount" class="col-sm-3 fee-value">
+                <span class="visible-xs-inline">Discounted Amount:</span>
+                {{discountedTotalFormatted}}
+            </div>
         </div>
     </div>
-    <div class="row fee-totals">
+    <div v-if="!errorMessage" class="row fee-totals">
         <div class="col-sm-offset-8 col-sm-4 fee-totals-options">
             <div class="form-group static-control">
                 <label class="control-label">Total Cost</label>

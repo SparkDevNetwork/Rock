@@ -30,6 +30,11 @@
         color: #737475;
         letter-spacing: 0.32px;
     }
+
+    .related-documents {
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
 </style>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
@@ -281,7 +286,7 @@
                     <div class="row">
                         <asp:Repeater ID="rptViewBenevolenceDocuments" runat="server">
                             <ItemTemplate>
-                                <div class="col-md-2">
+                                <div class="col-md-3 related-documents">
                                     <asp:HyperLink ID="lnkViewUploadedFile" runat="server" Target="_blank" rel="noopener noreferrer" CssClass="btn-link"></asp:HyperLink>
                                 </div>
                             </ItemTemplate>

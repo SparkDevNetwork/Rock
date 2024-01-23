@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 
 using MassTransit;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
 using Rock.Logging;
@@ -37,9 +39,31 @@ namespace Rock.Bus.Consumer
         where TMessage : class, IRockMessage<TQueue>
     {
         /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
         /// The context
         /// </summary>
         protected ConsumeContext<TMessage> ConsumeContext { get; private set; } = null;
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
 
         /// <summary>
         /// Consumes the specified message.
@@ -54,7 +78,7 @@ namespace Rock.Bus.Consumer
         /// <returns></returns>
         public virtual async Task Consume( ConsumeContext<TMessage> context )
         {
-            RockLogger.Log.Debug( RockLogDomains.Core, "Rock Task Consumer: {0} TMessage Type: {1} Context: {@context}", GetType(), typeof( TMessage ), context );
+            Logger.LogDebug( "Rock Task Consumer: {0} TMessage Type: {1} Context: {@context}", GetType(), typeof( TMessage ), context );
             ConsumeContext = context;
             await ConsumeAsync( context.Message );
         }

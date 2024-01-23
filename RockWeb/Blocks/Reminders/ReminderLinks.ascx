@@ -32,36 +32,107 @@
     }
 
     function refreshReminderCount() {
-        // use ajax to pull the updated reminder count.
-        var restUrl = Rock.settings.get('baseUrl') + 'api/Reminders/GetReminderCount';
+        var restUrl = $('#<%= hfActionUrl.ClientID %>').val();
+
         $.ajax({
             url: restUrl,
             dataType: 'json',
-            success: function (data, status, xhr) {
-                $('#<%= hfReminderCount.ClientID %>').val(data);
-                checkReminders();
+            method: 'POST',
+            data: '{}',
+            success: function (data, status) {
+                updateReminders(data.reminders, data.notifications);
+                var countData = {
+                    timestamp: Date.now(),
+                    reminders: data.reminders,
+                    notifications: data.notifications
+                };
+                localStorage.setItem("Rock.Core.ReminderLinks.Counts", JSON.stringify(countData));
             },
             error: function (xhr, status, error) {
-                console.log('GetReminderCount status: ' + status + ' [' + error + ']: ' + xhr.reponseText);
+                console.log(`GetReminderCount status: ${status} [${error}]: ${xhr.reponseText}`);
             }
-        });
+        })
     }
 
-    function checkReminders() {
-        var reminderCount = $('#<%=hfReminderCount.ClientID %>').val();
+    function updateReminders(reminderCount, notificationCount) {
         var remindersButton = $('#<%=btnReminders.ClientID %>');
         var buttonHtml = '<i class="fa fa-bell"></i>';
 
-        if (reminderCount != '' && reminderCount != "0") {
+        if (typeof reminderCount === "string") {
+            reminderCount = parseInt(reminderCount || '0');
+        }
+
+        if (typeof notificationCount === "string") {
+            notificationCount = parseInt(notificationCount || '0');
+        }
+
+        if (reminderCount > 0 || notificationCount > 0) {
             remindersButton.addClass('active has-reminders');
-            buttonHtml = buttonHtml + '<span class="count-bottom">' + new Intl.NumberFormat().format(reminderCount) + "</span>";
+            buttonHtml = buttonHtml + `<span class="indicator-bottom"></span>`;
         }
 
         remindersButton.html(buttonHtml);
+
+        var viewRemindersButton = $('#<%= btnViewReminders.ClientID %>');
+        if (reminderCount > 0) {
+            viewRemindersButton.html(`View Reminders <span class="badge badge-info">${reminderCount}</span>`);
+        }
+        else {
+            viewRemindersButton.html(`View Reminders <span class="badge badge-default">0</span>`);
+        }
+
+        var viewNotificationsButton = $('#<%= btnViewNotifications.ClientID %>');
+        if ( notificationCount > 0 ) {
+            viewNotificationsButton.html(`View Notifications <span class="badge badge-info">${notificationCount}</span>`);
+        }
+        else {
+            viewNotificationsButton.html(`View Notifications <span class="badge badge-default">0</span>`);
+        }
+    }
+
+    function readCounts() {
+        var countData = null;
+
+        try {
+            var counts = localStorage.getItem("Rock.Core.ReminderLinks.Counts");
+            if (counts !== null && counts !== "") {
+                countData = JSON.parse(counts);
+            }
+        }
+        catch {
+            countData = null;
+        }
+
+        if (countData !== null) {
+            updateReminders(countData.reminders, countData.notifications);
+
+            // If the data is more than 1 minute old, refresh.
+            if (countData.timestamp + 60000 < Date.now()) {
+                countData = null;
+            }
+        }
+
+        if (countData === null) {
+            refreshReminderCount();
+        }
+    }
+
+    function readCountsTimer() {
+        try {
+            readCounts();
+        }
+        finally {
+            setTimeout(readCountsTimer, 10 * 60 * 1000);
+        }
     }
 
     Sys.Application.add_load(function () {
-        checkReminders();
+        readCounts();
+
+        // Refresh every 10 minutes if they are just sitting on the page.
+        // Later this can be replaced with real-time communication.
+        setTimeout(readCountsTimer, 10 * 60 * 1000);
+
         var remindersButton = $('.js-rock-reminders');
 
         remindersButton.on('show.bs.dropdown', function () {
@@ -85,18 +156,21 @@
     }
 </script>
 
-<asp:HiddenField ID="hfReminderCount" runat="server" Value="0" />
+<asp:HiddenField ID="hfActionUrl" runat="server" Value="" />
 <asp:HiddenField ID="hfContextEntityTypeId" runat="server" Value="0" />
 
 <div class="dropdown js-rock-reminders">
-    <%-- LinkButton inner html is updated by checkReminders() function. --%>
+    <%-- LinkButton inner html is updated by updateReminders() function. --%>
     <asp:LinkButton runat="server" ID="btnReminders" Visible="false" CssClass="rock-bookmark" href="#" data-toggle="dropdown"><i class="fa fa-bell"></i></asp:LinkButton>
-    <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu js-reminders-container">
+    <asp:Panel ID="pnlReminders" runat="server" CssClass="dropdown-menu dropdown-menu-reminders js-reminders-container">
         <li class="js-add-reminder d-none">
-            <asp:LinkButton runat="server" ID="btnAddReminder" CssClass="" OnClick="btnAddReminder_Click">Add Reminder</asp:LinkButton>
+            <asp:LinkButton runat="server" ID="btnAddReminder" OnClick="btnAddReminder_Click">Add Reminder</asp:LinkButton>
         </li>
         <li>
             <asp:LinkButton runat="server" ID="btnViewReminders" OnClick="btnViewReminders_Click">View Reminders</asp:LinkButton>
+        </li>
+        <li>
+            <asp:LinkButton runat="server" ID="btnViewNotifications" OnClick="btnViewNotifications_Click">View Notifications</asp:LinkButton>
         </li>
     </asp:Panel>
 </div>
@@ -123,7 +197,7 @@
 
                             <p>
                                 <asp:Literal ID="lExistingReminderTextTemplate" runat="server" Visible="false">
-                                    You currently have {REMINDER_QUANTITY_TEXT_1} for this {ENTITY_TYPE}. The most {REMINDER_QUANTITY_TEXT_2} listed below. 
+                                    You currently have {REMINDER_QUANTITY_TEXT_1} for this {ENTITY_TYPE}. The most {REMINDER_QUANTITY_TEXT_2} listed below.
                                 </asp:Literal>
                                 <asp:Literal ID="lExistingReminderText" runat="server" />
                                 <asp:LinkButton runat="server" ID="btnViewReminders2" OnClick="btnViewReminders_Click" Visible="false">See your reminders settings for a complete list</asp:LinkButton>

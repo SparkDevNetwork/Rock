@@ -1,0 +1,139 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="button-dropdownlist">
+        <template #default="{ field, uniqueId }">
+            <div class="dropdown">
+                <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
+                    <RockButton class="dropdown-toggle" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
+                        {{ selectionStyle === 'title' && internalValue ? selectedText : title }}
+                        <span class="fa fa-caret-down"></span>
+                    </RockButton>
+                    <ul class="dropdown-menu">
+                        <li v-for="item of items" :key="item.value ?? 0" @click.stop="selectValue(item.value ?? '')">
+                            <a><i :class="{ 'fa fa-fw': true, 'fa-check': internalValue === item.value }" v-if="selectionStyle === 'checkmark'"></i> {{ item.text }}</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<style scoped>
+li > button > i {
+    display: inline-block;
+    width: 1.25em;
+    text-align: center;
+}
+
+li.disabled > button {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import RockFormField from "./rockFormField.obs";
+    import RockButton from "./rockButton.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** The v-model value this control */
+        modelValue: {
+            type: String,
+            default: null
+        },
+
+        /** The items that will be listed in the dropdown menu. */
+        items: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /** Used as a label on the button when using checkmark selection style */
+        title: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * When set to 'title', when an item is selected, the selected item is displayed as the button text, or if set to 'checkmark'
+         * it will place a check next to the selected item and display a given `title` as the button text
+         */
+        selectionStyle: {
+            type: String as PropType<"title" | "checkmark">,
+            default: "title"
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", v: string): void
+    }>();
+
+    // #region Values
+
+    const isDropDownOpen = ref(false);
+    const dropdownElement = ref<HTMLElement>();
+    const fieldProps = useStandardRockFormFieldProps(props);
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const itemsMap = computed(() => {
+        return props.items.reduce((map, item) => {
+            map[item.value ?? ""] = item.text ?? "";
+            return map;
+        }, {} as Record<string, string>);
+    });
+
+    const selectedText = computed(() => {
+        return itemsMap.value[internalValue.value];
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the drop down button has been clicked.
+     */
+    function toggleOpen(): void {
+        isDropDownOpen.value = !isDropDownOpen.value;
+    }
+
+    function selectValue(value: string): void {
+        internalValue.value = value;
+        isDropDownOpen.value = false;
+    }
+
+    /**
+     * Event handler for when the mouse is pressed down somewhere in the
+     * document.
+     *
+     * @param event The current event.
+     */
+    function onDocumentMouseDown(event: MouseEvent): void {
+        if (event.target instanceof HTMLElement && dropdownElement.value?.contains(event.target) !== true) {
+            isDropDownOpen.value = false;
+        }
+    }
+
+    // #endregion
+
+    // Watch for the drop down being opened or closed and add/remove the
+    // event handler for detecting clicks outside the dropdown.
+    watch(isDropDownOpen, () => {
+        if (isDropDownOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+        }
+        else {
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+        }
+    });
+</script>

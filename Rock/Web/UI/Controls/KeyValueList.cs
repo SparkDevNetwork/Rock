@@ -193,7 +193,20 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
             writer.WriteLine();
+
+            if ( this.ValueChanged != null )
+            {
+                var postBackChangedscript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ValueChanged" ), true );
+                postBackChangedscript = postBackChangedscript.Replace( '\'', '"' );
+                var script = string.Format( @"function raiseKeyValueList(){{ window.location = 'javascript: {0}'; }}", postBackChangedscript );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "key-value-script" + this.ClientID, script, true );
+            }
         }
+
+        /// <summary>
+        /// Occurs when [value changed].
+        /// </summary>
+        public event EventHandler ValueChanged;
 
         /// <summary>
         /// Writes the key controls.
@@ -307,6 +320,21 @@ namespace Rock.Web.UI.Controls
             else
             {
                 html.AppendFormat( @"<input class=""key-value-value input-width-md form-control js-key-value-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
+            }
+        }
+
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
+        public void RaisePostBackEvent( string eventArgument )
+        {
+            if ( eventArgument == "ValueChanged" )
+            {
+                if ( ValueChanged != null )
+                {
+                    ValueChanged( this, new EventArgs() );
+                }
             }
         }
     }

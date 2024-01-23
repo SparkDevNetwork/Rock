@@ -80,8 +80,13 @@ ul.rocktree-children {
     color: @text-color;
     white-space: nowrap;
 
+    // Only lighten the name, not the children of the item.
     &.is-inactive {
-      color: lighten(@text-color, 20%);
+      opacity: 1;
+
+      > .rocktree-name {
+        opacity: 0.6;
+      }
     }
 
     .select-children {
@@ -125,7 +130,6 @@ ul.rocktree-children {
     padding: 0 16px 0 0;
     line-height: 30px;
     cursor: pointer;
-    border-radius: 3px;
     border-radius: var(--border-radius-base, 3px);
 
     i {

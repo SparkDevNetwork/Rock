@@ -1,0 +1,196 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+
+                <TextBox v-model="abbreviatedName"
+                         label="Abbreviated Name" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isPublic"
+                          label="Public"
+                          help="Determines if this schedule should be shown or hidden when viewed by individuals outside of the organization." />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <Numberbox v-model="enableCheckIn"
+                            append="mins before start"
+                            label="Enable Check-in">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">mins before start</span>
+                            </template>
+                </Numberbox>
+
+                <CategoryPicker v-model="category"
+                                label="Category"
+                                :multiple="false"
+                                rules="required"
+                                :entityTypeGuid="scheduleEntityTypeGuid" />
+            </div>
+
+            <div class="col-md-6">
+                <Numberbox v-model="closeCheckIn"
+                            label="Close Check-in">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">mins after start</span>
+                            </template>
+                </Numberbox>
+
+                <CheckBox v-model="autoInactivateWhenComplete"
+                          label="Inactivate Schedule When Complete"
+                          help="When enabled, the schedule will automatically be inactivated once the schedule has no more occurrences." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-8">
+                        <ScheduleBuilder v-model="calendarContent"
+                                label="Schedule"/>
+                    </div>
+
+                    <div class="col-md-2">
+                        <RockButton btnType="link" data-toggle="tooltip" ref="previewRef"
+                            data-placement="auto" data-container="body" data-html="true"
+                            title="" :data-original-title="props.options?.helpText">Preview</RockButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, onMounted } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Numberbox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleBag";
+    import { ScheduleDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ScheduleBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ScheduleDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ScheduleBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const abbreviatedName = propertyRef(props.modelValue.abbreviatedName ?? "", "AbbreviatedName");
+    const enableCheckIn = propertyRef(props.modelValue.checkInStartOffsetMinutes, "CheckInStartOffsetMinute");
+    const closeCheckIn = propertyRef(props.modelValue.checkInEndOffsetMinutes, "CheckInEndOffsetMinute");
+    const category = propertyRef(props.modelValue.category, "CategoryId");
+    const autoInactivateWhenComplete = propertyRef(props.modelValue.autoInactivateWhenComplete, "AutoInactiveWhenComplete");
+    const isPublic = propertyRef(props.modelValue.isPublic ?? false, "IsPublic");
+    const calendarContent = propertyRef(props.modelValue.iCalendarContent ?? "", "iCalendarContent");
+
+    const scheduleEntityTypeGuid = EntityType.Schedule;
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, abbreviatedName, enableCheckIn, closeCheckIn, category, autoInactivateWhenComplete, isPublic, calendarContent];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(abbreviatedName, props.modelValue.abbreviatedName ?? "");
+        updateRefValue(enableCheckIn, props.modelValue.checkInStartOffsetMinutes);
+        updateRefValue(closeCheckIn, props.modelValue.checkInEndOffsetMinutes);
+        updateRefValue(category, props.modelValue.category);
+        updateRefValue(autoInactivateWhenComplete, props.modelValue.autoInactivateWhenComplete);
+        updateRefValue(isPublic, props.modelValue.isPublic ?? false);
+        updateRefValue(calendarContent, props.modelValue.iCalendarContent ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ScheduleBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            abbreviatedName: abbreviatedName.value,
+            checkInStartOffsetMinutes: enableCheckIn.value,
+            checkInEndOffsetMinutes: closeCheckIn.value,
+            category: category.value,
+            autoInactivateWhenComplete: autoInactivateWhenComplete.value,
+            isPublic: isPublic.value,
+            iCalendarContent: calendarContent.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // enable tooltip on the preview
+    const previewRef = ref<InstanceType<typeof RockButton>>();
+    onMounted(() => {
+        tooltip(previewRef?.value?.$el);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

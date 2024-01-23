@@ -34,7 +34,7 @@ declare const $: any;
  * Configure a tooltip for the specified node or nodes to show on hover. This
  * currently uses Bootstrap tooltips but may be changed to use a different
  * method later.
- * 
+ *
  * @param node The node or nodes to have tooltips configured on.
  * @param options The options that describe how the tooltips should behave.
  */
@@ -48,8 +48,21 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
         return;
     }
 
-    $(node).tooltip({
-        html: options?.html,
-        sanitize: options?.sanitize ?? true
-    });
+    if (typeof $ === "function") {
+        $(node).tooltip({
+            html: options?.html,
+            sanitize: options?.sanitize ?? true
+        });
+    }
+}
+
+/**
+ * Manually show a previously-configured tooltip for the specified node.
+ *
+ * @param node The node for which to show a tooltip
+ */
+export function showTooltip(node: Element): void {
+    if (typeof $ === "function") {
+        $(node).tooltip("show");
+    }
 }

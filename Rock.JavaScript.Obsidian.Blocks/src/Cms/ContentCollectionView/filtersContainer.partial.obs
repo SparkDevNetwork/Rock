@@ -1,0 +1,52 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="collectionsearch-filters">
+        <h4 class="title">Filter By</h4>
+
+        <Filter v-for="item in filters"
+                :modelValue="getFilterValue(item)"
+                @update:modelValue="setFilterValue(item, $event)"
+                :filter="item" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { SearchFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionView/searchFilterBag";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import Filter from "./filter.partial.obs";
+
+    const props = defineProps({
+        filters: {
+            type: Array as PropType<SearchFilterBag[]>,
+            required: true
+        },
+
+        filterValues: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:filterValues", value: Record<string, string>): void;
+    }>();
+
+    const filterValues = ref<Record<string, string>>(props.filterValues);
+
+    const getFilterValue = (filter: SearchFilterBag): string => {
+        return filterValues.value[(filter.label ?? "").toLowerCase()] ?? "";
+    };
+
+    const setFilterValue = (filter: SearchFilterBag, value: string): void => {
+        const newValues = { ...filterValues.value };
+        newValues[(filter.label ?? "").toLowerCase()] = value;
+        filterValues.value = newValues;
+
+        emit("update:filterValues", newValues);
+    };
+
+    watch(() => props.filterValues, () => {
+        updateRefValue(filterValues, props.filterValues);
+    });
+</script>

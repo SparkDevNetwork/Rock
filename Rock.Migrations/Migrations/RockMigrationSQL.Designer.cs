@@ -280,7 +280,8 @@ namespace Rock.Migrations.Migrations {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving {
             get {
@@ -1454,12 +1455,25 @@ namespace Rock.Migrations.Migrations {
         ///              BEGIN
         ///                  DECLARE @cROLE_ADULT uniqueidentifier = &apos;2639F9A5-2AAE-4E48-A8C3-4FFE86681E42&apos;
         ///              
-        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429CB9&apos;
-        ///      [rest of string was truncated]&quot;;.
+        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429 [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge {
             get {
                 return ResourceManager.GetString("_202305262246526_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation] = N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at each o [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202306151802148_UpdateChartShortcode {
+            get {
+                return ResourceManager.GetString("_202306151802148_UpdateChartShortcode", resourceCulture);
             }
         }
     }

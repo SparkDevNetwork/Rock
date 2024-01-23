@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.IpAddress;
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Tests.Integration.Data.Interactions;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
@@ -188,7 +189,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
 
                 foreach ( var testPage in interactionPages )
                 {
-                    var args = new TestDataHelper.Interactions.CreatePageViewInteractionActionArgs
+                    var args = new CreatePageViewInteractionActionArgs
                     {
                         ViewDateTime = interactionDateTime,
                         SiteIdentifier = internalSite.Id.ToString(),
@@ -200,7 +201,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
                         UserPersonAliasId = personTedDecker.PrimaryAliasId
                     };
 
-                    var interaction = TestDataHelper.Interactions.CreatePageViewInteraction( args, rockContext );
+                    var interaction = InteractionsDataManager.Instance.CreatePageViewInteraction( args );
 
                     interaction.ForeignKey = "IntegrationTestData";
 

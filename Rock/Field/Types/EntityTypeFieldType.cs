@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +34,8 @@ namespace Rock.Field.Types
     /// returns EntityType.Guid
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENTITYTYPE )]
     public class EntityTypeFieldType : FieldType, IEntityFieldType
     {
@@ -49,6 +51,8 @@ namespace Rock.Field.Types
          */
 
         #region Configuration
+
+        private const string IncludeGlobal = "includeglobal";
 
         #endregion
 
@@ -70,6 +74,57 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( jsonValue != null )
+            {
+                return jsonValue.Value;
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( guid.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( guid.Value );
+                var includeGlobalOption = privateConfigurationValues.ContainsKey( IncludeGlobal ) && privateConfigurationValues[IncludeGlobal].AsBoolean();               
+
+                if ( entityType != null )
+                {
+                    return new ListItemBag()
+                    {
+                        Text = entityType.FriendlyName,
+                        Value = entityType.Guid.ToString()
+                    }.ToCamelCaseJson( false, true );
+                }
+                else if ( includeGlobalOption )
+                {
+                    // If the guid had a value, but the EntityType is null, it's probably the "None (Global Attributes)" entity.
+                    return new ListItemBag()
+                    {
+                        Text = "None (Global Attributes)",
+                        Value = Guid.NewGuid().ToString()
+                    }.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 
@@ -115,7 +170,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
-            configKeys.Add( "includeglobal" );
+            configKeys.Add( IncludeGlobal );
             return configKeys;
         }
 
@@ -145,13 +200,13 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "includeglobal", new ConfigurationValue( "Include Global Option",
+            configurationValues.Add( IncludeGlobal, new ConfigurationValue( "Include Global Option",
                 "Should the 'Global Attributes' entity option be included.", "" ) );
 
             if ( controls != null && controls.Count == 1 )
             {
                 if ( controls[0] != null && controls[0] is RockCheckBox )
-                    configurationValues["includeglobal"].Value = ( ( RockCheckBox ) controls[0] ).Checked.ToString();
+                    configurationValues[IncludeGlobal].Value = ( ( RockCheckBox ) controls[0] ).Checked.ToString();
 
             }
 
@@ -167,14 +222,14 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Count == 1 && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is RockCheckBox && configurationValues.ContainsKey( "includeglobal" ) )
+                if ( controls[0] != null && controls[0] is RockCheckBox && configurationValues.ContainsKey( IncludeGlobal ) )
                 {
                     var cb = ( RockCheckBox ) controls[0];
                     cb.Checked = true;
 
                     bool includeGlobal = false;
-                    if ( configurationValues.ContainsKey( "includeglobal" ) &&
-                        bool.TryParse( configurationValues["includeglobal"].Value, out includeGlobal ) &&
+                    if ( configurationValues.ContainsKey( IncludeGlobal ) &&
+                        bool.TryParse( configurationValues[IncludeGlobal].Value, out includeGlobal ) &&
                         !includeGlobal )
                     {
                         cb.Checked = false;
@@ -214,8 +269,8 @@ namespace Rock.Field.Types
             if ( configurationValues != null )
             {
                 bool includeGlobal = false;
-                if ( configurationValues.ContainsKey( "includeglobal" ) &&
-                    bool.TryParse( configurationValues["includeglobal"].Value, out includeGlobal ) &&
+                if ( configurationValues.ContainsKey( IncludeGlobal ) &&
+                    bool.TryParse( configurationValues[IncludeGlobal].Value, out includeGlobal ) &&
                     !includeGlobal )
                 {
                     entityTypePicker.IncludeGlobalOption = false;

@@ -29,6 +29,7 @@ using Owin;
 using Owin.Security.OpenIdConnect.Extensions;
 
 using Rock;
+using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
 using Rock.Oidc.Authorization;
@@ -73,7 +74,7 @@ namespace RockWeb.Blocks.Security.Oidc
 
         private const string AntiXsrfTokenKey = "__AntiXsrfToken";
         protected string _antiXsrfTokenValue;
-
+        private const string ScopeCookiePrefix = ".ROCK-OidcScopeApproval-";
 
         #region Base Control Methods
 
@@ -167,31 +168,35 @@ namespace RockWeb.Blocks.Security.Oidc
         {
             base.OnLoad( e );
 
-            // We have to use querystring, because something in the .net postback chain writes to the Response object which breaks the auth call.
-            var action = PageParameter( PageParamKey.Action );
-            var token = PageParameter( "token" );
-
-            if ( !string.IsNullOrWhiteSpace( action ) && ValidateAntiForgeryToken( token ) )
-            {
-                switch ( action )
-                {
-                    case "approve":
-                        AcceptAuthorization();
-                        return;
-                    case "deny":
-                        DenyAuthorization( "The+user+declined+claim+permissions" );
-                        return;
-                }
-            }
-
-            CreateAntiForgeryToken();
-
+            // Get the auth client for the request
             var authClient = GetAuthClient();
             if ( authClient == null )
             {
                 DenyAuthorization( "Invalid+client" );
                 return;
             }
+
+            // Check if this client has already approved the scopes. We'll look for the cookie and check that the scopes have not changed.
+            var scopesApprovalCookieValue = RockPage.GetCookie( $"{ScopeCookiePrefix}{authClient.Guid}" )?.Value;
+            var scopesPreviouslyApproved = Rock.Security.Encryption.DecryptString( scopesApprovalCookieValue ) == authClient.AllowedScopes.ToString();
+
+            // We have to use querystring, because something in the .net postback chain writes to the Response object which breaks the auth call.
+            var action = PageParameter( PageParamKey.Action );
+            var token = PageParameter( "token" );
+
+            if ( (action.IsNotNullOrWhiteSpace() && ValidateAntiForgeryToken( token ) ) || scopesPreviouslyApproved )
+            {
+                if (action == "deny" )
+                {
+                    DenyAuthorization( "The+user+declined+claim+permissions" );
+                    return;
+                }
+
+                AcceptAuthorization();
+                return;
+            }
+
+            CreateAntiForgeryToken();
 
             BindClientName();
             BindScopes();
@@ -352,12 +357,16 @@ namespace RockWeb.Blocks.Security.Oidc
 
             // Create a new authentication ticket holding the user identity.
             var ticket = new AuthenticationTicket( identity, new AuthenticationProperties() );
-
+            
             // We should set the scopes to the requested valid scopes.
             ticket.SetScopes( requestedScopes );
 
             // Set the resource servers the access token should be issued for.
             ticket.SetResources( "resource_server" );
+
+            // Set cookie to remember the fact that this individual as approved the scopes.
+            var cookieValue = $"{Rock.Security.Encryption.EncryptString( authClient.AllowedScopes.ToString() )}";
+            RockPage.AddOrUpdateCookie( $"{ScopeCookiePrefix}{authClient.Guid}", cookieValue, RockDateTime.Now.AddDays( authClient.ScopeApprovalExpiration ) );
 
             // Returning a SignInResult will ask ASOS to serialize the specified identity
             // to build appropriate tokens. You should always make sure the identities

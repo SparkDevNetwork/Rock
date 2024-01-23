@@ -448,23 +448,10 @@ namespace RockWeb.Blocks.Finance
                             var batchService = new FinancialBatchService( rockContext );
 
                             // Get the batch
-                            var batch = batchService.Get(
-                                GetAttributeValue( "BatchNamePrefix" ),
-                                swipeInfo.CurrencyTypeValue,
-                                swipeInfo.CreditCardTypeValue,
-                                transaction.TransactionDateTime.Value,
-                                financialGateway.GetBatchTimeOffset() );
+                            var batch = batchService.GetForNewTransaction( transaction, GetAttributeValue( "BatchNamePrefix" ) );
 
                             var batchChanges = new History.HistoryChangeList();
-
-                            if ( batch.Id == 0 )
-                            {
-                                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-                            }
+                            FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
                             decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
                             History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );

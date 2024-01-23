@@ -197,11 +197,19 @@ namespace RockWeb.Blocks.Finance
         DefaultBooleanValue = false,
         Order = 18 )]
 
+    [BooleanField( "SMS Opt-in",
+        Key = AttributeKey.DisplaySmsOptIn,
+        Description = "If 'Prompt for Phone' is set to 'Yes' then selecting 'Show' here will allow a user to opt-into receiving SMS communications for that number.",
+        TrueText = "Show",
+        FalseText = "Hide",
+        DefaultBooleanValue = false,
+        Order = 19 )]
+
     [BooleanField( "Prompt for Email",
         Key = AttributeKey.DisplayEmail,
         Description = "Should the user be prompted for their email address?",
         DefaultBooleanValue = true,
-        Order = 19 )]
+        Order = 20 )]
 
     [GroupLocationTypeField( "Address Type",
         Key = AttributeKey.AddressType,
@@ -209,7 +217,7 @@ namespace RockWeb.Blocks.Finance
         GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-        Order = 20 )]
+        Order = 21 )]
 
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
@@ -218,7 +226,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
-        Order = 21 )]
+        Order = 22 )]
 
     [DefinedValueField( "Record Status",
         Key = AttributeKey.RecordStatus,
@@ -227,39 +235,39 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
-        Order = 22 )]
+        Order = 23 )]
 
     [BooleanField( "Enable Comment Entry",
         Key = AttributeKey.EnableCommentEntry,
         Description = "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment Template' setting)",
         DefaultBooleanValue = false,
-        Order = 23 )]
+        Order = 24 )]
 
     [TextField( "Comment Entry Label",
         Key = AttributeKey.CommentEntryLabel,
         Description = "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).",
         IsRequired = false,
         DefaultValue = "Comment",
-        Order = 24 )]
+        Order = 25 )]
 
     [BooleanField( "Enable Business Giving",
         Key = AttributeKey.EnableBusinessGiving,
         Description = "Should the option to give as a business be displayed?",
         DefaultBooleanValue = true,
-        Order = 25 )]
+        Order = 26 )]
 
     [BooleanField( "Enable Anonymous Giving",
         Key = AttributeKey.EnableAnonymousGiving,
         Description = "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.",
         DefaultBooleanValue = false,
-        Order = 26 )]
+        Order = 27 )]
 
     [BooleanField(
         "Disable Captcha Support",
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
-        Order = 29 )]
+        Order = 28 )]
 
     #endregion Default Category
 
@@ -542,6 +550,7 @@ namespace RockWeb.Blocks.Finance
             public const string AccountHeaderTemplate = "AccountHeaderTemplate";
             public const string AllowScheduled = "AllowScheduled";
             public const string DisplayPhone = "DisplayPhone";
+            public const string DisplaySmsOptIn = "SmsOptIn";
             public const string DisplayEmail = "DisplayEmail";
             public const string AddressType = "AddressType";
             public const string ConnectionStatus = "ConnectionStatus";
@@ -575,7 +584,6 @@ namespace RockWeb.Blocks.Finance
 
             // Advanced Category
             public const string AllowAccountOptionsInURL = "AllowAccountOptionsInURL";
-            public const string InvalidAccountInURLMessage = "InvalidAccountInURLMessage";
             public const string OnlyPublicAccountsInURL = "OnlyPublicAccountsInURL";
             public const string InvalidAccountMessage = "InvalidAccountMessage";
             public const string AccountCampusContext = "AccountCampusContext";
@@ -689,6 +697,7 @@ mission. We are so grateful for your commitment.</p>
             public const string StartDate = "StartDate";
             public const string Transfer = "Transfer";
             public const string ParticipationMode = "ParticipationMode";
+            public const string CampusId = "CampusId";
         }
 
         private static class ViewStateKey
@@ -698,10 +707,12 @@ mission. We are so grateful for your commitment.</p>
             public const string CreditCardTypeValueId = "CreditCardTypeValueId";
             public const string ScheduleId = "ScheduleId";
             public const string DisplayPhone = "DisplayPhone";
+            public const string DisplaySmsOptIn = "DisplaySmsOptIn";
             public const string PersonId = "PersonId";
             public const string HostPaymentInfoSubmitScript = "HostPaymentInfoSubmitScript";
             public const string AvailableAccountsJSON = "AvailableAccountsJSON";
             public const string SelectedAccountsJSON = "SelectedAccountsJSON";
+            public const string CaptchaFailCount = "CaptchaFailCount";
         }
 
         #endregion Block Keys
@@ -723,6 +734,8 @@ mission. We are so grateful for your commitment.</p>
         /// page parameter "transfer" and the "ScheduledTransactionId" are passed in.
         /// </summary>
         private FinancialScheduledTransaction _scheduledTransactionToBeTransferred = null;
+
+        
 
         #endregion
 
@@ -762,6 +775,18 @@ mission. We are so grateful for your commitment.</p>
         {
             get { return ViewState[ViewStateKey.DisplayPhone].ToString().AsBoolean(); }
             set { ViewState[ViewStateKey.DisplayPhone] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the SMS opt-in checkbox to enable SMS Messaging for the phone number.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [SMS opt in]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool DisplaySmsOptIn
+        {
+            get { return ViewState[ViewStateKey.DisplaySmsOptIn].ToString().AsBoolean(); }
+            set { ViewState[ViewStateKey.DisplaySmsOptIn] = value; }
         }
 
         /// <summary>
@@ -877,7 +902,7 @@ mission. We are so grateful for your commitment.</p>
 
             RegisterScript();
 
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
             cpCaptcha.Visible = !disableCaptchaSupport;
             cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
 
@@ -893,24 +918,48 @@ mission. We are so grateful for your commitment.</p>
         {
             if ( e.IsValid )
             {
+                nbPaymentTokenError.Visible= false;
+                nbPaymentTokenError.Text = string.Empty;
+
+                _hostedPaymentInfoControl.Visible = true;
                 hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 cpCaptcha.Visible = false;
+                return;
             }
+
+            nbPaymentTokenError.Visible= true;
+            nbPaymentTokenError.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
+            cpCaptcha.Visible = false;
+            btnHostedPaymentInfoNext.Visible = false;
         }
 
         private void InitializeFinancialGatewayControls()
         {
-            bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
-            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
-            if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
+            if ( this.FinancialGatewayComponent == null || this.FinancialGateway == null )
             {
-                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
-                phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
+                return;
+            }
 
-                if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
-                {
-                    hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
-                }
+            var hostedPaymentInfoControlOptions = new HostedPaymentInfoControlOptions
+            {
+                EnableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean(),
+                EnableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean()
+            };
+
+            _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", hostedPaymentInfoControlOptions );
+            _hostedPaymentInfoControl.Visible = false;
+            phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
+
+            nbPaymentTokenError.Text = "Loading...";
+            nbPaymentTokenError.Visible = true;
+
+            if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable )
+            {
+                hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
+                _hostedPaymentInfoControl.Visible = true;
+
+                nbPaymentTokenError.Visible= false;
+                nbPaymentTokenError.Text = string.Empty;
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
@@ -1079,7 +1128,10 @@ mission. We are so grateful for your commitment.</p>
         {
             var allowAccountsInUrl = this.GetAttributeValue( AttributeKey.AllowAccountOptionsInURL ).AsBoolean();
             var rockContext = new RockContext();
-            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
+            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() )
+                .OrderBy( a => a.Order )
+                .Select( a => a.Id )
+                .ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
             caapPromptForAccountAmounts.AccountHeaderTemplate = this.GetAttributeValue( AttributeKey.AccountHeaderTemplate );
 
@@ -1095,6 +1147,7 @@ mission. We are so grateful for your commitment.</p>
                 caapPromptForAccountAmounts.AmountEntryMode = CampusAccountAmountPicker.AccountAmountEntryMode.SingleAccount;
             }
 
+            caapPromptForAccountAmounts.CampusId = GetCampusId( _targetPerson );
             caapPromptForAccountAmounts.UseAccountCampusMappingLogic = this.GetAttributeValue( AttributeKey.UseAccountCampusMappingLogic ).AsBooleanOrNull() ?? false;
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
             caapPromptForAccountAmounts.IncludeInactiveCampuses = this.GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
@@ -1116,6 +1169,7 @@ mission. We are so grateful for your commitment.</p>
                 .Select( a => a.Id ).ToArray();
 
             caapPromptForAccountAmounts.IncludedCampusTypeIds = includedCampusTypeIds;
+            caapPromptForAccountAmounts.AllowPrivateSelectableAccounts = !GetAttributeValue( AttributeKey.OnlyPublicAccountsInURL ).AsBoolean();
 
             if ( allowAccountsInUrl )
             {
@@ -1123,7 +1177,7 @@ mission. We are so grateful for your commitment.</p>
                 if ( parameterAccountOptions.Any() )
                 {
                     selectableAccountIds = parameterAccountOptions.Select( a => a.AccountId ).ToList();
-                    string invalidAccountInURLMessage = this.GetAttributeValue( AttributeKey.InvalidAccountInURLMessage );
+                    string invalidAccountInURLMessage = this.GetAttributeValue( AttributeKey.InvalidAccountMessage );
                     if ( invalidAccountInURLMessage.IsNotNullOrWhiteSpace() )
                     {
                         var validAccountUrlIdsQuery = new FinancialAccountService( rockContext ).GetByIds( selectableAccountIds )
@@ -1141,6 +1195,7 @@ mission. We are so grateful for your commitment.</p>
 
                         if ( selectableAccountIds.Where( a => !validAccountIds.Contains( a ) ).Any() )
                         {
+                            nbConfigurationNotification.Title = "";
                             nbConfigurationNotification.Text = invalidAccountInURLMessage;
                             nbConfigurationNotification.NotificationBoxType = NotificationBoxType.Validation;
                             nbConfigurationNotification.Visible = true;
@@ -1160,6 +1215,25 @@ mission. We are so grateful for your commitment.</p>
             {
                 caapPromptForAccountAmounts.AccountAmounts = accountAmounts;
             }
+        }
+
+        /// <summary>
+        /// Sets the selected CampusId from a CampusId url parameter or the target person of the transaction.
+        /// </summary>
+        private int? GetCampusId( Person person )
+        {
+            var campusId = this.PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+            if ( !campusId.HasValue && person != null )
+            {
+                var personCampus = person.GetCampus();
+                if ( personCampus != null )
+                {
+                    campusId = personCampus.Id;
+                }
+            }
+
+            return campusId;
         }
 
         /// <summary>
@@ -1837,6 +1911,9 @@ mission. We are so grateful for your commitment.</p>
                 // If a person key was supplied then try to get that person
                 _targetPerson = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "transaction" );
 
+                // Pre-load campus to avoid lazy loading later when the _targetPerson field is utilized.
+                _targetPerson.GetCampus();
+
                 if ( allowImpersonation )
                 {
                     // If impersonation is allowed then ensure the supplied person key was valid
@@ -2124,9 +2201,16 @@ mission. We are so grateful for your commitment.</p>
             tdEmailConfirm.Visible = displayEmail;
 
             DisplayPhone = GetAttributeValue( AttributeKey.DisplayPhone ).AsBoolean();
-            pnbPhone.Visible = DisplayPhone;
-            pnbBusinessContactPhone.Visible = DisplayPhone;
+            DisplaySmsOptIn = GetAttributeValue( AttributeKey.DisplaySmsOptIn ).AsBoolean() && DisplayPhone;
             tdPhoneConfirm.Visible = DisplayPhone;
+
+            pnbPhone.Visible = DisplayPhone;
+            cbSmsOptIn.Visible = DisplaySmsOptIn;
+            cbSmsOptIn.Text = DisplaySmsOptIn ? Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL ) : string.Empty;
+
+            pnbBusinessContactPhone.Visible = DisplayPhone;
+            cbBusinessContactSmsOptIn.Visible = DisplaySmsOptIn;
+            cbBusinessContactSmsOptIn.Text = DisplaySmsOptIn ? Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL ) : string.Empty;
 
             var person = GetPerson( false );
             ShowPersonal( person );
@@ -2287,6 +2371,13 @@ mission. We are so grateful for your commitment.</p>
                         pnbPhone.CountryCode = PhoneNumber.DefaultCountryCode();
                         pnbPhone.Number = string.Empty;
                     }
+
+                    cbSmsOptIn.Visible = DisplaySmsOptIn && DisplayPhone;
+                    if ( DisplaySmsOptIn && DisplayPhone )
+                    {
+                        cbSmsOptIn.Text = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+                        cbSmsOptIn.Checked = phoneNumber?.IsMessagingEnabled ?? false;
+                    }
                 }
 
                 Guid addressTypeGuid = Guid.Empty;
@@ -2337,36 +2428,55 @@ mission. We are so grateful for your commitment.</p>
 
         private void ShowBusiness( PersonService personService, Person business )
         {
-            if ( personService != null && business != null )
-            {
-                txtBusinessName.Text = business.LastName;
-                txtEmail.Text = business.Email;
+            txtBusinessContactFirstName.Text = string.Empty;
+            txtBusinessContactLastName.Text = string.Empty;
+            pnbBusinessContactPhone.Text = string.Empty;
+            txtBusinessContactEmail.Text = string.Empty;
 
-                Guid addressTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
-                var groupLocation = personService.GetFirstLocation( business.Id, DefinedValueCache.Get( addressTypeGuid ).Id );
-                if ( groupLocation != null )
-                {
-                    GroupLocationId = groupLocation.Id;
-                    acAddress.SetValues( groupLocation.Location );
-                }
-                else
-                {
-                    GroupLocationId = null;
-                    acAddress.SetValues( null );
-                }
-            }
-            else
+            if ( personService == null && business == null )
             {
                 txtBusinessName.Text = string.Empty;
                 txtEmail.Text = string.Empty;
                 GroupLocationId = null;
                 acAddress.SetValues( null );
+                return;
             }
 
-            txtBusinessContactFirstName.Text = string.Empty;
-            txtBusinessContactLastName.Text = string.Empty;
-            pnbBusinessContactPhone.Text = string.Empty;
-            txtBusinessContactEmail.Text = string.Empty;
+            txtBusinessName.Text = business.LastName;
+            txtEmail.Text = business.Email;
+
+            Guid addressTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+            var groupLocation = personService.GetFirstLocation( business.Id, DefinedValueCache.Get( addressTypeGuid ).Id );
+            if ( groupLocation != null )
+            {
+                GroupLocationId = groupLocation.Id;
+                acAddress.SetValues( groupLocation.Location );
+            }
+            else
+            {
+                GroupLocationId = null;
+                acAddress.SetValues( null );
+            }
+
+            if ( DisplayPhone )
+            {
+                var workNumberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+                // Try to retrieve a work number and update it if it exists
+                var workPhone = business.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == workNumberTypeId );
+                if ( workPhone != null )
+                {
+                    pnbPhone.CountryCode = workPhone.CountryCode;
+                    pnbPhone.Number = workPhone.ToString();
+                }
+
+                if ( DisplaySmsOptIn )
+                {
+                    cbSmsOptIn.Visible = true;
+                    cbSmsOptIn.Text = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+                    cbSmsOptIn.Checked = workPhone?.IsMessagingEnabled ?? false;
+                }
+            }
+            
         }
 
         /// <summary>
@@ -2408,7 +2518,7 @@ mission. We are so grateful for your commitment.</p>
                 if ( person == null )
                 {
                     // Check to see if there's only one person with same email, first name, and last name
-                    if ( !string.IsNullOrWhiteSpace( txtEmail.Text ) &&
+                    if ( !string.IsNullOrWhiteSpace( txtEmail.Text ) && 
                         !string.IsNullOrWhiteSpace( txtFirstName.Text ) &&
                         !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                     {
@@ -2459,17 +2569,56 @@ mission. We are so grateful for your commitment.</p>
 
                 if ( DisplayPhone )
                 {
-                    var numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
-                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
-                    if ( phone == null )
-                    {
-                        phone = new PhoneNumber();
-                        person.PhoneNumbers.Add( phone );
-                        phone.NumberTypeValueId = numberTypeId;
-                    }
+                    // Get the NumberType IDs
+                    var homeNumberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                    var mobileNumberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ).Id;
 
-                    phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
-                    phone.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+                    // Clean the entered data
+                    var cleanCountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                    var cleanPhoneNumber = PhoneNumber.CleanNumber( pnbPhone.Number );
+
+                    // First try to retrieve a home number and update it if it exists
+                    var homePhone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == homeNumberTypeId );
+                    if ( homePhone != null )
+                    {
+                        homePhone.CountryCode = cleanCountryCode;
+                        homePhone.Number = cleanPhoneNumber;
+
+                        if ( DisplaySmsOptIn )
+                        {
+                            homePhone.IsMessagingEnabled = cbSmsOptIn.Checked;
+                        }
+                    }
+                    else
+                    {
+                        // No home number so try to match the mobile number to the one entered
+                        var mobilePhone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == mobileNumberTypeId && p.Number == cleanPhoneNumber );
+
+                        // if there is not a match on the mobile number than create a new home number
+                        if ( mobilePhone == null )
+                        {
+                            homePhone = new PhoneNumber
+                            {
+                                NumberTypeValueId = homeNumberTypeId,
+                                CountryCode = cleanCountryCode,
+                                Number = cleanPhoneNumber
+                            };
+
+                            if ( DisplaySmsOptIn )
+                            {
+                                homePhone.IsMessagingEnabled = cbSmsOptIn.Checked;
+                            }
+
+                            person.PhoneNumbers.Add( homePhone );
+                        }
+                        else
+                        {
+                            if ( DisplaySmsOptIn )
+                            {
+                                mobilePhone.IsMessagingEnabled = cbSmsOptIn.Checked;
+                            }
+                        }
+                    }
                 }
 
                 if ( familyGroup == null )
@@ -2557,17 +2706,56 @@ mission. We are so grateful for your commitment.</p>
 
                 if ( DisplayPhone )
                 {
-                    var numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
-                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
-                    if ( phone == null )
-                    {
-                        phone = new PhoneNumber();
-                        person.PhoneNumbers.Add( phone );
-                        phone.NumberTypeValueId = numberTypeId;
-                    }
+                    // Get the NumberType IDs
+                    var workNumberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+                    var mobileNumberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ).Id;
 
-                    phone.CountryCode = PhoneNumber.CleanNumber( pnbBusinessContactPhone.CountryCode );
-                    phone.Number = PhoneNumber.CleanNumber( pnbBusinessContactPhone.Number );
+                    // Clean the entered data
+                    var cleanCountryCode = PhoneNumber.CleanNumber( pnbBusinessContactPhone.CountryCode );
+                    var cleanPhoneNumber = PhoneNumber.CleanNumber( pnbBusinessContactPhone.Number );
+
+                    // First try to retrieve a work number and update it if it exists
+                    var workPhone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == workNumberTypeId );
+                    if ( workPhone != null )
+                    {
+                        workPhone.CountryCode = cleanCountryCode;
+                        workPhone.Number = cleanPhoneNumber;
+
+                        if ( DisplaySmsOptIn )
+                        {
+                            workPhone.IsMessagingEnabled = cbBusinessContactSmsOptIn.Checked;
+                        }
+                    }
+                    else
+                    {
+                        // No work number so try to match the mobile number to the one entered
+                        var mobilePhone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == mobileNumberTypeId && p.Number == cleanPhoneNumber );
+
+                        // if this isn't the mobile number than create a new work number
+                        if ( mobilePhone == null )
+                        {
+                            workPhone = new PhoneNumber
+                            {
+                                NumberTypeValueId = workNumberTypeId,
+                                CountryCode = cleanCountryCode,
+                                Number = cleanPhoneNumber
+                            };
+
+                            if ( DisplaySmsOptIn )
+                            {
+                                workPhone.IsMessagingEnabled = cbBusinessContactSmsOptIn.Checked;
+                            }
+
+                            person.PhoneNumbers.Add( workPhone );
+                        }
+                        else
+                        {
+                            if ( DisplaySmsOptIn )
+                            {
+                                mobilePhone.IsMessagingEnabled = cbBusinessContactSmsOptIn.Checked;
+                            }
+                        }
+                    }
                 }
 
                 rockContext.SaveChanges();
@@ -2641,17 +2829,57 @@ mission. We are so grateful for your commitment.</p>
 
                 if ( DisplayPhone )
                 {
-                    var numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
-                    var phone = business.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
-                    if ( phone == null )
-                    {
-                        phone = new PhoneNumber();
-                        business.PhoneNumbers.Add( phone );
-                        phone.NumberTypeValueId = numberTypeId;
-                    }
+                    // Get the NumberType IDs
+                    var workNumberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+                    var mobileNumberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ).Id;
 
-                    phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
-                    phone.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+                    // Clean the entered data
+                    var cleanCountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                    var cleanPhoneNumber = PhoneNumber.CleanNumber( pnbPhone.Number );
+
+                    // First try to retrieve a work number and update it if it exists
+                    var workPhone = business.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == workNumberTypeId );
+                    if ( workPhone != null )
+                    {
+                        workPhone.CountryCode = cleanCountryCode;
+                        workPhone.Number = cleanPhoneNumber;
+
+                        if ( DisplaySmsOptIn )
+                        {
+                            workPhone.IsMessagingEnabled = cbSmsOptIn.Checked;
+                        }
+                    }
+                    else
+                    {
+                        // No work number so try to match the mobile number to the one entered
+                        var mobilePhone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == mobileNumberTypeId );
+
+                        // If there is not match on the mobile number than create a new work number
+                        if ( mobilePhone == null )
+                        {
+
+                            workPhone = new PhoneNumber
+                            {
+                                NumberTypeValueId = workNumberTypeId,
+                                CountryCode = cleanCountryCode,
+                                Number = cleanPhoneNumber
+                            };
+
+                            if ( DisplaySmsOptIn )
+                            {
+                                workPhone.IsMessagingEnabled = cbSmsOptIn.Checked;
+                            }
+
+                            business.PhoneNumbers.Add( workPhone );
+                        }
+                        else
+                        {
+                            if ( DisplaySmsOptIn )
+                            {
+                                mobilePhone.IsMessagingEnabled = cbSmsOptIn.Checked;
+                            }
+                        }
+                    }
                 }
 
                 if ( familyGroup == null )
@@ -3070,7 +3298,7 @@ mission. We are so grateful for your commitment.</p>
                     if ( scheduledTransactionAlreadyExists != null )
                     {
                         // Hopefully shouldn't happen, but just in case the scheduledtransaction already went through, show the success screen.
-                        ShowSuccess( gateway, person, paymentInfo );
+                        ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
                         return true;
                     }
 
@@ -3092,7 +3320,7 @@ mission. We are so grateful for your commitment.</p>
                     if ( transactionAlreadyExists != null )
                     {
                         // hopefully shouldn't happen, but just in case the transaction already went thru, show the success screen
-                        ShowSuccess( gateway, person, paymentInfo );
+                        ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
                         return true;
                     }
 
@@ -3109,7 +3337,7 @@ mission. We are so grateful for your commitment.</p>
                     paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                 }
 
-                ShowSuccess( gateway, person, paymentInfo );
+                ShowSuccess( gateway, person, paymentInfo, givingAsBusiness );
 
                 return true;
             }
@@ -3268,23 +3496,10 @@ mission. We are so grateful for your commitment.</p>
             var batchService = new FinancialBatchService( rockContext );
 
             // Get the batch
-            var batch = batchService.Get(
-                GetAttributeValue( AttributeKey.BatchNamePrefix ),
-                paymentInfo.CurrencyTypeValue,
-                paymentInfo.CreditCardTypeValue,
-                transaction.TransactionDateTime.Value,
-                financialGateway.GetBatchTimeOffset() );
+            var batch = batchService.GetForNewTransaction( transaction, GetAttributeValue( AttributeKey.BatchNamePrefix ) );
 
             var batchChanges = new History.HistoryChangeList();
-
-            if ( batch.Id == 0 )
-            {
-                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
-                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
-                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
-                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
-                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
-            }
+            FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
 
             transaction.LoadAttributes( rockContext );
 
@@ -3361,9 +3576,9 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
-        private void ShowSuccess( IHostedGatewayComponent gatewayComponent, Person person, ReferencePaymentInfo paymentInfo )
+        private void ShowSuccess( IHostedGatewayComponent gatewayComponent, Person person, ReferencePaymentInfo paymentInfo, bool givingAsBusiness )
         {
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
             IEntity transactionEntity = GetTransactionEntity();
             mergeFields.Add( "TransactionEntity", transactionEntity );
@@ -3453,12 +3668,12 @@ mission. We are so grateful for your commitment.</p>
                     else if ( financialPaymentDetail?.CurrencyTypeValue != null )
                     {
                         accountTitle = $"Text-To-Give - {financialPaymentDetail.CurrencyTypeValue.Value}";
-                    }    
+                    }
 
                     CreateSavedAccount( accountTitle, rockContext, true );
                 }
             }
-            else if ( !isSavedAccount && !string.IsNullOrWhiteSpace( TransactionCode ) && gatewayComponent.SupportsSavedAccount( paymentInfo.CurrencyTypeValue ) )
+            else if ( !givingAsBusiness && !isSavedAccount && !string.IsNullOrWhiteSpace( TransactionCode ) && gatewayComponent.SupportsSavedAccount( paymentInfo.CurrencyTypeValue ) )
             {
                 cbSaveAccount.Visible = true;
                 pnlSaveAccount.Visible = true;
@@ -3686,7 +3901,6 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void RegisterScript()
         {
-            RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             var currencyCodeInfo = new RockCurrencyCodeInfo();
 

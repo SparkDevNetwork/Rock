@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a Auth Audit Log
+    /// Represents a Auth Audit Log. An Auth Audit Log gets created when the Authority of a group or person is saved/changed.
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "AuthAuditLog" )]
@@ -137,6 +137,7 @@ namespace Rock.Model
         /// If group based Authorization is not used this value will be null.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? GroupId { get; set; }
 
         /// <summary>

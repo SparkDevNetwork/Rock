@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -39,11 +38,14 @@ namespace Rock.Tests.Integration.Core
         [TestMethod]
         public void MergeTemplateTest_GroupAttendanceRoster_HasHeaderAndDetailElements()
         {
+            // Note that the test Group Name includes a reserved XML character to verify
+            // that encoding is correctly handled in the final output.
+            var testGroupName = "Pete's Group";
             var rockContext = new RockContext();
 
-            // Create an Entity Set containing the Group Members of the Decker Group.
+            // Create an Entity Set containing the Group Members of Pete's Group.
             var groupService = new GroupService( rockContext );
-            var group = groupService.Queryable().GetByIdentifier( "Decker Group" );
+            var group = groupService.Queryable().GetByIdentifier( testGroupName );
 
             var mergeEntitySet = new EntitySet();
             mergeEntitySet.EntityTypeId = EntityTypeCache.GetId( typeof( GroupMember ) );
@@ -80,7 +82,7 @@ namespace Rock.Tests.Integration.Core
             Assert.IsTrue( !wordTemplate.Exceptions.Any(), "The merge failed with errors." );
 
             // Verify that the group name exists in the header.
-            var nameNode = outputDoc.Descendants().Where( n => n.Name.LocalName == "t" && n.Value == "Decker Group" ).FirstOrDefault();
+            var nameNode = outputDoc.Descendants().Where( n => n.Name.LocalName == "t" && n.Value == testGroupName ).FirstOrDefault();
             Assert.IsNotNull( nameNode, "Expected Header element '{{ Group.Name }}' not found." );
             var headerNode = nameNode.Ancestors().Where( n => n.Name.LocalName == "hdr" ).FirstOrDefault();
             Assert.IsNotNull( headerNode, "Expected Header element '{{ Group.Name }}' not found." );

@@ -23,11 +23,15 @@ using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.BulkImport;
 using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Logging;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Utility;
@@ -230,6 +234,20 @@ namespace Rock.Model
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/></param>
         /// <returns>The first <see cref="Rock.Model.Attendance"/> entity that matches the provided values.</returns>
         public Attendance Get( DateTime date, int locationId, int scheduleId, int groupId, int personId )
+        {
+            return Get( date, ( int? ) locationId, scheduleId, groupId, personId );
+        }
+
+        /// <summary>
+        /// Returns a specific <see cref="Rock.Model.Attendance"/> record.
+        /// </summary>
+        /// <param name="date">A <see cref="System.DateTime"/> representing the date attended.</param>
+        /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/>If you pass null here, the LocationId property on the occurrence must also be null.</param>
+        /// <param name="scheduleId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Schedule"/></param>
+        /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/></param>
+        /// <returns>The first <see cref="Rock.Model.Attendance"/> entity that matches the provided values.</returns>
+        public Attendance Get( DateTime date, int? locationId, int scheduleId, int groupId, int personId )
         {
             return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias.Person" )
                 .FirstOrDefault( a =>
@@ -873,7 +891,7 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to { attendancesByPerson.Person }", ex );
+                        var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to {attendancesByPerson.Person}", ex );
                         errorMessages.Add( emailException.Message );
                         exceptionList.Add( emailException );
                     }
@@ -945,7 +963,7 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to send SendScheduleReminderSystemEmails to { attendancesByPerson.Person }", ex ) );
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to send SendScheduleReminderSystemEmails to {attendancesByPerson.Person}", ex ) );
                     }
                 }
             }
@@ -955,19 +973,50 @@ namespace Rock.Model
 
         /// <summary>
         /// Sends the schedule confirmation communication.
+        /// <para>
+        /// The caller of this method is responsible for calling SaveChanges() on the RockContext in order
+        /// to save the Attendance.ScheduleConfirmationSent values in the database, for those records having
+        /// a successfully-sent confirmation communication.
+        /// </para>
         /// </summary>
         /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
-        /// <returns></returns>
+        /// <returns>An object detailing the outcome of the send attempt.</returns>
         public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery )
         {
+            return SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, false );
+        }
+
+        /// <summary>
+        /// Sends the schedule confirmation communication.
+        /// <para>
+        /// The caller of this method is responsible for calling SaveChanges() on the RockContext in order
+        /// to save the Attendance.ScheduleConfirmationSent values in the database, for those records having
+        /// a successfully-sent confirmation communication.
+        /// </para>
+        /// </summary>
+        /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
+        /// <param name="includePeopleMissingContactInfo">
+        /// Whether to include people who are missing contact info in this send attempt.
+        /// Include these people if you want this method to return specific warnings about which people are missing the email
+        /// address or phone number needed to send their confirmation, according to the specified communication preferences.
+        /// </param>
+        /// <returns>An object detailing the outcome of the send attempt.</returns>
+        [RockInternal( "1.16.1" )]
+        public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery, bool includePeopleMissingContactInfo )
+        {
             sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
-                .Where( a =>
-                    ( a.PersonAlias.Person.Email != null
-                    && a.PersonAlias.Person.Email != string.Empty
-                    && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
-                    && a.PersonAlias.Person.IsEmailActive )
-                    || a.PersonAlias.Person.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) )
                 .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue );
+
+            if ( !includePeopleMissingContactInfo )
+            {
+                sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
+                    .Where( a =>
+                        ( a.PersonAlias.Person.Email != null
+                            && a.PersonAlias.Person.Email != string.Empty
+                            && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
+                            && a.PersonAlias.Person.IsEmailActive )
+                        || a.PersonAlias.Person.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) );
+            }
 
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
 
@@ -1139,7 +1188,7 @@ namespace Rock.Model
                 }
                 catch ( Exception ex )
                 {
-                    var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to { individualNotification.Individual }", ex );
+                    var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to {individualNotification.Individual}", ex );
                     sendMessageResults.Errors.Add( emailException.Message );
                     sendMessageResults.Exceptions.Add( emailException );
                 }
@@ -1916,7 +1965,7 @@ namespace Rock.Model
                     var personExclusionDateRange = new DateRange( a.BlackoutDateRanges.Min( d => d.StartDate ), a.BlackoutDateRanges.Max( d => d.EndDate ) );
                     personBlackoutDates = scheduleOccurrenceDateList.Where( d => personExclusionDateRange.Contains( d ) ).ToList();
                 }
-                
+
                 var groupMemberLookupValues = attendanceOccurrenceGroupMemberLookup
                     ?.GetValueOrNull( a.Person.Id )
                     ?.OrderBy( x => x.GroupRole?.Order ?? int.MaxValue );
@@ -2533,7 +2582,7 @@ namespace Rock.Model
         {
             var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
             var recipientPerson = attendance.ScheduledByPersonAlias?.Person;
-            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+            SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
         }
 
         /// <summary>
@@ -2546,7 +2595,7 @@ namespace Rock.Model
         {
             var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
             var recipientPerson = attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
-            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+            SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
         }
 
         /// <summary>
@@ -2555,7 +2604,8 @@ namespace Rock.Model
         /// <param name="attendance">The attendance.</param>
         /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
         /// <param name="recipientPerson">The recipient person.</param>
-        private void SendSendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
+        [RockInternal( "1.16.1" )]
+        public void SendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
         {
             if ( !schedulingResponseEmailGuid.HasValue )
             {
@@ -3128,7 +3178,8 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                        RockLogger.LoggerFactory.CreateLogger<AttendanceService>()
+                            .LogError( ex, ex.Message );
                     }
                 }
             }
@@ -3174,7 +3225,8 @@ namespace Rock.Model
             }
             catch ( Exception ex )
             {
-                Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                RockLogger.LoggerFactory.CreateLogger<AttendanceService>()
+                    .LogError( ex, ex.Message );
             }
         }
 
@@ -3194,8 +3246,8 @@ namespace Rock.Model
                     a.Guid,
                     OccurrenceGuid = a.Occurrence.Guid,
                     GroupGuid = ( Guid? ) a.Occurrence.Group.Guid,
-                    GroupTypeGuid = (Guid?) a.Occurrence.Group.GroupType.Guid,
-                    LocationGuid = (Guid?) a.Occurrence.Location.Guid,
+                    GroupTypeGuid = ( Guid? ) a.Occurrence.Group.GroupType.Guid,
+                    LocationGuid = ( Guid? ) a.Occurrence.Location.Guid,
                     a.DidAttend,
                     a.EndDateTime,
                     a.PresentDateTime,

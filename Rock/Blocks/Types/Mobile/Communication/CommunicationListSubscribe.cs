@@ -32,12 +32,13 @@ namespace Rock.Blocks.Types.Mobile.Events
     /// <summary>
     /// Allows the user to subscribe or unsubscribe from specific communication lists.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Communication List Subscribe" )]
     [Category( "Mobile > Communication" )]
     [Description( "Allows the user to subscribe or unsubscribe from specific communication lists." )]
     [IconCssClass( "fa fa-at" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -84,7 +85,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_COMMUNICATION_LIST_SUBSCRIBE_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "D0C51784-71ED-46F3-86AB-972148B78BE8" )]
-    public class CommunicationListSubscribe : RockMobileBlockType
+    public class CommunicationListSubscribe : RockBlockType
     {
         #region Block Attributes
 
@@ -144,21 +145,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 1;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Communication.CommunicationListSubscribe";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 1 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -174,6 +162,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             return new
             {
                 DynamicContent = true,
+                ShowDescription = this.ShowDescription,
                 ShowMediumPreference = GetAttributeValue( AttributeKeys.ShowMediumPreference ).AsBoolean(),
                 ShowPushNotificationsAsMediumPreference = GetAttributeValue( AttributeKeys.ShowPushNotificationsAsMediumPreference ).AsBoolean(),
             };

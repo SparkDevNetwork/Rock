@@ -1,6 +1,6 @@
-<section {% if id and id !=empty %}id="{{ id }}"{% endif %} class="soft-double-ends soft-sides xs-soft-half-sides xs-hard-bottom">
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="soft-double-ends soft-sides xs-soft-half-sides xs-hard-bottom">
     <div class="soft-double-top xs-hard">
-        <div class="text-center push-bottom">
+        <div class="bring-forward text-center push-bottom">
             <h2>{{ title }}</h2>
         </div>
 
@@ -31,7 +31,7 @@
                     </div>
 
                     {% assign isEven = forloop.index0 | Modulo:2 %}
-                    {% if isEven == 1 %}
+                    {% if isEven == 0 %}
                         </div><div class="row xs-row-condensed">
                     {% endif %}
 
@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        <div class="text-center push-double-bottom">
+        <div class="bring-forward text-center push-double-bottom">
             {% if linkurl and linkurl != empty %}
                 <a class="btn btn-primary" href="{{ linkurl }}">{{ linktext }} &nbsp;<i class="fas fa-sm fa-chevron-right"></i></a>
             {% endif %}

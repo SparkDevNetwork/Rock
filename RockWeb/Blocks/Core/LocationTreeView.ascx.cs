@@ -106,13 +106,13 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
-
+             
 
             if ( !string.IsNullOrWhiteSpace( _LocationId ) )
             {
                 hfInitialLocationId.Value = _LocationId;
                 hfSelectedLocationId.Value = _LocationId;
-                Location Location = ( new LocationService( new RockContext() ) ).Get( int.Parse( _LocationId ) );
+                Location Location = ( new LocationService( new RockContext() ) ).Get( _LocationId, !RockPage.Site.DisablePredictableIds );
 
                 lbAddLocationChild.Enabled = Location != null && canEditBlock;
 

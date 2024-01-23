@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="$props.options.exclusions?.length ?? 0" alertType="warning">
+        <strong>Exclusions</strong> <br />
+        <span class="js-notification-text">
+            <p>This schedule will not be active during the following dates due to being excluded by the schedule's category:</p>
+            <p>
+                <template v-for="exclusion in $props.options.exclusions">
+                    <strong>{{ exclusion.title }}</strong>: {{  RockDateTime.parseISO(exclusion.startDate ?? "")?.toASPString("d") }} - {{ RockDateTime.parseISO(exclusion.endDate ?? "")?.toASPString("d") }} <br>
+                </template>
+            </p>
+        </span>
+    </NotificationBox>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { ScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleBag";
+    import { ScheduleDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ScheduleBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<ScheduleDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if(props.modelValue?.description) {
+            valueBuilder.addTextValue("Description", props.modelValue?.description ?? "");
+        }
+
+        if(props.modelValue?.friendlyScheduleText) {
+            if(props.options.hasScheduleWarning) {
+                valueBuilder.addHtmlValue("Schedule", `<label class='label label-warning'>${props.modelValue?.friendlyScheduleText ?? ""}</label> <i class='fa fa-exclamation-triangle text-warning'></i>`);
+            }
+             else {
+                valueBuilder.addHtmlValue("Schedule", props.modelValue?.friendlyScheduleText ?? "");
+            }
+        }
+
+        if(props.modelValue?.nextOccurrence) {
+            valueBuilder.addTextValue("Next Occurrence", `${props.modelValue.nextOccurrence}`);
+        }
+
+        if(props.modelValue?.category) {
+            valueBuilder.addTextValue("Category", props.modelValue?.category?.text ?? "");
+        }
+
+        if(props.modelValue?.checkInStartOffsetMinutes !== null && props.modelValue?.checkInStartOffsetMinutes !== undefined) {
+            valueBuilder.addTextValue("Check-in Starts", `${props.modelValue?.checkInStartOffsetMinutes} minutes before start of schedule`);
+        }
+
+        if(props.modelValue?.checkInEndOffsetMinutes !== null && props.modelValue?.checkInEndOffsetMinutes !== undefined) {
+            valueBuilder.addTextValue("Check-in Ends", `${props.modelValue?.checkInEndOffsetMinutes} minutes after start of schedule`);
+        }
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

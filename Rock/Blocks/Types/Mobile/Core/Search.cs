@@ -31,12 +31,13 @@ namespace Rock.Blocks.Types.Mobile.Core
     /// <summary>
     /// Performs a search using one of the configured search components and displays the results.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
+    /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Search" )]
     [Category( "Mobile > Core" )]
     [Description( "Performs a search using one of the configured search components and displays the results." )]
     [IconCssClass( "fa fa-search" )]
+    [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -123,7 +124,7 @@ namespace Rock.Blocks.Types.Mobile.Core
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_SEARCH_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CORE_SEARCH )]
-    public class Search : RockMobileBlockType
+    public class Search : RockBlockType
     {
         #region Constants
 
@@ -334,21 +335,8 @@ namespace Rock.Blocks.Types.Mobile.Core
 
         #region IRockMobileBlockType Implementation
 
-        /// <summary>
-        /// Gets the required mobile application binary interface version required to render this block.
-        /// </summary>
-        /// <value>
-        /// The required mobile application binary interface version required to render this block.
-        /// </value>
-        public override int RequiredMobileAbiVersion => 3;
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Core.Search";
+        /// <inheritdoc/>
+        public override Version RequiredMobileVersion => new Version( 1, 3 );
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -367,7 +355,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                 DetailNavigationAction,
                 AutoFocusKeyboard,
                 HistoricalResultItemTemplate,
-                StoppedTypingBehaviorThreshold
+                StoppedTypingBehaviorThreshold,
+                PreferredKeyboardMode = SearchComponent?.PreferredKeyboardMode.ToMobile() ?? Rock.Common.Mobile.Enums.KeyboardInputMode.Default
             };
         }
 
@@ -443,7 +432,6 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                     return GetSearchResultItemViewModel( r, content );
                 } )
-                .OrderByDescending( r => r.ViewedCount )
                 .ToList();
                 
             return resultItems;

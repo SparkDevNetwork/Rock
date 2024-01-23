@@ -712,9 +712,8 @@ namespace Rock.Model
             List<int> groupMemberIdsThatLackGroupRequirementsList = groupMemberList
                 .Where( a =>
                     !qryGroupRequirements
-                        .Where( r =>
-                            !r.GroupRoleId.HasValue ||
-                            r.GroupRoleId.Value == a.GroupRoleId )
+                        .Where( r => !r.GroupRoleId.HasValue || r.GroupRoleId.Value == a.GroupRoleId )
+                        .Where( r => r.AppliesToAgeClassification == AppliesToAgeClassification.All || r.AppliesToAgeClassification.ConvertToInt() == a.Person.AgeClassification.ConvertToInt() )
                         .Select( x => x.Id )
                         .All( r =>
                             a.GroupMemberRequirements
@@ -1637,6 +1636,61 @@ namespace Rock.Model
             groupMember = groupMemberService.AsNoFilter().Where( a => a.IsArchived == false && a.GroupId == group.Id && a.PersonId == personId && a.GroupRoleId == groupRoleId ).FirstOrDefault();
             return groupMember != null;
         }
+
+        #region Actions
+
+        /// <summary>
+        /// Deletes a Security Role Group.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        public static void DeleteSecurityRoleGroup( int groupId )
+        {
+            var rockContext = new RockContext();
+            rockContext.WrapTransaction( () =>
+            {
+                // Get the target group.
+                var groupService = new GroupService( rockContext );
+                var group = groupService.Get( groupId );
+                if ( group == null )
+                {
+                    return;
+                }
+
+                // Verify that the group represents a Security Role.
+                var isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+                if ( !isSecurityRoleGroup )
+                {
+                    throw new Exception( $"Action DeleteSecurityRoleGroup failed. The specified group is not a Security Role. [GroupId={groupId}]" );
+                }
+
+                // Remove authorizations.
+                // Using the BulkDelete method bypasses the Auth.SaveHook() to avoid creating new AuthAuditLog entries for the deleted Group.
+                var authService = new AuthService( rockContext );
+                var authsToDelete = authService.Queryable().Where( a => a.GroupId == groupId );
+                if ( authsToDelete.Any() )
+                {
+                    rockContext.BulkDelete( authsToDelete );
+                }
+
+                // Remove authorization audit records.
+                var authAuditLogService = new AuthAuditLogService( rockContext );
+                var authAuditLogsToDelete = authAuditLogService.Queryable().Where( a => a.GroupId == groupId );
+                if ( authAuditLogsToDelete.Any() )
+                {
+                    rockContext.BulkDelete( authAuditLogsToDelete );
+                }
+
+                // Clear the authorizations cache.
+                Rock.Security.Authorization.Clear();
+
+                // Remove the group.
+                groupService.Delete( group );
+
+                rockContext.SaveChanges();
+            } );
+        }
+
+        #endregion
     }
 
     #region Extension Methods
@@ -1842,6 +1896,16 @@ namespace Rock.Model
                 .Distinct();
 
             return groupLocationsQuery;
+        }
+
+        /// <summary>
+        /// Returns a queryable of Groups with the Communication List Group Type Id.
+        /// </summary>
+        /// <param name="groupQuery">The group query.</param>
+        public static IQueryable<Group> IsCommunicationList( this IQueryable<Group> groupQuery )
+        {
+            var groupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ) ?? -1;
+            return IsGroupType( groupQuery, groupTypeId );
         }
     }
 

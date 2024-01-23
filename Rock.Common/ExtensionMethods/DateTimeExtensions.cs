@@ -679,6 +679,19 @@ namespace Rock
         }
 
         /// <summary>
+        /// Takes a DateTimeOffset and converts it into the organization timezone.
+        /// </summary>
+        /// <param name="dateTimeOffset">The date time offset.</param>
+        /// <remarks>This probably isn't the method you're looking for.
+        /// In 99.9% of cases you should be able to use the .DateTime property,
+        /// but this is used when a remote client has to set a specific spot in time.</remarks>
+        /// <returns>DateTime.</returns>
+        public static DateTime ToOrganizationDateTime( this DateTimeOffset dateTimeOffset )
+        {
+            return dateTimeOffset.ToOffset( RockDateTime.OrgTimeZoneInfo.GetUtcOffset( dateTimeOffset ) ).DateTime;
+        }
+
+        /// <summary>
         /// Converts to the flag (bit per day) friendly enum.
         /// </summary>
         /// <param name="dayOfWeek">The day of week.</param>

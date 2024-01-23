@@ -1,0 +1,172 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <NotificationBox v-if="duplicatePledgeWarningText"
+                         v-html="duplicatePledgeWarningText"
+                         :dismissable="false"
+                         alertType="warning"></NotificationBox>
+
+        <div v-else>
+            <div class="form-group" v-if="currentPerson">
+                <RockLabel>Name</RockLabel>
+                <div>
+                    {{ currentPerson.text }}
+                </div>
+            </div>
+
+            <div v-else>
+                <TextBox label="First Name" v-model="firstName" />
+                <TextBox label="Last Name" v-model="lastName" />
+                <EmailBox label="Email" v-model="email" />
+            </div>
+
+            <DropDownList v-if="selectGroupTypeGuid"
+                          :label="groupsLabel"
+                          v-model="groupGuid"
+                          :items="groups"
+                          :showBlankItem="false"
+                          :enhanceForLongLists="false"
+                          :grouped="false"
+                          :multiple="false" />
+
+            <DateRangePicker label="Date Range" v-if="showDateRange" v-model="selectedDateRange" />
+
+            <CurrencyBox :label="pledgeLabel"
+                         v-model="totalAmount"
+                         help="The total amount that you are pledging. If you intend to give $100 monthly for one year, enter $1,200."
+                         rules="required" />
+
+            <DropDownList v-if="showPledgeFrequency"
+                          label="Gift Frequency"
+                          help="How often you expect to be making gifts towards the total amount."
+                          v-model="pledgeFrequencyValue"
+                          :items="pledgeFrequencies"
+                          :rules="pledgeFrequencyValidationRule"
+                          :showBlankItem="false"
+                          :multiple="false"
+                          :enhanceForLongLists="true" />
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { FinancialPledgeEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryBag";
+    import { FinancialPledgeEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FinancialPledgeEntryBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<FinancialPledgeEntryOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FinancialPledgeEntryBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const firstName = ref(props.modelValue.firstName ?? "");
+    const lastName = ref(props.modelValue.lastName ?? "");
+    const email = ref(props.modelValue.email ?? "");
+    const currentPerson = ref(props.modelValue.currentPerson ?? {});
+    const personAlias = propertyRef(props.modelValue.personAlias ?? {}, "PersonAliasId");
+    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
+    const totalAmount = propertyRef(props.modelValue.totalAmount ?? null, "TotalAmount");
+    const groupGuid = propertyRef(props.modelValue.group?.value ?? "", "GroupId");
+    const pledgeFrequencyValue = propertyRef(props.modelValue.pledgeFrequencyValue?.value ?? "", "PledgeFrequencyValueId");
+    const selectGroupTypeGuid = ref(props.options.selectGroupTypeGuid ?? "");
+    const groupsLabel = ref(props.options.groupsLabel ?? "");
+    const groups = ref(props.options.groups ?? []);
+    const showPledgeFrequency = ref(props.options.showPledgeFrequency);
+    const pledgeFrequencies = ref(props.options.pledgeFrequencies ?? []);
+    const duplicatePledgeWarningText = ref(props.modelValue.duplicatePledgeWarningText);
+    const account = propertyRef(props.modelValue.account ?? {}, "AccountId");
+    const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
+    const showDateRange = ref(props.options.showDateRange);
+    const pledgeTerm = ref(props.options.pledgeTerm);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [startDate, endDate, totalAmount, groupGuid, pledgeFrequencyValue, personAlias, account];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const pledgeFrequencyValidationRule = computed((): string => props.options.requirePledgeFrequency ? "required" : "");
+
+    const pledgeLabel = computed((): string => `Total ${pledgeTerm.value} Amount`);
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.startDate ?? "");
+        updateRefValue(totalAmount, props.modelValue.totalAmount ?? null);
+        updateRefValue(groupGuid, props.modelValue.group?.value ?? "");
+        updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue?.value ?? "");
+        updateRefValue(personAlias, props.modelValue.personAlias ?? {});
+        updateRefValue(account, props.modelValue.account ?? {});
+        updateRefValue(duplicatePledgeWarningText, props.modelValue.duplicatePledgeWarningText ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, selectedDateRange, ...propRefs], () => {
+        const newValue: FinancialPledgeEntryBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            totalAmount: totalAmount.value,
+            group: {
+                value: groupGuid.value
+            },
+            pledgeFrequencyValue: {
+                value: pledgeFrequencyValue.value
+            },
+            startDate: selectedDateRange.value?.lowerValue,
+            endDate: selectedDateRange.value?.upperValue,
+            personAlias: personAlias.value,
+            account: account.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

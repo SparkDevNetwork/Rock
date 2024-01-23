@@ -26,6 +26,8 @@
             newValue += keyValue + '^' + valueValue;
         });
         $span.children('input').first().val(newValue);
+
+        raiseKeyValueList();
     }
 
     Sys.Application.add_load(function () {
@@ -38,7 +40,8 @@
             Rock.controls.modal.updateSize($(this));
         });
 
-        $(document).on('click', 'a.key-value-remove', function (e) {
+        $('a.key-value-remove').off('click');
+        $('a.key-value-remove').on('click', function (e) {
             e.preventDefault();
             var $rows = $(this).closest('span.key-value-rows');
             $(this).closest('div.controls-row').remove();
@@ -46,7 +49,9 @@
             Rock.controls.modal.updateSize($(this));
         });
 
-        $(document).on('change', '.js-key-value-input', function (e) {
+        $('.js-key-value-input').off('change');
+        $('.js-key-value-input').on('change', function (e) {
+            e.preventDefault();
             updateKeyValues($(this));
         });
     });

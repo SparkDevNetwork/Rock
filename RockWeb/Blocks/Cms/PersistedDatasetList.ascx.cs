@@ -187,33 +187,34 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void lbPreview_Click( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
-            PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
-            PersistedDataset persistedDataset = persistedDatasetService.GetNoTracking( e.RowKeyId );
-            if ( persistedDataset.LastRefreshDateTime == null )
-            {
-                persistedDataset.UpdateResultData();
-            }
-
-            // limit preview size (default is 1MB)
-            var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
-
-            // make sure they didn't put in a negative number
-            maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
-
-            var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
-
-            lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", persistedDataset.ResultData ) ).Truncate( maxPreviewSizeLength );
-
-            nbPreviewMessage.Visible = false;
-            nbPreviewMaxLengthWarning.Visible = false;
-
             try
             {
-                var preViewObject = persistedDataset.ResultData.FromJsonDynamic();
-                if ( persistedDataset.ResultData.Length > maxPreviewSizeLength )
+                var rockContext = new RockContext();
+                PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
+                PersistedDataset persistedDataset = persistedDatasetService.GetNoTracking( e.RowKeyId );
+                if ( persistedDataset.LastRefreshDateTime == null )
                 {
-                    nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", persistedDataset.ResultData.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
+                    persistedDataset.UpdateResultData();
+                }
+
+                // limit preview size (default is 1MB)
+                var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
+
+                // make sure they didn't put in a negative number
+                maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
+
+                var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
+
+                var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
+
+                lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", preViewObject ) ).Truncate( maxPreviewSizeLength );
+
+                nbPreviewMessage.Visible = false;
+                nbPreviewMaxLengthWarning.Visible = false;
+
+                if ( preViewObject.Length > maxPreviewSizeLength )
+                {
+                    nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", preViewObject.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
                     nbPreviewMaxLengthWarning.Visible = true;
                 }
 
@@ -267,7 +268,7 @@ namespace RockWeb.Blocks.Cms
         protected void btnRefresh_DataBound( object sender, RowEventArgs e )
         {
             var button = sender as LinkButton;
-            var persistedDataSet = e.Row.DataItem as PersistedDataset;
+            var persistedDataSet = e.Row.DataItem as GridRowItem;
             if ( button != null && persistedDataSet != null )
             {
                 button.Enabled = persistedDataSet.AllowManualRefresh;
@@ -283,7 +284,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            RockContext rockContext = new RockContext();
+            var rockContext = new RockContext();
             PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
 
             // Use AsNoTracking() since these records won't be modified, and therefore don't need to be tracked by the EF change tracker
@@ -299,8 +300,38 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.OrderBy( a => a.Name ).ThenBy( a => a.AccessKey );
             }
 
-            gList.SetLinqDataSource( qry );
+            // Get data. We need to do this so we can get the size of the return set. Confirmed that the anonymous type below does a SQL LEN() function.
+            var persistedDataSet = qry.Select( d => new GridRowItem()
+            {
+                Name = d.Name,
+                Id = d.Id,
+                Size = d.ResultData != null ? d.ResultData.Length / 1024 : 0,
+                AccessKey = d.AccessKey,
+                TimeToBuildMS = d.TimeToBuildMS,
+                LastRefreshDateTime = d.LastRefreshDateTime,
+                AllowManualRefresh = d.AllowManualRefresh
+            } ).ToList();
+
+            gList.DataSource = persistedDataSet;
             gList.DataBind();
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// ViewModel for PersistedDatasetList grid items.
+        /// </summary>
+        private sealed class GridRowItem
+        {
+            public string Name { get; set; }
+            public int Id { get; set; }
+            public int Size { get; set; }
+            public string AccessKey { get; set; }
+            public double? TimeToBuildMS { get; set; }
+            public DateTime? LastRefreshDateTime { get; set; }
+            public bool AllowManualRefresh { get; set; }
         }
 
         #endregion
