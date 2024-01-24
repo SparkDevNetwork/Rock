@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Newtonsoft.Json;
 using Rock.Tasks;
+using Rock.Constants;
 
 namespace RockWeb.Blocks.WorkFlow
 {
@@ -155,10 +156,19 @@ namespace RockWeb.Blocks.WorkFlow
             base.OnLoad( e );
 
             nbResult.Visible = false;
-            if ( !Page.IsPostBack && _canView )
+            if ( !Page.IsPostBack )
             {
-                SetFilter();
-                BindGrid();
+                if ( _canView )
+                {
+                    SetFilter();
+                    BindGrid();
+                }
+                else
+                {
+                    pnlWorkflowList.Visible = false;
+                    nbMessage.Visible = true;
+                    nbMessage.Text = EditModeMessage.NotAuthorizedToView( WorkflowType.FriendlyTypeName );
+                }
             }
         }
 
@@ -307,7 +317,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            BindGrid();
+                BindGrid();
         }
 
         /// <summary>
@@ -651,6 +661,11 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private void BindGrid()
         {
+            if ( !_canView )
+            {
+                return;
+            }
+
             if ( _workflowType != null )
             {
                 pnlWorkflowList.Visible = true;
@@ -804,7 +819,6 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 pnlWorkflowList.Visible = false;
             }
-
         }
 
         private string MakeKeyUniqueToType( string key )
