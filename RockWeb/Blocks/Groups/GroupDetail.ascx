@@ -347,7 +347,39 @@
                     </fieldset>
                 </div>
             </div>
-
+            
+            <Rock:ModalDialog ID="mdCopyGroup" runat="server" ValidationGroup="vgCopyGroup" Title="Copy Group" OnSaveClick="mdCopyGroup_SaveClick" SaveButtonText="Copy" Visible="false">
+                <Content>
+                    <Rock:NotificationBox ID="mdCopyWarning" runat="server" NotificationBoxType="Warning" Text="
+                        This action will copy the selected group and (optionally) it's child groups. Group members will not be copied.<br />
+                        The following items will be included for every copied group:<br />
+                        <ul>
+                            <li>
+                                Group member attributes configuration
+                            </li>
+                            <li>
+                                Group attributes configuration and their values
+                            </li>
+                            <li>
+                                Schedules
+                            </li>
+                            <li>
+                                Authorization (both authorizations to the group and access to other entities based on membership to the group)
+                            </li>
+                            <li>
+                                Locations (except when the location is a group member address)
+                            </li>
+                            <li>
+                                Group requirements
+                            </li>
+                            <li>
+                                Group syncs
+                            </li>
+                        </ul>"
+                        />
+                    <Rock:RockCheckBox ID="cbCopyGroupIncludeChildGroups" runat="server" Text="Include Child Groups" Checked="true" />
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />

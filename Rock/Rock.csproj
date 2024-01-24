@@ -1165,6 +1165,7 @@
     <Compile Include="Model\Reporting\AnalyticsSourceZipCode\AnalyticsSourceZipCode.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourceZipCode\AnalyticsSourceZipCode.Logic.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourceZipCode\ZipCodeBoundary.cs" />
+    <Compile Include="Model\Group\Group\Options\CopyGroupOptions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Net\BrowserCookie.cs" />

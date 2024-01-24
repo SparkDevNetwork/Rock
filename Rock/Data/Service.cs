@@ -712,7 +712,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Calls _objectSet.RemoveRange which adds the given collection of items
+        /// Calls _objectSet.AddRange which adds the given collection of items
         /// NOTE: Consider doing a SaveChanges(true) if there could be large number of items
         /// </summary>
         /// <param name="items">The items.</param>
