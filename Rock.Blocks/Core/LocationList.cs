@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,17 +17,14 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.LocationList;
-using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
 {
@@ -62,7 +59,46 @@ namespace Rock.Blocks.Core
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterStreetAddress = "filter-street-address";
+            public const string FilterCity = "filter-city";
+            public const string FilterNotGeocoded = "filter-not-geocoded";
+        }
+
         #endregion Keys
+
+        #region Properties
+
+        /// <summary>
+        /// Get the street address filter to use to filter grid rows.
+        /// </summary>
+        /// <value>
+        /// The value to filter locations on based on their street address
+        /// </value>
+        protected string FilterStreetAddress => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterStreetAddress ) ?? string.Empty;
+
+        /// <summary>
+        /// Get the city filter to use to filter grid rows.
+        /// </summary>
+        /// <value>
+        /// The value to filter locations on based on their city
+        /// </value>
+        protected string FilterCity => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterCity ) ?? string.Empty;
+
+        /// <summary>
+        /// Get whether or not to filter the grid rows by whether or not they
+        /// have a geo code location.
+        /// </summary>
+        /// <value>
+        /// Whether or not to filter locations based on whether or not it has a geo code.
+        /// </value>
+        protected bool FilterNotGeocoded => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterNotGeocoded ).AsBoolean();
+
+        #endregion Properties
 
         #region Methods
 
@@ -72,7 +108,7 @@ namespace Rock.Blocks.Core
             var box = new ListBlockBox<LocationListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
+            box.IsAddEnabled = false;
             box.IsDeleteEnabled = false;
             box.ExpectedRowCount = 1;
             box.NavigationUrls = GetBoxNavigationUrls();
@@ -99,9 +135,10 @@ namespace Rock.Blocks.Core
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new Location();
+            //var entity = new Location();
 
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            //return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return false;
         }
 
         /// <summary>
@@ -119,7 +156,35 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<Location> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            bool isFiltered = false;
+            var queryable = base.GetListQueryable( rockContext ).Where( l => l.Street1 != null && l.Street1 != string.Empty );
+
+            if ( !string.IsNullOrWhiteSpace( FilterStreetAddress ) )
+            {
+                queryable = queryable.Where( l => l.Street1.StartsWith( FilterStreetAddress ) );
+                isFiltered = true;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( FilterCity ) )
+            {
+                queryable = queryable.Where( l => l.City.StartsWith( FilterCity ) );
+                isFiltered = true;
+            }
+
+            if ( FilterNotGeocoded )
+            {
+                queryable = queryable.Where( l => l.GeoPoint == null );
+                isFiltered = true;
+            }
+
+            if ( !isFiltered )
+            {
+                return Enumerable.Empty<Location>().AsQueryable();
+            }
+            else
+            {
+                return queryable;
+            }
         }
 
         /// <inheritdoc/>
@@ -127,7 +192,7 @@ namespace Rock.Blocks.Core
         {
             return new GridBuilder<Location>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "id", a => a.Id.ToString() )
                 .AddTextField( "street1", a => a.Street1 )
                 .AddTextField( "city", a => a.City )
                 .AddTextField( "state", a => a.State )

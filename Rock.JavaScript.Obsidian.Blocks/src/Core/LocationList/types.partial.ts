@@ -18,3 +18,9 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
+
+export const enum PreferenceKey {
+    FilterStreetAddress = "filter-street-address",
+    FilterCity = "filter-city",
+    FilterNotGeocoded = "filter-not-geocoded"
+}

@@ -2,64 +2,95 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="idKey"
+          keyField="id"
           itemTerm="Location"
           :entityTypeGuid="EntityType.Location"
           stickyHeader
           liveUpdates
           @selectItem="onSelectItem">
-        <SelectColumn />
+        <!-- <SelectColumn /> -->
+
+        <template #gridHeaderPrepend>
+            <RockForm class="p-3" @submit="onSubmitFilter">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <TextBox v-model="streetFilter" label="Street Address Starts With" />
+                    </div>
+                    <div class="col-lg-4">
+                        <TextBox v-model="cityFilter" label="City Starts With" />
+                    </div>
+                    <div class="col-lg-4">
+                        <CheckBox v-model="notGeocodedFilter" label="Not Geocoded" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <RockButton type="submit" btnType="action" btnSize="xs" class="mr-3">Apply Filter</RockButton>
+                        <span v-if="!hasFilter" class="media-middle text-info">Please supply a filter in order to see results.</span>
+                    </div>
+                </div>
+            </RockForm>
+        </template>
 
         <TextColumn name="street1"
                     title="Street 1"
                     field="street1"
-                    :filter="textValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="city"
                     title="City"
                     field="city"
-                    :filter="textValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="state"
                     title="State"
                     field="state"
-                    :filter="textValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="postalCode"
                     title="Postal Code"
                     field="postalCode"
-                    :filter="textValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="country"
                     title="Country"
                     field="country"
-                    :filter="textValueFilter"
                     visiblePriority="xs" />
     </Grid>
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { TextColumn, textValueFilter, SelectColumn } from "@Obsidian/Controls/grid";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LocationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationList/locationListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./LocationList/types.partial";
-    import { reactive, ref } from "vue";
+    import { NavigationUrlKey, PreferenceKey } from "./LocationList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<LocationListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    const streetFilter = ref(preferences.getValue(PreferenceKey.FilterStreetAddress));
+    const cityFilter = ref(preferences.getValue(PreferenceKey.FilterCity));
+    const notGeocodedFilter = ref(asBoolean(preferences.getValue(PreferenceKey.FilterNotGeocoded)));
+
+    const hasFilter = computed(() => {
+        return !!streetFilter.value || !!cityFilter.value || notGeocodedFilter.value;
+    });
 
     // #endregion
 
@@ -102,6 +133,16 @@
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
+    }
+
+    async function onSubmitFilter(): Promise<void> {
+        preferences.setValue(PreferenceKey.FilterStreetAddress, streetFilter.value);
+        preferences.setValue(PreferenceKey.FilterCity, cityFilter.value);
+        preferences.setValue(PreferenceKey.FilterNotGeocoded, asTrueOrFalseString(notGeocodedFilter.value));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
     }
 
     // #endregion
