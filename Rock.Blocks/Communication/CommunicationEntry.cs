@@ -34,12 +34,9 @@ using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
 using Rock.Net;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.ComponentModel.DataAnnotations;
-using System.Web.SessionState;
 using System.Collections;
-using Rock.Lava.RockLiquid.Blocks;
-using System.Web.Http;
+using Rock.ViewModels.Blocks.Cms.LibraryViewer;
 
 namespace Rock.Blocks.Communication
 {
@@ -770,17 +767,100 @@ namespace Rock.Blocks.Communication
         //    args.IsValid = Recipients.Any();
         //}
 
+        private bool IsValueNotNull( object value, string valueFriendlyName, out ValidationResult validationResult )
+        {
+            if ( value != null )
+            {
+                validationResult = ValidationResult.Success;
+                return true;
+            }
+            else
+            {
+                validationResult = new ValidationResult( $"{valueFriendlyName} is required." );
+                return false;
+            }
+        }
+
+        private bool IsValueNotNotOrWhiteSpace( string value, string valueFriendlyName, out ValidationResult validationResult )
+        {
+            if ( value.IsNotNullOrWhiteSpace() )
+            {
+                validationResult = ValidationResult.Success;
+                return true;
+            }
+            else
+            {
+                validationResult = new ValidationResult( $"{valueFriendlyName} is required." );
+                return false;
+            }
+        }
+
+        private bool IsValueNowOrFutureDateTime( DateTimeOffset value, string valueFriendlyName, out ValidationResult validationResult )
+        {
+            if ( value.CompareTo( RockDateTime.Now ) >= 0 )
+            {
+                validationResult = ValidationResult.Success;
+                return true;
+            }
+            else
+            { 
+                validationResult = new ValidationResult( $"{valueFriendlyName} must be a future date/time." );
+                return false;
+            }
+        }
+
+        private bool IsValueNotEmpty<T>( IEnumerable<T> value, string valueFriendlyName, out ValidationResult validationResult )
+        {
+            if ( value != null && value.Any() )
+            {
+                validationResult = ValidationResult.Success;
+                return true;
+            }
+            else
+            {
+                validationResult = new ValidationResult( $"At least one {valueFriendlyName.Singularize()} is required." );
+                return false;
+            }
+        }
+
+        private bool IsTestRequestValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
+        {
+            return IsValueNotNull( bag, "Communication Information", out validationResult )
+                 && IsValueNotNotOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
+                 && IsValueNotNotOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
+                 && IsValueNotNull( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
+                 && ( !bag.FutureSendDateTime.HasValue || IsValueNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
+                 && IsValueNotEmpty( bag.Recipients, nameof( bag.Recipients ), out validationResult );
+        }
+
+        private bool IsSendRequestValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
+        {
+            return IsValueNotNull( bag, "Communication Information", out validationResult )
+                 && IsValueNotNotOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
+                 && IsValueNotNotOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
+                 && IsValueNotNull( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
+                 && ( !bag.FutureSendDateTime.HasValue || IsValueNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
+                 && IsValueNotEmpty( bag.Recipients, nameof( bag.Recipients ), out validationResult );
+        }
+
+        private bool IsSaveRequestValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
+        {
+            return IsValueNotNull( bag, "Communication Information", out validationResult )
+                 && IsValueNotNotOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
+                 && IsValueNotNotOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
+                 && IsValueNotNull( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
+                 && ( !bag.FutureSendDateTime.HasValue || IsValueNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) );
+        }
+
         /// <summary>
         /// Tests the communication by sending it to the current person.
         /// </summary>
         [BlockAction( "Test" )]
         public BlockActionResult Test( CommunicationEntryCommunicationBag bag )
         {
-            var validationResult = new TestBlockActionValidator().Validate( bag );
-
-            if ( validationResult.IsError() )
+            if ( !IsTestRequestValid( bag, out var validationResult ) )
             {
-                return ActionBadRequest( validationResult.ErrorMessage );
+                return ActionBadRequest( validationResult.ErrorMessage );   
             }
 
             var currentPerson = GetCurrentPerson();
@@ -788,20 +868,20 @@ namespace Rock.Blocks.Communication
 
             if ( !primaryAliasId.HasValue )
             {
-                return ActionBadRequest( "You must be authenticated to send a test communication" );
+                return ActionBadRequest( "You must be authenticated to send a test communication." );
             }
 
             // Get existing or new communication record.
             // Use a separate context so that changes in UpdateCommunication() are not persisted.
             var communication = UpdateCommunication( new RockContext(), bag );
 
+            if ( communication == null )
+            {
+                return ActionBadRequest( "Unable to send test communication." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
-                if ( communication == null )
-                {
-                    return ActionBadRequest( "Unable to send test communication" );
-                }
-
                 var testCommunication = communication.CloneWithoutIdentity();
                 testCommunication.CreatedByPersonAliasId = primaryAliasId;
                 testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext )
@@ -858,12 +938,12 @@ namespace Rock.Blocks.Communication
                 if ( testRecipient != null && testRecipient.Status == CommunicationRecipientStatus.Failed && testRecipient.PersonAlias != null && testRecipient.PersonAlias.Person != null )
                 {
                     response.MessageType = "danger";
-                    response.Message = $"Test communication to <strong>{testRecipient.PersonAlias.Person.FullName}</strong> failed: {testRecipient.StatusNote}.";
+                    response.MessageHtml = $"Test communication to <strong>{testRecipient.PersonAlias.Person.FullName}</strong> failed: {testRecipient.StatusNote}.";
                 }
                 else
                 {
                     response.MessageType = "success";
-                    response.Message = "Test communication has been sent.";
+                    response.MessageHtml = "Test communication has been sent.";
                 }
 
                 var pushMediumEntityTypeGuid = Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid();
@@ -906,12 +986,9 @@ namespace Rock.Blocks.Communication
         [BlockAction( "Send" )]
         public BlockActionResult Send( CommunicationEntryCommunicationBag bag )
         {
-            var validator = new SendBlockActionValidator();
-            var validationResult = validator.Validate( bag );
-
-            if ( validationResult.IsError() )
+            if ( !IsSendRequestValid( bag, out var validationResult ) )
             {
-                return ActionBadRequest( validationResult.ErrorMessage );
+                return ActionBadRequest( validationResult.ErrorMessage );   
             }
 
             using ( var rockContext = new RockContext() )
@@ -1067,12 +1144,9 @@ namespace Rock.Blocks.Communication
         [BlockAction( "Save" )]
         public BlockActionResult Save( CommunicationEntryCommunicationBag bag )
         {
-            var validator = new SaveBlockActionValidator();
-            var validationResult = validator.Validate( bag );
-
-            if ( validationResult.IsError() )
+            if ( !IsSaveRequestValid( bag, out var validationResult ) )
             {
-                return ActionBadRequest( validationResult.ErrorMessage );
+                return ActionBadRequest( validationResult.ErrorMessage );   
             }
 
             using ( var rockContext = new RockContext() )
@@ -1449,6 +1523,8 @@ namespace Rock.Blocks.Communication
                     CommunicationEntryHelper.CopyTemplate( template, communicationCopyTarget, this.RequestContext );
                 }
             }
+
+            //box.IsCommunicationSender = communication.SenderPersonAliasId.HasValue && communication.SenderPersonAliasId == GetCurrentPerson()?.PrimaryAliasId;
         }
 
         ///// <summary>
@@ -1748,42 +1824,6 @@ namespace Rock.Blocks.Communication
         //}
 
         ///// <summary>
-        ///// Shows the actions.
-        ///// </summary>
-        ///// <param name="communication">The communication.</param>
-        //private void ShowActions( Rock.Model.Communication communication )
-        //{
-        //    // TODO JMH Implement this in the Vue code using the 
-        //    // Determine if user is allowed to save changes, if not, disable
-        //    // submit and save buttons
-        //    if ( IsUserAuthorized( "Approve" ) ||
-        //        ( CurrentPersonAliasId.HasValue && CurrentPersonAliasId == communication.SenderPersonAliasId ) ||
-        //        IsUserAuthorized( Authorization.EDIT ) )
-        //    {
-        //        btnSubmit.Enabled = true;
-        //        btnSave.Enabled = true && IsFullMode;
-        //    }
-        //    else
-        //    {
-        //        btnSubmit.Enabled = false;
-        //        btnSave.Enabled = false;
-        //    }
-
-        //    if ( _editingApproved && communication.Status == CommunicationStatus.PendingApproval )
-        //    {
-        //        btnSubmit.Text = "Save";
-        //        btnSave.Visible = false;
-        //        btnCancel.Visible = true;
-        //    }
-        //    else
-        //    {
-        //        btnSubmit.Text = "Submit";
-        //        btnSave.Visible = true && IsFullMode;
-        //        btnCancel.Visible = false;
-        //    }
-        //}
-
-        ///// <summary>
         ///// Determines whether approval is required, and sets the submit button text appropriately
         ///// </summary>
         ///// <param name="communication">The communication.</param>
@@ -2001,43 +2041,6 @@ namespace Rock.Blocks.Communication
 
         #region Helper Classes
 
-        private class TestBlockActionValidator : Validator<CommunicationEntryCommunicationBag>
-        {
-            public TestBlockActionValidator()
-            {
-                RuleFor( bag => bag ).WithName( "Communication Information" ).IsRequired();
-                RuleFor( bag => bag.FromName ).IsRequired();
-                RuleFor( bag => bag.FromAddress ).IsRequired();
-                RuleFor( bag => bag.MediumEntityTypeGuid ).IsRequired().WithErrorMessage( "The medium type is required" );
-                RuleFor( bag => bag.FutureSendDateTime ).WithName( "Schedule Send" ).IsNullOrFutureDateTimeOffset();
-            }
-        }
-
-        private class SaveBlockActionValidator : Validator<CommunicationEntryCommunicationBag>
-        {
-            public SaveBlockActionValidator()
-            {
-                RuleFor( bag => bag ).WithName( "Communication Information" ).IsRequired();
-                RuleFor( bag => bag.FromName ).IsRequired();
-                RuleFor( bag => bag.FromAddress ).IsRequired();
-                RuleFor( bag => bag.MediumEntityTypeGuid ).IsRequired().WithErrorMessage( "The medium type is required" );
-                RuleFor( bag => bag.FutureSendDateTime ).WithName( "Schedule Send" ).IsNullOrFutureDateTimeOffset();
-            }
-        }
-
-        private class SendBlockActionValidator : Validator<CommunicationEntryCommunicationBag>
-        {
-            public SendBlockActionValidator()
-            {
-                RuleFor( bag => bag ).WithName( "Communication Information" ).IsRequired();
-                RuleFor( bag => bag.FromName ).IsRequired();
-                RuleFor( bag => bag.FromAddress ).IsRequired();
-                RuleFor( bag => bag.MediumEntityTypeGuid ).WithName( "Medium Type" ).IsRequired();
-                RuleFor( bag => bag.FutureSendDateTime ).WithName( "Schedule Send" ).IsNullOrFutureDateTimeOffset();
-                RuleFor( bag => bag.Recipients ).IsNotEmpty().WithErrorMessage( "At least one recipient is required" );
-            }
-        }
-
         private interface ICommunicationAttachments
         {
             IEnumerable<AttachmentDto> Attachments { get; set; }
@@ -2234,332 +2237,5 @@ namespace Rock.Blocks.Communication
         }
 
         #endregion
-    }
-
-    internal interface IRuleBuilder<T, TValue, TValidate> where TValidate : IValidate<TValue>
-    {
-        ValidationRule<T> AddRule( TValidate validate );
-    }
-
-    [RockInternal( "1.17.0" )]
-    internal class ValidationRuleBuilder<T, TValue> : IRuleBuilder<T, TValue, IValidate<TValue>>
-    {
-        private readonly List<IValidate<T>> _rules;
-        private readonly Expression<Func<T, TValue>> _valueSelectorExpression;
-        private readonly Func<T, TValue> _valueSelector;
-
-        /// <summary>
-        /// Gets or sets the name of the value to validate.
-        /// <para>Defaults to the name extracted from the expression passed to the constructor.</para>
-        /// </summary>
-        /// <value>
-        /// The name of the value to validate.
-        /// </value>
-        public string Name { get; set; }
-
-        internal ValidationRuleBuilder( List<IValidate<T>> rules, Expression<Func<T, TValue>> valueSelectorExpression )
-        {
-            _rules = rules;
-            _valueSelectorExpression = valueSelectorExpression;
-            _valueSelector = _valueSelectorExpression.Compile();
-            Name = ( ( _valueSelectorExpression.Body as MemberExpression ) ?? ( ( _valueSelectorExpression.Body as UnaryExpression )?.Operand as MemberExpression ) )?.Member.Name ?? (_valueSelectorExpression.Body as ParameterExpression)?.Name;
-        }
-
-        public ValidationRule<T> AddRule( Func<TValue, ValidationResult> validateFunc )
-        {
-            var rule = new ValidationRule<T>( Name, ( T t ) => validateFunc( _valueSelector( t ) ) );
-            _rules.Add( rule );
-            return rule;
-        }
-
-        public ValidationRule<T> AddRule( IValidate<TValue> validate )
-        {
-            var rule = new ValidationRule<T>( Name, ( T t ) => validate.Validate( _valueSelector( t ) ) );
-            _rules.Add( rule );
-            return rule;
-        }
-    }
-
-    [RockInternal( "1.17.0" )]
-    internal static class ValidationExtensions
-    {
-        public static ValidationResult Validate<T>( this T source, Action<Validator<T>> defineRules )
-        {
-            var rulesValidator = new Validator<T>();
-
-            // Define the validation rules.
-            defineRules( rulesValidator );
-
-            // Validate the object.
-            return rulesValidator.Validate( source );
-        }
-
-        internal static bool IsError( this ValidationResult validationResult )
-        {
-            return validationResult?.ErrorMessage.IsNotNullOrWhiteSpace() == true;
-        }
-
-        /// <summary>
-        /// Ensures the value is not null.
-        /// </summary>
-        /// <typeparam name="T">The type to validate.</typeparam>
-        /// <typeparam name="TValue">The type of the value to validate.</typeparam>
-        /// <param name="builder">The builder.</param>
-        /// <returns>The validation rule.</returns>
-        internal static ValidationRule<T> IsRequired<T, TValue>( this ValidationRuleBuilder<T, TValue> builder ) where TValue : class
-        {
-            var requiredRule = new RequiredRule( builder.Name );
-            return builder.AddRule( ( TValue value ) => requiredRule.Validate( value ) );
-        }
-
-        /// <summary>
-        /// Ensures the Guid is not empty.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder">The builder.</param>
-        /// <returns></returns>
-        internal static ValidationRule<T> IsRequired<T>( this ValidationRuleBuilder<T, Guid> builder )
-        {
-            return builder.AddRule( new RequiredRule( builder.Name ) );
-        }
-
-        internal static ValidationRule<T> IsRequired<T>( this ValidationRuleBuilder<T, string> builder )
-        {
-            return builder.AddRule( new RequiredRule( builder.Name ) );
-        }
-
-        internal static ValidationRule<T> IsRequired<T>( this ValidationRuleBuilder<T, int> builder )
-        {
-            return builder.AddRule( new RequiredRule( builder.Name ) );
-        }
-
-        internal static ValidationRule<T> IsNullOrFutureDateTimeOffset<T>( this ValidationRuleBuilder<T, DateTimeOffset?> builder )
-        {
-            return builder.AddRule( new IsNullOrFutureDateTimeOffsetRule( builder.Name ) );
-        }
-
-        internal static ValidationRule<T> IsNotEmpty<T, TValue>( this ValidationRuleBuilder<T, TValue> builder ) where TValue : IEnumerable
-        {
-            return builder.AddRule( new NotEmptyRule<TValue>( builder.Name ) );
-        }
-
-        /// <summary>
-        /// Overrides the value name which validation rules use to construct error messages.
-        /// </summary>
-        /// <typeparam name="T">The type to validate.</typeparam>
-        /// <typeparam name="TValue">The type of the value to validate.</typeparam>
-        /// <param name="builder">The builder.</param>
-        /// <param name="valueName">The value name override.</param>
-        /// <returns>The rule builder.</returns>
-        internal static ValidationRuleBuilder<T, TValue> WithName<T, TValue>( this ValidationRuleBuilder<T, TValue> builder, string valueName )
-        {
-            builder.Name = valueName;
-            return builder;
-        }
-
-        /// <summary>
-        /// Overrides the value name which validation rules use to construct error messages.
-        /// </summary>
-        /// <typeparam name="T">The type to validate.</typeparam>
-        /// <typeparam name="TValue">The type of the value to validate.</typeparam>
-        /// <param name="rule">The builder.</param>
-        /// <param name="valueName">The value name override.</param>
-        /// <returns>The rule builder.</returns>
-        internal static ValidationRule<T> WithName<T, TValue>( this ValidationRule<T> rule, string valueName )
-        {
-            rule.Name = valueName;
-            return rule;
-        }
-
-        internal static ValidationRule<T> WithErrorMessage<T>( this ValidationRule<T> rule, string message )
-        {
-            var oldValidator = rule.Validator;
-
-            rule.Validator = ( T t ) =>
-            {
-                var validationResult = oldValidator( t );
-
-                if (validationResult.IsError() )
-                {
-                    validationResult.ErrorMessage = message;
-                }
-
-                return validationResult;
-            };
-
-            return rule;
-        }
-    }
-
-    [RockInternal( "1.17.0" )]
-    internal interface IValidate<in T>
-    {
-        ValidationResult Validate( T value );
-    }
-
-    [RockInternal( "1.17.0" )]
-    internal class RequiredRule :
-        IValidateValue<object>,
-        IValidateValue<Guid>,
-        IValidateValue<int>,
-        IValidateValue<string>
-    {
-        public string Name { get; set; }
-
-        public RequiredRule( string valueName )
-        {
-            Name = valueName;
-        }
-
-        private string GetErrorMessage()
-        {
-            return $"{Name?.Replace(" ", string.Empty).SplitCase()} is required.";
-        }
-
-        public ValidationResult Validate( object value )
-        {
-            if ( value == null )
-            {
-                return new ValidationResult( GetErrorMessage() );
-            }
-
-            return ValidationResult.Success;
-        }
-
-        public ValidationResult Validate( Guid value )
-        {
-            if ( value.IsEmpty() )
-            {
-                return new ValidationResult( GetErrorMessage() );
-            }
-
-            return ValidationResult.Success;
-        }
-
-        public ValidationResult Validate( int value )
-        {
-            if ( value == 0 )
-            {
-                return new ValidationResult( GetErrorMessage() );
-            }
-
-            return ValidationResult.Success;
-        }
-
-        public ValidationResult Validate( string value )
-        {
-            if ( value.IsNullOrWhiteSpace() )
-            {
-                return new ValidationResult( GetErrorMessage() );
-            }
-
-            return ValidationResult.Success;
-        }
-    }
-    
-    [RockInternal( "1.17.0" )]
-    internal interface INotEmptyRule<in TCollection> : IValidateValue<TCollection> where TCollection : IEnumerable
-    {}
-
-    [RockInternal( "1.17.0" )]
-    internal class NotEmptyRule<TCollection> : INotEmptyRule<TCollection> where TCollection : IEnumerable
-    {
-        public string Name { get; set; }
-
-        public NotEmptyRule( string valueName )
-        {
-            Name = valueName;
-        }
-
-        public ValidationResult Validate( TCollection value )
-        {
-            var enumerator = value?.GetEnumerator();
-
-            if ( enumerator?.MoveNext() != true )
-            {
-                return new ValidationResult( $"{Name?.Replace(" ", string.Empty).SplitCase()} must not be empty." );
-            }
-
-            return ValidationResult.Success;
-        }
-    }
-
-    [RockInternal( "1.17.0" )]
-    internal class IsNullOrFutureDateTimeOffsetRule : IValidateValue<DateTimeOffset?>
-    {
-        public string Name { get; set; }
-
-        public IsNullOrFutureDateTimeOffsetRule( string valueName )
-        {
-            Name = valueName;
-        }
-
-        public ValidationResult Validate( DateTimeOffset? value )
-        {
-            if ( value.HasValue && value.Value.CompareTo( RockDateTime.Now ) < 0 )
-            {
-                return new ValidationResult( $"{Name?.Replace(" ", string.Empty).SplitCase()} must be a future date/time." );
-            }
-            else
-            {
-                return ValidationResult.Success;
-            }
-        }
-    }
-
-    internal interface IValidateValue<in T> : IValidate<T>
-    {
-        /// <summary>
-        /// Gets or sets the name of the value to validate.
-        /// </summary>
-        /// <value>
-        /// The name of the value to validate.
-        /// </value>
-        string Name { get; set; }
-    }
-
-    [RockInternal( "1.17.0" )]
-    internal class ValidationRule<T> : IValidateValue<T>
-    {
-        /// <inheritdoc/>
-        public string Name { get; set; }
-
-        internal Func<T, ValidationResult> Validator { get; set; }
-
-        public ValidationRule( string name, Func<T, ValidationResult> validator )
-        {
-            Name = name;
-            Validator = validator ?? throw new ArgumentNullException( nameof( validator ) );
-        }
-
-        public ValidationResult Validate( T value )
-        {
-            return Validator( value );
-        }
-    }
-
-    [RockInternal( "1.17.0" )]
-    internal class Validator<T> : IValidate<T>
-    {
-        private readonly List<IValidate<T>> _rules = new List<IValidate<T>>();
-
-        public ValidationRuleBuilder<T, TValue> RuleFor<TValue>( Expression<Func<T, TValue>> valueSelectorExpression )
-        {
-            return new ValidationRuleBuilder<T, TValue>( _rules, valueSelectorExpression );
-        }
-
-        public virtual ValidationResult Validate( T bag )
-        {
-            foreach (var rule in _rules )
-            {
-                var validationResult = rule.Validate( bag );
-                if ( validationResult.IsError() )
-                {
-                    return validationResult;
-                }
-            }
-
-            return ValidationResult.Success;
-        }
     }
 }

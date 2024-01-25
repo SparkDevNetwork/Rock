@@ -27,7 +27,7 @@
     defineExpose({
         save,
         send,
-        sendTest
+        test
     });
 
     //#region Values
@@ -60,7 +60,7 @@
      * Sends the test communication.
      * If this is renamed, it must also be renamed in the other medium components.
      */
-    function sendTest(): Promise<void> {
+    function test(): Promise<void> {
         return Promise.resolve();
     }
 

@@ -147,12 +147,6 @@
                     :editorHeight="600"
                     label="Message"
                     :mergeFields="['GlobalAttribute', 'Rock.Model.Person', 'Communication.Subject|Subject', 'Communication.FromName|From Name', 'Communication.FromEmail|From Address', 'Communication.ReplyToEmail|Reply To', 'UnsubscribeOption']" />
-
-        <NotificationBox v-if="testResult"
-                         v-html="testResult"
-                         :alertType="getAlertType(testResultType)"
-                         class="margin-t-md"
-                         id="nbTestResult" />
     </RockForm>
 </template>
 
@@ -173,14 +167,12 @@
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import VerticalTransitionCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
-    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -221,15 +213,24 @@
             required: false
         },
     });
+
     const emit = defineEmits<{
+        /** Emits an error message. */
         (e: "error", value: string): void,
+        /** Emits a save result. */
+        (e: "saved", value: CommunicationEntrySendResponseBag): void,
+        /** Emits a send result. */
+        (e: "sent", value: CommunicationEntrySendResponseBag): void,
+        /** Emits a test result. */
+        (e: "tested", value: CommunicationEntryTestResponseBag): void,
+        /** Emits an event indicating the disabled state should be updated. */
         (e: "update:disabled", value: boolean): void,
-        (e: "success", value: CommunicationEntrySendResponseBag): void
     }>();
+
     defineExpose({
         save,
         send,
-        sendTest
+        test
     });
 
     type LabelType = "label-default" | "label-success" | "label-warning" | "label-info" | "label-danger";
@@ -263,8 +264,6 @@
     const options = ref<Nullable<CommunicationEntryEmailMediumOptionsBag>>(props.mediumOptions);
     const isFormSubmitted = ref<boolean>(false);
     const pendingAction = ref<() => PromiseLike<void>>();
-    const testResult = ref<Nullable<string>>();
-    const testResultType = ref<Nullable<string>>();
     const isRecipientRequired = ref<boolean>(false);
 
     //#endregion
@@ -419,11 +418,6 @@
         return recipients.value.find(item => item.personAliasGuid === personAliasGuid) ?? null;
     }
 
-    /** Converts a string to an alert type. */
-    function getAlertType(type: Nullable<string>): AlertType {
-        return type as AlertType ?? AlertType.Default;
-    }
-
     //#endregion
 
     //#region Event Handlers
@@ -520,19 +514,19 @@
      * Sends the communication.
      * If this is renamed, it must also be renamed in the other medium components.
      */
-    function sendTest(): Promise<void> {
-        // Recipients are not required when sending a test.
-        if (!isRecipientRequired.value) {
-            // If validation is already turned off,
+    function test(): Promise<void> {
+        // Recipients are required when sending a test.
+        if (isRecipientRequired.value) {
+            // If validation is already turned on,
             // then trigger "sendTest" immediately.
             triggerFormSubmission(doSendTest);
             return Promise.resolve();
         }
         else {
-            // If validation needs to be turned off,
+            // If validation needs to be turned on,
             // then trigger "sendTest" on the next tick
             // so the form has a chance to update the validation UI.
-            isRecipientRequired.value = false;
+            isRecipientRequired.value = true;
             return nextTick(() => triggerFormSubmission(doSendTest));
         }
     }
@@ -594,7 +588,7 @@
                 emit("error", result.errorMessage || "An error occurred while saving. Please try again.");
             }
             else {
-                emit("success", result.data);
+                emit("sent", result.data);
             }
 
         }
@@ -644,8 +638,6 @@
     /** Sends the test communication. */
     async function doSendTest(): Promise<void> {
         try {
-            testResult.value = null;
-            testResultType.value = null;
             internalDisabled.value = true;
 
             const bag: CommunicationEntryCommunicationBag = {
@@ -672,8 +664,7 @@
                 emit("error", result.errorMessage || "An error occurred while sending a test communication. Please try again.");
             }
             else {
-                testResult.value = result.data.message;
-                testResultType.value = result.data.messageType;
+                emit("tested", result.data);
             }
         }
         finally {

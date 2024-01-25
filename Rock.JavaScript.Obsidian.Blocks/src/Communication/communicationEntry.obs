@@ -8,7 +8,7 @@
         </template>
 
         <template #default>
-            <div ID="pnlEdit" v-if="!areResultsShown">
+            <div ref="panelDiv" v-if="!areResultsShown">
                 <PanelNavigationBar v-model="selectedMediumEntityTypeGuid"
                                     :isFirstSelectedByDefault="true"
                                     :items="mediums" />
@@ -32,22 +32,31 @@
                                      :mediumEntityTypeGuid="selectedMediumEntityTypeGuid"
                                      :mediumOptions="config.mediumOptions"
                                      ref="communicationMedium"
-                                     @error="error => validationSummaryMessage = error"
-                                     @success="onSuccess" />
+                                     @error="onError"
+                                     @sent="onSent"
+                                     @saved="onSaved"
+                                     @tested="onTested" />
             </div>
 
-            <div ref="resultsDiv" v-if="areResultsShown" id="pnlResult" class="js-pnl-result">
+            <div ref="sentResultsDiv" v-if="areResultsShown" id="pnlResult" class="js-pnl-result">
                 <NotificationBox alertType="success">{{ resultMessage }}</NotificationBox>
                 <br />
                 <a :href="viewCommunicationUrl">View Communication</a>
             </div>
+
+            <NotificationBox v-if="testResult?.messageHtml"
+                             :alertType="getAlertType(testResult.messageType)"
+                             class="margin-t-md"
+                             id="nbTestResult">
+                <span ref="testResultsSpan" v-html="testResult.messageHtml"></span>
+            </NotificationBox>
         </template>
 
         <template #footerActions v-if="communicationMedium">
             <RockButton id="btnSubmit"
                         class="btn btn-primary"
                         type="button"
-                        @click="onSend">Send</RockButton>
+                        @click="onSend">{{ sendButtonText }}</RockButton>
 
             <RockButton v-if="isFullMode"
                         id="btnTest"
@@ -55,7 +64,7 @@
                         type="button"
                         @click="onSendTest">Send Test</RockButton>
 
-            <RockButton v-if="isFullMode"
+            <RockButton v-if="footerActions"
                         id="btnSave"
                         class="btn btn-link"
                         type="button"
@@ -70,19 +79,21 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, nextTick, ref } from "vue";
+    import { Ref, computed, nextTick, ref } from "vue";
     import CommunicationMedium from "./CommunicationEntry/communicationMedium.partial.obs";
     import PanelNavigationBar from "./CommunicationEntry/panelNavigationBar.partial.obs";
+    import { Nullable } from "./CommunicationEntry/types.partial";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { Nullable } from "./CommunicationEntry/types.partial";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
-    import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
@@ -94,34 +105,90 @@
     const areResultsShown = ref<boolean>(false);
     const isFullMode = ref<boolean>(config.isFullMode);
     const statusLabel = ref<Nullable<string>>(config.communication ? getStatusLabel(config.communication.status) : null);
-    const resultsDiv = ref<HTMLElement | undefined>();
+    const sentResultsDiv = ref<HTMLElement | undefined>();
     const communicationMedium = ref<InstanceType<typeof CommunicationMedium>>();
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
     const selectedMediumEntityTypeGuid = ref<Nullable<string>>("");
     const resultMessage = ref<Nullable<string>>("");
     const viewCommunicationUrl = ref<string>(window.location.href);
     const validationSummaryMessage = ref<Nullable<string>>();
+    const testResult = ref<Nullable<CommunicationEntryTestResponseBag>>();
+    const panelDiv = ref<HTMLElement | undefined>();
+    const testResultsSpan = ref<HTMLElement | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    type FooterActionProperties = {
+        isButtonEnabled: boolean;
+        isButtonVisible: boolean;
+        buttonText: string;
+    };
+
+    type FooterActions = {
+        cancel: FooterActionProperties;
+        save: FooterActionProperties;
+        send: FooterActionProperties;
+        test: FooterActionProperties;
+    };
+
+    const footerActions = computed<FooterActions>(() => {
+        const something = !!config.authorization?.isApproveActionAuthorized
+            || !!config.authorization?.isEditActionAuthorized
+            || !!config.authorization?.isCurrentPersonSender;
+
+        const somethingElse = !!config.authorization?.canApproveCommunication
+            && config.communication?.status === CommunicationStatus.PendingApproval;
+
+        return {
+            cancel: {
+                buttonText: "Cancel",
+                isButtonEnabled: true,
+                isButtonVisible: somethingElse
+            },
+            save: {
+                buttonText: "Save As Draft",
+                isButtonEnabled: something && isFullMode.value,
+                isButtonVisible: !somethingElse && isFullMode.value
+            },
+            send: {
+                buttonText: something ? "Save" : "Send",
+                isButtonEnabled: something,
+                isButtonVisible: true
+            },
+            test: {
+                buttonText: "Send Test",
+                isButtonEnabled: true,
+                isButtonVisible: isFullMode.value
+            },
+        };
+    });
+
+    const isCancelButtonVisible = computed<boolean>(() => {
+        return !!config.authorization?.canApproveCommunication && config.communication?.status === CommunicationStatus.PendingApproval;
+    });
+
+    const sendButtonText = computed<string>(() => {
+        if (!!config.authorization?.canApproveCommunication && config.communication?.status === CommunicationStatus.PendingApproval) {
+            return "Send";
+        }
+        else {
+            // The save button is hidden, so the send button should be labeled "Save".
+            return "Save";
+        }
+    });
 
     //#endregion
 
     //#region Functions
 
-    function showResults(): void {
-        areResultsShown.value = true;
-
-        // Scroll on next tick so Vue can process the v-if binding that shows the elements.
-        nextTick(() => {
-            const results = resultsDiv.value;
-            if (results) {
-                results.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                    inline: "start"
-                });
-            }
-        });
+    /** Converts a string to an alert type. */
+    function getAlertType(type: Nullable<string>): AlertType {
+        return type as AlertType ?? AlertType.Default;
     }
 
+    /** Gets the label for a communication status. */
     function getStatusLabel(status: CommunicationStatus): string {
         if (status === CommunicationStatus.Transient) {
             return "Draft";
@@ -129,6 +196,24 @@
         else {
             return CommunicationStatusDescription[status];
         }
+    }
+
+    /** Scrolls to an element. */
+    function scrollToElement(element: Ref<HTMLElement | undefined>): void {
+        console.log("about to scroll to ", element.value);
+        nextTick(() => {
+            console.log("about to scroll for real to ", element.value);
+            if (element.value) {
+                console.log("scrolling to ", element.value);
+                // element.value.scrollIntoView({
+                //     behavior: "smooth",
+                //     block: "start",
+                //     inline: "start"
+                // });
+                element.value.scrollIntoView(false);
+                console.log("scrolled to ", element.value);
+            }
+        });
     }
 
     //#endregion
@@ -148,10 +233,20 @@
         // Clear the error message.
         validationSummaryMessage.value = null;
 
-        communicationMedium.value?.sendTest();
+        // Clear the last test result.
+        testResult.value = null;
+
+        communicationMedium.value?.test();
     }
 
-    /** Saves the communication. */
+    /** Event handler for an error occurring. */
+    function onError(error: string): void {
+        validationSummaryMessage.value = error;
+        // Scroll to the top of the panel since the errors may be hidden behind the header.
+        scrollToElement(panelDiv);
+    }
+
+    /** Event handler for the save button being clicked. */
     function onSave(): void {
         // Clear the error message.
         validationSummaryMessage.value = null;
@@ -159,10 +254,8 @@
         communicationMedium.value?.save();
     }
 
-    function onSuccess(value: CommunicationEntrySendResponseBag): void {
-        statusLabel.value = getStatusLabel(value.communicationStatus ?? CommunicationStatus.Draft);
-        resultMessage.value = value.message;
-
+    /** Event handler for the communication being sent. */
+    function onSent(value: CommunicationEntrySendResponseBag): void {
         if (value.redirectToViewMode) {
             const url = new URL(window.location.href);
             const queryParams = url.searchParams;
@@ -171,7 +264,24 @@
             viewCommunicationUrl.value = url.href;
         }
 
-        showResults();
+        statusLabel.value = getStatusLabel(value.communicationStatus ?? CommunicationStatus.Draft);
+        resultMessage.value = value.message;
+        areResultsShown.value = true;
+
+        // Scroll on next tick so Vue can process the v-if binding that shows the elements.
+        scrollToElement(sentResultsDiv);
+    }
+
+    /** Event handler for the communication being saved. */
+    function onSaved(value: CommunicationEntrySendResponseBag): void {
+        // Behavior is the same as the communication being sent.
+        onSent(value);
+    }
+
+    /** Event handler for a test result being received. */
+    function onTested(value: CommunicationEntryTestResponseBag): void {
+        testResult.value = value;
+        scrollToElement(testResultsSpan);
     }
 
     //#endregion

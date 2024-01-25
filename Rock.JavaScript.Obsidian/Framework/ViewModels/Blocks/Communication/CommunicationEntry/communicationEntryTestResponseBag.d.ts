@@ -23,8 +23,8 @@
 
 /** Bag containing the response information after testing a communication via the Communication Entry block. */
 export type CommunicationEntryTestResponseBag = {
-    /** Gets or sets the response message. */
-    message?: string | null;
+    /** Gets or sets the HTML response message. */
+    messageHtml?: string | null;
 
     /** Gets or sets the type of the message. */
     messageType?: string | null;

@@ -8,8 +8,10 @@
                :mediumEntityTypeGuid="mediumEntityTypeGuid"
                :mediumOptions="(mediumOptions as CommunicationEntryEmailMediumOptionsBag)"
                ref="mediumComponent"
-               @error="v => emit('error', v)"
-               @success="v => emit('success', v)" />
+               @error="emit('error', $event)"
+               @saved="emit('saved', $event)"
+               @sent="emit('sent', $event)"
+               @tested="emit('tested', $event)" />
         <Sms v-else-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumSms)"
              :isFullMode="isFullMode"
              :mediumEntityTypeGuid="mediumEntityTypeGuid"
@@ -41,6 +43,7 @@
     import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
+    import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
 
     const props = defineProps({
         isFullMode: {
@@ -66,14 +69,22 @@
     });
     defineExpose({
         cancel,
-        save: saveDraft,
+        save,
         send,
-        sendTest,
+        test,
     });
 
     const emit = defineEmits<{
+        /** Emits an error message. */
         (e: "error", value: string): void,
-        (e: "success", value: CommunicationEntrySendResponseBag): void
+        /** Emits a save result. */
+        (e: "saved", value: CommunicationEntrySendResponseBag): void,
+        /** Emits a send result. */
+        (e: "sent", value: CommunicationEntrySendResponseBag): void,
+        /** Emits a test result. */
+        (e: "tested", value: CommunicationEntryTestResponseBag): void,
+        /** Emits an event indicating the disabled state should be updated. */
+        (e: "update:disabled", value: boolean): void,
     }>();
 
     //#region Values
@@ -102,7 +113,7 @@
     /**
      * Saves the communication.
      */
-    async function saveDraft(): Promise<void> {
+    async function save(): Promise<void> {
         await mediumComponent.value?.save();
     }
 
@@ -116,8 +127,8 @@
     /**
      * Sends a test communication.
      */
-    async function sendTest(): Promise<void> {
-        await mediumComponent.value?.sendTest();
+    async function test(): Promise<void> {
+        await mediumComponent.value?.test();
     }
 
     //#endregion

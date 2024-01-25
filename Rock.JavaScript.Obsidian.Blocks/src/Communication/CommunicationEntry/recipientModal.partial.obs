@@ -58,168 +58,168 @@
 </template>
 
 <script setup lang="ts">
-import { PropType, computed, ref, Ref, watch } from "vue";
-import SimpleGrid from "../../Security/AccountEntry/simpleGrid.partial.obs";
-import Modal from "@Obsidian/Controls/modal.obs";
-import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-import RockButton from "@Obsidian/Controls/rockButton.obs";
-import TextBox from "@Obsidian/Controls/textBox.obs";
-import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { PropType, computed, ref, Ref, watch } from "vue";
+    import SimpleGrid from "../../Security/AccountEntry/simpleGrid.partial.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
 
-const invokeBlockAction = useInvokeBlockAction();
+    const invokeBlockAction = useInvokeBlockAction();
 
-const props = defineProps({
-    modelValue: {
-        type: Object as PropType<boolean>,
-        required: true
-    },
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<boolean>,
+            required: true
+        },
 
-    items: {
-        type: Object as PropType<CommunicationEntryRecipientBag[]>,
-        required: true
-    },
+        items: {
+            type: Object as PropType<CommunicationEntryRecipientBag[]>,
+            required: true
+        },
 
-    isBulk: {
-        type: Boolean as PropType<boolean>,
-        required: false,
-        default: false
-    },
+        isBulk: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
 
-    getEmailTooltipRef: {
-        type: Function as PropType<(value: CommunicationEntryRecipientBag | null) => Ref<string>>,
-        required: false,
-        default: (_: string) => ""
-    },
-});
+        getEmailTooltipRef: {
+            type: Function as PropType<(value: CommunicationEntryRecipientBag | null) => Ref<string>>,
+            required: false,
+            default: (_: string) => ""
+        },
+    });
 
-const emit = defineEmits<{
-    (e: "update:modelValue", newValue: boolean): void,
-    (e: "update:items", newValue: CommunicationEntryRecipientBag[]): void
-}>();
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: boolean): void,
+        (e: "update:items", newValue: CommunicationEntryRecipientBag[]): void
+    }>();
 
-const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
-const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
+    const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
+    const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
 
-//#region Values
+    //#region Values
 
-const pendingItems = ref<CommunicationEntryRecipientBag[]>([...props.items]);
-const recipientTextFilter = ref<string>("");
+    const pendingItems = ref<CommunicationEntryRecipientBag[]>([...props.items]);
+    const recipientTextFilter = ref<string>("");
 
-//#endregion
+    //#endregion
 
-//#region Computed Values
+    //#region Computed Values
 
-const filteredRecipients = computed<CommunicationEntryRecipientBag[]>(() => {
-    const textFilter = recipientTextFilter.value;
-    if (!textFilter) {
-        return pendingItems.value;
-    }
+    const filteredRecipients = computed<CommunicationEntryRecipientBag[]>(() => {
+        const textFilter = recipientTextFilter.value;
+        if (!textFilter) {
+            return pendingItems.value;
+        }
 
-    const regex = tryGetRegExp(textFilter);
+        const regex = tryGetRegExp(textFilter);
 
-    if (regex) {
-        return pendingItems.value.filter(recipient =>
-            (recipient.name && regex.test(recipient.name))
+        if (regex) {
+            return pendingItems.value.filter(recipient =>
+                (recipient.name && regex.test(recipient.name))
                 || (recipient.email && regex.test(recipient.email))
                 || (recipient.smsNumber && regex.test(recipient.smsNumber))
-        );
-    }
-    else {
-        const textFilterLowerCase = textFilter.toLocaleLowerCase();
-        return pendingItems.value.filter(recipient =>
-            (recipient.name && recipient.name.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
+            );
+        }
+        else {
+            const textFilterLowerCase = textFilter.toLocaleLowerCase();
+            return pendingItems.value.filter(recipient =>
+                (recipient.name && recipient.name.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
                 || (recipient.email && recipient.email.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
                 || (recipient.smsNumber && recipient.smsNumber.toLocaleLowerCase().indexOf(textFilterLowerCase) >= 0)
-        );
-    }
-});
+            );
+        }
+    });
 
-//#endregion
+    //#endregion
 
-//#region Functions
+    //#region Functions
 
-function setItemRef(el: unknown): void {
-    const htmlElement = el as HTMLElement;
-    if (htmlElement) {
-        tooltip(htmlElement);
-    }
-}
-
-function tryGetRegExp(pattern: string): RegExp | undefined {
-    try {
-        const match = pattern.match(isRegex);
-
-        if (match && match.length) {
-            return new RegExp(match[1], match[2]);
+    function setItemRef(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
         }
     }
-    catch {
-        // The pattern was not valid regex.
-    }
-}
 
-function isRecipient(item: unknown): item is CommunicationEntryRecipientBag {
-    return ((item as CommunicationEntryRecipientBag)?.personAliasGuid ?? null) !== null;
-}
+    function tryGetRegExp(pattern: string): RegExp | undefined {
+        try {
+            const match = pattern.match(isRegex);
 
-//#endregion
-
-//#region Event Handlers
-
-function onDeselectItemClicked(personAliasGuid: string | null | undefined): void {
-    if (!personAliasGuid) {
-        return;
+            if (match && match.length) {
+                return new RegExp(match[1], match[2]);
+            }
+        }
+        catch {
+            // The pattern was not valid regex.
+        }
     }
 
-    const updatedPendingItems = [...pendingItems.value];
-
-    const index = updatedPendingItems.findIndex(i => i.personAliasGuid === personAliasGuid);
-    if (index !== -1) {
-        updatedPendingItems.splice(index, 1);
-        pendingItems.value = updatedPendingItems;
-    }
-}
-
-async function onPersonPicked(value: ListItemBag | undefined): Promise<void> {
-    if (!value) {
-        return;
+    function isRecipient(item: unknown): item is CommunicationEntryRecipientBag {
+        return ((item as CommunicationEntryRecipientBag)?.personAliasGuid ?? null) !== null;
     }
 
-    const result = await invokeBlockAction<CommunicationEntryRecipientBag>("GetRecipient", { personAliasGuid: value.value });
+    //#endregion
 
-    if (!result?.isSuccess || !result.data) {
-        // TODO JMH Show error somehow.
-        console.log("Error");
-        return;
+    //#region Event Handlers
+
+    function onDeselectItemClicked(personAliasGuid: string | null | undefined): void {
+        if (!personAliasGuid) {
+            return;
+        }
+
+        const updatedPendingItems = [...pendingItems.value];
+
+        const index = updatedPendingItems.findIndex(i => i.personAliasGuid === personAliasGuid);
+        if (index !== -1) {
+            updatedPendingItems.splice(index, 1);
+            pendingItems.value = updatedPendingItems;
+        }
     }
 
-    const updatedPendingItems = [...pendingItems.value];
-    const index = updatedPendingItems.findIndex(i => i.personAliasGuid === result.data?.personAliasGuid);
-    if (index === -1) {
-        updatedPendingItems.push(result.data);
-        pendingItems.value = updatedPendingItems;
+    async function onPersonPicked(value: ListItemBag | undefined): Promise<void> {
+        if (!value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<CommunicationEntryRecipientBag>("GetRecipient", { personAliasGuid: value.value });
+
+        if (!result?.isSuccess || !result.data) {
+            // TODO JMH Show error somehow.
+            console.log("Error");
+            return;
+        }
+
+        const updatedPendingItems = [...pendingItems.value];
+        const index = updatedPendingItems.findIndex(i => i.personAliasGuid === result.data?.personAliasGuid);
+        if (index === -1) {
+            updatedPendingItems.push(result.data);
+            pendingItems.value = updatedPendingItems;
+        }
     }
-}
 
-function onSaveClicked(): void {
-    emit("update:items", pendingItems.value);
-    internalIsOpen.value = false;
-}
-
-//#endregion
-
-//#region Watchers
-
-watch(() => props.modelValue, (newValue: boolean, oldValue: boolean) => {
-    // If opening the modal, reset the pending items.
-    if (newValue && !oldValue) {
-        pendingItems.value = [...props.items];
+    function onSaveClicked(): void {
+        emit("update:items", pendingItems.value);
+        internalIsOpen.value = false;
     }
-});
 
-//#endregion
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => props.modelValue, (newValue: boolean, oldValue: boolean) => {
+        // If opening the modal, reset the pending items.
+        if (newValue && !oldValue) {
+            pendingItems.value = [...props.items];
+        }
+    });
+
+    //#endregion
 </script>

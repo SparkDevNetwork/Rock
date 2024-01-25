@@ -23,12 +23,12 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
     public class CommunicationEntryTestResponseBag
     {
         /// <summary>
-        /// Gets or sets the response message.
+        /// Gets or sets the HTML response message.
         /// </summary>
         /// <value>
-        /// The response message.
+        /// The HTML response message.
         /// </value>
-        public string Message { get; set; }
+        public string MessageHtml { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the message.
