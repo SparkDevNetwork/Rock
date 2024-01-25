@@ -92,6 +92,7 @@
     <Content Include="src\Core\interactionChannelDetail.obs" />
     <Content Include="src\Core\InteractionChannelDetail\editPanel.partial.obs" />
     <Content Include="src\Core\InteractionChannelDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\locationList.obs" />
     <Content Include="src\Core\noteWatchDetail.obs" />
     <Content Include="src\Core\NoteWatchDetail\editPanel.partial.obs" />
     <Content Include="src\Core\NoteWatchDetail\viewPanel.partial.obs" />
@@ -369,6 +370,7 @@
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\FollowingSuggestionTypeList\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
+    <Folder Include="src\Core\LocationList\" />
     <Folder Include="src\Core\NoteWatchDetail\" />
     <Folder Include="src\Core\SignalTypeList\" />
     <Folder Include="src\Core\SuggestionDetail\" />
@@ -544,6 +546,7 @@
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingSuggestionTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\LocationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteWatchDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SignalTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />

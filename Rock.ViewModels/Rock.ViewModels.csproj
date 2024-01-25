@@ -98,6 +98,7 @@
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceList\DeviceListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\LocationList\LocationListOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteTypeList\NoteTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\FollowingSuggestionTypeList\FollowingSuggestionTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchBag.cs" />
