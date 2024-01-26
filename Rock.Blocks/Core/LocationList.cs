@@ -197,7 +197,8 @@ namespace Rock.Blocks.Core
                 .AddTextField( "city", a => a.City )
                 .AddTextField( "state", a => a.State )
                 .AddTextField( "postalCode", a => a.PostalCode )
-                .AddTextField( "country", a => a.Country );
+                .AddTextField( "country", a => a.Country )
+                .AddField( "isStandardized", a => a.StandardizedDateTime.HasValue );
         }
 
         #endregion

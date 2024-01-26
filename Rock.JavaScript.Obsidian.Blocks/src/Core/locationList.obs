@@ -8,7 +8,6 @@
           stickyHeader
           liveUpdates
           @selectItem="onSelectItem">
-        <!-- <SelectColumn /> -->
 
         <template #gridHeaderPrepend>
             <RockForm class="p-3" @submit="onSubmitFilter">
@@ -25,15 +24,14 @@
                 </div>
                 <div class="row">
                     <div class="col-xs-12">
-                        <RockButton type="submit" btnType="action" btnSize="xs" class="mr-3">Apply Filter</RockButton>
-                        <span v-if="!hasFilter" class="media-middle text-info">Please supply a filter in order to see results.</span>
+                        <RockButton type="submit" btnType="action" btnSize="xs" class="mr-3">Search</RockButton>
                     </div>
                 </div>
             </RockForm>
         </template>
 
         <TextColumn name="street1"
-                    title="Street 1"
+                    title="Street Address"
                     field="street1"
                     visiblePriority="xs" />
 
@@ -56,23 +54,27 @@
                     title="Country"
                     field="country"
                     visiblePriority="xs" />
+
+        <BooleanColumn name="isStandardized"
+                       title="Is Standardized"
+                       field="isStandardized"
+                       visiblePriority="xs" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LocationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationList/locationListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey, PreferenceKey } from "./LocationList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
+    import { reactive, ref } from "vue";
     import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<LocationListOptionsBag>>();
@@ -87,10 +89,6 @@
     const streetFilter = ref(preferences.getValue(PreferenceKey.FilterStreetAddress));
     const cityFilter = ref(preferences.getValue(PreferenceKey.FilterCity));
     const notGeocodedFilter = ref(asBoolean(preferences.getValue(PreferenceKey.FilterNotGeocoded)));
-
-    const hasFilter = computed(() => {
-        return !!streetFilter.value || !!cityFilter.value || notGeocodedFilter.value;
-    });
 
     // #endregion
 
@@ -123,15 +121,6 @@
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
-        }
-    }
-
-    /**
-     * Called when the Add button has been clicked by the indivual.
-     */
-    function onAddItem(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
 
