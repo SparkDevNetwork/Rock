@@ -87,6 +87,10 @@
     <Compile Include="Migrations\202401211244562_AddAnalyticsSourceZipCode.cs" />
     <Compile Include="Migrations\202401211244562_AddAnalyticsSourceZipCode.designer.cs">
       <DependentUpon>202401211244562_AddAnalyticsSourceZipCode.cs</DependentUpon>
+    </Compile>  
+    <Compile Include="Migrations\202401162245280_DataViewIcon.cs" />
+    <Compile Include="Migrations\202401162245280_DataViewIcon.designer.cs">
+      <DependentUpon>202401162245280_DataViewIcon.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.designer.cs">
@@ -1947,6 +1951,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202401211244562_AddAnalyticsSourceZipCode.resx">
       <DependentUpon>202401211244562_AddAnalyticsSourceZipCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202401162245280_DataViewIcon.resx">
+      <DependentUpon>202401162245280_DataViewIcon.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.resx">
       <DependentUpon>202311301719499_Rollup_20231130.cs</DependentUpon>

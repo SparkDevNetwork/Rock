@@ -31,7 +31,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Blocks;
-using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -163,6 +162,20 @@ namespace Rock.Rest.v2
                 if ( !pageCache.IsAuthorized( Security.Authorization.VIEW, person ) || !blockCache.IsAuthorized( Security.Authorization.VIEW, person ) )
                 {
                     return new StatusCodeResult( HttpStatusCode.Unauthorized, controller );
+                }
+
+                // Check if we need to apply rate limiting to this request.
+                if ( pageCache.IsRateLimited )
+                {
+                    var canProcess = RateLimiterCache.CanProcessPage( pageCache.Id,
+                        controller.RockRequestContext.ClientInformation.IpAddress,
+                        TimeSpan.FromSeconds( pageCache.RateLimitPeriod.Value ),
+                        pageCache.RateLimitRequestPerPeriod.Value );
+
+                    if ( !canProcess )
+                    {
+                        return new StatusCodeResult( ( HttpStatusCode ) 429, controller );
+                    }
                 }
 
                 //
