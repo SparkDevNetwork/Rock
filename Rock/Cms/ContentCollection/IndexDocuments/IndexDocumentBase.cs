@@ -224,12 +224,18 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
         /// <summary>
         /// Gets or sets the PrimarySlug for the <see cref="Rock.Model.ContentChannelItem"/>.
         /// </summary>
+        /// <value>
+        /// The primary slug (or first slug if no primary is set) for this item.
+        /// </value>
         [IndexField]
         public string PrimarySlug { get; set; }
 
         /// <summary>
         /// Gets or sets the item global key for the <see cref="Rock.Model.ContentChannelItem"/>.
         /// </summary>
+        /// <value>
+        /// The item global key for this item.
+        /// </value>
         [IndexField]
         public string ItemGlobalKey { get; set; }
 

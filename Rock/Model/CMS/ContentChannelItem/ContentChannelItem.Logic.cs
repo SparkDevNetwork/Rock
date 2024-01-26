@@ -41,7 +41,7 @@ namespace Rock.Model
         /// Gets the primary slug. The first occurence of IsPrimary otherwise the first.
         /// </summary>
         /// <value>
-        /// The primary alias.
+        /// The primary slug.
         /// </value>
         [NotMapped]
         [LavaVisible]
