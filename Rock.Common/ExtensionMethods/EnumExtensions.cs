@@ -200,17 +200,17 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts the enumerable int to a dbo.EntityIdList Sql parameter populated with values.
+        /// Converts the IEnumerable <see cref="int"/> to a dbo.EntityIdList <see cref="SqlParameter"/> populated with values.
         /// </summary>
-        /// <param name="intEnumerable">An The enumerable of int to convert.</param>
+        /// <param name="entityIds">An The enumerable of int to convert.</param>
         /// <param name="parameterName">The name of the Sql Parameter to be set.</param>
         /// <returns>A SqlParameter of Type dbo.EntityIdList whose values are those of this enumerable.</returns>
-        public static SqlParameter ConvertToEntityIdList(this IEnumerable<int> intEnumerable, string parameterName = "@EntityIds")
+        public static SqlParameter ConvertToEntityIdListParameter( this IEnumerable<int> entityIds, string parameterName )
         {
             var dataTable = new DataTable();
             dataTable.Columns.Add( "EntityId", typeof( int ) );
 
-            foreach (var value in intEnumerable)
+            foreach ( var value in entityIds )
             {
                 dataTable.Rows.Add( value );
             }

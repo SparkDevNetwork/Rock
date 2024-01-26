@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -29,17 +29,17 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.DataView", "IconCssClass", c => c.String(maxLength: 100));
-            AddColumn("dbo.DataView", "HighlightColor", c => c.String(maxLength: 100));
+            AddColumn( "dbo.DataView", "IconCssClass", c => c.String( maxLength: 100 ) );
+            AddColumn( "dbo.DataView", "HighlightColor", c => c.String( maxLength: 50 ) );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.DataView", "HighlightColor");
-            DropColumn("dbo.DataView", "IconCssClass");
+            DropColumn( "dbo.DataView", "HighlightColor" );
+            DropColumn( "dbo.DataView", "IconCssClass" );
         }
     }
 }

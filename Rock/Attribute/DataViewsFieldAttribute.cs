@@ -44,7 +44,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Gets or sets the name of the entity type <seealso cref="Rock.Model.EntityType"/>
+        /// Gets or sets the name of the <see cref="Rock.Model.EntityType"/>.
         /// </summary>
         public string EntityTypeName
         {
@@ -60,7 +60,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Gets or sets whether to show only <seealso cref="Rock.Model.DataView"/>s which are persisted.
+        /// Gets or sets whether to show only <see cref="Rock.Model.DataView"/>s which are persisted.
         /// </summary>
         public bool DisplayPersistedOnly
         {

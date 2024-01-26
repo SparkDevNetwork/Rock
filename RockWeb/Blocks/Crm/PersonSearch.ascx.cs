@@ -1010,10 +1010,10 @@ namespace RockWeb.Blocks.Crm
         public string TopSignalIconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the complete list of persisted DataViews where there's an IconCssClass and this Person is one records returned by the DataView.
+        /// Gets or sets the complete list of persisted DataViews where there's
+        /// an IconCssClass and this Person is one of the records returned by the DataView.
         /// </summary>
         public List<DataViewIconResult> DataViewIcons { get; set; }
-
     }
 
     /// <summary>

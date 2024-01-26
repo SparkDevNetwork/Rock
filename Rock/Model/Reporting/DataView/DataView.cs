@@ -205,9 +205,9 @@ namespace Rock.Model
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the highlight color for the Icon Css Class.
+        /// Gets or sets the highlight color for the <see cref="IconCssClass"/>.
         /// </summary>
-        [MaxLength( 100 )]
+        [MaxLength( 50 )]
         [DataMember]
         public string HighlightColor { get; set; }
 
