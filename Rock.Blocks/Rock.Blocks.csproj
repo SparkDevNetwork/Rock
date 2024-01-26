@@ -93,6 +93,7 @@
     <Compile Include="Cms\AdaptiveMessageList.cs" />
     <Compile Include="Cms\BlockTypeList.cs" />
     <Compile Include="Cms\ContentChannelDetail.cs" />
+    <Compile Include="Cms\ContentChannelItemList.cs" />
     <Compile Include="Cms\ContentChannelList.cs" />
     <Compile Include="Cms\ContentChannelTypeList.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />

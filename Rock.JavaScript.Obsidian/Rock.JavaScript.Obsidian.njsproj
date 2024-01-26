@@ -308,6 +308,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelItemList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />
@@ -789,6 +790,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\BlockTypeDetail\blockTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelDetail\contentChannelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelDetail\contentChannelDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelItemList\contentChannelItemListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelList\contentChannelListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeList\contentChannelTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\attributeFilterBag.d.ts" />
