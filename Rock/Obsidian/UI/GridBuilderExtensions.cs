@@ -36,7 +36,7 @@ namespace Rock.Obsidian.UI
     /// Extension methods for <see cref="GridBuilder{T}"/>. This provides much of
     /// specific use functionality of the builder.
     /// </summary>
-    internal static class GridBuilderExtensions
+    public static class GridBuilderExtensions
     {
         /// <summary>
         /// Adds a new person field to the grid definition.
