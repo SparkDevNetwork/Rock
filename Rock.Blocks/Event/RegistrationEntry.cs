@@ -1078,7 +1078,7 @@ namespace Rock.Blocks.Event
             {
                 if ( context.Registration.ConfirmationEmail.IsNotNullOrWhiteSpace() )
                 {
-                    var isEmailDifferent = !context.Registration.ConfirmationEmail.Trim().Equals( registrar.Email.Trim(), StringComparison.OrdinalIgnoreCase );
+                    var isEmailDifferent = !context.Registration.ConfirmationEmail.Trim().Equals( registrar.Email?.Trim(), StringComparison.OrdinalIgnoreCase );
 
                     var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
