@@ -515,7 +515,7 @@ namespace Rock.Lava.Filters
                 return new List<string>();
             }
 
-            var shouldRemove = InputParser.TryConvertBoolean( removeEmpty ) ?? true;
+            var shouldRemove = InputParser.ConvertToBooleanOrDefault( removeEmpty ) ?? true;
             var options = shouldRemove ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None;
 
             List<string> parts;
