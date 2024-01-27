@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// EntitySetItem POCO Service class
+    /// EntitySet Service class.
     /// </summary>
     public partial class EntitySetService
     {
@@ -38,26 +38,41 @@ namespace Rock.Model
         /// <remarks>
         /// This method uses a bulk insert to improve performance when creating large Entity Sets.
         /// </remarks>
-        /// <param name="name"></param>
-        /// <param name="entityTypeId"></param>
-        /// <param name="entityIdList"></param>
-        /// <param name="expiryMinutes"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
-        public int AddEntitySet( string name, int entityTypeId, IEnumerable<int> entityIdList, int expiryMinutes = 20 )
+        public int AddEntitySet( AddEntitySetActionOptions options )
         {
             // Create a new Entity Set.
             var entitySet = new Rock.Model.EntitySet();
-            entitySet.Name = name;
-            entitySet.EntityTypeId = entityTypeId;
-            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( expiryMinutes );
+            entitySet.Name = options.Name;
+            entitySet.EntityTypeId = options.EntityTypeId;
+            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( options.ExpiryInMinutes ?? 20 );
+            entitySet.Note = options.Note;
+
+            entitySet.ParentEntitySetId = options.ParentEntitySetId;
+            
+            // Set the Entity Set Purpose.
+             if ( options.PurposeValueId != null )
+            {
+                var purposeDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.ENTITY_SET_PURPOSE );
+
+                var purposeIsValid = purposeDefinedType.DefinedValues.Any( v => v.Id == options.PurposeValueId );
+                if ( !purposeIsValid )
+                {
+                    throw new Exception( $"Invalid Entity Set Purpose Value. [Value={options.PurposeValueId}]" );
+                }
+
+                entitySet.EntitySetPurposeValueId = options.PurposeValueId;
+            }
 
             Add( entitySet );
 
             var rockContext = ( RockContext ) this.Context;
-
             rockContext.SaveChanges();
 
-            // Add items to the new Entity Set, using a bulk insert to improve performance.
+            // Add items to the new Entity Set, using a bulk insert to optimize performance.
+            var entityIdList = options.EntityIdList;
+
             if ( entityIdList != null
                  && entityIdList.Any() )
             {
@@ -76,6 +91,32 @@ namespace Rock.Model
             }
 
             return entitySet.Id;
+        }
+
+        /// <summary>
+        /// Create a new Entity Set for the specified entities.
+        /// </summary>
+        /// <remarks>
+        /// This method uses a bulk insert to improve performance when creating large Entity Sets.
+        /// </remarks>
+        /// <param name="name"></param>
+        /// <param name="entityTypeId"></param>
+        /// <param name="entityIdList"></param>
+        /// <param name="expiryMinutes"></param>
+        /// <returns></returns>
+        [Obsolete( "Use AddEntitySet(options) instead." )]
+        [RockObsolete( "1.16" )]
+        public int AddEntitySet( string name, int entityTypeId, IEnumerable<int> entityIdList, int expiryMinutes = 20 )
+        {
+            var options = new AddEntitySetActionOptions()
+            {
+                Name = name,
+                EntityTypeId = entityTypeId,
+                ExpiryInMinutes = expiryMinutes,
+                EntityIdList = entityIdList
+            };
+
+            return AddEntitySet( options );
         }
 
         /// <summary>
