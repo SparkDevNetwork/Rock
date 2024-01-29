@@ -100,6 +100,16 @@ namespace Rock.Web.UI.Controls
                 title = $"{SECURE_TITLE} {title}";
             }
 
+            /*
+             * 01/26/2024 - KA
+             * Any existing ampersand is 'encoded' before calling HttpUtility.UrlEncode because Asp.Net's
+             * HttpRequestBase decodes the url and interprets the encoded '&' as a query parameter delimiter
+             * which results in null values when parsing to the QueryString parameter on HttpRequestBase.
+             * However in this scenario the '&' has to be included as the value for the 't' key.
+             * See https://stackoverflow.com/questions/3667902/c-sharp-asp-net-httpwebrequest-automatically-decodes-ampersand-values-from-q.
+             *
+            */
+            title = title.Replace( "&", "%26" );
             string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", EntityTypeId, EntityId, HttpUtility.UrlEncode( title.EscapeQuotes() ) ) );
             this.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
 
