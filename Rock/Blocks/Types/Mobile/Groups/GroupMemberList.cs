@@ -30,7 +30,6 @@ using Rock.Data;
 using Rock.Mobile;
 using Rock.Mobile.JsonFields;
 using Rock.Model;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -117,13 +116,21 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.ShowGenderFilter,
         Order = 8 )]
 
-    [BooleanField( "Show Child Groups Filter",
-        Description = "If enabled then the 'Child Groups' filter option will be shown.",
+    [BooleanField( "Show Unknown as Gender Filter Option",
+        Description = "If enabled then 'Unknown' will be shown as a Gender filter option.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Category = "filter",
+        Key = AttributeKeys.ShowUnknownAsGenderFilterOption,
+        Order = 9 )]
+
+    [BooleanField( "Show Subgroup Filter",
+        Description = "If enabled then the 'Subgroup' filter option will be shown.",
         IsRequired = false,
         DefaultBooleanValue = false,
         Category = "filter",
         Key = AttributeKeys.ShowChildGroupsFilter,
-        Order = 9 )]
+        Order = 10 )]
 
     [BooleanField( "Show Attendance Filter",
         Description = "If enabled then the 'Attendance' filter option will be shown.",
@@ -131,7 +138,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultBooleanValue = false,
         Key = AttributeKeys.ShowAttendanceFilter,
         Category = "filter",
-        Order = 10 )]
+        Order = 11 )]
 
     [IntegerField( "Attendance Filter Short Week Range",
         Description = "Displays a filter option that gives a variety of different options for attendance based on x number of weeks.",
@@ -139,7 +146,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultIntegerValue = 3,
         Key = AttributeKeys.AttendanceFilterShortWeekRange,
         Category = "filter",
-        Order = 11 )]
+        Order = 12 )]
 
     [IntegerField( "Attendance Filter Long Week Range",
         Description = "Displays a filter option that gives a variety of different options for attendance based on x number of weeks.",
@@ -147,7 +154,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultIntegerValue = 12,
         Key = AttributeKeys.AttendanceFilterLongWeekRange,
         Category = "filter",
-        Order = 12 )]
+        Order = 13 )]
 
     #endregion
 
@@ -201,6 +208,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The show gender filter key.
             /// </summary>
             public const string ShowGenderFilter = "ShowGenderFilter";
+
+            /// <summary>
+            /// The show unknown as gender filter option key.
+            /// </summary>
+            public const string ShowUnknownAsGenderFilterOption = "ShowUnknownAsGenderFilterOption";
 
             /// <summary>
             /// The show child groups filter key.
@@ -267,6 +279,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         /// <value><c>true</c> if [show gender filter]; otherwise, <c>false</c>.</value>
         protected bool ShowGenderFilter => GetAttributeValue( AttributeKeys.ShowGenderFilter ).AsBoolean();
+
+        /// <summary>
+        /// Gets a value indicating whether to show 'Unknown' as a gender filter option.
+        /// </summary>
+        /// <value><c>true</c> if [show unknown as gender filter option]; otherwise, <c>false</c>.</value>
+        protected bool ShowUnknownAsGenderFilterOption => GetAttributeValue( AttributeKeys.ShowUnknownAsGenderFilterOption ).AsBoolean();
 
         /// <summary>
         /// Gets a value indicating whether to show the child group filter option.
@@ -344,6 +362,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 ShowChildGroupFilter = ShowChildGroupFilter,
                 AttendanceFilterLongWeekRange = AttendanceFilterLongWeekRange,
                 AttendanceFilterShortWeekRange = AttendanceFilterShortWeekRange,
+                ShowUnknownAsGenderFilterOption = ShowUnknownAsGenderFilterOption,
                 GroupByPerson = GroupByPerson
             };
         }
@@ -428,7 +447,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             if ( !filterBag.IncludeInactive )
             {
-                members = members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
+                members = members.Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive );
             }
 
             // If they selected group roles to filter, and the amount of
@@ -529,6 +548,42 @@ namespace Rock.Blocks.Types.Mobile.Groups
             return groupMembers;
         }
 
+        /// <summary>
+        /// Gets the total number of group members.
+        /// </summary>
+        /// <param name="groupGuid">The group to get the group member count of.</param>
+        /// <param name="groupByPerson">If enabled, the count will represent the # of distinct people in the group.</param>
+        /// <param name="includeInactive">Whether or not inactive group members should be included in the count.</param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private static int GetGroupMemberCount( Guid groupGuid, bool groupByPerson, bool includeInactive, RockContext rockContext )
+        {
+            var group = new GroupMemberService( rockContext )
+                        .Queryable()
+                        .Where( gm => gm.Group.Guid == groupGuid );
+
+            if ( group == null )
+            {
+                return 0;
+            }
+
+            // Filter out inactive members.
+            if ( !includeInactive )
+            {
+                group = group.Where( m => m.GroupMemberStatus != GroupMemberStatus.Inactive );
+            }
+
+            // If we are grouping by person, then we need to get the distinct count of people.
+            if ( groupByPerson )
+            {
+                return group.Select( gm => gm.PersonId ).Distinct().Count();
+            }
+            else
+            {
+                return group.Count();
+            }
+        }
+
         #endregion
 
         #region Action Methods
@@ -541,6 +596,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetGroupDetailsWithFilterOptions( FilterBag filterBag )
         {
+            filterBag = filterBag ?? new FilterBag();
+
             using ( var rockContext = new RockContext() )
             {
                 var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
@@ -557,46 +614,16 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
-                IEnumerable<GroupMember> groupMembers;
-                int totalGroupMemberCount;
+                // Get the total count of group members.
+                var totalGroupMemberCount = GetGroupMemberCount( groupGuid, GroupByPerson, filterBag.IncludeInactive, rockContext );
 
-                // This really shouldn't ever be null, and in most cases
-                // the shell just passes up an empty filter, but if it is
-                // we just want to use all of the active group members.
-                if ( filterBag == null )
-                {
-                    groupMembers = new GroupMemberService( rockContext )
-                        .Queryable()
-                        .Include( gm => gm.Person )
-                        .Where( gm => gm.Group.Guid == groupGuid )
-                        .ToList();
-
-                    totalGroupMemberCount = groupMembers.Count();
-                }
-                // Otherwise, filter the group members according to our filter bag values.
-                else
-                {
-                    groupMembers = FilterGroupMembers( group, filterBag, rockContext );
-
-                    if ( filterBag.IncludeInactive )
-                    {
-                        totalGroupMemberCount = new GroupMemberService( rockContext )
-                        .Queryable()
-                        .Where( gm => gm.Group.Guid == groupGuid )
-                        .Count();
-                    }
-                    else
-                    {
-                        totalGroupMemberCount = new GroupMemberService( rockContext )
-                        .Queryable()
-                        .Where( gm => gm.Group.Guid == groupGuid && gm.GroupMemberStatus == GroupMemberStatus.Active )
-                        .Count();
-                    }
-                }
+                // Filter the group members based on the filter bag.
+                var groupMembers = FilterGroupMembers( group, filterBag, rockContext );
 
                 var lavaTemplate = CreateLavaTemplate();
                 var mergeFields = RequestContext.GetCommonMergeFields();
 
+                // If we are grouping by person, then we need to get each distinct person.
                 if ( GroupByPerson )
                 {
                     var groupedByPersonMembers = groupMembers.Select( gm => new
@@ -605,7 +632,6 @@ namespace Rock.Blocks.Types.Mobile.Groups
                         Roles = new GroupMemberService( rockContext ).GetByGroupIdAndPersonId( gm.GroupId, gm.PersonId ).Select( member => member.GroupRole.Name ).ToList().AsDelimited( ", " )
                     } ).Distinct();
 
-                    totalGroupMemberCount = groupedByPersonMembers.Count();
                     mergeFields.Add( "Items", groupedByPersonMembers );
                 }
                 else
@@ -647,11 +673,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 // We also need to send the shell a list of child groups
                 // that they can filter by.
-                var childGroups = group.Groups.Select( g => new ListItemViewModel
-                {
-                    Text = g.Name,
-                    Value = g.Guid.ToString()
-                } ).ToList();
+                var childGroups = group.Groups.Where( g => g.IsActive && !g.IsArchived )
+                    .Select( g => new ListItemViewModel
+                    {
+                        Text = g.Name,
+                        Value = g.Guid.ToString()
+                    } ).ToList();
 
                 var groupDetailBag = new GroupDetailBag
                 {

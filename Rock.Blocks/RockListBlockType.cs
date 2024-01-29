@@ -136,7 +136,6 @@ namespace Rock.Blocks
             {
                 return ActionOk( GetGridDataBag( rockContext ) );
             }
-
         }
 
         /// <summary>
@@ -163,7 +162,6 @@ namespace Rock.Blocks
                 return ActionBadRequest( "No entities were found to create the set." );
             }
 
-            // Todo: Change to IdKey???
             return ActionOk( rockEntitySet.Id.ToString() );
         }
 
@@ -191,7 +189,6 @@ namespace Rock.Blocks
                 return ActionBadRequest( "Grid has no recipients." );
             }
 
-            // Todo: Change to IdKey???
             return ActionOk( rockCommunication.Id.ToString() );
         }
 

@@ -245,13 +245,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityItemIds">The list of entity item IDs to include in the entity set.</param>
         /// <param name="entityTypeId">The ID of the entity type of the entity set.</param>
+        /// <param name="timeToExpire">The amount of time (in minutes) before the entity set is expired.</param>
         /// <param name="rockContext">The optional rock context to use for the operation.</param>
         /// <returns>The ID of the newly created entity set, or null if it was unable to create.</returns>
         [RockInternal("1.15")]
-        internal static int? CreateEntitySetFromItems( List<int> entityItemIds, int entityTypeId, RockContext rockContext = null )
+        internal static int? CreateEntitySetFromItems( List<int> entityItemIds, int entityTypeId, int timeToExpire = 15, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
-            return CreateEntitySetFromItemIds( entityItemIds, entityTypeId, rockContext )?.Id;
+            return CreateEntitySetFromItemIds( entityItemIds, entityTypeId, timeToExpire, rockContext )?.Id;
         }
 
         /// <summary>
@@ -259,10 +260,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityItemGuids">The list of entity item GUIDs to include in the entity set.</param>
         /// <param name="entityTypeGuid">The GUID of the entity type of the entity set.</param>
+        /// <param name="timeToExpire">The amount of times in minutes until the entity set expires. 0 to disable.</param>
         /// <param name="rockContext">The optional rock context to use for the operation.</param>
         /// <returns>The GUID of the newly created entity set, or null if the entity service for the entity type was not found.</returns>
         [RockInternal( "1.15" )]
-        internal static Guid? CreateEntitySetFromItems( List<Guid> entityItemGuids, Guid entityTypeGuid, RockContext rockContext = null )
+        internal static Guid? CreateEntitySetFromItems( List<Guid> entityItemGuids, Guid entityTypeGuid, int timeToExpire = 15, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 
@@ -300,7 +302,7 @@ namespace Rock.Model
             }
 
             // Create an entity set from the entity item IDs.
-            return CreateEntitySetFromItemIds( entityIds, entityType.Id, rockContext )?.Guid;
+            return CreateEntitySetFromItemIds( entityIds, entityType.Id, timeToExpire, rockContext )?.Guid;
         }
 
         /// <summary>
@@ -308,16 +310,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityItemIds">The entity item ids.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="timeToExpire">The amount of time in minutes before the entity set expires.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The Guid and the Id of the entity set that was created, or null if it was unable to create.</returns>
-        private static (int Id, Guid Guid)? CreateEntitySetFromItemIds( List<int> entityItemIds, int entityTypeId, RockContext rockContext = null )
+        private static (int Id, Guid Guid)? CreateEntitySetFromItemIds( List<int> entityItemIds, int entityTypeId, int timeToExpire = 15, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
 
             // Create the entity set and set the default expiration date.
             var entitySet = new Rock.Model.EntitySet();
             entitySet.EntityTypeId = entityTypeId;
-            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+
+            if ( timeToExpire > 0 )
+            {
+                entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( timeToExpire );
+            }
 
             // For each entity item id, add a new entity set item to the entity set.
             List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();

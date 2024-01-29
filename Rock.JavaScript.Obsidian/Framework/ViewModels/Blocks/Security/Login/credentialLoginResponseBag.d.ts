@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { PasswordlessLoginMfaBag } from "@Obsidian/ViewModels/Blocks/Security/Login/passwordlessLoginMfaBag";
+
 /** A bag that contains the credential login response information. */
 export type CredentialLoginResponseBag = {
     /** The error message. */
@@ -34,6 +36,9 @@ export type CredentialLoginResponseBag = {
 
     /** Gets or sets a value indicating whether the individual is locked out. */
     isLockedOut: boolean;
+
+    /** Gets or sets the MFA details. */
+    mfa?: PasswordlessLoginMfaBag | null;
 
     /** Gets or sets the redirect URL if authentication was successful. */
     redirectUrl?: string | null;

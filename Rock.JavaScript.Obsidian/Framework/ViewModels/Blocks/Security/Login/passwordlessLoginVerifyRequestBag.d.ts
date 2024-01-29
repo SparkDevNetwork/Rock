@@ -29,6 +29,9 @@ export type PasswordlessLoginVerifyRequestBag = {
     /** The matching person value. */
     matchingPersonValue?: string | null;
 
+    /** Gets or sets the MFA ticket. */
+    mfaTicket?: string | null;
+
     /** The passwordless authentication state. */
     state?: string | null;
 };

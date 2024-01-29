@@ -89,6 +89,15 @@ namespace Rock.Blocks
         /// </value>
         public RockRequestContext RequestContext { get; set; }
 
+        /// <summary>
+        /// Gets the response context for this request. This can be used to
+        /// add or update information that will be sent to the client.
+        /// </summary>
+        /// <value>
+        /// The response context.
+        /// </value>
+        public IRockResponseContext ResponseContext => RequestContext.Response;
+
         /// <inheritdoc/>
         [Obsolete( "Use RequiredMobileVersion instead." )]
         [RockObsolete( "1.16" )]
@@ -392,6 +401,13 @@ Obsidian.onReady(() => {{
         private bool IsBrowserSupported()
         {
             var browser = RequestContext.ClientInformation.Browser;
+
+            // If no user agent, assume the browser is supported since it is
+            // more likely to be supported than not supported.
+            if ( browser == null )
+            {
+                return true;
+            }
 
             var family = browser.UA.Family;
             var major = browser.UA.Major.AsIntegerOrNull();

@@ -364,9 +364,9 @@ namespace RockWeb.Blocks.Security.Oidc
             // Set the resource servers the access token should be issued for.
             ticket.SetResources( "resource_server" );
 
-            // Set cookie to remember the fact that this individual as approved the scopes
-            var cookieValue = $"{Rock.Security.Encryption.EncryptString(authClient.AllowedScopes.ToString())}";            
-            RockPage.AddOrUpdateCookie( $"{ScopeCookiePrefix}{authClient.Guid}", cookieValue, RockDateTime.Now.AddYears( 1 ) );
+            // Set cookie to remember the fact that this individual as approved the scopes.
+            var cookieValue = $"{Rock.Security.Encryption.EncryptString( authClient.AllowedScopes.ToString() )}";
+            RockPage.AddOrUpdateCookie( $"{ScopeCookiePrefix}{authClient.Guid}", cookieValue, RockDateTime.Now.AddDays( authClient.ScopeApprovalExpiration ) );
 
             // Returning a SignInResult will ask ASOS to serialize the specified identity
             // to build appropriate tokens. You should always make sure the identities

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -141,7 +141,7 @@ namespace Rock.Reporting.DataSelect.Group
                 GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[1].AsIntegerOrNull();
 
                 memberCountQuery = new GroupService( context ).Queryable()
-                                                            .Select( p => p.Members.Count( a =>
+                                                            .Select( p => p.Members.Where( a => !a.IsArchived ).Count( a =>
                                                                                          ( !memberStatusValue.HasValue || a.GroupMemberStatus == memberStatusValue )
                                                                                          && ( !isLeader.HasValue || ( a.GroupRole.IsLeader == isLeader.Value ) ) ) );
             }

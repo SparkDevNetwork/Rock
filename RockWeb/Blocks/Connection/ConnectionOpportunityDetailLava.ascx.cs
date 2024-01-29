@@ -76,12 +76,6 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
-        #region Fields
-
-        ConnectionOpportunity _connectionOpportunity = null;
-
-        #endregion 
-
         #region Control Methods
 
         /// <summary>
@@ -127,14 +121,10 @@ namespace RockWeb.Blocks.Connection
             int? opportunityId  = PageParameter( pageReference, "OpportunityId" ).AsIntegerOrNull();
             if ( opportunityId != null )
             {
-                _connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
-                if ( _connectionOpportunity != null )
+                var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
+                if ( connectionOpportunity != null )
                 {
-                    breadCrumbs.Add( new BreadCrumb( _connectionOpportunity.Name, pageReference ) );
-                }
-                else
-                {
-                    _connectionOpportunity = null;
+                    breadCrumbs.Add( new BreadCrumb( connectionOpportunity.Name, pageReference ) );
                 }
             }
 
@@ -161,7 +151,16 @@ namespace RockWeb.Blocks.Connection
 
         public void LoadContent()
         {
-            if ( _connectionOpportunity != null )
+            int? opportunityId = PageParameter( "OpportunityId" ).AsIntegerOrNull();
+
+            if ( !opportunityId.HasValue )
+            {
+                return;
+            }
+
+            var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( opportunityId.Value );
+
+            if ( connectionOpportunity != null )
             {
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
@@ -174,9 +173,9 @@ namespace RockWeb.Blocks.Connection
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
 
                 // Resolve any lava in the summary/description fields before adding the opportunity
-                _connectionOpportunity.Summary = _connectionOpportunity.Summary.ResolveMergeFields( mergeFields );
-                _connectionOpportunity.Description = _connectionOpportunity.Description.ResolveMergeFields( mergeFields );
-                mergeFields.Add( "Opportunity", _connectionOpportunity );
+                connectionOpportunity.Summary = connectionOpportunity.Summary.ResolveMergeFields( mergeFields );
+                connectionOpportunity.Description = connectionOpportunity.Description.ResolveMergeFields( mergeFields );
+                mergeFields.Add( "Opportunity", connectionOpportunity );
 
                 // Format the opportunity using lava template
                 lOutput.Text = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields );
@@ -184,7 +183,7 @@ namespace RockWeb.Blocks.Connection
                 // Set the page title from opportunity (if configured)
                 if ( GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean() )
                 {
-                    string pageTitle = _connectionOpportunity.PublicName;
+                    string pageTitle = connectionOpportunity.PublicName;
                     RockPage.PageTitle = pageTitle;
                     RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                     RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );

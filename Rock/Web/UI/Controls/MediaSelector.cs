@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Enums.Controls;
+using Rock.Media;
 
 namespace Rock.Web.UI.Controls
 {
@@ -32,9 +33,26 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:MediaSelector runat=server></{0}:MediaSelector>" )]
     public class MediaSelector : CompositeControl, IRockControl
     {
+        #region Constants
+
+        /// <summary>
+        /// The player controls.
+        /// </summary>
+        private static readonly string PlayerControls = string.Join( ",",
+            MediaPlayerControls.PlayLarge,
+            MediaPlayerControls.Play,
+            MediaPlayerControls.Progress,
+            MediaPlayerControls.CurrentTime,
+            MediaPlayerControls.Captions,
+            MediaPlayerControls.PictureInPicture,
+            MediaPlayerControls.Airplay,
+            MediaPlayerControls.Fullscreen
+        );
+
+        #endregion
+
         private List<MediaPlayer> _mediaPlayerControls = new List<MediaPlayer>();
         private List<RockCheckBox> _checkBoxControls = new List<RockCheckBox>();
-
         #region IRockControl implementation
 
         /// <summary>
@@ -253,7 +271,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _checkBoxControls.Where( a => a.Checked ).Select( a => a.Text ).ToList().AsDelimited( "," );
+                return _checkBoxControls.Where( a => a.Checked ).Select( a => a.Text ).FirstOrDefault();
             }
             set
             {
@@ -363,6 +381,7 @@ namespace Rock.Web.UI.Controls
                         var mediaPlayer = new MediaPlayer();
                         mediaPlayer.ID = $"mp_{MakeKeyValid( mediaItem.Key )}";
                         mediaPlayer.MediaUrl = mediaItem.Value;
+                        mediaPlayer.PlayerControls = PlayerControls;
                         Controls.Add( mediaPlayer );
                         _mediaPlayerControls.Add( mediaPlayer );
                     }
@@ -401,6 +420,12 @@ namespace Rock.Web.UI.Controls
                 args.IsValid = false;
                 return;
             }
+
+            if ( _checkBoxControls.Where( a => a.Checked ).Count() > 1 )
+            {
+                args.IsValid = false;
+                return;
+            }
         }
 
         /// <summary>
@@ -428,7 +453,7 @@ namespace Rock.Web.UI.Controls
             {
                 foreach ( var item in this.MediaItems.Where( a => a.Key.IsNotNullOrWhiteSpace() && a.Value.IsNotNullOrWhiteSpace() ) )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "well well-message mr-2 p-2 js-media-selector-item" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "well well-message flex-eq mr-2 p-2 js-media-selector-item" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Style, "display: grid; text-align: left;" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     var itemWidth = Unit.Parse( ItemWidth );
@@ -484,8 +509,18 @@ namespace Rock.Web.UI.Controls
     }}
 
     $( "".js-media-selector-item input[type=checkbox]"").on('click', function() {{
-            setBackgroundColor($(this));
+            onlyOne($(this));
     }})
+
+    function onlyOne(checkbox) {{
+       $(""input[id^='{0}']:checked"").each(function() {{
+            $(this).prop(""checked"", false);
+            setBackgroundColor($(this));
+        }});
+
+        $(checkbox).prop(""checked"", true);
+        setBackgroundColor(checkbox);
+    }}
 
     var checkboxes = $(""input[id^='{0}']:checked"");
 

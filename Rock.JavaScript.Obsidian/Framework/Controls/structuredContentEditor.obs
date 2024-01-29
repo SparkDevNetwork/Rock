@@ -175,7 +175,7 @@
             holder: containerId.value,
             tools: config?.toolsScript ? saferEval(config.toolsScript) : undefined,
             defaultBlock: "paragraph",
-            data: JSON.parse(props.modelValue),
+            data: JSON.parse(props.modelValue || "{}"),
             logLevel: EditorJsLogLevel.Error,
             onReady: function() {
                 new EditorDragDrop(editor);

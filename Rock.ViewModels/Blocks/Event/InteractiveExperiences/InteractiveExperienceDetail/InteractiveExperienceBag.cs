@@ -132,6 +132,15 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
         public List<InteractiveExperienceActionBag> Actions { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedule attributes.
+        /// </summary>
+        /// <value>
+        /// The schedule attributes.
+        /// </value>
+        [TypeScriptType( "Record<string, PublicAttribute> | null", "import { PublicAttribute } from './publicAttribute';" )]
+        public Dictionary<string, PublicAttributeBag> ScheduleAttributes { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules associated with this interactive experience.
         /// </summary>
         public List<InteractiveExperienceScheduleBag> Schedules { get; set; }

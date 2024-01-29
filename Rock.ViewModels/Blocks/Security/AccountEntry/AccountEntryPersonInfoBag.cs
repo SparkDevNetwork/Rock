@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using Rock.Model;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Security.AccountEntry
 {
@@ -65,5 +66,15 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// Gets or sets the address.
         /// </summary>
         public AddressControlBag Address { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attributes.
+        /// </summary>
+        public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute values.
+        /// </summary>
+        public Dictionary<string, string> AttributeValues { get; set; }
     }
 }

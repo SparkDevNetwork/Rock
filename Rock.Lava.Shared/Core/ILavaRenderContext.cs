@@ -27,6 +27,8 @@ namespace Rock.Lava
     {
         Current = 0,
         Parent = 1,
+
+        [Obsolete("The behavior of this setting is equivalent to Current. (v16.1).")]
         Root = 2
     }
 

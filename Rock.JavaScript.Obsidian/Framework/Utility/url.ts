@@ -114,8 +114,8 @@ export function syncRefsWithQueryParams(refs: Record<string, Ref>): void {
  *
  * @param queryParamKeys The string array of query parameter keys to remove from the current URL.
  */
-export function removeCurrentUrlQueryParams(...queryParamKeys: string[]): void {
-    removeUrlQueryParams(window.location.href, ...queryParamKeys);
+export function removeCurrentUrlQueryParams(...queryParamKeys: string[]): (string | null)[] {
+    return removeUrlQueryParams(window.location.href, ...queryParamKeys);
 }
 
 /**
@@ -124,9 +124,9 @@ export function removeCurrentUrlQueryParams(...queryParamKeys: string[]): void {
  * @param url The URL from which to remove the query parameters.
  * @param queryParamKeys The string array of query parameter keys to remove from the current URL.
  */
-export function removeUrlQueryParams(url: string | URL, ...queryParamKeys: string[]): void {
+export function removeUrlQueryParams(url: string | URL, ...queryParamKeys: string[]): (string | null)[] {
     if (!queryParamKeys || !queryParamKeys.length) {
-        return;
+        return [];
     }
 
     if (typeof url === "string") {
@@ -135,7 +135,15 @@ export function removeUrlQueryParams(url: string | URL, ...queryParamKeys: strin
 
     const queryParams = url.searchParams;
 
-    queryParamKeys.forEach((queryParamKey: string) => queryParams.delete(queryParamKey));
+    const removedQueryParams: (string | null)[] = [];
+
+    for (let i = 0; i < queryParamKeys.length; i++) {
+        const queryParamKey = queryParamKeys[i];
+        removedQueryParams.push(queryParams.get(queryParamKey));
+        queryParams.delete(queryParamKey);
+    }
 
     window.history.replaceState(null, "", url);
+
+    return removedQueryParams;
 }

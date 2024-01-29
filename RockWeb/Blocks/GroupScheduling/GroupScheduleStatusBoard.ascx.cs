@@ -619,6 +619,8 @@ namespace RockWeb.Blocks.GroupScheduling
             var preferences = GetBlockPersonPreferences();
 
             preferences.SetValue( UserPreferenceKey.GroupIds, selectedGroupIds.AsDelimited( "," ) );
+            preferences.Save();
+
             BuildStatusBoard();
         }
 

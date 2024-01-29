@@ -46,7 +46,7 @@ namespace Rock.Model
         {
             // If the schedule was not active at the specified date and time then
             // this occurrence was not active either.
-            if ( !InteractiveExperienceSchedule.Schedule.WasScheduleActive( dateTime ) )
+            if ( !InteractiveExperienceSchedule.Schedule.WasCheckInActive( dateTime ) )
             {
                 return false;
             }

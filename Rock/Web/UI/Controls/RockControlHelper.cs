@@ -165,21 +165,23 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            rockControl.RenderBaseControl( writer );
-
-            if ( renderLabel )
-            {
-                writer.RenderEndTag();
-            }
-
+            // If we didn't display the label but there is help text then add the help text markup.
             if ( !renderLabel && renderHelp )
             {
                 rockControl.HelpBlock.RenderControl( writer );
             }
 
+            // If we didn't display the label but there is a warning then add the warning markup.
             if ( !renderLabel && renderWarning )
             {
                 rockControl.WarningBlock.RenderControl( writer );
+            }
+
+            rockControl.RenderBaseControl( writer );
+
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
             }
 
             if ( rockControl.RequiredFieldValidator != null )

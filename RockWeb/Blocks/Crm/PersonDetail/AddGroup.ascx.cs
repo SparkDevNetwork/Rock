@@ -1054,7 +1054,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         attributeControl.ID = "groupAttributes_" + category.Id.ToString();
                         attributeControl.CategoryId = category.Id;
 
-                        foreach ( var attribute in attributeService.GetByCategoryId( category.Id, false ) )
+                        foreach ( var attribute in attributeService.GetByCategoryId( category.Id, false ).OrderBy( a => a.Order) )
                         {
                             if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {

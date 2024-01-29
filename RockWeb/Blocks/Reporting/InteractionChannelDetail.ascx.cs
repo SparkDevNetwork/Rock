@@ -71,14 +71,6 @@ namespace RockWeb.Blocks.Reporting
     [Rock.SystemGuid.BlockTypeGuid( "F722A03E-C344-40B1-B87D-EB90E2BCBC47" )]
     public partial class InteractionChannelDetail : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        RockContext _rockContext = null;
-        InteractionChannelService _channelService = null;
-        InteractionChannel _channel = null;
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -107,7 +99,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( 0 );
+                ShowDetail();
             }
         }
 
@@ -122,13 +114,15 @@ namespace RockWeb.Blocks.Reporting
         /// </returns>
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
-            _rockContext = new RockContext();
-            _channelService = new InteractionChannelService( _rockContext );
-            _channel = _channelService.Get( PageParameter( "ChannelId" ).AsInteger() );
+            using ( var rockContext = new RockContext() )
+            {
+                var channelService = new InteractionChannelService( rockContext );
+                var channelName = channelService.GetSelect( PageParameter( "ChannelId" ).AsInteger(), c => c.Name );
 
-            var breadCrumbs = new List<BreadCrumb>();
-            breadCrumbs.Add( new BreadCrumb( _channel != null ? _channel.Name : "Channel", pageReference ) );
-            return breadCrumbs;
+                var breadCrumbs = new List<BreadCrumb>();
+                breadCrumbs.Add( new BreadCrumb( channelName != null ? channelName : "Channel", pageReference ) );
+                return breadCrumbs;
+            }
         }
 
         #endregion
@@ -142,7 +136,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( 0 );
+            ShowDetail();
         }
 
 
@@ -163,23 +157,27 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            if ( _channel != null )
+            var rockContext = new RockContext();
+            var channelService = new InteractionChannelService( rockContext );
+            var channel = channelService.Get( PageParameter( "ChannelId" ).AsInteger() );
+
+            if ( channel != null )
             {
-                if ( !_channel.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                if ( !channel.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
                     mdDeleteWarning.Show( "You are not authorized to delete this interaction channel.", ModalAlertType.Information );
                     return;
                 }
 
                 string errorMessage;
-                if ( !_channelService.CanDelete( _channel, out errorMessage ) )
+                if ( !channelService.CanDelete( channel, out errorMessage ) )
                 {
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                _channelService.Delete( _channel );
-                _rockContext.SaveChanges();
+                channelService.Delete( channel );
+                rockContext.SaveChanges();
 
                 NavigateToParentPage();
             }
@@ -192,27 +190,31 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( _channel != null )
-            {
-                _channel.Name = tbName.Text;
-                _channel.RetentionDuration = nbRetentionDuration.Text.AsIntegerOrNull();
-                _channel.ComponentCacheDuration = nbComponentCacheDuration.Text.AsIntegerOrNull();
-                _channel.EngagementStrength = nbEngagementStrength.Text.AsIntegerOrNull();
-                _channel.ChannelListTemplate = ceChannelList.Text;
-                _channel.ChannelDetailTemplate = ceChannelDetail.Text;
-                _channel.SessionListTemplate = ceSessionList.Text;
-                _channel.ComponentListTemplate = ceComponentList.Text;
-                _channel.ComponentDetailTemplate = ceComponentDetail.Text;
-                _channel.InteractionListTemplate = ceInteractionList.Text;
-                _channel.InteractionDetailTemplate = ceInteractionDetail.Text;
-                _channel.IsActive = cbIsActive.Checked;
-                _channel.InteractionCustom1Label = tbChannelCustom1Label.Text;
-                _channel.InteractionCustom2Label = tbChannelCustom2Label.Text;
-                _channel.InteractionCustomIndexed1Label = tbChannelCustomIndexed1Label.Text;
-                _channel.ModifiedDateTime = RockDateTime.Now;
-                _channel.ModifiedByPersonAliasId = CurrentPersonAliasId;
+            var rockContext = new RockContext();
+            var channelService = new InteractionChannelService( rockContext );
+            var channel = channelService.Get( PageParameter( "ChannelId" ).AsInteger() );
 
-                _rockContext.SaveChanges();
+            if ( channel != null )
+            {
+                channel.Name = tbName.Text;
+                channel.RetentionDuration = nbRetentionDuration.Text.AsIntegerOrNull();
+                channel.ComponentCacheDuration = nbComponentCacheDuration.Text.AsIntegerOrNull();
+                channel.EngagementStrength = nbEngagementStrength.Text.AsIntegerOrNull();
+                channel.ChannelListTemplate = ceChannelList.Text;
+                channel.ChannelDetailTemplate = ceChannelDetail.Text;
+                channel.SessionListTemplate = ceSessionList.Text;
+                channel.ComponentListTemplate = ceComponentList.Text;
+                channel.ComponentDetailTemplate = ceComponentDetail.Text;
+                channel.InteractionListTemplate = ceInteractionList.Text;
+                channel.InteractionDetailTemplate = ceInteractionDetail.Text;
+                channel.IsActive = cbIsActive.Checked;
+                channel.InteractionCustom1Label = tbChannelCustom1Label.Text;
+                channel.InteractionCustom2Label = tbChannelCustom2Label.Text;
+                channel.InteractionCustomIndexed1Label = tbChannelCustomIndexed1Label.Text;
+                channel.ModifiedDateTime = RockDateTime.Now;
+                channel.ModifiedByPersonAliasId = CurrentPersonAliasId;
+
+                rockContext.SaveChanges();
             }
 
             var qryParams = new Dictionary<string, string>();
@@ -242,42 +244,50 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="channel">The interaction channel.</param>
         private void ShowEditDetails()
         {
-            if ( _channel != null )
+            var rockContext = new RockContext();
+            var channelService = new InteractionChannelService( rockContext );
+            var channel = channelService.Get( PageParameter( "ChannelId" ).AsInteger() );
+
+            if ( channel != null )
             {
-                lTitle.Text = _channel.Name.FormatAsHtmlTitle();
+                lTitle.Text = channel.Name.FormatAsHtmlTitle();
                 SetEditMode( true );
 
-                tbName.Text = _channel.Name;
-                cbIsActive.Checked = _channel.IsActive;
-                nbRetentionDuration.Text = _channel.RetentionDuration.ToString();
-                nbComponentCacheDuration.Text = _channel.ComponentCacheDuration.ToString();
-                nbEngagementStrength.Text = _channel.EngagementStrength.ToStringSafe();
-                ceChannelList.Text = _channel.ChannelListTemplate;
-                ceChannelDetail.Text = _channel.ChannelDetailTemplate;
-                ceSessionList.Text = _channel.SessionListTemplate;
-                ceComponentList.Text = _channel.ComponentListTemplate;
-                ceComponentDetail.Text = _channel.ComponentDetailTemplate;
-                ceInteractionList.Text = _channel.InteractionListTemplate;
-                ceInteractionDetail.Text = _channel.InteractionDetailTemplate;
-                tbChannelCustom1Label.Text = _channel.InteractionCustom1Label;
-                tbChannelCustom2Label.Text = _channel.InteractionCustom2Label;
-                tbChannelCustomIndexed1Label.Text = _channel.InteractionCustomIndexed1Label;
+                tbName.Text = channel.Name;
+                cbIsActive.Checked = channel.IsActive;
+                nbRetentionDuration.Text = channel.RetentionDuration.ToString();
+                nbComponentCacheDuration.Text = channel.ComponentCacheDuration.ToString();
+                nbEngagementStrength.Text = channel.EngagementStrength.ToStringSafe();
+                ceChannelList.Text = channel.ChannelListTemplate;
+                ceChannelDetail.Text = channel.ChannelDetailTemplate;
+                ceSessionList.Text = channel.SessionListTemplate;
+                ceComponentList.Text = channel.ComponentListTemplate;
+                ceComponentDetail.Text = channel.ComponentDetailTemplate;
+                ceInteractionList.Text = channel.InteractionListTemplate;
+                ceInteractionDetail.Text = channel.InteractionDetailTemplate;
+                tbChannelCustom1Label.Text = channel.InteractionCustom1Label;
+                tbChannelCustom2Label.Text = channel.InteractionCustom2Label;
+                tbChannelCustomIndexed1Label.Text = channel.InteractionCustomIndexed1Label;
             }
         }
 
         /// <summary>
         /// Shows the detail with lava.
         /// </summary>
-        public void ShowDetail( int channelId )
+        public void ShowDetail()
         {
             bool viewAllowed = false;
             bool editAllowed = UserCanEdit;
             bool adminAllowed = UserCanAdministrate;
 
-            if ( _channel != null )
+            var rockContext = new RockContext();
+            var channelService = new InteractionChannelService( rockContext );
+            var channel = channelService.Get( PageParameter( "ChannelId" ).AsInteger() );
+
+            if ( channel != null )
             {
-                viewAllowed = editAllowed || _channel.IsAuthorized( Authorization.VIEW, CurrentPerson );
-                editAllowed = editAllowed || _channel.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                viewAllowed = editAllowed || channel.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                editAllowed = editAllowed || channel.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 pnlDetails.Visible = viewAllowed;
                 if ( !editAllowed )
@@ -286,23 +296,23 @@ namespace RockWeb.Blocks.Reporting
                     btnDelete.Visible = false;
                 }
 
-                btnSecurity.Visible = UserCanAdministrate || _channel.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-                btnSecurity.EntityId = _channel.Id;
+                btnSecurity.Visible = UserCanAdministrate || channel.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                btnSecurity.EntityId = channel.Id;
 
                 SetEditMode( false );
 
-                hfChannelId.SetValue( _channel.Id );
+                hfChannelId.SetValue( channel.Id );
 
-                lTitle.Text = _channel.Name.FormatAsHtmlTitle();
+                lTitle.Text = channel.Name.FormatAsHtmlTitle();
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeFields.AddOrIgnore( "CurrentPerson", CurrentPerson );
-                mergeFields.Add( "InteractionChannel", _channel );
+                mergeFields.Add( "InteractionChannel", channel );
 
                 string template = GetAttributeValue( "DefaultTemplate" );
-                if ( !string.IsNullOrEmpty( _channel.ChannelDetailTemplate ) )
+                if ( !string.IsNullOrEmpty( channel.ChannelDetailTemplate ) )
                 {
-                    template = _channel.ChannelDetailTemplate;
+                    template = channel.ChannelDetailTemplate;
                 }
 
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );

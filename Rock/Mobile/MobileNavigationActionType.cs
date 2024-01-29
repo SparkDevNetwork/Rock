@@ -47,6 +47,11 @@ namespace Rock.Mobile
         /// <summary>
         /// A new page should be pushed onto the navigation stack.
         /// </summary>
-        PushPage = 4
+        PushPage = 4,
+
+        /// <summary>
+        /// Dismiss the cover sheet if the current page is currently in one.
+        /// </summary>
+        DismissCoverSheet = 5
     }
 }

@@ -77,7 +77,7 @@ namespace Rock.RealTime
             var state = GetConnectionState<EngineConnectionState>( connectionIdentifier );
 
             var requestWrapper = new SignalRRequestWrapper( ( realTimeHub as RealTimeHub ).Context.Request );
-            state.Request = new Net.RockRequestContext( requestWrapper );
+            state.Request = new Net.RockRequestContext( requestWrapper, new Net.NullRockResponseContext(), Model.UserLoginService.GetCurrentUser( false ) );
 
             return base.ClientConnectedAsync( realTimeHub, connectionIdentifier );
         }

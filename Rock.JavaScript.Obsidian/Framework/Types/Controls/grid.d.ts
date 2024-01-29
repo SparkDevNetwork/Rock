@@ -698,6 +698,12 @@ export type ColumnDefinition = {
      */
     skeletonComponent?: Component;
 
+    /**
+     * The component that will be displayed in the filter popup before the
+     * main filter content.
+     */
+    filterPrependComponent?: Component;
+
     /** Gets the value to use when filtering on the quick filter. */
     quickFilterValue: QuickFilterValueFunction;
 

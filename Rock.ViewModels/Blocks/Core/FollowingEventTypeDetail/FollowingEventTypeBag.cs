@@ -42,11 +42,6 @@ namespace Rock.ViewModels.Blocks.Core.FollowingEventTypeDetail
         public ListItemBag EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the event MEF component identifier.
-        /// </summary>
-        public int? EntityTypeId { get; set; }
-
-        /// <summary>
         /// Gets or sets the type of the followed entity.
         /// </summary>
         public ListItemBag FollowedEntityType { get; set; }

@@ -223,7 +223,7 @@
 
                 $control.find('.picker-cancel').on('click', function () {
                     $(this).toggleClass("active");
-                    $(this).closest('.picker-menu').toggle(0, function () {
+                    $control.find('.picker-menu').hide(0, function () {
                         self.updateScrollbar();
                     });
                     $(this).closest('.picker-label').toggleClass("active");

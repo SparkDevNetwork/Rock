@@ -522,6 +522,13 @@ namespace Rock.Blocks.Engagement.SignUp
             // Create a registrant entry for each GroupMember.
             foreach ( var groupMember in groupMembers )
             {
+                // Since a person might belong to a group multiple times if they have multiple roles,
+                // ensure we add them to the registrants collection only once.
+                if ( registrationData.Registrants.Any( r => r.PersonIdKey == groupMember.Person.IdKey ) )
+                {
+                    continue;
+                }
+
                 var existingProjectGroupMember = registrationData.ExistingProjectMembers
                     .FirstOrDefault( pm => pm.GroupMember.Person.Id == groupMember.PersonId )
                     ?.GroupMember;

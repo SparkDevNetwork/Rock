@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
@@ -22,6 +23,8 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -30,15 +33,34 @@ namespace Rock.Field.Types
     /// Field type to encapsulate a structured content editor which allows
     /// the individual a nice UI interface to editing content.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "92C88D02-CE12-4217-80FB-19422B758437" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.STRUCTURE_CONTENT_EDITOR )]
     public class StructureContentEditorFieldType : FieldType
     {
         #region Edit Control
 
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return "{}";
+            }
+
+            return privateValue;
+        }
+
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var helper = new StructuredContentHelper( privateValue );
+
+            return helper.Render();
+        }
 
         /// <inheritdoc/>
         public override string GetHtmlValue( string value, Dictionary<string, string> configurationValues )

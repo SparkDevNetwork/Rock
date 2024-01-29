@@ -17,9 +17,9 @@
                 </div>
                 <div v-if="showSmsOptIn ?? false">
                     <CheckBox
-                        v-model="isMessagingEnabled"
-                        label=""
-                        :text="smsOptInText ?? ''"/>
+                              v-model="isMessagingEnabled"
+                              label=""
+                              :text="smsOptInText ?? ''" />
                 </div>
             </div>
         </template>
@@ -43,7 +43,7 @@
         /** v-model of Phone Number */
         modelValue: {
             type: Object as PropType<PhoneNumberBoxWithSmsControlBag>,
-                required: false
+            required: false
         },
 
         inputGroupClasses: {
@@ -62,7 +62,7 @@
 
     const formFieldProps = useStandardRockFormFieldProps(props);
     const configuration = ref<PhoneNumberBoxGetConfigurationResultsBag | null>(null);
-    const number = ref(props.modelValue?.number?.toString() ?? "");
+    const number = ref(formatPhoneNumber(props.modelValue?.number?.toString() ?? ""));
     const countryCode = ref(props.modelValue?.countryCode?.toString() ?? "");
     const isMessagingEnabled = ref(props.modelValue?.isMessagingEnabled ?? false);
 
@@ -107,7 +107,7 @@
     function validatePhoneNumber(value: unknown): string | boolean {
         const rules = getConfiguredRules();
 
-        if(!value || typeof(value) !== "string" || rules.length == 0) {
+        if (!value || typeof (value) !== "string" || rules.length == 0) {
             return true;
         }
 
@@ -161,7 +161,7 @@
         console.log("watch() props.modelValue");
         autoSyncModelValue = false;
         countryCode.value = props.modelValue?.countryCode?.toString() ?? "";
-        number.value = props.modelValue?.number?.toString() ?? "";
+        number.value = formatPhoneNumber(props.modelValue?.number?.toString() ?? "");
         isMessagingEnabled.value = props.modelValue?.isMessagingEnabled ?? false;
         autoSyncModelValue = true;
     });

@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // Combine history records that were saved at the same time
-            var historySummaryList = historyService.GetHistorySummary( qry );
+            var historySummaryList = historyService.GetHistorySummary( qry, CurrentPerson );
 
             string summary = gfSettings.GetFilterPreference( "Summary Contains" );
             if ( !string.IsNullOrWhiteSpace( summary ) )

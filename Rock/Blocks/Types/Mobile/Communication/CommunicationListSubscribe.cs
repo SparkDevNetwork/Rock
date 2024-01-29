@@ -162,6 +162,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             return new
             {
                 DynamicContent = true,
+                ShowDescription = this.ShowDescription,
                 ShowMediumPreference = GetAttributeValue( AttributeKeys.ShowMediumPreference ).AsBoolean(),
                 ShowPushNotificationsAsMediumPreference = GetAttributeValue( AttributeKeys.ShowPushNotificationsAsMediumPreference ).AsBoolean(),
             };

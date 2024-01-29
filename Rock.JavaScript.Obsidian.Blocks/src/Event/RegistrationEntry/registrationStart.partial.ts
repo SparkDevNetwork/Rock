@@ -39,7 +39,7 @@ export default defineComponent({
         }
 
         const showPrevious = computed((): boolean => {
-            return registrationEntryState.firstStep === registrationEntryState.steps.intro;
+            return registrationEntryState.firstStep === registrationEntryState.steps.intro && !registrationEntryState.viewModel.isExistingRegistration;
         });
 
         const attributes = computed((): Record<string, PublicAttributeBag> => {

@@ -16,6 +16,7 @@
             });
 
         </script>
+        <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Warning" Visible="false" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
@@ -30,6 +31,12 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:GroupPicker ID="gpGroups" runat="server" AllowMultiSelect="true" Label="Groups" Required="true" OnSelectItem="gpGroups_SelectItem" LimitToSchedulingEnabledGroups="true" />
+                            <div class="form-group group-name required">
+                                <asp:Label ID="lblGroupLabel" class="control-label-sm" runat="server" Visible="False" Font-Bold="true">Group</asp:Label>
+                                <div class="control-wrapper">
+                                    <asp:Literal ID="lblGroup" runat="server" Visible="False" />
+                                </div>
+                            </div>
                             <Rock:RockCheckBoxList ID="cblInviteStatus" runat="server" Label="Invite Status" RepeatDirection="Horizontal" Required="true" />
                             <Rock:RockListBox ID="lbSchedules" runat="server" Label="Schedules" AutoPostBack="true" OnSelectedIndexChanged="lbSchedules_SelectedIndexChanged" Required="true" />
                             <Rock:RockDropDownList ID="ddlWeek" runat="server" Label="Week" />

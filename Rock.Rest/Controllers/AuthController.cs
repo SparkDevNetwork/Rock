@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,7 +49,12 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( errorResponse );
             }
 
-            Rock.Security.Authorization.SetAuthCookie( userName, loginParameters.Persisted, false );
+            // TODO: Add 2FA support to API authentication.
+            Rock.Security.Authorization.SetAuthCookie(
+                userName,
+                loginParameters.Persisted,
+                isImpersonated: false,
+                isTwoFactorAuthenticated: true );
         }
 
         /// <summary>

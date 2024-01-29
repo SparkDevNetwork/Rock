@@ -16,6 +16,8 @@
 //
 using System.Collections.Generic;
 using Rock.Attribute;
+using Rock.Enums.Blocks.Security.Login;
+using Rock.Model;
 
 namespace Rock.Security.Authentication.OneTimePasscode
 {
@@ -34,6 +36,19 @@ namespace Rock.Security.Authentication.OneTimePasscode
     public class OneTimePasscodeAuthenticationResult
     {
         /// <summary>
+        /// Gets or sets the authenticated user login.
+        /// </summary>
+        /// <value>
+        /// The authenticated user login.
+        /// </value>
+        public UserLogin AuthenticatedUser { get; set; }
+
+        /// <summary>
+        /// The error message.
+        /// </summary>
+        public string ErrorMessage { get; set; }
+    
+        /// <summary>
         /// Indicates whether the user is authenticated.
         /// </summary>
         /// <value>
@@ -42,9 +57,12 @@ namespace Rock.Security.Authentication.OneTimePasscode
         public bool IsAuthenticated { get; internal set; }
 
         /// <summary>
-        /// The error message.
+        /// Indicates whether person selection is required.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        /// <value>
+        ///   <c>true</c> if person selection is required; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPersonSelectionRequired { get; set; }
 
         /// <summary>
         /// Indicates whether account registration is required.
@@ -53,14 +71,6 @@ namespace Rock.Security.Authentication.OneTimePasscode
         ///   <c>true</c> if account registration is required; otherwise, <c>false</c>.
         /// </value>
         public bool IsRegistrationRequired { get; set; }
-
-        /// <summary>
-        /// Indicates whether person selection is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if person selection is required; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsPersonSelectionRequired { get; set; }
 
         /// <summary>
         /// The people matching the email or phone number.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +34,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the name of the Person's Spouse" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Spouse's Name" )]
-    [Rock.SystemGuid.EntityTypeGuid( "E8B3A661-5C6D-4B24-A09A-4D3ED080CE0C")]
+    [Rock.SystemGuid.EntityTypeGuid( "E8B3A661-5C6D-4B24-A09A-4D3ED080CE0C" )]
     public class SpouseNameSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties
@@ -134,11 +135,12 @@ namespace Rock.Reporting.DataSelect.Person
         {
             //// Spouse is determined if all these conditions are met
             //// 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
-            //// 2) Opposite Gender as Person
+            //// 2) Opposite Gender as Person, if the Bible Strict Couple is not selected.
             //// 3) Both Persons are Married
 
             var selectionParts = selection.Split( '|' );
             bool includeLastname = selectionParts.Length > 0 && selectionParts[0].AsBoolean();
+            var isBibleStrict = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
 
             Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             Guid marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
@@ -151,10 +153,10 @@ namespace Rock.Reporting.DataSelect.Person
             var personSpouseQuery = new PersonService( context ).Queryable()
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.Person.MaritalStatusValueId == marriedDefinedValueId && s.GroupRole.Guid == adultGuid )
                     .SelectMany( m => m.Group.Members )
-                    .Where( m => 
+                    .Where( m =>
                         m.PersonId != p.Id &&
                         m.GroupRole.Guid == adultGuid &&
-                        m.Person.Gender != p.Gender &&
+                        ( !isBibleStrict || m.Person.Gender != p.Gender ) &&
                         m.Person.MaritalStatusValueId == marriedDefinedValueId &&
                         !m.Person.IsDeceased )
                     .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
@@ -222,7 +224,7 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( selectionValues.Length >= 1 )
                 {
                     RockCheckBox cbIncludeLastname = controls[0] as RockCheckBox;
-                    
+
                     if ( cbIncludeLastname != null )
                     {
                         cbIncludeLastname.Checked = selectionValues[0].AsBoolean();
@@ -262,6 +264,7 @@ namespace Rock.Reporting.DataSelect.Person
                 Guid marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
                 int marriedDefinedValueId = DefinedValueCache.Get( marriedGuid ).Id;
                 Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                var isBibleStrict = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
 
                 var familyGroupMembers = new GroupMemberService( rockContext ).Queryable()
                     .Where( m => m.Group.GroupType.Guid == familyGuid );
@@ -272,7 +275,7 @@ namespace Rock.Reporting.DataSelect.Person
                         .Where( m =>
                             m.PersonId != p.Id &&
                             m.GroupRole.Guid == adultGuid &&
-                            m.Person.Gender != p.Gender &&
+                             ( !isBibleStrict || m.Person.Gender != p.Gender ) &&
                             m.Person.MaritalStatusValueId == marriedDefinedValueId &&
                             !m.Person.IsDeceased )
                         .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )

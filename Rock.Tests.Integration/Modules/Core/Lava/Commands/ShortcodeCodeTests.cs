@@ -292,7 +292,7 @@ Schedule Active = {{isScheduleActive}}
             var expectedOutput = @"
 <div id=`mediaplayer_*` style=`--plyr-color-main:var(--color-primary);`$></div>
 <script>
-(function(){newRock.UI.MediaPlayer(`#mediaplayer_*`,{`autopause`:true,`autoplay`:false,`clickToPlay`:true,`controls`:`play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen`,`debug`:false,`hideControls`:true,`mediaUrl`:``,`muted`:false,`posterUrl`:``,`resumePlaying`:false,`seekTime`:10.0,`trackProgress`:true,`type`:``,`volume`:1.0,`writeInteraction`:true});})();
+(function(){newRock.UI.MediaPlayer(`#mediaplayer_*`,{`autopause`:true,`autoplay`:false,`clickToPlay`:true,`controls`:`play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen`,`debug`:false,`hideControls`:true,`map`:``,`mediaUrl`:``,`muted`:false,`posterUrl`:``,`resumePlaying`:true,`seekTime`:10.0,`trackProgress`:true,`type`:``,`volume`:1.0,`writeInteraction`:true});})();
 </script>
 ";
             expectedOutput = expectedOutput.Replace( "`", @"""" );

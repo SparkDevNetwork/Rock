@@ -1,0 +1,109 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <StandardFilterDaysBack v-model="daysBack"
+                                        label="Date Range" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="containsTransactionType"
+                              label="Contains Transaction Type"
+                              :items="transactionTypeItems" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="containsSourceType"
+                              label="Contains Source Type"
+                              :items="sourceItems" />
+            </div>
+
+            <div class="col-md-4">
+                <AccountPicker v-model="accounts"
+                               label="Accounts"
+                               multiple />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        transactionTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        sourceItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const daysBack = ref(props.modelValue.daysBack);
+    const containsTransactionType = ref(props.modelValue.containsTransactionType ?? "");
+    const containsSourceType = ref(props.modelValue.containsSourceType ?? "");
+    const accounts = ref(props.modelValue.accounts);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            daysBack: daysBack.value,
+            containsSourceType: containsSourceType.value,
+            containsTransactionType: containsTransactionType.value,
+            accounts: accounts.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        daysBack.value = props.modelValue.daysBack;
+        containsSourceType.value = props.modelValue.containsSourceType ?? "";
+        containsTransactionType.value = props.modelValue.containsTransactionType ?? "";
+        accounts.value = props.modelValue.accounts;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

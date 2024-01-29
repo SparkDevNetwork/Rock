@@ -9,7 +9,7 @@
     </NotificationBox>
 
     <div v-if="!blockErrorMessage" class="sign-up-finder">
-        <RockForm @submit="onSearch" class="filters">
+        <RockForm v-if="isSearchFormVisible" @submit="onSearch" class="filters">
             <div class="row d-flex flex-wrap">
                 <div v-if="campuses.length" :class="columnClass" class="filters-campus">
                     <SignUpFilter v-model="selectedCampuses"
@@ -220,6 +220,19 @@
         });
 
         return filters;
+    });
+
+    const isSearchFormVisible = computed((): boolean => {
+        return !!(
+            projectTypes.value.length
+            || campuses.value.length
+            || namedSchedules.value.length
+            || attributeFilters.value.length
+            || config.displayDateRange
+            || config.displayLocationSort
+            || config.displayLocationRangeFilter
+            || config.displaySlotsAvailableFilter
+        );
     });
 
     // #endregion

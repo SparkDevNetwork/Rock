@@ -532,6 +532,8 @@ namespace Rock.Blocks.Core
                     entity.SaveAttributeValues( rockContext );
                 } );
 
+                Rock.CheckIn.KioskDevice.Clear();
+
                 if ( isNew )
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>

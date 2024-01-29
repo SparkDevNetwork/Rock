@@ -116,12 +116,13 @@ export type RegistrationEntryBlockViewModel = {
     races: ListItemBag[];
     ethnicities: ListItemBag[];
     showSmsOptIn: boolean;
-    smsOptInText: string;
 
     isInlineSignatureRequired: boolean;
     isSignatureDrawn: boolean;
     signatureDocumentTerm?: string | null;
     signatureDocumentTemplateName?: string | null;
+
+    hideProgressBar: boolean;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
@@ -138,6 +139,7 @@ export type RegistrationEntryBlockFeeViewModel = {
     isRequired: boolean;
     items: RegistrationEntryBlockFeeItemViewModel[];
     discountApplies: boolean;
+    hideWhenNoneRemaining?: boolean;
 };
 
 export type RegistrationEntryBlockFeeItemViewModel = {
@@ -183,6 +185,7 @@ export type RegistrantInfo = {
     fieldValues: Record<Guid, unknown>;
     cost: number;
     feeItemQuantities: Record<Guid, number>;
+    existingSignatureDocumentGuid?: Guid | null,
     signatureData?: string | null;
 
     guid: Guid;
@@ -207,11 +210,11 @@ export type RegistrationEntryBlockArgs = {
     registrationGuid: Guid | null;
     registrationSessionGuid: Guid | null;
     registrants: RegistrantInfo[];
-    fieldValues: Record<Guid, unknown>;
-    registrar: RegistrarInfo;
+    fieldValues: Record<Guid, unknown> | null;
+    registrar: RegistrarInfo | null;
     savedAccountGuid: Guid | null;
-    gatewayToken: string;
-    discountCode: string;
+    gatewayToken: string | null;
+    discountCode: string | null;
     amountToPayNow: number;
 };
 

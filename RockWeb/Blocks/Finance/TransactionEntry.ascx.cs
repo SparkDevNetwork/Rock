@@ -42,9 +42,9 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Add a new one-time or scheduled transaction
     /// </summary>
-    [DisplayName( "Transaction Entry" )]
+    [DisplayName( "Transaction Entry (Legacy)" )]
     [Category( "Finance" )]
-    [Description( "Creates a new financial transaction or scheduled transaction." )]
+    [Description( "Creates a new financial transaction or scheduled transaction. This block has been replaced with the Utility Payment Entry block." )]
 
     #region Block Attributes
 

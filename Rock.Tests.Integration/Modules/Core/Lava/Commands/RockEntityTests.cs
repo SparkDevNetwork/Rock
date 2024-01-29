@@ -26,12 +26,19 @@ using Rock.Web.Cache;
 using Rock.Data;
 using System.Linq;
 using Rock.Model;
+using Rock.Tests.Integration.Events;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
     [TestClass]
     public class RockEntityTests : LavaIntegrationTestBase
     {
+        [ClassInitialize]
+        public static void Initialize( TestContext context )
+        {
+            EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
+        }
+
         /// <summary>
         /// Tests the EventsCalendarItem to make sure that an item's EventItem and EventItem.Summary are returned.
         /// </summary>
@@ -246,27 +253,35 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             }
         }
 
+        /// <summary>
+        /// Verify that the "business" tag is registered as an entity command.
+        /// Tags are automatically registered for Rock Entity models, but the "business" tag is registered manually
+        /// as an alias for the Person entity.
+        /// </summary>
         [TestMethod]
-        public void EntityCommandBlock_WhereFilterWithAlphanumericFieldName_IsParsedCorrectly()
+        public void EntityCommandBlock_BusinessAlias_ReturnsPersonEntities()
         {
             var template = @"
-{% person where:'core_TimesCheckedIn16Wks > 1' iterator:'items' %}
+{% business where:'LastName == ""Ace Hardware""' iterator:'items' %}
 <ul>
   {% for item in items %}
-    <li>{{ item.NickName }} {{ item.LastName }}</li>
+    <li>{{ item.LastName }}</li>
   {% endfor %}
 </ul>
-{% endperson %}
+{% endbusiness %}
 ";
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
+                var options = new LavaTestRenderOptions
+                {
+                    EnabledCommands = "rockentity",
+                    OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
+                };
 
-                Assert.That.Contains( output, "Ted Decker" );
-                Assert.That.DoesNotContain( output, "Bill Marble" );
+                TestHelper.AssertTemplateOutput( engine, "Ace Hardware", template, options );
             } );
         }
 
@@ -412,6 +427,25 @@ TedDecker<br/>
 
             input2 = input2.Replace( "$personId", tedPerson.Id.ToString() );
             TestHelper.AssertTemplateOutput( expectedOutput2, input2, options );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WithCountParameterIsTrue_ReturnsCountVariableInContext()
+        {
+            var input = @"
+{% group count:'true' expression:'Id != 0' limit:'10' %}
+{{ count }}
+{% endgroup %}
+";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var context = engine.NewRenderContext( new List<string> { "RockEntity" } );
+                var result = engine.RenderTemplate( input, new LavaRenderParameters { Context = context } );
+                var count = result.Text.AsInteger();
+
+                Assert.IsTrue( count > 0, "Count variable is not set to a non-zero value." );
+            } );
         }
     }
 }

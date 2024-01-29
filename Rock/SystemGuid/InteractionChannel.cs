@@ -65,5 +65,10 @@ namespace Rock.SystemGuid
         /// Interaction Channel GUID for interactive experience participation.
         /// </summary>
         public const string INTERACTIVE_EXPERIENCES = "CAB85FAA-7A28-4986-B485-A02299E998A8";
+
+        /// <summary>
+        /// Interaction Channel GUID for adaptive messages.
+        /// </summary>
+        public const string ADAPTIVE_MESSAGES = "6F467CB2-586B-4963-B73B-9ACC42916549";
     }
 }

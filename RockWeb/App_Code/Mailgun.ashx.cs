@@ -184,20 +184,43 @@ public class Mailgun : IHttpHandler
                 .Where( v => v.AttributeId == emailMediumAttribute.Id )
                 .FirstOrDefault();
 
-            string apiKey = string.Empty;
+            string webhookSigningKey = string.Empty;
 
             var mailgunEntity = EntityTypeCache.Get( emailMediumAttributeValue.Value.AsGuid(), rockContext );
             if ( mailgunEntity != null )
             {
-                apiKey = new AttributeValueService( rockContext )
+                /*
+                    12/13/2023 - JPH
+
+                    New Mailgun accounts used to be created with a matching key value for "Private API key"and "HTTP
+                    webhook signing key". We have historically used this single, matching key value for both sending
+                    emails AND validating webhook requests. Mailgun has since changed their account-generation
+                    approach as follows:
+
+                        1. A "Private API key" is no longer generated for a newly-created Mailgun account; instead,
+                            Mailgun account administrators are responsible for manually generating any desired number
+                            of account-wide "Mailgun API keys" and/or domain-specific "Sending API Keys," to be used
+                            when sending emails.
+                        2. A separate, account-wide "HTTP webhook signing key" is auto-generated at account creation
+                           (and may also be recycled at will), to be used for validating webhook requests.
+
+                    This AttributeValue lookup logic has been changed to get the value for a newly-added
+                    "HTTPWebhookSigningKey" attribute instead of the "APIKey" attribute. Note that we have also added
+                    a data migration as part of this change to copy a Rock instance's "APIKey" attribute value - if
+                    present - to the new, "HTTPWebhookSigningKey" attribute value, to ensure Mailgun continues to work
+                    for preexisting accounts, while also adding support for newly-created accounts.
+
+                    Reason: Compatibility with preexisting AND newly-created Mailgun accounts.
+                */
+                webhookSigningKey = new AttributeValueService( rockContext )
                     .Queryable()
                     .AsNoTracking()
-                    .Where( v => v.Attribute.EntityTypeId == mailgunEntity.Id && v.Attribute.Key == "APIKey" )
+                    .Where( v => v.Attribute.EntityTypeId == mailgunEntity.Id && v.Attribute.Key == "HTTPWebhookSigningKey" )
                     .Select( v => v.Value )
                     .FirstOrDefault();
             }
 
-            if ( !Rock.Mailgun.MailgunUtilities.AuthenticateMailgunRequest( mailgunRequestPayload.TimeStamp, mailgunRequestPayload.Token, mailgunRequestPayload.Signature, apiKey ) )
+            if ( !Rock.Mailgun.MailgunUtilities.AuthenticateMailgunRequest( mailgunRequestPayload.TimeStamp, mailgunRequestPayload.Token, mailgunRequestPayload.Signature, webhookSigningKey ) )
             {
                 response.Write( "Invalid request signature." );
                 response.StatusCode = 406;
@@ -244,7 +267,7 @@ public class Mailgun : IHttpHandler
 
             if ( communicationRecipientGuid != null )
             {
-                ProcessForReceipent( communicationRecipientGuid, rockContext );
+                ProcessForRecipient( communicationRecipientGuid, rockContext );
             }
 
             response.Write( string.Format( "Successfully processed '{0}' message", mailgunRequestPayload.EventType ) );
@@ -258,7 +281,7 @@ public class Mailgun : IHttpHandler
     /// <param name="eventType">Type of the event.</param>
     /// <param name="communicationRecipientGuid">The communication recipient unique identifier.</param>
     /// <param name="rockContext">The rock context.</param>
-    private void ProcessForReceipent( Guid? communicationRecipientGuid, Rock.Data.RockContext rockContext )
+    private void ProcessForRecipient( Guid? communicationRecipientGuid, Rock.Data.RockContext rockContext )
     {
         if ( !communicationRecipientGuid.HasValue )
         {
@@ -480,7 +503,6 @@ public class Mailgun : IHttpHandler
     [Serializable]
     private class MailgunRequestPayload
     {
-
         public MailgunRequestPayload()
         {
             TimeStamp = 0;
@@ -617,7 +639,7 @@ public class Mailgun : IHttpHandler
 
         /// <summary>
         /// Gets or sets the description.
-        /// For the new mailgun API this is an concantenation of Description and message.
+        /// For the new Mailgun API this is an concatenation of Description and message.
         /// </summary>
         /// <value>
         /// The description.
@@ -639,6 +661,5 @@ public class Mailgun : IHttpHandler
         /// The recipient.
         /// </value>
         public string Recipient { get; set; }
-
     }
 }

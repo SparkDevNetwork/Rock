@@ -34,6 +34,7 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
 using Rock.Web.Cache;
+using WebGrease.Css.Extensions;
 
 namespace Rock.Jobs
 {
@@ -701,6 +702,21 @@ namespace Rock.Jobs
                 var currentDateTime = RockDateTime.Now;
 
                 familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group { IsActive = false } );
+            }
+
+            // Update people who have names with extra spaces between words (Issue #2990). See notes in Asana on query performance. Note
+            // that values with more than two spaces could take multiple runs to correct.
+            using( var nameCleanupRockContext = CreateRockContext() )
+            {
+                var peopleWithExtraSpaceNames = new PersonService( nameCleanupRockContext ).Queryable()
+                    .Where( p => p.NickName.Contains( "  " ) || p.LastName.Contains( "  " ) || p.FirstName.Contains( "  " ) || p.MiddleName.Contains( "  " ) );
+
+                nameCleanupRockContext.BulkUpdate( peopleWithExtraSpaceNames, x => new Person {
+                                                                NickName = x.NickName.Replace( "  ", " " ),
+                                                                LastName = x.LastName.Replace( "  ", " " ),
+                                                                FirstName = x.FirstName.Replace( "  ", " " ),
+                                                                MiddleName = x.MiddleName.Replace( "  ", " " )
+                                                            } );
             }
 
             return resultCount;

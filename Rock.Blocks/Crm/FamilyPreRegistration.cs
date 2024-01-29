@@ -2315,6 +2315,7 @@ namespace Rock.Blocks.Crm
                 };
             }
 
+            var displayMobilePhoneChildren = this.GetAttributeValue( AttributeKey.ChildMobilePhone ) == "Hide" ? false : true;
             var displaySmsAttributeValue = this.GetAttributeValue( AttributeKey.DisplaySmsOptIn );
             var smsOptInDisplayText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
 
@@ -2354,7 +2355,7 @@ namespace Rock.Blocks.Crm
                     IsHidden = false,
                     IsShowFirstAdult = true,
                     IsShowAllAdults = true,
-                    IsShowChildren = true
+                    IsShowChildren = displayMobilePhoneChildren
                 };
                 default:
                 return new FamilyPreRegistrationSmsOptInFieldBag

@@ -226,6 +226,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether validation is disabled for this control.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if validation is disabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool ValidationIsDisabled
+        {
+            get
+            {
+                return ViewState["ValidationIsDisabled"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ValidationIsDisabled"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -235,7 +254,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ( !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid ) && _addressRequirementsValidator.IsValid;
+                return _acAddress.IsValid && _addressRequirementsValidator.IsValid;
             }
         }
 
@@ -433,8 +452,18 @@ namespace Rock.Web.UI.Controls
 
             EnsureChildControls();
 
+            _acAddress.ValidationIsDisabled = this.ValidationIsDisabled;
+
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelect );
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelectNone );
+        }
+
+        /// <inheritdoc />
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            _acAddress.Required = this.Required;
         }
 
         /// <summary>
@@ -510,8 +539,8 @@ namespace Rock.Web.UI.Controls
             _pnlPickerActions.Controls.Add( _btnCancel );
 
             _addressRequirementsValidator.ID = ID + "_addressrequirementsvalidator";
-            _addressRequirementsValidator.CssClass = "validation-error help-inline";
-            _addressRequirementsValidator.Enabled = true;
+            _addressRequirementsValidator.CssClass = "validation-error";
+            _addressRequirementsValidator.Enabled = !this.ValidationIsDisabled;
             _addressRequirementsValidator.Display = ValidatorDisplay.None;
             _addressRequirementsValidator.ValidationGroup = ValidationGroup;
             this.Controls.Add( _addressRequirementsValidator );

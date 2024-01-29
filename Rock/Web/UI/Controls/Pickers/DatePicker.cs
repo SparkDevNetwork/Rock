@@ -210,18 +210,19 @@ namespace Rock.Web.UI.Controls
 
             // Get current date format and make sure it has double-lower-case month and day designators for the js date picker to use
             var dateFormat = System.Threading.Thread.CurrentThread.CurrentUICulture.DateTimeFormat.ShortDatePattern;
-            dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
-            dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
+            var jsDateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
+            jsDateFormat = jsDateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var endDateParam = ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString( "o" ) + "',";
-            var startDateParam = ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString( "o" ) + "',";
+            // StartDate and EndDate are optional, and must match the format of the dateFormat (which is the format of the input)
+            var endDateParam = ( this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString( dateFormat ) + "',";
+            var startDateParam = ( this.AllowPastDateSelection ) ? "" : "startDate: '" + RockDateTime.Today.ToString( dateFormat ) + "',";
 
             var script = $@"Rock.controls.datePicker.initialize(
                 {{
                     id: '{this.ClientID}',
                     startView: {this.StartView.ConvertToInt()},
                     showOnFocus: {this.ShowOnFocus.ToString().ToLower()},
-                    format: '{dateFormat}',
+                    format: '{jsDateFormat}',
                     todayHighlight: {this.HighlightToday.ToString().ToLower()},
                     forceParse: {this.ForceParse.ToString().ToLower()},
                     postbackScript: '{postBackScript}',

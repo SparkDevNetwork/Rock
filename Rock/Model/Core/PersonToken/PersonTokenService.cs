@@ -33,17 +33,30 @@ namespace Rock.Model
         /// <returns></returns>
         public PersonToken GetByImpersonationToken( string impersonationToken )
         {
+            if ( impersonationToken == "TokenProhibited" )
+            {
+                // This indicates that there was an attempt to generate a token for a person whose security settings do not permit it.  Exit here, before attempting to decrypt the token.
+                return null;
+            }
+
             // the impersonationToken should normally be a UrlEncoded string, but it is possible that the caller already UrlDecoded it, so first try without UrlDecoding it
             var decryptedToken = Rock.Security.Encryption.DecryptString( impersonationToken );
 
             if ( decryptedToken == null )
             {
                 // do a Replace('!', '%') on the token before UrlDecoding because we did a Replace('%', '!') after we UrlEncoded it (to make it embeddable in HTML and cross browser compatible)
-                string urlDecodedKey = System.Web.HttpUtility.UrlDecode( impersonationToken.Replace( '!', '%' ) );
-                decryptedToken = Rock.Security.Encryption.DecryptString( urlDecodedKey );
+                string urlDecodedToken = System.Web.HttpUtility.UrlDecode( impersonationToken.Replace( '!', '%' ) );
+
+                if ( urlDecodedToken == "TokenProhibited" )
+                {
+                    // This indicates that there was an attempt to generate a token for a person whose security settings do not permit it.  Exit here, before attempting to decrypt the token.
+                    return null;
+                }
+
+                decryptedToken = Rock.Security.Encryption.DecryptString( urlDecodedToken );
             }
 
-            var personToken = this.Queryable().Include(pt => pt.PersonAlias).FirstOrDefault( a => a.Token == decryptedToken );
+            var personToken = this.Queryable().Include( pt => pt.PersonAlias ).FirstOrDefault( a => a.Token == decryptedToken );
             if ( personToken == null )
             {
                 bool tokenUseLegacyFallback = GlobalAttributesCache.Get().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();

@@ -22,6 +22,7 @@ import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
+import { toNumberOrNull } from "./numberUtils";
 
 type Prop = { [key: string]: unknown };
 type PropKey<T extends Prop> = Extract<keyof T, string>;
@@ -472,7 +473,22 @@ export function getVNodeProps(node: VNode): Record<string, unknown> {
     // Override with any values specified on the DOM declaration.
     if (node.props) {
         for (const p in node.props) {
-            props[p] = node.props[p];
+            if (typeof node.type === "object" && typeof node.type["props"] === "object") {
+                const propType = node.type["props"][p]?.type;
+
+                if (propType === Boolean) {
+                    props[p] = node.props[p] === true || node.props[p] === "";
+                }
+                else if (propType === Number) {
+                    props[p] = toNumberOrNull(node.props[p]) ?? undefined;
+                }
+                else {
+                    props[p] = node.props[p];
+                }
+            }
+            else {
+                props[p] = node.props[p];
+            }
         }
     }
 

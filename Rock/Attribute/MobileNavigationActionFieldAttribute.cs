@@ -35,6 +35,11 @@ namespace Rock.Attribute
         internal const string PopSinglePageValue = "{\"Type\": 1, \"PopCount\": 1}";
 
         /// <summary>
+        /// A value that can be used in the default to specify the action of Push Page.
+        /// </summary>
+        internal const string PushPageValue = "{\"Type\": 4, \"PageGuid\": \"\"}";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MobileNavigationActionFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>

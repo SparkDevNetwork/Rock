@@ -49,6 +49,9 @@ namespace Rock.Client
         /// <summary />
         public bool IsActive { get; set; } = true;
 
+        /// <summary />
+        public bool IsDirty { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -98,6 +101,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
+            this.IsDirty = source.IsDirty;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.SegmentKey = source.SegmentKey;

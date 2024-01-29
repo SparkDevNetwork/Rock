@@ -89,7 +89,7 @@
                                                 <asp:Literal ID="lConfirmedOccurrenceTime" runat="server" />
                                             </td>
                                             <td>
-                                                <asp:LinkButton ID="btnCancelConfirmAttend" runat="server" CssClass="btn btn-xs btn-link text-danger" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttend_Click" />
+                                                <asp:LinkButton ID="btnCancelConfirmAttend" runat="server" CssClass="btn btn-xs btn-link text-danger" Text="Cancel Confirmation" OnClick="btnDeclineAttend_Click" />
                                             </td>
                                         </tr>
                                     </ItemTemplate>

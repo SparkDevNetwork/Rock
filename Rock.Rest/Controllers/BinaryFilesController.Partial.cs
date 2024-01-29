@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -111,7 +111,7 @@ namespace Rock.Rest.Controllers
                 binaryFile.IsTemporary = false;
                 binaryFile.BinaryFileTypeId = binaryFileType.Id;
                 binaryFile.MimeType = uploadedFile.ContentType;
-                binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+                binaryFile.FileName = FileUtilities.ScrubFileName( uploadedFile.FileName );
                 binaryFile.FileSize = uploadedFile.ContentLength;
                 binaryFile.ContentStream = FileUtilities.GetFileContentStream( uploadedFile );
 

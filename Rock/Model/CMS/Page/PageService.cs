@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -235,6 +236,7 @@ namespace Rock.Model
             var blockService = new BlockService( rockContext );
             var pageGuid = Rock.SystemGuid.EntityType.PAGE.AsGuid();
             var blockGuid = Rock.SystemGuid.EntityType.BLOCK.AsGuid();
+            var newBlockAuths = new List<Auth>();
 
             Dictionary<Guid, int> pageIntDictionary = pageService.Queryable()
                 .Where( p => pageGuidDictionary.Keys.Contains( p.Guid ) || pageGuidDictionary.Values.Contains( p.Guid ) )
@@ -269,10 +271,17 @@ namespace Rock.Model
                 newBlockAuth.ModifiedByPersonAliasId = currentPersonAliasId;
                 newBlockAuth.EntityId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == blockAuth.EntityId.Value ).FirstOrDefault().Key]];
 
+                newBlockAuths.Add( newBlockAuth );
                 authService.Add( newBlockAuth );
             }
 
             rockContext.SaveChanges();
+
+            // Call RefreshEntity after auth Block data is persisted to add new Block Auths to RockCache.
+            foreach ( var blockAuth in newBlockAuths )
+            {
+                Authorization.RefreshEntity( blockAuth.EntityTypeId, blockAuth.EntityId ?? 0, rockContext );
+            }
         }
 
         /// <summary>

@@ -4,6 +4,8 @@
     <ContentTemplate>
         <Rock:ModalAlert ID="mdSignUpOverview" runat="server" />
 
+        <Rock:NotificationBox ID="nbNotAuthorizedToDelete" runat="server" NotificationBoxType="Warning" Visible="false" Text="You are not authorized to delete this Sign-Up Opportunity." />
+
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfAction" runat="server" />
             <div class="panel panel-block">
@@ -33,7 +35,7 @@
                                 <Rock:RockBoundField DataField="FriendlySchedule" HeaderText="Schedule" SortExpression="NextOrLastStartDateTime" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockBoundField DataField="LeaderCount" HeaderText="Leader Count" SortExpression="LeaderCount" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:RockLiteralField ID="lParticipantCountBadgeHtml" HeaderText="Participant Count" SortExpression="ParticipantCount" ExcelExportBehavior="NeverInclude" />
-                                <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='fa fa-users'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:LinkButtonField ID="lbOpportunityDetail" Text="<i class='fa fa-users'></i>" ToolTip="Attendee List" CssClass="btn btn-default btn-sm btn-square" OnClick="lbOpportunityDetail_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                 <Rock:DeleteField ID="dfOpportunities" OnClick="dfOpportunities_Click" />
 
                                 <%-- Fields that are only shown when exporting --%>
@@ -51,8 +53,21 @@
             Sys.Application.add_load(function () {
                 var $thisBlock = $('#<%= upnlSignUpOverview.ClientID %>');
 
-                // delete prompt
-                $thisBlock.find('table.js-grid-opportunities a.grid-delete-button').on('click', function (e) {
+                // Get all delete buttons.
+                var $deleteButtons = $thisBlock.find('table.js-grid-opportunities a.grid-delete-button');
+
+                // Disable any buttons whose rows indicate deleting is not allowed.
+                $deleteButtons.each(function () {
+                    var $btn = $(this);
+                    var $row = $btn.closest('tr');
+
+                    if ($row.hasClass('js-cannot-delete')) {
+                        $btn.addClass('disabled');
+                    }
+                });
+
+                // Custom delete prompt.
+                $deleteButtons.on('click', function (e) {
                     var $btn = $(this);
                     var $row = $btn.closest('tr');
 

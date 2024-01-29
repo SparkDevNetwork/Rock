@@ -71,6 +71,11 @@ namespace Rock.Personalization
         /// <inheritdoc/>
         internal override bool IsMatch( RockRequestContext request )
         {
+            if ( request.ClientInformation.Browser == null )
+            {
+                return false;
+            }
+
             return IsMatch( request.ClientInformation.Browser.UA );
         }
 

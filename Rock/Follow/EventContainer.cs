@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
+using Rock.Data;
 using Rock.Extension;
+using Rock.Web.Cache;
 
 namespace Rock.Follow
 {
@@ -73,5 +75,21 @@ namespace Rock.Follow
         [ImportMany( typeof( EventComponent ) )]
         protected override IEnumerable<Lazy<EventComponent, IComponentData>> MEFComponents { get; set; }
 
+        /// <inheritdoc/>
+        public override void Refresh()
+        {
+            base.Refresh();
+
+            // Load all the Attributes to the Following Event Type so that they may not be loaded every time by the Detail Block in the remote device.
+            var FollowingEventTypeEntityType = EntityTypeCache.Get( "Rock.Model.FollowingEventType" );
+            foreach (var component in MEFComponents )
+            {
+                var EventComponentEntityType = component.Value.EntityType;
+                using ( var rockContext = new RockContext() )
+                {
+                    Rock.Attribute.Helper.UpdateAttributes( EventComponentEntityType.GetEntityType(), FollowingEventTypeEntityType.Id, "EntityTypeId", EventComponentEntityType.Id.ToString(), rockContext );
+                }
+            }
+        }
     }
 }

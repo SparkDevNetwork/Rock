@@ -792,7 +792,7 @@ namespace Rock.Utility
                         fee.DiscountApplies = GetBooleanValueSafe( feeElement, "discountApplies" );
                         fee.IsRequired = GetBooleanValueSafe( feeElement, "isRequired" );
                         fee.HideWhenNoneRemaining = GetBooleanValueSafe( feeElement, "hideWhenNoneRemaining" );
-                        fee.IsActive = GetBooleanValueSafe( feeElement, "isActive" );
+                        fee.IsActive = GetBooleanValueSafe( feeElement, "isActive", true );
                         registrationTemplate.Fees.Add( fee );
 
                         switch ( feeElement.Attribute( "type" ).Value.Trim().ToLowerInvariant() )
@@ -1018,9 +1018,9 @@ namespace Rock.Utility
             }
         }
 
-        private bool GetBooleanValueSafe( XElement element, string name )
+        private bool GetBooleanValueSafe( XElement element, string name, bool defaultValue = false)
         {
-            return element.Attribute( name ) != null && element.Attribute( name ).Value.AsBoolean();
+            return  element?.Attribute( name )?.Value?.AsBoolean() ?? defaultValue;
         }
 
         private int? GetNullableIntegerValueSafe( XElement element, string name )

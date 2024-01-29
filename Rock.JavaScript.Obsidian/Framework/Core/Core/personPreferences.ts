@@ -172,7 +172,7 @@ export class PersonPreferenceCollection implements IPersonPreferenceCollection {
         this.updatedKeys = [];
 
         if (!this.anonymous && keys.length > 0) {
-            this.saveUpdatedKeys(keys);
+            await this.saveUpdatedKeys(keys);
         }
     }
 

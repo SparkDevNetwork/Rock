@@ -1,7 +1,7 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <nav class="progress-tracker" style="margin: 20px auto; max-width: 1200px; width:100%">
-        <div :id="progressTrackerContainerElementId" class="progress-tracker-container d-none d-md-block">
+    <nav class="progress-tracker d-none d-md-flex" style="margin: 20px auto; max-width: 1200px; width:100%">
+        <div :id="progressTrackerContainerElementId" class="progress-tracker-container">
             <ul :id="progressTrackerElementId" class="progress-steps">
                 <template v-for="(item, index) in items" :key="item.key">
                     <li v-if="isCollapsed(index)" class="progress-step progress-tracker-more">

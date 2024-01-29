@@ -24,7 +24,8 @@
                     format: dateFormat,
                     assumeNearbyYear: 10,
                     autoclose: true,
-                    container: options.container || "body",
+                    container: options.container || document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || "body",
+                    orientation: options.orientation || "auto",
                     todayBtn: "linked",
                     forceParse: options.forceParse,
                     startDate: options.startDate,
@@ -32,8 +33,7 @@
                     startView: options.startView,
                     showOnFocus: options.showOnFocus,
                     todayHighlight: options.todayHighlight,
-                    zIndexOffset: 1050,
-                    container: document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || "body"
+                    zIndexOffset: 1050
                 });
 
                 // note: using 'change' instead of datePicker's 'changeDate' so that both manual entry and picking from calender works

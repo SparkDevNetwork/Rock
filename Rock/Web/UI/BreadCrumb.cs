@@ -90,6 +90,5 @@ namespace Rock.Web.UI
         {
             return this.Name;
         }
-
     }
 }

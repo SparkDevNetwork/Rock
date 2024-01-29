@@ -33,6 +33,7 @@ using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
 using ImageResizer;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
@@ -2078,7 +2079,7 @@ namespace Rock.Lava
                     // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
                     if ( qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                        return item.AttributeValues[attributeKey].PersistedHtmlValue;
                     }
 
                     // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
@@ -2501,6 +2502,11 @@ namespace Rock.Lava
                             modelCacheType = typeof( CampusCache );
                             break;
                         }
+                    case "EntityType":
+                        {
+                            modelCacheType = typeof( EntityTypeCache );
+                            break;
+                        }
                     case "Category":
                         {
                             modelCacheType = typeof( CategoryCache );
@@ -2614,16 +2620,30 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns a dynamic object from a JSON string.
+        /// Returns a dynamic object from a JSON string. The returned type parameter should be considered 'internal' at this point. It
+        /// is not documented and could be removed if we can use the NestedDictionaryConverter as the default return type. 
         /// See https://www.rockrms.com/page/565#fromjson
         /// </summary>
         /// <param name="input">The input.</param>
+        /// <param name="returnType"></param>
         /// <returns></returns>
-        public static object FromJSON( object input )
+        public static object FromJSON( object input, string returnType = "ExpandoObject" )
         {
-            var objectResult = ( input as string ).FromJsonDynamicOrNull();
+            switch ( returnType )
+            {
+                case "Dictionary":
+                    {
+                        var jsonSettings = new JsonSerializerSettings{
+                            Converters = new List<JsonConverter> { new NestedDictionaryConverter() }
+                        };
 
-            return objectResult;
+                        return JsonConvert.DeserializeObject<Dictionary<string, object>>( input.ToString(), jsonSettings );
+                    }
+                default:
+                    {
+                        return ( input as string ).FromJsonDynamicOrNull();
+                    }
+            }
         }
 
         /// <summary>
@@ -2860,7 +2880,7 @@ namespace Rock.Lava
             DateTime? startDate = null;
 
             // Quick out if we have no data
-            if ( source == null || currentPerson == null )
+            if ( source == null )
             {
                 return source;
             }
@@ -2920,10 +2940,22 @@ namespace Rock.Lava
                 }
             }
 
+            if ( source is Dictionary<string, object> dictionary )
+            {
+                // Try treating it as a dictionary 
+                return LavaAppendWatchesHelper.AppendMediaForDictionary( dictionary, startDate, currentPerson, rockContext );
+            }
+
             // ExpandoObject
             if ( source is ExpandoObject xo )
             {
-                return LavaAppendWatchesHelper.AppendMediaForExpando( xo, startDate, currentPerson, rockContext );
+                if ( LavaAppendWatchesHelper.DynamicContainsKey( xo, "MediaId" ) )
+                {
+                    return LavaAppendWatchesHelper.AppendMediaForExpando( xo, startDate, currentPerson, rockContext );
+                }
+
+                // If the expando didn't have the key, it could be a dictionary
+                return LavaAppendWatchesHelper.AppendMediaForDictionary( xo, startDate, currentPerson, rockContext ) ;
             }
             
 
@@ -4079,7 +4111,6 @@ namespace Rock.Lava
 
                 input = input.EscapeQuotes();
 
-                input = input.EscapeQuotes();
                 if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
                 {
                     var quickReturnScript = "" +

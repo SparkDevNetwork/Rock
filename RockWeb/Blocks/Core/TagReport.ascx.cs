@@ -91,7 +91,11 @@ namespace RockWeb.Blocks.Core
                         if ( TagEntityType.Name == "Rock.Model.Person" )
                         {
                             gReport.ColumnsOfType<SelectField>().First().Visible = true;
-                            gReport.DataKeyNames = new string[] { "EntityId" };
+                            // The order of the DataKeyNames is important here, the grid uses the first value as the identifier
+                            // and so placing the EntityId first means when performing a Communication action the PersonId will be used,
+                            // and the gReport_RowSelected and gReport_Delete event handlers also use the second indexed value as the Identifier, thus
+                            // ensuring the actual TaggedItemId is used when a row item is selected.
+                            gReport.DataKeyNames = new string[] { "EntityId", "Id" };
                             gReport.Actions.ShowAdd = _tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson );
                         }
 
@@ -158,7 +162,14 @@ namespace RockWeb.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var taggedItem = new TaggedItemService( rockContext ).Get( e.RowKeyId );
+                var id = e.RowKeyId;
+                if ( e.RowKeyValues != null )
+                {
+                    // If multiple RowKeyValues are in use, the second value represents the actual TaggedItemId.
+                    id = e.RowKeyValues.Count > 1 ? ( int ) e.RowKeyValues[1] : e.RowKeyId;
+                }
+
+                var taggedItem = new TaggedItemService( rockContext ).Get( id );
                 if ( taggedItem != null )
                 {
                     var entityType = EntityTypeCache.Get( taggedItem.EntityTypeId );
@@ -189,8 +200,15 @@ namespace RockWeb.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
+                var id = e.RowKeyId;
+                if ( e.RowKeyValues != null )
+                {
+                    // If multiple RowKeyValues are in use, the second value represents the actual TaggedItemId.
+                    id = e.RowKeyValues.Count > 1 ? ( int ) e.RowKeyValues[1] : e.RowKeyId;
+                }
+
                 var taggedItemService = new TaggedItemService( rockContext );
-                var taggedItem = taggedItemService.Get( e.RowKeyId );
+                var taggedItem = taggedItemService.Get( id );
                 if ( taggedItem != null && taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson ) )
                 {
                     string errorMessage;

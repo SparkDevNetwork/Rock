@@ -31,6 +31,12 @@ export const EntityType = {
     AchievementType: "0E99356C-0DEA-4F24-944E-21CD5FA83B9E",
     /** The achievement type prerequisite */
     AchievementTypePrerequisite: "5362DB19-B8E1-4378-A66A-FB097CE3AB90",
+    /** The EntityType Guid for Rock.Model.AdaptiveMessage  */
+    AdaptiveMessage: "63D98F58-DA81-46AE-AE0C-662A7BFAA7D0",
+    /** The EntityType Guid for Rock.Model.AdaptiveMessageAdaptation  */
+    AdaptiveMessageAdaptation: "39753CCE-184A-4F14-AE80-08241DE8FC2E",
+    /** The EntityType Guid for Rock.Model.AdaptiveMessageAdaptationSegment  */
+    AdaptiveMessageAdaptationSegment: "40EDF82B-EFF5-4253-A129-965F7BC90033",
     /** The EntityType Guid for Rock.Model.AnalyticsDimCampus  */
     AnalyticsDimCampus: "DCEB0575-1351-4CFF-BA4F-410BA2D638CB",
     /** The EntityType Guid for Rock.Model.AnalyticsDimFamilyCurrent  */
@@ -419,6 +425,8 @@ export const EntityType = {
     MobileCommunicationCommunicationentryBlockType: "9A952F9F-F619-4063-B1BB-CFB2E6983C01",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView */
     MobileCommunicationCommunicationviewBlockType: "4AF5FCEF-CBF6-486B-A04D-920E31356B7F",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest. */
+    MobileConnectionAddConnectionRequest: "F41E7BE3-2854-40FF-82C8-1FDEA12B8B2F",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList. */
     MobileConnectionConnectionOpportunityListBlockType: "CB151D80-DBEF-4A1E-A816-3DF4CD2DE45A",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail. */

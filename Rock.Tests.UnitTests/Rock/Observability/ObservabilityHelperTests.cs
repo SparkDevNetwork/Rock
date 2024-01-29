@@ -22,6 +22,7 @@ namespace Rock.Tests.UnitTests.Rock.Observability
             {
                 var childActivityCount = 0;
                 var source = RockActivitySource.ActivitySource;
+                var expectedCount = ObservabilityHelper.SpanCountLimit - 1;
 
                 listener.ActivityStarted = activity =>
                 {
@@ -53,7 +54,7 @@ namespace Rock.Tests.UnitTests.Rock.Observability
                         }
                     }
 
-                    Assert.AreEqual( 9_999, childActivityCount, "Incorrect child activity count." );
+                    Assert.AreEqual( expectedCount, childActivityCount, "Incorrect child activity count." );
                     Assert.AreEqual( 15_015, rootActivity.GetTagItem( "rock-descendant-count" ), "Incorrect descendant count." );
                 }
             }

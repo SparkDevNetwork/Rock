@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using AngleSharp.Dom;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Model;
@@ -76,25 +76,23 @@ namespace Rock.Field.Types
 
             if ( boolValue.Value )
             {
-                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.TrueText ) )
-                {
-                    return privateConfigurationValues[ConfigurationKey.TrueText];
-                }
-                else
+                var trueText = privateConfigurationValues.GetValueOrDefault( ConfigurationKey.TrueText, string.Empty );
+                if ( trueText.IsNullOrWhiteSpace() )
                 {
                     return "Yes";
+
                 }
+                return trueText;
             }
             else
             {
-                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.FalseText ) )
-                {
-                    return privateConfigurationValues[ConfigurationKey.FalseText];
-                }
-                else
+                var falseText = privateConfigurationValues.GetValueOrDefault( ConfigurationKey.FalseText, string.Empty );
+                if ( falseText.IsNullOrWhiteSpace() )
                 {
                     return "No";
+
                 }
+                return falseText;
             }
         }
 
