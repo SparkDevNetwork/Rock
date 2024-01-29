@@ -417,6 +417,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleSignup\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\" />
+    <Folder Include="Framework\ViewModels\Blocks\Group\GroupTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\" />
     <Folder Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\" />
@@ -1044,6 +1045,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\confirmDeclineBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\contentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupTypeList\groupTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\landingPageContentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupScheduleOccurrenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerAppliedFiltersBag.d.ts" />
