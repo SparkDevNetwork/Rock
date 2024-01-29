@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -196,13 +197,29 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
             bag.IsBlockExists = entity.IsBlockExists();
-            bag.Pages = entity.Blocks.Where( a => a.Page != null ).Select( a => a.Page.GetFullyQualifiedPageName() ).OrderBy( a => a ).ToList();
+            var blocks = BlockCache.All()
+                .Where( b => b.BlockTypeId == entity.Id );
+            bag.Pages = blocks
+                .Where( b => b.PageId != null )
+                .OrderBy( b => b.Page.GetFullyQualifiedPageName() ) // ordering by FullyQualifiedPageName to keep it consistent with the ordering used before HyperLinkedPageBreadCrumbs.
+                .Select( b => b.Page.GetHyperLinkedPageBreadCrumbs() )
+                .ToList();
+            bag.Layouts = blocks
+                .Where( b => b.Layout != null )
+                .Select( b => $"<a href='/admin/cms/sites/layouts/{b.LayoutId}'>{b.Layout.Name}</a> (Layout), {b.Zone} (Zone)" )
+                .OrderBy( l => l )
+                .ToList();
+            bag.Sites = blocks
+                .Where( b => b.Site != null )
+                .Select( b => $"<a href='/admin/cms/sites/{b.SiteId}'>{b.Site.Name}</a> (Site), {b.Zone} (Zone)" )
+                .OrderBy( s => s )
+                .ToList();
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
         }
 
-        
+
 
         /// <summary>
         /// Gets the bag for editing the specified entity.
