@@ -186,6 +186,14 @@ namespace Rock.Net
         /// </summary>
         internal static string PageContextCookieNamePrefix = "ROCK_CONTEXT_PAGE_";
 
+        /// <summary>
+        /// Gets a value indicating whether a captcha valid has been validated
+        /// for this request. This is currenly only valid when this request
+        /// context is for a block action.
+        /// </summary>
+        /// <value><c>true</c> if a captcha has been validated; otherwise, <c>false</c>.</value>
+        public bool IsCaptchaValid { get; internal set; }
+
         #endregion
 
         #region Constructors

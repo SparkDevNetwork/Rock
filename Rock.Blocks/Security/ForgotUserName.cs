@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -27,7 +28,6 @@ using Rock.Enums.Blocks.Security.ForgotUserName;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Security.ForgotUserName;
-using Rock.Web;
 
 namespace Rock.Blocks.Security
 {
@@ -175,13 +175,11 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult SendInstructions( ForgotUserNameSendInstructionsRequestBag bag )
         {
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
-            if ( !disableCaptcha && !bag.IsCaptchaValid )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
-                return ActionOk( new ForgotUserNameSendInstructionsResultBag
-                {
-                    ResultType = SendInstructionsResultType.CaptchaInvalid
-                } );
+                return ActionBadRequest( "Captcha was not valid." );
             }
 
             var url = this.ConfirmationPageUrl;

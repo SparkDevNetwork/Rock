@@ -57,4 +57,9 @@ export type BlockTypeBag = {
 
     /** Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. */
     path?: string | null;
+
+    /** Gets or sets the name of the Layouts having the Block of the given Block Type. */
+    layouts?: string[] | null;
+
+    sites?: string[] | null;
 };

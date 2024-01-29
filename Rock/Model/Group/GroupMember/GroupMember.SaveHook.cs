@@ -289,10 +289,8 @@ namespace Rock.Model
 
                         if ( changes.Any() )
                         {
-                            Task.Run( async () =>
+                            Task.Run( () =>
                             {
-                                // Wait 1 second to allow all post save actions to complete
-                                await Task.Delay( 1000 );
                                 try
                                 {
                                     using ( var insertRockContext = new RockContext() )
@@ -320,10 +318,8 @@ namespace Rock.Model
 
                         if ( groupMemberChanges.Any() )
                         {
-                            Task.Run( async () =>
+                            Task.Run( () =>
                             {
-                                // Wait 1 second to allow all post save actions to complete
-                                await Task.Delay( 1000 );
                                 try
                                 {
                                     using ( var insertRockContext = new RockContext() )

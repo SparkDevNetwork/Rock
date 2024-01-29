@@ -47,7 +47,8 @@ namespace Rock.Blocks.Security
     [IconCssClass( "fa fa-user-lock" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    #region "Block Attributes"
+    #region Block Attributes
+
     [BooleanField(
         "Require Email For Username",
         Key = AttributeKey.RequireEmailForUsername,
@@ -432,6 +433,13 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult Register( AccountEntryRegisterRequestBox box )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var config = GetInitializationBox( box.State );

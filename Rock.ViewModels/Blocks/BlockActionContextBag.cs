@@ -15,16 +15,27 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Security.ForgotUserName
+using System.Collections.Generic;
+
+namespace Rock.ViewModels.Blocks
 {
     /// <summary>
-    /// A bag containing the required request information to send instructions.
+    /// The data structure of the __context parameter included with block
+    /// action requests.
     /// </summary>
-    public class ForgotUserNameSendInstructionsRequestBag
+    public class BlockActionContextBag
     {
         /// <summary>
-        /// The email to which to send instructions.
+        /// Gets or sets the page parameters that the page was originally
+        /// loaded with.
         /// </summary>
-        public string Email { get; set; }
+        /// <value>The page parameters.</value>
+        public Dictionary<string, string> PageParameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the captcha that should be validated by the server.
+        /// </summary>
+        /// <value>The captcha that should be validated by the server.</value>
+        public string Captcha { get; set; }
     }
 }

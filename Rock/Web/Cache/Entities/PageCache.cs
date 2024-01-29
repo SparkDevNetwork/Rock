@@ -20,10 +20,12 @@ using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -1075,6 +1077,51 @@ namespace Rock.Web.Cache
             properties.Add( "Pages", childPages );
 
             return properties;
+        }
+
+        /// <summary>
+        /// Gets the URL of the Page along with the BreadCrumbs
+        /// This method does not honor the page routes.
+        /// </summary>
+        /// <returns></returns>
+        [RockInternal( "1.16.3" )]
+        public string GetHyperLinkedPageBreadCrumbs()
+        {
+            var pageHyperLinkFormat = "<a href='{0}'>{1}</a>";
+            var result = new StringBuilder( string.Format( pageHyperLinkFormat, $"/page/{this.Id}", HttpUtility.HtmlEncode( this.InternalName ) ) );
+
+            var parentPageId = this.ParentPageId;
+            while ( parentPageId.HasValue )
+            {
+                var parentPage = Get( parentPageId.Value );
+                result.Insert( 0, " / " );
+                result.Insert( 0, string.Format( pageHyperLinkFormat, $"/page/{parentPage.Id}", HttpUtility.HtmlEncode( parentPage.InternalName ) ) );
+                parentPageId = parentPage.ParentPageId;
+            }
+
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Gets the name of the fully qualified page.
+        /// </summary>
+        /// <returns>A string which would have the bread crumbs of the page with the routes hyper-linked</returns>
+        [RockInternal( "1.16.3" )]
+        public string GetFullyQualifiedPageName()
+        {
+            var pageHyperLinkFormat = "<a href='{0}'>{1}</a>";
+            var result = new StringBuilder( string.Format( pageHyperLinkFormat, new PageReference( this.Id ).BuildUrl(), HttpUtility.HtmlEncode( this.InternalName ) ) );
+
+            var parentPageId = this.ParentPageId;
+            while ( parentPageId.HasValue )
+            {
+                var parentPage = Get( parentPageId.Value );
+                result.Insert( 0, " / " );
+                result.Insert( 0, string.Format( pageHyperLinkFormat, new PageReference( parentPage.Id ).BuildUrl(), HttpUtility.HtmlEncode( parentPage.InternalName ) ) );
+                parentPageId = parentPage.ParentPageId;
+            }
+
+            return string.Format( "<li>{0}</li>", result );
         }
 
         #endregion

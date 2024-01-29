@@ -21,6 +21,8 @@
 
         <Captcha v-if="!disableCaptchaSupport" v-model="isCaptchaValid"></Captcha>
 
+        <slot name="captcha" />
+
         <div class="row">
             <div class="col-md-12">
                 <RockButton
