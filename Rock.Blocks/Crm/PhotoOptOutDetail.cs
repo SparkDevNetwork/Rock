@@ -36,7 +36,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Allows a person to opt-out of future photo requests." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

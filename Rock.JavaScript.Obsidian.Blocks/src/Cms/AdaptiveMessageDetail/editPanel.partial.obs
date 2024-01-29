@@ -1,0 +1,293 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="key"
+                         label="Key"
+                         help="The unique key that will identify this adaptive message."
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CategoryPicker v-model="categories"
+                                label="Categories"
+                                multiple
+                                :entityTypeGuid="EntityType.AdaptiveMessage" />
+            </div>
+        </div>
+
+        <Panel title="Adaptation Attributes" :hasCollapse="false" :isDrawerOpen="true">
+            <div class="panel-body">
+                <NotificationBox alertType="info">
+                    These Attributes apply to all adaptations. Each adaptation will have thier own value for these attributes.
+                </NotificationBox>
+                <h5>Shared Adaptation Attributes</h5>
+                <div class="grid grid-panel">
+                    <Grid :data="gridSharedData" keyField="key" itemTerm="Shared Adaptation Attribute" liveUpdates light>
+                        <TextColumn name="name" field="name" title="Attribute" />
+                        <TextColumn name="description" field="description" title="Description" />
+                        <Column title="Inherited" name="key">
+                            <template #format="{ row }">
+                                (Inherited from Adaptive Message)
+                            </template>
+
+                            <template #skeleton>
+                                <div class="skeleton skeleton-text skeleton-rounded" />
+                            </template>
+                        </Column>
+                    </Grid>
+                </div>
+
+                <h5>Adaptation Attributes</h5>
+                <div class="grid grid-panel">
+                    <Grid :data="gridData" keyField="key" itemTerm="Attribute" liveUpdates light @addItem="onAddItem">
+                        <TextColumn name="name" field="name" title="Attribute" />
+                        <TextColumn name="description" field="description" title="Description" />
+                        <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+                        <EditColumn @click="onEditItem" />
+                        <DeleteColumn @click="onDeleteItem" disableConfirmation />
+                    </Grid>
+                </div>
+            </div>
+            <Modal v-model="isModalOpen" title="Adaptation Attributes">
+                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
+                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
+                        Please correct the following:
+                        <ul>
+                            <li v-for="error of attributeErrors">
+                                {{ error }}
+                            </li>
+                        </ul>
+                    </NotificationBox>
+                    <AttributeEditor v-model="adaptationAttribute" :reservedKeyNames="reservedKeyNames" />
+                </RockForm>
+
+                <template #customButtons>
+                    <RockButton btnType="primary" @click="onStartSaveAttribute">Save</RockButton>
+                </template>
+            </Modal>
+        </Panel>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Grid, { Column, EditColumn, DeleteColumn, TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AdaptiveMessageBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageDetail/adaptiveMessageBag";
+    import { AdaptiveMessageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageDetail/adaptiveMessageDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AdaptiveMessageBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AdaptiveMessageDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AdaptiveMessageBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const key = propertyRef(props.modelValue.key ?? "", "Key");
+    const categories = propertyRef(props.modelValue.categories ?? [], "Categories");
+    const adaptationSharedAttributes = ref(props.modelValue.adaptationSharedAttributes ?? []);
+    const adaptationAttributes = ref(props.modelValue.adaptationAttributes ?? []);
+    const adaptationAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const isModalOpen = ref<boolean>(false);
+    const attributeErrors = ref<string[]>([]);
+    const submitEditAttribute = ref<boolean>(false);
+    const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, categories, key];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const gridSharedData: GridDataBag = reactive<GridDataBag>({
+        rows: adaptationSharedAttributes.value.map(x => convertToRowItem(x))
+    });
+
+    const gridData: GridDataBag = reactive<GridDataBag>({
+        rows: adaptationAttributes.value.map(x => convertToRowItem(x))
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function convertToRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
+        return {
+            key: attribute.key,
+            name: attribute.name,
+            description: attribute.description,
+            isRequired: attribute.isRequired
+        };
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+    async function onAddItem(): Promise<void> {
+        adaptationAttribute.value = {} as PublicEditableAttributeBag;
+        isModalOpen.value = true;
+        attributeErrors.value = [];
+    }
+
+    const onEditItem = async (key: string): Promise<void> => {
+        attributeErrors.value = [];
+        const selectedSiteAttribute = adaptationAttributes.value.find(x => x.key === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedSiteAttribute) {
+            adaptationAttribute.value = selectedSiteAttribute;
+            isModalOpen.value = true;
+        }
+        else {
+            onAddItem();
+        }
+    };
+    const onDeleteItem = async (key: string): Promise<void> => {
+        // Close modal and remove deleted attribute from the current collection of attributes.
+        isModalOpen.value = false;
+        adaptationAttributes.value = adaptationAttributes.value.filter(s => s.key !== key);
+
+        // Update the grid.
+        if (gridData.rows) {
+            const index = gridData.rows.findIndex(r => r["key"] === key);
+
+            if (index !== -1) {
+                gridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    function onSaveAttribute(): void {
+
+        if (adaptationAttribute.value) {
+            const index = adaptationAttributes.value.findIndex(a => a.key === adaptationAttribute.value?.key);
+            if (index !== -1) {
+                // Get the updated attribute and rowItem.
+                let editedAttribute = adaptationAttributes.value.find(a => a.guid == adaptationAttribute.value?.guid);
+                let rowItem = gridData.rows?.find(x => x["idKey"] == adaptationAttribute.value?.key);
+
+                if (editedAttribute) {
+                    // Replace old attribute with updated attribute.
+                    editedAttribute = adaptationAttribute.value;
+                    adaptationAttributes.value.splice(index, 1, editedAttribute);
+                }
+
+                if (rowItem && gridData.rows && editedAttribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = gridData.rows.findIndex(r => r["idKey"] === adaptationAttribute.value?.key);
+                    rowItem = convertToRowItem(editedAttribute);
+                    gridData.rows?.splice(rowIndex, 1, rowItem);
+                }
+            }
+            else {
+                adaptationAttributes.value.push(adaptationAttribute.value);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = convertToRowItem(adaptationAttribute.value);
+                gridData.rows?.push(newRowItem);
+            }
+
+            const key = adaptationAttribute.value?.key ?? "";
+            adaptationAttribute.value = null;
+            isModalOpen.value = false;
+            if (!reservedKeyNames.value.includes(key)) {
+                reservedKeyNames.value.push(key);
+            }
+        }
+    }
+
+    const onStartSaveAttribute = (): void => {
+        attributeErrors.value = [];
+        const isExistingKey = reservedKeyNames.value.includes(adaptationAttribute.value?.key ?? "") && !adaptationAttribute.value?.guid;
+        submitEditAttribute.value = !isExistingKey;
+        if (isExistingKey) {
+            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
+    };
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(key, props.modelValue.key ?? "");
+        updateRefValue(categories, props.modelValue.categories ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues,adaptationAttributes, ...propRefs], () => {
+        const newValue: AdaptiveMessageBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            isActive: isActive.value,
+            name: name.value,
+            key: key.value,
+            categories: categories.value,
+            adaptationAttributes: adaptationAttributes.value,
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -334,6 +334,18 @@ namespace Rock.SystemKey
         public const string OBSERVABILITY_TARGETED_QUERIES = "core_ObservabilityTargetedQueries";
 
         /// <summary>
+        /// The maximum number of spans that can be created for a single trace
+        /// in observability.
+        /// </summary>
+        public const string OBSERVABILITY_SPAN_COUNT_LIMIT = "core_ObservabilitySpanCountLimit";
+
+        /// <summary>
+        /// The maximum length of any single attribute value in observability
+        /// traces.
+        /// </summary>
+        public const string OBSERVABILITY_MAX_ATTRIBUTE_LENGTH = "core_ObservabilityMaxAttributeLength";
+
+        /// <summary>
         /// The label text for the SMS Opt-In checkbox
         /// </summary>
         public const string SMS_OPT_IN_MESSAGE_LABEL = "core_SmsOptInMessageLabel";
@@ -342,5 +354,10 @@ namespace Rock.SystemKey
         /// The content library data (JSON).
         /// </summary>
         public const string CONTENT_LIBRARY_DATA_JSON = "core_ContentLibraryDataJson";
+
+        /// <summary>
+        /// Determine if Same Sex Couples are allowed.
+        /// </summary>
+        public const string BIBLE_STRICT_SPOUSE = "core_BibleStrictSpouse";
     }
 }

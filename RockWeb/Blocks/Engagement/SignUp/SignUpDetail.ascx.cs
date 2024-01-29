@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             public const string GroupTypeId = "GroupTypeId";
             public const string GroupRequirementsState = "GroupRequirementsState";
             public const string IsAuthorizedToEdit = "IsAuthorizedToEdit";
+            public const string IsAuthorizedToSchedule = "IsAuthorizedToSchedule";
             public const string IsProjectTypeInPerson = "IsProjectTypeInPerson";
             public const string OpportunitiesState = "OpportunitiesState";
             public const string ProjectName = "ProjectName";
@@ -106,6 +107,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
         #region Fields
 
         private bool _canEdit;
+        private bool _canSchedule;
+
         private bool _isProjectTypeInPerson;
 
         #endregion
@@ -294,7 +297,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
             base.LoadViewState( savedState );
 
             _canEdit = ( bool ) ViewState[ViewStateKey.IsAuthorizedToEdit];
-            gOpportunities.Actions.ShowAdd = _canEdit;
+
+            _canSchedule = ( bool ) ViewState[ViewStateKey.IsAuthorizedToSchedule];
+            gOpportunities.Actions.ShowAdd = _canSchedule;
 
             _isProjectTypeInPerson = ( bool ) ViewState[ViewStateKey.IsProjectTypeInPerson];
 
@@ -428,6 +433,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         protected override object SaveViewState()
         {
             ViewState[ViewStateKey.IsAuthorizedToEdit] = _canEdit;
+            ViewState[ViewStateKey.IsAuthorizedToSchedule] = _canSchedule;
             ViewState[ViewStateKey.IsProjectTypeInPerson] = _isProjectTypeInPerson;
 
             var jsonSetting = new JsonSerializerSettings
@@ -515,7 +521,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 else
                 {
                     group = groupService.Queryable()
-                        .Include( g => g.ParentGroup ) // Parent group is needed to properly check for edit authorization.
+                        .Include( g => g.ParentGroup ) // ParentGroup may be needed for a proper authorization check.
                         .Include( g => g.GroupRequirements )
                         .FirstOrDefault( g => g.Id == this.GroupId );
 
@@ -1013,7 +1019,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
-            if ( !_canEdit )
+            if ( !_canSchedule )
             {
                 var editField = gOpportunities.ColumnsOfType<EditField>().FirstOrDefault( c => c.ID == "efOpportunities" );
                 if ( editField != null )
@@ -1071,7 +1077,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             {
                 var groupService = new GroupService( rockContext );
                 var group = groupService.Queryable()
-                    .Include( g => g.ParentGroup ) // Parent group is needed to properly check for edit authorization.
+                    .Include( g => g.ParentGroup ) // ParentGroup may be needed for a proper authorization check.
                     .FirstOrDefault( g => g.Id == this.GroupId );
 
                 if ( group == null )
@@ -1764,18 +1770,32 @@ namespace RockWeb.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Determines whether [is authorized to edit] [the specified group].
+        /// Determines whether the current person is authorized to edit the current project (group).
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns>
-        ///   <c>true</c> if [is authorized to edit] [the specified group]; otherwise, <c>false</c>.
+        /// Whether the current person is authorized to edit the current project (group).
         /// </returns>
         private bool IsAuthorizedToEdit( Group group )
         {
-            _canEdit = IsUserAuthorized( Authorization.EDIT )
-                && group?.IsSystem == false
-                && group?.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) == true;
+            _canEdit = group != null
+                && !group.IsSystem
+                && group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+
             return _canEdit;
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to schedule (add/edit/delete) project opportunities.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns>Whether the current person is authorized to schedule (add/edit/delete) project opportunities.</returns>
+        private bool IsAuthorizedToSchedule( Group group )
+        {
+            _canSchedule = group != null
+                && ( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) );
+
+            return _canSchedule;
         }
 
         /// <summary>
@@ -2109,9 +2129,14 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             BindOpportunitiesGrid( group );
 
-            pnlActions.Visible = !isReadOnly;
+            var canAdministrate = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
-            btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            pnlActions.Visible = !isReadOnly || canAdministrate;
+
+            btnEdit.Visible = !isReadOnly;
+            btnDelete.Visible = !isReadOnly;
+
+            btnSecurity.Visible = canAdministrate;
             btnSecurity.EntityId = group.Id;
         }
 
@@ -2718,7 +2743,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
     <div class=""indicator"" style=""left: {percentage}%;""></div>";
                     }
 
-                    return $@"<div class=""progress progress-sign-ups text-{progressState} m-0 flex-fill js-progress-sign-ups"" role=""progressbar"" title=""{ProgressBarTooltip.EncodeHtml()}"" aria-label=""Sign-Ups Progress"">
+                    return $@"<div class=""progress progress-sign-ups text-{progressState} m-0 flex-fill js-progress-sign-ups"" role=""progressbar"" title=""{ProgressBarTooltip.EncodeHtml()}"" aria-label=""Sign-Ups Progress"" data-slots-filled=""{filled}"">
     <div class=""progress-bar progress-bar-sign-ups bg-{progressState}"" style=""width: {filledPercentage}%""></div>{GetIndicator( minPercentage )}{GetIndicator( desiredPercentage )}{GetIndicator( maxPercentage, true )}
 </div>";
                 }
@@ -2759,6 +2784,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     .Queryable()
                     .AsNoTracking()
                     .Include( g => g.Campus )
+                    .Include( g => g.ParentGroup ) // ParentGroup may be needed for a proper authorization check.
                     .FirstOrDefault( g => g.Id == this.GroupId );
 
                 if ( shouldForceRefresh || this.OpportunitiesState?.Any() != true )
@@ -2824,13 +2850,13 @@ namespace RockWeb.Blocks.Engagement.SignUp
                                 }
                             }
 
-                            var particpantCount = participantCounts.FirstOrDefault( c =>
+                            var participantCount = participantCounts.FirstOrDefault( c =>
                                 c.GroupId == gls.Group.Id
                                 && c.LocationId == gls.Location.Id
                                 && c.ScheduleId == gls.Schedule.Id
                             )?.Count ?? 0;
 
-                            totalParticipantCount += particpantCount;
+                            totalParticipantCount += participantCount;
 
                             return new Opportunity
                             {
@@ -2846,7 +2872,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                                 SlotsMin = gls.Config?.MinimumCapacity,
                                 SlotsDesired = gls.Config?.DesiredCapacity,
                                 SlotsMax = gls.Config?.MaximumCapacity,
-                                SlotsFilled = particpantCount,
+                                SlotsFilled = participantCount,
                                 ReminderAdditionalDetails = gls.Config?.ReminderAdditionalDetails,
                                 ConfirmationAdditionalDetails = gls.Config?.ConfirmationAdditionalDetails
                             };
@@ -2880,7 +2906,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
 
                 gOpportunities.RowItemText = timeframe == OpportunityTimeframe.Upcoming ? "Upcoming Opportunity" : "Past Opportunity";
-                gOpportunities.Actions.ShowAdd = IsAuthorizedToEdit( group );
+                gOpportunities.Actions.ShowAdd = IsAuthorizedToSchedule( group );
 
                 var nameColumn = gOpportunities.ColumnsOfType<RockBoundField>().FirstOrDefault( c => c.DataField == "Name" );
                 if ( nameColumn != null )

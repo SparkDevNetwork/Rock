@@ -67,6 +67,9 @@ namespace Rock.Field.Types
                 case MobileNavigationActionType.PopPage:
                     return $"Pop {popCount} page{( popCount != 1 ? "s" : string.Empty )}";
 
+                case MobileNavigationActionType.DismissCoverSheet:
+                    return $"Dismiss Cover Sheet";
+
                 case MobileNavigationActionType.PushPage:
                     return $"Push '{pageCache?.InternalName}'";
 

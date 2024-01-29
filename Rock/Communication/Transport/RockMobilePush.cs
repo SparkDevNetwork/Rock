@@ -456,27 +456,32 @@ namespace Rock.Communication.Transport
                 data.AddOrReplace( "silent", "true" );
             }
 
+            // Android config
+            var androidConfig = new AndroidConfig
+            {
+                Notification =
+                {
+                    ClickAction = "Rock.Mobile.Main",
+                    Sound = sound,
+                }
+            };
+
+            // iOS config
+            var apnsConfig = new ApnsConfig
+            {
+                Aps =
+                {
+                    Badge = emailMessage.Data?.ApplicationBadgeCount
+                }
+            };
+
             var msg = new FirebaseAdmin.Messaging.MulticastMessage
             {
                 Tokens = to,
                 Notification = notification,
                 Data = data,
-                Android =
-                {
-                    Notification =
-                    {
-                        ClickAction = "Rock.Mobile.Main",
-                        Sound = sound,
-
-                    }
-                },
-                Apns =
-                {
-                    Aps =
-                    {
-                        Badge = emailMessage.Data.ApplicationBadgeCount
-                    }
-                }
+                Android = androidConfig,
+                Apns = apnsConfig
             };
 
             var firebaseApp = GetFirebaseApp();

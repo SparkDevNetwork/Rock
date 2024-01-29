@@ -57,14 +57,6 @@ namespace RockWeb.Blocks.Reporting
     public partial class InteractionComponentDetail : Rock.Web.UI.RockBlock
     {
 
-        #region Fields 
-
-        RockContext _rockContext = null;
-        InteractionComponentService _componentService = null;
-        InteractionComponent _component = null;
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -105,13 +97,15 @@ namespace RockWeb.Blocks.Reporting
         /// </returns>
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
-            _rockContext = new RockContext();
-            _componentService = new InteractionComponentService( _rockContext );
-            _component = _componentService.Get( PageParameter( "ComponentId" ).AsInteger() );
+            using ( var rockContext = new RockContext() )
+            {
+                var componentService = new InteractionComponentService( rockContext );
+                var componentName = componentService.GetSelect( PageParameter( "ComponentId" ).AsInteger(), c => c.Name );
 
-            var breadCrumbs = new List<BreadCrumb>();
-            breadCrumbs.Add( new BreadCrumb( _component != null ? _component.Name : "Component", pageReference ) );
-            return breadCrumbs;
+                var breadCrumbs = new List<BreadCrumb>();
+                breadCrumbs.Add( new BreadCrumb( componentName != null ? componentName : "Component", pageReference ) );
+                return breadCrumbs;
+            }
         }
 
         #endregion
@@ -139,21 +133,25 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowDetail( int componentId )
         {
-            if ( _component != null )
+            var rockContext = new RockContext();
+            var componentService = new InteractionComponentService( rockContext );
+            var component = componentService.Get( PageParameter( "ComponentId" ).AsInteger() );
+
+            if ( component != null )
             {
-                pnlDetails.Visible = UserCanEdit || _component.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                pnlDetails.Visible = UserCanEdit || component.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 IEntity componentEntity = null;
-                if ( _component.InteractionChannel.ComponentEntityTypeId.HasValue )
+                if ( component.InteractionChannel.ComponentEntityTypeId.HasValue )
                 {
-                    componentEntity = GetComponentEntity( _rockContext, _component );
+                    componentEntity = GetComponentEntity( rockContext, component );
                 }
 
-                lTitle.Text = _component.Name.FormatAsHtmlTitle();
+                lTitle.Text = component.Name.FormatAsHtmlTitle();
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "InteractionChannel", _component.InteractionChannel );
-                mergeFields.Add( "InteractionComponent", _component );
+                mergeFields.Add( "InteractionChannel", component.InteractionChannel );
+                mergeFields.Add( "InteractionComponent", component );
 
                 if ( componentEntity != null )
                 {
@@ -166,8 +164,8 @@ namespace RockWeb.Blocks.Reporting
                 
                 mergeFields.Add( "InteractionComponentEntity", componentEntity);
 
-                string template = _component.InteractionChannel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
-                    _component.InteractionChannel.ComponentDetailTemplate :
+                string template = component.InteractionChannel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
+                    component.InteractionChannel.ComponentDetailTemplate :
                     GetAttributeValue( "DefaultTemplate" );
 
                 lContent.Text = template.ResolveMergeFields( mergeFields );

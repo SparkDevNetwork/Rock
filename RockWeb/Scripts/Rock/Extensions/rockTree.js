@@ -184,7 +184,10 @@
                     if (parentNode && parentNode.entityId) {
                         restUrl += parentNode.entityId;
                     } else {
-                        var sanitizedId = parentId.toString().replace(self.options.categoryPrefix, '');
+                        var sanitizedId = parentId.toString();
+                        if (parentNode && parentNode.isCategory) {
+                            sanitizedId = sanitizedId.replace(self.options.categoryPrefix, '');
+                        }
                         restUrl += sanitizedId;
                     }
 

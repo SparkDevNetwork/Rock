@@ -612,6 +612,11 @@
                 recurringContinueUntilType.value = "endBy";
                 recurringContinueUntilDate.value = rrule.endDate.toISOString();
             }
+
+            if (event?.excludedDates) {
+                recurringExclusionDates.value = event?.excludedDates;
+            }
+
         }
     }
 

@@ -41,6 +41,13 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
         public ListItemBag Schedule { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of minutes before the schedule starts that
+        /// the experience should be enabled.
+        /// </summary>
+        /// <value>The number of minutes before the schedule to enable the experience.</value>
+        public int? EnableMinutesBefore { get; set; }
+
+        /// <summary>
         /// Gets or sets the campuses that are tied to this schedule.
         /// </summary>
         /// <value>The campuses that are tied to this schedule.</value>
@@ -57,5 +64,13 @@ namespace Rock.ViewModels.Blocks.Event.InteractiveExperiences.InteractiveExperie
         /// </summary>
         /// <value>The group to use for filtering.</value>
         public ListItemBag Group { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute values.
+        /// </summary>
+        /// <value>
+        /// The attribute values.
+        /// </value>
+        public Dictionary<string, string> AttributeValues { get; set; }
     }
 }

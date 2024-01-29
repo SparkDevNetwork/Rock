@@ -742,7 +742,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                         foreach ( var attribute in entityAttributeListForAttributeKey )
                         {
                             filterAttribute = attribute;
-                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
+                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute, limitToFilterableAttributes:false );
 
                             var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
                             if ( filterExpression is NoAttributeFilterExpression )

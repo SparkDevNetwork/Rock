@@ -51,7 +51,7 @@ namespace Rock.Blocks.Utility
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var phoneNumbers = SystemPhoneNumberCache.All()
+            var phoneNumbers = SystemPhoneNumberCache.All( false )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )

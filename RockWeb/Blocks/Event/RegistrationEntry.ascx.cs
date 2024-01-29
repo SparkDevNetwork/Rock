@@ -2983,6 +2983,22 @@ namespace RockWeb.Blocks.Event
                     string lastName = registrantInfo.GetLastName( RegistrationTemplate );
                     string email = registrantInfo.GetEmail( RegistrationTemplate );
 
+                    /*
+                        10/11/2023 - DSH
+
+                        In regards to https://github.com/SparkDevNetwork/Rock/issues/5091,
+                        we believe the issue is only with this block and not the Obsidian
+                        version of the block. Since we still can't track down what is
+                        causing the issue our plan is to at least prevent these blank
+                        registrations from being created when possible. So if either
+                        the first name or last name fields are blank (which they should
+                        never be), we will abort the registration with an error.
+                     */
+                    if ( firstName.IsNullOrWhiteSpace() || lastName.IsNullOrWhiteSpace() )
+                    {
+                        throw new RegistrationTemplateFormFieldException( "Registration cannot be completed due to missing information. Please refresh the page and try again, or contact us if the issue persists." );
+                    }
+
                     var birthday = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate ).ToStringSafe().AsDateTime();
                     var mobilePhone = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone ).ToStringSafe();
 

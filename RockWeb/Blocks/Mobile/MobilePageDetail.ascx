@@ -81,6 +81,7 @@
 
                 <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" ValidationGroup="EditPage" />
                 <Rock:ImageUploader ID="imgPageIcon" runat="server" Help="This image is used as a icon for your page." Label="Icon" />
+                <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
 
                 <Rock:PanelWidget ID="pwEditAdvancedSettings" runat="server" Title="Advanced Settings">
                     <div class="row">

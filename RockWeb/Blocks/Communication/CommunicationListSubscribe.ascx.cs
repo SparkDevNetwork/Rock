@@ -45,7 +45,6 @@ namespace RockWeb.Blocks.Communication
         Description = "Select the categories of the communication lists to display, or select none to show all that the user is authorized to view.",
         AllowMultiple = true,
         GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST,
-        DefaultValue = Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC,
         IsRequired = false,
         Key = AttributeKey.CommunicationListCategories,
         Order = 1 )]

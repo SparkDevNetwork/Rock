@@ -25,5 +25,13 @@ namespace Rock.ViewModels.Blocks.Security.Login
         /// Gets or sets the authentication entity type guid.
         /// </summary>
         public string AuthenticationType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current URL path.
+        /// </summary>
+        /// <value>
+        /// The current URL path.
+        /// </value>
+        public string Route { get; set; }
     }
 }

@@ -36,6 +36,8 @@ namespace Rock.Lava
     /// </summary>
     public class LavaElementAttributes
     {
+        #region Factory Methods
+
         /// <summary>
         /// Create a new instance from the specified markup.
         /// </summary>
@@ -61,6 +63,24 @@ namespace Rock.Lava
             return attributes;
         }
 
+        #endregion
+
+        /// <summary>
+        /// Create a copy of the current object.
+        /// </summary>
+        /// <returns></returns>
+        public LavaElementAttributes Clone()
+        {
+            var attributes = new LavaElementAttributes();
+
+            foreach( var kv in _settings )
+            {
+                attributes[kv.Key] = kv.Value;
+            }
+
+            return attributes;
+        }
+
         private Dictionary<string, string> _settings = GetConfiguredAttributeDictionary();
 
         /// <summary>
@@ -72,14 +92,13 @@ namespace Rock.Lava
             {
                 return _settings;
             }
+
             set
             {
-                _settings = value;
-
-                if ( _settings == null )
-                {
-                    _settings = GetConfiguredAttributeDictionary();
-                }
+                // This set function should be removed, because it could be misleading.
+                // It performs a value copy rather than setting a reference to the supplied dictionary,
+                // because the internal dictionary must use a case-insensitive key.
+                AddOrIgnore( value );
             }
         }
 
@@ -93,6 +112,7 @@ namespace Rock.Lava
                 return _settings.Count;
             }
         }
+
         /// <summary>
         /// Returns a flag indicating if a value exists for the specified parameter name.
         /// </summary>
@@ -152,6 +172,62 @@ namespace Rock.Lava
             _settings[name] = value;
 
             return true;
+        }
+
+        /// <summary>
+        /// Adds the specified parameter and value if it does not already exist.
+        /// </summary>
+        /// <param name="values"></param>
+        public bool AddOrIgnore( IDictionary<string, string> values )
+        {
+            if ( values == null )
+            {
+                return false;
+            }
+
+            bool added = false;
+            foreach ( var value in values )
+            {
+                added = added | AddOrIgnore( value.Key, value.Value );
+            }
+
+            return added;
+        }
+
+        /// <summary>
+        /// Remove the named parameter.
+        /// </summary>
+        /// <param name="name"></param>
+        public bool Remove( string name )
+        {
+            name = name?.Trim() ?? string.Empty;
+
+            if ( !_settings.ContainsKey( name ) )
+            {
+                return false;
+            }
+
+            var removed = _settings.Remove( name );
+            return removed;
+        }
+
+        /// <summary>
+        /// Remove the named parameters.
+        /// </summary>
+        /// <param name="names"></param>
+        /// <returns></returns>
+        public bool Remove( IEnumerable<string> names )
+        {
+            bool removed = false;
+            foreach ( var name in names )
+            {
+                if ( _settings.Remove( name ) )
+                {
+                    removed = true;
+                }
+            }
+
+            return removed;
         }
 
         /// <summary>
@@ -479,8 +555,9 @@ namespace Rock.Lava
             // 2. Must be terminated with a space that does not form part of the parameter value.
             // 3. Must contain a colon separating the key from the value.
             // 4. Must preserve the content of Lava tags.
+            // 5. Has a case-insensitive Key.
 
-            var parameters = new Dictionary<string, string>();
+            var parameters = GetConfiguredAttributeDictionary();
 
             if ( string.IsNullOrWhiteSpace( elementAttributesMarkup ) )
             {

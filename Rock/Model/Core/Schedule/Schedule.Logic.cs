@@ -26,6 +26,7 @@ using Rock.Lava;
 using Rock.Web.Cache;
 using Ical.Net.CalendarComponents;
 using System.ComponentModel.DataAnnotations;
+using Rock.Attribute;
 
 namespace Rock.Model
 {
@@ -758,6 +759,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a list of scheduled start datetimes between the two specified dates, sorted by datetime.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="excludeOccurrencesAlreadyStarted">Whether to exclude occurrences whose start time has already passed.</param>
+        /// <returns>A list of scheduled start datetimes between the two specified dates, sorted by datetime.</returns>
+        [RockInternal( "1.16.1" )]
+        public virtual List<DateTime> GetScheduledStartTimes( DateTime beginDateTime, DateTime endDateTime, bool excludeOccurrencesAlreadyStarted )
+        {
+            return GetScheduledStartTimes( beginDateTime, endDateTime )
+                .Where( a => !excludeOccurrencesAlreadyStarted || a > beginDateTime )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the first start date time.
         /// </summary>
         /// <returns></returns>
@@ -1016,18 +1032,40 @@ namespace Rock.Model
             var calEvent = this.GetICalEvent();
             if ( calEvent != null && calEvent.DtStart != null )
             {
-                // Is the current time earlier than the event's start time?
-                if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds )
+                // If compare is greater than zero, then the End Day is in the next day.
+                var endDateTimeIsNextDay = calEvent.DtEnd.Date > calEvent.DtStart.Date;
+                if ( endDateTimeIsNextDay )
                 {
-                    return false;
+                    /*
+                       edrotning 2023-09-28
+                       Since we are just comparing the time and not the date here, the end time is going to be smaller than the start time, this is because the start Time is on the previous day.
+                       The given time falls outside of the start time to midnight and the midnight to end time windows
+                       has to be greater than the end time, which is going to be an earlier time than the start time.
+                    */
+                        if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds
+                            && time.TimeOfDay.TotalSeconds >= calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
+                        {
+                            return false;
+                        }
+                }
+                else
+                {
+                    // Start and end time are on the same day, so simple compare of seconds
+
+                    if ( time.TimeOfDay.TotalSeconds < calEvent.DtStart.Value.TimeOfDay.TotalSeconds )
+                    {
+                        // The given time is earlier than the event's start time
+                        return false;
+                    }
+
+                    if ( time.TimeOfDay.TotalSeconds > calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
+                    {
+                        // The given time is later than the event's end time
+                        return false;
+                    }
                 }
 
-                // Is the current time later than the event's end time?
-                if ( time.TimeOfDay.TotalSeconds > calEvent.DtEnd.Value.TimeOfDay.TotalSeconds )
-                {
-                    return false;
-                }
-
+                // After verifying the times, get the occurrences for this schedule for the provided date.
                 var occurrences = GetICalOccurrences( time.Date );
                 return occurrences.Count > 0;
             }
@@ -1183,12 +1221,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns the schedule's name if defined, or a friendly text of the calendar event if not.
+        /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
+        /// <returns>The schedule's name if defined, or a friendly text of the calendar event if not.</returns>
         public override string ToString()
+        {
+            return ToString( false );
+        }
+
+        /// <summary>
+        /// Returns the schedule's name if defined, or a friendly text of the calendar event if not.
+        /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
+        /// </summary>
+        /// <param name="condensed">Whether to return condensed friendly text (with no HTML markup, for example).</param>
+        /// <returns>The schedule's name if defined, or a friendly text of the calendar event if not.</returns>
+        public string ToString( bool condensed )
         {
             if ( this.Name.IsNotNullOrWhiteSpace() )
             {
@@ -1196,7 +1244,7 @@ namespace Rock.Model
             }
             else
             {
-                return this.ToFriendlyScheduleText();
+                return this.ToFriendlyScheduleText( condensed );
             }
         }
 

@@ -393,7 +393,7 @@ namespace RockWeb.Blocks.Crm
                                 }
                                 else
                                 {
-                                    pnlView.Visible = false;
+                                    ShowPage();
                                 }
                                 upnlContent.Update();
                             }
@@ -764,6 +764,8 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
+
+                upnlContent.Update();
             }
         }
 

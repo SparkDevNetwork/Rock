@@ -15,9 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility;
 
 namespace Rock.Transactions
 {
@@ -52,7 +53,7 @@ namespace Rock.Transactions
             using ( var rockContext = new RockContext() )
             {
                 var communication = new CommunicationService( rockContext ).Get( CommunicationId );
-                AsyncHelper.RunSync( () => Model.Communication.SendAsync( communication ) );
+                Task.Run( async () => await Model.Communication.SendAsync( communication ) );
             }
         }
     }

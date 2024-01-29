@@ -1072,6 +1072,7 @@
 		<row><td>ShowMsiLog</td><td>226</td><td>SystemFolder</td><td>[SystemFolder]notepad.exe "[MsiLogFileLocation]"</td><td/><td>Shows Property-driven MSI Log</td></row>
 		<row><td>setAllUsersProfile2K</td><td>51</td><td>ALLUSERSPROFILE</td><td>[%ALLUSERSPROFILE]</td><td/><td/></row>
 		<row><td>setPublicProfileVista</td><td>51</td><td>PUBLIC</td><td>[%PUBLIC]</td><td/><td/></row>
+		<row><td>setSysArmProfileVista</td><td>51</td><td>SystemArmFolder</td><td>[%systemroot]\SysArm32</td><td/><td/></row>
 		<row><td>setUserProfileNT</td><td>51</td><td>USERPROFILE</td><td>[%USERPROFILE]</td><td/><td/></row>
 	</table>
 
@@ -1135,6 +1136,7 @@
 		<row><td>AppDataFolder</td><td>TARGETDIR</td><td>.:APPLIC~1|Application Data</td><td/><td>0</td><td/></row>
 		<row><td>CommonAppDataFolder</td><td>TARGETDIR</td><td>.:Common~1|CommonAppData</td><td/><td>0</td><td/></row>
 		<row><td>CommonFiles64Folder</td><td>TARGETDIR</td><td>.:Common64</td><td/><td>0</td><td/></row>
+		<row><td>CommonFilesArmFolder</td><td>TARGETDIR</td><td>.:COMMON~3|Common Files (Arm)</td><td/><td>0</td><td/></row>
 		<row><td>CommonFilesFolder</td><td>TARGETDIR</td><td>.:Common</td><td/><td>0</td><td/></row>
 		<row><td>DATABASEDIR</td><td>ISYourDataBaseDir</td><td>.</td><td/><td>0</td><td/></row>
 		<row><td>DesktopFolder</td><td>TARGETDIR</td><td>.:Desktop</td><td/><td>3</td><td/></row>
@@ -1155,6 +1157,7 @@
 		<row><td>PrimaryVolumePath</td><td>TARGETDIR</td><td>.:Primar~1|PrimaryVolumePath</td><td/><td>0</td><td/></row>
 		<row><td>PrintHoodFolder</td><td>TARGETDIR</td><td>.:PRINTH~1|PrintHood</td><td/><td>0</td><td/></row>
 		<row><td>ProgramFiles64Folder</td><td>TARGETDIR</td><td>.:Prog64~1|Program Files 64</td><td/><td>0</td><td/></row>
+		<row><td>ProgramFilesArmFolder</td><td>TARGETDIR</td><td>.:PROGRA~3|Program Files (Arm)</td><td/><td>0</td><td/></row>
 		<row><td>ProgramFilesFolder</td><td>TARGETDIR</td><td>.:PROGRA~1|program files</td><td/><td>0</td><td/></row>
 		<row><td>ProgramMenuFolder</td><td>TARGETDIR</td><td>.:Programs</td><td/><td>3</td><td/></row>
 		<row><td>ROCK_RMS_CHECK_SCANNER</td><td>SPARK_DEVELOPMENT_NETWORK</td><td>ROCKRM~1|Rock RMS Check Scanner</td><td/><td>0</td><td/></row>
@@ -1165,6 +1168,7 @@
 		<row><td>StartupFolder</td><td>TARGETDIR</td><td>.:StartUp</td><td/><td>3</td><td/></row>
 		<row><td>System16Folder</td><td>TARGETDIR</td><td>.:System</td><td/><td>0</td><td/></row>
 		<row><td>System64Folder</td><td>TARGETDIR</td><td>.:System64</td><td/><td>0</td><td/></row>
+		<row><td>SystemArmFolder</td><td>TARGETDIR</td><td>.:SYSARM~1|SysArm32</td><td/><td>0</td><td/></row>
 		<row><td>SystemFolder</td><td>TARGETDIR</td><td>.:System32</td><td/><td>0</td><td/></row>
 		<row><td>TARGETDIR</td><td/><td>SourceDir</td><td/><td>0</td><td/></row>
 		<row><td>TempFolder</td><td>TARGETDIR</td><td>.:Temp</td><td/><td>0</td><td/></row>
@@ -3993,6 +3997,7 @@
 		<row><td>WriteRegistryValues</td><td/><td>5000</td><td>WriteRegistryValues</td><td/></row>
 		<row><td>setAllUsersProfile2K</td><td>VersionNT &gt;= 500</td><td>980</td><td/><td/></row>
 		<row><td>setPublicProfileVista</td><td>VersionNT &gt;= 600</td><td>985</td><td/><td/></row>
+		<row><td>setSysArmProfileVista</td><td>VersionNT &gt;= 600</td><td>986</td><td/><td/></row>
 		<row><td>setUserProfileNT</td><td>VersionNT</td><td>960</td><td/><td/></row>
 	</table>
 
@@ -4020,7 +4025,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISUSLock</td><td>{047583ED-57C0-46EB-8BF9-DF0B2654EC4E}</td></row>
 		<row><td>ISUSSignature</td><td>{BF0AF29E-BE3B-421E-A916-D305CD7F709A}</td></row>
 		<row><td>ISUpdateNotifications</td><td>0</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewShortcuts,viewProject,viewUI,viewRelease,viewSupportFiles,viewSetupDesign,viewUpgradePaths</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewShortcuts,viewProject,viewUI,viewRelease,viewSupportFiles,viewSetupDesign,viewUpgradePaths,viewISToday</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
 		<row><td>MsiLogFile</td><td/></row>
@@ -4031,7 +4036,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SaveAsSchema</td><td/></row>
 		<row><td>SccEnabled</td><td>0</td></row>
 		<row><td>SccPath</td><td/></row>
-		<row><td>SchemaVersion</td><td>784</td></row>
+		<row><td>SchemaVersion</td><td>786</td></row>
 		<row><td>Type</td><td>MSIE</td></row>
 	</table>
 
@@ -4068,6 +4073,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ValidateProductID</td><td/><td>700</td><td>ValidateProductID</td><td/></row>
 		<row><td>setAllUsersProfile2K</td><td>VersionNT &gt;= 500</td><td>980</td><td/><td/></row>
 		<row><td>setPublicProfileVista</td><td>VersionNT &gt;= 600</td><td>985</td><td/><td/></row>
+		<row><td>setSysArmProfileVista</td><td>VersionNT &gt;= 600</td><td>986</td><td/><td/></row>
 		<row><td>setUserProfileNT</td><td>VersionNT</td><td>960</td><td/><td/></row>
 	</table>
 
@@ -4396,9 +4402,9 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGMSG_IIS_ROLLBACKVROOTS</td><td>##IDS_PROGMSG_IIS_ROLLBACKVROOTS##</td><td/></row>
 		<row><td>PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS</td><td>##IDS_PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS##</td><td/></row>
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]CheckScannerUtility.Primary output</td><td/></row>
-		<row><td>ProductCode</td><td>{130B034F-DB09-42B0-9340-9506BA6BED5E}</td><td/></row>
+		<row><td>ProductCode</td><td>{DC5020A1-3D21-4772-8FD5-1FA5A0A1A76F}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Check Scanner</td><td/></row>
-		<row><td>ProductVersion</td><td>1.14.1.0</td><td/></row>
+		<row><td>ProductVersion</td><td>1.16.1.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
@@ -4683,7 +4689,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">Remove</col>
 		<col def="s72">ActionProperty</col>
 		<col def="S72">ISDisplayName</col>
-		<row><td>{7A96B742-1A9F-4D81-A12F-0182872CF180}</td><td></td><td>1.14.1.0</td><td></td><td>0</td><td/><td>ISACTIONPROP1</td><td>UpgradeFromAny</td></row>
+		<row><td>{7A96B742-1A9F-4D81-A12F-0182872CF180}</td><td></td><td>1.16.1.0</td><td></td><td>0</td><td/><td>ISACTIONPROP1</td><td>UpgradeFromAny</td></row>
 	</table>
 
 	<table name="Verb">

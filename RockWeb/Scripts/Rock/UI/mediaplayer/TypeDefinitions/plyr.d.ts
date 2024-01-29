@@ -138,6 +138,8 @@ declare class Plyr {
      */
     ratio?: string;
 
+    download?: string;
+
     /**
      * Access Elements cache
      */

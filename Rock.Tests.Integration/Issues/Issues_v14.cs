@@ -54,7 +54,10 @@ namespace Rock.Tests.Integration.BugFixes
             var personService = new PersonService( rockContext );
             var personIdList = personService.Queryable().Take( 50000 ).Select( p => p.Id.ToString() ).ToList();
 
-            Assert.AreEqual( 50000, personIdList.Count, "There are insufficient Person records in the current database to create the Communication List." );
+            if ( personIdList.Count < 50000 )
+            {
+                Assert.Inconclusive( "There are insufficient Person records in the current database to create the Communication List." );
+            }
 
             // Create List 1
             CreateTestCommunicationList( "Test Communication List 1",

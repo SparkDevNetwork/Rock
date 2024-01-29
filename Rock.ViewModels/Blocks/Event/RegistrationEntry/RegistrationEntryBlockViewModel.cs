@@ -431,13 +431,20 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public List<ListItemBag> Ethnicities { get; set; }
 
         /// <summary>
+        /// Gets or sets a value that indicates if the progress bar should be hidden.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the progress bar should be hidden; otherwise <c>false</c>.
+        /// </value>
+        public bool HideProgressBar { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to show the SMS OptIn checkbox under the phone number
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowSmsOptIn { get; set; }
-
     }
 
     /// <summary>
@@ -774,6 +781,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// </summary>
     public sealed class RegistrationEntrySignatureDocument
     {
+        /// <summary>
+        /// Gets or sets the unique identifier of a previously-signed signature document that should be reused for this registrant.
+        /// </summary>
+        /// <value>
+        /// The unique identifier of a previously-signed signature document that should be reused for this registrant.
+        /// </value>
+        public Guid? ExistingSignatureDocumentGuid { get; set; }
+
         /// <summary>
         /// Gets or sets the document HTML to be displayed on the form. This should
         /// be displayed inside an IFrame element to ensure no other CSS on the

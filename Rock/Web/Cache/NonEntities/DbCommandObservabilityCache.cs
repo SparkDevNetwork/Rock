@@ -15,13 +15,11 @@
 // </copyright>
 //
 
-using Rock.Data;
-using System.Collections.Concurrent;
 using System;
-using DocumentFormat.OpenXml.Spreadsheet;
 using System.Collections.Generic;
-using Rock.SystemKey;
 using System.Linq;
+
+using Rock.SystemKey;
 
 namespace Rock.Web.Cache.NonEntities
 {
@@ -41,6 +39,11 @@ namespace Rock.Web.Cache.NonEntities
         /// The table name for the command.
         /// </summary>
         public string Prefix { get; set; }
+
+        /// <summary>
+        /// The type of SQL command (select, update, insert, delete, exec)
+        /// </summary>
+        public string CommandType { get; set; }
 
         #endregion
 
@@ -172,6 +175,8 @@ namespace Rock.Web.Cache.NonEntities
                             break;
                         }
                 }
+
+                item.CommandType = sqlFirstWord;
             }
             catch ( Exception ) { }
 
@@ -198,7 +203,7 @@ namespace Rock.Web.Cache.NonEntities
                 return "undefined";
             }
 
-            var indexOfFrom = commandText.IndexOfNth( "from", iterationCount, StringComparison.OrdinalIgnoreCase );
+            var indexOfFrom = commandText.IndexOfNth( "from ", iterationCount, StringComparison.OrdinalIgnoreCase );
 
             if ( indexOfFrom > 0 )
             {

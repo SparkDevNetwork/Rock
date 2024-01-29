@@ -181,9 +181,12 @@ namespace RockWeb.Blocks.Crm
                 hasError = true;
             }
 
+
             // Ensure the page ContextEntity page parameter is configured.
+            var pageContextTypes = pageContextEntityTypes.Select( x => x.Name );
+            var requiredTypes = ContextTypesRequired.Select( x => x.Name );
             if ( !pageContextEntityTypes.Any()
-                || !pageContextEntityTypes.Where( p => ContextTypesRequired.Contains( p ) ).Any() )
+                || !requiredTypes.All( item => pageContextTypes.Contains( item ) ) )
             {
                 nbMessage.Text += "The page context entity has not been configured for this block. Go to Page Properties and click Advanced and enter a valid parameter name under 'Context Parameters'.<br/>";
                 hasError = true;
@@ -393,6 +396,14 @@ namespace RockWeb.Blocks.Crm
 
             // disable security button
             var showSecurityButton = GetAttributeValue( AttributeKeys.ShowSecurityButton ).AsBoolean();
+
+            var viewDocumentField = gFileList.ColumnsOfType<HyperLinkField>().FirstOrDefault();
+            var viewDocumentFieldIndex = gFileList.Columns.IndexOf( viewDocumentField );
+            var viewDocumentHyperLink = ( HyperLink ) e.Row.Cells[viewDocumentFieldIndex].Controls[0];
+            viewDocumentHyperLink.NavigateUrl = $"~/GetFile.ashx?id={document.BinaryFile.Id}";
+            var viewableExtensions = new string[] { ".PDF", ".GIF", ".JPG", ".PNG"  };
+            var fileExtension = System.IO.Path.GetExtension( document.BinaryFile.FileName ).ToUpper();
+            viewDocumentHyperLink.Visible = viewableExtensions.Contains( fileExtension );
 
             var securityField = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
             var securityFieldIndex = gFileList.Columns.IndexOf( securityField );

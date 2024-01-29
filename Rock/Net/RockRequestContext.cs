@@ -60,6 +60,14 @@ namespace Rock.Net
         #region Properties
 
         /// <summary>
+        /// Gets the response object associated with this request.
+        /// </summary>
+        /// <value>
+        /// The response object associated with this request.
+        /// </value>
+        public virtual IRockResponseContext Response { get; private set; }
+
+        /// <summary>
         /// Gets the current user.
         /// </summary>
         /// <value>
@@ -183,9 +191,13 @@ namespace Rock.Net
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
-        internal RockRequestContext( HttpRequest request )
+        /// <param name="response">The object that handles response updates.</param>
+        /// <param name="currentUser">The currently logged in user.</param>
+        internal RockRequestContext( HttpRequest request, IRockResponseContext response, UserLogin currentUser )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( true );
+            Response = response;
+
+            CurrentUser = currentUser;
 
             RequestUri = request.UrlProxySafe();
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -229,9 +241,13 @@ namespace Rock.Net
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
         /// <param name="request">The request that we will initialize from.</param>
-        internal RockRequestContext( IRequest request )
+        /// <param name="response">The object that handles response updates.</param>
+        /// <param name="currentUser">The currently logged in user.</param>
+        internal RockRequestContext( IRequest request, IRockResponseContext response, UserLogin currentUser )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( true );
+            Response = response;
+
+            CurrentUser = currentUser;
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
@@ -542,12 +558,12 @@ namespace Rock.Net
                 mergeFields.Add( "PageParameter", PageParameters );
             }
 
-            if ( options.GetOSFamily )
+            if ( options.GetOSFamily && ClientInformation.Browser != null )
             {
                 mergeFields.Add( "OSFamily", ClientInformation.Browser.OS.Family.ToLower() );
             }
 
-            if ( options.GetDeviceFamily )
+            if ( options.GetDeviceFamily && ClientInformation.Browser != null )
             {
                 mergeFields.Add( "DeviceFamily", ClientInformation.Browser.Device.Family );
             }

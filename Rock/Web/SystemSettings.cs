@@ -20,10 +20,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
-using Rock.Constants;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Web
@@ -151,6 +150,39 @@ namespace Rock.Web
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the System Settings values for the specified key. This method
+        /// will only use cache and not load anything from the database. This
+        /// is important in cases where accessing the database might cause a
+        /// recursive loop, such as with Observability.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="result">On return will contain the setting value.</param>
+        /// <returns><c>true</c> if the cache was valid, otherwise <c>false</c>.</returns>
+        internal static bool TryGetCachedValue( string key, out string result )
+        {
+            // Do not use the Get() method because that would defeat the purpose.
+            var cache = RockCache.Get( CacheKey ) as SystemSettings;
+
+            if ( cache == null )
+            {
+                result = string.Empty;
+
+                return false;
+            }
+
+            if ( cache.SystemSettingsValues.TryGetValue( key, out result ) )
+            {
+                return true;
+            }
+
+            // We found the cache, but the setting wasn't in it. Return true
+            // to indicate we had cache and the value is blank.
+            result = string.Empty;
+
+            return true;
         }
 
         /// <summary>

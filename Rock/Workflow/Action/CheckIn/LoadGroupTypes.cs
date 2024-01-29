@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,9 +59,17 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
                                 {
-                                    var checkinGroupType = new CheckInGroupType();
-                                    checkinGroupType.GroupType = kioskGroupType.GroupType;
-                                    person.GroupTypes.Add( checkinGroupType );
+                                    var currentDateTime = RockDateTime.Now.Date;
+                                    var hasExclusions = kioskGroupType.GroupType.GroupScheduleExclusions.Where( e => currentDateTime >= e.Start && currentDateTime <= e.End ).Any();
+                                    if ( !hasExclusions )
+                                    {
+                                        var checkinGroupType = new CheckInGroupType
+                                        {
+                                            GroupType = kioskGroupType.GroupType
+                                        };
+
+                                        person.GroupTypes.Add( checkinGroupType );
+                                    }
                                 }
                             }
                         }

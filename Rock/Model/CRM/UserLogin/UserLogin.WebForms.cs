@@ -39,14 +39,39 @@ namespace Rock.Model
             get
             {
                 System.Web.Security.FormsIdentity identity = HttpContext.Current.User?.Identity as System.Web.Security.FormsIdentity;
-                if ( identity == null )
-                    return false;
 
-                if ( identity.Ticket != null &&
-                    identity.Ticket.UserData.ToLower() == "true" )
+                if ( identity == null )
+                {
                     return false;
+                }
+
+                if ( Rock.Security.Authorization.GetUserData( identity.Ticket )?.IsImpersonated == true )
+                {
+                    return false;
+                }
 
                 return true;
+            }
+        }
+        /// <summary>
+        /// Gets a flag indicating if the User is two-factor authenticated.
+        /// </summary>
+        /// <value>
+        ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user is two-factor authenticated; otherwise <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public virtual bool IsTwoFactorAuthenticated
+        {
+            get
+            {
+                System.Web.Security.FormsIdentity identity = HttpContext.Current.User?.Identity as System.Web.Security.FormsIdentity;
+
+                if ( identity == null )
+                {
+                    return false;
+                }
+
+                return Rock.Security.Authorization.GetUserData( identity.Ticket )?.IsTwoFactorAuthenticated == true;
             }
         }
 

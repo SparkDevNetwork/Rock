@@ -152,33 +152,40 @@ namespace RockWeb.Blocks.Checkin
 
         #region Methods
 
-        private GroupType GetRootGroupType(int groupId)
+        private GroupType GetRootGroupType( int groupId )
         {
-            List<int> parentRecursionHistory = new List<int>();
-            GroupTypeService groupTypeService = new GroupTypeService( _rockContext );
-            var groupType = groupTypeService.Queryable().AsNoTracking().Include( t => t.ParentGroupTypes ).Where( t => t.Groups.Select( g => g.Id ).Contains( groupId ) ).FirstOrDefault();
+            var parentRecursionHistory = new List<int>();
+            var groupTypeService = new GroupTypeService( _rockContext );
+            var groupType = groupTypeService.Queryable().AsNoTracking()
+                .Include( t => t.ParentGroupTypes )
+                .Where( t => t.Groups.Select( g => g.Id ).Contains( groupId ) )
+                .FirstOrDefault();
 
-            while (groupType != null && groupType.ParentGroupTypes.Count != 0 )
+            while ( groupType != null && groupType.ParentGroupTypes.Count != 0 )
             {
-                if ( parentRecursionHistory.Contains( groupType.Id ) )
+                var currentGroupTypeId = groupType.Id;
+                if ( parentRecursionHistory.Contains( currentGroupTypeId ) )
                 {
-                    var exception = new Exception("Infinite Recursion detected in GetRootGroupType for groupId: " + groupId.ToString());
+                    // This Group Type has been previously encountered in the inheritance chain, so a circular reference exists.
+                    var exception = new Exception( "Infinite Recursion detected in GetRootGroupType for groupId: " + groupId.ToString() );
                     LogException( exception );
                     return null;
                 }
                 else
                 {
                     var parentGroupType = GetParentGroupType( groupType );
-                    if (parentGroupType != null && parentGroupType.Id == groupType.Id)
+                    if ( parentGroupType != null && parentGroupType.Id == currentGroupTypeId )
                     {
-                        // the group type's parent is itself
+                        // This Group Type is a parent of itself, so it must be the root of the inheritance chain.
                         return groupType;
                     }
 
+                    // Process the parent Group Type next.
                     groupType = parentGroupType;
                 }
-                
-                parentRecursionHistory.Add(groupType.Id);
+
+                // Add the processed GroupType to the recursion tracking list.
+                parentRecursionHistory.Add( currentGroupTypeId );
             }
 
             return groupType;

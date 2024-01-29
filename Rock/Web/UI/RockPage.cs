@@ -36,6 +36,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
+using Rock.Observability;
 using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
@@ -754,11 +755,19 @@ namespace Rock.Web.UI
                 {
                     Activity.Current.DisplayName = Activity.Current.DisplayName + " [Postback]";
                 }
+                else
+                {
+                    // Only add a metric if for non-postback requests
+                    var pageTags = RockMetricSource.CommonTags;
+                    pageTags.Add( "rock-page", this.PageId );
+                    pageTags.Add( "rock-site", this.Site.Name );
+                    RockMetricSource.PageRequestCounter.Add( 1, pageTags );
+                }
 
                 // Add attributes
                 Activity.Current.AddTag( "rock-otel-type", "rock-page" );
-                Activity.Current.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
                 Activity.Current.AddTag( "rock.current-user", this.CurrentUser?.UserName );
+                Activity.Current.AddTag( "rock.current-person", this.CurrentPerson?.FullName );
                 Activity.Current.AddTag( "rock.current-visitor", this.CurrentVisitor?.AliasPersonGuid );
                 Activity.Current.AddTag( "rock.page-id", this.PageId );
                 Activity.Current.AddTag( "rock.page-ispostback", this.IsPostBack );
@@ -766,7 +775,7 @@ namespace Rock.Web.UI
 
             var stopwatchInitEvents = Stopwatch.StartNew();
 
-            RequestContext = new RockRequestContext( Request );
+            RequestContext = new RockRequestContext( Request, new RockResponseContext( this ), CurrentUser );
 
             if ( _pageCache != null )
             {
@@ -966,6 +975,27 @@ namespace Rock.Web.UI
                     if ( Site.ChangePasswordPageReference.PageId != this.PageId )
                     {
                         Site.RedirectToChangePasswordPage( true, true );
+                    }
+                }
+
+                // Check that they are two-factor authenticated if two-factor authentication is required for their protection profile.
+                var securitySettings = new SecuritySettingsService().SecuritySettings;
+
+                if ( securitySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( user.Person.AccountProtectionProfile ) == true
+                     && !user.IsTwoFactorAuthenticated )
+                {
+                    // Sign out and redirect to the login page to force two-factor authentication.
+                    Authorization.SignOut();
+
+                    var site = _pageCache.Layout.Site;
+
+                    if ( site.LoginPageId.HasValue )
+                    {
+                        site.RedirectToLoginPage( true );
+                    }
+                    else
+                    {
+                        FormsAuthentication.RedirectToLoginPage();
                     }
                 }
 
@@ -1275,6 +1305,14 @@ Rock.settings.initialize({{
                                     {
                                         control = TemplateControl.LoadControl( block.BlockType.Path );
                                         control.ClientIDMode = ClientIDMode.AutoID;
+
+                                        // This block needs Obsidian so that it can
+                                        // open the custom settings dialogs of Obsidian
+                                        // blocks on the page.
+                                        if ( block.BlockType.Path.Equals( "~/Blocks/Cms/PageZoneBlocksEditor.ascx", StringComparison.OrdinalIgnoreCase ) )
+                                        {
+                                            _pageNeedsObsidian = true;
+                                        }
                                     }
                                     else if ( block.BlockType.EntityTypeId.HasValue )
                                     {
@@ -1352,13 +1390,6 @@ Rock.settings.initialize({{
                                     Page.Trace.Warn( "\tSetting block properties" );
                                     blockControl.SetBlock( _pageCache, block, canEdit, canAdministrate );
                                     control = new RockBlockWrapper( blockControl );
-
-                                    // Add any breadcrumbs to current page reference that the block creates
-                                    Page.Trace.Warn( "\tAdding any breadcrumbs from block" );
-                                    if ( block.BlockLocation == BlockLocation.Page )
-                                    {
-                                        blockControl.GetBreadCrumbs( PageReference ).ForEach( c => PageReference.BreadCrumbs.Add( c ) );
-                                    }
                                 }
                             }
 
@@ -1444,13 +1475,6 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         }
                     }
 
-                    // Make the last crumb for this page the active one
-                    Page.Trace.Warn( "Setting active breadcrumb" );
-                    if ( PageReference.BreadCrumbs.Any() )
-                    {
-                        PageReference.BreadCrumbs.Last().Active = true;
-                    }
-
                     /*
                      * 2020-06-17 - JH
                      *
@@ -1459,19 +1483,23 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                      * Page loads/postbacks occur. By providing a suffix for the storage key when in an iFrame modal, we can preserve the
                      * main Rock instance's PageReference history.
                      */
+                    Page.Trace.Warn( "Getting breadcrumbs" );
+
                     var pageReferencesKeySuffix = IsIFrameModal ? "_iFrameModal" : null;
+                    var pageReferences = PageReference.GetBreadCrumbPageReferences( this, _pageCache, PageReference, pageReferencesKeySuffix );
 
-                    Page.Trace.Warn( "Getting parent page references" );
-                    var pageReferences = PageReference.GetParentPageReferences( this, _pageCache, PageReference, pageReferencesKeySuffix );
-                    pageReferences.Add( PageReference );
-                    PageReference.SavePageReferences( pageReferences, pageReferencesKeySuffix );
+                    BreadCrumbs = pageReferences.SelectMany( pr => pr.BreadCrumbs ).ToList();
 
-                    // Update breadcrumbs
-                    Page.Trace.Warn( "Updating breadcrumbs" );
-                    BreadCrumbs = new List<BreadCrumb>();
-                    foreach ( var pageReference in pageReferences )
+                    // Update the current page reference to have the correct breadcrumbs.
+                    var currentPageReference = pageReferences.FirstOrDefault( pr => pr.PageId == PageReference.PageId );
+                    if ( currentPageReference != null )
                     {
-                        pageReference.BreadCrumbs.ForEach( c => BreadCrumbs.Add( c ) );
+                        PageReference.BreadCrumbs = currentPageReference.BreadCrumbs;
+
+                        if ( PageReference.BreadCrumbs.Any() )
+                        {
+                            PageReference.BreadCrumbs.Last().Active = true;
+                        }
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
@@ -1626,13 +1654,9 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     }
                 }
 
+                Page.Trace.Warn( "Setting meta tags" );
+
                 stopwatchInitEvents.Restart();
-
-                string pageTitle = BrowserTitle ?? string.Empty;
-                string siteTitle = _pageCache.Layout.Site.Name;
-                string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
-
-                base.Title = pageTitle + seperator + siteTitle;
 
                 if ( !string.IsNullOrWhiteSpace( _pageCache.Description ) )
                 {
@@ -1757,7 +1781,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 }
 
                 MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                if ( getMethod != null )
+                if ( getMethod == null )
                 {
                     continue;  // Couldn't find method to fetch Entity.
                 }
@@ -2142,11 +2166,20 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
         {
             base.OnLoadComplete( e );
 
-            // Cause the wrapper to render it's content so the initialization
-            // logic will be part of our page load timings.
-            foreach ( var wrapper in _blockTypeWrappers )
+            // Set the title displayed in the browser on the base page.
+            string pageTitle = BrowserTitle ?? string.Empty;
+            string siteTitle = _pageCache.Layout.Site.Name;
+            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
+
+            base.Title = pageTitle + seperator + siteTitle;
+
+            // Make the last breadcrumb on this page the only one active. This
+            // takes care of any late additions to the breadcrumbs by Lava or
+            // Obsidian blocks.
+            if ( BreadCrumbs != null && BreadCrumbs.Any() )
             {
-                wrapper.RenderAndCache();
+                BreadCrumbs.ForEach( bc => bc.Active = false );
+                BreadCrumbs.Last().Active = true;
             }
 
             // Finalize the debug settings
@@ -2187,7 +2220,20 @@ Obsidian.onReady(() => {{
             {
                 Authorization.SignOut();
                 UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
-                Rock.Security.Authorization.SetAuthCookie( impersonatedByUser.UserName, false, false );
+
+                /*
+                    10/23/2023 - JMH
+
+                    Bypass two-factor authentication when restoring the "impersonated by" user's session;
+                    otherwise, they would have to use two-factor authentication again.
+
+                    Reason: Two-Factor Authentication
+                 */
+                Rock.Security.Authorization.SetAuthCookie(
+                    impersonatedByUser.UserName,
+                    isPersisted: false,
+                    isImpersonated: false,
+                    isTwoFactorAuthenticated: true );
                 Response.Redirect( PageReference.BuildUrl( true ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
@@ -2228,7 +2274,21 @@ Obsidian.onReady(() => {{
                     }
 
                     Authorization.SignOut();
-                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
+
+                    /*
+                        10/19/2023 - JMH
+
+                        Bypass the two-factor authentication requirement when impersonating;
+                        otherwise, an administrator would be forced to provide username and password,
+                        as well as complete a passwordless login.
+
+                        Reason: Two-Factor Authentication
+                     */
+                    Rock.Security.Authorization.SetAuthCookie(
+                        "rckipid=" + impersonatedPersonKeyParam,
+                        isPersisted: false,
+                        isImpersonated: true,
+                        isTwoFactorAuthenticated: true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
                     UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
 

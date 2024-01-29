@@ -33,8 +33,9 @@ using Rock.Web.Cache;
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    ///
+    /// Provides the implementation of a Rock dynamic block shortcode in DotLiquid.
     /// </summary>
+    /// <seealso cref="global::DotLiquid.Block" />
     public class DynamicShortcodeBlock : RockLavaShortcodeBlockBase
     {
         string _markup = string.Empty;

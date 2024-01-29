@@ -1,0 +1,116 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <div class="row">
+            <div class="col-md-6">
+                <Grid v-if="isVisible" :data="gridData" keyField="key" liveUpdates light @addItem="onAddItem" :showExport="showExport">
+                    <TextColumn name="name"
+                                :title="nameTitle"
+                                field="name" />
+
+                    <DateColumn name="date"
+                                :title="dateTitle"
+                                field="date"
+                                visiblePriority="md" />
+
+                    <NumberColumn name="index"
+                                  :title="numberTitle"
+                                  field="index"
+                                  visiblePriority="lg" />
+
+                    <BooleanColumn name="isActive"
+                                   :title="activeTitle"
+                                   field="isActive"
+                                   visiblePriority="sm" />
+
+                    <EditColumn />
+
+                    <DeleteColumn @click="onDelete" disableConfirmation />
+                </Grid>
+            </div>
+        </div>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox label="Use Column Titles" v-model="useColumnTitles" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Show Export" v-model="showExport" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import { getControlImportPath } from "./utils.partial";
+    import { computed, nextTick, reactive, ref, watch } from "vue";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const isVisible = ref(true);
+    const useColumnTitles = ref(false);
+    const showExport = ref(false);
+    const nameTitle = ref("");
+    const dateTitle = ref("");
+    const numberTitle = ref("");
+    const activeTitle = ref("");
+
+    const gridData: GridDataBag = reactive<GridDataBag>({
+        rows: [1, 2, 3, 4, 5].map(idx => generateItem(idx))
+    });
+
+    const importCode = getControlImportPath("grid");
+
+    const exampleCode = computed((): string => {
+        return `<Grid :data="gridData" light>
+    <TextColumn name="name" field="name" />
+    <DateColumn name="date" field="date" visiblePriority="md" />
+    <NumberColumn name="index" field="index" visiblePriority="lg" />
+    <BooleanColumn name="isActive" field="isActive" visiblePriority="sm" />
+    <EditColumn />
+    <DeleteColumn disableConfirmation />
+</Grid>
+`;
+    });
+
+    function generateItem(index: number): Record<string, unknown> {
+        return {
+            key: `${index}`,
+            name: `Item ${index}`,
+            date: RockDateTime.now().date.addDays(-index).toISOString(),
+            index: index,
+            isActive: (index % 3) === 0
+        };
+    }
+
+    function onAddItem(): void {
+        if (gridData.rows) {
+            gridData.rows.splice(gridData.rows.length, 0, generateItem(gridData.rows.length + 1));
+        }
+    }
+
+    function onDelete(key: string): void {
+        if (gridData.rows) {
+            const index = gridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                gridData.rows.splice(index, 1);
+            }
+        }
+    }
+
+    watch(useColumnTitles, async () => {
+        isVisible.value = false;
+        await nextTick();
+
+        nameTitle.value = useColumnTitles.value ? "Name" : "";
+        dateTitle.value = useColumnTitles.value ? "Date" : "";
+        numberTitle.value = useColumnTitles.value ? "Number" : "";
+        activeTitle.value = useColumnTitles.value ? "Active" : "";
+        isVisible.value = true;
+    });
+</script>

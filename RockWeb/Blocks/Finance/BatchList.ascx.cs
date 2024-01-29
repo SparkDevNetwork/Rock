@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    [DisplayName( "Batch List" )]
+    [DisplayName( "Batch List (Legacy)" )]
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
     [LinkedPage( "Detail Page", order: 0 )]

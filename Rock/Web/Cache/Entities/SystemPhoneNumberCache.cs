@@ -15,8 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Data.Entity.Spatial;
+using Rock.Lava;
 
 using Rock.Data;
 using Rock.Model;
@@ -198,6 +202,38 @@ namespace Rock.Web.Cache
         public override string ToString()
         {
             return Name;
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Returns all system phone numbers from cache ordered by the order property.
+        /// </summary>
+        /// <returns></returns>
+        public static new List<SystemPhoneNumberCache> All()
+        {
+            // Calls the method below including inactive campuses too.
+            return All( true );
+        }
+
+        /// <summary>
+        /// Returns all campuses from cache ordered by the campus's order property.
+        /// </summary>
+        /// <param name="includeInactive">if set to true to include inactive campuses; otherwise set to false to exclude them.</param>
+        /// <returns></returns>
+        public static List<SystemPhoneNumberCache> All( bool includeInactive )
+        {
+            // WARNING: We need to call the All(RockContext) static method here, not the All(bool) or All() static method. Otherwise a stack overflow loop will occur.
+            var allSystemPhoneNumbers = All( null );
+
+            if ( includeInactive )
+            {
+                return allSystemPhoneNumbers.OrderBy( c => c.Order ).ToList();
+            }
+
+            return allSystemPhoneNumbers.Where( c => c.IsActive ).OrderBy( c => c.Order ).ToList();
         }
 
         #endregion

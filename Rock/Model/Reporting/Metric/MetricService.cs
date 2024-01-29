@@ -214,7 +214,8 @@ FROM (
                     DateTime? lastRunDateTime = metric.LastRunDateTime ?? startOfWeek;
 
                     // Get all the scheduled times that the Metric was scheduled to run since that last time it was run.
-                    var scheduledDateTimesToProcess = metric.Schedule.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList();
+                    var scheduledDateTimesToProcess = metric.Schedule?.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList() ?? new List<DateTime>();
+
                     if ( isManualRun )
                     {
                         // If this is a manual run, there should not be any scheduled date times to process.
@@ -317,7 +318,7 @@ FROM (
                                 if ( !string.IsNullOrWhiteSpace( metric.SourceSql ) )
                                 {
                                     string formattedSql = metric.SourceSql.ResolveMergeFields( metric.GetMergeObjects( scheduleDateTime ) );
-                                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
+                                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null, commandTimeout );
 
                                     if ( tableResult.Columns.Count >= 2 && tableResult.Columns[1].ColumnName == "MetricValueDateTime" )
                                     {

@@ -53,3 +53,12 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
         sanitize: options?.sanitize ?? true
     });
 }
+
+/**
+ * Manually show a previously-configured tooltip for the specified node.
+ *
+ * @param node The node for which to show a tooltip
+ */
+export function showTooltip(node: Element): void {
+    $(node).tooltip("show");
+}

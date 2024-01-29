@@ -9,6 +9,8 @@
     FamilyMembers -  (List of Rock.Model.GroupMember) The family members (of the selected family), not including the currentperson
     Families = (List of Rock.Model.Group) The families that this person is in
     ShowGender - If this is true, gender should be shown
+    ShowTitle - If this is true, the person's Title should be shown
+    ShowSuffix - If this is true, the person's Suffix should be shown
 
     ShowAddresses - If this is true, addresses should be shown
     AddressTypeValueId - (DefinedValueCache Id) The address type defined value Id that is displayed
@@ -48,7 +50,7 @@
             <div class="col-xs-8 col-sm-9">
                 {% comment %} Person Name, and dropdown of families (if more than 1) {% endcomment %}
                 <h2 class="mt-0 h1 font-weight-bold title name">
-                    {{ CurrentPerson.FullName }}
+                    {% if ShowTitle %}{{CurrentPerson.TitleValue}} {% endif %}{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }}{% if ShowSuffix %} {{ CurrentPerson.SuffixValue }}{% endif %}
                     {% if familyCount > 1 %}
                         <div class="pull-right">
                             <select name="selectFamily" onchange="{{ Family.Id | Postback:'SelectFamily' }}" class="form-control">
@@ -277,7 +279,7 @@
         	                                    {% assign numberTypeValue = phoneNumber.NumberTypeValueId | FromCache:'DefinedValue' %}
         	                                    {% assign displayPhoneType = DisplayedPhoneTypeValueIds | Contains:numberTypeValue.Id %}
         	                                    {% if displayPhoneType %}
-        	                                        <li>{{ phoneNumber.NumberFormatted }}<small>{{ numberTypeValue.Value }} {% if phoneNumber.IsUnlisted %}Unlisted{% endif %}</small></li>
+        	                                        <li>{{ phoneNumber.NumberFormatted }} <small>{{ numberTypeValue.Value }} {% if phoneNumber.IsUnlisted %}Unlisted{% endif %}</small></li>
         	                                    {% endif %}
         	                                {% endfor %}
         	                                </ul>

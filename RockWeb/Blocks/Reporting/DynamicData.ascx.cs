@@ -414,7 +414,9 @@ namespace RockWeb.Blocks.Reporting
             {
                 var pageCache = PageCache.Get( RockPage.PageId );
                 if ( pageCache != null &&
-                    ( pageCache.PageTitle != tbName.Text || pageCache.Description != tbDesc.Text ) )
+                        ( pageCache.PageTitle != tbName.Text || pageCache.Description != tbDesc.Text )
+                        && pageCache.Guid != Rock.SystemGuid.Page.PAGE_MAP.AsGuid() // Don't allow editing the title of the page if the page is the internal page editor (Issue #5542)
+                   )
                 {
                     var rockContext = new RockContext();
                     var service = new PageService( rockContext );

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 namespace Rock.ViewModels.Blocks.Security.Login
 {
     /// <summary>
@@ -49,5 +50,13 @@ namespace Rock.ViewModels.Blocks.Security.Login
         /// </summary>
         /// <value>The redirect URL.</value>
         public string RedirectUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MFA details.
+        /// </summary>
+        /// <value>
+        /// The MFA details.
+        /// </value>
+        public PasswordlessLoginMfaBag Mfa { get; set; }
     }
 }

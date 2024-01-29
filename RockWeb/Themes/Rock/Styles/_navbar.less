@@ -100,20 +100,25 @@ body.navbar-side-open {
   display: none;
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
   color: @navbarside-color;
   background-color: var(--navbarside-background-color);
 
-  &::-webkit-scrollbar {
-    width: 6px;
-    background-color: transparent;
-  }
+  // Scroll Styling applied to the inner container because of a bug in Safari
+  .zone-navigation {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
 
-  &::-webkit-scrollbar-thumb {
-    width: 6px;
-    background-color: rgba(0,0,0, .2);
-    border-radius: 10px;
+    &::-webkit-scrollbar {
+      width: 6px;
+      background-color: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      width: 6px;
+      background-color: rgba(0,0,0, .2);
+      border-radius: 10px;
+    }
   }
 
   .navbar-side-open & {
@@ -134,8 +139,6 @@ body.navbar-side-open {
   }
 
   .navbar-side {
-
-
     .nav-item-top {
       display: flex;
       align-items: center;
@@ -168,7 +171,7 @@ body.navbar-side-open {
         box-shadow: inset 3px 0 0 0 @brand-primary;
       }
 
-      
+
       // TODO: This is split into a separate selector because it feels buggy when toggled open
       &.open {
         .nav-childpages {

@@ -1297,6 +1297,19 @@ namespace Rock.Client.Enums.Core
 
     /// <summary>
     /// </summary>
+    public enum KeyboardInputMode
+    {
+        Default = 0x0,
+        Email = 0x1,
+        Numeric = 0x2,
+        Decimal = 0x3,
+        Telephone = 0x4,
+        Text = 0x5,
+        Url = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum NoteFormatType
     {
         Unknown = 0x0,
@@ -1375,6 +1388,28 @@ namespace Rock.Client.Enums.Cms
         Foundational = 0x1,
         Intermediate = 0x2,
         Advanced = 0x3,
+    }
+
+}
+
+namespace Rock.Client.Enums.Net
+{
+    /// <summary>
+    /// </summary>
+    public enum CookieSameSiteMode
+    {
+        None = 0x0,
+        Lax = 0x1,
+        Strict = 0x2,
+        Unspecified = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ResponseElementLocation
+    {
+        Header = 0x0,
+        Footer = 0x1,
     }
 
 }
@@ -1536,6 +1571,35 @@ namespace Rock.Client.Enums.Blocks.Group.Scheduling
         ParentGroup = 0x3,
         DataView = 0x4,
         GroupMatchingAssignment = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ToolboxActionType
+    {
+        ViewCurrent = 0x0,
+        UpdatePreferences = 0x1,
+        SignUp = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ToolboxScheduleRowActionType
+    {
+        Accept = 0x0,
+        Decline = 0x1,
+        Cancel = 0x2,
+        Delete = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ToolboxScheduleRowConfirmationStatus
+    {
+        Pending = 0x0,
+        Confirmed = 0x1,
+        Declined = 0x2,
+        Unavailable = 0x3,
     }
 
     /// <summary>

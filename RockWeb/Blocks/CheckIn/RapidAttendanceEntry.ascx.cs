@@ -1524,7 +1524,7 @@ namespace RockWeb.Blocks.CheckIn
 
                     person.LoadAttributes();
                     avcPersonAttributes.GetEditValues( person );
-                    person.SaveAttributeValues();
+                    person.SaveAttributeValues( rockContext );
                 }
 
                 return true;

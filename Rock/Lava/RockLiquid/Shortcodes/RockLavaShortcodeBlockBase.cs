@@ -15,20 +15,17 @@
 // </copyright>
 //
 using System.IO;
-
 using DotLiquid;
-
 using Rock.Utility;
 
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    /// 
+    /// Provides base functionality for the implementation of a Rock block shortcode in DotLiquid.
     /// </summary>
     /// <seealso cref="global::DotLiquid.Block" />
     public class RockLavaShortcodeBlockBase : Block, IRockStartup, IRockShortcode
     {
-        
         /// <summary>
         /// Renders the specified context.
         /// </summary>

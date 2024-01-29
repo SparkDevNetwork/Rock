@@ -2185,7 +2185,8 @@ mission. We are so grateful for your commitment.</p>
                     acAddressIndividual.SetValues( null );
                 }
 
-                if ( GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean() )
+                var promptForPhone = GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean();
+                if ( promptForPhone )
                 {
                     var personPhoneNumber = targetPerson.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
 
@@ -2194,6 +2195,26 @@ mission. We are so grateful for your commitment.</p>
                     if ( personPhoneNumber == null || string.IsNullOrWhiteSpace( personPhoneNumber.Number ) || personPhoneNumber.IsUnlisted )
                     {
                         personPhoneNumber = targetPerson.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                    }
+
+                    PhoneNumberBox pnbPhone = pnbPhoneIndividual;
+                    if ( targetPerson.IsBusiness() )
+                    {
+                        pnbPhone = pnbPhoneBusiness;
+                    }
+
+                    if ( personPhoneNumber != null )
+                    {
+                        if ( !personPhoneNumber.IsUnlisted )
+                        {
+                            pnbPhone.CountryCode = personPhoneNumber.CountryCode;
+                            pnbPhone.Number = personPhoneNumber.ToString();
+                        }
+                    }
+                    else
+                    {
+                        pnbPhone.CountryCode = PhoneNumber.DefaultCountryCode();
+                        pnbPhone.Number = string.Empty;
                     }
                 }
 

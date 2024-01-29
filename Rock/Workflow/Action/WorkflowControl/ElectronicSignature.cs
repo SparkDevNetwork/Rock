@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,8 +37,16 @@ namespace Rock.Workflow.Action
         Description = "The template to use for the signature document.",
         Key = AttributeKey.SignatureDocumentTemplate,
         ShowTemplatesThatHaveExternalProviders = false,
-        IsRequired = true,
+        IsRequired = false,
         Order = 1 )]
+
+    [WorkflowTextOrAttribute( "Signature Document Template Id or Guid",
+        "Signature Document Template Attribute",
+        Description = "The Id or Guid of a signature document template to use for the signature document. If a Signature Document Template is specified above, this setting will be ignored.",
+        Key = AttributeKey.SignatureDocumentTemplateIdOrGuid,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.SignatureDocumentTemplateFieldType" },
+        IsRequired = false,
+        Order = 2 )]
 
     [WorkflowAttribute(
         "Applies to Person",
@@ -46,7 +54,7 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.AppliesToPersonAlias,
         IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.TextFieldType" },
-        Order = 2 )]
+        Order = 3 )]
 
     [WorkflowAttribute(
         "Assigned To Person",
@@ -54,7 +62,7 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.AssignedToPersonAlias,
         IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.TextFieldType" },
-        Order = 3 )]
+        Order = 4 )]
 
     [WorkflowAttribute(
         "Signed by Person",
@@ -62,7 +70,7 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.SignedByPersonAlias,
         IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.TextFieldType" },
-        Order = 4 )]
+        Order = 5 )]
 
     [WorkflowAttribute(
         "Signature Document",
@@ -70,16 +78,16 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.SignatureDocument,
         IsRequired = false,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.BinaryFileFieldType" },
-        Order = 5 )]
+        Order = 6 )]
 
     [TextField(
         "Signature Document Name",
         Description = "The name to use for the new document that is created. <span class='tip tip-lava'></span>",
         Key = AttributeKey.SignatureDocumentName,
         IsRequired = true,
-        Order = 6 )]
+        Order = 7 )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "41491689-00BD-49A1-A3CD-A59FBBD2B2F8")]
+    [Rock.SystemGuid.EntityTypeGuid( "41491689-00BD-49A1-A3CD-A59FBBD2B2F8" )]
     public class ElectronicSignature : ActionComponent
     {
         /// <summary>
@@ -88,6 +96,7 @@ namespace Rock.Workflow.Action
         private static class AttributeKey
         {
             public const string SignatureDocumentTemplate = "SignatureDocumentTemplate";
+            public const string SignatureDocumentTemplateIdOrGuid = "SignatureDocumentTemplateIdOrGuid";
             public const string AppliesToPersonAlias = "AppliesToPersonAlias";
             public const string AssignedToPersonAlias = "AssignedToPersonAlias";
             public const string SignedByPersonAlias = "SignedByPersonAlias";
@@ -104,6 +113,18 @@ namespace Rock.Workflow.Action
         public SignatureDocumentTemplate GetSignatureDocumentTemplate( RockContext rockContext, WorkflowAction workflowAction )
         {
             var templateGuid = this.GetAttributeValue( workflowAction, AttributeKey.SignatureDocumentTemplate, true ).AsGuidOrNull();
+            if ( templateGuid.HasValue )
+            {
+                return new SignatureDocumentTemplateService( rockContext ).Get( templateGuid.Value );
+            }
+
+            var templateId = this.GetAttributeValue( workflowAction, AttributeKey.SignatureDocumentTemplateIdOrGuid, true ).AsIntegerOrNull();
+            if ( templateId.HasValue )
+            {
+                return new SignatureDocumentTemplateService( rockContext ).Get( templateId.Value );
+            }
+
+            templateGuid = this.GetAttributeValue( workflowAction, AttributeKey.SignatureDocumentTemplateIdOrGuid, true ).AsGuidOrNull();
             if ( templateGuid.HasValue )
             {
                 return new SignatureDocumentTemplateService( rockContext ).Get( templateGuid.Value );

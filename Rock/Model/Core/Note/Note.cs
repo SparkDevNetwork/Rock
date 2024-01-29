@@ -86,6 +86,15 @@ namespace Rock.Model
         public bool? IsAlert { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if this note should be pinned to top
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is an alert; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPinned { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this note is viewable to only the person that created the note
         /// </summary>
         /// <value>

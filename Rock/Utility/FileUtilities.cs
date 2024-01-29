@@ -21,6 +21,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 
 using Goheer.EXIF;
@@ -253,6 +254,28 @@ namespace Rock.Utility
             }
 
             return bytes + " B";
+        }
+
+        /// <summary>
+        /// Scrubs a filename to make sure it doesn't have any directories, invalid characters, or spaces.
+        /// </summary>
+        /// <param name="untrustedFileName">The filename.</param>
+        /// <returns>A scrubbed filename.</returns>
+        public static string ScrubFileName( string untrustedFileName )
+        {
+            // Scrub characters identified by .NET as invalid for file names.
+            string scrubbedFileName = Regex.Replace( untrustedFileName, "[" + Regex.Escape( string.Concat( Path.GetInvalidFileNameChars() ) ) + "]", string.Empty, RegexOptions.CultureInvariant );
+
+            // Get the file name (without path).
+            scrubbedFileName = Path.GetFileName( scrubbedFileName );
+
+            scrubbedFileName = scrubbedFileName.Replace( " ", "_" );
+
+            // Remove Illegal Filename Characters
+            char[] illegalChars = { '#', '(', ')', '&', '%' };
+            scrubbedFileName = string.Concat( scrubbedFileName.Split( illegalChars ) );
+
+            return scrubbedFileName;
         }
     }
 }

@@ -147,9 +147,9 @@ namespace RockWeb.Blocks.Core
                     nbBackupMessage.Visible = false;
                 }
 
-                var hasMinimumSqlServerOrHigher = VersionValidationHelper.CheckSqlServerVersion( VersionValidationHelper.SqlServerVersion.v2016 );
+                var hasMinimumCompatibilityLevelOrHigher = VersionValidationHelper.CheckSqlServerCompatibilityLevel( VersionValidationHelper.SqlServerCompatibilityLevel.v2016 );
 
-                if ( !hasMinimumSqlServerOrHigher )
+                if ( !hasMinimumCompatibilityLevelOrHigher )
                 {
                     nbSqlServerVersionIssue.Visible = true;
                 }
@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Core
                     if ( new Version( _releases.Last().SemanticVersion ) >= new Version( "1.16.0" ) )
                     {
                         // if SqlServer2016Issue is visible, and they are updating to v16 or later, show the version Warning as an Danger instead.
-                        if ( !hasMinimumSqlServerOrHigher )
+                        if ( !hasMinimumCompatibilityLevelOrHigher )
                         {
                             nbSqlServerVersionIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                         }

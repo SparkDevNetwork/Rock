@@ -221,10 +221,32 @@ namespace Rock.Jobs
 
             try
             {
+                var flushPageIds = new List<int>();
+                var flushLayoutIds = new List<int>();
+                var flushSiteIds = new List<int>();
+
                 rockContext.WrapTransaction( () =>
                 {
                     var copiedBlockMappings = AddCopiesOfBlocksInSameLocationsButWithNewBlockType( oldBlockTypeGuid, newBlockTypeId.Value, rockContext );
                     rockContext.SaveChanges(); // saving the new blocks so that the attributes and person preferences may be copied over.
+
+                    foreach ( var block in copiedBlockMappings.Keys )
+                    {
+                        if ( block.PageId.HasValue && !flushPageIds.Contains( block.PageId.Value ) )
+                        {
+                            flushPageIds.Add( block.PageId.Value );
+                        }
+
+                        if ( block.LayoutId.HasValue && !flushLayoutIds.Contains( block.LayoutId.Value ) )
+                        {
+                            flushLayoutIds.Add( block.LayoutId.Value );
+                        }
+
+                        if ( block.SiteId.HasValue && !flushSiteIds.Contains( block.SiteId.Value ) )
+                        {
+                            flushSiteIds.Add( block.SiteId.Value );
+                        }
+                    }
 
                     CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings );
 
@@ -237,6 +259,21 @@ namespace Rock.Jobs
                     ChopBlock( oldBlockTypeGuid, rockContext );
                     rockContext.SaveChanges();
                 } );
+
+                foreach ( var pageId in flushPageIds )
+                {
+                    PageCache.FlushPage( pageId );
+                }
+
+                foreach ( var layoutId in flushLayoutIds )
+                {
+                    PageCache.FlushPagesForLayout( layoutId );
+                }
+
+                foreach ( var siteId in flushSiteIds )
+                {
+                    PageCache.FlushPagesForSite( siteId );
+                }
             }
             catch ( Exception ex )
             {

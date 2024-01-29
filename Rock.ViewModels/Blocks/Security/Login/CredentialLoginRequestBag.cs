@@ -38,5 +38,13 @@ namespace Rock.ViewModels.Blocks.Security.Login
         /// </summary>
         /// <value><c>true</c> if [remember me]; otherwise, <c>false</c>.</value>
         public bool RememberMe { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MFA ticket.
+        /// </summary>
+        /// <value>
+        /// The MFA ticket.
+        /// </value>
+        public string MfaTicket { get; set; }
     }
 }

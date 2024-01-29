@@ -66,6 +66,7 @@ namespace Rock.Lava.Shortcodes
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
+            int? visitorAliasId = null;
             var currentPerson = GetCurrentPerson( context );
             var settings = MediaPlayerShortcode.GetAttributesFromMarkup( this.Markup, new RockLiquidRenderContext( context ) );
 
@@ -80,7 +81,12 @@ namespace Rock.Lava.Shortcodes
                 sessionGuid = null;
             }
 
-            MediaPlayerShortcode.RenderToWriter( settings.Attributes, currentPerson, sessionGuid, result );
+            if ( currentPerson == null )
+            {
+                visitorAliasId = GetVisitorAliasId( context );
+            }
+
+            MediaPlayerShortcode.RenderToWriter( settings.Attributes, currentPerson, visitorAliasId, sessionGuid, result );
         }
 
         /// <summary>
@@ -118,6 +124,30 @@ namespace Rock.Lava.Shortcodes
             }
 
             return currentPerson;
+        }
+
+        /// <summary>
+        /// Gets the visitor person alias identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private static int? GetVisitorAliasId( Context context )
+        {
+            PersonAlias visitorAlias = null;
+
+            // Check for a visitor value included in lava context
+            if ( context.Scopes != null )
+            {
+                foreach ( var scopeHash in context.Scopes )
+                {
+                    if ( scopeHash.ContainsKey( "CurrentVisitor" ) )
+                    {
+                        visitorAlias = scopeHash["CurrentVisitor"] as PersonAlias;
+                    }
+                }
+            }
+
+            return visitorAlias?.Id;
         }
 
         #endregion

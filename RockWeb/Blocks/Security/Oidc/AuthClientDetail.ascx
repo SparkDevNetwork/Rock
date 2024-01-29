@@ -106,6 +106,19 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DataTextBox
+                                ID="tbScopeApprovalExpiration"
+                                Label="Scope Approval Expiration"
+                                Help="The number of days that an individual's scope approval will be valid. After this expiration the individual will be asked to re-approve the scopes."
+                                runat="server"
+                                CssClass="form-group"
+                                SourceTypeName="Rock.Model.AuthClient, Rock"
+                                PropertyName="ScopeApprovalExpiration"
+                                />
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-12">
                             <Rock:PanelWidget
                                 ID="pwScopes"

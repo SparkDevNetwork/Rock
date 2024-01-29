@@ -47,6 +47,9 @@ registerFieldType(FieldTypeGuids.Category, new CategoryFieldType());
 import { CategorizedDefinedValueField } from "./categorizedDefinedValueField.partial";
 registerFieldType(FieldTypeGuids.DefinedValueCategorized, new CategorizedDefinedValueField());
 
+import { CheckListFieldType } from "./checkListField.partial";
+registerFieldType(FieldTypeGuids.CheckList, new CheckListFieldType());
+
 import { ColorFieldType } from "./colorField.partial";
 registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 
@@ -190,6 +193,9 @@ registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
+
+import { StructureContentEditorFieldType } from "./structureContentEditorField.partial";
+registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEditorFieldType());
 
 import { SlidingDateRangeFieldType } from "./slidingDateRangeField.partial";
 registerFieldType(FieldTypeGuids.SlidingDateRange, new SlidingDateRangeFieldType());

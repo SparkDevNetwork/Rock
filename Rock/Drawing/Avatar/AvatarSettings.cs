@@ -50,6 +50,11 @@ namespace Rock.Drawing.Avatar
         {
             get
             {
+                if ( AvatarStyle == AvatarStyle.Icon )
+                {
+                    return string.Empty;
+                }
+
                 return _text;
             }
             set

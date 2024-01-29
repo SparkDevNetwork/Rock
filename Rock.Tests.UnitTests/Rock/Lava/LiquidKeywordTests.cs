@@ -441,10 +441,7 @@ The answer is {{ x }}.
 
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
-                //var result = engine.RenderTemplate( input );
-
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input, ignoreWhitespace: true );
-                //Assert.That.AreEqual(.a.AreEqual( expectedOutput, result.Text, );
             } );
         }
 

@@ -286,7 +286,7 @@
 
                 return true;
             }
-            else if (result.statusCode === 201 && typeof result.data === "string") {
+            else if ((result.statusCode === 201 || result.statusCode === 200) && typeof result.data === "string") {
                 return result.data;
             }
         }

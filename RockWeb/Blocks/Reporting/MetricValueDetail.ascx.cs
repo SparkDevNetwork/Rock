@@ -39,6 +39,18 @@ namespace RockWeb.Blocks.Reporting
     [Rock.SystemGuid.BlockTypeGuid( "508DA252-F94C-4641-8579-458D8FCE14B2" )]
     public partial class MetricValueDetail : RockBlock
     {
+        #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string MetricId = "MetricId";
+            public const string MetricValueId = "MetricValueId";
+            public const string MetricCategoryId = "MetricCategoryId";
+            public const string ExpandedIds = "ExpandedIds";
+        }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -65,13 +77,13 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                int? metricValueId = PageParameter( "MetricValueId" ).AsIntegerOrNull();
+                int? metricValueId = PageParameter( PageParameterKey.MetricValueId ).AsIntegerOrNull();
 
                 // in case called with MetricId as the parent id parameter
-                int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
+                int? metricId = PageParameter( PageParameterKey.MetricId ).AsIntegerOrNull();
 
                 // in case called with MetricCategoryId as the parent id parameter
-                int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
+                int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
                 MetricCategory metricCategory = null;
                 if ( metricCategoryId.HasValue )
                 {
@@ -184,8 +196,17 @@ namespace RockWeb.Blocks.Reporting
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "MetricId", hfMetricId.Value );
-            qryParams.Add( "MetricCategoryId", hfMetricCategoryId.Value );
+
+            if ( hfMetricId.ValueAsInt() > 0 )
+            {
+                qryParams.Add( PageParameterKey.MetricId, hfMetricId.Value );
+            }
+
+            if ( hfMetricCategoryId.ValueAsInt() > 0 )
+            {
+                qryParams.Add( PageParameterKey.MetricCategoryId, hfMetricCategoryId.Value );
+            }
+
             NavigateToParentPage( qryParams );
         }
 
@@ -263,9 +284,23 @@ namespace RockWeb.Blocks.Reporting
             rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "MetricId", hfMetricId.Value );
-            qryParams.Add( "MetricCategoryId", hfMetricCategoryId.Value );
-            qryParams.Add( "ExpandedIds", PageParameter( "ExpandedIds" ) );
+
+            if ( hfMetricId.ValueAsInt() > 0 )
+            {
+                qryParams.Add( PageParameterKey.MetricId, hfMetricId.Value );
+            }
+
+            if ( hfMetricCategoryId.ValueAsInt() > 0 )
+            {
+                qryParams.Add( PageParameterKey.MetricCategoryId, hfMetricCategoryId.Value );
+            }
+
+            var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
+            if ( expandedIds.IsNotNullOrWhiteSpace() )
+            {
+                qryParams.Add( PageParameterKey.ExpandedIds, expandedIds );
+            }
+
             NavigateToParentPage( qryParams );
         }
 

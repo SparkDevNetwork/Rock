@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -176,6 +176,9 @@ namespace Rock.StatementGenerator.Rest
                     PersonId = person.Id
                 };
             }
+
+            // Set the Location ID so the recipient's mailing address is included on the statement.
+            financialStatementGeneratorRecipientRequest.FinancialStatementGeneratorRecipient.LocationId = person.GetMailingLocation()?.Id;
 
             // Get the generator result
             FinancialStatementGeneratorRecipientResult result = FinancialStatementGeneratorHelper.GetStatementGeneratorRecipientResult( financialStatementGeneratorRecipientRequest, this.GetPerson() );

@@ -398,13 +398,24 @@
 @badge-border-radius:         9999px;
 
 // Modals
-@modal-header-bg:             @white;
-@modal-header-text-color:     @text-color;
+@modal-header-bg:             @brand-primary;
+@modal-footer-background:     @ui-3;                          // The header color for modal dialogs. #color
+@modal-backdrop-background:   fade(#5E5E5E, 60%);      // The backdrop color that overlays the page when a modal is displayed. #color
+
+
+@modal-header-text-color:     @white;
 @modal-body-bg:               @white;
 @modal-body-text-color:       @text-color;
-@modal-footer-bg:             @modal-body-bg;
+@modal-footer-bg:             @modal-footer-background;
 @modal-footer-text-color:     @modal-body-text-color;
 @modal-dropshadow-color:      rgba(0,0,0,.6);
+
+@modal-rock-border-radius:           12px;
+@modal-rock-inner-padding:           24px;
+@modal-rock-header-padding-y:        8px;
+@modal-rock-header-padding-x:        24px;
+@modal-rock-footer-padding-y:        12px;
+@modal-rock-footer-padding-x:        24px;
 
 //== Components
 //

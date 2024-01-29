@@ -295,7 +295,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of ContentChannels that this ContentChannel allows as children.
         /// </value>
-        [DataMember, LavaHidden, JsonIgnore]
+        [DataMember, JsonIgnore]
         public virtual ICollection<ContentChannel> ChildContentChannels
         {
             get { return _childContentChannels ?? ( _childContentChannels = new Collection<ContentChannel>() ); }

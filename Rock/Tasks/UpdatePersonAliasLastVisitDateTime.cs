@@ -81,7 +81,7 @@ namespace Rock.Tasks
                 {
                     personAlias.LastVisitDateTime = message.LastVisitDateTime;
 
-                    rockContext.SaveChanges();
+                    rockContext.SaveChanges( true );
                 }
             }
         }

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { CredentialLoginMfaBag } from "@Obsidian/ViewModels/Blocks/Security/Login/credentialLoginMfaBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** A bag that contains the passwordless login verify response information. */
@@ -39,6 +40,9 @@ export type PasswordlessLoginVerifyResponseBag = {
 
     /** The people matching the email or phone number. */
     matchingPeople?: ListItemBag[] | null;
+
+    /** Gets or sets the MFA details. */
+    mfa?: CredentialLoginMfaBag | null;
 
     /** Gets or sets the registration URL. */
     registrationUrl?: string | null;

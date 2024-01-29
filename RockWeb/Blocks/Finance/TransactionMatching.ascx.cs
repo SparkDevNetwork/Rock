@@ -463,7 +463,7 @@ namespace RockWeb.Blocks.Finance
                 financialAccountList = financialAccountList.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
             }
 
-            _visibleDisplayedAccountIds = new List<int>( financialAccountList.Select( a => a.Id ).ToList() );
+            _visibleDisplayedAccountIds = new List<int>( financialAccountList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => a.Id ).ToList() ); // Later on these are assumed to be in order Issue: #5371
             _visibleOptionalAccountIds = new List<int>();
 
             // make the datasource all accounts, but only show the ones that are in _visibleAccountIds or have a non-zero amount

@@ -184,7 +184,7 @@
                             <Rock:NotificationBox ID="nbProcessTransactionError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                             <div class="navigation actions margin-t-md">
-                                <asp:LinkButton ID="btnPersonalInformationBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnPersonalInformationBack_Click" />
+                                <asp:LinkButton ID="btnPersonalInformationBack" runat="server" CssClass="btn btn-default" Text="Back" CausesValidation="false" OnClick="btnPersonalInformationBack_Click" />
                                 <Rock:BootstrapButton ID="btnPersonalInformationNext" runat="server" CssClass="btn btn-primary pull-right" Text="Finish" OnClick="btnPersonalInformationNext_Click" />
                             </div>
                         </asp:Panel>

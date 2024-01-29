@@ -602,7 +602,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 var rootScheduleCategoryId = CategoryCache.GetId( rootScheduleCategoryGuid.Value );
                 if ( rootScheduleCategoryId.HasValue )
                 {
-                    query = query.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == rootScheduleCategoryId.Value );
+                    query = query.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == rootScheduleCategoryId.Value && a.IsActive );
                 }
             }
 
@@ -1372,7 +1372,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var actions = new List<BlockCustomActionBag>();
 
-            if ( BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
+            if ( canAdministrate )
             {
                 actions.Add( new BlockCustomActionBag
                 {

@@ -41,10 +41,10 @@ namespace Rock.MyWell
     ///
     /// </summary>
     /// <seealso cref="Rock.Financial.GatewayComponent" />
-    [Description( "The My Well Gateway is the primary gateway to use with My Well giving." )]
-    [DisplayName( "My Well Gateway" )]
+    [Description( "This legacy version of the My Well Gateway is no longer supported.  Please contact MyWell and install their new gateway from the RockShop." )]
+    [DisplayName( "My Well Gateway (Legacy)" )]
     [Export( typeof( GatewayComponent ) )]
-    [ExportMetadata( "ComponentName", "My Well Gateway" )]
+    [ExportMetadata( "ComponentName", "My Well Gateway (Legacy)" )]
 
     #region Component Attributes
 

@@ -109,6 +109,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, Metric.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<PersistedDataset>( Context ).Queryable().Any( a => a.PersistedScheduleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, PersistedDataset.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

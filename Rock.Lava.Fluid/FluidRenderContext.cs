@@ -260,32 +260,15 @@ namespace Rock.Lava.Fluid
                 value = new FluidRawValueProxy( value );
             }
 
-            if ( scope == LavaContextRelativeScopeSpecifier.Current )
-            {
-                _context.SetValue( key, value );
-            }
-            else if ( scope == LavaContextRelativeScopeSpecifier.Parent )
+            if ( scope == LavaContextRelativeScopeSpecifier.Parent )
             {
                 var parentScope = localScope.Parent ?? localScope;
 
                 parentScope.SetValue( key, FluidValue.Create( value, _context.Options ) );
             }
-            else if ( scope == LavaContextRelativeScopeSpecifier.Root )
-            {
-                var parentScope = _contextScopeInternalField.GetValue( _context ) as Scope;
-                var outerScope = parentScope.Parent;
-
-                while ( outerScope != null )
-                {
-                    parentScope = outerScope;
-                    outerScope = outerScope.Parent;
-                }
-
-                parentScope.SetValue( key, FluidValue.Create( value, _context.Options ) );
-            }
             else
             {
-                throw new LavaException( $"SetMergeFieldValue failed. Scope reference \"{ scope }\" is invalid." );
+                _context.SetValue( key, value );
             }
         }
 
