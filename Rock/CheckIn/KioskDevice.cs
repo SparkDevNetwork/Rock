@@ -403,6 +403,27 @@ namespace Rock.CheckIn
                 .DistinctBy( g => g.Id )
                 .LoadAttributes( rockContext );
 
+            // The above call only loaded Attributes for the first Group of a given ID.
+            // We need to copy the attributes to all other Groups whose IDs match.
+            var groupsWithAttributes = groupLocationList
+                .Select( g => g.Group )
+                .Where( g => g.Attributes != null && g.AttributeValues != null );
+
+            foreach ( var groupWithAttributes in groupsWithAttributes )
+            {
+                var groupsMissingAttributes = groupLocationList
+                    .Select( g => g.Group )
+                    .Where( g => g.Id == groupWithAttributes.Id
+                        && ( g.Attributes == null || g.AttributeValues == null )
+                    );
+
+                foreach ( var groupMissingAttributes in groupsMissingAttributes )
+                {
+                    groupMissingAttributes.Attributes = groupWithAttributes.Attributes;
+                    groupMissingAttributes.AttributeValues = groupWithAttributes.AttributeValues;
+                }
+            }
+
             // Load all the schedules in one shot. This is faster than adding
             // Schedules as an Include above. Because we are already including
             // the Location and Group objects, adding in Schedules duplicates
