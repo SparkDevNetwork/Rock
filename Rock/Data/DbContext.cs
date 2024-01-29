@@ -719,7 +719,10 @@ namespace Rock.Data
 
                     if ( item.Entity is IModel model )
                     {
+                        ExecuteAfterCommit( () =>
+                        {
                             model.PostSaveChanges( this );
+                        } );
                     }
                 }
             }
@@ -728,9 +731,11 @@ namespace Rock.Data
                 // At this point, even if a workflow trigger fails or a legacy
                 // PostSaveChanges() call fails, the save still worked so call
                 // all post save hooks with success state.
-                CallPostSaveHooks( updatedItems );
-
-                tcsPostSave.SetResult( true );
+                ExecuteAfterCommit( () =>
+                {
+                    CallPostSaveHooks( updatedItems );
+                    tcsPostSave.SetResult( true );
+                } );
             }
 
             List<ITransaction> indexTransactions = new List<ITransaction>();
