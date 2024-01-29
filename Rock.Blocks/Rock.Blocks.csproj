@@ -136,6 +136,7 @@
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
     <Compile Include="Engagement\StepProgramList.cs" />
+    <Compile Include="Event\EventCalendarItemList.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
     <Compile Include="Finance\BusinessList.cs" />
     <Compile Include="Finance\FinancialAccountDetail.cs" />
