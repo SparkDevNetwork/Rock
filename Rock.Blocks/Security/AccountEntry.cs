@@ -46,7 +46,8 @@ namespace Rock.Blocks.Security
     [IconCssClass( "fa fa-user-lock" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    #region "Block Attributes"
+    #region Block Attributes
+
     [BooleanField(
         "Require Email For Username",
         Key = AttributeKey.RequireEmailForUsername,
@@ -290,6 +291,13 @@ namespace Rock.Blocks.Security
         Category = "Captions",
         Order = 29 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 30 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "75704274-FDB8-4A0C-AE0E-510F1977BE0A" )]
@@ -330,6 +338,7 @@ namespace Rock.Blocks.Security
             public const string DisableUsernameAvailabilityCheck = "DisableUsernameAvailabilityCheck";
             public const string ConfirmAccountPasswordlessTemplate = "ConfirmAccountPasswordlessTemplate";
             public const string ConfirmCaptionPasswordless = "ConfirmCaptionPasswordless";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         private static class PageParameterKey
@@ -423,6 +432,13 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult Register( AccountEntryRegisterRequestBox box )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var config = GetInitializationBox( box.State );
@@ -1026,6 +1042,7 @@ namespace Rock.Blocks.Security
                 AccountEntryRegisterStepBox = accountEntryRegisterStepBox,
                 IsGenderPickerShown = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean(),
                 AccountEntryPersonInfoBag = accountEntryPersonInfoBag,
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
             };
         }
 

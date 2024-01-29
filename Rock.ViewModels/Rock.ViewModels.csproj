@@ -47,6 +47,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Blocks\BlockActionContextBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
@@ -390,7 +391,7 @@
     <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
-    <Compile Include="Blocks\Tv\AppleTvPageDetail\RockCacheabilityBag.cs" /> 
+    <Compile Include="Blocks\Tv\AppleTvPageDetail\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\TimeIntervalBag.cs" />

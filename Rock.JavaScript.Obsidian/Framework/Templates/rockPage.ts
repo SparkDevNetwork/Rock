@@ -26,9 +26,8 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
 import { alert } from "@Obsidian/Utility/dialogs";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { InvokeBlockActionFunc } from "@Obsidian/Types/Utility/block";
 import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
-import { provideBlockGuid } from "@Obsidian/Utility/block";
+import { createInvokeBlockAction, provideBlockGuid } from "@Obsidian/Utility/block";
 
 type DebugTimingConfig = {
     elementId: string;
@@ -219,14 +218,7 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
                 return await httpCall<T>("POST", url, params, data);
             };
 
-            const invokeBlockAction: InvokeBlockActionFunc = async <T>(actionName: string, data: HttpBodyData = undefined) => {
-                return await post<T>(`/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`, undefined, {
-                    __context: {
-                        pageParameters: store.state.pageParameters
-                    },
-                    ...data
-                });
-            };
+            const invokeBlockAction = createInvokeBlockAction(post, pageGuid, blockGuid, store.state.pageParameters);
 
             provideHttp({
                 doApiCall,

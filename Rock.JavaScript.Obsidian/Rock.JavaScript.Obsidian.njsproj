@@ -722,6 +722,7 @@
     <TypeScriptCompile Include="Framework\Utility\form.ts" />
     <TypeScriptCompile Include="Framework\Utility\util.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonType.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockActionContextBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />

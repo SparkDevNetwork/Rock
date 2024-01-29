@@ -21,25 +21,17 @@
 // </copyright>
 //
 
-import { ForgotUserNameCaptionsBag } from "@Obsidian/ViewModels/Blocks/Security/ForgotUserName/forgotUserNameCaptionsBag";
-
-/** A bag containing the required information to render a Forgot UserName block. */
-export type ForgotUserNameInitializationBox = {
-    /** A bag containing the required information to display various block captions. */
-    captions?: ForgotUserNameCaptionsBag | null;
-
-    /** If set to true if the Captcha verification step should not be performed. */
-    disableCaptchaSupport: boolean;
+/**
+ * The data structure of the __context parameter included with block
+ * action requests.
+ */
+export type BlockActionContextBag = {
+    /** Gets or sets the captcha that should be validated by the server. */
+    captcha?: string | null;
 
     /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
+     * Gets or sets the page parameters that the page was originally
+     * loaded with.
      */
-    errorMessage?: string | null;
-
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
-
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+    pageParameters?: Record<string, string> | null;
 };
