@@ -3444,103 +3444,142 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Pages the specified input.
+        /// Returns information about the current page.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="parm">The parm.</param>
-        /// <returns></returns>
+        /// <param name="parm">The type of information to return about the current page.</param>
+        /// <returns>Information about the current page or null if not found.</returns>
+        [Obsolete( "Use the Page() method that takes an ILavaRenderContext parameter." )]
+        [RockObsolete( "1.16.3" )]
         public static object Page( string input, string parm )
         {
+            return Page( null, input, parm );
+        }
+
+        /// <summary>
+        /// Returns information about the current page.
+        /// </summary>
+        /// <param name="context">The current Lava render context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The type of information to return about the current page.</param>
+        /// <returns>Information about the current page or null if not found.</returns>
+        public static object Page( ILavaRenderContext context, string input, string parm )
+        {
+            PageCache pageCache = null;
             var page = HttpContext.Current?.Handler as RockPage;
 
-            if ( page != null )
+            var rockRequestContext = context.GetRockRequestContext();
+            if ( rockRequestContext != null )
             {
-                switch ( parm )
-                {
-                    case "Title":
+                pageCache = rockRequestContext.Page;
+            }
+            else if ( page != null )
+            {
+                pageCache = PageCache.Get( page.PageId );
+            }
+
+            if ( pageCache == null )
+            {
+                return null;
+            }
+
+            switch ( parm )
+            {
+                case "Title":
+                    {
+                        return pageCache.PageTitle;
+                    }
+
+                case "BrowserTitle":
+                    {
+                        return pageCache.BrowserTitle;
+                    }
+
+                case "Url":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().AbsoluteUri;
+                    }
+
+                case "Id":
+                    {
+                        return pageCache.Id.ToString();
+                    }
+
+                case "Host":
+                    {
+                        var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+                        return host;
+                    }
+
+                case "Path":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().AbsolutePath;
+                    }
+
+                case "SiteName":
+                    {
+                        return pageCache.Site;
+                    }
+
+                case "SiteId":
+                    {
+                        return pageCache.SiteId;
+                    }
+
+                case "Theme":
+                    {
+                        if ( page?.Theme != null )
                         {
-                            return page.PageTitle;
+                            return page.Theme;
                         }
 
-                    case "BrowserTitle":
-                        {
-                            return page.BrowserTitle;
-                        }
-
-                    case "Url":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().AbsoluteUri;
-                        }
-
-                    case "Id":
-                        {
-                            return page.PageId.ToString();
-                        }
-
-                    case "Host":
-                        {
-                            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
-                            return host;
-                        }
-
-                    case "Path":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().AbsolutePath;
-                        }
-
-                    case "SiteName":
-                        {
-                            return page.Site.Name;
-                        }
-
-                    case "SiteId":
-                        {
-                            return page.Site.Id.ToString();
-                        }
-
-                    case "Theme":
-                        {
-                            if ( page.Theme != null )
-                            {
-                                return page.Theme;
-                            }
-                            else
-                            {
-                                return page.Site.Theme;
-                            }
-                        }
-                    case "Description":
+                        return pageCache.SiteTheme;
+                    }
+                case "Description":
+                    {
+                        if ( page?.MetaDescription != null )
                         {
                             return page.MetaDescription;
                         }
-                    case "Layout":
-                        {
-                            return page.Layout.Name;
-                        }
 
-                    case "Scheme":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().Scheme;
-                        }
+                        return pageCache.Description;
+                    }
+                case "Layout":
+                    {
+                        return pageCache.Layout?.Name;
+                    }
 
-                    case "QueryString":
+                case "Scheme":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().Scheme;
+                    }
+
+                case "QueryString":
+                    {
+                        if ( rockRequestContext != null )
+                        {
+                            return rockRequestContext.PageParameters;
+                        }
+                        else if ( page != null )
                         {
                             return page.PageParameters();
                         }
-                    case "Cookies":
+
+                        return null;
+                    }
+                case "Cookies":
+                    {
+                        var cookies = new List<HttpCookieDrop>();
+                        foreach ( string cookieKey in System.Web.HttpContext.Current.Request.Cookies )
                         {
-                            var cookies = new List<HttpCookieDrop>();
-                            foreach ( string cookieKey in System.Web.HttpContext.Current.Request.Cookies )
-                            {
-                                cookies.Add( new HttpCookieDrop( System.Web.HttpContext.Current.Request.Cookies[cookieKey] ) );
-                            }
-
-                            return cookies;
+                            cookies.Add( new HttpCookieDrop( System.Web.HttpContext.Current.Request.Cookies[cookieKey] ) );
                         }
-                }
-            }
 
-            return null;
+                        return cookies;
+                    }
+                default:
+                    return null;
+            }
         }
 
         /// <summary>
@@ -3560,20 +3599,39 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns the specified page parm.
+        /// Returns the specified page parameter.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="parm">The parm.</param>
-        /// <returns></returns>
+        /// <param name="parm">The parameter name.</param>
+        /// <returns>The page parameter or null if not found.</returns>
+        [Obsolete( "Use the PageParameter() method that takes an ILavaRenderContext parameter." )]
+        [RockObsolete( "1.16.3" )]
         public static object PageParameter( string input, string parm )
         {
-            var page = HttpContext.Current?.Handler as RockPage;
-            if ( page == null )
-            {
-                return null;
-            }
+            return PageParameter( null, input, parm );
+        }
 
-            var parmReturn = page.PageParameter( parm );
+        /// <summary>
+        /// Returns the specified page parameter.
+        /// </summary>
+        /// <param name="context">The current Lava render context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parameter name.</param>
+        /// <returns>The page parameter or null if not found.</returns>
+        public static object PageParameter( ILavaRenderContext context, string input, string parm )
+        {
+            string parmReturn;
+
+            var rockRequestContext = context.GetRockRequestContext();
+            if ( rockRequestContext != null )
+            {
+                parmReturn = rockRequestContext.GetPageParameter( parm );
+            }
+            else
+            {
+                var page = HttpContext.Current?.Handler as RockPage;
+                parmReturn = page?.PageParameter( parm );
+            }
 
             if ( parmReturn == null )
             {

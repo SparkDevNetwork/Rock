@@ -194,6 +194,11 @@ namespace Rock.Net
         /// <value><c>true</c> if a captcha has been validated; otherwise, <c>false</c>.</value>
         public bool IsCaptchaValid { get; internal set; }
 
+        /// <summary>
+        /// Gets the cache object for the page this request is related to.
+        /// </summary>
+        internal PageCache Page => _pageCache;
+
         #endregion
 
         #region Constructors
