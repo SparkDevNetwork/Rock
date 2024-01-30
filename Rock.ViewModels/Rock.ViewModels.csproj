@@ -482,6 +482,7 @@
     <Compile Include="Rest\Controls\LocationListSaveNewLocationOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowPickerGetWorkflowOptionsBag.cs" />
+    <Compile Include="Utility\CurrencyInfoBag.cs" />
     <Compile Include="Rest\Utilities\UpdatePersonPreferencesAccessedOptionsBag.cs" />
     <Compile Include="Rest\Utilities\UpdatePersonPreferencesOptionsBag.cs" />
     <Compile Include="Utility\IValidPropertiesBox.cs" />

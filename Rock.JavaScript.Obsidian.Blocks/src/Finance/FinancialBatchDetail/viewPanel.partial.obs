@@ -50,6 +50,7 @@
 
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const currencyInfo = props.options.currencyInfo;
 
     // #endregion
 
@@ -83,10 +84,11 @@
         let transactionAmount = toNumber(props.options.transactionAmount);
         let transactionVariance = transactionAmount - controlAmount;
         if(transactionVariance == 0) {
-            valueBuilder.addHtmlValue("Transaction Amount / Control / Variance", `${toCurrencyOrNull(transactionAmount)} / ${toCurrencyOrNull(controlAmount)} / ${toCurrencyOrNull(transactionVariance)}`);
+            valueBuilder.addHtmlValue("Transaction Amount / Control / Variance", `${toCurrencyOrNull(transactionAmount, currencyInfo)} / ${toCurrencyOrNull(controlAmount, currencyInfo)} / ${toCurrencyOrNull(transactionVariance, currencyInfo)}`);
         }
         else {
-            valueBuilder.addHtmlValue("Transaction Amount / Control / Variance", `${toCurrencyOrNull(transactionAmount)} / ${toCurrencyOrNull(controlAmount)} / <span class='label label-danger'> ${toCurrencyOrNull(transactionVariance)} </span>`);
+            valueBuilder.addHtmlValue("Transaction Amount / Control / Variance",
+            `<span>${toCurrencyOrNull(transactionAmount, currencyInfo)} </span> / <span>${toCurrencyOrNull(controlAmount, currencyInfo)} </span> / <span class='label label-danger'>${toCurrencyOrNull(transactionVariance, currencyInfo)}</span>`);
         }
 
         let transactionItemCount = toNumber(props.options.transactionItemCount);
@@ -98,7 +100,8 @@
                 valueBuilder.addHtmlValue("Transaction Item Count / Control / Variance", `${transactionItemCount} / ${controlItemCount} / ${itemVariance}`);
             }
             else {
-                valueBuilder.addHtmlValue("Transaction Item Count / Control / Variance", `${transactionItemCount} / ${controlItemCount} / <span class='label label-danger'> ${itemVariance} </span>`);
+                valueBuilder.addHtmlValue("Transaction Item Count / Control / Variance", `
+                     ${transactionItemCount} / ${controlItemCount} / <span class='label label-danger'> ${itemVariance} </span>`);
             }
         }
 
@@ -123,13 +126,13 @@
 
         var accountsTotalTable = `<table class="grid-table table table-auto">
                 <tbody>
-                    ${props.options.accounts?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
+                    ${props.options.accounts?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency, currencyInfo) + "</td> </tr>").join("")}
                 </tbody>
             </table>`;
 
         var currencyTotalTable = `<table class="grid-table table table-auto">
             <tbody>
-                ${props.options.currencyTypes?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
+                ${props.options.currencyTypes?.map(a => "<tr> <td align='left'>" + a.name + "</td> <td align='right'>" + toCurrencyOrNull(a.currency, currencyInfo) + "</td> </tr>").join("")}
             </tbody>
         </table>`;
 
