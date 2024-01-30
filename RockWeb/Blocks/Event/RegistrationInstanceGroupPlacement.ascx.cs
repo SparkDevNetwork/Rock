@@ -660,6 +660,8 @@ namespace RockWeb.Blocks.Event
                 registrationInstanceList = registrationInstanceService
                     .Queryable()
                     .Where( a => a.RegistrationTemplateId == registrationTemplateId.Value )
+                    .Select( a => new { Id = a.Id, Name = a.Name } )
+                    .AsEnumerable()
                     .Select( a => new RegistrationInstance { Id = a.Id, Name = a.Name } )
                     .OrderBy( a => a.Name )
                     .ToList();
