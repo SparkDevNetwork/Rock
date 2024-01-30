@@ -111,7 +111,7 @@ namespace Rock.Financial
         Order = 9 )]
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY )]
-    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, ISettlementGateway
+    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, ISettlementGateway, IScheduledNumberOfPaymentsGateway
     {
         #region Attribute Keys
 
