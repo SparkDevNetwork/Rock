@@ -87,10 +87,18 @@
     <Compile Include="Migrations\202401211244562_AddAnalyticsSourceZipCode.cs" />
     <Compile Include="Migrations\202401211244562_AddAnalyticsSourceZipCode.designer.cs">
       <DependentUpon>202401211244562_AddAnalyticsSourceZipCode.cs</DependentUpon>
-    </Compile>  
+    </Compile>
     <Compile Include="Migrations\202401162245280_DataViewIcon.cs" />
     <Compile Include="Migrations\202401162245280_DataViewIcon.designer.cs">
       <DependentUpon>202401162245280_DataViewIcon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202401292333035_AddEventRegistrationPaymentPlansSupport.cs" />
+    <Compile Include="Migrations\202401292333035_AddEventRegistrationPaymentPlansSupport.designer.cs">
+      <DependentUpon>202401292333035_AddEventRegistrationPaymentPlansSupport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202401302113422_PublicProfileEditAttribute.cs" />
+    <Compile Include="Migrations\202401302113422_PublicProfileEditAttribute.designer.cs">
+      <DependentUpon>202401302113422_PublicProfileEditAttribute.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.designer.cs">
@@ -1954,6 +1962,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202401162245280_DataViewIcon.resx">
       <DependentUpon>202401162245280_DataViewIcon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202401292333035_AddEventRegistrationPaymentPlansSupport.resx">
+      <DependentUpon>202401292333035_AddEventRegistrationPaymentPlansSupport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202401302113422_PublicProfileEditAttribute.resx">
+      <DependentUpon>202401302113422_PublicProfileEditAttribute.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.resx">
       <DependentUpon>202311301719499_Rollup_20231130.cs</DependentUpon>

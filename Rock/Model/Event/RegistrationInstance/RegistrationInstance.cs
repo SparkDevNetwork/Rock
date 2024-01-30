@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -281,6 +281,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? TimeoutThreshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment deadline date.
+        /// </summary>
+        /// <value>
+        /// The payment deadline date.
+        /// </value>
+        [DataMember]
+        public DateTime? PaymentDeadlineDate { get; set; }
 
         #endregion Entity Properties
 

@@ -948,71 +948,75 @@ namespace Rock.Blocks.Security
 
             var areUsernameAndPasswordRequired = PageParameter( PageParameterKey.AreUsernameAndPasswordRequired ).AsBoolean();
 
-            AccountEntryPersonInfoBag accountEntryPersonInfoBag = null;
-
-            if ( currentPerson != null )
+            // Use an empty Person if none is available.
+            // We should always include an AccountEntryPersonInfoBag.
+            // The Obsidian block expects any configured attributes
+            // (in addition to other config values like phones & addresses)
+            // to be set in the AccountEntryPersonInfoBag.
+            if ( currentPerson == null )
             {
-                if ( showPhoneNumbers )
-                {
-                    foreach ( var bag in phoneNumberBags )
-                    {
-                        var phoneNumber = currentPerson.PhoneNumbers.FirstOrDefault( x => x.Number == bag.PhoneNumber );
+                currentPerson = new Person();
+            }
 
-                        if ( phoneNumber != null )
-                        {
-                            bag.PhoneNumber = phoneNumber.Number;
-                            bag.IsSmsEnabled = phoneNumber.IsMessagingEnabled;
-                            bag.IsUnlisted = phoneNumber.IsUnlisted;
-                        }
+            if ( showPhoneNumbers )
+            {
+                foreach ( var bag in phoneNumberBags )
+                {
+                    var phoneNumber = currentPerson.PhoneNumbers.FirstOrDefault( x => x.Number == bag.PhoneNumber );
+
+                    if ( phoneNumber != null )
+                    {
+                        bag.PhoneNumber = phoneNumber.Number;
+                        bag.IsSmsEnabled = phoneNumber.IsMessagingEnabled;
+                        bag.IsUnlisted = phoneNumber.IsUnlisted;
                     }
                 }
-
-                accountEntryPersonInfoBag = new AccountEntryPersonInfoBag
-                {
-                    FirstName = currentPerson.FirstName,
-                    Gender = currentPerson.Gender,
-                    Campus = currentPerson.PrimaryCampus?.Guid,
-                    Email = currentPerson.Email,
-                    LastName = currentPerson.LastName,
-                    PhoneNumbers = phoneNumberBags
-                };
-
-                if ( currentPerson.BirthDate.HasValue )
-                {
-                    accountEntryPersonInfoBag.Birthday = new ViewModels.Controls.BirthdayPickerBag()
-                    {
-                        Day = currentPerson.BirthDate.Value.Day,
-                        Month = currentPerson.BirthDate.Value.Month,
-                        Year = currentPerson.BirthDate.Value.Year,
-                    };
-                }
-
-                var homeAddress = currentPerson.GetHomeLocation();
-                if ( homeAddress != null )
-                {
-                    accountEntryPersonInfoBag.Address = new ViewModels.Controls.AddressControlBag
-                    {
-                        Street1 = homeAddress.Street1,
-                        Street2 = homeAddress.Street2,
-                        City = homeAddress.City,
-                        State = homeAddress.State,
-                        PostalCode = homeAddress.PostalCode,
-                        Country = homeAddress.Country
-                    };
-                }
             }
-            
+
+            var accountEntryPersonInfoBag = new AccountEntryPersonInfoBag
+            {
+                FirstName = currentPerson.FirstName,
+                Gender = currentPerson.Gender,
+                Campus = currentPerson.PrimaryCampus?.Guid,
+                Email = currentPerson.Email,
+                LastName = currentPerson.LastName,
+                PhoneNumbers = phoneNumberBags
+            };
+
+            if ( currentPerson.BirthDate.HasValue )
+            {
+                accountEntryPersonInfoBag.Birthday = new ViewModels.Controls.BirthdayPickerBag()
+                {
+                    Day = currentPerson.BirthDate.Value.Day,
+                    Month = currentPerson.BirthDate.Value.Month,
+                    Year = currentPerson.BirthDate.Value.Year,
+                };
+            }
+
+            var homeAddress = currentPerson.GetHomeLocation();
+            if ( homeAddress != null )
+            {
+                accountEntryPersonInfoBag.Address = new ViewModels.Controls.AddressControlBag
+                {
+                    Street1 = homeAddress.Street1,
+                    Street2 = homeAddress.Street2,
+                    City = homeAddress.City,
+                    State = homeAddress.State,
+                    PostalCode = homeAddress.PostalCode,
+                    Country = homeAddress.Country
+                };
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var personAttributes = GetAttributeCategoryAttributes( rockContext );
 
                 // Load the attributes for the current person if possible.
-                var attributesForPerson = currentPerson ?? new Person();
-                attributesForPerson.LoadAttributes( rockContext );
+                currentPerson.LoadAttributes( rockContext );
 
                 accountEntryPersonInfoBag = accountEntryPersonInfoBag ?? new AccountEntryPersonInfoBag();
-                accountEntryPersonInfoBag.Attributes = attributesForPerson.GetPublicAttributesForEdit( attributesForPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
-                accountEntryPersonInfoBag.AttributeValues = attributesForPerson.GetPublicAttributeValuesForEdit( attributesForPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
+                accountEntryPersonInfoBag.Attributes = currentPerson.GetPublicAttributesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
+                accountEntryPersonInfoBag.AttributeValues = currentPerson.GetPublicAttributeValuesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
             }
 
             return new AccountEntryInitializationBox

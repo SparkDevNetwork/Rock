@@ -76,6 +76,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public int? PaymentPlanFinancialScheduledTransactionId { get; set; }
+
+        /// <summary />
         public int? PersonAliasId { get; set; }
 
         /// <summary />
@@ -127,6 +130,7 @@ namespace Rock.Client
             this.LastName = source.LastName;
             this.LastPaymentReminderDateTime = source.LastPaymentReminderDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.PaymentPlanFinancialScheduledTransactionId = source.PaymentPlanFinancialScheduledTransactionId;
             this.PersonAliasId = source.PersonAliasId;
             this.RegistrationInstanceId = source.RegistrationInstanceId;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -152,6 +156,9 @@ namespace Rock.Client
 
         /// <summary />
         public AnalyticsSourceDate CreatedSourceDate { get; set; }
+
+        /// <summary />
+        public FinancialScheduledTransaction PaymentPlanFinancialScheduledTransaction { get; set; }
 
         /// <summary />
         public ICollection<RegistrationRegistrant> Registrants { get; set; }
