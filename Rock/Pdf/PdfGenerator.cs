@@ -384,6 +384,10 @@ namespace Rock.Pdf
 
             var pdfOptions = new PdfOptions();
 
+            // Set page size
+            pdfOptions.Format = this.PaperFormat;
+
+            // Set margins
             if ( this.MarginOptions != null )
             {
                 pdfOptions.MarginOptions = this.MarginOptions;
