@@ -105,6 +105,7 @@
     <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
     <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Communication\SmsPipelineList.cs" />
     <Compile Include="Core\AssetStorageProviderList.cs" />
     <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
