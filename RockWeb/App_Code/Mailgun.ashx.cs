@@ -220,6 +220,13 @@ public class Mailgun : IHttpHandler
                     .FirstOrDefault();
             }
 
+            if ( webhookSigningKey.IsNullOrWhiteSpace() )
+            {
+                response.Write( "HTTP webhook signing key not defined." );
+                response.StatusCode = 500;
+                return;
+            }
+
             if ( !Rock.Mailgun.MailgunUtilities.AuthenticateMailgunRequest( mailgunRequestPayload.TimeStamp, mailgunRequestPayload.Token, mailgunRequestPayload.Signature, webhookSigningKey ) )
             {
                 response.Write( "Invalid request signature." );
