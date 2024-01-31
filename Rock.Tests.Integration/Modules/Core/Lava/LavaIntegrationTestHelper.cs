@@ -588,6 +588,18 @@ namespace Rock.Tests.Integration.Core.Lava
         /// </summary>
         /// <param name="inputTemplate"></param>
         /// <returns></returns>
+        public LavaRenderResult GetTemplateRenderResult( Type engineType, string inputTemplate, LavaRenderParameters parameters = null, LavaTestRenderOptions options = null )
+        {
+            var engine = GetEngineInstance( engineType );
+
+            return GetTemplateRenderResult( engine, inputTemplate, parameters, options );
+        }
+
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
         public LavaRenderResult GetTemplateRenderResult( ILavaEngine engine, string inputTemplate, LavaRenderParameters parameters = null, LavaTestRenderOptions options = null )
         {
             inputTemplate = inputTemplate ?? string.Empty;
@@ -929,7 +941,7 @@ namespace Rock.Tests.Integration.Core.Lava
             }
             catch ( Exception ex )
             {
-                // Specify the engine identifer in the top-level exception.
+                // Specify the engine identifier in the top-level exception.
                 throw new Exception( $"[{engine.EngineName}] Template render failed.", ex );
             }
         }
