@@ -1,60 +1,89 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="config"
+          :definition="config?.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="idKey"
-          itemTerm="Content Channel Item"
+          keyField="id"
+          :itemTerm="config?.options?.contentItemName + ' Items'"
           :entityTypeGuid="EntityType.ContentChannelItem"
           stickyHeader
           liveUpdates
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :onAddItem="config?.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-        <SelectColumn />
+
+        <ReorderColumn v-if="config?.options?.showReorderColumn" @orderChanged="onOrderChanged" />
 
         <TextColumn name="title"
                     title="Title"
                     field="title"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    width="25%" />
 
-        <NumberColumn name="priority"
+        <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn"
+                        name="startDateTime"
+                        :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
+                        field="startDateTime"
+                        :filter="dateValueFilter" />
+
+        <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn"
+                        name="expireDateTime"
+                        title="Expire"
+                        field="expireDateTime"
+                        :filter="dateValueFilter" />
+
+        <NumberColumn v-if="config?.options?.showPriorityColumn"
+                      name="priority"
                       title="Priority"
                       field="priority"
                       :filter="numberValueFilter"
-                      visiblePriority="xs" />
+                      width="125" />
 
-        <TextColumn name="content"
-                    title="Content"
-                    field="content"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+        <AttributeColumns :attributes="config?.gridDefinition?.attributeFields ?? []" />
 
-        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+        <LabelColumn v-if="config?.options?.showStatusColumn"
+                     name="status"
+                     title="Status"
+                     field="status"
+                     :filter="pickExistingValueFilter"
+                     :textSource="ContentChannelItemStatusDescription"
+                     :classSource="statusLabelColors" />
 
-        <SecurityColumn />
+        <SecurityColumn v-if="config?.options?.showSecurityColumn" />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config?.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
 
 <script setup lang="ts">
+    import { reactive, ref } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DateTimeColumn, dateValueFilter, DeleteColumn, SecurityColumn, LabelColumn, pickExistingValueFilter, ReorderColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ContentChannelItemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemList/contentChannelItemListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./ContentChannelItemList/types.partial";
-    import { reactive, ref } from "vue";
+    import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
+    import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
 
     const config = useConfigurationValues<ListBlockBox<ContentChannelItemListOptionsBag>>();
+
+    console.log(config);
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+
+
+    const statusLabelColors: Record<string, string> = {
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.PendingApproval]]: "default",
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Approved]]: "success",
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Denied]]: "danger"
+    };
 
     // #endregion
 
@@ -120,6 +149,24 @@
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        // TODO
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
     }
 
     // #endregion

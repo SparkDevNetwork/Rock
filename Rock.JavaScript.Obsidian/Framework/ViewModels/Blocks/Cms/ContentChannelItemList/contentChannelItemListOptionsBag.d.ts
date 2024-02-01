@@ -21,6 +21,29 @@
 // </copyright>
 //
 
+import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
+
 /** The additional configuration options for the Content Channel Item List block. */
 export type ContentChannelItemListOptionsBag = {
+    contentItemName?: string | null;
+
+    dateType: ContentChannelDateType;
+
+    includeTime: boolean;
+
+    isManuallyOrdered: boolean;
+
+    showExpireDateTimeColumn: boolean;
+
+    showOccurrencesColumn: boolean;
+
+    showPriorityColumn: boolean;
+
+    showReorderColumn: boolean;
+
+    showSecurityColumn: boolean;
+
+    showStartDateTimeColumn: boolean;
+
+    showStatusColumn: boolean;
 };

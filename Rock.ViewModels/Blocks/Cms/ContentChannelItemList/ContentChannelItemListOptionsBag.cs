@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Model;
+
 namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemList
 {
     /// <summary>
@@ -22,5 +24,26 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemList
     /// </summary>
     public class ContentChannelItemListOptionsBag
     {
+        public string ContentItemName { get; set; }
+
+        public bool IncludeTime { get; set; }
+
+        public bool IsManuallyOrdered { get; set; }
+
+        public ContentChannelDateType DateType { get; set; }
+
+        public bool ShowReorderColumn { get; set; }
+
+        public bool ShowPriorityColumn { get; set; }
+
+        public bool ShowStartDateTimeColumn { get; set; }
+
+        public bool ShowExpireDateTimeColumn { get; set; }
+
+        public bool ShowStatusColumn { get; set; }
+
+        public bool ShowSecurityColumn { get; set; }
+
+        public bool ShowOccurrencesColumn { get; set; }
     }
 }
