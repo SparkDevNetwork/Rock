@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Cms
             public const string EthnicityOption = "EthnicityOption";
         }
 
-        private static class PageParameters
+        private static class PageParametersName
         {
             public const string ReturnUrl = "ReturnUrl";
         }
@@ -1326,7 +1326,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     // When in EditOnly mode if there's a ReturnUrl specified navigate to that page.
                     // Otherwise stay on the page, but show a saved success message.
-                    var returnUrl = PageParameter( PageParameters.ReturnUrl );
+                    var returnUrl = PageParameter( PageParametersName.ReturnUrl );
 
                     if ( returnUrl.IsNotNullOrWhiteSpace() )
                     {

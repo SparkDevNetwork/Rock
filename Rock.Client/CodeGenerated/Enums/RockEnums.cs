@@ -1661,6 +1661,8 @@ namespace Rock.Client.Enums.Blocks.Security.ForgotUserName
         InstructionsSent = 0x0,
         EmailInvalid = 0x1,
         ChangePasswordNotSupported = 0x2,
+
+        [Obsolete( "No longer used and will be removed in the future.", false )]
         CaptchaInvalid = 0x3,
     }
 
