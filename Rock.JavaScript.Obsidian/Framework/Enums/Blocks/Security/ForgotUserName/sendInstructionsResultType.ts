@@ -33,6 +33,7 @@ export const SendInstructionsResultType = {
     ChangePasswordNotSupported: 2,
 
     /** Indicates that the captcha was not solved successfully. */
+    /** @deprecated No longer used and will be removed in the future. */
     CaptchaInvalid: 3
 } as const;
 
@@ -44,6 +45,7 @@ export const SendInstructionsResultTypeDescription: Record<number, string> = {
 
     2: "Change Password Not Supported",
 
+    /** @deprecated No longer used and will be removed in the future. */
     3: "Captcha Invalid"
 };
 

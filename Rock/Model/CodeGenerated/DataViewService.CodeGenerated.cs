@@ -198,6 +198,8 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HighlightColor = source.HighlightColor;
+            target.IconCssClass = source.IconCssClass;
             target.IncludeDeceased = source.IncludeDeceased;
             target.IsSystem = source.IsSystem;
             target.LastRunDateTime = source.LastRunDateTime;
