@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, inject } from "vue";
-import Registrant from "./registrant.partial";
+import Registrant from "./registrant.partial.obs";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrantInfo, RegistrationEntryState } from "./types.partial";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";

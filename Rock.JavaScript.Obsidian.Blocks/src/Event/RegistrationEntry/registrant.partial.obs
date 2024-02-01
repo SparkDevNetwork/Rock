@@ -1,0 +1,642 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="registrationentry-registrant-details">
+        <RockForm @submit="onNext" :formResetKey="formResetKey">
+            <template v-if="isDataForm">
+                <template v-if="currentFormIndex === 0">
+                    <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
+                        <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
+                    </div>
+                    <div v-if="familyMemberOptions.length" class="row">
+                        <div class="col-md-6">
+                            <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" label="Family Member to Register" />
+                        </div>
+                    </div>
+                </template>
+
+                <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
+                    <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
+                        <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
+                        <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute || field.fieldSource === fieldSources.groupMemberAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" :formFields="currentFormFields" />
+                        <NotificationBox alertType="danger" v-else>Could not resolve field source {{ field.fieldSource }}</NotificationBox>
+                    </template>
+                </ItemsWithPreAndPostHtml>
+
+                <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
+                    <h4>{{ pluralFeeTerm }}</h4>
+                    <template v-for="fee in viewModel.fees" :key="fee.guid">
+                        <FeeField :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
+                    </template>
+                </div>
+            </template>
+
+            <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
+                <h2 class="signature-header">Please Sign the {{ signatureDocumentTerm }} for {{ firstName }}</h2>
+                <div class="signaturedocument-container">
+                    <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="style.height = contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
+                </div>
+
+                <div class="well">
+                    <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="signatureDocumentTerm" />
+                </div>
+            </div>
+
+            <div class="actions row">
+                <div class="col-xs-6">
+                    <RockButton v-if="showPrevious" btnType="default" @click="onPrevious">
+                        Previous
+                    </RockButton>
+                </div>
+                <div class="col-xs-6 text-right">
+                    <RockButton v-if="isNextVisible" btnType="primary" type="submit" :disabled="isNextDisabled">
+                        Next
+                    </RockButton>
+                </div>
+            </div>
+        </RockForm>
+    </div>
+</template>
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { computed, onUpdated, PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, use } from "./utils.partial";
+    import StringFilter from "@Obsidian/Utility/stringUtils";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RegistrantPersonField from "./registrantPersonField.partial";
+    import RegistrantAttributeField from "./registrantAttributeField.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from "./types.partial";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import FeeField from "./feeField.partial.obs";
+    import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
+    import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
+    import { useStore } from "@Obsidian/PageState";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
+    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { smoothScrollToTop } from "@Obsidian/Utility/page";
+
+    const props = defineProps({
+        currentRegistrant: {
+            type: Object as PropType<RegistrantInfo>,
+            required: true
+        },
+        isWaitList: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "next"): void,
+        (e: "previous"): void
+    }>();
+
+    const store = useStore();
+    const invokeBlockAction = useInvokeBlockAction();
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
+
+    for (const fee of registrationEntryState.viewModel.fees) {
+        for (const feeItem of fee.items) {
+            if (typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
+                props.currentRegistrant.feeItemQuantities[feeItem.guid] = 0;
+            }
+        }
+    }
+
+    const fieldSources = {
+        personField: RegistrationFieldSource.PersonField,
+        personAttribute: RegistrationFieldSource.PersonAttribute,
+        groupMemberAttribute: RegistrationFieldSource.GroupMemberAttribute,
+        registrantAttribute: RegistrationFieldSource.RegistrantAttribute
+    } as const;
+
+    // #region Values
+
+    const signatureData = ref<ElectronicSignatureValue | undefined>();
+    const signatureSource = ref<string>("");
+    const signatureToken = ref<string>("");
+    const formResetKey = ref<string>("");
+    const isNextDisabled = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isSignatureDrawn = computed<boolean>(() => {
+        return registrationEntryState.viewModel.isSignatureDrawn;
+    });
+
+    const showPrevious = computed<boolean>(() => {
+        // Allow to navigate to other registrants
+        if (registrationEntryState.currentRegistrantIndex > 0) {
+            return true;
+        }
+
+        // Allow to navigate to registration attributes
+        if (registrationEntryState.viewModel?.registrationAttributesStart?.length > 0) {
+            return true;
+        }
+
+        // Allow back to intro page if this is not an existing registration
+        if (!registrationEntryState.viewModel.isExistingRegistration) {
+            return true;
+        }
+
+        return false;
+    });
+
+    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+        return registrationEntryState.viewModel;
+    });
+
+    const currentFormIndex = computed<number>(() => {
+        return registrationEntryState.currentRegistrantFormIndex;
+    });
+
+    const currentForm = computed<RegistrationEntryBlockFormViewModel | null>(() => {
+        return formsToShow[currentFormIndex.value] || null;
+    });
+
+    const isLastForm = computed<boolean>(() => {
+        return (currentFormIndex.value + 1) === formsToShow.value.length;
+    });
+
+    const isDataForm = computed<boolean>(() => {
+        return currentFormIndex.value < formsToShow.value.length;
+    });
+
+    const isSignatureForm = computed<boolean>(() => {
+        return viewModel.value.isInlineSignatureRequired && currentFormIndex.value === formsToShow.value.length;
+    });
+
+    const isNextVisible = computed<boolean>(() => {
+        return !isSignatureForm;
+    });
+
+    /** The filtered list of forms that will be shown */
+    const formsToShow = computed<RegistrationEntryBlockFormViewModel[]>(() => {
+        if (!props.isWaitList) {
+            return viewModel.value.registrantForms;
+        }
+
+        return viewModel.value.registrantForms.filter(form => form.fields.some(field => field.showOnWaitList));
+    });
+
+    /** The filtered fields to show on the current form */
+    const currentFormFields = computed<RegistrationEntryBlockFormFieldViewModel[]>(() => {
+        return (currentForm.value?.fields || [])
+            .filter(f => !props.isWaitList || f.showOnWaitList);
+    });
+
+    /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
+    const currentFormFieldsAugmented = computed<RegistrationEntryBlockFormFieldViewModel[]>(() => {
+        const fields = JSON.parse(JSON.stringify(currentFormFields.value)) as RegistrationEntryBlockFormFieldViewModel[];
+
+        fields.forEach(value => {
+            if (value.fieldSource != fieldSources.personField) {
+                let isVisible = true;
+                switch (value.visibilityRuleType) {
+                    case FilterExpressionType.GroupAll:
+                        isVisible = value.visibilityRules.every(vr => isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        break;
+
+                    case FilterExpressionType.GroupAllFalse:
+                        isVisible = value.visibilityRules.every(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        break;
+
+                    case FilterExpressionType.GroupAny:
+                        isVisible = value.visibilityRules.some(vr => isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        break;
+
+                    case FilterExpressionType.GroupAnyFalse:
+                        isVisible = value.visibilityRules.some(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        break;
+
+                    default:
+                        isVisible = true;
+                        break;
+                }
+
+                if (isVisible === false) {
+                    value.preHtml = "";
+                    value.postHtml = "";
+                }
+            }
+        });
+
+        return fields;
+    });
+
+    /** The current fields as pre-post items to allow pre-post HTML to be rendered */
+    const prePostHtmlItems = computed<ItemWithPreAndPostHtml[]>(() => {
+        return currentFormFieldsAugmented.value
+            .map(f => ({
+                preHtml: f.preHtml,
+                postHtml: f.postHtml,
+                slotName: f.guid
+            }));
+    });
+
+    const currentPerson = computed<CurrentPersonBag | null>(() => {
+        return store.state.currentPerson;
+    });
+
+    const pluralFeeTerm = computed<string>(() => {
+        return StringFilter.toTitleCase(viewModel.value.pluralFeeTerm || "fees");
+    });
+
+    /** The radio options that are displayed to allow the user to pick another person that this
+     *  registrant is part of a family. */
+    const familyOptions = computed<ListItemBag[]>(() => {
+        const options: ListItemBag[] = [];
+        const usedFamilyGuids: Record<Guid, boolean> = {};
+
+        if (viewModel.value.registrantsSameFamily !== RegistrantsSameFamily.Ask) {
+            return options;
+        }
+
+        // Add previous registrants as options
+        for (let i = 0; i < registrationEntryState.currentRegistrantIndex; i++) {
+            const registrant = registrationEntryState.registrants[i];
+            const info = getRegistrantBasicInfo(registrant, viewModel.value.registrantForms);
+
+            if (registrant.familyGuid && !usedFamilyGuids[registrant.familyGuid] && info?.firstName && info?.lastName) {
+                options.push({
+                    text: `${info.firstName} ${info.lastName}`,
+                    value: registrant.familyGuid
+                });
+
+                usedFamilyGuids[registrant.familyGuid] = true;
+            }
+        }
+
+        // Add the current person (registrant) if not already added
+        if (viewModel.value.currentPersonFamilyGuid && currentPerson.value?.fullName && !usedFamilyGuids[viewModel.value.currentPersonFamilyGuid]) {
+            usedFamilyGuids[viewModel.value.currentPersonFamilyGuid] = true;
+            options.push({
+                text: currentPerson.value.fullName,
+                value: viewModel.value.currentPersonFamilyGuid
+            });
+        }
+
+        // Add the current person (registrant) if not already added
+        const familyGuid = !props.currentRegistrant.familyGuid || usedFamilyGuids[props.currentRegistrant.familyGuid] == true
+            ? newGuid()
+            : props.currentRegistrant.familyGuid;
+        options.push({
+            text: "None of the above",
+            value: familyGuid
+        });
+
+        return options;
+    });
+
+    /** The people that can be picked from because they are members of the same family. */
+    const familyMemberOptions = computed<ListItemBag[]>(() => {
+
+        const usedFamilyMemberGuids = registrationEntryState.registrants
+            .filter(r => r.personGuid && r.personGuid !== props.currentRegistrant.personGuid)
+            .map(r => r.personGuid);
+
+        return viewModel.value.familyMembers
+            .filter(fm => !usedFamilyMemberGuids.includes(fm.guid))
+            .map(fm => ({
+                text: fm.fullName,
+                value: fm.guid
+            }));
+    });
+
+    const uppercaseRegistrantTerm = computed<string>(() => {
+        return StringFilter.toTitleCase(viewModel.value.registrantTerm);
+    });
+
+    const firstName = computed<string>(() => {
+        return getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms).firstName;
+    });
+
+    const familyMember = computed<RegistrationEntryBlockFamilyMemberViewModel | null>(() => {
+        const personGuid = props.currentRegistrant.personGuid;
+
+        if (!personGuid) {
+            return null;
+        }
+
+        return viewModel.value.familyMembers.find(fm => areEqual(fm.guid, personGuid)) || null;
+    });
+
+    const signatureDocumentTerm = computed<string>(() => {
+        return StringFilter.toTitleCase(viewModel.value.signatureDocumentTerm || "Release");
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
+        const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
+
+        if (typeof value !== "string") {
+            return false;
+        }
+
+        const comparedToFormField = formFields.find(ff => areEqual(ff.guid, rule.comparedToRegistrationTemplateFormFieldGuid));
+        if (!comparedToFormField?.attribute?.fieldTypeGuid) {
+            return false;
+        }
+
+        const fieldType = getFieldType(comparedToFormField.attribute.fieldTypeGuid);
+
+        if (!fieldType) {
+            return false;
+        }
+
+        return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+    }
+
+    function onPrevious(): void {
+        clearFormErrors();
+
+        if (currentFormIndex.value <= 0) {
+            emit("previous");
+            return;
+        }
+
+        registrationEntryState.currentRegistrantFormIndex--;
+
+        // Wait for the previous form to be rendered and then scroll to the top
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onNext(): Promise<void> {
+        clearFormErrors();
+        let lastFormIndex = formsToShow.value.length - 1;
+
+        // If we have an inline signature then there is an additional form
+        // screen that we need to show. Get the document to be signed from
+        // the server and then display the form.
+        if (viewModel.value.isInlineSignatureRequired) {
+            isNextDisabled.value = true;
+
+            try {
+                const result = await invokeBlockAction("GetSignatureDocumentData", {
+                    args: getRegistrationEntryBlockArgs(),
+                    registrantGuid: props.currentRegistrant.guid
+                });
+
+                if (result.isSuccess && result.data) {
+                    const data = (result.data as Record<string, string>);
+
+                    if (data.existingSignatureDocumentGuid) {
+                        props.currentRegistrant.existingSignatureDocumentGuid = data.existingSignatureDocumentGuid;
+                    }
+                    else {
+                        signatureSource.value = data.documentHtml;
+                        signatureToken.value = data.securityToken;
+
+                        lastFormIndex += 1;
+                    }
+                }
+                else {
+                    console.error(result.data);
+                    return;
+                }
+            }
+            finally {
+                isNextDisabled.value = false;
+            }
+        }
+
+        if (currentFormIndex.value >= lastFormIndex) {
+            emit("next");
+            return;
+        }
+
+        registrationEntryState.currentRegistrantFormIndex++;
+
+        // Wait for the next form to be rendered and then scroll to the top
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    function updateFeeItemsRemaining(): void {
+        // calculate fee items remaining
+        const combinedFeeItemQuantities: Record<Guid, number> = {};
+
+        // Get all of the fee items in use for all registrants and add them to the combinedFeeItemQuantities Record
+        for (const registrant of registrationEntryState.registrants) {
+            for (const feeItemGuid in registrant.feeItemQuantities) {
+
+                if (registrant.feeItemQuantities[feeItemGuid] > 0) {
+                    const feeItemsUsed = registrant.feeItemQuantities[feeItemGuid];
+                    if (combinedFeeItemQuantities[feeItemGuid] === undefined || combinedFeeItemQuantities[feeItemGuid] === null) {
+                        combinedFeeItemQuantities[feeItemGuid] = feeItemsUsed;
+                    }
+                    else {
+                        combinedFeeItemQuantities[feeItemGuid] = combinedFeeItemQuantities[feeItemGuid] + feeItemsUsed;
+                    }
+                }
+            }
+        }
+
+        // Now go through all of the fee items and update the usage by subtracting the the total in combinedFeeItemQuantities from the originalCountRemaining
+        const fees = registrationEntryState.viewModel.fees;
+        for (const fee of fees) {
+            if (fee !== undefined && fee !== null && fee.items !== undefined && fee.items !== null && fee.items.length > 0) {
+                for (const feeItem of fee.items) {
+                    if (feeItem.countRemaining === null || feeItem.countRemaining === undefined || feeItem.originalCountRemaining === undefined || feeItem.originalCountRemaining === null) {
+                        continue;
+                    }
+
+                    const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid] ?? 0;
+                    if (usedFeeItemCount !== undefined && usedFeeItemCount !== null) {
+                        feeItem.countRemaining = feeItem.originalCountRemaining - usedFeeItemCount;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Clears any existing errors from the RockForm component. This is
+     * needed since we display multiple registrant forms inside the single
+     * RockForm instance. Otherwise when moving from the first form to
+     * the second form it would immediately validate and display errors.
+     */
+    function clearFormErrors(): void {
+        formResetKey.value = newGuid();
+    }
+
+    async function onSigned(): Promise<void> {
+        // Send all the signed document information to the server. This will
+        // prepare the final signed document data that will be later sent
+        // when we complete the registration.
+        const result = await invokeBlockAction<string>("SignDocument", {
+            args: getRegistrationEntryBlockArgs(),
+            registrantGuid: props.currentRegistrant.guid,
+            documentHtml: signatureSource.value,
+            securityToken: signatureToken.value,
+            signature: signatureData.value
+        });
+
+        if (result.isSuccess && result.data) {
+            // Store the signed document data on the registrant.
+            props.currentRegistrant.signatureData = result.data;
+            emit("next");
+        }
+        else {
+            console.error(result.data);
+        }
+    }
+
+    /** Copy the values that are to have current values used */
+    function copyValuesFromFamilyMember(): void {
+        if (!familyMember.value || registrationEntryState.navBack || registrationEntryState.viewModel.isExistingRegistration) {
+            // Nothing to copy
+            return;
+        }
+
+        // If the family member selection is made then set all form fields where use existing value is enabled
+        for (const form of viewModel.value.registrantForms) {
+            for (const field of form.fields) {
+                // Do not set common fields if they are of type
+                // Registrant Attribute since there is no value to set.
+                // Fixes issue #5610.
+                if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                    continue;
+                }
+
+                if (field.guid in familyMember.value.fieldValues) {
+                    const familyMemberValue = familyMember.value.fieldValues[field.guid];
+
+                    if (!familyMemberValue) {
+                        // TODO JMH Should we be manipulating props directly???
+                        delete props.currentRegistrant.fieldValues[field.guid];
+                    }
+                    else if (typeof familyMemberValue === "object") {
+                        // TODO JMH Should we be manipulating props directly???
+                        props.currentRegistrant.fieldValues[field.guid] = { ...familyMemberValue };
+                    }
+                    else {
+                        // TODO JMH Should we be manipulating props directly???
+                        props.currentRegistrant.fieldValues[field.guid] = familyMemberValue;
+                    }
+                }
+                else {
+                    // TODO JMH Should we be manipulating props directly???
+                    delete props.currentRegistrant.fieldValues[field.guid];
+                }
+            }
+        }
+    }
+
+    async function getFieldValues(): Promise<void> {
+        const result = await invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", {
+            args: getRegistrationEntryBlockArgs(),
+            forms: viewModel.value.registrantForms,
+            registrantGuid: props.currentRegistrant.guid
+        });
+
+        if (result.isSuccess && result.data) {
+            for (const form of viewModel.value.registrantForms) {
+                for (const field of form.fields) {
+                    // Check if we gota value for the attribute
+                    if (field.guid in result.data) {
+                        const formFieldValue = result.data[field.guid];
+                        const currentFormFieldValue = props.currentRegistrant.fieldValues[field.guid];
+
+                        if (currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
+                            if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
+                                // TODO JMH Should we be manipulating props directly???
+                                props.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
+                            }
+                            else {
+                                // TODO JMH Should we be manipulating props directly???
+                                props.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function onUpdateRegistrantFee(values: Record<string, number>): void {
+        const newValue = { ...props.currentRegistrant.feeItemQuantities };
+
+        for (const key of Object.keys(values)) {
+            newValue[key] = values[key];
+        }
+
+        props.currentRegistrant.feeItemQuantities = newValue;
+
+        updateFeeItemsRemaining();
+    }
+
+    function onSetFamilyGuid(familyGuid: Guid): void {
+        if (familyGuid !== props.currentRegistrant.familyGuid) {
+            props.currentRegistrant.familyGuid = familyGuid;
+            props.currentRegistrant.personGuid = null;
+        }
+    }
+
+    function onSetPersonGuid(guid: Guid | string[]): void {
+        if (Array.isArray(guid)) {
+            // This should not happen, but if multiple values are selected, then default to the first selection.
+            guid = guid[0];
+        }
+
+        if (guid !== props.currentRegistrant.personGuid) {
+            props.currentRegistrant.personGuid = guid;
+
+            if (familyMember.value) {
+                props.currentRegistrant.familyGuid = familyMember.value.familyGuid;
+            }
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(familyMember, () => {
+        if (!familyMember.value) {
+            // If the family member selection is cleared then clear all form fields
+            for (const form of viewModel.value.registrantForms) {
+                for (const field of form.fields) {
+                    // Do not touch common fields if they are of type
+                    // Registrant Attribute since we don't set them when
+                    // selecting a family member either.
+                    // Fixes issue #5610.
+                    if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                        continue;
+                    }
+
+                    // TODO JMH Should we be manipulating props directly???
+                    delete props.currentRegistrant.fieldValues[field.guid];
+                }
+            }
+        }
+        else {
+            // If the family member selection is made then set all form fields where use existing value is enabled
+            copyValuesFromFamilyMember();
+        }
+    });
+
+    // #endregion
+
+    onUpdated(() => {
+        updateFeeItemsRemaining();
+    });
+
+    // Last-minute setup.
+    getFieldValues();
+    copyValuesFromFamilyMember();
+</script>
