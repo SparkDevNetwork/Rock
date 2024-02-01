@@ -341,11 +341,15 @@ namespace Rock.SystemGuid
         /// The post update data migration job to chop the Login and Account Entry blocks.
         /// </summary>
         public const string DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS = "A65D26C1-229E-4198-B388-E269C3534BC0";
-        
+
         /// <summary>
         /// The post update data migration job to chop the Email Preference Entry block.
         /// </summary>
         public const string DATA_MIGRATIONS_162_CHOP_EMAIL_PREFERENCE_ENTRY = "AE07C80A-80A4-48FD-908C-56DDB1CAA322";
+
+        /// <summary>
+        /// The post update data migration job to remove legacy preference attributes.
+        /// </summary>
         public const string DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES = "46d98280-7611-4588-831d-6924e2be9da6";
 
         /// <summary>
