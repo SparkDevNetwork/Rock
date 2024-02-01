@@ -74,7 +74,7 @@
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial";
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial";
     import RegistrationEntryPayment from "./RegistrationEntry/payment.partial";
-    import RegistrationEntrySummary from "./RegistrationEntry/summary.partial";
+    import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
     import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
 
     const store = useStore();

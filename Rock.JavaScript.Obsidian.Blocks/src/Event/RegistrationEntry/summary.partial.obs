@@ -1,0 +1,202 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="registrationentry-summary">
+        <RockForm @submit="onNext">
+
+            <Registrar />
+
+            <div v-if="hasPaymentCost">
+                <h4>Payment Summary</h4>
+                <DiscountCodeForm />
+                <CostSummary />
+            </div>
+
+            <div v-if="!hasPaymentCost" class="margin-b-md">
+                <p>The following {{ registrantTerm }} will be registered for {{ instanceName }}:</p>
+                <ul>
+                    <li v-for="r in registrantInfos" :key="r.guid">
+                        <strong>{{ r.firstName }} {{ r.lastName }}</strong>
+                    </li>
+                </ul>
+            </div>
+
+            <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
+
+            <div class="actions text-right">
+                <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
+                    Previous
+                </RockButton>
+                <RockButton btnType="primary" type="submit" :isLoading="loading" autoDisable>
+                    {{ finishButtonText }}
+                </RockButton>
+            </div>
+        </RockForm>
+    </div>
+</template>
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, PersistSession, getRegistrantBasicInfo, use } from "./utils.partial";
+    import CostSummary from "./costSummary.partial.obs";
+    import DiscountCodeForm from "./discountCodeForm.partial.obs";
+    import Registrar from "./registrar.partial";
+    import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo } from "./types.partial";
+    import { Guid } from "@Obsidian/Types";
+
+    const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
+    const invokeBlockAction = useInvokeBlockAction();
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const persistSession = use(PersistSession);
+
+    const emit = defineEmits<{
+        (e: "next"): void,
+        (e: "previous"): void
+    }>();
+
+    // #region Values
+
+    /** Is there an AJAX call in-flight? */
+    const loading = ref<boolean>(false);
+
+    /** An error message received from a bad submission */
+    const submitErrorMessage = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const hasPaymentCost = computed<boolean>(() => {
+        const usedFeeIds: Guid[] = [];
+
+        // Get a list of all fees that are in use.
+        for (const registrant of registrationEntryState.registrants) {
+            for (const feeId in registrant.feeItemQuantities) {
+                if (registrant.feeItemQuantities[feeId] > 0) {
+                    usedFeeIds.push(feeId);
+                }
+            }
+        }
+
+        // See if any of those fees have a cost.
+        const hasCostFees = registrationEntryState.viewModel.fees.some(f => f.items.some(i => i.cost > 0 && usedFeeIds.includes(i.guid)));
+
+        return hasCostFees || registrationEntryState.viewModel.cost > 0;
+    });
+
+    /** This is the data sent from the C# code behind when the block initialized. */
+    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+        return registrationEntryState.viewModel;
+    });
+
+    /** Info about the registrants made available by .FirstName instead of by field guid */
+    const registrantInfos = computed<RegistrantBasicInfo[]>(() => {
+        return registrationEntryState.registrants.map(r => getRegistrantBasicInfo(r, viewModel.value.registrantForms));
+    });
+
+    /** The registrant term - plural if there are more than 1 */
+    const registrantTerm = computed<string>(() => {
+        return registrantInfos.value.length === 1 ? viewModel.value.registrantTerm : viewModel.value.pluralRegistrantTerm;
+    });
+
+    /** The name of this registration instance */
+    const instanceName = computed<string>(() => {
+        return viewModel.value.instanceName;
+    });
+
+    /** The text to be displayed on the "Finish" button */
+    const finishButtonText = computed<string>(() => {
+        if (registrationEntryState.amountToPayToday) {
+            return viewModel.value.isRedirectGateway ? "Pay" : "Next";
+        }
+        else {
+            return "Finish";
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** User clicked the "previous" button */
+    function onPrevious(): void {
+        emit("previous");
+    }
+
+    /** User clicked the "finish" button */
+    async function onNext(): Promise<void> {
+        loading.value = true;
+
+        // If there is a cost, then the gateway will need to be used to pay
+        if (registrationEntryState.amountToPayToday) {
+            await persistSession(true);
+
+            if (viewModel.value.isRedirectGateway) {
+                const redirectUrl = await getPaymentRedirect();
+
+                if (redirectUrl) {
+                    location.href = redirectUrl;
+                }
+                else {
+                    // Error is shown by getPaymentRedirect method
+                    loading.value = false;
+                }
+            }
+            else {
+                loading.value = false;
+                emit("next");
+            }
+        }
+        else {
+            const success = await submit();
+            loading.value = false;
+
+            if (success) {
+                emit("next");
+            }
+        }
+    }
+
+    /** Submit the registration to the server */
+    async function submit(): Promise<boolean> {
+        submitErrorMessage.value = "";
+
+        const result = await invokeBlockAction<RegistrationEntryBlockSuccessViewModel>("SubmitRegistration", {
+            args: getRegistrationEntryBlockArgs()
+        });
+
+        if (result.isError || !result.data) {
+            submitErrorMessage.value = result.errorMessage || "Unknown error";
+        }
+        else {
+            registrationEntryState.successViewModel = result.data;
+        }
+
+        return result.isSuccess;
+    }
+
+    /**
+     * Persist the args to the server so the user can be redirected for
+     * payment. Returns the redirect URL.
+     */
+    async function getPaymentRedirect(): Promise<string> {
+        const result = await invokeBlockAction<string>("GetPaymentRedirect", {
+            args: getRegistrationEntryBlockArgs(),
+            returnUrl: window.location.href
+        });
+
+        if (result.isError || !result.data) {
+            submitErrorMessage.value = result.errorMessage || "Unknown error";
+        }
+
+        return result.data || "";
+    }
+
+    // #endregion
+
+    if (!hasPaymentCost.value) {
+        registrationEntryState.amountToPayToday = 0;
+    }
+</script>
