@@ -31,6 +31,9 @@ export type FinancialBatchDetailOptionsBag = {
     /** The message to be shown on the frontend if the batch is automated. */
     automatedToolTip?: string | null;
 
+    /** The Defined Type Guid for the Batch Name Defined Type Picker if the Defined Type is specified. */
+    batchNameDefinedTypeGuid?: string | null;
+
     /** Gets or sets the currency types. */
     currencyTypes?: FinancialBatchCurrencyTotalsBag[] | null;
 
@@ -55,7 +58,4 @@ export type FinancialBatchDetailOptionsBag = {
 
     /** Gets or sets the transaction item count. */
     transactionItemCount: number;
-
-    /** Gets the GUID of the defined type for the batch names if specified in the block attribute. */
-    batchNameDefinedTypeGuid: string | null;
 };
