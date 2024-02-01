@@ -1716,7 +1716,20 @@ mission. We are so grateful for your commitment.</p>
         {
             if ( ValidatePaymentInfo( out string errorMessage ) )
             {
-                SetConfirmationText();
+                ReferencePaymentInfo paymentInfo = GetPaymentInfo( out errorMessage );
+                if ( !string.IsNullOrEmpty( errorMessage ) )
+                {
+                    ShowMessage( NotificationBoxType.Validation, "Before we finish...", errorMessage );
+                    return;
+                }
+                else if ( paymentInfo == null )
+                {
+                    errorMessage = "There was a problem creating the payment information";
+                    ShowMessage( NotificationBoxType.Validation, "Before we finish...", errorMessage );
+                    return;
+                }
+
+                SetConfirmationText( paymentInfo );
                 if ( this.PartialPostbacksAllowed )
                 {
                     this.AddHistory( "GivingDetail", EntryStep.PromptForAmount.ConvertToString( false ), null );
@@ -3086,9 +3099,8 @@ mission. We are so grateful for your commitment.</p>
             return true;
         }
 
-        private void SetConfirmationText()
+        private void SetConfirmationText( ReferencePaymentInfo paymentInfo )
         {
-            ReferencePaymentInfo paymentInfo = GetPaymentInfo();
             var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
             bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
@@ -3153,20 +3165,13 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Gets the payment information.
         /// </summary>
-        private ReferencePaymentInfo GetPaymentInfo()
+        private ReferencePaymentInfo GetPaymentInfo( out string errorMessage )
         {
-            ReferencePaymentInfo paymentInfo;
-            if ( rblSavedAccount.Items.Count > 0 && ( rblSavedAccount.SelectedValueAsId() ?? 0 ) > 0 )
-            {
-                paymentInfo = GetReferenceInfo( rblSavedAccount.SelectedValueAsId().Value );
-            }
-            else
-            {
-                paymentInfo = new ReferencePaymentInfo();
+            errorMessage = null;
 
-                var financialGatewayComponent = this.FinancialGatewayComponent;
-                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out _ );
-            }
+            var isSavedAccount = ( rblSavedAccount.Items.Count > 0 && ( rblSavedAccount.SelectedValueAsId() ?? 0 ) > 0 );
+
+            var paymentInfo = ( isSavedAccount ) ? GetReferenceInfo( rblSavedAccount.SelectedValueAsId().Value ) : new ReferencePaymentInfo();
 
             paymentInfo.Amount = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue ).Sum( a => a.Amount.Value );
             paymentInfo.Email = txtEmail.Text;
@@ -3180,6 +3185,13 @@ mission. We are so grateful for your commitment.</p>
 
             var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             paymentInfo.TransactionTypeValueId = transactionType.Id;
+
+            if ( !isSavedAccount )
+            {
+                // If this is not a saved account, the Gateway may alter the data in paymentInfo (e.g., to use a separate billing address, if the gateway's hosted payment control permits this).
+                var financialGatewayComponent = this.FinancialGatewayComponent;
+                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+            }
 
             return paymentInfo;
         }
@@ -3351,8 +3363,14 @@ mission. We are so grateful for your commitment.</p>
 
         private ReferencePaymentInfo GetTxnPaymentInfo( Person person, out string errorMessage )
         {
-            ReferencePaymentInfo paymentInfo = GetPaymentInfo();
-            if ( paymentInfo == null )
+            errorMessage = null;
+
+            ReferencePaymentInfo paymentInfo = GetPaymentInfo( out errorMessage );
+            if ( !string.IsNullOrEmpty( errorMessage ) )
+            {
+                return null;
+            }
+            else if ( paymentInfo == null )
             {
                 errorMessage = "There was a problem creating the payment information";
                 return null;
@@ -3367,6 +3385,12 @@ mission. We are so grateful for your commitment.</p>
             {
                 var financialGatewayComponent = this.FinancialGatewayComponent;
                 financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    ShowMessage( NotificationBoxType.Danger, "", errorMessage ?? "Unknown Error" );
+                    return null;
+                }
+
                 var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentInfo, out errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
                 {
