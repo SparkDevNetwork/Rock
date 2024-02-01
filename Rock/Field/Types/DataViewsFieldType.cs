@@ -48,6 +48,11 @@ namespace Rock.Field.Types
         /// </summary>
         protected const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
 
+        /// <summary>
+        /// Display Persisted Only Key
+        /// </summary>
+        protected const string DISPLAY_PERSISTED_ONLY_KEY = "displayPersistedOnly";
+
         #endregion
 
         #region Formatting
@@ -298,6 +303,7 @@ namespace Rock.Field.Types
         {
             string entityTypeName = string.Empty;
             int entityTypeId = 0;
+            var displayPersistedOnly = false;
 
             if ( configurationValues != null )
             {
@@ -312,10 +318,15 @@ namespace Rock.Field.Types
                             entityTypeId = entityType.Id;
                         }
                     }
+
+                    if ( configurationValues.ContainsKey( DISPLAY_PERSISTED_ONLY_KEY ) )
+                    {
+                        displayPersistedOnly = configurationValues[DISPLAY_PERSISTED_ONLY_KEY].Value.AsBoolean();
+                    }
                 }
             }
 
-            var editControl = new DataViewsPicker { ID = id, EntityTypeId = entityTypeId };
+            var editControl = new DataViewsPicker { ID = id, EntityTypeId = entityTypeId, DisplayPersistedOnly = displayPersistedOnly };
 
             return editControl;
         }

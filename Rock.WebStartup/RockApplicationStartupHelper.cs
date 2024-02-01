@@ -984,11 +984,10 @@ namespace Rock.WebStartup
                         name = elementType.Name;
                     }
 
-                    engine.RegisterTag( name, ( shortcodeName ) =>
+                    engine.RegisterTag( name, ( tagName ) =>
                     {
-                        var shortcode = Activator.CreateInstance( elementType ) as ILavaTag;
-
-                        return shortcode;
+                        var tag = Activator.CreateInstance( elementType ) as ILavaTag;
+                        return tag;
                     } );
 
                     try

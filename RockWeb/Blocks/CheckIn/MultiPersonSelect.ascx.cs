@@ -324,7 +324,12 @@ namespace RockWeb.Blocks.CheckIn
                         }
                     }
 
-                    var noOptionMessage = GetAttributeValue( AttributeKey.NoOptionMessage );
+                    // If the "No Option Message" block setting is defined, that takes precedence.
+                    // Otherwise, we'll fall back to using per-person messages.
+                    var attrNoOptionMessage = GetAttributeValue( AttributeKey.NoOptionMessage );
+                    var noOptionMessage = attrNoOptionMessage.IsNotNullOrWhiteSpace()
+                        ? attrNoOptionMessage
+                        : person.NoOptionReason;
 
                     if ( options.Any() )
                     {

@@ -5,10 +5,12 @@
             :childNumber="index + 1"
             :child="child"
             :disabled="disabled"
+            :childLabel="childLabel"
+            :adultLabel="adultLabel"
             @remove="$emit('removeChild', child)" />
         <hr>
     </template>
-    <NotificationBox v-if="addChildErrors.length" alertType="danger" title="Add Child">
+    <NotificationBox v-if="addChildErrors.length" alertType="danger" :title="`Add ${childLabel}`">
         <ul>
             <li v-for="error in addChildErrors">{{ error }}</li>
         </ul>
@@ -20,7 +22,7 @@
         :disabled="disabled"
         @click="onAddChildClicked">
         <i class="fa fa-user"></i>
-        <span> Add Child</span>
+        <span> Add {{ childLabel }}</span>
     </RockButton>
 </template>
 
@@ -50,7 +52,17 @@
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        childLabel: {
+            type: String as PropType<string>,
+            default: "Child"
+        },
+
+        adultLabel: {
+            type: String as PropType<string>,
+            default: "Adult"
+        },
     });
 
     const emit = defineEmits<{
@@ -81,7 +93,7 @@
             emit("addChild", child);
         }
         else {
-            addChildErrors.value = [result?.errorMessage || "An unexpected error occurred while adding a child. Please try again."];
+            addChildErrors.value = [result?.errorMessage || `An unexpected error occurred while adding a ${props.childLabel}. Please try again.`];
         }
     }
 

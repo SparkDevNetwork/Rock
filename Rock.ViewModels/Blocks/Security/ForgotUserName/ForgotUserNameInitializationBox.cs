@@ -29,10 +29,10 @@ namespace Rock.ViewModels.Blocks.Security.ForgotUserName
         public ForgotUserNameCaptionsBag Captions { get; set; }
 
         /// <summary>
-        /// If set to true the CAPTCHA verification step will not be performed.
+        /// If set to true if the Captcha verification step should not be performed.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
+        ///   <c>true</c> if Captcha is disabled; otherwise, <c>false</c>.
         /// </value>
         public bool DisableCaptchaSupport { get; set; }
     }

@@ -389,7 +389,9 @@ namespace Rock.Mobile
                 TimeZone = timeZoneName,
                 PushTokenUpdateValue = additionalSettings.PushTokenUpdateValue,
                 Auth0ClientId = additionalSettings.Auth0ClientId,
-                Auth0ClientDomain = additionalSettings.Auth0Domain
+                Auth0ClientDomain = additionalSettings.Auth0Domain,
+                EntraTenantId = additionalSettings.EntraTenantId,
+                EntraClientId = additionalSettings.EntraClientId
             };
 
             //

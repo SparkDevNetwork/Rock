@@ -1907,6 +1907,125 @@ END" );
         }
 
         /// <summary>
+        ///     Migrates the known values from one BlockType Attribute to another
+        ///     based on the provided mapping dictionary. An optional value
+        ///     can be specified for anything not mapped to one of the dictionary
+        ///     entries. If an <see cref="Rock.Model.AttributeValue.EntityId"/>
+        ///     already contains a record for the new Attribute no new records are
+        ///     created for that Entity.
+        /// <para>
+        ///     This is not a commonly used method, but can be useful when
+        ///     you're creating a new BlockType Attribute and you want to map
+        ///     the <see cref="Rock.Model.AttributeValue.Value"/> from another
+        ///     <see cref="Rock.Model.Attribute"/>. For example when a
+        ///     <see cref="Rock.Model.BlockType"/> has a Boolean
+        ///     Attribute, but now needs to support more than 2 values.
+        ///     You might create a new CustomList Attribute and then map the
+        ///     previously defined values from the boolean to the new Attribute
+        ///     before deleting the old/previously defined attribute. This would
+        ///     preserve non-default values that were set in an existing environment.
+        /// </para>
+        /// <para>
+        ///     This method makes no changes to <see cref="Rock.Model.AttributeQualifier"/>.
+        ///     If you're new <see cref="Rock.Model.Attribute"/> needs to preserve
+        ///     admin modified values for AttributeQualifers you will need to
+        ///     write a script for migrating those values to your new attribute.
+        /// </para>
+        /// </summary>
+        /// <param name="blockTypeGuid">
+        ///     The <see cref="Rock.Model.BlockType"/> Guid whose Attributes are
+        ///     being targeted.
+        /// </param>
+        /// <param name="fromAttributeGuid">
+        ///     The <see cref="Rock.Model.Attribute"/> Guid whose
+        ///     <seealso cref="Rock.Model.AttributeValue"/>s are being remapped
+        ///     to the new Attribute.
+        /// </param>
+        /// <param name="toAttributeGuid">
+        ///     The <see cref="Rock.Model.Attribute"/> Guid whose
+        ///     <seealso cref="Rock.Model.AttributeValue"/>s are being created
+        ///     based on the values from the old Attribute.
+        /// </param>
+        /// <param name="oldValueToNewValueMap">
+        ///     A dictionary whose key corresponds to the
+        ///     <see cref="Rock.Model.AttributeValue.Value"/> to map from
+        ///     and whose value corresponds to the value to
+        ///     <see cref="Rock.Model.AttributeValue.Value"/> to map to.
+        /// </param>
+        /// <param name="unmappedValue">An optional value to set for any unmapped records.</param>
+        public void MigrateBlockTypeAttributeKnownValues( string blockTypeGuid, string fromAttributeGuid, string toAttributeGuid, Dictionary<string, string> oldValueToNewValueMap, string unmappedValue = "" )
+        {
+            // If there are no mapped values then there's nothing to do.
+            if ( oldValueToNewValueMap == null || !oldValueToNewValueMap.Any() )
+            {
+                return;
+            }
+
+            // Create the list of conditions and their resulting values.
+            var caseConditions = oldValueToNewValueMap
+                .Select( k => "WHEN '" + k.Key.Replace( "'", "''" ) + "' THEN '" + k.Value.Replace( "'", "''" ) + "'" )
+                .JoinStrings( Environment.NewLine );
+
+            // If there's a value to use for unmapped values include it.
+            // Otherwise use the DefaultValue that's configured for the new Attribute.
+            if ( !string.IsNullOrWhiteSpace( unmappedValue ) )
+            {
+                caseConditions += " ELSE " + unmappedValue.Replace( "'", "''" );
+            }
+            else
+            {
+                caseConditions += " ELSE @ToDefaultValue";
+            }
+
+            Migration.Sql( $@"
+                DECLARE @BlockTypeGuid uniqueidentifier = '{blockTypeGuid}';
+                DECLARE @FromAttributeGuid uniqueidentifier = '{fromAttributeGuid}';
+                DECLARE @ToAttributeGuid uniqueidentifier = '{toAttributeGuid}';
+                DECLARE @BlockEntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block');
+
+                DECLARE @ToAttributeId INT;
+                DECLARE @ToDefaultValue NVARCHAR(MAX);
+
+                SELECT
+                    @ToAttributeId = [Id],
+                    @ToDefaultValue = [DefaultValue]
+                FROM [dbo].[Attribute]
+                WHERE [Guid] = @ToAttributeGuid;
+
+                 INSERT INTO [dbo].[AttributeValue] (
+                       [IsSystem]
+                     , [AttributeId]
+                     , [EntityId]
+                     , [Value]
+                     , [Guid]
+                     , [IsPersistedValueDirty])
+                 SELECT 
+                     1 IsSystem
+                     , @ToAttributeId NewAttributeId
+                     , [av].[EntityId]
+                     , CASE [av].[Value]
+                          {caseConditions}
+                     END MappedValue
+                     , NEWID() AttributeValueGuid
+                     , 1
+                 FROM [dbo].[AttributeValue] [av]
+                 JOIN [dbo].[Attribute] [a] ON [a].Id = [av].[AttributeId]
+                 JOIN [dbo].[BlockType] [bt] ON [bt].Id = [a].[EntityTypeQualifierValue]
+                 WHERE [bt].[Guid] = @BlockTypeGuid
+                    AND [a].[Guid] = @FromAttributeGuid
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM [dbo].[AttributeValue] [existingAv]
+                        JOIN [dbo].[Attribute] [existingA] ON [existingA].[Id] = [existingAv].[AttributeId]
+                        WHERE [existingA].[Guid] = @ToAttributeGuid
+                            AND [existingA].[EntityTypeQualifierColumn] = 'BlockTypeId'
+                            AND [existingA].[EntityTypeQualifierValue] = CAST([bt].[Id] as nvarchar)
+                            AND [existingA].[EntityTypeId] = @BlockEntityTypeId
+                    )
+            " );
+        }
+
+        /// <summary>
         /// Updates the BlockType Attribute for the given blocktype and key or inserts a new record if it does not exist.
         /// </summary>
         /// <param name="blockTypeGuid">The block type unique identifier.</param>
@@ -8413,10 +8532,9 @@ END
             }
 
             // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
-            AddPostUpdateServiceJob(
-                name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - { name }",
+            AddPostUpdateServiceJob( name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - {name}",
                 description: "This job will replace the  WebForms blocks with their Obsidian blocks on all sites, pages, and layouts.",
-                jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid);
+                jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid );
 
             // Adding the Attributes for the Job in case they happen to not be present in the database before
 

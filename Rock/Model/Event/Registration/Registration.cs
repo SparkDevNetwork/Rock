@@ -184,6 +184,15 @@ namespace Rock.Model
         [FieldType(Rock.SystemGuid.FieldType.CAMPUS)]
         public int? CampusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/> identifier.
+        /// </value>
+        [DataMember]
+        public int? PaymentPlanFinancialScheduledTransactionId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -247,6 +256,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/>.
+        /// </summary>
+        /// <value>
+        /// The payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/>.
+        /// </value>
+        [DataMember]
+        public virtual FinancialScheduledTransaction PaymentPlanFinancialScheduledTransaction { get; set; }
 
         #endregion Navigation Properties
     }

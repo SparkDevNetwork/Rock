@@ -43,6 +43,14 @@
                             <div class="col-md-6">
                                 <Rock:Toggle ID="tglIncludeDeceased" runat="server" Label="Include Deceased" OnText="Yes" OffText="No" Visible="false" />
                             </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"
+                                        Help="The Font Awesome icon class to use when an Entity is returned by this DataView." />
+                                    <Rock:ColorPicker ID="cpIconColor" runat="server" Label="Highlight Color"
+                                        Help="The highlight color of the icon in the Icon CSS Class." />
+                                 </div>
+                            </div>
                         </div>
 
                         <%-- Persistence Schedule Settings --%>

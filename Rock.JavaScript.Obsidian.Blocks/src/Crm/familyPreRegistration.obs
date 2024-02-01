@@ -62,9 +62,9 @@
                         </div>
                     </Panel>
 
-                    <Panel title="Adult Information">
+                    <Panel :title="`${pluralize(adultLabel)} Information`">
                         <template #default>
-                            <h4 class="heading-individual">First Adult</h4>
+                            <h4 class="heading-individual">First {{ adultLabel }}</h4>
 
                             <div class="row">
                                 <div class="col-sm-6">
@@ -266,7 +266,7 @@
 
                             <hr />
 
-                            <h4 class="heading-individual">Second Adult</h4>
+                            <h4 class="heading-individual">Second {{ adultLabel }}</h4>
 
                             <div class="adult-2-fields">
                                 <div class="row">
@@ -442,11 +442,13 @@
                         </template>
                     </Panel>
 
-                    <Panel type="default" title="Children">
+                    <Panel type="default" :title="pluralize(childLabel)">
                         <PreRegistrationChildren
                                                  v-model="children"
                                                  :disabled="isSaving || isNavigating"
                                                  :lastName="adult1.lastName"
+                                                 :childLabel="childLabel"
+                                                 :adultLabel="adultLabel"
                                                  @addChild="onAddChild"
                                                  @removeChild="onRemoveChild" />
                     </Panel>
@@ -514,6 +516,7 @@
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -543,6 +546,8 @@
         password: ""
     });
     const disableCaptcha = ref(config.disableCaptchaSupport);
+    const adultLabel = config.adultLabel || "Adult";
+    const childLabel = config.childLabel || "Child";
 
     // Create the request bags that will be used to pre-register the adults and children.
     const adult1Request = ref<PersonRequestBag>(convertPersonToPersonRequest(config.adult1));
@@ -568,24 +573,24 @@
     // Even though the first rule is a required rule,
     // we need to add the special "required" rule to get the required indicator to display.
     const adult1RequiredRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for First Adult`),
+        createRuleWithSuffix(required, `for First ${adultLabel}`),
         "required"
     ]);
 
     const adult1RequiredGenderRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for First Adult`),
-        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for First Adult"),
+        createRuleWithSuffix(required, `for First ${adultLabel}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for First ${adultLabel}`),
         "required"
     ]);
 
     const adult2RequiredRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for Second Adult`),
+        createRuleWithSuffix(required, `for Second ${adultLabel}`),
         "required"
     ]);
 
     const adult2RequiredGenderRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for Second Adult`),
-        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for Second Adult"),
+        createRuleWithSuffix(required, `for Second ${adultLabel}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for Second ${adultLabel}`),
         "required"
     ]);
 
@@ -763,7 +768,7 @@
         const adult2FirstName = adult2.firstName?.trim();
 
         if (!adult1FirstName && !adult2FirstName) {
-            return "is invalid. The name of at least one adult needs to be entered.";
+            return `is invalid. The name of at least one ${adultLabel} needs to be entered.`;
         }
 
         return true;

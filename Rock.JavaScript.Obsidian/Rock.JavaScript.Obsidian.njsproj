@@ -328,6 +328,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\SiteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\SmsPipelineList\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\" />
@@ -345,6 +346,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DeviceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingSuggestionTypeList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\LocationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NoteWatchDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\" />
@@ -386,6 +388,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakTypeExclusionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\EventCalendarItemList\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventItemDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\" />
@@ -416,6 +419,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleSignup\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\" />
+    <Folder Include="Framework\ViewModels\Blocks\Group\GroupTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\" />
     <Folder Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\" />
@@ -767,6 +771,7 @@
     <TypeScriptCompile Include="Framework\Utility\form.ts" />
     <TypeScriptCompile Include="Framework\Utility\util.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonType.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockActionContextBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
@@ -837,6 +842,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceIntializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SmsPipelineList\smsPipelineListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetBag.d.ts" />
@@ -864,6 +870,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\FollowingSuggestionTypeList\followingSuggestionTypeListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\LocationList\locationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\deleteNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\editNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\noteBag.d.ts" />
@@ -971,6 +978,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventCalendarBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventCalendarDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarItemList\eventCalendarItemListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventCalendarItemAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemDetailOptionsBag.d.ts" />
@@ -1042,6 +1050,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\confirmDeclineBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\contentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupTypeList\groupTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\landingPageContentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupScheduleOccurrenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerAppliedFiltersBag.d.ts" />

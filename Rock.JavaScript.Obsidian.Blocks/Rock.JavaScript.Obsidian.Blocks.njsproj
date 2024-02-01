@@ -58,6 +58,7 @@
     <Content Include="src\Cms\LibraryViewer\itemListSort.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
+    <Content Include="src\Communication\smsPipelineList.obs" />
     <Content Include="src\Core\assetStorageProviderList.obs" />
     <Content Include="src\Cms\personalLinkList.obs" />
     <Content Include="src\Core\attributeMatrixTemplateDetail.obs" />
@@ -92,6 +93,7 @@
     <Content Include="src\Core\interactionChannelDetail.obs" />
     <Content Include="src\Core\InteractionChannelDetail\editPanel.partial.obs" />
     <Content Include="src\Core\InteractionChannelDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\locationList.obs" />
     <Content Include="src\Core\noteWatchDetail.obs" />
     <Content Include="src\Core\NoteWatchDetail\editPanel.partial.obs" />
     <Content Include="src\Core\NoteWatchDetail\viewPanel.partial.obs" />
@@ -148,6 +150,7 @@
     <Content Include="src\Event\eventCalendarDetail.obs" />
     <Content Include="src\Event\EventCalendarDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventCalendarDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\eventCalendarItemList.obs" />
     <Content Include="src\Event\eventItemDetail.obs" />
     <Content Include="src\Event\EventItemDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventItemDetail\viewPanel.partial.obs" />
@@ -175,6 +178,7 @@
     <Content Include="src\Group\groupRequirementTypeDetail.obs" />
     <Content Include="src\Group\GroupRequirementTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRequirementTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Group\groupTypeList.obs" />
     <Content Include="src\Group\Scheduling\groupScheduler.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\availableResources.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\cloneSchedules.partial.obs" />
@@ -350,6 +354,7 @@
     <Folder Include="src\Cms\PersonalLinkSectionList\" />
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
+    <Folder Include="src\Communication\SmsPipelineList\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
@@ -369,6 +374,7 @@
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\FollowingSuggestionTypeList\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
+    <Folder Include="src\Core\LocationList\" />
     <Folder Include="src\Core\NoteWatchDetail\" />
     <Folder Include="src\Core\SignalTypeList\" />
     <Folder Include="src\Core\SuggestionDetail\" />
@@ -396,6 +402,7 @@
     <Folder Include="src\Engagement\StreakTypeDetail\" />
     <Folder Include="src\Engagement\StreakTypeExclusionDetail\" />
     <Folder Include="src\Event\EventCalendarDetail\" />
+    <Folder Include="src\Event\EventCalendarItemList\" />
     <Folder Include="src\Event\EventItemDetail\" />
     <Folder Include="src\Finance\BenevolenceTypeDetail\" />
     <Folder Include="src\Finance\BusinessDetail\" />
@@ -408,6 +415,7 @@
     <Folder Include="src\Finance\FinancialStatementTemplateDetail\" />
     <Folder Include="src\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="src\Group\GroupRequirementTypeDetail\" />
+    <Folder Include="src\Group\GroupTypeList\" />
     <Folder Include="src\Group\Scheduling\" />
     <Folder Include="src\Group\Scheduling\GroupScheduler\" />
     <Folder Include="src\Group\Scheduling\GroupScheduleToolbox\" />
@@ -519,6 +527,7 @@
     <TypeScriptCompile Include="src\Cms\SiteDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\SmsPipelineList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\assetStorageProviderDetail.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.partial.ts" />
@@ -544,6 +553,7 @@
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingSuggestionTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\LocationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteWatchDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SignalTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
@@ -582,6 +592,7 @@
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\EventCalendarItemList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BenevolenceTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
@@ -593,6 +604,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\GroupTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\utils.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduleToolbox\types.partial.ts" />

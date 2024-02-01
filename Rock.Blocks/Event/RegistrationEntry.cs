@@ -1078,7 +1078,7 @@ namespace Rock.Blocks.Event
             {
                 if ( context.Registration.ConfirmationEmail.IsNotNullOrWhiteSpace() )
                 {
-                    var isEmailDifferent = !context.Registration.ConfirmationEmail.Trim().Equals( registrar.Email.Trim(), StringComparison.OrdinalIgnoreCase );
+                    var isEmailDifferent = !context.Registration.ConfirmationEmail.Trim().Equals( registrar.Email?.Trim(), StringComparison.OrdinalIgnoreCase );
 
                     var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
@@ -4634,7 +4634,7 @@ namespace Rock.Blocks.Event
 
             public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
-            public Dictionary<string, string> AttributeValueDefaults => throw new NotImplementedException();
+            public Dictionary<string, string> AttributeValueDefaults => null;
 
             public string GetAttributeValue( string key )
             {

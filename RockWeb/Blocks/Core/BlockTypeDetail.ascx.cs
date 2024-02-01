@@ -31,6 +31,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Core
@@ -141,27 +142,6 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Gets the name of the fully qualified page.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <returns></returns>
-        private string GetFullyQualifiedPageName( Rock.Model.Page page )
-        {
-            string result = Server.HtmlEncode( page.InternalName );
-
-            result = string.Format( "<a href='{0}'>{1}</a>", new PageReference( page.Id ).BuildUrl(), result );
-
-            Rock.Model.Page parent = page.ParentPage;
-            while ( parent != null )
-            {
-                result = string.Format( "<a href='{0}'>{1}</a> / {2}", new PageReference( parent.Id ).BuildUrl(), Server.HtmlEncode( parent.InternalName ), result );
-                parent = parent.ParentPage;
-            }
-
-            return string.Format( "<li>{0}</li>", result );
-        }
-
-        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="blockTypeId">The block type identifier.</param>
@@ -209,19 +189,45 @@ namespace RockWeb.Blocks.Core
 
             lReadonlySummary.Text = new DescriptionList().Add( "Name", blockType.Name ).Add( "Path", blockType.Path ).Add( "Description", blockType.Description ).Html;
 
-            StringBuilder sb = new StringBuilder();
-            foreach ( var fullPageName in blockType.Blocks.ToList().Where( a => a.Page != null ).Select( a => GetFullyQualifiedPageName( a.Page ) ).OrderBy( a => a ) )
-            {
-                sb.Append( fullPageName );
-            }
+            var blocks = BlockCache.All()
+                .Where( b => b.BlockTypeId == blockTypeId );
+            var pages = blocks
+                .Where( b => b.PageId != null )
+                .OrderBy( b => b.Page.GetFullyQualifiedPageName() )
+                .Select( b => b.Page.GetHyperLinkedPageBreadCrumbs() )
+                .Select( p => $"<li>{p}</li>" )
+                .ToList();
+            var layouts = blocks
+                .Where( b => b.LayoutId != null )
+                .Select( b => $"<a href='/admin/cms/sites/layouts/{b.LayoutId}'>{b.Layout.Name}</a> (Layout), {b.Zone} (Zone)" )
+                .Select( l => $"<li>{l}</li>" )
+                .OrderBy( l => l )
+                .ToList();
+            var sites = blocks
+                .Where( b => b.SiteId != null )
+                .Select( b => $"<a href='/admin/cms/sites/{b.SiteId}'>{b.Site.Name}</a> (Site), {b.Zone} (Zone)" )
+                .Select( s => $"<li>{s}</li>" )
+                .OrderBy( s => s )
+                .ToList();
 
-            if ( sb.Length == 0 )
+            if ( pages.Any() )
             {
-                lPages.Text = "<span class='text-muted'><em>No pages are currently using this block</em></muted>";
+                lPages.Text = string.Format( $"<ul>{string.Join( "", pages )}</ul>" );
             }
             else
             {
-                lPages.Text = string.Format( "<ul>{0}</ul>", sb.ToString() );
+                lPages.Text = "<span class='text-muted'><em>No pages are currently using this block</em></muted>";
+            }
+
+            if ( layouts.Any() )
+            {
+                lLayout.Visible = true;
+                lLayout.Text = $"<ul>{string.Join( "", layouts )}</ul>";
+            }
+            if ( sites.Any() )
+            {
+                lSites.Visible = true;
+                lSites.Text = $"<ul>{string.Join( "", sites )}</ul>";
             }
 
             string blockPath = Request.MapPath( blockType.Path );

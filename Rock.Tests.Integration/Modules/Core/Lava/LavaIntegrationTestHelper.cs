@@ -587,6 +587,18 @@ namespace Rock.Tests.Integration.Core.Lava
         /// </summary>
         /// <param name="inputTemplate"></param>
         /// <returns></returns>
+        public LavaRenderResult GetTemplateRenderResult( Type engineType, string inputTemplate, LavaRenderParameters parameters = null, LavaTestRenderOptions options = null )
+        {
+            var engine = GetEngineInstance( engineType );
+
+            return GetTemplateRenderResult( engine, inputTemplate, parameters, options );
+        }
+
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
         public LavaRenderResult GetTemplateRenderResult( ILavaEngine engine, string inputTemplate, LavaRenderParameters parameters = null, LavaTestRenderOptions options = null )
         {
             inputTemplate = inputTemplate ?? string.Empty;
@@ -677,11 +689,11 @@ namespace Rock.Tests.Integration.Core.Lava
 
             if ( exceptions.Any() )
             {
-                throw new AggregateException( $"Test failed for { failedEngines.AsDelimited( "/" ) }.", exceptions );
+                throw new AggregateException( $"Test failed for {failedEngines.AsDelimited( "/" )}.", exceptions );
             }
         }
 
-        private static void TaskScheduler_UnobservedTaskException( object sender , UnobservedTaskExceptionEventArgs e )
+        private static void TaskScheduler_UnobservedTaskException( object sender, UnobservedTaskExceptionEventArgs e )
         {
             var ex = e.Exception.Flatten();
             Debug.WriteLine( $"**\n** Unhandled Exception:\n{ex}" );
@@ -734,16 +746,11 @@ namespace Rock.Tests.Integration.Core.Lava
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( string expectedOutput, string inputTemplate, LavaTestRenderOptions options = null )
         {
-            var engines = options?.LavaEngineTypes ?? new List<Type>();
-            if ( !engines.Any() )
-            {
-                engines = GetActiveTestEngineTypes();
-            }
+            var requirement = new LavaTestOutputMatchRequirement( expectedOutput, options?.OutputMatchType ?? LavaTestOutputMatchTypeSpecifier.Equal );
 
-            ExecuteForEngines( engines, ( engine ) =>
-            {
-                AssertTemplateOutput( engine, expectedOutput, inputTemplate, options );
-            } );
+            AssertTemplateOutput( new List<LavaTestOutputMatchRequirement> { requirement },
+                inputTemplate,
+                options );
         }
 
         /// <summary>
@@ -800,6 +807,47 @@ namespace Rock.Tests.Integration.Core.Lava
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( ILavaEngine engine, IEnumerable<string> expectedOutputs, string inputTemplate, LavaTestRenderOptions options = null )
         {
+            var requirements = new List<LavaTestOutputMatchRequirement>();
+            foreach ( var expectedOutput in expectedOutputs )
+            {
+                var requirement = new LavaTestOutputMatchRequirement
+                {
+                    MatchValue = expectedOutput,
+                    MatchType = options?.OutputMatchType ?? LavaTestOutputMatchTypeSpecifier.Equal
+                };
+                requirements.Add( requirement );
+            }
+
+            AssertTemplateOutput( engine, requirements, inputTemplate, options );
+        }
+
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="expectedOutput"></param>
+        /// <param name="inputTemplate"></param>
+        public void AssertTemplateOutput( IEnumerable<LavaTestOutputMatchRequirement> matchRequirements, string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            var engines = options?.LavaEngineTypes ?? new List<Type>();
+            if ( !engines.Any() )
+            {
+                engines = GetActiveTestEngineTypes();
+            }
+
+            ExecuteForEngines( engines, ( engine ) =>
+            {
+                AssertTemplateOutput( engine, matchRequirements, inputTemplate, options );
+            } );
+
+        }
+
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="expectedOutput"></param>
+        /// <param name="inputTemplate"></param>
+        public void AssertTemplateOutput( ILavaEngine engine, IEnumerable<LavaTestOutputMatchRequirement> matchRequirements, string inputTemplate, LavaTestRenderOptions options = null )
+        {
             try
             {
                 options = options ?? new LavaTestRenderOptions();
@@ -821,19 +869,16 @@ namespace Rock.Tests.Integration.Core.Lava
                     outputString = outputString.ToLower();
                 }
 
-                var matchType = options.OutputMatchType;
-
-                if ( expectedOutputs.Count() > 1 )
+                foreach ( var matchRequirement in matchRequirements )
                 {
-                    if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
+                    var matchType = matchRequirement.MatchType;
+                    if ( matchRequirements.Count() > 1
+                         && matchType == LavaTestOutputMatchTypeSpecifier.Equal )
                     {
                         matchType = LavaTestOutputMatchTypeSpecifier.Contains;
                     }
-                }
 
-                foreach ( var expectedOutputString in expectedOutputs )
-                {
-                    var expectedOutput = expectedOutputString;
+                    var expectedOutput = matchRequirement.MatchValue ?? string.Empty;
 
                     // If ignoring whitespace, strip it from the comparison string.
                     if ( options.IgnoreWhiteSpace )
@@ -895,7 +940,7 @@ namespace Rock.Tests.Integration.Core.Lava
             }
             catch ( Exception ex )
             {
-                // Specify the engine identifer in the top-level exception.
+                // Specify the engine identifier in the top-level exception.
                 throw new Exception( $"[{engine.EngineName}] Template render failed.", ex );
             }
         }
@@ -1012,7 +1057,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 var isValidDate = DateTime.TryParse( outputString, out outputDate );
 
-                Assert.That.True( isValidDate, $"Template Output does not represent a valid DateTime. [Output=\"{ outputString }\"]" );
+                Assert.That.True( isValidDate, $"Template Output does not represent a valid DateTime. [Output=\"{outputString}\"]" );
 
                 if ( maximumDelta != null )
                 {
@@ -1219,5 +1264,21 @@ namespace Rock.Tests.Integration.Core.Lava
         Contains = 1,
         DoesNotContain = 2,
         RegEx = 3
+    }
+
+    public class LavaTestOutputMatchRequirement
+    {
+        public LavaTestOutputMatchRequirement()
+        {
+        }
+
+        public LavaTestOutputMatchRequirement( string value, LavaTestOutputMatchTypeSpecifier match )
+        {
+            MatchValue = value;
+            MatchType = match;
+        }
+
+        public string MatchValue { get; set; }
+        public LavaTestOutputMatchTypeSpecifier MatchType { get; set; }
     }
 }

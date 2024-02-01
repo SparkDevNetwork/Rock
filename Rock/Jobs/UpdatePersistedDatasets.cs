@@ -21,7 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 
@@ -50,8 +49,9 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            StringBuilder results = new StringBuilder();
+            var warnings = new List<string>();
             List<PersistedDataset> datasetsToBeUpdated;
+            int updatedDatasetCount = 0;
 
             using ( var rockContext = new RockContext() )
             {
@@ -89,26 +89,43 @@ namespace Rock.Jobs
                 foreach ( var persistedDataset in datasetsToBeUpdated )
                 {
                     var name = persistedDataset.Name;
-                    var updateResult = persistedDataset.UpdateResultData();
-
-                    if ( updateResult.IsSuccess )
+                    this.UpdateLastStatusMessage( FormatStatusMessage( "Updating", name, "success" ) );
+                    try
                     {
-                        var successMessage = $"<i class='fa fa-circle text-success'></i> Success: {name} was run successfully";
-                        results.AppendLine( successMessage );
+                        persistedDataset.UpdateResultData();
+                        this.UpdateLastStatusMessage( FormatStatusMessage( "Updating", name, "success" ) );
+                        updatedDatasetCount++;
                     }
-                    else
+                    catch ( Exception ex )
                     {
-                        var warningMessage = $"<i class='fa fa-circle text-warning'></i> Warning: {name} was run but encountered issues: {updateResult.WarningMessage}";
-                        results.AppendLine( warningMessage );
+                        var warningMessage = $"Ran the job with Warnings: {name} was run but could not update due to the following error: {ex.Message}";
+                        warnings.Add( warningMessage );
+                        ExceptionLogService.LogException( ex, null );
+                        this.UpdateLastStatusMessage( FormatStatusMessage( "Warning", name, "warning" ) );
+                    }
+                    finally
+                    {
+                        rockContext.SaveChanges();
                     }
                 }
-
-                if ( results.Length > 0 )
-                {
-                    this.Result = results.ToString();
-                }
-                rockContext.SaveChanges();
             }
+
+            var resultMessage = new StringBuilder();
+            resultMessage.AppendLine( $"<i class='fa fa-circle text-success'></i> Updated {updatedDatasetCount} dataset{( updatedDatasetCount == 1 ? "" : "s" )}" );
+
+            // If there are warnings, concatenate them into the final result.
+            if ( warnings.Any() )
+            {
+                resultMessage.AppendLine(string.Join( "<br>", warnings ));
+            }
+            this.Result = resultMessage.ToString();
+        }
+
+        private string FormatStatusMessage( string action, string datasetName, string statusType )
+        {
+            string iconClass = statusType == "success" ? "fa-circle text-success" :
+                               statusType == "warning" ? "fa-circle text-warning" : "";
+            return $"<i class='fa {iconClass}'></i> {action}: {datasetName}";
         }
     }
 }

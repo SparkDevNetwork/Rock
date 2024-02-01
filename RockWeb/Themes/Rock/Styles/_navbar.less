@@ -102,7 +102,6 @@ body.navbar-side-open {
   height: 100%;
   color: @navbarside-color;
   background-color: var(--navbarside-background-color);
-
   // Scroll Styling applied to the inner container because of a bug in Safari
   .zone-navigation {
     position: absolute;
@@ -124,7 +123,6 @@ body.navbar-side-open {
   .navbar-side-open & {
     display: block;
   }
-
   // Hide config-bar inside navigation since it is always cropped
   .config-bar {
     display: none !important;
@@ -136,9 +134,14 @@ body.navbar-side-open {
     height: 48px;
     background: @brand-primary;
     padding: 0 12px;
+    position: fixed;
+    width: 100%;
+    z-index: @zindex-navbar-fixed;
   }
 
   .navbar-side {
+    margin-bottom: 84px; // adds space for the admintool bar and the static top menu item on mobile
+
     .nav-item-top {
       display: flex;
       align-items: center;
@@ -161,6 +164,10 @@ body.navbar-side-open {
         border-top: 0;
       }
 
+      &:nth-child(2) {
+        margin-top: 48px; // Move the second list item (the first real menu item) down so it's not covered by the navbar-logo
+      }
+
       i {
         width: 1.25em;
       }
@@ -170,8 +177,6 @@ body.navbar-side-open {
         background-color: var(--nav-childpages-bg);
         box-shadow: inset 3px 0 0 0 @brand-primary;
       }
-
-
       // TODO: This is split into a separate selector because it feels buggy when toggled open
       &.open {
         .nav-childpages {
@@ -226,6 +231,7 @@ body.navbar-side-open {
 
     .item-title {
       display: inline-block;
+
       &:after {
         transform: rotate(90deg);
       }
@@ -268,6 +274,7 @@ body.navbar-side-open {
         .nav-link {
           font-weight: 600;
           color: @white;
+
           &::before {
             width: 8px;
             padding-left: 8px;
@@ -344,6 +351,14 @@ body.navbar-side-open {
       z-index: 2000;
     }
 
+    .navbar-side:first-child {
+      margin-bottom: 0; // Remove the extra margin that's needed for mobile.
+    }
+
+    .navbar-side .nav-item-top:nth-child(2) {
+      margin-top: 0px; // Remove the extra margin on the second list item (the first real menu item) down so it's not covered by the navbar-logo
+    }
+
     .navbar-side .nav-item-top > .item-title {
       display: none;
     }
@@ -360,12 +375,15 @@ body.navbar-side-open {
         .item-title {
           // display: inline-block;
           font-size: 28px;
+
           &:after {
             display: none;
           }
         }
 
-        i { display: none; }
+        i {
+          display: none;
+        }
       }
     }
 

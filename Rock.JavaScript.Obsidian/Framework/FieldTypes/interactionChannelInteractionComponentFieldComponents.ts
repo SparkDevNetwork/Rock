@@ -33,7 +33,8 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         // The internal value used by the text editor.
-        const internalValue = ref<ListItemBag>({});
+        const internalValue = ref<ListItemBag>();
+        const interactionChannel = ref<ListItemBag>();
 
         // The interactionChannel options to choose from.
         const interactionChannelGuid = computed((): string => {
@@ -44,24 +45,34 @@ export const EditComponent = defineComponent({
 
         // Watch for changes from the parent component and update the interaction channel picker.
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue,  JSON.parse(props.modelValue || "{}"));
+            const value = JSON.parse(props.modelValue || "{}");
+            updateRefValue(interactionChannel, value?.interactionChannel);
+            updateRefValue(internalValue, value?.interactionComponent);
         }, {
             immediate: true
         });
 
         // Watch for changes from the interaction channel picker and update the parent component.
-        watch(internalValue, () => {
-            emit("update:modelValue", JSON.stringify(internalValue.value));
+        watch([internalValue, interactionChannel], () => {
+            const newValue = {
+                interactionChannel: interactionChannel.value,
+                interactionComponent: internalValue.value
+            };
+            emit("update:modelValue", JSON.stringify(newValue));
         });
 
         return {
             internalValue,
-            interactionChannelGuid
+            interactionChannelGuid,
+            interactionChannel
         };
     },
 
     template: `
-    <InteractionChannelInteractionComponentPicker v-model="internalValue" :defaultInteractionChannelGuid="interactionChannelGuid" showBlankItem />
+    <InteractionChannelInteractionComponentPicker v-model="internalValue"
+        v-model:interactionChannel="interactionChannel"
+        :defaultInteractionChannelGuid="interactionChannelGuid"
+        showBlankItem />
 `
 });
 

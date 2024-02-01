@@ -99,6 +99,11 @@ namespace Rock.SystemGuid
         public const string BINARY_FILE_TYPES = "A5365133-FF87-48B3-BCA3-AF6D871F8895";
 
         /// <summary>
+        /// Block Template field type
+        /// </summary>
+        public const string BLOCK_TEMPLATE = "CCD73456-C83B-4D6E-BD69-8133D2EB996D";
+
+        /// <summary>
         /// Boolean field type
         /// </summary>
         public const string BOOLEAN = "1EDAFDED-DFE6-4334-B019-6EECBA89E05A";
@@ -587,6 +592,11 @@ namespace Rock.SystemGuid
         /// Phone Number field type
         /// </summary>
         public const string PHONE_NUMBER = "6B1908EC-12A2-463A-A7BD-970CE0FAF097";
+
+        /// <summary>
+        /// Prayer Request field type
+        /// </summary>
+        public const string PRAYER_REQUEST = "E34A29A4-3787-4CF5-9C17-08EFB9E2FD23";
 
         /// <summary>
         /// Range Slider field type

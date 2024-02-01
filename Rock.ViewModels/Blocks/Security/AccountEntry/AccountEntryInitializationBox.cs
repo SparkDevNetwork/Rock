@@ -158,10 +158,10 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         public AccountEntryPersonInfoBag AccountEntryPersonInfoBag { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether captcha support should be disabled for this block.
+        /// If set to true if the Captcha verification step should not be performed.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
+        ///   <c>true</c> if Captcha is disabled; otherwise, <c>false</c>.
         /// </value>
         public bool DisableCaptchaSupport { get; set; }
     }

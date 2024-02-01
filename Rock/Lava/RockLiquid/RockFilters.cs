@@ -3867,6 +3867,19 @@ namespace Rock.Lava
             return LavaFilters.IsInSecurityRole( lavaContext, input, roleId );
         }
 
+        /// <summary>
+        /// Gets a Person the by person action identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="action">The action.</param>
+        /// <returns><see cref="Person"/></returns>
+        public static Person PersonByPersonActionIdentifier( Context context, object input, string action )
+        {
+            var lavaContext = new RockLiquidRenderContext( context );
+            return LavaFilters.PersonByPersonActionIdentifier( lavaContext, input, action );
+        }
+
         #endregion Person Filters
 
         #region Personalize Filters
@@ -4537,7 +4550,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="dataObject">The data object.</param>
         /// <returns></returns>
-        public static object FilterNotFollowed( Context context, object dataObject )
+        public static object FilterUnfollowed( Context context, object dataObject )
         {
             return FilterFollowedOrNotFollowed( context, GetCurrentPerson( context ), dataObject, FollowFilterType.NotFollowed );
         }
