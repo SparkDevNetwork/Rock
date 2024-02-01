@@ -73,7 +73,7 @@
     import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial.obs";
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial.obs";
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
-    import RegistrationEntryPayment from "./RegistrationEntry/payment.partial";
+    import RegistrationEntryPayment from "./RegistrationEntry/payment.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
     import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
 

@@ -1,0 +1,316 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="registrationentry-payment">
+        <RockForm @submit="onNext">
+            <h4>Payment Information</h4>
+            <div>
+                Payment Amount: {{ amountToPayText }}
+            </div>
+
+            <hr />
+
+            <div v-if="gatewayControlModel" class="payment-method-options">
+                <div v-if="hasSavedAccounts" v-for="savedAccount in savedAccountOptions" class="radio payment-method">
+                    <label :for="getOptionUniqueId(savedAccount)">
+                        <input :id="getOptionUniqueId(savedAccount)"
+                               :name="uniqueId"
+                               type="radio"
+                               :value="savedAccount.value"
+                               v-model="selectedSavedAccount" />
+                        <span class="label-text payment-method-account">
+                            <img v-if="getAccountImage(savedAccount)" class="payment-method-image" :src="getAccountImage(savedAccount)">
+                            <span class="payment-method-name">{{ getAccountName(savedAccount) }}</span>
+                            <span class="payment-method-description text-muted">{{ getAccountDescription(savedAccount) }}</span>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="position-relative overflow-hidden">
+                    <transition name="rockslide">
+                        <div v-if="showGateway" class="hosted-gateway-container payment-method-entry">
+                            <NotificationBox v-if="gatewayErrorMessage" alertType="danger">{{ gatewayErrorMessage }}</NotificationBox>
+                            <RockValidation :errors="gatewayValidationFields" />
+                            <div class="hosted-payment-control">
+                                <GatewayControl
+                                                :gatewayControlModel="gatewayControlModel"
+                                                :amountToPay="amountToPay"
+                                                :returnUrl="redirectReturnUrl"
+                                                @success="onGatewayControlSuccess"
+                                                @error="onGatewayControlError"
+                                                @validation="onGatewayControlValidation" />
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+
+            <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
+
+            <div class="actions text-right">
+                <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
+                    Previous
+                </RockButton>
+
+                <RockButton v-if="gatewayControlModel" btnType="primary" type="submit" :isLoading="loading" autoDisable>
+                    {{ finishButtonText }}
+                </RockButton>
+            </div>
+        </RockForm>
+    </div>
+</template>
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from "./types.partial";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
+    import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockValidation from "@Obsidian/Controls/rockValidation.obs";
+    import { provideSubmitPayment } from "@Obsidian/Core/Controls/financialGateway";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
+    import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
+
+    const submitPayment = provideSubmitPayment();
+    const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
+    const invokeBlockAction = useInvokeBlockAction();
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const uniqueId = newGuid();
+
+    const emit = defineEmits<{
+        (e: "next"): void,
+        (e: "previous"): void
+    }>();
+
+    // #region Values
+
+    /** Is there an AJAX call in-flight? */
+    const loading = ref<boolean>(false);
+
+    /** Gateway indicated error */
+    const gatewayErrorMessage = ref<string>("");
+
+    /** Gateway indicated validation issues */
+    const gatewayValidationFields = ref<FormError[]>([]);
+
+    /** An error message received from a bad submission */
+    const submitErrorMessage = ref<string>("");
+
+    /** The currently selected saved account. */
+    const selectedSavedAccount = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The settings for the gateway (MyWell, etc) control */
+    const gatewayControlModel = computed<GatewayControlBag>(() => {
+        return viewModel.value.gatewayControl;
+    });
+
+    /** This is the data sent from the C# code behind when the block initialized. */
+    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+        return registrationEntryState.viewModel;
+    });
+
+    /** The text to be displayed on the "Finish" button */
+    const finishButtonText = computed<string>(() => {
+        return "Pay";
+    });
+
+    /** true if there are any saved accounts to be selected. */
+    const hasSavedAccounts = computed<boolean>(() => {
+        return registrationEntryState.viewModel.savedAccounts !== null
+            && registrationEntryState.viewModel.savedAccounts.length > 0;
+    });
+
+    /** Contains the options to display in the saved account drop down list. */
+    const savedAccountOptions = computed<SavedFinancialAccountListItemBag[]>(() => {
+        if (registrationEntryState.viewModel.savedAccounts === null) {
+            return [];
+        }
+
+        const options = [...registrationEntryState.viewModel.savedAccounts];
+
+        options.push({
+            value: "",
+            text: "New Payment Method"
+        });
+
+        return options;
+    });
+
+    /** true if the gateway control should be visible. */
+    const showGateway = computed<boolean>(() => {
+        return !hasSavedAccounts.value || selectedSavedAccount.value === "";
+    });
+
+    /** The amount to pay in dollars and cents. */
+    const amountToPay = computed<number>(() => {
+        return registrationEntryState.amountToPayToday;
+    });
+
+    /** The amount to pay as a friendly text string. */
+    const amountToPayText = computed<string>(() => {
+        return `$${registrationEntryState.amountToPayToday.toFixed(2)}`;
+    });
+
+    /** The URL to return to if the gateway control needs to perform a redirect. */
+    const redirectReturnUrl = computed<string>(() => {
+        if (window.location.href.includes("?")) {
+            return `${window.location.href}&sessionGuid=${registrationEntryState.registrationSessionGuid}`;
+        }
+        else {
+            return `${window.location.href}?sessionGuid=${registrationEntryState.registrationSessionGuid}`;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** User clicked the "previous" button */
+    function onPrevious(): void {
+        emit("previous");
+    }
+
+    /** User clicked the "finish" button */
+    async function onNext(): Promise<void> {
+        loading.value = true;
+
+        // If there is a cost, then the gateway will need to be used to pay
+        if (registrationEntryState.amountToPayToday) {
+            if (showGateway.value) {
+                // Otherwise, this is a traditional gateway
+                gatewayErrorMessage.value = "";
+                gatewayValidationFields.value = [];
+                submitPayment();
+            }
+            else if (selectedSavedAccount.value !== "") {
+                registrationEntryState.savedAccountGuid = toGuidOrNull(selectedSavedAccount.value);
+                const success = await submit();
+                loading.value = false;
+
+                if (success) {
+                    emit("next");
+                }
+            }
+            else {
+                submitErrorMessage.value = "Please select a valid payment option.";
+                loading.value = false;
+
+                return;
+            }
+        }
+        else {
+            const success = await submit();
+            loading.value = false;
+
+            if (success) {
+                emit("next");
+            }
+        }
+    }
+
+    /**
+     * The gateway indicated success and returned a token
+     * @param token
+     */
+    async function onGatewayControlSuccess(token: string): Promise<void> {
+        registrationEntryState.gatewayToken = token;
+        const success = await submit();
+
+        loading.value = false;
+
+        if (success) {
+            emit("next");
+        }
+    }
+
+    /**
+     * The gateway indicated an error
+     * @param message
+     */
+    function onGatewayControlError(message: string): void {
+        loading.value = false;
+        gatewayErrorMessage.value = message;
+    }
+
+    /**
+     * The gateway wants the user to fix some fields
+     * @param invalidFields
+     */
+    function onGatewayControlValidation(invalidFields: FormError[]): void {
+        loading.value = false;
+        gatewayValidationFields.value = invalidFields;
+    }
+
+    /**
+     * Get the unique identifier of the option to use on the input control.
+     *
+     * @param option The option that represents the saved account.
+     *
+     * @returns A string that contains the unique control identifier.
+     */
+    function getOptionUniqueId(option: SavedFinancialAccountListItemBag): string {
+        const key = option.value?.replace(" ", "-") ?? "";
+
+        return `${uniqueId}-${key}`;
+    }
+
+    /**
+     * Gets the image to display for the saved account input control.
+     *
+     * @param option The option that represents the saved account.
+     *
+     * @returns A string with the URL of the image to display.
+     */
+    function getAccountImage(option: SavedFinancialAccountListItemBag): string {
+        return option.image ?? "";
+    }
+
+    /**
+     * Gets the name to display for the saved account input control.
+     *
+     * @param option The option that represents the saved account.
+     *
+     * @returns A string with the user friendly name of the saved account.
+     */
+    function getAccountName(option: SavedFinancialAccountListItemBag): string {
+        return option.text ?? "";
+    }
+
+    /**
+     * Gets the descriptive text to display for the saved account input control.
+     *
+     * @param option The option that represents the saved account.
+     *
+     * @returns A string with the user friendly description of the saved account.
+     */
+    function getAccountDescription(option: SavedFinancialAccountListItemBag): string {
+        return option.description ?? "";
+    }
+
+    /** Submit the registration to the server */
+    async function submit(): Promise<boolean> {
+        submitErrorMessage.value = "";
+
+        const result = await invokeBlockAction<RegistrationEntryBlockSuccessViewModel>("SubmitRegistration", {
+            args: getRegistrationEntryBlockArgs()
+        });
+
+        if (result.isError || !result.data) {
+            submitErrorMessage.value = result.errorMessage || "Unknown error";
+        }
+        else {
+            registrationEntryState.successViewModel = result.data;
+        }
+
+        return result.isSuccess;
+    }
+
+    // #endregion
+</script>
