@@ -1,0 +1,112 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="isVisible">
+        <RockField v-if="modifiedAttribute" v-model="value" isEditMode :attribute="modifiedAttribute" />
+        <NotificationBox v-else alertType="danger">Could not resolve attribute field</NotificationBox>
+    </template>
+</template>
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { computed, PropType, ref, watch } from "vue";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types.partial";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        field: {
+            type: Object as PropType<RegistrationEntryBlockFormFieldViewModel>,
+            required: true
+        },
+
+        fieldValues: {
+            type: Object as PropType<Record<Guid, unknown>>,
+            required: true
+        },
+
+        formFields: {
+            type: Array as PropType<RegistrationEntryBlockFormFieldViewModel[]>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const value = ref<string>((props.fieldValues[props.field.guid] as string) ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed<boolean>(() => {
+        switch (props.field.visibilityRuleType) {
+            case FilterExpressionType.GroupAll:
+                return props.field.visibilityRules.every(vr => isRuleMet(vr, props.fieldValues, props.formFields));
+
+            case FilterExpressionType.GroupAllFalse:
+                return props.field.visibilityRules.every(vr => !isRuleMet(vr, props.fieldValues, props.formFields));
+
+            case FilterExpressionType.GroupAny:
+                return props.field.visibilityRules.some(vr => isRuleMet(vr, props.fieldValues, props.formFields));
+
+            case FilterExpressionType.GroupAnyFalse:
+                return props.field.visibilityRules.some(vr => !isRuleMet(vr, props.fieldValues, props.formFields));
+        }
+
+        return true;
+    });
+
+    const modifiedAttribute = computed<PublicAttributeBag | null>(() => {
+        if (!props.field.attribute) {
+            return null;
+        }
+
+        const fieldAttribute: PublicAttributeBag = { ...props.field.attribute };
+        fieldAttribute.isRequired = props.field.isRequired;
+        return fieldAttribute;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
+        const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
+
+        if (typeof value !== "string") {
+            return false;
+        }
+
+        const comparedToFormField = formFields.find(ff => areEqual(ff.guid, rule.comparedToRegistrationTemplateFormFieldGuid));
+        if (!comparedToFormField?.attribute?.fieldTypeGuid) {
+            return false;
+        }
+
+        const fieldType = getFieldType(comparedToFormField.attribute.fieldTypeGuid);
+
+        if (!fieldType) {
+            return false;
+        }
+
+        return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Detect changes like switch from one person to another.
+    watch(() => props.fieldValues[props.field.guid], () => {
+        value.value = props.fieldValues[props.field.guid] as string;
+    });
+
+    watch(value, () => {
+        // TODO JMH Should we be manipulating props directly???
+        props.fieldValues[props.field.guid] = value.value;
+    });
+
+    // #endregion
+</script>
