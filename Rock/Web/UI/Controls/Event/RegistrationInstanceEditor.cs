@@ -51,6 +51,7 @@ namespace Rock.Web.UI.Controls
         PhoneNumberBox _pnContactPhone;
         EmailBox _ebContactEmail;
         DateTimePicker _dtpSendReminder;
+        DatePicker _dpPaymentDeadline;
         RockCheckBox _cbReminderSent;
         HtmlEditor _htmlRegistrationInstructions;
         HtmlEditor _htmlAdditionalReminderDetails;
@@ -655,6 +656,7 @@ namespace Rock.Web.UI.Controls
                 _cbDefaultPaymentAmount.ValidationGroup = value;
                 _apAccount.ValidationGroup = value;
                 _dtpSendReminder.ValidationGroup = value;
+                _dpPaymentDeadline.ValidationGroup = value;
                 _cbReminderSent.ValidationGroup = value;
                 _htmlAdditionalConfirmationDetails.ValidationGroup = value;
                 _htmlRegistrationInstructions.ValidationGroup = value;
@@ -716,6 +718,7 @@ namespace Rock.Web.UI.Controls
                 _apAccount.SetValue( instance.AccountId );
                 _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
+                _dpPaymentDeadline.SelectedDate = instance.PaymentDeadlineDate;
                 _cbReminderSent.Checked = instance.ReminderSent;
                 _htmlRegistrationInstructions.Text = instance.RegistrationInstructions;
                 _htmlAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
@@ -799,6 +802,7 @@ namespace Rock.Web.UI.Controls
                 _cbDefaultPaymentAmount.Value = null;
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
+                _dpPaymentDeadline.SelectedDate = null;
                 _cbReminderSent.Checked = false;
                 _nbTimeoutLengthMinutes.IntegerValue = null;
                 _nbTimeoutThreshold.IntegerValue = null;
@@ -839,6 +843,7 @@ namespace Rock.Web.UI.Controls
                 int accountId = _apAccount.SelectedValue.AsInteger();
                 instance.AccountId = accountId > 0 ? accountId : ( int? ) null;
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
+                instance.PaymentDeadlineDate = _dpPaymentDeadline.SelectedDate;
                 instance.ReminderSent = _cbReminderSent.Checked;
                 instance.RegistrationInstructions = _htmlRegistrationInstructions.Text;
                 instance.AdditionalReminderDetails = _htmlAdditionalReminderDetails.Text;
@@ -996,6 +1001,12 @@ namespace Rock.Web.UI.Controls
                 _dtpSendReminder.ID = this.ID + "_dtpSendReminder";
                 _dtpSendReminder.Label = "Send Reminder Date";
                 Controls.Add( _dtpSendReminder );
+
+                _dpPaymentDeadline = new DatePicker();
+                _dpPaymentDeadline.ID = this.ID + "_dpPaymentDeadline";
+                _dpPaymentDeadline.Label = "Payment Deadline";
+                _dpPaymentDeadline.Help = "The date that all payments must be completed by. This date will be used by the payment plan feature to calculate the payment schedule and amount.";
+                Controls.Add( _dpPaymentDeadline );
 
                 _cbReminderSent = new RockCheckBox();
                 _cbReminderSent.ID = this.ID + "_cbReminderSent";
@@ -1178,6 +1189,11 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _dtpSendReminder.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _dpPaymentDeadline.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();
