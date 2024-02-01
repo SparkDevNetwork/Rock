@@ -151,12 +151,6 @@ namespace Rock.Model
             }
         }
 
-        public class UpdateResult
-        {
-            public bool IsSuccess { get; set; }
-            public string WarningMessage { get; set; }
-        }
-
         #endregion
 
         #region Helper Classes
