@@ -1,0 +1,205 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Dialog :modelValue="isModalVisible" :dismissible="false">
+        <template #header>
+            <h4 v-if="isLoading || spotsSecured === null">Registration Timed Out</h4>
+            <h4 v-else>Request Extension</h4>
+        </template>
+        <template #default>
+            <LoadingIndicator v-if="isLoading" />
+            <template v-else-if="hasWaitlist && spotsSecured === 0">
+                Due to high demand there is no longer space available.
+                You can continue, but your registrants will be placed on the waitlist.
+                Do you wish to continue with the registration?
+            </template>
+            <template v-else-if="spotsSecured === 0">
+                Due to high demand there is no longer space available for this registration.
+            </template>
+            <template v-else-if="hasWaitlist && spotsSecured !== null">
+                Due to high demand there is no longer space available for all your registrants.
+                Your last {{ waitlistRegistrantCountWord }}
+                {{ pluralConditional(waitlistRegistrantCount, 'registrant', ' registrants') }}
+                will be placed on the waitlist.
+                Do you wish to continue with the registration?
+            </template>
+            <template v-else-if="spotsSecured !== null">
+                Due to high demand there is no longer space available for all your registrants.
+                Only {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, 'spot is', 'spots are') }} available.
+                Your registration has been updated to only allow
+                {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, 'registrant', 'registrants') }}.
+                Do you wish to continue with the registration?
+            </template>
+            <template v-else>
+                Your registration has timed out. Do you wish to request an extension in time?
+            </template>
+        </template>
+        <template v-if="!isLoading" #footer>
+            <template v-if="!hasWaitlist && spotsSecured === 0">
+                <RockButton btnType="link" @click="restart">Close</RockButton>
+            </template>
+            <template v-else-if="spotsSecured !== null">
+                <RockButton btnType="primary" @click="close">Yes</RockButton>
+                <RockButton btnType="link" @click="restart">No, cancel registration</RockButton>
+            </template>
+            <template v-else>
+                <RockButton btnType="primary" @click="requestRenewal">Yes</RockButton>
+                <RockButton btnType="link" @click="restart">No, cancel registration</RockButton>
+            </template>
+        </template>
+    </Dialog>
+</template>
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import Dialog from "@Obsidian/Controls/dialog.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { toWord } from "@Obsidian/Utility/numberUtils";
+    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
+    import { SessionRenewalResult } from "./types.partial";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CurrentRegistrationEntryState, use } from "./utils.partial";
+
+    const props = defineProps({
+        isSessionExpired: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "success"): void
+    }>();
+
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const spotsSecured = ref<number | null>(null);
+    const isLoading = ref<boolean>(false);
+    const isModalVisible = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Does this registration instance have a waitlist? */
+    const hasWaitlist = computed<boolean>(() => {
+        return registrationEntryState.viewModel.waitListEnabled;
+    });
+
+    /** The number of registrants being registered */
+    const allRegistrantCount = computed<number>(() => {
+        return registrationEntryState.registrants.length;
+    });
+
+    /** The number of registrants pushed to the waitlist */
+    const waitlistRegistrantCount = computed<number>(() => {
+        return registrationEntryState.registrants.filter(r => r.isOnWaitList).length;
+    });
+
+    /** The number of registrants pushed to the waitlist as a word (eg "one") */
+    const waitlistRegistrantCountWord = computed<string>(() => {
+        return toWord(waitlistRegistrantCount.value);
+    });
+
+    /** The number of registrants not on a waitlist */
+    const nonWaitlistRegistrantCount = computed<number>(() => {
+        return registrationEntryState.registrants.filter(r => !r.isOnWaitList).length;
+    });
+
+    /** The number of registrants not on a waitlist as a word (eg "one") */
+    const nonWaitlistRegistrantCountWord = computed<string>(() => {
+        return toWord(nonWaitlistRegistrantCount.value);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Restart the registration by reloading the page */
+    function restart(): void {
+        isLoading.value = true;
+        location.reload();
+    }
+
+    /** Close the modal and continue on */
+    function close(): void {
+        isModalVisible.value = false;
+
+        nextTick(() => {
+            spotsSecured.value = null;
+            isLoading.value = false;
+        });
+    }
+
+    /** Attempt to renew the session and get more time */
+    async function requestRenewal(): Promise<void> {
+        spotsSecured.value = 0;
+        isLoading.value = true;
+
+        try {
+            const response = await invokeBlockAction<SessionRenewalResult>("TryToRenewSession", {
+                registrationSessionGuid: registrationEntryState.registrationSessionGuid
+            });
+
+            if (response.isSuccess && response.data) {
+                const asDate = RockDateTime.parseISO(response.data.expirationDateTime);
+                registrationEntryState.sessionExpirationDateMs = asDate?.toMilliseconds() ?? null;
+                spotsSecured.value = response.data.spotsSecured;
+            }
+            else {
+                registrationEntryState.sessionExpirationDateMs = null;
+                spotsSecured.value = 0;
+            }
+
+            // If there is a deficiency, then update the state to reflect the reduced spots available
+            let deficiency = nonWaitlistRegistrantCount.value - spotsSecured.value;
+
+            if (!deficiency) {
+                emit("success");
+                close();
+                return;
+            }
+
+            registrationEntryState.viewModel.spotsRemaining = spotsSecured.value;
+
+            if (!hasWaitlist) {
+                // Reduce the registrants down to fit the spots available
+                registrationEntryState.registrants.length = spotsSecured.value;
+                return;
+            }
+
+            // Work backward through the registrants until the deficiency is removed
+            for (let i = allRegistrantCount.value - 1; i >= 0; i--) {
+                if (!deficiency) {
+                    break;
+                }
+
+                const registrant = registrationEntryState.registrants[i];
+
+                if (registrant.isOnWaitList) {
+                    continue;
+                }
+
+                registrant.isOnWaitList = true;
+                deficiency--;
+            }
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.isSessionExpired, () => {
+        if (props.isSessionExpired) {
+            spotsSecured.value = null;
+            isModalVisible.value = true;
+        }
+    });
+</script>
