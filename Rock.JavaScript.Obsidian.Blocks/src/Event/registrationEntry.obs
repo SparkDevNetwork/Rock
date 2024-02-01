@@ -1,0 +1,555 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <NotificationBox v-if="notFound" alertType="warning">
+            <strong>Sorry</strong>
+            <p>{{ notFoundMessage }}</p>
+        </NotificationBox>
+        <NotificationBox v-else-if="mustLogin" alertType="warning">
+            <strong>Please log in</strong>
+            <p>You must be logged in to access this registration.</p>
+        </NotificationBox>
+        <NotificationBox v-else-if="config.isUnauthorized" alertType="warning">
+            <strong>Sorry</strong>
+            <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>
+        </NotificationBox>
+        <NotificationBox v-else-if="isInvalidGateway" alertType="warning">
+            <strong>Incorrect Configuration</strong>
+            <p>This registration has costs/fees associated with it but the configured payment gateway is not supported.</p>
+        </NotificationBox>
+        <NotificationBox v-else-if="preventNewRegistration" class="text-left" alertType="warning">
+            <strong>{{ registrationTermTitleCase }} Full</strong>
+            <p>
+                There are not any more {{ registrationTermPlural }} available for {{ config.instanceName }}.
+            </p>
+        </NotificationBox>
+        <template v-else>
+            <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
+            <ProgressTracker v-if="config.hideProgressBar !== true && currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
+                <template #aside>
+                    <div v-if="secondsBeforeExpiration >= 0" v-show="secondsBeforeExpiration <= (30 * 60)" class="remaining-time flex-grow-1 flex-md-grow-0">
+                        <NotificationBox v-if="hasSessionRenewalSuccess" alertType="success" class="m-0 pt-3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                            <h4>Success</h4>
+                        </NotificationBox>
+                        <span class="remaining-time-title">Time left before timeout</span>
+                        <p class="remaining-time-countdown">
+                            <CountdownTimer v-model="secondsBeforeExpiration" />
+                        </p>
+                    </div>
+                </template>
+            </ProgressTracker>
+            <RegistrationEntryIntro v-if="currentStep === steps.intro" @next="onIntroNext" />
+            <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious" />
+            <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
+            <RegistrationEntryRegistrationEnd v-else-if="currentStep === steps.registrationEndForm" @next="onRegistrationEndNext" @previous="onRegistrationEndPrevious" />
+            <RegistrationEntrySummary v-else-if="currentStep === steps.review" @next="onSummaryNext" @previous="onSummaryPrevious" />
+            <RegistrationEntryPayment v-else-if="currentStep === steps.payment" @next="onPaymentNext" @previous="onPaymentPrevious" />
+            <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
+            <NotificationBox v-else alertType="danger">Invalid State: '{{ currentStep }}'</NotificationBox>
+
+            <SessionRenewal :isSessionExpired="isSessionExpired" @success="onSessionRenewalSuccess" />
+        </template>
+    </div>
+</template>
+<script setup lang="ts">
+    import { computed, onMounted, provide, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
+    import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
+    import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+    import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
+    import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { useStore } from "@Obsidian/PageState";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { List } from "@Obsidian/Utility/linq";
+    import { smoothScrollToTop } from "@Obsidian/Utility/page";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
+    import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
+    import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
+    import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types.partial";
+    import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial";
+    import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial";
+    import RegistrationEntrySuccess from "./RegistrationEntry/success.partial";
+    import RegistrationEntryPayment from "./RegistrationEntry/payment.partial";
+    import RegistrationEntrySummary from "./RegistrationEntry/summary.partial";
+    import { getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
+
+    const store = useStore();
+    const steps = {
+        [Step.Intro]: Step.Intro,
+        [Step.RegistrationStartForm]: Step.RegistrationStartForm,
+        [Step.PerRegistrantForms]: Step.PerRegistrantForms,
+        [Step.RegistrationEndForm]: Step.RegistrationEndForm,
+        [Step.Review]: Step.Review,
+        [Step.Payment]: Step.Payment,
+        [Step.Success]: Step.Success
+    } as const;
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const config = useConfigurationValues<RegistrationEntryBlockViewModel>();
+    const notFound = !!config.registrationInstanceNotFoundMessage || !config.registrationAttributesStart;
+    const notFoundMessage = config.registrationInstanceNotFoundMessage || "The selected registration could not be found or is no longer active.";
+    const hasPreAttributes = (config.registrationAttributesStart?.length ?? 0) > 0;
+    const hasPostAttributes = (config.registrationAttributesEnd?.length ?? 0) > 0;
+
+    let initialStep: Step = steps.intro;
+
+    if (config.successViewModel) {
+        // This is after having paid via redirect gateway
+        initialStep = steps.success;
+    }
+    else if (config.session && !config.startAtBeginning) {
+        // This is an existing registration, start at the summary
+        initialStep = steps.review;
+    }
+    else if (config.maxRegistrants === 1 && isNullOrWhiteSpace(config.instructionsHtml)) {
+        // There is no need to show the number of registrants selector or instructions. Start at the second page.
+        initialStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
+    }
+    else if (config.isExistingRegistration && config.startAtBeginning) {
+        // An existing registration with StartAtBeginning set to true, go right to the attributes.
+        initialStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
+    }
+
+    // #region Values
+
+    const secondsBeforeExpiration = ref(-1);
+    const hasSessionRenewalSuccess = ref(false);
+    const registrationEntryState = ref<RegistrationEntryState>({
+        steps: steps,
+        viewModel: config,
+        firstStep: initialStep,
+        currentStep: initialStep,
+        navBack: false,
+        currentRegistrantFormIndex: 0,
+        currentRegistrantIndex: 0,
+        registrants: config.session?.registrants || [getDefaultRegistrantInfo(null, config, null)],
+        registrationFieldValues: config.session?.fieldValues || {},
+        registrar: config.session?.registrar || {
+            nickName: "",
+            lastName: "",
+            email: "",
+            updateEmail: true,
+            familyGuid: null
+        },
+        gatewayToken: "",
+        savedAccountGuid: null,
+        discountCode: config.session?.discountCode || "",
+        discountAmount: config.session?.discountAmount || 0,
+        discountPercentage: config.session?.discountPercentage || 0,
+        discountMaxRegistrants: config.session?.discountMaxRegistrants || 0,
+        successViewModel: config.successViewModel,
+        amountToPayToday: 0,
+        sessionExpirationDateMs: null,
+        registrationSessionGuid: config.session?.registrationSessionGuid || newGuid(),
+        ownFamilyGuid: config.currentPersonFamilyGuid || newGuid()
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const currentStep = computed<string>(() => {
+        return registrationEntryState.value.currentStep;
+    });
+
+    /** The person currently authenticated */
+    const currentPerson = computed<CurrentPersonBag | null>(() => {
+        return store.state.currentPerson;
+    });
+
+    /** Is the session expired? */
+    const isSessionExpired = computed<boolean>(() => {
+        return secondsBeforeExpiration.value === 0 && registrationEntryState.value.currentStep !== Step.Success;
+    });
+
+    const mustLogin = computed<boolean>(() => {
+        return !currentPerson.value && config != null && (config.isUnauthorized || config.loginRequiredToRegister);
+    });
+
+    const progressTrackerIndex = computed<number>(() => {
+        if (currentStep.value === Step.Intro) {
+            return 0;
+        }
+
+        const stepsBeforePre = registrationEntryState.value.firstStep === Step.Intro ? 1 : 0;
+
+        if (currentStep.value === Step.RegistrationStartForm) {
+            return stepsBeforePre;
+        }
+
+        const stepsBeforeRegistrants = stepsBeforePre + (hasPreAttributes ? 1 : 0);
+
+        if (currentStep.value === Step.PerRegistrantForms) {
+            return registrationEntryState.value.currentRegistrantIndex + stepsBeforeRegistrants;
+        }
+
+        const stepsToCompleteRegistrants = registrationEntryState.value.registrants.length + stepsBeforeRegistrants;
+
+        if (currentStep.value === Step.RegistrationEndForm) {
+            return stepsToCompleteRegistrants;
+        }
+
+        if (currentStep.value === Step.Review) {
+            return stepsToCompleteRegistrants + (hasPostAttributes ? 1 : 0);
+        }
+
+        if (currentStep.value === Step.Payment) {
+            return stepsToCompleteRegistrants + (hasPostAttributes ? 1 : 0);
+        }
+
+        return 0;
+    });
+    const uppercaseRegistrantTerm = computed<string>(() => {
+        return StringFilter.toTitleCase(config.registrantTerm ?? "");
+    });
+    const currentRegistrantTitle = computed<string>(() => {
+        const ordinal = NumberFilter.toOrdinal(registrationEntryState.value.currentRegistrantIndex + 1);
+        let title = StringFilter.toTitleCase(
+            registrationEntryState.value.registrants.length <= 1 ?
+                uppercaseRegistrantTerm.value :
+                ordinal + " " + uppercaseRegistrantTerm.value);
+
+        if (registrationEntryState.value.currentRegistrantFormIndex > 0) {
+            title += " (cont)";
+        }
+
+        return title;
+    });
+    const stepTitleHtml = computed<string>(() => {
+        if (currentStep.value === Step.RegistrationStartForm) {
+            return config.registrationAttributeTitleStart ?? "";
+        }
+
+        if (currentStep.value === Step.PerRegistrantForms) {
+            return currentRegistrantTitle.value;
+        }
+
+        if (currentStep.value === Step.RegistrationEndForm) {
+            return config.registrationAttributeTitleEnd ?? "";
+        }
+
+        if (currentStep.value === Step.Review) {
+            return "Review Registration";
+        }
+
+        if (currentStep.value === Step.Success) {
+            return registrationEntryState.value.successViewModel?.titleHtml || "Congratulations";
+        }
+
+        return "";
+    });
+
+    /** The items to display in the progress tracker */
+    const progressTrackerItems = computed<ProgressTrackerItem[]>(() => {
+        const items: ProgressTrackerItem[] = [];
+
+        if (registrationEntryState.value.firstStep === Step.Intro) {
+            items.push({
+                key: "Start",
+                title: "Start",
+                subtitle: config.registrationTerm
+            });
+        }
+
+        if (hasPreAttributes) {
+            items.push({
+                key: "Pre",
+                title: config.registrationAttributeTitleStart,
+                subtitle: config.registrationTerm
+            });
+        }
+
+        if (!registrationEntryState.value.registrants.length) {
+            items.push({
+                key: "Registrant",
+                title: toTitleCase(config.registrantTerm),
+                subtitle: config.registrationTerm
+            });
+        }
+
+        for (let i = 0; i < registrationEntryState.value.registrants.length; i++) {
+            const registrant = registrationEntryState.value.registrants[i];
+            const info = getRegistrantBasicInfo(registrant, config.registrantForms);
+
+            if (info?.firstName && info?.lastName) {
+                items.push({
+                    key: `Registrant-${registrant.guid}`,
+                    title: info.firstName,
+                    subtitle: info.lastName
+                });
+            }
+            else {
+                items.push({
+                    key: `Registrant-${registrant.guid}`,
+                    title: toTitleCase(config.registrantTerm),
+                    subtitle: toTitleCase(toWord(i + 1))
+                });
+            }
+        }
+
+        if (hasPostAttributes) {
+            items.push({
+                key: "Post",
+                title: config.registrationAttributeTitleEnd,
+                subtitle: config.registrationTerm
+            });
+        }
+
+        items.push({
+            key: "Finalize",
+            title: "Finalize",
+            subtitle: config.registrationTerm
+        });
+
+        return items;
+    });
+
+    /**
+     * Determines if there are any costs or fees on the registration and
+     * checks if we have a valid gateway.
+     */
+    const isInvalidGateway = computed<boolean>(() => {
+        if (!config) {
+            return false;
+        }
+
+        const hasCostFees = new List<RegistrationEntryBlockFeeViewModel>(config.fees)
+            .any(f => new List(f.items).any(i => i.cost > 0));
+
+        // If no cost or fees, then no gateway will be needed.
+        if (config.cost <= 0 && !hasCostFees) {
+            return false;
+        }
+
+        if (config.isRedirectGateway || config.gatewayControl.fileUrl) {
+            return false;
+        }
+
+        return true;
+    });
+
+    const isFull = computed<boolean>(() => {
+        if (!config || config.spotsRemaining === null) {
+            return false;
+        }
+
+        return config.spotsRemaining < 1 && !config.waitListEnabled;
+    });
+
+    const preventNewRegistration = computed<boolean>(() => {
+        return isFull.value && !config.isExistingRegistration;
+    });
+
+    const registrationTerm = computed<string>(() => {
+        return (config.registrationTerm || "registration").toLowerCase();
+    });
+
+    const registrationTermPlural = computed<string>(() => {
+        return (config.pluralRegistrationTerm || "registrations").toLowerCase();
+    });
+
+    const registrationTermTitleCase = computed<string>(() => {
+        return toTitleCase(registrationTerm.value);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Gets the args needed for persisting the session. */
+    function getRegistrationEntryBlockArgs(): RegistrationEntryBlockArgs {
+        return {
+            registrationSessionGuid: registrationEntryState.value.registrationSessionGuid,
+            gatewayToken: registrationEntryState.value.gatewayToken,
+            savedAccountGuid: registrationEntryState.value.savedAccountGuid,
+            discountCode: registrationEntryState.value.discountCode,
+            fieldValues: registrationEntryState.value.registrationFieldValues,
+            registrar: registrationEntryState.value.registrar,
+            registrants: registrationEntryState.value.registrants,
+            amountToPayNow: registrationEntryState.value.amountToPayToday,
+            registrationGuid: config.session?.registrationGuid || null
+        };
+    }
+
+    /** Persists the session. */
+    async function persistSession(force: boolean = false): Promise<void> {
+        if (!force && !config.timeoutMinutes) {
+            return;
+        }
+
+        const response = await invokeBlockAction<{ expirationDateTime: string }>("PersistSession", {
+            args: getRegistrationEntryBlockArgs()
+        });
+
+        if (response.data) {
+            const expirationDate = RockDateTime.parseISO(response.data.expirationDateTime);
+
+            registrationEntryState.value.sessionExpirationDateMs = expirationDate?.toMilliseconds() ?? null;
+        }
+    }
+
+    /** The user requested an extension in time and it was granted */
+    function onSessionRenewalSuccess(): void {
+        hasSessionRenewalSuccess.value = true;
+        setTimeout(() => hasSessionRenewalSuccess.value = false, 5000);
+    }
+
+    async function onIntroNext(): Promise<void> {
+        await persistSession(false);
+        registrationEntryState.value.currentStep = hasPreAttributes ? Step.RegistrationStartForm : Step.PerRegistrantForms;
+        registrationEntryState.value.navBack = false;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onRegistrationStartPrevious(): Promise<void> {
+        await persistSession(false);
+        registrationEntryState.value.currentStep = Step.Intro;
+        registrationEntryState.value.navBack = true;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onRegistrationStartNext(): Promise<void> {
+        await persistSession(false);
+        registrationEntryState.value.currentStep = Step.PerRegistrantForms;
+        registrationEntryState.value.navBack = false;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onRegistrantPrevious(): Promise<void> {
+        await persistSession(false);
+        registrationEntryState.value.currentStep = hasPreAttributes ? Step.RegistrationStartForm : Step.Intro;
+        registrationEntryState.value.navBack = true;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onRegistrantNext(): Promise<void> {
+        await persistSession(false);
+        registrationEntryState.value.currentStep = hasPostAttributes ? Step.RegistrationEndForm : Step.Review;
+        registrationEntryState.value.navBack = false;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onRegistrationEndPrevious(): Promise<void> {
+        await persistSession(false);
+        registrationEntryState.value.currentStep = Step.PerRegistrantForms;
+        registrationEntryState.value.navBack = true;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onRegistrationEndNext(): Promise<void> {
+        await persistSession(false);
+        registrationEntryState.value.currentStep = Step.Review;
+        registrationEntryState.value.navBack = false;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onSummaryPrevious(): Promise<void> {
+        await persistSession(false);
+
+        if (hasPostAttributes) {
+            registrationEntryState.value.currentStep = Step.RegistrationEndForm;
+        }
+        else {
+            const lastFormIndex = registrationEntryState.value.viewModel.registrantForms.length - 1;
+
+            registrationEntryState.value.currentRegistrantFormIndex = lastFormIndex;
+            registrationEntryState.value.currentStep = Step.PerRegistrantForms;
+        }
+        registrationEntryState.value.navBack = true;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    function onSummaryNext(): void {
+        if (registrationEntryState.value.amountToPayToday) {
+            registrationEntryState.value.currentStep = Step.Payment;
+        }
+        else {
+            registrationEntryState.value.currentStep = Step.Success;
+        }
+        registrationEntryState.value.navBack = false;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    async function onPaymentPrevious(): Promise<void> {
+        await persistSession(false);
+        registrationEntryState.value.currentStep = Step.Review;
+        registrationEntryState.value.navBack = true;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    function onPaymentNext(): void {
+        registrationEntryState.value.currentStep = Step.Success;
+        registrationEntryState.value.navBack = false;
+
+        // Wait for the form to be rendered and then scroll to the top.
+        setTimeout(() => smoothScrollToTop(), 10);
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(currentPerson, () => {
+        const forcedFamilyGuid = getForcedFamilyGuid(currentPerson.value, config);
+
+        if (forcedFamilyGuid) {
+            for (const registrant of registrationEntryState.value.registrants) {
+                registrant.familyGuid = forcedFamilyGuid;
+            }
+        }
+    }, {
+        immediate: true
+    });
+
+    watch(() => registrationEntryState.value.sessionExpirationDateMs, () => {
+        if (!registrationEntryState.value.sessionExpirationDateMs) {
+            secondsBeforeExpiration.value = -1;
+            return;
+        }
+
+        const nowMs = RockDateTime.now().toMilliseconds();
+        const thenMs = registrationEntryState.value.sessionExpirationDateMs;
+        const diffMs = thenMs - nowMs;
+        secondsBeforeExpiration.value = diffMs / 1000;
+    }, {
+        immediate: true
+    });
+
+    // #endregion
+
+    onMounted(() => {
+        if (config.loginRequiredToRegister && !currentPerson.value) {
+            store.redirectToLogin();
+        }
+    });
+
+    // Provide the unwrapped reactive state object for child components.
+    provide("registrationEntryState", registrationEntryState.value);
+    provide("getRegistrationEntryBlockArgs", getRegistrationEntryBlockArgs);
+    provide("persistSession", persistSession);
+
+</script>
