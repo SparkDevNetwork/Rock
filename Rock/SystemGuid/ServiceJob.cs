@@ -347,5 +347,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DATA_MIGRATIONS_162_CHOP_EMAIL_PREFERENCE_ENTRY = "AE07C80A-80A4-48FD-908C-56DDB1CAA322";
         public const string DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES = "46d98280-7611-4588-831d-6924e2be9da6";
+
+        /// <summary>
+        /// The <see cref="Rock.Jobs.UpdatePersistedDatasets" /> job.
+        /// </summary>
+        public const string UPDATE_PERSISTED_DATASETS = "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA";
     }
 }
