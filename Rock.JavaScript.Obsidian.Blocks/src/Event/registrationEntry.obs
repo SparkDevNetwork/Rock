@@ -72,7 +72,7 @@
     import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types.partial";
     import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial";
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial";
-    import RegistrationEntrySuccess from "./RegistrationEntry/success.partial";
+    import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntryPayment from "./RegistrationEntry/payment.partial";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
     import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";

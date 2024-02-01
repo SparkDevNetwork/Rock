@@ -1,0 +1,59 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <div v-html="messageHtml"></div>
+        <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier && enableSaveAccount"
+                                  :gatewayGuid="gatewayGuid"
+                                  :transactionCode="transactionCode"
+                                  :gatewayPersonIdentifier="gatewayPersonIdentifier"
+                                  class="well">
+            <template #header>
+                <h3>Make Payments Even Easier</h3>
+            </template>
+        </SaveFinancialAccountForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { computed } from "vue";
+    import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm.obs";
+    import { CurrentRegistrationEntryState, use } from "./utils.partial";
+
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+
+    // #region Computed Values
+
+    /** The term to refer to a registrant */
+    const registrationTerm = computed<string>(() => {
+        return registrationEntryState.viewModel.registrationTerm.toLowerCase();
+    });
+
+    /** The success lava markup */
+    const messageHtml = computed<string>(() => {
+        return registrationEntryState.successViewModel?.messageHtml || `You have successfully completed this ${registrationTerm.value}`;
+    });
+
+    /** The financial gateway record's guid */
+    const gatewayGuid = computed<Guid | null>(() => {
+        return registrationEntryState.viewModel.gatewayGuid;
+    });
+
+    /** The transaction code that can be used to create a saved account */
+    const transactionCode = computed<string>(() => {
+        return registrationEntryState.viewModel.isRedirectGateway ?
+            "" :
+            registrationEntryState.successViewModel?.transactionCode || "";
+    });
+
+    /** The token returned for the payment method */
+    const gatewayPersonIdentifier = computed<string>(() => {
+        return registrationEntryState.successViewModel?.gatewayPersonIdentifier || "";
+    });
+
+    const enableSaveAccount = computed<boolean>(() => {
+        return registrationEntryState.viewModel.enableSaveAccount && registrationEntryState.savedAccountGuid === null;
+    });
+
+    // #endregion
+</script>
