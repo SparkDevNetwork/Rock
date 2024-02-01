@@ -111,7 +111,7 @@ namespace Rock.Lava
         void RegisterFilter( MethodInfo filterMethod, string filterName = null );
 
         /// <summary>
-        /// Register a Lava Tag elemennt.
+        /// Register a Lava Tag element.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="factoryMethod"></param>
@@ -173,6 +173,12 @@ namespace Rock.Lava
         /// </summary>
         /// <returns></returns>
         Dictionary<string, ILavaElementInfo> GetRegisteredElements();
+
+        /// <summary>
+        /// Gets the collection of all registered Lava filters.
+        /// </summary>
+        /// <returns></returns>
+        List<string> GetRegisteredFilterNames();
 
         /// <summary>
         /// Parse the provided text into a compiled Lava template object. The resulting template can be used to render output with a variety of render contexts.

@@ -398,9 +398,10 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             var migrator = new System.Data.Entity.Migrations.DbMigrator( config );
 
+            LogHelper.Log( $"Applying database migrations... [Target=\"{ _targetMigration }\"]" );
             try
             {
-                migrator.Update();
+                migrator.Update( _targetMigration );
             }
             catch ( Exception ex )
             {
