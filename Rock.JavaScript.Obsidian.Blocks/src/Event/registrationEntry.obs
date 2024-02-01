@@ -68,7 +68,7 @@
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import RegistrationEntryIntro from "./RegistrationEntry/intro.partial.obs";
     import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial.obs";
-    import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
+    import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial.obs";
     import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types.partial";
     import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial.obs";
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial.obs";

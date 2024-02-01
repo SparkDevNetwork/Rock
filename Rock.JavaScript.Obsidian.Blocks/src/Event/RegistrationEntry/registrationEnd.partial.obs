@@ -1,0 +1,86 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="registrationentry-registration-attributes">
+        <RockForm @submit="onNext">
+            <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
+
+            <div class="actions row">
+                <div class="col-xs-6">
+                    <RockButton v-if="showPrevious" btnType="default" @click="onPrevious">
+                        Previous
+                    </RockButton>
+                </div>
+                <div class="col-xs-6 text-right">
+                    <RockButton btnType="primary" type="submit">
+                        Next
+                    </RockButton>
+                </div>
+            </div>
+        </RockForm>
+    </div>
+</template>
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { CurrentRegistrationEntryState, use } from "./utils.partial";
+
+    const emit = defineEmits<{
+        (e: "next"): void,
+        (e: "previous"): void
+    }>();
+
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+
+    // #region Values
+
+    const attributeValues = ref<Record<string, string>>({});
+
+    for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
+        attributeValues.value[a.key ?? ""] = (registrationEntryState.registrationFieldValues[a.attributeGuid ?? ""] as string) || "";
+    }
+
+    // #endregion
+
+    // #region Computed Values
+
+    const showPrevious = computed((): boolean => {
+        return registrationEntryState.firstStep === registrationEntryState.steps.intro;
+    });
+
+    const attributes = computed((): Record<string, PublicAttributeBag> => {
+        const attrs: Record<string, PublicAttributeBag> = {};
+
+        for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
+            attrs[a.key ?? ""] = a;
+        }
+
+        return attrs;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function onPrevious(): void {
+        emit("previous");
+    }
+
+    function onNext(): void {
+        emit("next");
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(attributeValues, () => {
+        for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
+            registrationEntryState.registrationFieldValues[a.attributeGuid ?? ""] = attributeValues.value[a.key ?? ""];
+        }
+    });
+
+    // #endregion
+</script>
