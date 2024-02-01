@@ -95,9 +95,10 @@ namespace Rock.Blocks.Types.Mobile.Communication
         Order = 8 )]
 
     [IntegerField( "SMS Character Limit",
-        Description = "The number of characters to limit the SMS communication body to.",
+        Description = "The number of characters to limit the SMS communication body to. Set to 0 to disable.",
         IsRequired = false,
         Key = AttributeKey.SmsCharacterLimit,
+        DefaultIntegerValue = 0,
         Order = 9 )]
 
     [LinkedPage(
