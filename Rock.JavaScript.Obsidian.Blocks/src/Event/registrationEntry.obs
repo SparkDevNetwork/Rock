@@ -70,7 +70,7 @@
     import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
     import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
     import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types.partial";
-    import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial";
+    import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial.obs";
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial.obs";
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntryPayment from "./RegistrationEntry/payment.partial";
