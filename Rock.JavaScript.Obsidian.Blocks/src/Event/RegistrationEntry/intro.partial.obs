@@ -1,0 +1,199 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="registrationentry-intro">
+        <NotificationBox v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
+            <strong>{{ registrationTermTitleCase }} Full</strong>
+            <p>
+                There are not any more {{ registrationTermPlural }} available for {{ viewModel.instanceName }}.
+            </p>
+        </NotificationBox>
+        <NotificationBox v-if="showRemainingCapacity" class="text-left" alertType="warning">
+            <strong>{{ registrationTermTitleCase }} Full</strong>
+            <p>
+                This {{ registrationTerm }} only has capacity for {{ remainingCapacityPhrase }}.
+            </p>
+        </NotificationBox>
+        <div class="text-left" v-html="viewModel.instructionsHtml">
+        </div>
+        <div v-if="viewModel.maxRegistrants > 1" class="registrationentry-intro mb-3">
+            <h1>How many {{ viewModel.pluralRegistrantTerm }} will you be registering?</h1>
+            <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.maxRegistrants" />
+        </div>
+        <NotificationBox v-if="viewModel.timeoutMinutes" alertType="info" class="text-left">
+            Due to a high-volume of expected interest, your {{ registrationTerm }} session will expire after
+            {{ pluralConditional(viewModel.timeoutMinutes, 'a minute', viewModel.timeoutMinutes + ' minutes') }}
+            of inactivity.
+        </NotificationBox>
+        <NotificationBox v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
+            This {{ registrationTerm }} has reached its capacity. Complete the registration to be added to the waitlist.
+        </NotificationBox>
+        <NotificationBox v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
+            This {{ registrationTerm }} only has capacity for {{ remainingCapacityPhrase }}.
+            The first {{ pluralConditional(viewModel.spotsRemaining ?? 0, registrantTerm, viewModel.spotsRemaining + ' ' + registrantTermPlural) }} you add will be registered for {{ viewModel.instanceName }}.
+            The remaining {{ pluralConditional(numberToAddToWaitlist, registrantTerm, numberToAddToWaitlist + ' ' + registrantTermPlural) }} will be added to the waitlist.
+        </NotificationBox>
+
+        <div v-if="canContinue" class="actions text-right">
+            <RockButton btnType="primary" @click="onNext">
+                Next
+            </RockButton>
+        </div>
+    </div>
+</template>
+<script setup lang="ts">
+    import { computed, nextTick, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";
+    import { CurrentRegistrationEntryState, getDefaultRegistrantInfo, getForcedFamilyGuid, use } from "./utils.partial";
+    import { RegistrationEntryBlockViewModel } from "./types.partial";
+    import { useStore } from "@Obsidian/PageState";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+
+    const emit = defineEmits<{
+        (e: "next"): void
+    }>();
+
+    const store = useStore();
+
+    /** The shared state among all the components that make up this block */
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+
+    // #region Values
+
+    /** Should the remaining capacity warning be shown? */
+    const showRemainingCapacity = ref<boolean>(false);
+
+    /** The number of registrants that this registrar is going to input */
+    const numberOfRegistrants = ref<number>(registrationEntryState.registrants.length);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The currently authenticated person */
+    const currentPerson = computed<CurrentPersonBag | null>(() => {
+        return store.state.currentPerson;
+    });
+
+    /** The view model sent by the C# code behind. This is just a convenient shortcut to the shared object. */
+    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+        return registrationEntryState.viewModel;
+    });
+
+    /** The number of these registrants that will be placed on a waitlist because of capacity rules */
+    const numberToAddToWaitlist = computed<number>(() => {
+        if (viewModel.value.spotsRemaining === null || !viewModel.value.waitListEnabled) {
+            // There is no waitlist or no cap on number of attendees
+            return 0;
+        }
+
+        if (viewModel.value.spotsRemaining >= numberOfRegistrants.value) {
+            // There is enough capacity left for all of these registrants
+            return 0;
+        }
+
+        // Some or all need to go on the waitlist
+        return numberOfRegistrants.value - viewModel.value.spotsRemaining;
+    });
+
+    /** The capacity left phrase: Ex: 1 more camper */
+    const remainingCapacityPhrase = computed<string>(() => {
+        const spots = viewModel.value.spotsRemaining;
+
+        if (spots === null) {
+            return "";
+        }
+
+        return pluralConditional(spots, `1 more ${registrantTerm.value}`, `${spots} more ${registrantTermPlural.value}`);
+    });
+
+    /** Is this instance full and no one else can register? */
+    const isFull = computed<boolean>(() => {
+        if (viewModel.value.spotsRemaining === null) {
+            return false;
+        }
+
+        return viewModel.value.spotsRemaining < 1;
+    });
+
+    /** True if the user is allowed to move on to the next screen. */
+    const canContinue = computed<boolean>(() => {
+        return !(isFull.value && numberToAddToWaitlist.value !== numberOfRegistrants.value);
+    });
+
+    const registrantTerm = computed<string>(() => {
+        viewModel.value.instanceName;
+        return (viewModel.value.registrantTerm || "registrant").toLowerCase();
+    });
+
+    const registrantTermPlural = computed<string>(() => {
+        return (viewModel.value.pluralRegistrantTerm || "registrants").toLowerCase();
+    });
+
+    const registrationTerm = computed<string>(() => {
+        return (viewModel.value.registrationTerm || "registration").toLowerCase();
+    });
+
+    const registrationTermPlural = computed<string>(() => {
+        return (viewModel.value.pluralRegistrationTerm || "registrations").toLowerCase();
+    });
+
+    const registrationTermTitleCase = computed<string>(() => {
+        return toTitleCase(registrationTerm.value);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function onNext(): void {
+        // If the person is authenticated and the setting is to put registrants in the same family, then we force that family guid
+        const forcedFamilyGuid = getForcedFamilyGuid(currentPerson.value, viewModel.value);
+
+        // TODO Evaluate if there was an intention behind this commented code.
+        // const usedFamilyMemberGuids = registrationEntryState.registrants
+        //     .filter(r => r.personGuid)
+        //     .map(r => r.personGuid);
+        //
+        // const availableFamilyMembers = viewModel.value.familyMembers
+        //     .filter(fm =>
+        //         areEqual(fm.familyGuid, forcedFamilyGuid) &&
+        //         !usedFamilyMemberGuids.includes(fm.guid));
+
+        // Resize the registrant array to match the selected number
+        while (numberOfRegistrants.value > registrationEntryState.registrants.length) {
+            const registrant = getDefaultRegistrantInfo(currentPerson.value, viewModel.value, forcedFamilyGuid);
+            registrationEntryState.registrants.push(registrant);
+        }
+
+        registrationEntryState.registrants.length = numberOfRegistrants.value;
+
+        // Set people beyond the capacity to be on the waitlist
+        const firstWaitListIndex = numberOfRegistrants.value - numberToAddToWaitlist.value;
+
+        for (let i = firstWaitListIndex; i < numberOfRegistrants.value; i++) {
+            registrationEntryState.registrants[i].isOnWaitList = true;
+        }
+
+        emit("next");
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(numberOfRegistrants, () => {
+        if (!viewModel.value.waitListEnabled && viewModel.value.spotsRemaining !== null && viewModel.value.spotsRemaining < numberOfRegistrants.value) {
+            showRemainingCapacity.value = true;
+            const spotsRemaining = viewModel.value.spotsRemaining;
+
+            // Do this on the next tick to allow the events to finish. Otherwise the component tree doesn't have time
+            // to respond to this, since the watch was triggered by the numberOfRegistrants change
+            nextTick(() => numberOfRegistrants.value = spotsRemaining);
+        }
+    });
+
+    // #endregion
+</script>
