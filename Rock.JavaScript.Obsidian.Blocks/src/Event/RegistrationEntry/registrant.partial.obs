@@ -65,7 +65,7 @@
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, use } from "./utils.partial";
     import StringFilter from "@Obsidian/Utility/stringUtils";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RegistrantPersonField from "./registrantPersonField.partial";
+    import RegistrantPersonField from "./registrantPersonField.partial.obs";
     import RegistrantAttributeField from "./registrantAttributeField.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from "./types.partial";
