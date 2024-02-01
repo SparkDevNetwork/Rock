@@ -18,7 +18,8 @@
 import { Guid } from "@Obsidian/Types";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { newGuid } from "@Obsidian/Utility/guid";
-import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType, RegistrationFieldSource } from "./types.partial";
+import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
+import { InjectionKey, inject, provide } from "vue";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -77,3 +78,26 @@ export function getRegistrantBasicInfo(registrant: RegistrantInfo, registrantFor
         guid: registrant?.guid
     };
 }
+
+/**
+ * Injects a provided value.
+ * Throws an exception if the value is undefined or not yet provided.
+ */
+export function use<T>(key: string | InjectionKey<T>): T {
+    const result = inject<T>(key);
+
+    if (result === undefined) {
+        throw `Attempted to access ${key} before a value was provided.`;
+    }
+
+    return result;
+}
+
+/** An injection key to provide the registration entry state. */
+export const CurrentRegistrationEntryState: InjectionKey<RegistrationEntryState> = Symbol("registration-entry-state");
+
+/** An injection key to provide the function that gets the args to persist the session. */
+export const GetPersistSessionArgs: InjectionKey<() => RegistrationEntryBlockArgs> = Symbol("get-persist-session-args");
+
+/** An injection key to provide the function that persists the session. */
+export const PersistSession: InjectionKey<(force?: boolean) => Promise<void>> = Symbol("persist-session");

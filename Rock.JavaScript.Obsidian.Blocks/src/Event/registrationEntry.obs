@@ -75,7 +75,7 @@
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial";
     import RegistrationEntryPayment from "./RegistrationEntry/payment.partial";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial";
-    import { getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
+    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
 
     const store = useStore();
     const steps = {
@@ -547,9 +547,9 @@
         }
     });
 
-    // Provide the unwrapped reactive state object for child components.
-    provide("registrationEntryState", registrationEntryState.value);
-    provide("getRegistrationEntryBlockArgs", getRegistrationEntryBlockArgs);
-    provide("persistSession", persistSession);
+    // Provide the injectables for child components.
+    provide(CurrentRegistrationEntryState, registrationEntryState.value);
+    provide(GetPersistSessionArgs, getRegistrationEntryBlockArgs);
+    provide(PersistSession, persistSession);
 
 </script>
