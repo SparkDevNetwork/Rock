@@ -231,7 +231,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// <summary>
         /// Gets the max number of characters allowed in an SMS message.
         /// </summary>
-        public int SmsCharacterLimit => GetAttributeValue( AttributeKey.SmsCharacterLimit ).AsIntegerOrNull() ?? 160;
+        public int SmsCharacterLimit => GetAttributeValue( AttributeKey.SmsCharacterLimit ).AsIntegerOrNull() ?? 0;
 
         /// <summary>
         /// Gets the person profile page unique identifier.
