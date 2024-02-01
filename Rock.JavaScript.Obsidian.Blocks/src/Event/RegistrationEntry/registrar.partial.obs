@@ -1,0 +1,213 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isRegistrarPanelShown" class="well">
+        <h4>This Registration Was Completed By</h4>
+        <template v-if="useLoggedInPersonForRegistrar">
+            <div class="row">
+                <div class="col-md-6 col-sm-6">
+                    <StaticFormControl label="First Name" v-model="registrar.nickName" />
+                </div>
+                <div class="col-md-6 col-sm-6">
+                    <StaticFormControl label="Last Name" v-model="registrar.lastName" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-6">
+                    <StaticFormControl label="Email" v-model="registrar.email" />
+                </div>
+            </div>
+        </template>
+        <template v-else>
+            <div class="row">
+                <div class="col-md-6 col-sm-6">
+                    <TextBox label="First Name" rules="required" v-model="registrar.nickName" tabIndex="1" />
+                </div>
+                <div class="col-md-6 col-sm-6">
+                    <TextBox label="Last Name" rules="required" v-model="registrar.lastName" tabIndex="2" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-6">
+                    <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.email" tabIndex="3" />
+                    <InlineCheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.updateEmail" />
+                </div>
+                <div class="col-md-6 col-sm-6">
+                    <RadioButtonList
+                                     v-if="familyOptions.length"
+                                     :label="(registrar.nickName || 'Person') + ' is in the same immediate family as'"
+                                     rules='required:{"allowEmptyString": true}'
+                                     :modelValue="registrar.familyGuid ?? undefined"
+                                     @update:modelValue="onUpdateFamilyGuid"
+                                     :items="familyOptions"
+                                     validationTitle="Family" />
+                </div>
+            </div>
+        </template>
+    </div>
+</template>
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { computed, ref, watch } from "vue";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, use } from "./utils.partial";
+    import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel, RegistrantBasicInfo } from "./types.partial";
+    import { useStore } from "@Obsidian/PageState";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const store = useStore();
+
+    const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+
+    // #region Values
+
+    /** Should the registrar panel be shown */
+    const isRegistrarPanelShown = ref<boolean>(true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Is the registrar option set to UseLoggedInPerson */
+    const useLoggedInPersonForRegistrar = computed<boolean>(() => {
+        return (!!currentPerson.value) && viewModel.value.registrarOption === RegistrarOption.UseLoggedInPerson;
+    });
+
+    /** The person that is currently authenticated */
+    const currentPerson = computed<CurrentPersonBag | null>(() => {
+        return store.state.currentPerson;
+    });
+
+    /** The person entering the registration information. This object is part of the registration state. */
+    const registrar = computed<RegistrarInfo>(() => {
+        return registrationEntryState.registrar;
+    });
+
+    /** The first registrant entered into the registration. */
+    const firstRegistrant = computed<RegistrantInfo>(() => {
+        return registrationEntryState.registrants[0];
+    });
+
+    /** This is the data sent from the C# code behind when the block initialized. */
+    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+        return registrationEntryState.viewModel;
+    });
+
+    /** Should the checkbox allowing the registrar to choose to update their email address be shown? */
+    const doShowUpdateEmailOption = computed<boolean>(() => {
+        return !viewModel.value.forceEmailUpdate && !!currentPerson.value?.email;
+    });
+
+    /** Info about the registrants made available by .FirstName instead of by field guid */
+    const registrantInfos = computed<RegistrantBasicInfo[]>(() => {
+        return registrationEntryState.registrants.map(r => getRegistrantBasicInfo(r, viewModel.value.registrantForms));
+    });
+
+    /** The registrant term - plural if there are more than 1 */
+    const registrantTerm = computed<string>(() => {
+        return registrantInfos.value.length === 1 ? viewModel.value.registrantTerm : viewModel.value.pluralRegistrantTerm;
+    });
+
+    /** The name of this registration instance */
+    const instanceName = computed<string>(() => {
+        return viewModel.value.instanceName;
+    });
+
+    /** The radio options that are displayed to allow the user to pick another person that this
+     *  registrar is part of a family. */
+    const familyOptions = computed<ListItemBag[]>(() => {
+        const options: ListItemBag[] = [];
+        const usedFamilyGuids: Record<Guid, boolean> = {};
+
+        if (viewModel.value.registrantsSameFamily !== RegistrantsSameFamily.Ask) {
+            return options;
+        }
+
+        // Add previous registrants as options
+        for (let i = 0; i < registrationEntryState.registrants.length; i++) {
+            const registrant = registrationEntryState.registrants[i];
+            const info = getRegistrantBasicInfo(registrant, viewModel.value.registrantForms);
+
+            if (registrant.familyGuid && !usedFamilyGuids[registrant.familyGuid] && info?.firstName && info.lastName) {
+                options.push({
+                    text: `${info.firstName} ${info.lastName}`,
+                    value: registrant.familyGuid
+                });
+
+                usedFamilyGuids[registrant.familyGuid] = true;
+            }
+        }
+
+        // Add the current person (registrant) if not already added
+        if (!usedFamilyGuids[registrationEntryState.ownFamilyGuid]) {
+            options.push({
+                text: "None",
+                value: registrationEntryState.ownFamilyGuid
+            });
+        }
+
+        return options;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Prefill in the registrar form fields based on the admin's settings */
+    function prefillRegistrar(): void {
+        isRegistrarPanelShown.value = true;
+
+        // If the option is to prompt or use the current person, prefill the current person if available
+        if (currentPerson.value &&
+            (viewModel.value.registrarOption === RegistrarOption.UseLoggedInPerson || viewModel.value.registrarOption === RegistrarOption.PromptForRegistrar)) {
+            registrar.value.nickName = currentPerson.value.nickName || currentPerson.value.firstName || "";
+            registrar.value.lastName = currentPerson.value.lastName || "";
+            registrar.value.email = currentPerson.value.email || "";
+            registrar.value.familyGuid = viewModel.value.currentPersonFamilyGuid || null;
+            return;
+        }
+
+        if (viewModel.value.registrarOption === RegistrarOption.PromptForRegistrar) {
+            return;
+        }
+
+        // If prefill or first-registrant, then the first registrants info is used (as least as a starting point)
+        if (viewModel.value.registrarOption === RegistrarOption.PrefillFirstRegistrant || viewModel.value.registrarOption === RegistrarOption.UseFirstRegistrant) {
+            const firstRegistrantInfo = getRegistrantBasicInfo(firstRegistrant.value, viewModel.value.registrantForms);
+            registrar.value.nickName = firstRegistrantInfo.firstName;
+            registrar.value.lastName = firstRegistrantInfo.lastName;
+            registrar.value.email = firstRegistrantInfo.email;
+            registrar.value.familyGuid = firstRegistrant.value.familyGuid;
+
+            const hasAllInfo = (!!registrar.value.nickName) && (!!registrar.value.lastName) && (!!registrar.value.email);
+
+            if (hasAllInfo && viewModel.value.registrarOption === RegistrarOption.UseFirstRegistrant) {
+                isRegistrarPanelShown.value = false;
+            }
+
+            return;
+        }
+    }
+
+    /** Event handler for the family being updated. */
+    function onUpdateFamilyGuid(guid: Guid): void {
+        registrar.value.familyGuid = guid;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(currentPerson, () => {
+        prefillRegistrar();
+    }, {
+        immediate: true
+    });
+
+    // #endregion
+</script>

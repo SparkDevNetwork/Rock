@@ -42,7 +42,7 @@
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, PersistSession, getRegistrantBasicInfo, use } from "./utils.partial";
     import CostSummary from "./costSummary.partial.obs";
     import DiscountCodeForm from "./discountCodeForm.partial.obs";
-    import Registrar from "./registrar.partial";
+    import Registrar from "./registrar.partial.obs";
     import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo } from "./types.partial";
     import { Guid } from "@Obsidian/Types";
 
