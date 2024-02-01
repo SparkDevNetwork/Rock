@@ -90,7 +90,7 @@
 
         valueBuilder.addTextValue("Sync Linked Activity", props.modelValue?.enableAttendance ? "Yes": "No");
 
-        valueBuilder.addTextValue("Linked Activity", props.modelValue?.structureTypeDisplay ?? "None");
+        valueBuilder.addTextValue("Linked Activity", props.modelValue?.structureTypeDisplay || "None");
 
         return valueBuilder.build();
     });

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -147,6 +147,9 @@ namespace Rock.Workflow.Action.CheckIn
         {
             var personGroups = person.GetGroupTypes( loadSelectedOnly ).SelectMany( gt => gt.GetGroups( loadSelectedOnly ) ).ToList();
 
+            var anyAvailableGroups = false;
+            var anyAvailableSchedules = false;
+
             foreach ( var group in personGroups )
             {
                 var kioskGroup = kioskGroupTypeLookup.GetValueOrNull( group.Group.GroupTypeId )?.KioskGroups?.Where( g => g.Group.Id == group.Group.Id && g.IsCheckInActive )
@@ -156,6 +159,8 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     continue;
                 }
+
+                anyAvailableGroups = true;
 
                 var groupType = GroupTypeCache.Get( group.Group.GroupTypeId );
 
@@ -240,8 +245,25 @@ namespace Rock.Workflow.Action.CheckIn
 
                             person.PossibleSchedules.Add( checkInSchedule );
                         }
+
+                        if ( !excludeSchedule )
+                        {
+                            anyAvailableSchedules = true;
+                        }
                     }
                 }
+            }
+
+            // If this person has no groups or schedules available, set their "No Option Reason".
+            if ( !anyAvailableGroups )
+            {
+                person.NoOptionReason = "No Matching Groups Found";
+            }
+            else if ( !anyAvailableSchedules )
+            {
+                // Using "Locations" rather than "Schedules" within this message makes more sense
+                // here, since we're showing this message to individuals attempting to check in.
+                person.NoOptionReason = "No Locations Available";
             }
         }
 

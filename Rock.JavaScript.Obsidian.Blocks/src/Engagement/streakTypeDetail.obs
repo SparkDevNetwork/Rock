@@ -7,6 +7,7 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="title"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -63,6 +64,7 @@
 
     const streakTypeViewBag = ref(config.entity);
     const streakTypeEditBag = ref<StreakTypeBag>({} as StreakTypeBag);
+    const rebuildButtonEnabled = ref<boolean>(streakTypeViewBag.value?.isActive === true);
 
     const entityTypeGuid = EntityType.StreakType;
 
@@ -98,6 +100,10 @@
      */
     const panelName = computed((): string => {
         return streakTypeViewBag.value?.name ?? "";
+    });
+
+    const title = computed((): string => {
+        return streakTypeViewBag.value?.name ?? "Streak Type";
     });
 
     /**
@@ -147,7 +153,7 @@
         if(panelMode.value != DetailPanelMode.View) {
             return [];
         }
-        return [
+        const footerActionsPanelActions: PanelAction[] = [
         {
             iconCssClass: "fa fa-medal",
             title: "Achievements",
@@ -171,15 +177,19 @@
             handler: () => {
                 window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ExclusionsPage] ?? "");
             }
-        },
-        {
+        }];
+        if(streakTypeViewBag.value?.structureType === 0 || streakTypeViewBag.value?.structureEntity != null) {
+            footerActionsPanelActions.push({
             iconCssClass: "fa fa-redo-alt",
             title: "Rebuild",
             type: "danger",
             handler: () => {
                 onRebuild();
-            }
-        }];
+            },
+            disabled: !rebuildButtonEnabled.value
+        });
+        }
+        return footerActionsPanelActions;
     });
 
     // #endregion
@@ -205,6 +215,7 @@
 
         if (result.isSuccess && result.data) {
             rebuildActionSuccessMessage.value = result.data;
+            rebuildButtonEnabled.value = false;
             return true;
         }
         else {
