@@ -79,7 +79,7 @@
     import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
 
     const store = useStore();
-    const steps = {
+    const steps: Record<Step, Step> = {
         [Step.Intro]: Step.Intro,
         [Step.RegistrationStartForm]: Step.RegistrationStartForm,
         [Step.PerRegistrantForms]: Step.PerRegistrantForms,
@@ -117,8 +117,8 @@
 
     // #region Values
 
-    const secondsBeforeExpiration = ref(-1);
-    const hasSessionRenewalSuccess = ref(false);
+    const secondsBeforeExpiration = ref<number>(-1);
+    const hasSessionRenewalSuccess = ref<boolean>(false);
     const registrationEntryState = ref<RegistrationEntryState>({
         steps: steps,
         viewModel: config,
@@ -204,9 +204,11 @@
 
         return 0;
     });
+
     const uppercaseRegistrantTerm = computed<string>(() => {
         return StringFilter.toTitleCase(config.registrantTerm ?? "");
     });
+
     const currentRegistrantTitle = computed<string>(() => {
         const ordinal = NumberFilter.toOrdinal(registrationEntryState.value.currentRegistrantIndex + 1);
         let title = StringFilter.toTitleCase(
@@ -220,6 +222,7 @@
 
         return title;
     });
+
     const stepTitleHtml = computed<string>(() => {
         if (currentStep.value === Step.RegistrationStartForm) {
             return config.registrationAttributeTitleStart ?? "";
@@ -276,7 +279,7 @@
             const registrant = registrationEntryState.value.registrants[i];
             const info = getRegistrantBasicInfo(registrant, config.registrantForms);
 
-            if (info?.firstName && info?.lastName) {
+            if (info?.firstName && info.lastName) {
                 items.push({
                     key: `Registrant-${registrant.guid}`,
                     title: info.firstName,
@@ -396,6 +399,8 @@
     /** The user requested an extension in time and it was granted */
     function onSessionRenewalSuccess(): void {
         hasSessionRenewalSuccess.value = true;
+
+        // TODO JMH Should this be `nextTick`?
         setTimeout(() => hasSessionRenewalSuccess.value = false, 5000);
     }
 
@@ -403,63 +408,49 @@
         await persistSession(false);
         registrationEntryState.value.currentStep = hasPreAttributes ? Step.RegistrationStartForm : Step.PerRegistrantForms;
         registrationEntryState.value.navBack = false;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onRegistrationStartPrevious(): Promise<void> {
         await persistSession(false);
         registrationEntryState.value.currentStep = Step.Intro;
         registrationEntryState.value.navBack = true;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onRegistrationStartNext(): Promise<void> {
         await persistSession(false);
         registrationEntryState.value.currentStep = Step.PerRegistrantForms;
         registrationEntryState.value.navBack = false;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onRegistrantPrevious(): Promise<void> {
         await persistSession(false);
         registrationEntryState.value.currentStep = hasPreAttributes ? Step.RegistrationStartForm : Step.Intro;
         registrationEntryState.value.navBack = true;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onRegistrantNext(): Promise<void> {
         await persistSession(false);
         registrationEntryState.value.currentStep = hasPostAttributes ? Step.RegistrationEndForm : Step.Review;
         registrationEntryState.value.navBack = false;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onRegistrationEndPrevious(): Promise<void> {
         await persistSession(false);
         registrationEntryState.value.currentStep = Step.PerRegistrantForms;
         registrationEntryState.value.navBack = true;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onRegistrationEndNext(): Promise<void> {
         await persistSession(false);
         registrationEntryState.value.currentStep = Step.Review;
         registrationEntryState.value.navBack = false;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onSummaryPrevious(): Promise<void> {
@@ -475,9 +466,7 @@
             registrationEntryState.value.currentStep = Step.PerRegistrantForms;
         }
         registrationEntryState.value.navBack = true;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     function onSummaryNext(): void {
@@ -488,25 +477,24 @@
             registrationEntryState.value.currentStep = Step.Success;
         }
         registrationEntryState.value.navBack = false;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onPaymentPrevious(): Promise<void> {
         await persistSession(false);
         registrationEntryState.value.currentStep = Step.Review;
         registrationEntryState.value.navBack = true;
-
-        // Wait for the form to be rendered and then scroll to the top.
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     function onPaymentNext(): void {
         registrationEntryState.value.currentStep = Step.Success;
         registrationEntryState.value.navBack = false;
+        scrollToTopAfterNextRender();
+    }
 
-        // Wait for the form to be rendered and then scroll to the top.
+    function scrollToTopAfterNextRender(): void {
+        // TODO JMH Should this be `nextTick`?
         setTimeout(() => smoothScrollToTop(), 10);
     }
 
@@ -542,15 +530,15 @@
 
     // #endregion
 
+    // Provide the injectables for child components.
+    provide(CurrentRegistrationEntryState, registrationEntryState.value);
+    provide(GetPersistSessionArgs, getRegistrationEntryBlockArgs);
+    provide(PersistSession, persistSession);
+
     onMounted(() => {
         if (config.loginRequiredToRegister && !currentPerson.value) {
             store.redirectToLogin();
         }
     });
-
-    // Provide the injectables for child components.
-    provide(CurrentRegistrationEntryState, registrationEntryState.value);
-    provide(GetPersistSessionArgs, getRegistrationEntryBlockArgs);
-    provide(PersistSession, persistSession);
 
 </script>

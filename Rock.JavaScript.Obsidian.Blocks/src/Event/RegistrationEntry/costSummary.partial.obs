@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, ref, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import { GetPersistSessionArgs, CurrentRegistrationEntryState, use } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";

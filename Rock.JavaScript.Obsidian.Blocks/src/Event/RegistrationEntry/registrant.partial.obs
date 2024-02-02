@@ -64,7 +64,6 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed, onUpdated, PropType, ref, watch } from "vue";
     import FeeField from "./feeField.partial.obs";
     import RegistrantAttributeField from "./registrantAttributeField.partial.obs";
@@ -80,6 +79,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
     import { useStore } from "@Obsidian/PageState";
+    import { Guid } from "@Obsidian/Types";
     import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
