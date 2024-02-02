@@ -115,6 +115,7 @@ export const ServiceJob = {
     DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
     /** The post update data migration job to chop the Email Preference Entry block. */
     DataMigrations162ChopEmailPreferenceEntry: "AE07C80A-80A4-48FD-908C-56DDB1CAA322",
+    /** The post update data migration job to remove legacy preference attributes. */
     DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
