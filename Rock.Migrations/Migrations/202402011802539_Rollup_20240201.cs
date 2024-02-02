@@ -89,8 +89,11 @@ namespace Rock.Migrations
             Sql( $@"
 DECLARE @FieldTypeId [int] = (SELECT [Id]
                               FROM [FieldType]
-                              WHERE [Assembly] = 'org.sparkdevnetwork.PrayerRequestWorkflowAction'
-                                  AND [Class] = 'Rock.Field.Types.PrayerRequestFieldType');
+                              WHERE [Guid] = '{SystemGuid.FieldType.PRAYER_REQUEST}'
+                                  OR (
+                                      [Assembly] = 'org.sparkdevnetwork.PrayerRequestWorkflowAction'
+                                      AND [Class] = 'Rock.Field.Types.PrayerRequestFieldType')
+                                  );
 DECLARE @Now [datetime] = GETDATE();
 IF @FieldTypeId IS NULL
 BEGIN
