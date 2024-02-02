@@ -16,26 +16,26 @@
         <TextColumn name="title"
                     title="Title"
                     field="title"
-                    :filter="textValueFilter"
+                    :filter="config?.options?.showFilters ? textValueFilter : undefined"
                     width="25%" />
 
         <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn"
                         name="startDateTime"
                         :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                         field="startDateTime"
-                        :filter="dateValueFilter" />
+                        :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
 
         <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn"
                         name="expireDateTime"
                         title="Expire"
                         field="expireDateTime"
-                        :filter="dateValueFilter" />
+                        :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
 
         <NumberColumn v-if="config?.options?.showPriorityColumn"
                       name="priority"
                       title="Priority"
                       field="priority"
-                      :filter="numberValueFilter"
+                      :filter="config?.options?.showFilters ? numberValueFilter : undefined"
                       width="125" />
 
         <AttributeColumns :attributes="config?.gridDefinition?.attributeFields ?? []" />
@@ -44,7 +44,7 @@
                      name="status"
                      title="Status"
                      field="status"
-                     :filter="pickExistingValueFilter"
+                     :filter="config?.options?.showFilters ? pickExistingValueFilter : undefined"
                      :textSource="ContentChannelItemStatusDescription"
                      :classSource="statusLabelColors" />
 
@@ -146,8 +146,8 @@
      * Called when the Add button has been clicked by the indivual.
      */
     function onAddItem(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        if (config.navigationUrls?.[NavigationUrlKey.NewItemPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.NewItemPage].replace("((Key))", "0");
         }
     }
 

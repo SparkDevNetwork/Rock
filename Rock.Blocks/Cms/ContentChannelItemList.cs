@@ -118,6 +118,7 @@ namespace Rock.Blocks.Cms
         private static class NavigationUrlKey
         {
             public const string DetailPage = "DetailPage";
+            public const string NewItemPage = "NewItemPage";
         }
 
         #endregion Keys
@@ -170,6 +171,8 @@ namespace Rock.Blocks.Cms
                 IncludeTime = contentChannel.ContentChannelType.IncludeTime,
                 IsManuallyOrdered = contentChannel.ItemsManuallyOrdered,
                 DateType = contentChannel.ContentChannelType.DateRangeType,
+                ContentChannelId = contentChannel.Id,
+                ShowFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean(),
 
                 ShowReorderColumn = !isFiltered && contentChannel.ItemsManuallyOrdered,
                 ShowPriorityColumn = !contentChannel.ContentChannelType.DisablePriority
@@ -203,9 +206,16 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var contentChannel = GetContentChannel();
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ContentChannelItemId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ContentItemId", "((Key))" ),
+                [NavigationUrlKey.NewItemPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
+                {
+                    ["ContentItemId"] = "((Key))",
+                    ["ContentChannelId"] = contentChannel.Id.ToString()
+                } )
             };
         }
 
@@ -241,7 +251,7 @@ namespace Rock.Blocks.Cms
 
             if ( person != null )
             {
-                query.Where( i => i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.PersonId == person.Id );
+                query = query.Where( i => i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.PersonId == person.Id );
             }
 
             return query;

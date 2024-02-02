@@ -32,6 +32,10 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemList
 
         public ContentChannelDateType DateType { get; set; }
 
+        public int ContentChannelId { get; set; }
+
+        public bool ShowFilters { get; set; }
+
         public bool ShowReorderColumn { get; set; }
 
         public bool ShowPriorityColumn { get; set; }
