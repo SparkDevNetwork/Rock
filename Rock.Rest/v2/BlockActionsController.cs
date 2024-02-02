@@ -230,7 +230,7 @@ namespace Rock.Rest.v2
                                     var api = new CloudflareApi();
                                     var ipAddress = rockBlock.RequestContext.ClientInformation.IpAddress;
 
-                                    rockBlock.RequestContext.IsCaptchaValid = !await api.IsTurnstileTokenValidAsync( actionContext.Captcha, ipAddress );
+                                    rockBlock.RequestContext.IsCaptchaValid = await api.IsTurnstileTokenValidAsync( actionContext.Captcha, ipAddress );
                                 }
                             }
                             else
