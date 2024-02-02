@@ -90,7 +90,6 @@
         amountFormatted: string;
     };
 
-
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
