@@ -56,7 +56,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [Export( typeof( IndexComponent ) )]
     [ExportMetadata( "ComponentName", "Lucene.Net 4.8" )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "C06ABF4E-6178-45DB-BC26-A057124D98A7")]
+    [Rock.SystemGuid.EntityTypeGuid( "C06ABF4E-6178-45DB-BC26-A057124D98A7" )]
     public class Lucene : IndexComponent
     {
         #region Private Fields
@@ -265,7 +265,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 {
                     string hitJson = hitJsonField.GetStringValue();
                     JObject jObject = JObject.Parse( hitJson );
-                    Type indexModelType = Type.GetType( $"{ jObject["IndexModelType"].ToStringSafe() }, { jObject["IndexModelAssembly"].ToStringSafe() }" );
+                    Type indexModelType = Type.GetType( $"{jObject["IndexModelType"].ToStringSafe()}, {jObject["IndexModelAssembly"].ToStringSafe()}" );
 
                     if ( indexModelType != null )
                     {
@@ -290,6 +290,30 @@ namespace Rock.UniversalSearch.IndexComponents
 
             return null;
         }
+
+        /// <summary>
+        /// Adds a property to the <see cref="Lucene.Index.MappingProperties"/> of the provided index with default values.
+        /// If one of the provided property names already exists it is ignored.
+        /// </summary>
+        /// <param name="index">The <see cref="Lucene.Index"/> whose <seealso cref="Lucene.Index.MappingProperties"/> will be added to.</param>
+        /// <param name="propertyNames">One or more property names to add with a default TypeMappingProperties.</param>
+        private void AddDynamicPropertyTypeMappingsToIndex( Index index, params string[] propertyNames )
+        {
+            foreach ( var propertyName in propertyNames )
+            {
+                var dynamicPropertyIndexMapping = new TypeMappingProperties
+                {
+                    IsCompileTimeProperty = false,
+                    Name = propertyName,
+                    Boost = 1,
+                    IndexType = IndexType.Indexed,
+                    Analyzer = string.Empty
+                };
+
+                index.MappingProperties.AddOrIgnore( propertyName, dynamicPropertyIndexMapping );
+            }
+        }
+
         #endregion
 
         #region Properties
@@ -519,14 +543,9 @@ namespace Rock.UniversalSearch.IndexComponents
                 {
                     // get entities search model name
                     var entityType = entityTypeService.GetNoTracking( entityId );
-                    indexModelTypes.Add( entityType.IndexModelType );
+                    var entityRelatedIndexes = IndexHelper.GetRelatedIndexes( entityType.IndexModelType );
 
-                    // check if this is a person model, if so we need to add two model types one for person and the other for businesses
-                    // wish there was a cleaner way to do this
-                    if ( entityType.Guid == SystemGuid.EntityType.PERSON.AsGuid() )
-                    {
-                        indexModelTypes.Add( typeof( BusinessIndex ) );
-                    }
+                    indexModelTypes.AddRange( entityRelatedIndexes );
                 }
 
                 indexModelTypes = indexModelTypes.Distinct().ToList();
@@ -897,16 +916,30 @@ namespace Rock.UniversalSearch.IndexComponents
                 }
 
                 var index = _indexes[mappingType];
+                var docIndexModelBase = document as IndexModelBase;
+
+                // Verify that the index contains TypeMappingProperties for the dynamic properties.
+                // Unfortunately because we don't have an actual instance in the CreateIndex method
+                // we need to perform this check with each document/object we index.
+                var dynamicProperties = docIndexModelBase.GetProperties();
+                var compileTimePropertyCount = index.MappingProperties.Values.Where( m => m.IsCompileTimeProperty ).Count();
+                var expectedPropertyCount = compileTimePropertyCount + dynamicProperties.Count();
+
+                if ( index.MappingProperties.Count != expectedPropertyCount )
+                {
+                    AddDynamicPropertyTypeMappingsToIndex( index, dynamicProperties.Select( kv => kv.Key ).ToArray() );
+                }
 
                 Document doc = new Document();
                 foreach ( var typeMappingProperty in index.MappingProperties.Values )
                 {
-                    TextField textField = new TextField( typeMappingProperty.Name, documentType.GetProperty( typeMappingProperty.Name ).GetValue( document, null ).ToStringSafe().ToLower(), global::Lucene.Net.Documents.Field.Store.YES );
+                    // Use the docIndexModelBase.GetValue method to ensure even dynamic property values are returned.
+                    var propertyValue = docIndexModelBase.GetValue( typeMappingProperty.Name ).ToStringSafe().ToLower();
+                    TextField textField = new TextField( typeMappingProperty.Name, propertyValue, global::Lucene.Net.Documents.Field.Store.YES );
                     textField.Boost = typeMappingProperty.Boost;
                     doc.Add( textField );
                 }
 
-                IndexModelBase docIndexModelBase = document as IndexModelBase;
                 string indexValue = LuceneID( mappingType, docIndexModelBase.Id );
                 doc.AddStringField( "type", mappingType, global::Lucene.Net.Documents.Field.Store.YES );
                 doc.AddStringField( "id", docIndexModelBase.Id.ToString(), global::Lucene.Net.Documents.Field.Store.YES );
@@ -933,6 +966,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 ExceptionLogService.LogException( ex, context2 );
             }
         }
+
         #endregion
 
         #region Constructors and Destructors
@@ -1026,6 +1060,13 @@ namespace Rock.UniversalSearch.IndexComponents
             /// The analyzer.
             /// </value>
             public string Analyzer { get; set; }
+
+            /// <summary>
+            /// If the property name corresponding to TypeMappingProperties was defined by the class at compile time
+            /// rather than a property added dynamically at runtime this will be <c>True</c>.
+            /// Defaults to true to preserve current behavior.
+            /// </summary>
+            public bool IsCompileTimeProperty { get; set; } = true;
         }
         #endregion
     }

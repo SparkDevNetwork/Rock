@@ -547,20 +547,18 @@ namespace Rock.UniversalSearch.IndexComponents
                     // Get entities search model name.
                     var entityType = EntityTypeCache.Get( entityId );
                     entityTypeList.Add( entityType );
-                    indexModelTypes.Add( entityType.IndexModelType );
-                    var indexName = entityType.IndexModelType.Name.ToLower();
 
-                    if ( _client.Indices.Exists( indexName ).Exists )
-                    {
-                        indexNameList.Add( indexName );
-                    }
+                    // A single entity type may span multiple indexes (e.g. Person & Business).
+                    var entityRelatedIndexes = IndexHelper.GetRelatedIndexes( entityType.IndexModelType );
 
-                    // Check if this is a person model, if so we need to add two model types one for person and the other for businesses.
-                    if ( entityType.Guid == SystemGuid.EntityType.PERSON.AsGuid() )
+                    indexModelTypes.AddRange( entityRelatedIndexes );
+
+                    foreach ( var entityTypeRelatedIndex in entityRelatedIndexes )
                     {
-                        if ( _client.Indices.Exists( "businessindex" ).Exists )
+                        var indexName = entityTypeRelatedIndex.Name.ToLower();
+                        if ( _client.Indices.Exists( indexName ).Exists )
                         {
-                            indexNameList.Add( "businessindex" );
+                            indexNameList.Add( indexName );
                         }
                     }
                 }
