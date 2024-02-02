@@ -4,19 +4,19 @@
     <NotificationBox v-else alertType="danger">Could not load the control for person field {{ fieldType }}.</NotificationBox>
 </template>
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed, PropType } from "vue";
-    import AddressControl from "@Obsidian/Controls/addressControl.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
-    import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
-    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
-    import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
-    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType } from "./types.partial";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         field: {

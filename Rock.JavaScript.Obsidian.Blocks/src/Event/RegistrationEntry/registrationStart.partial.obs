@@ -21,11 +21,11 @@
 </template>
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
 

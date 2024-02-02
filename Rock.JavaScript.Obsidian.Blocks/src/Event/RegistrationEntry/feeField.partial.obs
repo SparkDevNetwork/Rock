@@ -11,17 +11,17 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import NumberUpDownGroup from "@Obsidian/Controls/numberUpDownGroup.obs";
-    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-    import { areEqual } from "@Obsidian/Utility/guid";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types.partial";
-    import { updateRefValue } from "@Obsidian/Utility/component";
     import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {

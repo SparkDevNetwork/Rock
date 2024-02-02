@@ -50,15 +50,15 @@
 </template>
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { SessionRenewalResult } from "./types.partial";
+    import { CurrentRegistrationEntryState, use } from "./utils.partial";
     import Dialog from "@Obsidian/Controls/dialog.obs";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { toWord } from "@Obsidian/Utility/numberUtils";
-    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
-    import { SessionRenewalResult } from "./types.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { CurrentRegistrationEntryState, use } from "./utils.partial";
+    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         isSessionExpired: {

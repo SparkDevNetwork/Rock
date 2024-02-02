@@ -42,14 +42,14 @@
 </template>
 <script setup lang="ts">
     import { computed, nextTick, ref, watch } from "vue";
+    import { RegistrationEntryBlockViewModel } from "./types.partial";
+    import { CurrentRegistrationEntryState, getDefaultRegistrantInfo, getForcedFamilyGuid, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";
-    import { CurrentRegistrationEntryState, getDefaultRegistrantInfo, getForcedFamilyGuid, use } from "./utils.partial";
-    import { RegistrationEntryBlockViewModel } from "./types.partial";
     import { useStore } from "@Obsidian/PageState";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";
 
     const emit = defineEmits<{
         (e: "next"): void

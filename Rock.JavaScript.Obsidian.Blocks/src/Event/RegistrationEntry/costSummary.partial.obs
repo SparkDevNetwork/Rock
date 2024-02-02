@@ -43,49 +43,14 @@
         </div>
         <div class="row fee-totals">
             <div class="col-sm-offset-8 col-sm-4 fee-totals-options">
-                <div class="form-group static-control">
-                    <label class="control-label">Total Cost</label>
-                    <div class="control-wrapper">
-                        <div class="form-control-static">
-                            {{ discountedTotalFormatted }}
-                        </div>
-                    </div>
-                </div>
-                <div v-if="amountPreviouslyPaid" class="form-group static-control">
-                    <label class="control-label">Previously Paid</label>
-                    <div class="control-wrapper">
-                        <div class="form-control-static">
-                            {{ amountPreviouslyPaidFormatted }}
-                        </div>
-                    </div>
-                </div>
+                <StaticFormControl v-model="discountedTotalFormatted" label="Total Cost" />
+                <StaticFormControl v-if="amountPreviouslyPaid" v-model="amountPreviouslyPaidFormatted" label="Previously Paid" />
                 <template v-if="showAmountDueToday && maxAmountCanBePaid">
-                    <div class="form-group static-control">
-                        <label class="control-label">Minimum Due Today</label>
-                        <div class="control-wrapper">
-                            <div class="form-control-static">
-                                {{ amountDueTodayFormatted }}
-                            </div>
-                        </div>
-                    </div>
+                    <StaticFormControl v-model="amountDueTodayFormatted" label="Minimum Due Today" />
                     <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.amountToPayToday" formGroupClasses="form-right" inputGroupClasses="input-width-md amount-to-pay" />
-                    <div class="form-group static-control">
-                        <label class="control-label">Amount Remaining After Payment</label>
-                        <div class="control-wrapper">
-                            <div class="form-control-static">
-                                {{ amountRemainingFormatted }}
-                            </div>
-                        </div>
-                    </div>
+                    <StaticFormControl v-model="amountRemainingFormatted" label="Amount Remaining After Payment" />
                 </template>
-                <div v-else class="form-group static-control">
-                    <label class="control-label">Amount Due</label>
-                    <div class="control-wrapper">
-                        <div class="form-control-static">
-                            {{ maxAmountCanBePaidFormatted }}
-                        </div>
-                    </div>
-                </div>
+                <StaticFormControl v-else v-model="maxAmountCanBePaidFormatted" label="Amount Due" />
             </div>
         </div>
     </Loading>
@@ -93,13 +58,14 @@
 
 <script setup lang="ts">
     import { computed, onMounted, ref, watch } from "vue";
-    import Loading from "@Obsidian/Controls/loading.obs";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
-    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use } from "./utils.partial";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
 
     enum RegistrationCostSummaryType {
         Cost = 0,

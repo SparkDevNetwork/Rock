@@ -35,16 +35,16 @@
 </template>
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { CurrentRegistrationEntryState, GetPersistSessionArgs, PersistSession, getRegistrantBasicInfo, use } from "./utils.partial";
     import CostSummary from "./costSummary.partial.obs";
     import DiscountCodeForm from "./discountCodeForm.partial.obs";
     import Registrar from "./registrar.partial.obs";
     import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo } from "./types.partial";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, PersistSession, getRegistrantBasicInfo, use } from "./utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();

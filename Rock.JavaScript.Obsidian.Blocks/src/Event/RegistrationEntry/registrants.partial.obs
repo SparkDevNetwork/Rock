@@ -15,10 +15,10 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import Registrant from "./registrant.partial.obs";
+    import { RegistrantInfo } from "./types.partial";
     import { CurrentRegistrationEntryState, PersistSession, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { smoothScrollToTop } from "@Obsidian/Utility/page";
-    import { RegistrantInfo } from "./types.partial";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const persistSession = use(PersistSession);

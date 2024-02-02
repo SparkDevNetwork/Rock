@@ -188,9 +188,6 @@ namespace Rock.Blocks.Event
 
         #region Obsidian Block Type Overrides
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => base.ObsidianFileUrl.ReplaceIfEndsWith( ".obs", string.Empty );
-
         /// <summary>
         /// Gets the property values that will be sent to the browser.
         /// </summary>

@@ -38,6 +38,7 @@
                     </div>
                 </template>
             </ProgressTracker>
+            {{ currentStep }}
             <RegistrationEntryIntro v-if="currentStep === steps.intro" @next="onIntroNext" />
             <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious" />
             <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
@@ -86,7 +87,7 @@
         [Step.Review]: Step.Review,
         [Step.Payment]: Step.Payment,
         [Step.Success]: Step.Success
-    } as const;
+    };
 
     const invokeBlockAction = useInvokeBlockAction();
     const config = useConfigurationValues<RegistrationEntryBlockViewModel>();

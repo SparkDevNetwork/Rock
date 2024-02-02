@@ -15,10 +15,10 @@
 </template>
 
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed } from "vue";
-    import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm.obs";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
+    import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm.obs";
+    import { Guid } from "@Obsidian/Types";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
 

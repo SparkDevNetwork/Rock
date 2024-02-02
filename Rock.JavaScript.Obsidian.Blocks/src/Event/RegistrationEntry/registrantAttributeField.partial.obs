@@ -6,12 +6,12 @@
     </template>
 </template>
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed, PropType, ref, watch } from "vue";
-    import RockField from "@Obsidian/Controls/rockField.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
     import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { Guid } from "@Obsidian/Types";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";

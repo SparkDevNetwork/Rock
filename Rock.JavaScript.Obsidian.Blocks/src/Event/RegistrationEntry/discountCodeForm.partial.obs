@@ -16,12 +16,12 @@
 </template>
 <script setup lang="ts">
     import { computed, onMounted, ref, watch } from "vue";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { RegistrationEntryBlockViewModel } from "./types.partial";
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 
     type CheckDiscountCodeResult = {
         discountCode: string;

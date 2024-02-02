@@ -46,22 +46,20 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed, ref, watch } from "vue";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from "./types.partial";
+    import { CurrentRegistrationEntryState, getRegistrantBasicInfo, use } from "./utils.partial";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, use } from "./utils.partial";
-    import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel, RegistrantBasicInfo } from "./types.partial";
     import { useStore } from "@Obsidian/PageState";
+    import { Guid } from "@Obsidian/Types";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const store = useStore();
-
-    const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const registrationEntryState = use(CurrentRegistrationEntryState);
 
     // #region Values
@@ -101,21 +99,6 @@
     /** Should the checkbox allowing the registrar to choose to update their email address be shown? */
     const doShowUpdateEmailOption = computed<boolean>(() => {
         return !viewModel.value.forceEmailUpdate && !!currentPerson.value?.email;
-    });
-
-    /** Info about the registrants made available by .FirstName instead of by field guid */
-    const registrantInfos = computed<RegistrantBasicInfo[]>(() => {
-        return registrationEntryState.registrants.map(r => getRegistrantBasicInfo(r, viewModel.value.registrantForms));
-    });
-
-    /** The registrant term - plural if there are more than 1 */
-    const registrantTerm = computed<string>(() => {
-        return registrantInfos.value.length === 1 ? viewModel.value.registrantTerm : viewModel.value.pluralRegistrantTerm;
-    });
-
-    /** The name of this registration instance */
-    const instanceName = computed<string>(() => {
-        return viewModel.value.instanceName;
     });
 
     /** The radio options that are displayed to allow the user to pick another person that this
