@@ -16,9 +16,8 @@
     import { computed, ref } from "vue";
     import Registrant from "./registrant.partial.obs";
     import { RegistrantInfo } from "./types.partial";
-    import { CurrentRegistrationEntryState, PersistSession, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, PersistSession, scrollToTopAfterNextRender, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { smoothScrollToTop } from "@Obsidian/Utility/page";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const persistSession = use(PersistSession);
@@ -47,10 +46,7 @@
         registrationEntryState.currentRegistrantIndex--;
         registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
         await persistSession();
-
-        // Wait for the form to be rendered and then scroll to the top.
-        // TODO JMH Should this be `nextTick`?
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     /** The event handler when the user clicks to move to the next registrant */
@@ -70,10 +66,7 @@
         registrationEntryState.currentRegistrantIndex++;
         registrationEntryState.currentRegistrantFormIndex = 0;
         await persistSession();
-
-        // Wait for the form to be rendered and then scroll to the top.
-        // TODO JMH Should this be `nextTick`?
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     /** Copy the common values from the first registrant to the others */

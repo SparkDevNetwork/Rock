@@ -64,7 +64,6 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { List } from "@Obsidian/Utility/linq";
-    import { smoothScrollToTop } from "@Obsidian/Utility/page";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import RegistrationEntryIntro from "./RegistrationEntry/intro.partial.obs";
@@ -76,7 +75,7 @@
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntryPayment from "./RegistrationEntry/payment.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
-    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
+    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo, scrollToTopAfterNextRender } from "./RegistrationEntry/utils.partial";
 
     const store = useStore();
     const steps: Record<Step, Step> = {
@@ -400,7 +399,6 @@
     function onSessionRenewalSuccess(): void {
         hasSessionRenewalSuccess.value = true;
 
-        // TODO JMH Should this be `nextTick`?
         setTimeout(() => hasSessionRenewalSuccess.value = false, 5000);
     }
 
@@ -491,11 +489,6 @@
         registrationEntryState.value.currentStep = Step.Success;
         registrationEntryState.value.navBack = false;
         scrollToTopAfterNextRender();
-    }
-
-    function scrollToTopAfterNextRender(): void {
-        // TODO JMH Should this be `nextTick`?
-        setTimeout(() => smoothScrollToTop(), 10);
     }
 
     // #endregion
