@@ -62,7 +62,7 @@
     import RegistrantAttributeField from "./registrantAttributeField.partial.obs";
     import RegistrantPersonField from "./registrantPersonField.partial.obs";
     import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from "./types.partial";
-    import { CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, scrollToTopAfterNextRender, use } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
     import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
@@ -77,7 +77,6 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-    import { smoothScrollToTop } from "@Obsidian/Utility/page";
     import StringFilter from "@Obsidian/Utility/stringUtils";
     import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
@@ -179,7 +178,7 @@
     });
 
     const isNextVisible = computed<boolean>(() => {
-        return !isSignatureForm;
+        return !isSignatureForm.value;
     });
 
     /** The filtered list of forms that will be shown */
@@ -320,12 +319,7 @@
     });
 
     const firstName = computed<string>(() => {
-        // TODO JMH revert this
-        const name = getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms).firstName;
-
-        console.log("firstName updated to ", name);
-
-        return name;
+        return getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms).firstName;
     });
 
     const familyMember = computed<RegistrationEntryBlockFamilyMemberViewModel | null>(() => {
@@ -376,9 +370,7 @@
         }
 
         registrationEntryState.currentRegistrantFormIndex--;
-
-        // Wait for the previous form to be rendered and then scroll to the top
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     async function onNext(): Promise<void> {
@@ -426,9 +418,7 @@
         }
 
         registrationEntryState.currentRegistrantFormIndex++;
-
-        // Wait for the next form to be rendered and then scroll to the top
-        setTimeout(() => smoothScrollToTop(), 10);
+        scrollToTopAfterNextRender();
     }
 
     function updateFeeItemsRemaining(): void {
