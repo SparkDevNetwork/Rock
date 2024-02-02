@@ -4,7 +4,7 @@
         <RockForm @submit="onNext" :formResetKey="formResetKey">
             <template v-if="isDataForm">
                 <template v-if="currentFormIndex === 0">
-                    <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
+                    <div v-if="familyOptions.length > 1" class="well">
                         <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
                     </div>
                     <div v-if="familyMemberOptions.length" class="row">
@@ -320,7 +320,12 @@
     });
 
     const firstName = computed<string>(() => {
-        return getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms).firstName;
+        // TODO JMH revert this
+        const name = getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms).firstName;
+
+        console.log("firstName updated to ", name);
+
+        return name;
     });
 
     const familyMember = computed<RegistrationEntryBlockFamilyMemberViewModel | null>(() => {
