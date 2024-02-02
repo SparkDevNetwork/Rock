@@ -538,6 +538,7 @@
     <Compile Include="Utility\ValueProviders\RockRouteDataValueProviderFactory.cs" />
     <Compile Include="v2\UtilitiesController.PersonPreferences.cs" />
     <Compile Include="v2\UtilitiesController.cs" />
+    <Compile Include="Validation\RockBodyModelValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
