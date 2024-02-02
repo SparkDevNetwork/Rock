@@ -157,8 +157,7 @@ export default defineComponent({
                 registrar: registrationEntryState.registrar,
                 registrants: registrationEntryState.registrants,
                 amountToPayNow: registrationEntryState.amountToPayToday,
-                registrationGuid: viewModel.session?.registrationGuid || null,
-                isCaptchaValid: registrationEntryState.isCaptchValid
+                registrationGuid: viewModel.session?.registrationGuid || null
             };
         };
 

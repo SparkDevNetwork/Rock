@@ -338,8 +338,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountMaxRegistrants": 0,
         "discountPercentage": 0.0,
         "previouslyPaid": 0.0,
-        "savedAccountGuid": null,
-        "isCaptchaValid": false
+        "savedAccountGuid": null
     },
     "isUnauthorized": false,
     "instructionsHtml": "",

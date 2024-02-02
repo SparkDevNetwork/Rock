@@ -16,6 +16,7 @@
 //
 
 import { computed, defineComponent, inject, ref } from "vue";
+import Captcha from "@Obsidian/Controls/captcha.obs";
 import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
 import RockValidation from "@Obsidian/Controls/rockValidation.obs";
@@ -30,10 +31,12 @@ import DiscountCodeForm from "./discountCodeForm.partial";
 import Registrar from "./registrar.partial";
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { Guid } from "@Obsidian/Types";
+import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Summary",
     components: {
+        Captcha,
         RockButton,
         EmailBox,
         RockForm,
@@ -49,6 +52,9 @@ export default defineComponent({
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
         const invokeBlockAction = useInvokeBlockAction();
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
+
+        const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
+        const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
 
         /** Is there an AJAX call in-flight? */
         const loading = ref(false);
@@ -82,6 +88,8 @@ export default defineComponent({
         }
 
         return {
+            captchaElement,
+            disableCaptchaSupport,
             loading,
             hasError,
             submitErrorMessage,
@@ -169,9 +177,16 @@ export default defineComponent({
         async submit(): Promise<boolean> {
             this.submitErrorMessage = "";
 
+            const actionContext: BlockActionContextBag = {};
+
+            if (this.captchaElement) {
+                actionContext.captcha = await this.captchaElement.getToken();
+                this.captchaElement.refreshToken();
+            }
+
             const result = await this.invokeBlockAction<RegistrationEntryBlockSuccessViewModel>("SubmitRegistration", {
                 args: this.getRegistrationEntryBlockArgs()
-            });
+            }, actionContext);
 
             if (result.isError || !result.data) {
                 this.submitErrorMessage = result.errorMessage || "Unknown error";
@@ -226,6 +241,8 @@ export default defineComponent({
                 </li>
             </ul>
         </div>
+
+        <Captcha v-if="!disableCaptchaSupport" ref="captchaElement" />
 
         <NotificationBox v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</NotificationBox>
 

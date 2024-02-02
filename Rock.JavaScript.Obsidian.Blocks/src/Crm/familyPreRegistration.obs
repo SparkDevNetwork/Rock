@@ -453,7 +453,7 @@
                                                  @removeChild="onRemoveChild" />
                     </Panel>
 
-                    <Captcha v-if="!disableCaptcha" v-model="isCaptchaValid"></Captcha>
+                    <Captcha v-if="!disableCaptcha" ref="captchaElement"></Captcha>
                 </template>
 
                 <template #footerActions>
@@ -515,8 +515,8 @@
     import { FamilyPreRegistrationScheduleDateBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationScheduleDateBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -539,13 +539,13 @@
     const isUsernameAvailable = ref<boolean | null | undefined>();
     const confirmPassword = ref<string>("");
     const address = ref<AddressControlBag | undefined>(config.address ?? undefined);
-    const isCaptchaValid = ref("");
     const familyAttributeValues = ref<Record<string, string>>(config.familyAttributeValues || {});
     const createAccount = ref<CreateAccountRequest>({
         username: "",
         password: ""
     });
     const disableCaptcha = ref(config.disableCaptchaSupport);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
     const adultLabel = config.adultLabel || "Adult";
     const childLabel = config.childLabel || "Child";
 
@@ -566,8 +566,6 @@
 
     const isAdult1Entered = computed<boolean>(() => !!adult1.firstName.trim());
     const isAdult2Entered = computed<boolean>(() => !!adult2.firstName.trim());
-    const isAdult2FirstNameEntered = computed<boolean>(() => !!adult2.firstName.trim());
-    const isAdult2LastNameEntered = computed<boolean>(() => !!adult2.lastName.trim());
 
     // Validation rules are executed in order and stop on the first failure.
     // Even though the first rule is a required rule,
@@ -650,14 +648,20 @@
                 createAccount: createAccount.value,
                 familyAttributeValues: familyAttributeValues.value,
                 familyGuid: config.familyGuid,
-                isCaptchaValid: asBoolean(isCaptchaValid.value),
                 plannedVisitDate: plannedVisitDate.value,
                 scheduleGuid: scheduleGuid.value
             };
 
             clearErrors();
 
-            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag });
+            const actionContext: BlockActionContextBag = {};
+
+            if (captchaElement.value) {
+                actionContext.captcha = await captchaElement.value.getToken();
+                captchaElement.value.refreshToken();
+            }
+
+            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag }, actionContext);
 
             if (result.isSuccess && result?.data) {
                 if (result.data.errors?.length) {

@@ -32,14 +32,6 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         public AccountEntryPersonInfoBag PersonInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the solved captcha is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the solved captcha is valid; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsCaptchaValid { get; set; }
-
-        /// <summary>
         /// Gets or sets the encrypted state.
         /// </summary>
         /// <remarks>
