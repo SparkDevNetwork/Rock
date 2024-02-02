@@ -32,9 +32,6 @@ export type AccountEntryRegisterRequestBox = {
     /** Gets or sets the passwordless verification code. */
     code?: string | null;
 
-    /** Gets or sets a value indicating whether the solved captcha is valid. */
-    isCaptchaValid: boolean;
-
     /** Gets or sets the person info. */
     personInfo?: AccountEntryPersonInfoBag | null;
 

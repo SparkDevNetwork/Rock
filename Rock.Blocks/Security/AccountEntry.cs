@@ -371,6 +371,13 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult ForgotUsername( AccountEntryForgotUsernameRequestBag bag )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var person = GetSelectedDuplicatePerson( bag.PersonId, bag.Email, bag.LastName, rockContext );
@@ -1189,22 +1196,6 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
-        /// Determines if the full name is valid.
-        /// </summary>
-        /// <param name="box">The register request box.</param>
-        /// <returns><c>true</c> if valid; otherwise, <c>false</c>.</returns>
-        private bool IsCaptchaValid( AccountEntryRegisterRequestBox box )
-        {
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
-            if ( !disableCaptcha && !box.IsCaptchaValid )
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Determines if the new person is old enough for a new account.
         /// </summary>
         /// <param name="box">The register request box.</param>
@@ -1287,12 +1278,6 @@ namespace Rock.Blocks.Security
             {
                 // The API consumer isn't sending the request properly.
                 errorMessage = "Request missing";
-                return false;
-            }
-
-            if ( !IsCaptchaValid( box ) )
-            {
-                errorMessage = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
                 return false;
             }
 

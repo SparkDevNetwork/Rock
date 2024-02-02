@@ -479,6 +479,13 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult SubmitRegistration( RegistrationEntryBlockArgs args )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var context = GetContext( rockContext, args, out var errorMessage );
@@ -2794,7 +2801,6 @@ namespace Rock.Blocks.Event
                     AmountToPayNow = session.AmountToPayNow,
                     DiscountCode = session.DiscountCode,
                     FieldValues = session.FieldValues,
-                    IsCaptchaValid = true,
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
                     RegistrationGuid = session.RegistrationGuid, // See engineering note from 9/7/2022 above.
@@ -4055,12 +4061,6 @@ namespace Rock.Blocks.Event
             if ( args.Registrar == null )
             {
                 errorMessage = "A registrar is required";
-                return null;
-            }
-
-            if ( !disableCaptcha && !args.IsCaptchaValid )
-            {
-                errorMessage = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
                 return null;
             }
 
