@@ -352,7 +352,19 @@ namespace Rock.UniversalSearch.IndexComponents
             createIndexRequest.Settings.Analysis = new Analysis
             {
                 Normalizers = new Normalizers(),
-                Analyzers = new Analyzers()
+                Analyzers = new Analyzers(),
+                TokenFilters = new TokenFilters
+                {
+                    // Include an ASCII-Folding Filter that allows searching
+                    // with and without the accented characters (PreserveOriginal).
+                    {
+                        "asciifolding_preserve",
+                        new AsciiFoldingTokenFilter
+                        {
+                            PreserveOriginal = true
+                        }
+                    }
+                }
             };
 
             /* 04/19/2022 MDP 
@@ -365,7 +377,11 @@ namespace Rock.UniversalSearch.IndexComponents
              */
 
             createIndexRequest.Settings.Analysis.Analyzers.Add( "whitespace_lowercase", new CustomAnalyzer { Tokenizer = "whitespace", Filter = new string[1] { "lowercase" } } );
-
+            // When the RockIndexField Attribute requests asciifolding - use an analyzer that includes that filter
+            // along with the standard tokenizer as recommended by ElasticSearch.
+            // https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-standard-analyzer.html.
+            createIndexRequest.Settings.Analysis.Analyzers.Add( "asciifolding", new CustomAnalyzer { Tokenizer = "standard", Filter = new string[2] { "lowercase", "asciifolding_preserve" } } );
+            
             createIndexRequest.Settings.NumberOfShards = GetAttributeValue( AttributeKey.ShardCount ).AsInteger();
 
             var typeMapping = new TypeMapping();

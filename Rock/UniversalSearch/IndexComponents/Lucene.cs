@@ -853,32 +853,43 @@ namespace Rock.UniversalSearch.IndexComponents
 
                             typeMapping.Add( propertyName, typeMappingProperty );
 
-                            if ( typeMappingProperty.Analyzer?.ToLowerInvariant() == "snowball" )
+                            var lowerCaseInvariantAnalyzer = typeMappingProperty.Analyzer?.ToLowerInvariant();
+
+                            switch ( lowerCaseInvariantAnalyzer )
                             {
-                                fieldAnalyzers[typeMappingProperty.Name] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
-                                {
-                                    var tokenizer = new StandardTokenizer( _matchVersion, reader );
-                                    var sbpff = new SnowballPorterFilterFactory( new Dictionary<string, string>() { { "language", "English" } } );
-                                    sbpff.Inform( new ClasspathResourceLoader( documentType ) );
-                                    TokenStream result = sbpff.Create( new StandardTokenizer( _matchVersion, reader ) );
-                                    return new TokenStreamComponents( tokenizer, result ); // https://github.com/apache/lucenenet/blob/master/src/Lucene.Net.Analysis.Common/Analysis/Snowball/SnowballAnalyzer.cs
-                                } );
-                            }
-                            else if ( typeMappingProperty.Analyzer?.ToLowerInvariant() == "whitespace" )
-                            {
-                                fieldAnalyzers[propertyName] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
-                                {
-                                    var tokenizer = new WhitespaceTokenizer( _matchVersion, reader );
-                                    TokenStream result = new StandardFilter( _matchVersion, tokenizer );
-                                    return new TokenStreamComponents( tokenizer, result );
-                                } );
+                                case "snowball":
+                                    fieldAnalyzers[typeMappingProperty.Name] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
+                                    {
+                                        var tokenizer = new StandardTokenizer( _matchVersion, reader );
+                                        var sbpff = new SnowballPorterFilterFactory( new Dictionary<string, string>() { { "language", "English" } } );
+                                        sbpff.Inform( new ClasspathResourceLoader( documentType ) );
+                                        TokenStream result = sbpff.Create( new StandardTokenizer( _matchVersion, reader ) );
+                                        return new TokenStreamComponents( tokenizer, result ); // https://github.com/apache/lucenenet/blob/master/src/Lucene.Net.Analysis.Common/Analysis/Snowball/SnowballAnalyzer.cs
+                                    } );
+                                    break;
+                                case "whitespace":
+                                    fieldAnalyzers[propertyName] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
+                                    {
+                                        var tokenizer = new WhitespaceTokenizer( _matchVersion, reader );
+                                        TokenStream result = new StandardFilter( _matchVersion, tokenizer );
+                                        return new TokenStreamComponents( tokenizer, result );
+                                    } );
+                                    break;
+                                case "asciifolding":
+                                    fieldAnalyzers[propertyName] = Analyzer.NewAnonymous( createComponents: ( fieldName, reader ) =>
+                                    {
+                                        var tokenizer = new WhitespaceTokenizer( _matchVersion, reader );
+                                        TokenStream result = new ASCIIFoldingFilter( tokenizer );
+                                        return new TokenStreamComponents( tokenizer, result );
+                                    } );
+                                    break;
                             }
                         }
-                    }
 
-                    index.MappingProperties = typeMapping;
-                    index.FieldAnalyzers = fieldAnalyzers;
-                    _indexes[indexName] = index;
+                        index.MappingProperties = typeMapping;
+                        index.FieldAnalyzers = fieldAnalyzers;
+                        _indexes[indexName] = index;
+                    }
                 }
             }
             catch ( Exception ex )
