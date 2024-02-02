@@ -22,7 +22,7 @@
                     </template>
                 </ItemsWithPreAndPostHtml>
 
-                <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
+                <div v-if="!isWaitList && isLastForm && viewModel.fees.length && viewModel.fees.some(f => !!f.items.length)" class="well registration-additional-options">
                     <h4>{{ pluralFeeTerm }}</h4>
                     <template v-for="fee in viewModel.fees" :key="fee.guid">
                         <FeeField :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
