@@ -3421,19 +3421,6 @@ namespace Rock.Lava
         /// <summary>
         /// Returns information about the current page.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="parm">The type of information to return about the current page.</param>
-        /// <returns>Information about the current page or null if not found.</returns>
-        [Obsolete( "Use the Page() method that takes an ILavaRenderContext parameter." )]
-        [RockObsolete( "1.16.3" )]
-        public static object Page( string input, string parm )
-        {
-            return Page( null, input, parm );
-        }
-
-        /// <summary>
-        /// Returns information about the current page.
-        /// </summary>
         /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
         /// <param name="parm">The type of information to return about the current page.</param>
@@ -3571,19 +3558,6 @@ namespace Rock.Lava
             }
 
             HttpContext.Current.Response.AddHeader( headerName, input );
-        }
-
-        /// <summary>
-        /// Returns the specified page parameter.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="parm">The parameter name.</param>
-        /// <returns>The page parameter or null if not found.</returns>
-        [Obsolete( "Use the PageParameter() method that takes an ILavaRenderContext parameter." )]
-        [RockObsolete( "1.16.3" )]
-        public static object PageParameter( string input, string parm )
-        {
-            return PageParameter( null, input, parm );
         }
 
         /// <summary>
