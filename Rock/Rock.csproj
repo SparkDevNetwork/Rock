@@ -1054,6 +1054,7 @@
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Blocks\AdaptiveMessageBlock.cs" />
     <Compile Include="Lava\Blocks\ObserveBlock.cs" />
+    <Compile Include="Lava\Filters\LavaFilters.Identifiers.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Text.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
     <Compile Include="Lava\Filters\LavaFilters.EntitySets.cs" />

@@ -162,7 +162,9 @@
     <Compile Include="Core\Shortcodes\DynamicShortcodeTag.cs" />
     <Compile Include="Core\Shortcodes\LavaShortcodeBase.cs" />
     <Compile Include="Core\Tags\LavaTagInfo.cs" />
+    <Compile Include="Engine\LavaExceptionExtensions.cs" />
     <Compile Include="Engine\LavaNullFileSystem.cs" />
+    <Compile Include="Engine\LavaElementRenderException.cs" />
     <Compile Include="Engine\LavaRenderException.cs" />
     <Compile Include="Engine\LavaParseException.cs" />
     <Compile Include="Engine\LavaToLiquidTemplateConverter.cs" />
