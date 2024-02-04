@@ -1046,6 +1046,7 @@
     <Compile Include="Lava\Blocks\ObserveBlock.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Text.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
+    <Compile Include="Lava\Filters\LavaFilters.EntitySets.cs" />
     <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.cs" />
