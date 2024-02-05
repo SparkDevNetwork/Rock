@@ -23,7 +23,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockSession
     /// </summary>
-    public sealed class RegistrationEntryBlockSession : IRegistrationEntryBlockArgs
+    public sealed class RegistrationEntrySessionBag : IRegistrationEntryBlockArgs
     {
         /// <summary>
         /// Gets or sets the registration session unique identifier.
@@ -47,7 +47,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registrants.
         /// </value>
-        public List<RegistrantInfo> Registrants { get; set; }
+        public List<RegistrantBag> Registrants { get; set; }
 
         /// <summary>
         /// Gets or sets the field values.
@@ -63,7 +63,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registrar.
         /// </value>
-        public RegistrarInfo Registrar { get; set; }
+        public RegistrarBag Registrar { get; set; }
 
         /// <summary>
         /// Gets or sets the gateway token.

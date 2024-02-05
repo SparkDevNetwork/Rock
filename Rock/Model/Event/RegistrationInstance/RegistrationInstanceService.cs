@@ -149,7 +149,8 @@ namespace Rock.Model
         /// <param name="context">The context.</param>
         /// <param name="registration">The registration.</param>
         /// <returns></returns>
-        public List<RegistrationCostSummaryInfo> GetRegistrationCostSummaryInfo( RegistrationContext context, RegistrationEntryBlockArgs registration )
+        // TODO JMH Do we need to keep a RockObsolete overload with the previously named RegistrationEntryBlockArgs view model class?
+        public List<RegistrationCostSummaryInfo> GetRegistrationCostSummaryInfo( RegistrationContext context, RegistrationEntryArgsBag registration )
         {
             var minimumInitialPaymentPerRegistrant = context.RegistrationSettings.PerRegistrantMinInitialPayment;
             var defaultPaymentAmountPerRegistrant = context.RegistrationSettings.PerRegistrantDefaultInitialPayment;

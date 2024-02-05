@@ -61,7 +61,7 @@
     import FeeField from "./feeField.partial.obs";
     import RegistrantAttributeField from "./registrantAttributeField.partial.obs";
     import RegistrantPersonField from "./registrantPersonField.partial.obs";
-    import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from "./types.partial";
+import { RegistrationFieldSource } from "./types.partial";
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, scrollToTopAfterNextRender, use } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
@@ -78,13 +78,16 @@
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import StringFilter from "@Obsidian/Utility/stringUtils";
+    import { RequiredNonNullable } from "@Obsidian/Utility/typeUtils";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
+    import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         currentRegistrant: {
-            type: Object as PropType<RegistrantInfo>,
+            type: Object as PropType<RequiredNonNullable<RegistrantBag>>,
             required: true
         },
         isWaitList: {
@@ -153,7 +156,7 @@
         return false;
     });
 
-    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+    const viewModel = computed<RegistrationEntryInitializationBox>(() => {
         return registrationEntryState.viewModel;
     });
 
@@ -422,7 +425,7 @@
     }
 
     function updateFeeItemsRemaining(): void {
-        // calculate fee items remaining
+        // Calculate fee items remaining.
         const combinedFeeItemQuantities: Record<Guid, number> = {};
 
         // Get all of the fee items in use for all registrants and add them to the combinedFeeItemQuantities Record
@@ -435,7 +438,7 @@
                         combinedFeeItemQuantities[feeItemGuid] = feeItemsUsed;
                     }
                     else {
-                        combinedFeeItemQuantities[feeItemGuid] = combinedFeeItemQuantities[feeItemGuid] + feeItemsUsed;
+                        combinedFeeItemQuantities[feeItemGuid] += feeItemsUsed;
                     }
                 }
             }
@@ -444,7 +447,7 @@
         // Now go through all of the fee items and update the usage by subtracting the the total in combinedFeeItemQuantities from the originalCountRemaining
         const fees = registrationEntryState.viewModel.fees;
         for (const fee of fees) {
-            if (fee !== undefined && fee !== null && fee.items !== undefined && fee.items !== null && fee.items.length > 0) {
+            if (fee?.items?.length) {
                 for (const feeItem of fee.items) {
                     if (feeItem.countRemaining === null || feeItem.countRemaining === undefined || feeItem.originalCountRemaining === undefined || feeItem.originalCountRemaining === null) {
                         continue;
@@ -512,20 +515,16 @@
                     const familyMemberValue = familyMember.value.fieldValues[field.guid];
 
                     if (!familyMemberValue) {
-                        // TODO JMH Should we be manipulating props directly???
                         delete props.currentRegistrant.fieldValues[field.guid];
                     }
                     else if (typeof familyMemberValue === "object") {
-                        // TODO JMH Should we be manipulating props directly???
                         props.currentRegistrant.fieldValues[field.guid] = { ...familyMemberValue };
                     }
                     else {
-                        // TODO JMH Should we be manipulating props directly???
                         props.currentRegistrant.fieldValues[field.guid] = familyMemberValue;
                     }
                 }
                 else {
-                    // TODO JMH Should we be manipulating props directly???
                     delete props.currentRegistrant.fieldValues[field.guid];
                 }
             }
@@ -549,11 +548,10 @@
 
                         if (currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
                             if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
-                                // TODO JMH Should we be manipulating props directly???
+                                // Is this even possible? It was already determined that currentFormFieldValue is undefined | null | "".
                                 props.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
                             }
                             else {
-                                // TODO JMH Should we be manipulating props directly???
                                 props.currentRegistrant.fieldValues[field.guid] = formFieldValue;
                             }
                         }
@@ -582,7 +580,7 @@
         }
     }
 
-    function onSetPersonGuid(guid: Guid | string[]): void {
+    function onSetPersonGuid(guid: Guid | Guid[]): void {
         if (Array.isArray(guid)) {
             // This should not happen, but if multiple values are selected, then default to the first selection.
             guid = guid[0];
@@ -614,7 +612,6 @@
                         continue;
                     }
 
-                    // TODO JMH Should we be manipulating props directly???
                     delete props.currentRegistrant.fieldValues[field.guid];
                 }
             }

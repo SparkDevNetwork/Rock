@@ -27,7 +27,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockViewModel
+    public sealed class RegistrationEntryInitializationBox
     {
         /// <summary>
         /// Gets or sets the current person family unique identifier.
@@ -58,7 +58,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registration entry block arguments.
         /// </value>
-        public RegistrationEntryBlockSession Session { get; set; }
+        public RegistrationEntrySessionBag Session { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is unauthorized.
@@ -106,7 +106,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registrant forms.
         /// </value>
-        public IEnumerable<RegistrationEntryBlockFormViewModel> RegistrantForms { get; set; }
+        public List<RegistrationEntryFormBag> RegistrantForms { get; set; }
 
         /// <summary>
         /// Gets or sets the fees.
@@ -114,7 +114,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The fees.
         /// </value>
-        public IEnumerable<RegistrationEntryBlockFeeViewModel> Fees { get; set; }
+        public List<RegistrationEntryFeeBag> Fees { get; set; }
 
         /// <summary>
         /// Gets or sets the family members.
@@ -122,7 +122,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The family members.
         /// </value>
-        public IEnumerable<RegistrationEntryBlockFamilyMemberViewModel> FamilyMembers { get; set; }
+        public List<RegistrationEntryFamilyMemberBag> FamilyMembers { get; set; }
 
         /// <summary>
         /// Gets or sets the registration attribute title end.
@@ -146,7 +146,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registration attributes start.
         /// </value>
-        public IEnumerable<PublicAttributeBag> RegistrationAttributesStart { get; set; }
+        public List<PublicAttributeBag> RegistrationAttributesStart { get; set; }
 
         /// <summary>
         /// Gets or sets the registration attributes end.
@@ -154,7 +154,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registration attributes end.
         /// </value>
-        public IEnumerable<PublicAttributeBag> RegistrationAttributesEnd { get; set; }
+        public List<PublicAttributeBag> RegistrationAttributesEnd { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum registrants.
@@ -298,7 +298,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The success view model.
         /// </value>
-        public RegistrationEntryBlockSuccessViewModel SuccessViewModel { get; set; }
+        public RegistrationEntrySuccessBag SuccessViewModel { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [start at beginning].
@@ -445,12 +445,36 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowSmsOptIn { get; set; }
+
+        /// <summary>
+        /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPaymentPlanAllowed { get; set; }
+        
+        /// <summary>
+        /// Gets the payment deadline date.
+        /// </summary>
+        /// <value>
+        /// The payment deadline date.
+        /// </value>
+        public DateTime? PaymentDeadlineDate { get; set; }
+
+        /// <summary>
+        /// Gets the collection of payment plan frequencies from which a registrant can select.
+        /// </summary>
+        /// <value>
+        /// The collection of payment plan frequencies from which a registrant can select.
+        /// </value>
+        public List<ListItemBag> PaymentPlanFrequencies { get; set; }
     }
 
     /// <summary>
     /// RegistrationEntryBlockFamilyMemberViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockFamilyMemberViewModel
+    public sealed class RegistrationEntryFamilyMemberBag
     {
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -482,13 +506,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The field values.
         /// </value>
-        public IDictionary<Guid, object> FieldValues { get; set; }
+        public Dictionary<Guid, object> FieldValues { get; set; }
     }
 
     /// <summary>
     /// RegistrationEntryBlockFeeViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockFeeViewModel
+    public sealed class RegistrationEntryFeeBag
     {
         /// <summary>
         /// Gets or sets the name.
@@ -512,7 +536,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The items.
         /// </value>
-        public IEnumerable<RegistrationEntryBlockFeeItemViewModel> Items { get; set; }
+        public List<RegistrationEntryFeeItemBag> Items { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allow multiple].
@@ -550,7 +574,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockFeeItemViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockFeeItemViewModel
+    public sealed class RegistrationEntryFeeItemBag
     {
         /// <summary>
         /// Gets or sets the name.
@@ -596,7 +620,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockFormViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockFormViewModel
+    public sealed class RegistrationEntryFormBag
     {
         /// <summary>
         /// Gets or sets the fields.
@@ -604,13 +628,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The fields.
         /// </value>
-        public IEnumerable<RegistrationEntryBlockFormFieldViewModel> Fields { get; set; }
+        public List<RegistrationEntryFormFieldBag> Fields { get; set; }
     }
 
     /// <summary>
     /// RegistrationEntryBlockFormFieldViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockFormFieldViewModel
+    public sealed class RegistrationEntryFormFieldBag
     {
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -666,7 +690,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The visibility rules.
         /// </value>
-        public IEnumerable<RegistrationEntryBlockVisibilityViewModel> VisibilityRules { get; set; }
+        public List<RegistrationEntryVisibilityBag> VisibilityRules { get; set; }
 
         /// <summary>
         /// Gets or sets the pre HTML.
@@ -704,7 +728,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockVisibilityViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockVisibilityViewModel
+    public sealed class RegistrationEntryVisibilityBag
     {
         /// <summary>
         /// Gets or sets the compared to registration template form field unique identifier.
@@ -724,7 +748,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockLineItemViewModel
     /// </summary>
-    public sealed class RegistrationEntryBlockLineItemViewModel
+    public sealed class RegistrationEntryLineItemBag
     {
         /// <summary>
         /// Gets or sets the key.
@@ -779,7 +803,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// Defines the data required to display a signature document on a single
     /// registrant form.
     /// </summary>
-    public sealed class RegistrationEntrySignatureDocument
+    public sealed class RegistrationEntrySignatureDocumentBag
     {
         /// <summary>
         /// Gets or sets the unique identifier of a previously-signed signature document that should be reused for this registrant.

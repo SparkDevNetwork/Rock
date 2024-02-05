@@ -18,9 +18,13 @@
 import { Guid } from "@Obsidian/Types";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { newGuid } from "@Obsidian/Utility/guid";
-import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
+import { RegistrantsSameFamily, RegistrationPersonFieldType, RegistrationFieldSource, RegistrationEntryState } from "./types.partial";
 import { InjectionKey, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
+import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
+import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -31,7 +35,7 @@ const unknownSingleFamilyGuid = newGuid();
  * @param currentPerson
  * @param viewModel
  */
-export function getForcedFamilyGuid(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryBlockViewModel): string | null {
+export function getForcedFamilyGuid(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryInitializationBox): string | null {
     return (currentPerson && viewModel.registrantsSameFamily === RegistrantsSameFamily.Yes) ?
         (viewModel.currentPersonFamilyGuid || unknownSingleFamilyGuid) :
         null;
@@ -43,7 +47,7 @@ export function getForcedFamilyGuid(currentPerson: CurrentPersonBag | null, view
  * @param viewModel
  * @param familyGuid
  */
-export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryBlockViewModel, familyGuid: Guid | null): RegistrantInfo {
+export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryInitializationBox, familyGuid: Guid | null): RegistrantBag {
     const forcedFamilyGuid = getForcedFamilyGuid(currentPerson, viewModel);
 
     if (forcedFamilyGuid) {
@@ -62,11 +66,11 @@ export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null,
         feeItemQuantities: {},
         guid: newGuid(),
         personGuid: null
-    } as RegistrantInfo;
+    } as RegistrantBag;
 }
 
-export function getRegistrantBasicInfo(registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[]): RegistrantBasicInfo {
-    const fields = registrantForms?.reduce((acc, f) => acc.concat(f.fields), [] as RegistrationEntryBlockFormFieldViewModel[]) || [];
+export function getRegistrantBasicInfo(registrant: RegistrantBag, registrantForms: RegistrationEntryFormBag[]): RegistrantBag {
+    const fields = registrantForms?.reduce((acc, f) => acc.concat(f.fields), [] as RegistrationEntryFormFieldBag[]) || [];
 
     const firstNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
     const lastNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
@@ -103,7 +107,7 @@ export function use<T>(key: string | InjectionKey<T>): T {
 export const CurrentRegistrationEntryState: InjectionKey<RegistrationEntryState> = Symbol("registration-entry-state");
 
 /** An injection key to provide the function that gets the args to persist the session. */
-export const GetPersistSessionArgs: InjectionKey<() => RegistrationEntryBlockArgs> = Symbol("get-persist-session-args");
+export const GetPersistSessionArgs: InjectionKey<() => RegistrationEntryArgsBag> = Symbol("get-persist-session-args");
 
 /** An injection key to provide the function that persists the session. */
 export const PersistSession: InjectionKey<(force?: boolean) => Promise<void>> = Symbol("persist-session");

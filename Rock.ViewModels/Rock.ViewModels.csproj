@@ -361,11 +361,11 @@
     <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceVisualizerTypeBag.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\LiveExperiencesOccurrencesInitializationBox.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\LiveExperience\LiveExperienceInitializationBox.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResult.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryArgsBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySessionBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySuccessBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryInitializationBox.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResultBag.cs" />
     <Compile Include="Blocks\Group\GroupSchedulePreference\AssignmentScheduleAndLocationBag.cs" />
     <Compile Include="Blocks\Group\GroupScheduleSignup\PersonScheduleSignupDataBag.cs" />
     <Compile Include="Blocks\Group\GroupScheduleSignup\PersonScheduleSignupBag.cs" />

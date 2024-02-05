@@ -256,7 +256,8 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetFirstName( RegistrationSettings settings, Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        // TODO JMH Do we need to keep a RockObsolete overload with the previously named RegistrantInfo view model class?
+        public string GetFirstName( RegistrationSettings settings, Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.FirstName );
 
@@ -282,7 +283,7 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetLastName( RegistrationSettings settings, Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        public string GetLastName( RegistrationSettings settings, Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.LastName );
 
@@ -308,7 +309,7 @@ namespace Rock.Model
         /// <param name="settings">The settings.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        public string GetEmail( RegistrationSettings settings, Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        public string GetEmail( RegistrationSettings settings, Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo )
         {
             object value = GetPersonFieldValue( settings, registrantInfo, RegistrationPersonFieldType.Email );
 
@@ -335,7 +336,7 @@ namespace Rock.Model
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="personFieldType">Type of the person field.</param>
         /// <returns></returns>
-        public object GetPersonFieldValue( RegistrationSettings settings, Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationPersonFieldType personFieldType )
+        public object GetPersonFieldValue( RegistrationSettings settings, Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, RegistrationPersonFieldType personFieldType )
         {
             if ( settings != null && settings.Forms != null )
             {
@@ -497,6 +498,11 @@ namespace Rock.Model
             ExternalGatewayMerchantId = instance.ExternalGatewayMerchantId;
             FinancialAccountId = instance.AccountId;
             BatchNamePrefix = template.BatchNamePrefix;
+
+            // Payment plan
+            IsPaymentPlanAllowed = template.IsPaymentPlanAllowed;
+            PaymentDeadlineDate = instance.PaymentDeadlineDate;
+            PaymentPlanFrequencyValueIds = template.PaymentPlanFrequencyValueIdsCollection.ToList();
 
             // Group placement
             GroupTypeId = template.GroupTypeId;
@@ -770,6 +776,30 @@ namespace Rock.Model
         /// The batch name prefix.
         /// </value>
         public string BatchNamePrefix { get; private set; }
+
+        /// <summary>
+        /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPaymentPlanAllowed { get; private set; }
+        
+        /// <summary>
+        /// Gets the payment deadline date.
+        /// </summary>
+        /// <value>
+        /// The payment deadline date.
+        /// </value>
+        public DateTime? PaymentDeadlineDate { get; private set; }
+
+        /// <summary>
+        /// Gets the collection of payment plan frequency value IDs from which a registrant can select.
+        /// </summary>
+        /// <value>
+        /// The collection of payment plan frequency value IDs from which a registrant can select.
+        /// </value>
+        public List<int> PaymentPlanFrequencyValueIds { get; private set; }
 
         /// <summary>
         /// Gets the group type identifier.

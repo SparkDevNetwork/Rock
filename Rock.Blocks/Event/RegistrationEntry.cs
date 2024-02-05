@@ -328,7 +328,7 @@ namespace Rock.Blocks.Event
         /// <param name="sessionUrl">The URL currently being viewed in the browser for the registration session.</param>
         /// <returns>The URL to redirect the person to in order to handle payment.</returns>
         [BlockAction]
-        public BlockActionResult GetPaymentRedirect( RegistrationEntryBlockArgs args, string returnUrl )
+        public BlockActionResult GetPaymentRedirect( RegistrationEntryArgsBag args, string returnUrl )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -384,7 +384,7 @@ namespace Rock.Blocks.Event
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult PersistSession( RegistrationEntryBlockArgs args )
+        public BlockActionResult PersistSession( RegistrationEntryArgsBag args )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -415,7 +415,7 @@ namespace Rock.Blocks.Event
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult CalculateCost( RegistrationEntryBlockArgs args )
+        public BlockActionResult CalculateCost( RegistrationEntryArgsBag args )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -452,7 +452,7 @@ namespace Rock.Blocks.Event
                     return ActionNotFound();
                 }
 
-                return ActionOk( new SessionRenewalResult
+                return ActionOk( new SessionRenewalResultBag
                 {
                     SpotsSecured = registrationSession.RegistrationCount,
                     ExpirationDateTime = registrationSession.ExpirationDateTime.ToRockDateTimeOffset()
@@ -466,7 +466,7 @@ namespace Rock.Blocks.Event
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SubmitRegistration( RegistrationEntryBlockArgs args )
+        public BlockActionResult SubmitRegistration( RegistrationEntryArgsBag args )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -495,9 +495,9 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="args">The registration entry arguments.</param>
         /// <param name="registrantGuid">The unique identifier of the registrant to build the signature document.</param>
-        /// <returns>An instance of <see cref="RegistrationEntrySignatureDocument"/> that contains the document information.</returns>
+        /// <returns>An instance of <see cref="RegistrationEntrySignatureDocumentBag"/> that contains the document information.</returns>
         [BlockAction]
-        public BlockActionResult GetSignatureDocumentData( RegistrationEntryBlockArgs args, Guid registrantGuid )
+        public BlockActionResult GetSignatureDocumentData( RegistrationEntryArgsBag args, Guid registrantGuid )
         {
             var registrantInfo = args.Registrants.FirstOrDefault( r => r.Guid == registrantGuid );
 
@@ -567,7 +567,7 @@ namespace Rock.Blocks.Event
                 bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
                 var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamily?.Guid ?? Guid.Empty, isCreatedAsRegistrant, rockContext );
 
-                var response = new RegistrationEntrySignatureDocument();
+                var response = new RegistrationEntrySignatureDocumentBag();
 
                 // If the person happens to have a valid signature document of the required template, we may skip this step.
                 if ( documentTemplate.IsValidInFuture && documentTemplate.ValidityDurationInDays.HasValue )
@@ -645,7 +645,7 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Signs the document previously returned by <see cref="GetSignatureDocumentData(RegistrationEntryBlockArgs, Guid)"/>.
+        /// Signs the document previously returned by <see cref="GetSignatureDocumentData(RegistrationEntryArgsBag, Guid)"/>.
         /// </summary>
         /// <param name="args">The registration entry arguments.</param>
         /// <param name="registrantGuid">The unique identifier of the registrant this document will apply to.</param>
@@ -654,7 +654,7 @@ namespace Rock.Blocks.Event
         /// <param name="signature">The signature of the person that signed the document.</param>
         /// <returns>A string that contains the encoded signed document details.</returns>
         [BlockAction]
-        public BlockActionResult SignDocument( RegistrationEntryBlockArgs args, Guid registrantGuid, string documentHtml, string securityToken, ElectronicSignatureValueViewModel signature )
+        public BlockActionResult SignDocument( RegistrationEntryArgsBag args, Guid registrantGuid, string documentHtml, string securityToken, ElectronicSignatureValueViewModel signature )
         {
             var registrantInfo = args.Registrants.FirstOrDefault( r => r.Guid == registrantGuid );
 
@@ -713,7 +713,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrantGuid">The registrant unique identifier of the registrant</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetDefaultAttributeFieldValues( RegistrationEntryBlockArgs args, RegistrationEntryBlockFormViewModel[] forms, Guid registrantGuid )
+        public BlockActionResult GetDefaultAttributeFieldValues( RegistrationEntryArgsBag args, RegistrationEntryFormBag[] forms, Guid registrantGuid )
         {
             var registrantInfo = args.Registrants.FirstOrDefault( r => r.Guid == registrantGuid );
             var fieldValues = new Dictionary<Guid, object>();
@@ -805,11 +805,11 @@ namespace Rock.Blocks.Event
         /// <returns>The <see cref="RegistrationSession"/> or <c>null</c> if an error occurred.</returns>
         private RegistrationSession UpsertSession(
             RegistrationContext context,
-            RegistrationEntryBlockArgs args,
+            RegistrationEntryArgsBag args,
             SessionStatus sessionStatus,
             out string errorMessage )
         {
-            var sessionData = new RegistrationEntryBlockSession
+            var sessionData = new RegistrationEntrySessionBag
             {
                 AmountToPayNow = args.AmountToPayNow,
                 DiscountAmount = context.Discount?.RegistrationTemplateDiscount?.DiscountAmount ?? 0,
@@ -860,7 +860,7 @@ namespace Rock.Blocks.Event
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         /// <exception cref="Exception">There was a problem with the payment</exception>
-        private Registration SubmitRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryBlockArgs args, out string errorMessage )
+        private Registration SubmitRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args, out string errorMessage )
         {
             /*
                 8/15/2023 - JPH
@@ -1443,7 +1443,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantFirstName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        private string GetRegistrantFirstName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo )
         {
             var fields = context.RegistrationSettings.Forms.SelectMany( f => f.Fields );
             var field = fields.FirstOrDefault( f => f.PersonFieldType == RegistrationPersonFieldType.FirstName );
@@ -1456,7 +1456,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantLastName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        private string GetRegistrantLastName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo )
         {
             var fields = context.RegistrationSettings.Forms.SelectMany( f => f.Fields );
             var field = fields.FirstOrDefault( f => f.PersonFieldType == RegistrationPersonFieldType.LastName );
@@ -1469,7 +1469,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantFullName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        private string GetRegistrantFullName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo )
         {
             var firstName = GetRegistrantFirstName( context, registrantInfo );
             var lastName = GetRegistrantLastName( context, registrantInfo );
@@ -1926,7 +1926,7 @@ namespace Rock.Blocks.Event
         /// <param name="isCreatedAsRegistrant">if set to <c>true</c> [is created as registrant].</param>
         /// <param name="rockContext">The rock context for any database lookups.</param>
         /// <returns>A tuple that contains the <see cref="Person" /> object and the optional <see cref="RegistrationRegistrant" /> object.</returns>
-        private (Person person, RegistrationRegistrant registrant) GetExistingOrCreatePerson( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, Person registrar, Guid registrarFamilyGuid, bool isCreatedAsRegistrant, RockContext rockContext )
+        private (Person person, RegistrationRegistrant registrant) GetExistingOrCreatePerson( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, Person registrar, Guid registrarFamilyGuid, bool isCreatedAsRegistrant, RockContext rockContext )
         {
             RegistrationRegistrant registrant = null;
             Person person = null;
@@ -2127,7 +2127,7 @@ namespace Rock.Blocks.Event
         /// <param name="personChanges">The person history changes that were made.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns>A tuple that contains the <see cref="Campus"/> identifier and the <see cref="Location"/> object if either were found.</returns>
-        private (int? campusId, Location location, bool updateExistingCampus) UpdatePersonFromRegistrant( Person person, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, History.HistoryChangeList personChanges, RegistrationSettings settings )
+        private (int? campusId, Location location, bool updateExistingCampus) UpdatePersonFromRegistrant( Person person, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, History.HistoryChangeList personChanges, RegistrationSettings settings )
         {
             Location location = null;
             var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
@@ -2298,7 +2298,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns><c>true</c> if any attributes were modified, <c>false</c> otherwise.</returns>
-        private bool UpdatePersonAttributes( Person person, History.HistoryChangeList personChanges, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationSettings settings )
+        private bool UpdatePersonAttributes( Person person, History.HistoryChangeList personChanges, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, RegistrationSettings settings )
         {
             bool isChanged = false;
             var personAttributes = settings.Forms
@@ -2371,7 +2371,7 @@ namespace Rock.Blocks.Event
             RegistrationContext context,
             Person registrar,
             Guid registrarFamilyGuid,
-            ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo,
+            ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo,
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
@@ -2641,7 +2641,7 @@ namespace Rock.Blocks.Event
             registrantInfo.PersonGuid = person.Guid;
         }
 
-        private static (Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache>) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationTemplate template )
+        private static (Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache>) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, RegistrationTemplate template )
         {
             var attributes = new Dictionary<string, AttributeCache>();
             var attributeValues = new Dictionary<string, AttributeValueCache>();
@@ -2676,7 +2676,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrantChanges">The registrant changes that were made.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns><c>true</c> if any attributes were modified, <c>false</c> otherwise.</returns>
-        private bool UpdateRegistrantAttributes( RegistrationRegistrant registrant, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, History.HistoryChangeList registrantChanges, RegistrationSettings settings )
+        private bool UpdateRegistrantAttributes( RegistrationRegistrant registrant, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, History.HistoryChangeList registrantChanges, RegistrationSettings settings )
         {
             var isChanged = false;
             var registrantAttributeFields = settings.Forms
@@ -2726,14 +2726,14 @@ namespace Rock.Blocks.Event
         /// Gets the view model.
         /// </summary>
         /// <returns></returns>
-        private RegistrationEntryBlockViewModel GetViewModel( RockContext rockContext )
+        private RegistrationEntryInitializationBox GetViewModel( RockContext rockContext )
         {
             // Get the registration context (template, instance, actual registration (if existing))
             var context = GetContext( rockContext, out var errorMessage );
 
             if ( context is null )
             {
-                return new RegistrationEntryBlockViewModel
+                return new RegistrationEntryInitializationBox
                 {
                     RegistrationInstanceNotFoundMessage = errorMessage
                 };
@@ -2760,11 +2760,11 @@ namespace Rock.Blocks.Event
 
             var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue || session?.RegistrationGuid.HasValue == true;
             var isUnauthorized = isExistingRegistration && session == null;
-            RegistrationEntryBlockSuccessViewModel successViewModel = null;
+            RegistrationEntrySuccessBag successViewModel = null;
 
             if ( session != null )
             {
-                var args = new RegistrationEntryBlockArgs
+                var args = new RegistrationEntryArgsBag
                 {
                     AmountToPayNow = session.AmountToPayNow,
                     DiscountCode = session.DiscountCode,
@@ -2841,7 +2841,7 @@ namespace Rock.Blocks.Event
                     } )
                     .DistinctBy( gm => gm.Person.Guid )
                     .ToList()
-                    .Select( gm => new RegistrationEntryBlockFamilyMemberViewModel
+                    .Select( gm => new RegistrationEntryFamilyMemberBag
                     {
                         Guid = gm.Person.Guid,
                         FamilyGuid = gm.FamilyGuid,
@@ -2849,7 +2849,7 @@ namespace Rock.Blocks.Event
                         FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels, false )
                     } )
                     .ToList() :
-                    new List<RegistrationEntryBlockFamilyMemberViewModel>();
+                    new List<RegistrationEntryFamilyMemberBag>();
 
             // Get the instructions
             var instructions = context.RegistrationSettings.Instructions;
@@ -2866,11 +2866,11 @@ namespace Rock.Blocks.Event
 
             // Get the fees
             var feeModels = context.RegistrationSettings.Fees?.Where( f => f.IsActive ).OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
-            var fees = new List<RegistrationEntryBlockFeeViewModel>();
+            var fees = new List<RegistrationEntryFeeBag>();
 
             foreach ( var feeModel in feeModels )
             {
-                var feeViewModel = new RegistrationEntryBlockFeeViewModel
+                var feeViewModel = new RegistrationEntryFeeBag
                 {
                     Guid = feeModel.Guid,
                     Name = feeModel.Name,
@@ -2880,7 +2880,7 @@ namespace Rock.Blocks.Event
                     HideWhenNoneRemaining = feeModel.HideWhenNoneRemaining,
                     Items = feeModel.FeeItems
                         .Where( fi => fi.IsActive )
-                        .Select( fi => new RegistrationEntryBlockFeeItemViewModel
+                        .Select( fi => new RegistrationEntryFeeItemBag
                         {
                             Cost = fi.Cost,
                             Name = fi.Name,
@@ -2895,7 +2895,7 @@ namespace Rock.Blocks.Event
             }
 
             // Get forms with fields
-            var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
+            var formViewModels = new List<RegistrationEntryFormBag>();
             var allAttributeFields = formModels
                 .SelectMany( fm =>
                     fm.Fields.Where( f => !f.IsInternal && f.Attribute?.IsActive == true )
@@ -2903,15 +2903,15 @@ namespace Rock.Blocks.Event
 
             foreach ( var formModel in formModels )
             {
-                var form = new RegistrationEntryBlockFormViewModel();
+                var form = new RegistrationEntryFormBag();
                 var fieldModels = formModel.Fields
                     .Where( f => !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
                     .OrderBy( f => f.Order );
-                var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
+                var fields = new List<RegistrationEntryFormFieldBag>();
 
                 foreach ( var fieldModel in fieldModels )
                 {
-                    var field = new RegistrationEntryBlockFormFieldViewModel();
+                    var field = new RegistrationEntryFormFieldBag();
                     var attribute = fieldModel.AttributeId.HasValue ? AttributeCache.Get( fieldModel.AttributeId.Value ) : null;
 
                     field.Guid = fieldModel.Guid;
@@ -2961,7 +2961,7 @@ namespace Rock.Blocks.Event
 
                             var comparisonValue = fieldType.GetPublicFilterValue( filterValues.ToJson(), fieldAttribute.ConfigurationValues );
 
-                            return new RegistrationEntryBlockVisibilityViewModel
+                            return new RegistrationEntryVisibilityBag
                             {
                                 ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
                                 ComparisonValue = new PublicComparisonValueBag
@@ -2971,7 +2971,8 @@ namespace Rock.Blocks.Event
                                 }
                             };
                         } )
-                        .Where( vr => vr != null );
+                        .Where( vr => vr != null )
+                        .ToList();
 
                     fields.Add( field );
                 }
@@ -3068,18 +3069,18 @@ namespace Rock.Blocks.Event
             // If we don't have a session that means we are starting new. Create an empty session.
             if ( session == null )
             {
-                session = new RegistrationEntryBlockSession
+                session = new RegistrationEntrySessionBag
                 {
                     RegistrationSessionGuid = Guid.NewGuid()
                 };
 
-                session.Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>();
+                session.Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag>();
                 var isOnWaitList = context.SpotsRemaining.HasValue && context.SpotsRemaining.Value == 0;
 
                 if ( context.RegistrationSettings.AreCurrentFamilyMembersShown && currentPerson != null )
                 {
                     // Fill in first registrant info as a member of the family.
-                    session.Registrants.Add( new ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo
+                    session.Registrants.Add( new ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = currentPerson.PrimaryFamily.Guid,
@@ -3093,7 +3094,7 @@ namespace Rock.Blocks.Event
                 {
                     // Only fill in the first registrant with existing values
                     // as a "new" person if family members are not shown.
-                    session.Registrants.Add( new ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo
+                    session.Registrants.Add( new ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = Guid.NewGuid(),
@@ -3139,7 +3140,7 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            var viewModel = new RegistrationEntryBlockViewModel
+            var viewModel = new RegistrationEntryInitializationBox
             {
                 RegistrationAttributesStart = beforeAttributes,
                 RegistrationAttributesEnd = afterAttributes,
@@ -3232,7 +3233,12 @@ namespace Rock.Blocks.Event
                     .ToList(),
 
                 EnableSaveAccount = enableSavedAccount,
-                SavedAccounts = savedAccounts
+                SavedAccounts = savedAccounts,
+
+                // Payment plan
+                IsPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed,
+                PaymentDeadlineDate = context.RegistrationSettings.PaymentDeadlineDate,
+                PaymentPlanFrequencies = GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds ),
             };
 
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired )
@@ -3252,6 +3258,26 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Gets the payment plan frequency list item bags.
+        /// </summary>
+        /// <param name="paymentPlanFrequencyValueIds">The payment plan frequency value ids.</param>
+        /// <returns></returns>
+        private List<ListItemBag> GetPaymentPlanFrequencyListItemBags( List<int> paymentPlanFrequencyValueIds )
+        {
+            var frequencies = new Dictionary<int, ListItemBag>();
+
+            foreach (var paymentPlanFrequencyId in paymentPlanFrequencyValueIds )
+            {
+                if ( !frequencies.ContainsKey( paymentPlanFrequencyId ) && DefinedValueCache.TryGet( paymentPlanFrequencyId, out var frequency ) )
+                {
+                    frequencies.Add( paymentPlanFrequencyId, frequency.ToListItemBag() );
+                }
+            }
+
+            return frequencies.Values.ToList();
+        }
+
+        /// <summary>
         /// Generates the redirect URL.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -3266,8 +3292,8 @@ namespace Rock.Blocks.Event
             RockContext rockContext,
             RegistrationContext context,
             decimal amount,
-            RegistrarInfo registrar,
-            List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo> registrants,
+            RegistrarBag registrar,
+            List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag> registrants,
             Guid registrationSessionGuid,
             string returnUrl )
         {
@@ -3337,7 +3363,7 @@ namespace Rock.Blocks.Event
         private Guid? ProcessPayment(
             RockContext rockContext,
             RegistrationContext context,
-            RegistrationEntryBlockArgs args,
+            RegistrationEntryArgsBag args,
             out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -3610,12 +3636,12 @@ namespace Rock.Blocks.Event
         /// <param name="transactionCode">The transaction code.</param>
         /// <param name="gatewayPersonIdentifier">The gateway person identifier.</param>
         /// <returns></returns>
-        private RegistrationEntryBlockSuccessViewModel GetSuccessViewModel( int registrationId, string transactionCode, string gatewayPersonIdentifier )
+        private RegistrationEntrySuccessBag GetSuccessViewModel( int registrationId, string transactionCode, string gatewayPersonIdentifier )
         {
             var currentPerson = GetCurrentPerson();
 
             // Create a view model with default values in case anything goes wrong
-            var viewModel = new RegistrationEntryBlockSuccessViewModel
+            var viewModel = new RegistrationEntrySuccessBag
             {
                 TitleHtml = "Congratulations",
                 MessageHtml = "You have successfully completed this registration.",
@@ -3848,7 +3874,7 @@ namespace Rock.Blocks.Event
         /// <param name="rockContext">The rock context.</param>
         /// <param name="registrationContext">The registration context.</param>
         /// <returns></returns>
-        private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationContext registrationContext )
+        private RegistrationEntrySessionBag GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationContext registrationContext )
         {
             // Try to restore the session from the RegistrationSessionGuid, which is typically a PushPay redirect
             var registrationSessionGuid = GetRegistrationSessionPageParameter( null );
@@ -3867,7 +3893,7 @@ namespace Rock.Blocks.Event
 
                 if ( registrationSession != null )
                 {
-                    return registrationSession.RegistrationData.FromJsonOrNull<RegistrationEntryBlockSession>();
+                    return registrationSession.RegistrationData.FromJsonOrNull<RegistrationEntrySessionBag>();
                 }
             }
 
@@ -3914,7 +3940,7 @@ namespace Rock.Blocks.Event
             }
 
             // Create the base args data
-            var session = new RegistrationEntryBlockSession
+            var session = new RegistrationEntrySessionBag
             {
                 RegistrationSessionGuid = Guid.NewGuid(),
                 AmountToPayNow = balanceDue,
@@ -3923,8 +3949,8 @@ namespace Rock.Blocks.Event
                 DiscountPercentage = registration.DiscountPercentage,
                 FieldValues = new Dictionary<Guid, object>(),
                 GatewayToken = string.Empty,
-                Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>(),
-                Registrar = new RegistrarInfo(),
+                Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag>(),
+                Registrar = new RegistrarBag(),
                 RegistrationGuid = registration.Guid,
                 PreviouslyPaid = alreadyPaid,
                 Slug = PageParameter( PageParameterKey.Slug ),
@@ -3950,7 +3976,7 @@ namespace Rock.Blocks.Event
                 person.LoadAttributes( rockContext );
                 registrant.LoadAttributes( rockContext );
 
-                var registrantInfo = new ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo
+                var registrantInfo = new ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag
                 {
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,
@@ -4013,7 +4039,7 @@ namespace Rock.Blocks.Event
         /// <param name="args">The arguments.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private RegistrationContext GetContext( RockContext rockContext, RegistrationEntryBlockArgs args, out string errorMessage )
+        private RegistrationContext GetContext( RockContext rockContext, RegistrationEntryArgsBag args, out string errorMessage )
         {
             var currentPerson = GetCurrentPerson();
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
@@ -4079,7 +4105,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The registration context that describes the registration details.</param>
         /// <param name="args">The arguments that describe the current registration request.</param>
         /// <returns>The amount still due in dollars and cents.</returns>
-        private static decimal CalculateTotalAmountDue( RockContext rockContext, RegistrationContext context, RegistrationEntryBlockArgs args )
+        private static decimal CalculateTotalAmountDue( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args )
         {
             var registrationService = new RegistrationService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -4138,7 +4164,7 @@ namespace Rock.Blocks.Event
         /// <param name="registration">The registration.</param>
         /// <param name="previousRegistrantPersonIds">The previous registrant person ids.</param>
         /// <param name="postSaveActions">Additional actions to run during the post save process.</param>
-        private void ProcessPostSave( RockContext rockContext, RegistrationSettings settings, RegistrationEntryBlockArgs args, bool isNewRegistration, Registration registration, List<int> previousRegistrantPersonIds, List<Action> postSaveActions )
+        private void ProcessPostSave( RockContext rockContext, RegistrationSettings settings, RegistrationEntryArgsBag args, bool isNewRegistration, Registration registration, List<int> previousRegistrantPersonIds, List<Action> postSaveActions )
         {
             var currentPerson = GetCurrentPerson();
             var currentPersonAliasId = currentPerson?.PrimaryAliasId;
@@ -4258,7 +4284,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns><c>true</c> if any attribute value was changed, <c>false</c> otherwise.</returns>
-        private bool UpdateGroupMemberAttributes( GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationSettings settings )
+        private bool UpdateGroupMemberAttributes( GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, RegistrationSettings settings )
         {
             bool isChanged = false;
             var memberAttributeFields = settings.Forms
@@ -4302,7 +4328,7 @@ namespace Rock.Blocks.Event
         /// <param name="settings">The settings.</param>
         /// <param name="registration">The registration.</param>
         /// <param name="args">The arguments.</param>
-        private void AddRegistrantsToGroup( RockContext rockContext, RegistrationSettings settings, Registration registration, RegistrationEntryBlockArgs args )
+        private void AddRegistrantsToGroup( RockContext rockContext, RegistrationSettings settings, Registration registration, RegistrationEntryArgsBag args )
         {
             if ( !registration.GroupId.HasValue )
             {
@@ -4362,7 +4388,7 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns>A <see cref="string"/> that contains the token to be hashed.</returns>
-        private string GetRegistrantSignatureHashToken( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        private string GetRegistrantSignatureHashToken( ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo )
         {
             return registrantInfo.FieldValues
                 .OrderBy( kvp => kvp.Key )
@@ -4542,7 +4568,7 @@ namespace Rock.Blocks.Event
 
             public Rock.Model.GroupMember GroupMember { get; }
 
-            public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationInstance registrationInstance )
+            public LavaSignatureRegistrant( Person person, Location homeLocation, CampusCache campus, GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, RegistrationInstance registrationInstance )
             {
                 var (registrantAttributes, registrantAttributeValues) = GetRegistrantAttributesFromRegistration( registrantInfo, registrationInstance.RegistrationTemplate );
 

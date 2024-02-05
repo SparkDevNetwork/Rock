@@ -15,29 +15,43 @@
 // </copyright>
 //
 
-using System;
-
 namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
 {
     /// <summary>
-    /// SessionRenewalResult
+    /// RegistrationEntryBlockSuccessViewModel
     /// </summary>
-    public sealed class SessionRenewalResult
+    public sealed class RegistrationEntrySuccessBag
     {
         /// <summary>
-        /// Gets or sets the spots secured.
+        /// Gets or sets the title HTML.
         /// </summary>
         /// <value>
-        /// The spots secured.
+        /// The title HTML.
         /// </value>
-        public int SpotsSecured { get; set; }
+        public string TitleHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the expiration date time.
+        /// Gets or sets the message HTML.
         /// </summary>
         /// <value>
-        /// The expiration date time.
+        /// The message HTML.
         /// </value>
-        public DateTimeOffset ExpirationDateTime { get; set; }
+        public string MessageHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction code.
+        /// </summary>
+        /// <value>
+        /// The transaction code.
+        /// </value>
+        public string TransactionCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gateway person identifier.
+        /// </summary>
+        /// <value>
+        /// The gateway person identifier.
+        /// </value>
+        public string GatewayPersonIdentifier { get; set; }
     }
 }

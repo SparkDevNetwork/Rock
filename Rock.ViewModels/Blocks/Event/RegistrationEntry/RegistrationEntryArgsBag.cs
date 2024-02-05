@@ -41,7 +41,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registrants.
         /// </value>
-        List<RegistrantInfo> Registrants { get; set; }
+        List<RegistrantBag> Registrants { get; set; }
 
         /// <summary>
         /// Gets or sets the field values.
@@ -57,7 +57,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registrar.
         /// </value>
-        RegistrarInfo Registrar { get; set; }
+        RegistrarBag Registrar { get; set; }
 
         /// <summary>
         /// Gets or sets the gateway token.
@@ -87,7 +87,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// RegistrationEntryBlockArgs
     /// </summary>
-    public sealed class RegistrationEntryBlockArgs : IRegistrationEntryBlockArgs
+    public sealed class RegistrationEntryArgsBag : IRegistrationEntryBlockArgs
     {
         /// <summary>
         /// Gets or sets the registration session unique identifier.
@@ -111,7 +111,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registrants.
         /// </value>
-        public List<RegistrantInfo> Registrants { get; set; }
+        public List<RegistrantBag> Registrants { get; set; }
 
         /// <summary>
         /// Gets or sets the field values.
@@ -127,7 +127,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registrar.
         /// </value>
-        public RegistrarInfo Registrar { get; set; }
+        public RegistrarBag Registrar { get; set; }
 
         /// <summary>
         /// Gets or sets the gateway token.
@@ -165,7 +165,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// Registrant Info
     /// </summary>
-    public sealed class RegistrantInfo
+    public sealed class RegistrantBag
     {
         /// <summary>
         /// Gets or sets a value indicating whether this instance is on wait list.
@@ -243,7 +243,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     /// <summary>
     /// Registrar Info
     /// </summary>
-    public sealed class RegistrarInfo
+    public sealed class RegistrarBag
     {
         /// <summary>
         /// Gets or sets the name of the nick.
