@@ -1355,6 +1355,37 @@ namespace Rock.Client.Enums.Core.Grid
 
 }
 
+namespace Rock.Client.Enums.Cms
+{
+    /// <summary>
+    /// </summary>
+    public enum BotGuardianLevel
+    {
+        Disable = 0x0,
+        Enable = 0x1,
+        Inherit = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ContentCollectionFilterControl
+    {
+        Pills = 0x0,
+        Dropdown = 0x1,
+        Boolean = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ContentLibraryItemExperienceLevel
+    {
+        Foundational = 0x1,
+        Intermediate = 0x2,
+        Advanced = 0x3,
+    }
+
+}
+
 namespace Rock.Client.Enums.AI
 {
     /// <summary>
@@ -1475,28 +1506,6 @@ namespace Rock.Client.Enums.Blocks.Security.ConfirmAccount
         DeleteConfirmation = 0x2,
         ChangePassword = 0x3,
         Content = 0x4,
-    }
-
-}
-
-namespace Rock.Client.Enums.Cms
-{
-    /// <summary>
-    /// </summary>
-    public enum ContentCollectionFilterControl
-    {
-        Pills = 0x0,
-        Dropdown = 0x1,
-        Boolean = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum ContentLibraryItemExperienceLevel
-    {
-        Foundational = 0x1,
-        Intermediate = 0x2,
-        Advanced = 0x3,
     }
 
 }
