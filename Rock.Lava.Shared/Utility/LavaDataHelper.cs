@@ -24,18 +24,18 @@ namespace Rock.Lava
     /// <summary>
     /// Defines static helper functions for working with Lava data objects and types.
     /// </summary>
-    [Obsolete("Use Rock.Lava.Shared.LavaDataHelper instead.")]
-    [RockObsolete("1.17")]
-    public static class LavaDataObjectHelper
+    public static class LavaDataHelper
     {
+        private static Type _lavaDataObjectBaseType = typeof( LavaDataObject );
+
         /// <summary>
         /// Gets the properties of a class that are accessible in a Lava template.
         /// </summary>
         /// <param name="type"></param>
         /// <returns>A collection of visible property names, or null if the type is not marked as [LavaType].</returns>
-        public static LavaTypeInfo GetLavaTypeInfo( Type type )
+        public static LavaDataTypeInfo GetLavaTypeInfo( Type type )
         {
-            var info = new LavaTypeInfo();
+            var info = new LavaDataTypeInfo();
 
             info.IsPrimitiveType = type.IsPrimitive;
 
@@ -43,35 +43,28 @@ namespace Rock.Lava
             {
                 var attr = (LavaTypeAttribute)type.GetCustomAttributes( typeof( LavaTypeAttribute ), false ).FirstOrDefault();
 
-                if ( attr != null )
+                info.HasLavaTypeAttribute = ( attr != null );
+
+                // Get the list of included properties, then remove the ignored properties.
+                List<PropertyInfo> includedProperties;
+                if ( attr == null || attr.AllowedMembers == null || !attr.AllowedMembers.Any() )
                 {
-                    info.HasLavaTypeAttribute = true;
-                }
-
-                if ( info.HasLavaTypeAttribute )
-                {
-                    List<PropertyInfo> includedProperties;
-
-                    // Get the list of included properties, then remove the ignored properties.
-                    if ( attr.AllowedMembers == null || !attr.AllowedMembers.Any() )
-                    {
-                        // No included properties have been specified, so assume all are included.
-                        includedProperties = type.GetProperties().ToList();
-                    }
-                    else
-                    {
-                        includedProperties = type.GetProperties().Where( x => attr.AllowedMembers.Contains( x.Name, StringComparer.OrdinalIgnoreCase ) ).ToList();
-                    }
-
-                    var ignoredProperties = type.GetProperties().Where( x => x.GetCustomAttributes( typeof( LavaHiddenAttribute ), false ).Any() ).ToList();
-
-                    info.VisiblePropertyNames = includedProperties.Except( ignoredProperties ).Select( x => x.Name ).ToList();
+                    // No included properties have been specified, so assume all are included.
+                    // Exclude properties that are defined on the LavaDataObject base type.
+                    includedProperties = type.GetProperties()
+                        .Where( a => a.DeclaringType != _lavaDataObjectBaseType )
+                        .ToList();
                 }
                 else
                 {
-                    // By default, allow all public properties.
-                    info.VisiblePropertyNames = type.GetProperties().Select( p => p.Name ).ToList();
+                    includedProperties = type.GetProperties()
+                    .Where( x => attr.AllowedMembers.Contains( x.Name, StringComparer.OrdinalIgnoreCase ) )
+                    .ToList();
                 }
+
+                var ignoredProperties = type.GetProperties().Where( x => x.GetCustomAttributes( typeof( LavaHiddenAttribute ), false ).Any() ).ToList();
+
+                info.VisiblePropertyNames = includedProperties.Except( ignoredProperties ).Select( x => x.Name ).ToList();
             }
             else
             {
