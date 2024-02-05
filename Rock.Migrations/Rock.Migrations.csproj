@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.designer.cs">
+      <DependentUpon>202402051838570_AddBotGuardianLevelToPageAndSite.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.designer.cs">
       <DependentUpon>202401041703106_Rollup_20240104.cs</DependentUpon>
@@ -1950,6 +1954,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.resx">
+      <DependentUpon>202402051838570_AddBotGuardianLevelToPageAndSite.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.resx">
       <DependentUpon>202401041703106_Rollup_20240104.cs</DependentUpon>
     </EmbeddedResource>

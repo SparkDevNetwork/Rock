@@ -171,6 +171,7 @@ namespace Rock.Model
             target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AllowIndexing = source.AllowIndexing;
             target.BodyCssClass = source.BodyCssClass;
+            target.BotGuardianLevel = source.BotGuardianLevel;
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             target.BrowserTitle = source.BrowserTitle;
