@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class PersonServiceTests
+    public class PersonServiceTests : DatabaseTestsBase
     {
         #region Setup
 
@@ -48,9 +51,6 @@ namespace Rock.Tests.Integration.Crm
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
-            // Restore the test database image.
-            TestDatabaseHelper.ResetDatabase();
-
             CreatePersonWithPrimaryAndPreviousEmails();
             CreatePersonWithNoEmails();
             CreatePersonWithPrimaryEmailButDifferentName();
@@ -203,27 +203,7 @@ namespace Rock.Tests.Integration.Crm
 
             Group newPersonFamily = PersonService.SaveNewPerson( person, rockContext );
 
-
             rockContext.SaveChanges();
-        }
-
-        /// <summary>
-        /// Runs after all tests in this class is executed.
-        /// </summary>
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            //
-        }
-
-        /// <summary>
-        /// Runs after each test in this class is executed.
-        /// Deletes the test data added to the database for each tests.
-        /// </summary>
-        [TestCleanup]
-        public void Cleanup()
-        {
-            //
         }
 
         #endregion

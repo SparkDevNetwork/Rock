@@ -24,6 +24,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Model;
+using Rock.Utility.Settings;
 
 namespace Rock.Data
 {
@@ -86,7 +87,7 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// </summary>
         public RockContext()
-            : base()
+            : base( RockInstanceConfig.Database.ConnectionString )
         {
         }
 

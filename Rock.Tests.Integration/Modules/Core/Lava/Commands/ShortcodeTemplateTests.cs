@@ -14,15 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using Rock.Lava.RockLiquid;
-using Rock.Lava.Fluid;
 
-namespace Rock.Tests.Integration.Core.Lava
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Lava;
+using Rock.Lava.RockLiquid;
+using Rock.Tests.Shared.Lava;
+
+namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
     /// <summary>
     /// Test for shortcodes that are defined and implemented as parameterized Lava templates rather than code components.

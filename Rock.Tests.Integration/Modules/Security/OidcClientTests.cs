@@ -1,28 +1,24 @@
-﻿using System;
-using System.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+
 using IdentityModel;
+
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.ExternalAuthentication;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Security
+namespace Rock.Tests.Integration.Modules.Security
 {
     [TestClass]
-    public class OidcClientTests
+    public class OidcClientTests : DatabaseTestsBase
     {
-        [ClassInitialize]
-        public static void TestInitialize( TestContext context )
-        {
-            TestDatabaseHelper.ResetDatabase();
-        }
-
         [TestMethod]
         public void HandleOidcUserAddUpdate_ExistingPersonShouldBeBoundToNewUser()
         {

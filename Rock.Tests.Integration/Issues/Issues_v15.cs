@@ -15,13 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Integration.Core.Lava;
 using Rock.Tests.Integration.Data.Interactions;
+using Rock.Tests.Integration.Modules.Core.Lava;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.BugFixes

@@ -17,11 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
+
 using Rock.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Shared.Lava
 {
     public class MockFileProvider : IFileProvider, ILavaFileSystem
     {
@@ -83,11 +85,11 @@ namespace Rock.Tests.Integration.Core.Lava
 
                 while ( fs.Read( byteArray, 0, byteArray.Length ) > 0 )
                 {
-                     sb.Append( fileContent.GetString( byteArray ) );
+                    sb.Append( fileContent.GetString( byteArray ) );
                 }
             }
 
-            return sb.ToString().Trim('\x0');
+            return sb.ToString().Trim( '\x0' );
         }
 
         public bool FileExists( string filePath )

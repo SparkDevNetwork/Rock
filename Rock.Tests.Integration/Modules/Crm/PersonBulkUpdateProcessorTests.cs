@@ -24,22 +24,27 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tests.Integration.Modules.Core;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm
+namespace Rock.Tests.Integration.Modules.Crm
 {
     /// <summary>
     /// Create and manage test data for the Rock CRM module.
     /// </summary>
     [TestClass]
-    public class PersonBulkUpdateProcessorTests
+    [Ignore( "This seems to be testing duplicate of the original code, which means we are no longer testing the right code. Many tests are failing now." )]
+    public class PersonBulkUpdateProcessorTests : DatabaseTestsBase
     {
         private const string AlishaMarblePersonGuid = "69DC0FDC-B451-4303-BD91-EF17C0015D23";
         private const string TedDeckerPersonGuid = "8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4";

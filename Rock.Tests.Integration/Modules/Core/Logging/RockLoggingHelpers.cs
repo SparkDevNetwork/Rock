@@ -15,7 +15,7 @@
 // </copyright>
 using System.Threading;
 
-namespace Rock.Tests.Integration.Core.Logging
+namespace Rock.Tests.Integration.Modules.Core.Logging
 {
     public static class RockLoggingHelpers
     {

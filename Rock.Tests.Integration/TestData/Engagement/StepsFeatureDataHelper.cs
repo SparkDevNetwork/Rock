@@ -22,6 +22,7 @@ using System.Linq;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestFramework;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
@@ -519,7 +520,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             dateCompletedFilter.ExpressionType = FilterExpressionType.Filter;
             dateCompletedFilter.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Reporting.DataFilter.PropertyFilter ) );
 
-            var dateFilterSettings = new List<string> { "Property_CompletedDateTime", "4096", "\tDateRange|||1/01/2001 12:00:00 AM|31/12/2001 12:00:00 AM" };
+            var dateFilterSettings = new List<string> { "Property_CompletedDateTime", "4096", "\tDateRange|||1/01/2001 12:00:00 AM|12/31/2001 12:00:00 AM" };
 
             dateCompletedFilter.Selection = dateFilterSettings.ToJson();
 

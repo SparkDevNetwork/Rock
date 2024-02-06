@@ -18,14 +18,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Http.TestLibrary;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Blocks
 {
     /// <summary>
     /// Tests for the Personalize Lava block.
