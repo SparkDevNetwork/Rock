@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <appSettings>
   <!-- Test Database Configuration -->
-  <add key="SampleDataUrl" value="http://storage.rockrms.com/sampledata/sampledata_1_14_1.xml" />
+  <add key="SampleDataUrl" value="TestData/SampleData/sampledata_1_14_1.xml" />
   <add key="DatabaseCreatorKey" value="RockIntegrationTestProject" />
   <!-- The DatabaseRefreshStrategy setting determines if the test database is replaced for each test run.
          * "never" prevents an existing database from being replaced. 

@@ -414,6 +414,9 @@
     <Analyzer Include="..\packages\AWSSDK.S3.3.3.21.1\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestData\SampleData\sampledata_1_14_1.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestData\test.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
