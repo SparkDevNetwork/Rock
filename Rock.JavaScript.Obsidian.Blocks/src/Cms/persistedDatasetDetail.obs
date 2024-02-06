@@ -63,6 +63,9 @@
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
+    const lastRefreshDate = new Date(persistedDatasetViewBag.value?.lastRefreshDateTime ?? "Never");
+    const formattedDate = lastRefreshDate ? new Date(lastRefreshDate).toLocaleDateString("en-US") : "Never";
+
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
     const validProperties = [
@@ -138,13 +141,13 @@
 
             labels.push({
                 iconCssClass: "fa fa-refresh",
-                title: "Not Run Since: " + RockDateTime.parseISO(persistedDatasetViewBag.value.lastRefreshDateTime ?? "Never")?.toString(),
+                title: `Not Run Since: ${formattedDate}`,
                 type: "warning",
             });
 
             labels.push({
                 iconCssClass: "fa fa-clock",
-                title: `Time To Run: ${persistedDatasetViewBag.value.timeToBuildMS?.toString()}ms`,
+                title: `Time To Run: ${parseFloat(persistedDatasetViewBag.value?.timeToBuildMS?.toString() ?? "0").toFixed(2)}ms`,
                 type: timeToBuildLabelType.value,
             });
         }
