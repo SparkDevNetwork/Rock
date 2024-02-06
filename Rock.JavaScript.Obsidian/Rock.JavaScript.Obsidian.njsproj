@@ -412,6 +412,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\" />
+    <Folder Include="Framework\ViewModels\Blocks\Group\GroupArchivedList\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupRequirementTypeDetail\" />
@@ -1021,6 +1022,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBlockBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupArchivedList\groupArchivedListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAddPersonRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAddPersonResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAttendanceBag.d.ts" />

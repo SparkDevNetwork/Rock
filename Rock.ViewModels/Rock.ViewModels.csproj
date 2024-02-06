@@ -152,6 +152,7 @@
     <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Group\GroupArchivedList\GroupArchivedListOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupTypeList\GroupTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutDetailOptionsBag.cs" />

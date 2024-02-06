@@ -172,6 +172,7 @@
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
     <Content Include="src\Finance\financialGatewayList.obs" />
+    <Content Include="src\Group\groupList.obs" />
     <Content Include="src\Group\groupMemberScheduleTemplateDetail.obs" />
     <Content Include="src\Group\GroupMemberScheduleTemplateDetail\editPanel.partial.obs" />
     <Content Include="src\Group\GroupMemberScheduleTemplateDetail\viewPanel.partial.obs" />
@@ -413,6 +414,7 @@
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
     <Folder Include="src\Finance\FinancialGatewayList\" />
     <Folder Include="src\Finance\FinancialStatementTemplateDetail\" />
+    <Folder Include="src\Group\GroupList\" />
     <Folder Include="src\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="src\Group\GroupRequirementTypeDetail\" />
     <Folder Include="src\Group\GroupTypeList\" />
@@ -602,6 +604,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\GroupList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupTypeList\types.partial.ts" />
