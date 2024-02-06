@@ -17,5 +17,6 @@
 
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage",
-    NewItemPage = "NewItemPage"
+    NewItemPage = "NewItemPage",
+    LibraryDownloadPage = "LibraryDownloadPage"
 }

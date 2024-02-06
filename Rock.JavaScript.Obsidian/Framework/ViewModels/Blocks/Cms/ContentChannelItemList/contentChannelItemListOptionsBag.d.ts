@@ -33,6 +33,8 @@ export type ContentChannelItemListOptionsBag = {
 
     includeTime: boolean;
 
+    isContentLibraryEnabled: boolean;
+
     isManuallyOrdered: boolean;
 
     showExpireDateTimeColumn: boolean;

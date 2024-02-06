@@ -9,6 +9,7 @@
           stickyHeader
           liveUpdates
           :onAddItem="config?.isAddEnabled ? onAddItem : undefined"
+          :customActions="customActions"
           @selectItem="onSelectItem">
 
         <ReorderColumn v-if="config?.options?.showReorderColumn" @orderChanged="onOrderChanged" />
@@ -16,20 +17,31 @@
         <TextColumn name="title"
                     title="Title"
                     field="title"
-                    :filter="config?.options?.showFilters ? textValueFilter : undefined"
-                    width="25%" />
+                    :filter="config?.options?.showFilters ? textValueFilter : undefined" />
 
-        <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn"
+        <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn && config?.options?.includeTime"
                         name="startDateTime"
                         :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                         field="startDateTime"
                         :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
 
-        <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn"
+        <DateColumn v-if="config?.options?.showStartDateTimeColumn && !config?.options?.includeTime"
+                    name="startDateTime"
+                    :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
+                    field="startDateTime"
+                    :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
+
+        <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn && config?.options?.includeTime"
                         name="expireDateTime"
                         title="Expire"
                         field="expireDateTime"
                         :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
+
+        <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime"
+                    name="expireDateTime"
+                    title="Expire"
+                    field="expireDateTime"
+                    :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
 
         <NumberColumn v-if="config?.options?.showPriorityColumn"
                       name="priority"
@@ -38,7 +50,22 @@
                       :filter="config?.options?.showFilters ? numberValueFilter : undefined"
                       width="125" />
 
-        <AttributeColumns :attributes="config?.gridDefinition?.attributeFields ?? []" />
+        <Column v-if="config.options?.isContentLibraryEnabled"
+                name="library"
+                title="Library">
+            <template #format="{ row }">
+                <RockButton v-if="row.isUploadedToContentLibrary">Is Uploaded</RockButton>
+                <RockButton v-else-if="row.isDownloadedFromContentLibrary">Is Downloaded</RockButton>
+                <RockButton v-else-if="!row.contentLibrarySourceIdentifier">Upload</RockButton>
+
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <AttributeColumns :attributes="config?.gridDefinition?.attributeFields ?? []" :filter="null" />
 
         <LabelColumn v-if="config?.options?.showStatusColumn"
                      name="status"
@@ -46,7 +73,8 @@
                      field="status"
                      :filter="config?.options?.showFilters ? pickExistingValueFilter : undefined"
                      :textSource="ContentChannelItemStatusDescription"
-                     :classSource="statusLabelColors" />
+                     :classSource="statusLabelColors"
+                     width="150" />
 
         <SecurityColumn v-if="config?.options?.showSecurityColumn" />
 
@@ -55,10 +83,12 @@
 </template>
 
 <script setup lang="ts">
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DateTimeColumn, dateValueFilter, DeleteColumn, SecurityColumn, LabelColumn, pickExistingValueFilter, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DateTimeColumn, DateColumn, dateValueFilter, DeleteColumn, SecurityColumn, LabelColumn, pickExistingValueFilter, ReorderColumn, Column } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { type GridAction } from "@Obsidian/Types/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ContentChannelItemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemList/contentChannelItemListOptionsBag";
@@ -77,7 +107,22 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-
+    const customActions = computed<GridAction[]>(() => {
+        if (config.options?.isContentLibraryEnabled) {
+            return [
+                {
+                    title: "Download from Library",
+                    tooltip: "Download from Library",
+                    isPrimary: true,
+                    iconCssClass: "fa fa-download",
+                    handler: () => {
+                        window.location = (config.navigationUrls?.[NavigationUrlKey.LibraryDownloadPage] ?? "/") as (string & Location);
+                    }
+                }
+            ];
+        }
+        return [];
+    });
 
     const statusLabelColors: Record<string, string> = {
         [ContentChannelItemStatusDescription[ContentChannelItemStatus.PendingApproval]]: "default",

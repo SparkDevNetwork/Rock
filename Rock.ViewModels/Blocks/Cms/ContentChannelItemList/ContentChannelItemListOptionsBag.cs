@@ -30,6 +30,8 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemList
 
         public bool IsManuallyOrdered { get; set; }
 
+        public bool IsContentLibraryEnabled { get; set; }
+
         public ContentChannelDateType DateType { get; set; }
 
         public int ContentChannelId { get; set; }

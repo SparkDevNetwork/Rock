@@ -119,6 +119,7 @@ namespace Rock.Blocks.Cms
         {
             public const string DetailPage = "DetailPage";
             public const string NewItemPage = "NewItemPage";
+            public const string LibraryDownloadPage = "LibraryDownloadPage";
         }
 
         #endregion Keys
@@ -173,6 +174,7 @@ namespace Rock.Blocks.Cms
                 DateType = contentChannel.ContentChannelType.DateRangeType,
                 ContentChannelId = contentChannel.Id,
                 ShowFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean(),
+                IsContentLibraryEnabled = contentChannel.ContentLibraryConfiguration?.IsEnabled == true,
 
                 ShowReorderColumn = !isFiltered && contentChannel.ItemsManuallyOrdered,
                 ShowPriorityColumn = !contentChannel.ContentChannelType.DisablePriority
@@ -208,6 +210,25 @@ namespace Rock.Blocks.Cms
         {
             var contentChannel = GetContentChannel();
 
+            var libraryDownloadUrl = "";
+            var pageCache = PageCache.Get( Rock.SystemGuid.Page.LIBRARY_VIEWER.AsGuid() );
+            if ( pageCache != null )
+            {
+                int routeId = 0;
+                {
+                    var pageRouteInfo = pageCache.PageRoutes.FirstOrDefault( a => a.Guid == Rock.SystemGuid.PageRoute.LIBRARY_VIEWER.AsGuid() );
+                    if ( pageRouteInfo != null )
+                    {
+                        routeId = pageRouteInfo.Id;
+                    }
+                }
+
+                libraryDownloadUrl = ( new Rock.Web.PageReference( pageCache.Id, routeId, new Dictionary<string, string>
+                {
+                    { "ContentChannelIdKey", contentChannel.IdKey }
+                }, null ) ).BuildUrl();
+            }
+
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ContentItemId", "((Key))" ),
@@ -215,7 +236,8 @@ namespace Rock.Blocks.Cms
                 {
                     ["ContentItemId"] = "((Key))",
                     ["ContentChannelId"] = contentChannel.Id.ToString()
-                } )
+                } ),
+                [NavigationUrlKey.LibraryDownloadPage] = libraryDownloadUrl
             };
         }
 
@@ -274,7 +296,7 @@ namespace Rock.Blocks.Cms
         {
             var contentChannel = GetContentChannel();
 
-            return new GridBuilder<ContentChannelItem>()
+            var builder = new GridBuilder<ContentChannelItem>()
                 .WithBlock( this )
                 .AddTextField( "id", a => a.Id.ToString() )
                 .AddTextField( "idKey", a => a.IdKey )
@@ -286,8 +308,15 @@ namespace Rock.Blocks.Cms
                 .AddField( "occurrences", a => a.EventItemOccurrences.Any() )
                 .AddField( "status", a => a.Status )
                 .AddField( "priority", a => a.Priority )
+                .AddField( "isContentLibraryOwner", a => a.IsContentLibraryOwner )
+                .AddField( "contentLibrarySourceIdentifier", a => a.ContentLibrarySourceIdentifier )
+                .AddField( "isDownloadedFromContentLibrary", a => a.IsDownloadedFromContentLibrary )
+                .AddField( "isUploadedToContentLibrary", a => a.IsUploadedToContentLibrary )
+                .AddField( "contentLibraryLicenseTypeGuid", a => a.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( a.ContentLibraryLicenseTypeValueId.Value )?.Guid : null )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
+
+            return builder;
         }
 
         /// <inheritdoc/>
