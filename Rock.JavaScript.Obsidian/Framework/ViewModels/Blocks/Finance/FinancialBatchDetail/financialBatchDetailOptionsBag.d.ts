@@ -23,6 +23,7 @@
 
 import { FinancialBatchAccountTotalsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchAccountTotalsBag";
 import { FinancialBatchCurrencyTotalsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchCurrencyTotalsBag";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
 
 export type FinancialBatchDetailOptionsBag = {
     /** Gets or sets the accounts. */
@@ -33,6 +34,9 @@ export type FinancialBatchDetailOptionsBag = {
 
     /** The Defined Type Guid for the Batch Name Defined Type Picker if the Defined Type is specified. */
     batchNameDefinedTypeGuid?: string | null;
+
+    /** Gets or sets the CurrencyInfo */
+    currencyInfo?: CurrencyInfoBag | null;
 
     /** Gets or sets the currency types. */
     currencyTypes?: FinancialBatchCurrencyTotalsBag[] | null;
