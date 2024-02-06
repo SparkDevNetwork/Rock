@@ -15,20 +15,23 @@
 // </copyright>
 //
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Communications.Sms
+namespace Rock.Tests.Integration.Modules.Communications
 {
     /// <summary>
     /// Initialize test data for the Steps feature of Rock.
     /// </summary>
     [TestClass]
-    public class SmsTests
+    public class SmsTests : DatabaseTestsBase
     {
         public static class Constants
         {

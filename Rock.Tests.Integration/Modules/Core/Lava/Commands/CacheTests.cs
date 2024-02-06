@@ -15,13 +15,15 @@
 // </copyright>
 //
 
-using Rock.Lava;
-
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Lava;
+using Rock.Tests.Shared.Lava;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
     /// <summary>
     /// Tests for Lava-specific commands implemented as Liquid custom blocks and tags.

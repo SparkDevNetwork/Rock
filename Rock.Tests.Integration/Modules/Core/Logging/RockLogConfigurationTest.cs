@@ -15,18 +15,21 @@
 // </copyright>
 using System.Collections.Generic;
 using System.Threading;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Logging;
 using Rock.SystemKey;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Logging
+namespace Rock.Tests.Integration.Modules.Core.Logging
 {
     /// <summary>
     /// Summary description for RockLogConfiguration
     /// </summary>
     [TestClass]
-    public class RockLogConfigurationTest
+    public class RockLogConfigurationTest : DatabaseTestsBase
     {
         [TestMethod]
         public void RockLogConfigurationShouldLoadFromDatabase()
@@ -55,7 +58,7 @@ namespace Rock.Tests.Integration.Core.Logging
             var expectedDomains = new List<string>();
             var expectedLogLevel = RockLogLevel.Off;
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, "garbage" );
+            global::Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, "garbage" );
 
             // System Settings are now updated via the bus and so we have to allow time for that to happen.
             Thread.Sleep( 1000 );

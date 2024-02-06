@@ -16,14 +16,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Logging;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Logging
+namespace Rock.Tests.Integration.Modules.Core.Logging
 {
     [TestClass]
-    public class RockSerilogReaderTests
+    public class RockSerilogReaderTests : DatabaseTestsBase
     {
         private readonly string LogFolder = $"\\logs\\{Guid.NewGuid()}";
         [TestCleanup]

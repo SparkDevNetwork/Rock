@@ -19,21 +19,25 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Newtonsoft.Json.Linq;
+
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core
+namespace Rock.Tests.Integration.Modules.Core
 {
     /// <summary>
     /// Tests for the document merge process.
     /// </summary>
     [TestClass]
-    public class MergeTemplateTests
+    public class MergeTemplateTests : DatabaseTestsBase
     {
         [TestMethod]
         public void MergeTemplateTest_GroupAttendanceRoster_HasHeaderAndDetailElements()

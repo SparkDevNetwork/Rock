@@ -17,9 +17,10 @@
 using System;
 using System.IO;
 using System.Text;
+
 using Microsoft.Extensions.FileProviders;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Shared.Lava
 {
     public class MockFileInfo : IFileInfo
     {

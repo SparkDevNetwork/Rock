@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
 using Rock.SystemKey;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -43,8 +44,8 @@ namespace Rock.Model
         {
             get
             {
-                var rockContext = System.Configuration.ConfigurationManager.ConnectionStrings[SystemSetting.ROCK_CONTEXT]?.ConnectionString;
-                var readOnlyContext = System.Configuration.ConfigurationManager.ConnectionStrings[SystemSetting.ROCK_CONTEXT_READ_ONLY]?.ConnectionString;
+                var rockContext = RockInstanceConfig.Database.ConnectionString;
+                var readOnlyContext = RockInstanceConfig.Database.ReadOnlyConnectionString;
 
                 if ( rockContext != null && readOnlyContext != null && !rockContext.Equals( readOnlyContext ) )
                 {

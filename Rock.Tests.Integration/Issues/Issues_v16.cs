@@ -14,16 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Data;
-using Rock.Jobs;
+
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Model;
-using Rock.Tests.Integration.Core.Lava;
+using Rock.Tests.Integration.Modules.Core.Lava;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.BugFixes
 {
@@ -162,7 +159,7 @@ StartTimeOfDay (Formatted): {{ schedule.StartTimeOfDay | Date:'hh:mm tt K' }}<br
 <pre>{{ schedule.iCalendarContent }}</pre>
 {% endschedule %}
 ";
-            var expectedOutput = @"
+            var expectedOutput = $@"
 <h3>Testing issue 5632</h3>
 Standard Date Format: 03:30 PM
 <br/>
@@ -170,7 +167,7 @@ Schedule Name: Sunday 10:30am
 <br/>
 StartTimeOfDay (Raw): 10:30:00
 <br/>
-StartTimeOfDay (Formatted): 10:30 AM +11:00
+StartTimeOfDay (Formatted): 10:30 AM {System.DateTime.Now:%K}
 <br/>
 <pre>
     BEGIN:VCALENDAR

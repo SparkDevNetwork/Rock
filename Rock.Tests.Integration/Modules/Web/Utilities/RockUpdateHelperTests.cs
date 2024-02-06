@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Web.Utilities
+namespace Rock.Tests.Integration.Modules.Web.Utilities
 {
     [TestClass]
     public class RockUpdateHelperTests

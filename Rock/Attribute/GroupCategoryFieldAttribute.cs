@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Field.Types;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -104,7 +105,7 @@ namespace Rock.Attribute
             set
             {
                 var groupTypeGuid = value.AsGuidOrNull();
-                var groupTypeId = groupTypeGuid.HasValue ? GroupTypeCache.GetId( groupTypeGuid.Value ) : null;
+                var groupTypeId = groupTypeGuid.HasValue && RockInstanceConfig.DatabaseIsAvailable ? GroupTypeCache.GetId( groupTypeGuid.Value ) : null;
                 FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( groupTypeId?.ToString() ) );
             }
         }

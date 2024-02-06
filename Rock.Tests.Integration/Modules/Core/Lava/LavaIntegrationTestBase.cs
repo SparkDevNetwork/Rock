@@ -14,18 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava;
-using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Core.Lava
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.Tests.Integration.Modules.Core.Lava
 {
-    [TestClass]
-    public class LavaIntegrationTestBase
+    public abstract class LavaIntegrationTestBase : DatabaseTestsBase
     {
         public static LavaIntegrationTestHelper TestHelper
         {
@@ -35,9 +32,10 @@ namespace Rock.Tests.Integration.Core.Lava
             }
         }
 
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext context )
+        [ClassInitialize( InheritanceBehavior.BeforeEachDerivedClass )]
+        public static void LavaClassInitialize( TestContext context )
         {
+            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: true );
             LogHelper.SetTestContext( context );
         }
     }

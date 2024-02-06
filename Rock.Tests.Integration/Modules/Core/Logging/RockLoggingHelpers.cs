@@ -15,10 +15,11 @@
 // </copyright>
 using System.Collections.Generic;
 using System.Threading;
+
 using Rock.Logging;
 using Rock.SystemKey;
 
-namespace Rock.Tests.Integration.Core.Logging
+namespace Rock.Tests.Integration.Modules.Core.Logging
 {
     public static class RockLoggingHelpers
     {
@@ -37,7 +38,7 @@ namespace Rock.Tests.Integration.Core.Logging
                 NumberOfLogFiles = maxFiles
             };
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, logConfig.ToJson() );
+            global::Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, logConfig.ToJson() );
         }
 
         public static void DeleteFilesInFolder( string logFolder )

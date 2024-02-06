@@ -17,14 +17,16 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Rock.Data;
 
-namespace Rock.Tests.Integration.Reporting.DataFilter
+using Rock.Data;
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.Tests.Integration.Modules.Reporting.DataFilter
 {
     /// <summary>
     /// Provides base functionality for a set of DataFilter tests.
     /// </summary>
-    public abstract class DataFilterTestBase
+    public abstract class DataFilterTestBase : DatabaseTestsBase
     {
         /// <summary>
         /// Create a query that returns entities of a specific type, filtered by a predicate expression.

@@ -1,15 +1,17 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core
+namespace Rock.Tests.Integration.Modules.Core
 {
     [TestClass]
-    public class SundayDateTest
+    public class SundayDateTest : DatabaseTestsBase
     {
         [TestMethod]
         public void TestFirstDateOfWeekMonday()

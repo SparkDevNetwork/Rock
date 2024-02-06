@@ -16,18 +16,24 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+
 using Ical.Net;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
+
 using TimeZoneConverter;
 
-namespace Rock.Tests.Integration.Events
+using EventsDataManager = Rock.Tests.Integration.Events.EventsDataManager;
+
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     /// <summary>
     /// Tests related to Calendar Events.
@@ -36,12 +42,18 @@ namespace Rock.Tests.Integration.Events
     /// These tests require a database populated with standard Rock sample data.
     /// </remarks>
     [TestClass]
-    public class EventTests
+    public class EventTests : DatabaseTestsBase
     {
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
             EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            TestConfigurationHelper.SetRockDateTimeToLocalTimezone();
         }
 
         #region EventItemService Tests
@@ -468,7 +480,7 @@ namespace Rock.Tests.Integration.Events
             args.CalendarId = calendar.Id;
 
             args.StartDate = startDate ?? RockDateTime.New( 2010, 1, 1 ).Value;
-            args.EndDate = endDate ?? DateTime.MaxValue;
+            args.EndDate = endDate ?? args.StartDate.AddYears( 10 );
 
             if ( !string.IsNullOrWhiteSpace( campusName ) )
             {
@@ -646,7 +658,8 @@ namespace Rock.Tests.Integration.Events
             // Modify the EventItem.
             var updateArgs = new EventsDataManager.UpdateEventItemActionArgs
             {
-                Properties = new EventsDataManager.EventItemInfo { EventName = $"{eventName} [Updated]" }
+                Properties = new EventsDataManager.EventItemInfo { EventName = $"{eventName} [Updated]" },
+                UpdateTargetIdentifier = testEventGuid
             };
             EventsDataManager.Instance.UpdateEventItem( updateArgs );
 
@@ -654,7 +667,7 @@ namespace Rock.Tests.Integration.Events
             var calendarString2 = calendarService.CreateICalendar( args );
 
             var calendarEvent2 = CalendarCollection.Load( calendarString2 )?.FirstOrDefault()?.Events
-                .FirstOrDefault( e => e.Summary == eventName );
+                .FirstOrDefault( e => e.Summary == $"{eventName} [Updated]" );
 
             Assert.IsNotNull( calendarEvent2, "Expected Event not found." );
             Assert.IsTrue( calendarEvent2.Sequence > calendarEvent1.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );

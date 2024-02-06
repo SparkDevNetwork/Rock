@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
+using Rock.Utility.Settings;
+
 namespace Rock.Data
 {
     /// <summary>
@@ -115,7 +117,7 @@ namespace Rock.Data
         /// <returns></returns>
         public static IDataReader GetDataReader( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
-            string connectionString = GetRockContextConnectionString();
+            string connectionString = RockInstanceConfig.Database.ConnectionString;
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
                 SqlConnection con = new SqlConnection( connectionString );
@@ -209,7 +211,7 @@ namespace Rock.Data
         /// <returns>DataSet.</returns>
         private static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null, bool schemaOnly = false )
         {
-            string connectionString = GetRockContextConnectionString();
+            string connectionString = RockInstanceConfig.Database.ConnectionString;
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
                 using ( SqlConnection con = new SqlConnection( connectionString ) )
@@ -264,7 +266,7 @@ namespace Rock.Data
         /// <exception cref="System.NotImplementedException"></exception>
         public static int ExecuteCommand( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null, int? commandTimeout = null )
         {
-            var connectionString = GetRockContextConnectionString();
+            var connectionString = RockInstanceConfig.Database.ConnectionString;
             return ExecuteCommand( connectionString, query, commandType, parameters, commandTimeout );
         }
 
@@ -340,7 +342,7 @@ namespace Rock.Data
         /// <returns></returns>
         public static object ExecuteScalar( string query, CommandType commandType = CommandType.Text, Dictionary<string, object> parameters = null, int? commandTimeout = null )
         {
-            string connectionString = GetRockContextConnectionString();
+            string connectionString = RockInstanceConfig.Database.ConnectionString;
             return ExecuteScalar( connectionString, query, commandType, parameters, commandTimeout );
         }
 
@@ -439,20 +441,6 @@ namespace Rock.Data
 
                 return sqlCommand.ExecuteScalar();
             }
-        }
-
-        /// <summary>
-        /// Gets the ConnectionString using the 'RockContext' specified in web.ConnectionStrings.config.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        private static string GetRockContextConnectionString()
-        {
-            var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"];
-            if ( connectionString != null )
-            {
-                return connectionString.ConnectionString;
-            }
-            return null;
         }
 
         #endregion

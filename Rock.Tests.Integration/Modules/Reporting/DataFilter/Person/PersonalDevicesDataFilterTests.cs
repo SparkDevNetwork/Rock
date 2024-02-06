@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -25,7 +27,7 @@ using Rock.Reporting.DataFilter.Person;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Reporting.DataFilter
+namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
 {
     /// <summary>
     /// Test DataFilter: Person/PersonalDevices.
@@ -228,7 +230,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settingsString = DataComponentSettingsHelper.SerializeFilterSettings( settings );
             var predicate = settingsFilter.GetExpression( typeof( Rock.Model.Person ), personService, parameterExpression, settingsString );
 
-            var personQuery = GetFilteredEntityQuery<Person>( dataContext, predicate, parameterExpression );
+            var personQuery = GetFilteredEntityQuery<Rock.Model.Person>( dataContext, predicate, parameterExpression );
 
             return personQuery;
         }
