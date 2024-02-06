@@ -289,6 +289,7 @@ namespace Rock.Model
         /// The payment deadline date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? PaymentDeadlineDate { get; set; }
 
         #endregion Entity Properties
