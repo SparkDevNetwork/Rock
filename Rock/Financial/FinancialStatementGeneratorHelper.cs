@@ -326,34 +326,45 @@ namespace Rock.Financial
                 var transactionSettings = reportSettings.TransactionSettings;
                 var financialTransactionQry = FinancialStatementGeneratorHelper.GetFinancialTransactionQuery( financialStatementGeneratorOptions, rockContext, false );
 
+                IQueryable<Person> personQry = null;
                 var personList = new List<Person>();
                 Person person = null;
                 if ( personId.HasValue )
                 {
-                    person = new PersonService( rockContext ).Queryable( true, true ).Include( a => a.Aliases ).Include( a => a.PrimaryFamily ).Where( a => a.Id == personId.Value ).FirstOrDefault();
+                    personQry = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId.Value );
+                    person = personQry.Include( a => a.PrimaryFamily ).FirstOrDefault();
                     personList.Add( person );
                 }
                 else
                 {
                     // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
                     GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                    personList = groupMemberService.GetByGroupId( groupId, true ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.Person ).Include( a => a.Aliases ).Include( a => a.PrimaryFamily ).ToList();
+                    personQry = groupMemberService.GetByGroupId( groupId, true ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.Person );
+                    personList = personQry.Include( a => a.PrimaryFamily ).ToList();
                     person = personList.FirstOrDefault();
                 }
 
                 // if *any* giving unit member has opted out, set the recipient as opted out
                 recipientResult.OptedOut = FinancialStatementGeneratorHelper.GetOptedOutPersonIds( personList ).Any();
 
-                var personAliasIds = personList.SelectMany( a => a.Aliases.Select( x => x.Id ) ).ToList();
-                if ( personAliasIds.Count == 1 )
-                {
-                    var personAliasId = personAliasIds[0];
-                    financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAliasId.Value == personAliasId );
-                }
-                else
-                {
-                    financialTransactionQry = financialTransactionQry.Where( a => personAliasIds.Contains( a.AuthorizedPersonAliasId.Value ) );
-                }
+                /*
+                    1/4/2024 - JPH
+
+                    The following 2 usages of ".Contains(...)" result in JOINs rather than WHERE...IN clauses, since they're
+                    leveraging an IQueryable<Person> instead of the List<int>[PersonAlias.Id] we were previously using.
+
+                    Reason: Statement Generator times out when generating statements for people with an excessive number of
+                            person alias records.
+                */
+                var personIdQry = personQry.Select( p => p.Id );
+
+                var personAliasIds = new PersonAliasService( rockContext )
+                    .Queryable()
+                    .Where( pa => personIdQry.Contains( pa.PersonId ) )
+                    .Select( pa => pa.Id )
+                    .ToList();
+
+                financialTransactionQry = financialTransactionQry.Where( a => personIdQry.Contains( a.AuthorizedPersonAlias.PersonId ) );
 
                 var financialTransactionsList = financialTransactionQry
                     .Include( a => a.FinancialPaymentDetail )

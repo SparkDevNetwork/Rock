@@ -312,5 +312,25 @@ namespace Rock.SystemKey
         /// The label text for the SMS Opt-In checkbox
         /// </summary>
         public const string SMS_OPT_IN_MESSAGE_LABEL = "core_SmsOptInMessageLabel";
+
+        /// <summary>
+        /// The start date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_START_DATE = "core_AnalyticsCalendarDimensionStartDate";
+
+        /// <summary>
+        /// The end date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_END_DATE = "core_AnalyticsCalendarDimensionEndDate";
+
+        /// <summary>
+        /// The fiscal start month for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_FISCAL_START_MONTH = "core_AnalyticsCalendarDimensionFiscalStartMonth";
+
+        /// <summary>
+        /// Whether the giving month should use Sunday date for the analytics calendar dimension.
+        /// </summary>
+        public const string ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE = "core_AnalyticsCalendarDimensionGivingMonthUseSundayDate";
     }
 }

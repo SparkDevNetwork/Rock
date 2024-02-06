@@ -20,8 +20,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Humanizer;
-
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
@@ -405,11 +403,19 @@ namespace Rock.Model
 
                 // process universal search indexing if required
                 var groupType = GroupTypeCache.Get( this.Entity.GroupTypeId );
-                if ( groupType != null && groupType.IsIndexEnabled && this.Entity.Group.IsActive )
+                if ( groupType != null && groupType.IsIndexEnabled )
                 {
-                    var GroupEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP );
-                    var groupIndexTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = GroupEntityTypeId.Value, EntityId = this.Entity.GroupId } );
-                    groupIndexTransaction.Enqueue();
+                    var group = this.Entity.Group;
+                    if ( group == null )
+                    {
+                        group = new GroupService( this.RockContext ).Get( this.Entity.GroupId );
+                    }
+                    if ( group?.IsActive ?? false )
+                    {
+                        var GroupEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP );
+                        var groupIndexTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = GroupEntityTypeId.Value, EntityId = this.Entity.GroupId } );
+                        groupIndexTransaction.Enqueue();
+                    }
                 }
 
                 SendUpdateGroupMemberMessage();
