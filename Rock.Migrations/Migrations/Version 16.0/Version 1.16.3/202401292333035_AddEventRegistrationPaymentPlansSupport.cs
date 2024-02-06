@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.RegistrationInstance", "PaymentDeadlineDate", c => c.DateTime());
+            AddColumn("dbo.RegistrationInstance", "PaymentDeadlineDate", c => c.DateTime( storeType: "date" ));
             AddColumn("dbo.Registration", "PaymentPlanFinancialScheduledTransactionId", c => c.Int());
             AddColumn("dbo.RegistrationTemplate", "IsPaymentPlanAllowed", c => c.Boolean(nullable: false));
             AddColumn("dbo.RegistrationTemplate", "PaymentPlanFrequencyValueIds", c => c.String(maxLength: 50));
