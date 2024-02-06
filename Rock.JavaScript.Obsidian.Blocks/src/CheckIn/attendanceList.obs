@@ -1,0 +1,153 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Attendance"
+          :entityTypeGuid="EntityType.Attendance"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <BooleanColumn name="didAttend"
+                       title="Attended"
+                       field="didAttend"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
+
+        <TextColumn name="note"
+                    title="Note"
+                    field="note"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="createdByPersonName"
+                    title="Entered By"
+                    field="createdByPersonName"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DateTimeColumn name="createdDateTime"
+                        title="Entered On"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, DateTimeColumn, dateValueFilter, booleanValueFilter, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { AttendanceListOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/AttendanceList/attendanceListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridSettingsOptions, PreferenceKey } from "./AttendanceList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./AttendanceList/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<AttendanceListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        attended: preferences.getValue(PreferenceKey.FilterDidAttend),
+        enteredBy: JSON.parse(preferences.getValue(PreferenceKey.FilterEnteredBy) || "{}"),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.attended || !!gridSettings.value.enteredBy?.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete attendance.");
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDidAttend, gridSettings.value.attended ?? "");
+        preferences.setValue(PreferenceKey.FilterEnteredBy, JSON.stringify(gridSettings.value.enteredBy));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>
