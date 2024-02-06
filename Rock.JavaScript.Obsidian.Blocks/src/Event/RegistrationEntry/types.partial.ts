@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { PartialProps, RequiredNonNullableProps, RequiredProps, TypeProps } from "@Obsidian/Utility/typeUtils";
+import { UnwrapBuilderType, buildTypeFrom } from "@Obsidian/Utility/typeUtils";
 import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
@@ -71,187 +71,114 @@ export const enum RegistrantsSameFamily {
     Ask = 2
 }
 
-export type SessionRenewalResult =
-    RequiredNonNullableProps<
+const sessionRenewalResultValue =
+    buildTypeFrom<SessionRenewalResultBag>()
+    .withRequiredNonNullableProps("expirationDateTime")
+    .build();
+export type SessionRenewalResult = UnwrapBuilderType<typeof sessionRenewalResultValue>;
 
-    // Base data structure.
-    SessionRenewalResultBag,
+const registrationEntryBlockViewModelValue =
+    buildTypeFrom<RegistrationEntryInitializationBox>()
+    .withRequiredProps(
+        "timeoutMinutes", "spotsRemaining", "amountDueToday", "initialAmountToPay", "session",
+        "successViewModel", "gatewayGuid", "savedAccounts", "registrationInstanceNotFoundMessage")
+    .withRequiredNonNullableProps(
+        "registrationAttributeTitleStart", "registrationAttributeTitleEnd", "instructionsHtml",
+        "registrantTerm", "registrationTerm", "pluralRegistrationTerm", "pluralRegistrantTerm",
+        "pluralFeeTerm", "registrantForms", "fees", "familyMembers", "registrationAttributesStart",
+        "registrationAttributesEnd", "gatewayControl", "instanceName", "redirectGatewayUrl",
+        "campuses", "maritalStatuses", "connectionStatuses", "grades", "races", "ethnicities")
+    .withOverriddenType<RegistrationEntryBlockFamilyMemberViewModel[]>().forProps("familyMembers")
+    .withOverriddenType<RegistrationEntryBlockFeeViewModel[]>().forProps("fees")
+    .withOverriddenType<RegistrationEntryBlockFormViewModel[]>().forProps("registrantForms")
+    .withOverriddenType<RegistrarOption>().forProps("registrarOption")
+    .withOverriddenType<RegistrantsSameFamily>().forProps("registrantsSameFamily")
+    .withOverriddenType<RegistrationEntryBlockSession | null>().forProps("session")
+    .withOverriddenType<RegistrationEntryBlockSuccessViewModel | null>().forProps("successViewModel")
+    .build();
+export type RegistrationEntryBlockViewModel = UnwrapBuilderType<typeof registrationEntryBlockViewModelValue>;
 
-    // Define properties that must have a value.
-    "expirationDateTime">;
+const registrationEntryBlockFamilyMemberViewModelValue =
+    buildTypeFrom<RegistrationEntryFamilyMemberBag>()
+    .withRequiredNonNullableProps("familyGuid", "fieldValues", "fullName", "guid")
+    .build();
+export type RegistrationEntryBlockFamilyMemberViewModel = UnwrapBuilderType<typeof registrationEntryBlockFamilyMemberViewModelValue>;
 
-export type RegistrationEntryBlockViewModel =
-    TypeProps<
-    TypeProps<
-    TypeProps<
-    TypeProps<
-    TypeProps<
-    TypeProps<
-    TypeProps<
-    RequiredNonNullableProps<
-    RequiredProps<
+const registrationEntryBlockFeeViewModelValue =
+    buildTypeFrom<RegistrationEntryFeeBag>()
+    .withOptionalProps("hideWhenNoneRemaining")
+    .withRequiredNonNullableProps("guid", "items", "name")
+    .withOverriddenType<RegistrationEntryBlockFeeItemViewModel[]>().forProps("items")
+    .build();
+export type RegistrationEntryBlockFeeViewModel = UnwrapBuilderType<typeof registrationEntryBlockFeeViewModelValue>;
 
-    // Base data structure.
-    RegistrationEntryInitializationBox,
+const registrationEntryBlockFeeItemViewModelValue =
+    buildTypeFrom<RegistrationEntryFeeItemBag>()
+    .withRequiredProps("countRemaining", "originalCountRemaining")
+    .withRequiredNonNullableProps("guid", "name")
+    .build();
+export type RegistrationEntryBlockFeeItemViewModel = UnwrapBuilderType<typeof registrationEntryBlockFeeItemViewModelValue>;
 
-    // Define required properties (can still be null).
-    "timeoutMinutes" | "spotsRemaining" | "amountDueToday" | "initialAmountToPay" | "session" | "successViewModel" | "gatewayGuid" | "savedAccounts" | "registrationInstanceNotFoundMessage">,
+const registrationEntryBlockFormViewModelValue =
+    buildTypeFrom<RegistrationEntryFormBag>()
+    .withRequiredProps("fields")
+    .withOverriddenType<RegistrationEntryBlockFormFieldViewModel[]>().forProps("fields")
+    .build();
+export type RegistrationEntryBlockFormViewModel = UnwrapBuilderType<typeof registrationEntryBlockFormViewModelValue>;
 
-    // Define properties that must have a value.
-    "registrationAttributeTitleStart" | "registrationAttributeTitleEnd" | "instructionsHtml" | "registrantTerm" | "registrationTerm" | "pluralRegistrationTerm" | "pluralRegistrantTerm" | "pluralFeeTerm"
-    | "registrantForms" | "fees" | "familyMembers" | "registrationAttributesStart" | "registrationAttributesEnd" | "gatewayControl" | "instanceName" | "redirectGatewayUrl" | "campuses" | "maritalStatuses"
-    | "connectionStatuses" | "grades" | "races" | "ethnicities">,
-
-    // Override property types.
-    "familyMembers", RegistrationEntryBlockFamilyMemberViewModel[]>,
-    "fees", RegistrationEntryBlockFeeViewModel[]>,
-    "registrantForms", RegistrationEntryBlockFormViewModel[]>,
-    "registrarOption", RegistrarOption>,
-    "registrantsSameFamily", RegistrantsSameFamily>,
-    "session", RegistrationEntryBlockSession | null>,
-    "successViewModel", RegistrationEntryBlockSuccessViewModel | null>;
-
-export type RegistrationEntryBlockFamilyMemberViewModel =
-    RequiredNonNullableProps<
-
-    // Base data structure.
-    RegistrationEntryFamilyMemberBag,
-
-    // Define properties that must have a value.
-    "familyGuid" | "fieldValues" | "fullName" | "guid">;
-
-export type RegistrationEntryBlockFeeViewModel =
-    TypeProps<
-    RequiredNonNullableProps<
-    PartialProps<
-
-    // Base data structure.
-    RegistrationEntryFeeBag,
-
-    // Define optional properties.
-    "hideWhenNoneRemaining">,
-
-    // Define properties that must have a value.
-    "guid" | "items" | "name">,
-
-    // Override property type.
-    "items", RegistrationEntryBlockFeeItemViewModel[]>;
-
-export type RegistrationEntryBlockFeeItemViewModel =
-    RequiredNonNullableProps<
-    RequiredProps<
-
-    // Base data structure.
-    RegistrationEntryFeeItemBag,
-
-    // Define required properties (can still be null).
-    "countRemaining" | "originalCountRemaining">,
-
-    // Define properties that must have a value.
-    "guid" | "name">;
-
-export type RegistrationEntryBlockFormViewModel =
-    TypeProps<
-    RequiredNonNullableProps<
-
-    // Base data structure.
-    RegistrationEntryFormBag,
-
-    // Define properties that must have a value.
-    "fields">,
-
-    // Override property type.
-    "fields", RegistrationEntryBlockFormFieldViewModel[]>;
-
-export type RegistrationEntryBlockFormFieldViewModel =
-    TypeProps<
-    TypeProps<
-    RequiredNonNullableProps<
-    RequiredProps<
-
-    // Base data structure.
-    RegistrationEntryFormFieldBag,
-
-    // Define required properties (can still be null).
-    "attribute" | "visibilityRules">,
-
-    // Define properties that must have a value.
-    "guid" | "preHtml" | "postHtml">,
-
-    // Override property types.
-    "fieldSource", RegistrationFieldSource>,
-    "visibilityRules", RegistrationEntryBlockFormFieldRuleViewModel[]>;
+const registrationEntryBlockFormFieldViewModelValue =
+    buildTypeFrom<RegistrationEntryFormFieldBag>()
+    .withRequiredProps("attribute", "visibilityRules")
+    .withRequiredNonNullableProps("guid", "preHtml", "postHtml")
+    .withOverriddenType<RegistrationFieldSource>().forProps("fieldSource")
+    .withOverriddenType<RegistrationEntryBlockFormFieldRuleViewModel[]>().forProps("visibilityRules")
+    .build();
+export type RegistrationEntryBlockFormFieldViewModel = UnwrapBuilderType<typeof registrationEntryBlockFormFieldViewModelValue>;
 
 export type RegistrationEntryBlockFormFieldRuleViewModel = {
     comparedToRegistrationTemplateFormFieldGuid: Guid;
     comparisonValue: ComparisonValue;
 };
 
-export type RegistrantInfo =
-    RequiredNonNullableProps<
-    RequiredProps<
+const registrantInfoValue =
+    buildTypeFrom<RegistrantBag>()
+    .withRequiredProps("familyGuid", "personGuid")
+    .withRequiredNonNullableProps("feeItemQuantities", "fieldValues", "guid")
+    .build();
+export type RegistrantInfo = UnwrapBuilderType<typeof registrantInfoValue>;
 
-    // Base data structure.
-    RegistrantBag,
+const registrarInfoValue =
+    buildTypeFrom<RegistrarBag>()
+    .withRequiredProps("familyGuid")
+    .withRequiredNonNullableProps("email", "lastName", "nickName")
+    .build();
+export type RegistrarInfo = UnwrapBuilderType<typeof registrarInfoValue>;
 
-    // Define required properties (can still be null).
-    "familyGuid" | "personGuid">,
+const registrationEntryBlockSuccessViewModelValue =
+    buildTypeFrom<RegistrationEntrySuccessBag>()
+    .withRequiredNonNullableProps("gatewayPersonIdentifier", "messageHtml", "titleHtml", "transactionCode")
+    .build();
+export type RegistrationEntryBlockSuccessViewModel = UnwrapBuilderType<typeof registrationEntryBlockSuccessViewModelValue>;
 
-    // Define properties that must have a value.
-    "feeItemQuantities" | "fieldValues" | "guid">;
+const registrationEntryBlockArgsValue =
+    buildTypeFrom<RegistrationEntryArgsBag>()
+    .withRequiredProps(
+        "discountCode", "fieldValues", "gatewayToken", "registrants", "registrar",
+        "registrationGuid", "registrationSessionGuid", "savedAccountGuid")
+    .withOverriddenType<RegistrantInfo[]>().forProps("registrants")
+    .withOverriddenType<RegistrarInfo | null>().forProps("registrar")
+    .build();
+export type RegistrationEntryBlockArgs = UnwrapBuilderType<typeof registrationEntryBlockArgsValue>;
 
-export type RegistrarInfo =
-    RequiredNonNullableProps<
-    RequiredProps<
-
-    // Base data structure.
-    RegistrarBag,
-
-    // Define required properties (can still be null).
-    "familyGuid">,
-
-    // Define properties that must have a value.
-    "email" | "lastName" | "nickName">;
-
-
-export type RegistrationEntryBlockSuccessViewModel =
-    RequiredNonNullableProps<
-
-    // Base data structure.
-    RegistrationEntrySuccessBag,
-
-    // Define required properties (can still be null).
-    "gatewayPersonIdentifier" | "messageHtml" | "titleHtml" | "transactionCode">;
-
-export type RegistrationEntryBlockArgs =
-    TypeProps<
-    TypeProps<
-    RequiredProps<
-
-    // Base data structure.
-    RegistrationEntryArgsBag,
-
-    // Define required properties (can still be null).
-    "discountCode" | "fieldValues" | "gatewayToken" | "registrants" | "registrar" | "registrationGuid" | "registrationSessionGuid" | "savedAccountGuid">,
-
-    // Override property types.
-    "registrants", RegistrantInfo[]>,
-    "registrar", RegistrarInfo | null>;
-
-export type RegistrationEntryBlockSession =
-    TypeProps<
-    TypeProps<
-    RequiredProps<
-
-    // Base data structure.
-    RegistrationEntrySessionBag,
-
-    // Define required properties (can still be null).
-    "discountCode" | "fieldValues" | "gatewayToken" | "registrants" | "registrar" | "registrationGuid" | "registrationSessionGuid">,
-
-    // Override property types.
-    "registrants", RegistrantInfo[]>,
-    "registrar", RegistrarInfo | null>;
+const registrationEntryBlockSessionValue =
+    buildTypeFrom<RegistrationEntrySessionBag>()
+    .withRequiredProps(
+        "discountCode", "fieldValues", "gatewayToken", "registrants", "registrar",
+        "registrationGuid", "registrationSessionGuid")
+    .withOverriddenType<RegistrantInfo[]>().forProps("registrants")
+    .withOverriddenType<RegistrarInfo | null>().forProps("registrar")
+    .build();
+export type RegistrationEntryBlockSession = UnwrapBuilderType<typeof registrationEntryBlockSessionValue>;
 
 export const enum Step {
     Intro = "intro",
