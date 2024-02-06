@@ -16,6 +16,26 @@
 //
 
 /**
+ * Make specific properties in T required,
+ * while leaving the rest of the properties untouched.
+ *
+ * @example
+ * type Shape = {
+ *   length?: number | null,
+ *   width?: number | null
+ * };
+ *
+ * type StaticShape = RequiredProps<Shape, "length">;
+ * // {
+ * //   length: number | null,
+ * //   width?: number | null
+ * // }
+ */
+export type RequiredProps<T, K extends keyof T> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]-?: T[P]
+};
+
+/**
  * Make all properties in T required, and unable to be set to undefined or null.
  *
  * @example
@@ -55,6 +75,85 @@ export type RequiredNonNullableProps<T, K extends keyof T> = Omit<T, K> & {
 };
 
 /**
+ * Make specific properties in T optional, and able to be set to undefined,
+ * while leaving the rest of the properties untouched.
+ *
+ * @example
+ * type Shape = {
+ *   length: number,
+ *   width: number
+ * };
+ *
+ * type StaticShape = PartialProps<Shape, "width">;
+ * // {
+ * //   length: number,
+ * //   width?: number
+ * // }
+ */
+export type PartialProps<T, K extends keyof T> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]+?: T[P]
+};
+
+/**
+ * Make all properties in T optional, and able to be set to undefined or null.
+ *
+ * @example
+ * type Shape = {
+ *   length: number,
+ *   width: number
+ * };
+ *
+ * type StaticShape = PartialNullable<Shape>;
+ * // {
+ * //   length?: number | null,
+ * //   width?: number | null
+ * // }
+ */
+export type PartialNullable<T> = {
+    [K in keyof T]+?: T[K] | null
+};
+
+/**
+ * Make specific properties in T optional, and able to be set to undefined or null,
+ * while leaving the rest of the properties untouched.
+ *
+ * @example
+ * type Shape = {
+ *   length: number,
+ *   width: number
+ * };
+ *
+ * type StaticShape = PartialNullableProps<Shape, "width">;
+ * // {
+ * //   length: number,
+ * //   width?: number | null
+ * // }
+ */
+export type PartialNullableProps<T, K extends keyof T> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]+?: T[P] | null
+};
+
+/**
+ * Make specific properties in T have a specific type,
+ * while leaving the rest of the properties untouched.
+ *
+ * @example
+ * type Shape = {
+ *   length: number,
+ *   width: number
+ * };
+ *
+ * type StaticShape = TypeProps<Shape, "width", string>;
+ * // {
+ * //   length: number,
+ * //   width: string
+ * // }
+ */
+export type TypeProps<T, K extends keyof T, U> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]: U
+};
+
+/**
  * Get the union of keys from T where the properties are of type P.
  *
  * @example
@@ -65,13 +164,13 @@ export type RequiredNonNullableProps<T, K extends keyof T> = Omit<T, K> & {
  *   height?: number | null;
  * };
  *
- * type ShapeNumberProperties = KeysOfType<Shape, number>; // "length" | "width"; notice "height" does not appear because it can be a number, null, or undefined.
+ * type ShapeProperties = KeysOfType<Shape, number>; // "length" | "width"; notice "height" does not appear because it can be a number, null, or undefined.
  *
  * // To include "height", you can either expand the second generic type argument to include null and undefined...
- * type ShapeNumberProperties = KeysOfType<Shape, number | null | undefined>; // "length" | "width" | "height"
+ * type ShapeProperties = KeysOfType<Shape, number | null | undefined>; // "length" | "width" | "height"
  *
  * // ...or you can convert Shape to a RequiredNonNullable type for the first generic type argument...
- * type ShapeNumberProperties = KeysOfType<RequiredNonNullable<Shape>, number>; // "length" | "width" | "height"
+ * type ShapeProperties = KeysOfType<RequiredNonNullable<Shape>, number>; // "length" | "width" | "height"
  */
 export type KeysOfType<T, P> = Exclude<{
     [K in keyof T]: T[K] extends P ? K : never;
@@ -88,7 +187,7 @@ export type KeysOfType<T, P> = Exclude<{
  *   height?: number | null;
  * };
  *
- * type ShapeNumberProperties = PropertiesOfType<Shape, number>;
+ * type ShapeProperties = PropertiesOfType<Shape, number>;
  * // {
  * //   length: number;
  * //   width: number;
@@ -96,7 +195,7 @@ export type KeysOfType<T, P> = Exclude<{
  * // }
  *
  * // To include "height", you can either expand the second generic type argument to include null and undefined...
- * type ShapeNumberProperties = PropertiesOfType<Shape, number | null | undefined>;
+ * type ShapeProperties = PropertiesOfType<Shape, number | null | undefined>;
  * // {
  * //   length: number;
  * //   width: number;
@@ -104,7 +203,7 @@ export type KeysOfType<T, P> = Exclude<{
  * // }
  *
  * // ...or you can convert Shape to a RequiredNonNullable type for the first generic type argument...
- * type ShapeNumberProperties = PropertiesOfType<RequiredNonNullable<Shape>, number>;
+ * type ShapeProperties = PropertiesOfType<RequiredNonNullable<Shape>, number>;
  * // {
  * //   length: number;
  * //   width: number;

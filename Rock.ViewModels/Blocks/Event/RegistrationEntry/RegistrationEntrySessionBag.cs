@@ -128,5 +128,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The group identifier.
         /// </value>
         public int? GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the discount maximum registrants.
+        /// </summary>
+        /// <value>
+        /// The discount maximum registrants.
+        /// </value>
+        public int? DiscountMaxRegistrants { get; set; }
     }
 }

@@ -16,16 +16,20 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { PartialProps, RequiredNonNullableProps, RequiredProps, TypeProps } from "@Obsidian/Utility/typeUtils";
 import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
-// import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
-// import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-// import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-// import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
-// import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
-// import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
 import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
+import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
+import { SessionRenewalResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/sessionRenewalResultBag";
+import { RegistrationEntryFamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFamilyMemberBag";
+import { RegistrationEntryFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeItemBag";
+import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
+import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
+import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { RegistrationEntrySessionBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySessionBag";
 
 export const enum RegistrationPersonFieldType {
     FirstName = 0,
@@ -67,167 +71,187 @@ export const enum RegistrantsSameFamily {
     Ask = 2
 }
 
-// export type SessionRenewalResult = {
-//     spotsSecured: number;
-//     expirationDateTime: string;
-// };
+export type SessionRenewalResult =
+    RequiredNonNullableProps<
 
-// export type RegistrationEntryBlockViewModel = {
-//     currentPersonFamilyGuid?: Guid | null;
-//     timeoutMinutes: number | null;
-//     registrantsSameFamily: RegistrantsSameFamily;
-//     maxRegistrants: number;
-//     registrationAttributeTitleStart: string;
-//     registrationAttributeTitleEnd: string;
-//     instructionsHtml: string;
-//     registrantTerm: string;
-//     registrationTerm: string;
-//     pluralRegistrationTerm: string;
-//     pluralRegistrantTerm: string;
-//     pluralFeeTerm: string;
-//     registrantForms: RegistrationEntryBlockFormViewModel[];
-//     fees: RegistrationEntryBlockFeeViewModel[];
-//     familyMembers: RegistrationEntryBlockFamilyMemberViewModel[];
-//     registrationAttributesStart: PublicAttributeBag[];
-//     registrationAttributesEnd: PublicAttributeBag[];
-//     forceEmailUpdate: boolean;
-//     registrarOption: RegistrarOption;
-//     cost: number;
-//     gatewayControl: GatewayControlBag;
-//     isRedirectGateway: boolean;
-//     spotsRemaining: number | null;
-//     waitListEnabled: boolean;
-//     instanceName: string;
-//     amountDueToday: number | null;
-//     initialAmountToPay: number | null;
-//     session: RegistrationEntryBlockSession | null;
-//     isUnauthorized: boolean;
-//     hasDiscountsAvailable: boolean;
-//     redirectGatewayUrl: string;
-//     loginRequiredToRegister: boolean;
-//     successViewModel: RegistrationEntryBlockSuccessViewModel | null;
-//     allowRegistrationUpdates: boolean;
-//     isExistingRegistration: boolean;
-//     startAtBeginning: boolean;
-//     gatewayGuid: Guid | null;
-//     campuses: ListItemBag[];
-//     maritalStatuses: ListItemBag[];
-//     connectionStatuses: ListItemBag[];
-//     grades: ListItemBag[];
-//     enableSaveAccount: boolean;
-//     savedAccounts: SavedFinancialAccountListItemBag[] | null;
-//     registrationInstanceNotFoundMessage: string | null;
-//     races: ListItemBag[];
-//     ethnicities: ListItemBag[];
-//     showSmsOptIn: boolean;
+    // Base data structure.
+    SessionRenewalResultBag,
 
-//     isInlineSignatureRequired: boolean;
-//     isSignatureDrawn: boolean;
-//     signatureDocumentTerm?: string | null;
-//     signatureDocumentTemplateName?: string | null;
+    // Define properties that must have a value.
+    "expirationDateTime">;
 
-//     hideProgressBar: boolean;
-// };
+export type RegistrationEntryBlockViewModel =
+    TypeProps<
+    TypeProps<
+    TypeProps<
+    TypeProps<
+    TypeProps<
+    TypeProps<
+    TypeProps<
+    RequiredNonNullableProps<
+    RequiredProps<
 
-// export type RegistrationEntryBlockFamilyMemberViewModel = {
-//     guid: Guid;
-//     familyGuid: Guid;
-//     fullName: string;
-//     fieldValues: Record<Guid, unknown>;
-// };
+    // Base data structure.
+    RegistrationEntryInitializationBox,
 
-// export type RegistrationEntryBlockFeeViewModel = {
-//     name: string;
-//     guid: Guid;
-//     allowMultiple: boolean;
-//     isRequired: boolean;
-//     items: RegistrationEntryBlockFeeItemViewModel[];
-//     discountApplies: boolean;
-//     hideWhenNoneRemaining?: boolean;
-// };
+    // Define required properties (can still be null).
+    "timeoutMinutes" | "spotsRemaining" | "amountDueToday" | "initialAmountToPay" | "session" | "successViewModel" | "gatewayGuid" | "savedAccounts" | "registrationInstanceNotFoundMessage">,
 
-// export type RegistrationEntryBlockFeeItemViewModel = {
-//     name: string;
-//     guid: Guid;
-//     cost: number;
-//     originalCountRemaining: number | null;
-//     countRemaining: number | null;
-// };
+    // Define properties that must have a value.
+    "registrationAttributeTitleStart" | "registrationAttributeTitleEnd" | "instructionsHtml" | "registrantTerm" | "registrationTerm" | "pluralRegistrationTerm" | "pluralRegistrantTerm" | "pluralFeeTerm"
+    | "registrantForms" | "fees" | "familyMembers" | "registrationAttributesStart" | "registrationAttributesEnd" | "gatewayControl" | "instanceName" | "redirectGatewayUrl" | "campuses" | "maritalStatuses"
+    | "connectionStatuses" | "grades" | "races" | "ethnicities">,
 
-// export type RegistrationEntryBlockFormViewModel = {
-//     fields: RegistrationEntryBlockFormFieldViewModel[];
-// };
+    // Override property types.
+    "familyMembers", RegistrationEntryBlockFamilyMemberViewModel[]>,
+    "fees", RegistrationEntryBlockFeeViewModel[]>,
+    "registrantForms", RegistrationEntryBlockFormViewModel[]>,
+    "registrarOption", RegistrarOption>,
+    "registrantsSameFamily", RegistrantsSameFamily>,
+    "session", RegistrationEntryBlockSession | null>,
+    "successViewModel", RegistrationEntryBlockSuccessViewModel | null>;
 
-// export type RegistrationEntryBlockFormFieldViewModel = {
-//     fieldSource: RegistrationFieldSource;
-//     personFieldType: RegistrationPersonFieldType;
-//     isRequired: boolean;
-//     isSharedValue: boolean;
-//     attribute: PublicAttributeBag | null;
-//     visibilityRuleType: FilterExpressionType;
-//     visibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
-//     preHtml: string;
-//     postHtml: string;
-//     showOnWaitList: boolean;
-//     guid: Guid;
-// };
+export type RegistrationEntryBlockFamilyMemberViewModel =
+    RequiredNonNullableProps<
 
-// export type RegistrationEntryBlockFormFieldRuleViewModel = {
-//     comparedToRegistrationTemplateFormFieldGuid: Guid;
-//     comparisonValue: ComparisonValue;
-// };
+    // Base data structure.
+    RegistrationEntryFamilyMemberBag,
 
-// export type RegistrantInfo = {
-//     isOnWaitList: boolean;
+    // Define properties that must have a value.
+    "familyGuid" | "fieldValues" | "fullName" | "guid">;
 
-//     /** The family guid that this person is to be a part of */
-//     familyGuid: Guid | null;
+export type RegistrationEntryBlockFeeViewModel =
+    TypeProps<
+    RequiredNonNullableProps<
+    PartialProps<
 
-//     /** If the person were an existing person, this is his/her guid */
-//     personGuid: Guid | null;
+    // Base data structure.
+    RegistrationEntryFeeBag,
 
-//     fieldValues: Record<Guid, unknown>;
-//     cost: number;
-//     feeItemQuantities: Record<Guid, number>;
-//     existingSignatureDocumentGuid?: Guid | null,
-//     signatureData?: string | null;
+    // Define optional properties.
+    "hideWhenNoneRemaining">,
 
-//     guid: Guid;
-// };
+    // Define properties that must have a value.
+    "guid" | "items" | "name">,
 
-// export type RegistrarInfo = {
-//     nickName: string;
-//     lastName: string;
-//     email: string;
-//     updateEmail: boolean;
-//     familyGuid: Guid | null;
-// };
+    // Override property type.
+    "items", RegistrationEntryBlockFeeItemViewModel[]>;
 
-// export type RegistrationEntryBlockSuccessViewModel = {
-//     titleHtml: string;
-//     messageHtml: string;
-//     transactionCode: string;
-//     gatewayPersonIdentifier: string;
-// };
+export type RegistrationEntryBlockFeeItemViewModel =
+    RequiredNonNullableProps<
+    RequiredProps<
 
-// export type RegistrationEntryBlockArgs = {
-//     registrationGuid: Guid | null;
-//     registrationSessionGuid: Guid | null;
-//     registrants: RegistrantInfo[];
-//     fieldValues: Record<Guid, unknown> | null;
-//     registrar: RegistrarInfo | null;
-//     savedAccountGuid: Guid | null;
-//     gatewayToken: string | null;
-//     discountCode: string | null;
-//     amountToPayNow: number;
-// };
+    // Base data structure.
+    RegistrationEntryFeeItemBag,
 
-// export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
-//     discountAmount: number;
-//     discountPercentage: number;
-//     previouslyPaid: number;
-//     discountMaxRegistrants: number;
-// };
+    // Define required properties (can still be null).
+    "countRemaining" | "originalCountRemaining">,
+
+    // Define properties that must have a value.
+    "guid" | "name">;
+
+export type RegistrationEntryBlockFormViewModel =
+    TypeProps<
+    RequiredNonNullableProps<
+
+    // Base data structure.
+    RegistrationEntryFormBag,
+
+    // Define properties that must have a value.
+    "fields">,
+
+    // Override property type.
+    "fields", RegistrationEntryBlockFormFieldViewModel[]>;
+
+export type RegistrationEntryBlockFormFieldViewModel =
+    TypeProps<
+    TypeProps<
+    RequiredNonNullableProps<
+    RequiredProps<
+
+    // Base data structure.
+    RegistrationEntryFormFieldBag,
+
+    // Define required properties (can still be null).
+    "attribute" | "visibilityRules">,
+
+    // Define properties that must have a value.
+    "guid" | "preHtml" | "postHtml">,
+
+    // Override property types.
+    "fieldSource", RegistrationFieldSource>,
+    "visibilityRules", RegistrationEntryBlockFormFieldRuleViewModel[]>;
+
+export type RegistrationEntryBlockFormFieldRuleViewModel = {
+    comparedToRegistrationTemplateFormFieldGuid: Guid;
+    comparisonValue: ComparisonValue;
+};
+
+export type RegistrantInfo =
+    RequiredNonNullableProps<
+    RequiredProps<
+
+    // Base data structure.
+    RegistrantBag,
+
+    // Define required properties (can still be null).
+    "familyGuid" | "personGuid">,
+
+    // Define properties that must have a value.
+    "feeItemQuantities" | "fieldValues" | "guid">;
+
+export type RegistrarInfo =
+    RequiredNonNullableProps<
+    RequiredProps<
+
+    // Base data structure.
+    RegistrarBag,
+
+    // Define required properties (can still be null).
+    "familyGuid">,
+
+    // Define properties that must have a value.
+    "email" | "lastName" | "nickName">;
+
+
+export type RegistrationEntryBlockSuccessViewModel =
+    RequiredNonNullableProps<
+
+    // Base data structure.
+    RegistrationEntrySuccessBag,
+
+    // Define required properties (can still be null).
+    "gatewayPersonIdentifier" | "messageHtml" | "titleHtml" | "transactionCode">;
+
+export type RegistrationEntryBlockArgs =
+    TypeProps<
+    TypeProps<
+    RequiredProps<
+
+    // Base data structure.
+    RegistrationEntryArgsBag,
+
+    // Define required properties (can still be null).
+    "discountCode" | "fieldValues" | "gatewayToken" | "registrants" | "registrar" | "registrationGuid" | "registrationSessionGuid" | "savedAccountGuid">,
+
+    // Override property types.
+    "registrants", RegistrantInfo[]>,
+    "registrar", RegistrarInfo | null>;
+
+export type RegistrationEntryBlockSession =
+    TypeProps<
+    TypeProps<
+    RequiredProps<
+
+    // Base data structure.
+    RegistrationEntrySessionBag,
+
+    // Define required properties (can still be null).
+    "discountCode" | "fieldValues" | "gatewayToken" | "registrants" | "registrar" | "registrationGuid" | "registrationSessionGuid">,
+
+    // Override property types.
+    "registrants", RegistrantInfo[]>,
+    "registrar", RegistrarInfo | null>;
 
 export const enum Step {
     Intro = "intro",
@@ -239,31 +263,31 @@ export const enum Step {
     Success = "success"
 }
 
-// export type RegistrantBasicInfo = {
-//     firstName: string;
-//     lastName: string;
-//     email: string;
-//     guid: Guid;
-// };
+export type RegistrantBasicInfo = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    guid: Guid;
+};
 
 export type RegistrationEntryState = {
     steps: Record<Step, Step>;
-    viewModel: RegistrationEntryInitializationBox;
+    viewModel: RegistrationEntryBlockViewModel;
     currentStep: string;
     firstStep: string;
     navBack: boolean;
     currentRegistrantIndex: number;
     currentRegistrantFormIndex: number;
-    registrants: RegistrantBag[];
+    registrants: RegistrantInfo[];
     registrationFieldValues: Record<Guid, unknown>;
-    registrar: RegistrarBag;
+    registrar: RegistrarInfo;
     gatewayToken: string;
     savedAccountGuid: Guid | null;
     discountCode: string;
     discountAmount: number;
     discountPercentage: number;
     discountMaxRegistrants: number;
-    successViewModel: RegistrationEntrySuccessBag | null;
+    successViewModel: RegistrationEntryBlockSuccessViewModel | null;
     amountToPayToday: number;
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;

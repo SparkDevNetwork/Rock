@@ -73,6 +73,16 @@
     <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\GetAvailableCampusesBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrantBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrarBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFamilyMemberBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFeeBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFeeItemBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFormBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFormFieldBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryLineItemBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySignatureDocumentBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryVisibilityBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />

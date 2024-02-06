@@ -36,7 +36,7 @@
 
     //#region Computed Values
 
-    const availablePaymentFrequencies = computed<ListItemBag[]>(() => registrationEntryState.viewModel.);
+    const availablePaymentFrequencies = computed<ListItemBag[]>(() => registrationEntryState.viewModel.paymentPlanFrequencies ?? []);
 
     //#endregion
 

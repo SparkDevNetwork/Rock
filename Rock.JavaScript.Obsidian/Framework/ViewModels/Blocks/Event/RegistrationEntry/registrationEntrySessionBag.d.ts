@@ -36,6 +36,9 @@ export type RegistrationEntrySessionBag = {
     /** Gets or sets the discount code. */
     discountCode?: string | null;
 
+    /** Gets or sets the discount maximum registrants. */
+    discountMaxRegistrants?: number | null;
+
     /** Gets or sets the discount. */
     discountPercentage: number;
 

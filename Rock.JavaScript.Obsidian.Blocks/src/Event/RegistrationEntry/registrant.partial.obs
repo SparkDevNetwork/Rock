@@ -61,8 +61,8 @@
     import FeeField from "./feeField.partial.obs";
     import RegistrantAttributeField from "./registrantAttributeField.partial.obs";
     import RegistrantPersonField from "./registrantPersonField.partial.obs";
-import { RegistrationFieldSource } from "./types.partial";
-    import { CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, scrollToTopAfterNextRender, use } from "./utils.partial";
+    import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from "./types.partial";
+    import { convertComparisonValue, CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, scrollToTopAfterNextRender, use } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
     import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
@@ -78,16 +78,13 @@ import { RegistrationFieldSource } from "./types.partial";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import StringFilter from "@Obsidian/Utility/stringUtils";
-    import { RequiredNonNullable } from "@Obsidian/Utility/typeUtils";
-    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
-    import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         currentRegistrant: {
-            type: Object as PropType<RequiredNonNullable<RegistrantBag>>,
+            type: Object as PropType<RegistrantInfo>,
             required: true
         },
         isWaitList: {
@@ -106,9 +103,9 @@ import { RegistrationFieldSource } from "./types.partial";
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
 
-    for (const fee of registrationEntryState.viewModel.fees) {
-        for (const feeItem of fee.items) {
-            if (typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
+    for (const fee of registrationEntryState.viewModel.fees ?? []) {
+        for (const feeItem of fee.items ?? []) {
+            if (feeItem.guid && typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
                 props.currentRegistrant.feeItemQuantities[feeItem.guid] = 0;
             }
         }
@@ -144,7 +141,7 @@ import { RegistrationFieldSource } from "./types.partial";
         }
 
         // Allow to navigate to registration attributes
-        if (registrationEntryState.viewModel?.registrationAttributesStart?.length > 0) {
+        if ((registrationEntryState.viewModel?.registrationAttributesStart?.length ?? 0) > 0) {
             return true;
         }
 
@@ -156,7 +153,7 @@ import { RegistrationFieldSource } from "./types.partial";
         return false;
     });
 
-    const viewModel = computed<RegistrationEntryInitializationBox>(() => {
+    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
         return registrationEntryState.viewModel;
     });
 
@@ -187,10 +184,10 @@ import { RegistrationFieldSource } from "./types.partial";
     /** The filtered list of forms that will be shown */
     const formsToShow = computed<RegistrationEntryBlockFormViewModel[]>(() => {
         if (!props.isWaitList) {
-            return viewModel.value.registrantForms;
+            return viewModel.value.registrantForms ?? [];
         }
 
-        return viewModel.value.registrantForms.filter(form => form.fields.some(field => field.showOnWaitList));
+        return viewModel.value.registrantForms?.filter(form => form.fields?.some(field => field.showOnWaitList)) ?? [];
     });
 
     /** The filtered fields to show on the current form */
@@ -208,19 +205,19 @@ import { RegistrationFieldSource } from "./types.partial";
                 let isVisible = true;
                 switch (value.visibilityRuleType) {
                     case FilterExpressionType.GroupAll:
-                        isVisible = value.visibilityRules.every(vr => isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        isVisible = !!value.visibilityRules?.every(vr => isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
                         break;
 
                     case FilterExpressionType.GroupAllFalse:
-                        isVisible = value.visibilityRules.every(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        isVisible = !!value.visibilityRules?.every(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
                         break;
 
                     case FilterExpressionType.GroupAny:
-                        isVisible = value.visibilityRules.some(vr => isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        isVisible = !!value.visibilityRules?.some(vr => isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
                         break;
 
                     case FilterExpressionType.GroupAnyFalse:
-                        isVisible = value.visibilityRules.some(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        isVisible = !!value.visibilityRules?.some(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
                         break;
 
                     default:
@@ -241,10 +238,12 @@ import { RegistrationFieldSource } from "./types.partial";
     /** The current fields as pre-post items to allow pre-post HTML to be rendered */
     const prePostHtmlItems = computed<ItemWithPreAndPostHtml[]>(() => {
         return currentFormFieldsAugmented.value
+            .filter(f => f.guid)
             .map(f => ({
-                preHtml: f.preHtml,
-                postHtml: f.postHtml,
-                slotName: f.guid
+                preHtml: f.preHtml ?? "",
+                postHtml: f.postHtml ?? "",
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                slotName: f.guid!
             }));
     });
 
@@ -269,7 +268,7 @@ import { RegistrationFieldSource } from "./types.partial";
         // Add previous registrants as options
         for (let i = 0; i < registrationEntryState.currentRegistrantIndex; i++) {
             const registrant = registrationEntryState.registrants[i];
-            const info = getRegistrantBasicInfo(registrant, viewModel.value.registrantForms);
+            const info = getRegistrantBasicInfo(registrant, viewModel.value.registrantForms ?? []);
 
             if (registrant.familyGuid && !usedFamilyGuids[registrant.familyGuid] && info?.firstName && info?.lastName) {
                 options.push({
@@ -310,19 +309,19 @@ import { RegistrationFieldSource } from "./types.partial";
             .map(r => r.personGuid);
 
         return viewModel.value.familyMembers
-            .filter(fm => !usedFamilyMemberGuids.includes(fm.guid))
-            .map(fm => ({
+            ?.filter(fm => fm.guid && !usedFamilyMemberGuids.includes(fm.guid))
+            ?.map(fm => ({
                 text: fm.fullName,
                 value: fm.guid
-            }));
+            })) ?? [];
     });
 
     const uppercaseRegistrantTerm = computed<string>(() => {
-        return StringFilter.toTitleCase(viewModel.value.registrantTerm);
+        return StringFilter.toTitleCase(viewModel.value.registrantTerm ?? "");
     });
 
     const firstName = computed<string>(() => {
-        return getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms).firstName;
+        return getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms ?? []).firstName;
     });
 
     const familyMember = computed<RegistrationEntryBlockFamilyMemberViewModel | null>(() => {
@@ -332,7 +331,7 @@ import { RegistrationFieldSource } from "./types.partial";
             return null;
         }
 
-        return viewModel.value.familyMembers.find(fm => areEqual(fm.guid, personGuid)) || null;
+        return viewModel.value.familyMembers?.filter(fm => fm.guid)?.find(fm => areEqual(fm.guid, personGuid)) || null;
     });
 
     const signatureDocumentTerm = computed<string>(() => {
@@ -344,7 +343,7 @@ import { RegistrationFieldSource } from "./types.partial";
     // #region Functions
 
     function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
-        const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
+        const value = !rule.comparedToRegistrationTemplateFormFieldGuid ? "" : fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
 
         if (typeof value !== "string") {
             return false;
@@ -361,7 +360,11 @@ import { RegistrationFieldSource } from "./types.partial";
             return false;
         }
 
-        return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+        if (!rule.comparisonValue) {
+            return false;
+        }
+
+        return fieldType.doesValueMatchFilter(value, convertComparisonValue(rule.comparisonValue), comparedToFormField.attribute.configurationValues ?? {});
     }
 
     function onPrevious(): void {
@@ -445,11 +448,11 @@ import { RegistrationFieldSource } from "./types.partial";
         }
 
         // Now go through all of the fee items and update the usage by subtracting the the total in combinedFeeItemQuantities from the originalCountRemaining
-        const fees = registrationEntryState.viewModel.fees;
+        const fees = registrationEntryState.viewModel.fees ?? [];
         for (const fee of fees) {
             if (fee?.items?.length) {
                 for (const feeItem of fee.items) {
-                    if (feeItem.countRemaining === null || feeItem.countRemaining === undefined || feeItem.originalCountRemaining === undefined || feeItem.originalCountRemaining === null) {
+                    if (!feeItem.guid || feeItem.countRemaining === null || feeItem.countRemaining === undefined || feeItem.originalCountRemaining === undefined || feeItem.originalCountRemaining === null) {
                         continue;
                     }
 
@@ -502,12 +505,20 @@ import { RegistrationFieldSource } from "./types.partial";
         }
 
         // If the family member selection is made then set all form fields where use existing value is enabled
-        for (const form of viewModel.value.registrantForms) {
-            for (const field of form.fields) {
+        for (const form of viewModel.value.registrantForms ?? []) {
+            for (const field of form.fields ?? []) {
+                if (!field.guid) {
+                    continue;
+                }
+
                 // Do not set common fields if they are of type
                 // Registrant Attribute since there is no value to set.
                 // Fixes issue #5610.
                 if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                    continue;
+                }
+
+                if (!familyMember.value.fieldValues) {
                     continue;
                 }
 
@@ -538,21 +549,23 @@ import { RegistrationFieldSource } from "./types.partial";
             registrantGuid: props.currentRegistrant.guid
         });
 
-        if (result.isSuccess && result.data) {
+        if (result.isSuccess && result.data && viewModel.value.registrantForms) {
             for (const form of viewModel.value.registrantForms) {
-                for (const field of form.fields) {
-                    // Check if we gota value for the attribute
-                    if (field.guid in result.data) {
-                        const formFieldValue = result.data[field.guid];
-                        const currentFormFieldValue = props.currentRegistrant.fieldValues[field.guid];
+                if (form.fields) {
+                    for (const field of form.fields) {
+                        // Check if we gota value for the attribute
+                        if (field.guid && field.guid in result.data) {
+                            const formFieldValue = result.data[field.guid];
+                            const currentFormFieldValue = props.currentRegistrant.fieldValues[field.guid];
 
-                        if (currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
-                            if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
-                                // Is this even possible? It was already determined that currentFormFieldValue is undefined | null | "".
-                                props.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
-                            }
-                            else {
-                                props.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                            if (currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
+                                if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
+                                    // Is this even possible? It was already determined that currentFormFieldValue is undefined | null | "".
+                                    props.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
+                                }
+                                else {
+                                    props.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                                }
                             }
                         }
                     }
