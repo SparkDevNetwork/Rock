@@ -327,6 +327,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\SiteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\CommunicationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SmsPipelineList\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
@@ -841,6 +842,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionList\personalLinkSectionListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\SiteDetail\siteBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\SiteDetail\siteDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\CommunicationList\communicationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceIntializationBox.d.ts" />
