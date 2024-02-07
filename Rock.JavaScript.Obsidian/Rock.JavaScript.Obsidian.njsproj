@@ -310,6 +310,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\" />
@@ -798,6 +799,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelDetail\contentChannelDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelList\contentChannelListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeList\contentChannelTypeListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeDetail\contentChannelTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeDetail\contentChannelTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\attributeFilterBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\availableContentSourceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\contentCollectionBag.d.ts" />
