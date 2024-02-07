@@ -28,15 +28,15 @@ namespace Rock.Rest.Validation
     /// </summary>
     public class RockBodyModelValidator : DefaultBodyModelValidator
     {
-        private readonly List<Type> BypassTypes = new List<Type>
+        private readonly HashSet<string> BypassTypes = new HashSet<string>
         {
-            typeof( GroupTypeCache )
+            typeof( GroupTypeCache ).FullName
         };
 
         /// <inheritdoc/>
         public override bool ShouldValidateType( Type type )
         {
-            return !BypassTypes.Contains( type ) && base.ShouldValidateType( type );
+            return !BypassTypes.Contains( type.FullName ) && base.ShouldValidateType( type );
         }
     }
 }
