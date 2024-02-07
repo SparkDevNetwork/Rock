@@ -88,7 +88,7 @@
         }
         else {
             valueBuilder.addHtmlValue("Transaction Amount / Control / Variance",
-            `<span>${toCurrencyOrNull(transactionAmount, currencyInfo)} </span> / <span>${toCurrencyOrNull(controlAmount, currencyInfo)} </span> / <span class='label label-danger'>${toCurrencyOrNull(transactionVariance, currencyInfo)}</span>`);
+            `${toCurrencyOrNull(transactionAmount, currencyInfo)} / ${toCurrencyOrNull(controlAmount, currencyInfo)} / <span class='label label-danger'>${toCurrencyOrNull(transactionVariance, currencyInfo)}</span>`);
         }
 
         let transactionItemCount = toNumber(props.options.transactionItemCount);
