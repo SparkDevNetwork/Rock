@@ -978,6 +978,10 @@ namespace Rock.Lava
             {
                 return lpe;
             }
+            if ( ex is LavaException le )
+            {
+                return le;
+            }
 
             return new LavaRenderException( this.EngineName, templateText, ex );
         }

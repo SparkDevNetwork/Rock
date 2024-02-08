@@ -37,6 +37,13 @@ Whenever possible a test should put the database back the way it was found. This
 
 Each test suite (C# class) will get a new database instance for all tests contained in that suite. Usually this is sufficient as those tests are generally related and expect the same test data. When that is not the case and your individual tests each require a clean environment, you can apply the `[IsolatedDatabase]` attribute to the test method for whichever tests want a clean environment. You can also put that attribute on the class and each test will get a clean database.
 
+## Configuring Docker Desktop
+Docker Desktop is simple to install on a Windows PC.
+However, configuring Docker to run on a Virtual Machine requires some additional configuration, because Docker is a virtualization tool itself.
+
+Advice on how to run Docker Desktop in a virtualized environment can be found [here](https://docs.docker.com/desktop/vm-vdi/).
+To configure Docker for a Hyper-V virtual machine, follow the instructions [here](https://learn.microsoft.com/en-us/virtualization/hyper-v-on-windows/user-guide/enable-nested-virtualization)
+
 ## Using a Development Database
 There may be times when it is necessary or desirable to preserve your test data from one test run to another. This is particularly true during the initial development of a new feature where test data is being added throughout the development process.
 In that case, be sure to set the DatabaseRefreshStrategy configuration option to "never", to prevent your database from being replaced by a new sample database at the start of each test run.

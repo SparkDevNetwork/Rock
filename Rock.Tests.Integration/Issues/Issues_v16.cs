@@ -34,6 +34,7 @@ namespace Rock.Tests.Integration.BugFixes
     /// They are only relevant to the Rock version in which the bug is fixed, and should be removed in subsequent versions.
     /// </remarks>
     [TestClass]
+    [TestCategory( TestFeatures.Lava )]
     [RockObsolete( "1.16" )]
     public class BugFixVerificationTests_v16
     {
@@ -124,6 +125,7 @@ Property Filter: 1
         /// Verifies the resolution of a specific Issue.
         /// </summary>
         [TestMethod]
+        [TestCategory( TestFeatures.Lava )]
         public void Issue5560_LavaCommentsDisplayedInOutput()
         {
             /* The Lava Engine may render inline comments to output where an unmatched quote delimiter is present in the preceding template text.
@@ -209,6 +211,7 @@ Did you see those comments ^^^
         /// Verifies the resolution of a specific Issue.
         /// </summary>
         [TestMethod]
+        [TestCategory( TestFeatures.Lava )]
         public void Issue5632_ScheduleStartTimeReturnsUtc()
         {
             /* The Fluid Lava Engine incorrectly renders the Schedule.StartTimeOfDay property as a UTC DateTime rather than a TimeSpan.
@@ -268,6 +271,7 @@ StartTimeOfDay (Formatted): 10:30 AM {System.DateTime.Now:%K}
         }
 
         [TestMethod]
+        [TestCategory( TestFeatures.Lava )]
         public void Issue5687_CannotNestEntityCommands()
         {
             /* The Fluid Lava Engine throws a parsing exception when trying to process embedded entity commands

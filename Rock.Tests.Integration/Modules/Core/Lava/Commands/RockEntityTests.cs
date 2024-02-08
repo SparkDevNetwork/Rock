@@ -434,9 +434,9 @@ TedDecker<br/>
         public void EntityCommandBlock_WithCountParameterIsTrue_ReturnsCountVariableInContext()
         {
             var input = @"
-{% group count:'true' expression:'Id != 0' limit:'10' %}
+{% person count:'true' expression:'Id != 0' limit:'10' %}
 {{ count }}
-{% endgroup %}
+{% endperson %}
 ";
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
