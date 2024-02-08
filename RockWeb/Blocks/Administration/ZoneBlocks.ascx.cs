@@ -699,7 +699,9 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            List<BlockTypeCache> blockTypesToDisplay = BlockTypeService.BlockTypesToDisplay( siteType );
+            // If the IsDebuggingEnabled happens to be true, show all the obsidian blocks. This is done for testing purposes.
+            // This flag needs to be removed once all the blocks are migrated to obsidian.
+            List<BlockTypeCache> blockTypesToDisplay = BlockTypeService.BlockTypesToDisplay( siteType, HttpContext.Current.IsDebuggingEnabled );
 
             var blockTypes = blockTypesToDisplay.Select( b => new
             {
