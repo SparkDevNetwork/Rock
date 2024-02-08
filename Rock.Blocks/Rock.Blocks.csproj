@@ -130,6 +130,7 @@
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
     <Compile Include="Core\SignalTypeList.cs" />
+    <Compile Include="Core\TagList.cs" />
     <Compile Include="Crm\AssessmentTypeList.cs" />
     <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />

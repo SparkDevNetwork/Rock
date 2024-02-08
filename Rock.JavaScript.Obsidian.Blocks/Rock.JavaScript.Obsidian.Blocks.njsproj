@@ -110,6 +110,7 @@
     <Content Include="src\Core\taggedItemDetail.obs" />
     <Content Include="src\Core\TaggedItemDetail\editPanel.partial.obs" />
     <Content Include="src\Core\TaggedItemDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\tagList.obs" />
     <Content Include="src\Crm\assessmentList.obs" />
     <Content Include="src\Crm\familyPreRegistration.obs" />
     <Content Include="src\Crm\FamilyPreRegistration\preRegistrationChild.partial.obs" />
@@ -387,6 +388,7 @@
     <Folder Include="src\Core\SuggestionDetail\" />
     <Folder Include="src\Core\ScheduleDetail\" />
     <Folder Include="src\Core\TaggedItemDetail\" />
+    <Folder Include="src\Core\TagList\" />
     <Folder Include="src\Crm\DocumentTypeDetail\" />
     <Folder Include="src\Core\LocationDetail\" />
     <Folder Include="src\Core\NoteTypeDetail\" />
@@ -569,6 +571,7 @@
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\ScheduleDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\TaggedItemDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\TagList\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\DocumentTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\SignalTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\locationDetail.ts" />
