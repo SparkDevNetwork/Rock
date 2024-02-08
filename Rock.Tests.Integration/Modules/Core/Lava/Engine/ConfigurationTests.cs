@@ -123,6 +123,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
             var webSitePath = Path.GetFullPath( Directory.GetCurrentDirectory() + "..\\..\\..\\..\\RockWeb" );
             var configFilePath = Path.GetFullPath( webSitePath + @"/Scripts/ace/mode-lava.js" );
 
+            LogHelper.Log( $"Reading configuration file...\n{configFilePath}" );
+
             var configText = File.ReadAllText( configFilePath );
 
             var lavaFiltersRegex = @"
