@@ -25,7 +25,8 @@
                         name="startDateTime"
                         :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                         field="startDateTime"
-                        :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
+                        :filter="config?.options?.showFilters ? dateValueFilter : undefined"
+                        width="250" />
 
         <DateColumn v-if="config?.options?.showStartDateTimeColumn && !config?.options?.includeTime"
                     headerClass="text-right"
@@ -33,7 +34,18 @@
                     name="startDateTime"
                     :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                     field="startDateTime"
-                    :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
+                    :filter="config?.options?.showFilters ? dateValueFilter : undefined"
+                    width="250" />
+
+        <Column v-if="showScheduledIconColumn"
+                name="isScheduled"
+                title=""
+                width="45">
+            <template #format="{ row }">
+                <i class='fa fa-clock' v-if="RockDateTime.parseISO(row.startDateTime as string)?.isLaterThan(RockDateTime.now())"></i>
+            </template>
+        </Column>
+
 
         <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn && config?.options?.includeTime"
                         headerClass="text-right"
@@ -41,7 +53,8 @@
                         name="expireDateTime"
                         title="Expire"
                         field="expireDateTime"
-                        :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
+                        :filter="config?.options?.showFilters ? dateValueFilter : undefined"
+                        width="250" />
 
         <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime"
                     headerClass="text-right"
@@ -49,7 +62,8 @@
                     name="expireDateTime"
                     title="Expire"
                     field="expireDateTime"
-                    :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
+                    :filter="config?.options?.showFilters ? dateValueFilter : undefined"
+                    width="250" />
 
         <NumberColumn v-if="config?.options?.showPriorityColumn"
                       headerClass="text-right"
@@ -59,6 +73,15 @@
                       field="priority"
                       :filter="config?.options?.showFilters ? numberValueFilter : undefined"
                       width="125" />
+
+        <BooleanColumn v-if="showOccurrencesColumn"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
+                       name="occurrences"
+                       title="Event Occurrences"
+                       field="occurrences"
+                       :filter="config?.options?.showFilters ? booleanValueFilter : undefined"
+                       width="120" />
 
         <Column v-if="config.options?.isContentLibraryEnabled"
                 itemClass="grid-columncommand justify-content-center"
@@ -163,7 +186,7 @@
     import { computed, reactive, ref, watch } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DateTimeColumn, DateColumn, dateValueFilter, DeleteColumn, SecurityColumn, LabelColumn, pickExistingValueFilter, ReorderColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DateTimeColumn, DateColumn, dateValueFilter, DeleteColumn, SecurityColumn, LabelColumn, pickExistingValueFilter, BooleanColumn, booleanValueFilter, ReorderColumn, Column } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -177,6 +200,7 @@
     import { NavigationUrlKey } from "./ContentChannelItemList/types.partial";
     import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
     import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     type GridRowItem = {
         "id": string,
@@ -204,6 +228,8 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    const hasEventOccurrences = ref(false);
 
     // Content Library Modals
     const isUpdateModalVisible = ref(false);
@@ -234,6 +260,12 @@
         return [];
     });
 
+    const showOccurrencesColumn = computed(() => {
+        return hasEventOccurrences.value && config.options?.showOccurrencesColumn;
+    });
+
+    const showScheduledIconColumn = ref(false);
+
     const statusLabelColors: Record<string, string> = {
         [ContentChannelItemStatusDescription[ContentChannelItemStatus.PendingApproval]]: "default",
         [ContentChannelItemStatusDescription[ContentChannelItemStatus.Approved]]: "success",
@@ -252,6 +284,10 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
+
+            hasEventOccurrences.value = (gridData?.rows ?? []).some(i => i.occurrences);
+            showScheduledIconColumn.value = (gridData?.rows ?? []).some(i => RockDateTime.parseISO(i.startDateTime as string)?.isLaterThan(RockDateTime.now()));
+
             return gridData;
         }
         else {
@@ -300,6 +336,8 @@
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete content channel item.");
         }
+
+        gridDataSource.value = loadGridData();
     }
 
     /**

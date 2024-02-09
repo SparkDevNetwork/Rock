@@ -283,7 +283,20 @@ namespace Rock.Blocks.Cms
                 query = query.Where( i => i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.PersonId == person.Id );
             }
 
+            query = query.OrderBy( i => i.Order );
+
+            if ( !contentChannel.ItemsManuallyOrdered )
+            {
+                query = query.OrderByDescending( p => p.StartDateTime );
+            }
+
             return query;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<ContentChannelItem> GetOrderedListQueryable( IQueryable<ContentChannelItem> queryable, RockContext rockContext )
+        {
+            return queryable;
         }
 
         /// <summary>
@@ -308,6 +321,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "id", a => a.Id.ToString() )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "contentChannelId", a => a.ContentChannelId )
+                .AddField( "order", a => a.Order )
                 .AddTextField( "title", a => a.Title )
                 .AddDateTimeField( "startDateTime", a => a.StartDateTime )
                 .AddDateTimeField( "expireDateTime", a => a.ExpireDateTime )
