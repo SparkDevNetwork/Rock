@@ -20,30 +20,40 @@
                     :filter="config?.options?.showFilters ? textValueFilter : undefined" />
 
         <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn && config?.options?.includeTime"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         name="startDateTime"
                         :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                         field="startDateTime"
                         :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
 
         <DateColumn v-if="config?.options?.showStartDateTimeColumn && !config?.options?.includeTime"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     name="startDateTime"
                     :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                     field="startDateTime"
                     :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
 
         <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn && config?.options?.includeTime"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
                         name="expireDateTime"
                         title="Expire"
                         field="expireDateTime"
                         :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
 
         <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
                     name="expireDateTime"
                     title="Expire"
                     field="expireDateTime"
                     :filter="config?.options?.showFilters ? dateValueFilter : undefined" />
 
         <NumberColumn v-if="config?.options?.showPriorityColumn"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
                       name="priority"
                       title="Priority"
                       field="priority"
@@ -51,12 +61,35 @@
                       width="125" />
 
         <Column v-if="config.options?.isContentLibraryEnabled"
+                itemClass="grid-columncommand justify-content-center"
                 name="library"
-                title="Library">
+                title="Library"
+                width="80">
             <template #format="{ row }">
-                <RockButton v-if="row.isUploadedToContentLibrary">Is Uploaded</RockButton>
-                <RockButton v-else-if="row.isDownloadedFromContentLibrary">Is Downloaded</RockButton>
-                <RockButton v-else-if="!row.contentLibrarySourceIdentifier">Upload</RockButton>
+                <RockButton v-if="row.isUploadedToContentLibrary"
+                            title="Update"
+                            btnType="default"
+                            btnSize="sm"
+                            class="text-info"
+                            @click.stop="showUpdateModal(row as GridRowItem)">
+                    <i class="fa fa-upload" aria-label="Update"></i>
+                </RockButton>
+                <RockButton v-else-if="row.isDownloadedFromContentLibrary"
+                            title="Re-Download"
+                            btnType="default"
+                            btnSize="sm"
+                            class="text-success"
+                            @click.stop="showRedownloadModal(row as GridRowItem)">
+                    <i class="fa fa-download" aria-label="Re-Download"></i>
+                </RockButton>
+                <RockButton v-else-if="!row.contentLibrarySourceIdentifier"
+                            title="Upload"
+                            btnType="default"
+                            btnSize="sm"
+                            class="text-muted"
+                            @click.stop="showUploadModal(row as GridRowItem)">
+                    <i class="fa fa-upload" aria-label="Upload"></i>
+                </RockButton>
 
             </template>
 
@@ -80,16 +113,64 @@
 
         <DeleteColumn v-if="config?.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
+    <Modal v-model="isUpdateModalVisible"
+           title="Send to Library"
+           saveText="Update"
+           :isSaveButtonDisabled="isLoading"
+           @save="onUpdateModalSave"
+           @closeModal="onUpdateModalCancel">
+        <Loading :isLoading="isLoading">
+            <p>Are you sure you would like to update the item "{{ currentRow?.title }}" in the library? Updating an item will temporarily remove it from the library until it can be re-approved.</p>
+        </Loading>
+        <template #customButtons>
+            <LoadingIndicator v-if="isLoading" class="text-body pull-right p-2" isSmall />
+        </template>
+    </Modal>
+    <Modal v-model="isRedownloadModalVisible"
+           title="Re-download from Library"
+           saveText="Re-download"
+           :isSaveButtonDisabled="isLoading"
+           @save="onRedownloadModalSave"
+           @closeModal="onRedownloadModalCancel">
+        <Loading :isLoading="isLoading">
+            <div class="alert alert-warning">
+                <span class="js-notification-text">The action you are about to perform will overwrite the existing content of the item "Beta Test ChatGPT on Biblical New Years Resolutions.". Any changes will be lost. Are you sure you want to proceed with the update? </span>
+            </div>
+        </Loading>
+        <template #customButtons>
+            <LoadingIndicator v-if="isLoading" class="text-body pull-right p-2" isSmall />
+        </template>
+    </Modal>
+    <Modal v-model="isUploadModalVisible"
+           title="Send to Library"
+           saveText="Upload"
+           :isSaveButtonDisabled="isLoading"
+           @save="onUploadModalSave"
+           @closeModal="onUploadModalCancel">
+        <Loading :isLoading="isLoading">
+            <p>Are you sure you would like to upload the item "{{ currentRow?.title }}" to the library? This will be shared with the <a href="https://rockrms.com/library/licenses?utm_source=rock-item-uploaded" target="_blank">{{ config.options?.libraryLicenseName }} License</a></p>
+        </Loading>
+        <template #customButtons>
+            <LoadingIndicator v-if="isLoading" class="text-body pull-right p-2" isSmall />
+        </template>
+    </Modal>
+    <ModalAlert v-model="showError" type="Alert">
+        <div v-html="errorMessage"></div>
+    </ModalAlert>
 </template>
 
 <script setup lang="ts">
-    import { computed, reactive, ref } from "vue";
+    import { computed, reactive, ref, watch } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DateTimeColumn, DateColumn, dateValueFilter, DeleteColumn, SecurityColumn, LabelColumn, pickExistingValueFilter, ReorderColumn, Column } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
     import { type GridAction } from "@Obsidian/Types/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ContentChannelItemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemList/contentChannelItemListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -97,15 +178,44 @@
     import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
     import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
 
-    const config = useConfigurationValues<ListBlockBox<ContentChannelItemListOptionsBag>>();
+    type GridRowItem = {
+        "id": string,
+        "idKey": string,
+        "contentChannelId": number,
+        "title": string,
+        "startDateTime": string,
+        "expireDateTime": string,
+        "isScheduled": boolean,
+        "occurrences": boolean,
+        "status": ContentChannelItemStatus,
+        "priority": number,
+        "isContentLibraryOwner": boolean | null,
+        "contentLibrarySourceIdentifier": boolean | null,
+        "isDownloadedFromContentLibrary": boolean,
+        "isUploadedToContentLibrary": boolean,
+        "contentLibraryLicenseTypeGuid": string | null,
+        "isSecurityDisabled": boolean
+    };
 
-    console.log(config);
+    const config = useConfigurationValues<ListBlockBox<ContentChannelItemListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    // Content Library Modals
+    const isUpdateModalVisible = ref(false);
+    const isRedownloadModalVisible = ref(false);
+    const isUploadModalVisible = ref(false);
+    const isLoading = ref(false);
+
+    const currentRow = ref<GridRowItem>();
+
+    //Error Modal
+    const showError = ref(false);
+    const errorMessage = ref("");
 
     const customActions = computed<GridAction[]>(() => {
         if (config.options?.isContentLibraryEnabled) {
@@ -147,6 +257,11 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    function showAlert(message: string): void {
+        errorMessage.value = escapeHtml(message).replace("\n", "<br>");
+        showError.value = true;
     }
 
     // #endregion
@@ -213,6 +328,94 @@
 
         return result.isSuccess;
     }
+
+    function showUpdateModal(row: GridRowItem): void {
+        currentRow.value = row;
+        isUpdateModalVisible.value = true;
+    }
+
+    async function onUpdateModalSave(): Promise<void> {
+        isLoading.value = true;
+
+        const result = await invokeBlockAction<string>("UpdateContentLibraryItem", {
+            key: currentRow.value?.id ?? 0
+        });
+
+        isLoading.value = false;
+        isUpdateModalVisible.value = false;
+
+        if (result.isError) {
+            showAlert(result.errorMessage || "An unknown error occurred while updating.");
+        }
+    }
+
+    function onUpdateModalCancel(): void {
+        isLoading.value = false;
+        isUpdateModalVisible.value = false;
+    }
+
+    function showRedownloadModal(row: GridRowItem): void {
+        currentRow.value = row;
+        isRedownloadModalVisible.value = true;
+    }
+
+    async function onRedownloadModalSave(): Promise<void> {
+        isLoading.value = true;
+
+        const result = await invokeBlockAction<string>("ReDownloadContentLibraryItem", {
+            key: currentRow.value?.id ?? 0
+        });
+
+        isLoading.value = false;
+        isRedownloadModalVisible.value = false;
+
+        if (result.isError) {
+            showAlert(result.errorMessage || "An unknown error occurred while re-downloading.");
+        }
+    }
+
+    function onRedownloadModalCancel(): void {
+        isLoading.value = false;
+        isUploadModalVisible.value = false;
+    }
+
+    function showUploadModal(row: GridRowItem): void {
+        currentRow.value = row;
+        isUploadModalVisible.value = true;
+    }
+
+    async function onUploadModalSave(): Promise<void> {
+        isLoading.value = true;
+
+        const result = await invokeBlockAction<string>("UploadContentLibraryItem", {
+            key: currentRow.value?.id ?? 0
+        });
+
+        isLoading.value = false;
+        isUploadModalVisible.value = false;
+
+        if (result.isError) {
+            showAlert(result.errorMessage || "An unknown error occurred while re-downloading.");
+        }
+
+        // Make sure the grid is up-to-date so the "update" icon shows for this instead of
+        gridDataSource.value = loadGridData();
+    }
+
+    function onUploadModalCancel(): void {
+        isLoading.value = false;
+        isUploadModalVisible.value = false;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(showError, () => {
+        if (!showError.value) {
+            errorMessage.value = "";
+        }
+    });
 
     // #endregion
 

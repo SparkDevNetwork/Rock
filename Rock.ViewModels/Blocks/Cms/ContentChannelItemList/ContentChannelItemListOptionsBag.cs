@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemList
@@ -35,6 +37,10 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemList
         public ContentChannelDateType DateType { get; set; }
 
         public int ContentChannelId { get; set; }
+
+        public Guid LibraryLicenseGuid { get; set; }
+
+        public string LibraryLicenseName { get; set; }
 
         public bool ShowFilters { get; set; }
 

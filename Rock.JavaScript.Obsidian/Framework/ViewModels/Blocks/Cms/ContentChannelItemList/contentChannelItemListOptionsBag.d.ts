@@ -22,6 +22,7 @@
 //
 
 import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
+import { Guid } from "@Obsidian/Types";
 
 /** The additional configuration options for the Content Channel Item List block. */
 export type ContentChannelItemListOptionsBag = {
@@ -36,6 +37,10 @@ export type ContentChannelItemListOptionsBag = {
     isContentLibraryEnabled: boolean;
 
     isManuallyOrdered: boolean;
+
+    libraryLicenseGuid?: Guid | null;
+
+    libraryLicenseName?: string | null;
 
     showExpireDateTimeColumn: boolean;
 

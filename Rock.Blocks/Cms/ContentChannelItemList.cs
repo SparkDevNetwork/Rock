@@ -18,11 +18,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.SystemGuid;
@@ -165,6 +169,7 @@ namespace Rock.Blocks.Cms
             }
 
             var isFiltered = IsFiltered();
+            var licenseGuid = contentChannel.ContentLibraryConfiguration?.LicenseTypeValueGuid ?? Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid();
 
             var options = new ContentChannelItemListOptionsBag
             {
@@ -175,6 +180,8 @@ namespace Rock.Blocks.Cms
                 ContentChannelId = contentChannel.Id,
                 ShowFilters = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean(),
                 IsContentLibraryEnabled = contentChannel.ContentLibraryConfiguration?.IsEnabled == true,
+                LibraryLicenseGuid = licenseGuid,
+                LibraryLicenseName = DefinedValueCache.Get( licenseGuid ).Value,
 
                 ShowReorderColumn = !isFiltered && contentChannel.ItemsManuallyOrdered,
                 ShowPriorityColumn = !contentChannel.ContentChannelType.DisablePriority
@@ -395,6 +402,103 @@ namespace Rock.Blocks.Cms
 
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Upload a content item to the content library
+        /// </summary>
+        /// <param name="key">The identifier of the item to be uploaded.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult UploadContentLibraryItem( string key )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    var contentChannelItemId = key.AsInteger();
+                    var contentChannelItemService = new ContentChannelItemService( rockContext );
+                    contentChannelItemService.UploadToContentLibrary(
+                        new ContentLibraryItemUploadOptions
+                        {
+                            ContentChannelItemId = contentChannelItemId,
+                            UploadedByPersonAliasId = GetCurrentPerson().PrimaryAliasId
+                        } );
+                }
+                catch ( AddToContentLibraryException ex )
+                {
+                    Logger.LogError( ex, ex.Message );
+                    return ActionInternalServerError( ex.Message );
+                }
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Update a content item that has already been uploaded to the content library
+        /// </summary>
+        /// <param name="key">The identifier of the item to be uploaded.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult UpdateContentLibraryItem( string key )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    var contentChannelItemId = key.AsInteger();
+                    var contentChannelItemService = new ContentChannelItemService( rockContext );
+                    contentChannelItemService.UploadToContentLibrary(
+                        new ContentLibraryItemUploadOptions
+                        {
+                            ContentChannelItemId = contentChannelItemId,
+                            UploadedByPersonAliasId = GetCurrentPerson().PrimaryAliasId
+                        }
+                    );
+                }
+                catch ( AddToContentLibraryException ex )
+                {
+                    Logger.LogError( ex, ex.Message );
+                    return ActionInternalServerError( ex.Message );
+                }
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Redownload a content item that has already been downloaded from the content library
+        /// </summary>
+        /// <param name="key">The identifier of the item to be downloaded.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult ReDownloadContentLibraryItem( string key )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemId = key.AsInteger();
+                var contentChannelItemService = new ContentChannelItemService( rockContext );
+
+                var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id == contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();
+
+                try
+                {
+                    var result = contentChannelItemService.AddFromContentLibrary( new ContentLibraryItemDownloadOptions
+                    {
+                        ContentLibraryItemGuidToDownload = contentLibraryItemGuid.Value,
+                        DownloadIntoContentChannelGuid = GetContentChannel().Guid,
+                        CurrentPersonPerformingDownload = GetCurrentPerson()
+                    } );
+                }
+                catch ( AddFromContentLibraryException ex )
+                {
+                    Logger.LogError( ex, ex.Message );
+                    return ActionInternalServerError( ex.Message );
+                }
 
                 return ActionOk();
             }
