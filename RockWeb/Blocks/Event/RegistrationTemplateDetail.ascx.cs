@@ -126,9 +126,11 @@ namespace RockWeb.Blocks.Event
 </p>
 {% endif %}
 
-<p>
-    {{ RegistrationInstance.AdditionalConfirmationDetails }}
-</p>
+{% if registrantCount > 0 %}
+    <p>
+        {{ RegistrationInstance.AdditionalConfirmationDetails }}
+    </p>
+{% endif %}
 
 <p>
     If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
