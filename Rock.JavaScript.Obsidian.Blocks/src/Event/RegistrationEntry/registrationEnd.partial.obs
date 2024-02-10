@@ -38,8 +38,10 @@
 
     const attributeValues = ref<Record<string, string>>({});
 
-    for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
-        attributeValues.value[a.key ?? ""] = (registrationEntryState.registrationFieldValues[a.attributeGuid ?? ""] as string) || "";
+    if (registrationEntryState.viewModel.registrationAttributesEnd) {
+        for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
+            attributeValues.value[a.key ?? ""] = (registrationEntryState.registrationFieldValues[a.attributeGuid ?? ""] as string) || "";
+        }
     }
 
     // #endregion
@@ -53,8 +55,10 @@
     const attributes = computed((): Record<string, PublicAttributeBag> => {
         const attrs: Record<string, PublicAttributeBag> = {};
 
-        for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
-            attrs[a.key ?? ""] = a;
+        if (registrationEntryState.viewModel.registrationAttributesEnd) {
+            for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
+                attrs[a.key ?? ""] = a;
+            }
         }
 
         return attrs;
@@ -77,8 +81,10 @@
     // #region Watchers
 
     watch(attributeValues, () => {
-        for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
-            registrationEntryState.registrationFieldValues[a.attributeGuid ?? ""] = attributeValues.value[a.key ?? ""];
+        if (registrationEntryState.viewModel.registrationAttributesEnd) {
+            for (const a of registrationEntryState.viewModel.registrationAttributesEnd) {
+                registrationEntryState.registrationFieldValues[a.attributeGuid ?? ""] = attributeValues.value[a.key ?? ""];
+            }
         }
     });
 

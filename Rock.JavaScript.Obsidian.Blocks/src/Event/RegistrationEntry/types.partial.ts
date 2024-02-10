@@ -15,21 +15,22 @@
 // </copyright>
 //
 
+import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { Guid } from "@Obsidian/Types";
-import { UnwrapBuilderType, buildTypeFrom } from "@Obsidian/Utility/typeUtils";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { UnwrapTypeBuilder, TypeBuilder } from "@Obsidian/Utility/typeUtils";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
-import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
 import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
 import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
-import { SessionRenewalResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/sessionRenewalResultBag";
 import { RegistrationEntryFamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFamilyMemberBag";
-import { RegistrationEntryFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeItemBag";
 import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
+import { RegistrationEntryFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeItemBag";
 import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
 import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
-import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { RegistrationEntrySessionBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySessionBag";
+import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
+import { RegistrationEntryVisibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryVisibilityBag";
+import { SessionRenewalResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/sessionRenewalResultBag";
 
 export const enum RegistrationPersonFieldType {
     FirstName = 0,
@@ -72,113 +73,112 @@ export const enum RegistrantsSameFamily {
 }
 
 const sessionRenewalResultValue =
-    buildTypeFrom<SessionRenewalResultBag>()
-    .withRequiredNonNullableProps("expirationDateTime")
+    TypeBuilder.fromType<SessionRenewalResultBag>()
+    .makePropertiesWithName("expirationDateTime").required().and.defined()
     .build();
-export type SessionRenewalResult = UnwrapBuilderType<typeof sessionRenewalResultValue>;
+export type SessionRenewalResult = UnwrapTypeBuilder<typeof sessionRenewalResultValue>;
 
 const registrationEntryBlockViewModelValue =
-    buildTypeFrom<RegistrationEntryInitializationBox>()
-    .withRequiredProps(
-        "timeoutMinutes", "spotsRemaining", "amountDueToday", "initialAmountToPay", "session",
-        "successViewModel", "gatewayGuid", "savedAccounts", "registrationInstanceNotFoundMessage")
-    .withRequiredNonNullableProps(
-        "registrationAttributeTitleStart", "registrationAttributeTitleEnd", "instructionsHtml",
-        "registrantTerm", "registrationTerm", "pluralRegistrationTerm", "pluralRegistrantTerm",
-        "pluralFeeTerm", "registrantForms", "fees", "familyMembers", "registrationAttributesStart",
-        "registrationAttributesEnd", "gatewayControl", "instanceName", "redirectGatewayUrl",
-        "campuses", "maritalStatuses", "connectionStatuses", "grades", "races", "ethnicities")
-    .withOverriddenType<RegistrationEntryBlockFamilyMemberViewModel[]>().forProps("familyMembers")
-    .withOverriddenType<RegistrationEntryBlockFeeViewModel[]>().forProps("fees")
-    .withOverriddenType<RegistrationEntryBlockFormViewModel[]>().forProps("registrantForms")
-    .withOverriddenType<RegistrarOption>().forProps("registrarOption")
-    .withOverriddenType<RegistrantsSameFamily>().forProps("registrantsSameFamily")
-    .withOverriddenType<RegistrationEntryBlockSession | null>().forProps("session")
-    .withOverriddenType<RegistrationEntryBlockSuccessViewModel | null>().forProps("successViewModel")
+    TypeBuilder.fromType<RegistrationEntryInitializationBox>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("currentPersonFamilyGuid").type<Guid | null>()
+    .makePropertiesWithName("gatewayGuid").type<Guid | null>()
+    .makePropertiesWithName("session").type<RegistrationEntryBlockSession | null>()
+    .makePropertiesWithName("registrantForms").type<RegistrationEntryBlockFormViewModel[] | null>()
+    .makePropertiesWithName("fees").type<RegistrationEntryBlockFeeViewModel[] | null>()
+    .makePropertiesWithName("familyMembers").type<RegistrationEntryBlockFamilyMemberViewModel[] | null>()
+    .makePropertiesWithName("successViewModel").type<RegistrationEntryBlockSuccessViewModel | null>()
+    .makePropertiesWithName("registrarOption").type<RegistrarOption>()
     .build();
-export type RegistrationEntryBlockViewModel = UnwrapBuilderType<typeof registrationEntryBlockViewModelValue>;
+export type RegistrationEntryBlockViewModel = UnwrapTypeBuilder<typeof registrationEntryBlockViewModelValue>;
 
 const registrationEntryBlockFamilyMemberViewModelValue =
-    buildTypeFrom<RegistrationEntryFamilyMemberBag>()
-    .withRequiredNonNullableProps("familyGuid", "fieldValues", "fullName", "guid")
+    TypeBuilder.fromType<RegistrationEntryFamilyMemberBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("familyGuid", "guid").type<Guid>()
     .build();
-export type RegistrationEntryBlockFamilyMemberViewModel = UnwrapBuilderType<typeof registrationEntryBlockFamilyMemberViewModelValue>;
+export type RegistrationEntryBlockFamilyMemberViewModel = UnwrapTypeBuilder<typeof registrationEntryBlockFamilyMemberViewModelValue>;
 
 const registrationEntryBlockFeeViewModelValue =
-    buildTypeFrom<RegistrationEntryFeeBag>()
-    .withOptionalProps("hideWhenNoneRemaining")
-    .withRequiredNonNullableProps("guid", "items", "name")
-    .withOverriddenType<RegistrationEntryBlockFeeItemViewModel[]>().forProps("items")
+    TypeBuilder.fromType<RegistrationEntryFeeBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("guid").type<Guid>()
+    .makePropertiesWithName("items").type<RegistrationEntryBlockFeeItemViewModel[] | null>()
     .build();
-export type RegistrationEntryBlockFeeViewModel = UnwrapBuilderType<typeof registrationEntryBlockFeeViewModelValue>;
+export type RegistrationEntryBlockFeeViewModel = UnwrapTypeBuilder<typeof registrationEntryBlockFeeViewModelValue>;
 
 const registrationEntryBlockFeeItemViewModelValue =
-    buildTypeFrom<RegistrationEntryFeeItemBag>()
-    .withRequiredProps("countRemaining", "originalCountRemaining")
-    .withRequiredNonNullableProps("guid", "name")
+    TypeBuilder.fromType<RegistrationEntryFeeItemBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("guid").type<Guid>()
     .build();
-export type RegistrationEntryBlockFeeItemViewModel = UnwrapBuilderType<typeof registrationEntryBlockFeeItemViewModelValue>;
+export type RegistrationEntryBlockFeeItemViewModel = UnwrapTypeBuilder<typeof registrationEntryBlockFeeItemViewModelValue>;
 
 const registrationEntryBlockFormViewModelValue =
-    buildTypeFrom<RegistrationEntryFormBag>()
-    .withRequiredProps("fields")
-    .withOverriddenType<RegistrationEntryBlockFormFieldViewModel[]>().forProps("fields")
+    TypeBuilder.fromType<RegistrationEntryFormBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("fields").type<RegistrationEntryBlockFormFieldViewModel[] | null>()
     .build();
-export type RegistrationEntryBlockFormViewModel = UnwrapBuilderType<typeof registrationEntryBlockFormViewModelValue>;
+export type RegistrationEntryBlockFormViewModel = UnwrapTypeBuilder<typeof registrationEntryBlockFormViewModelValue>;
 
 const registrationEntryBlockFormFieldViewModelValue =
-    buildTypeFrom<RegistrationEntryFormFieldBag>()
-    .withRequiredProps("attribute", "visibilityRules")
-    .withRequiredNonNullableProps("guid", "preHtml", "postHtml")
-    .withOverriddenType<RegistrationFieldSource>().forProps("fieldSource")
-    .withOverriddenType<RegistrationEntryBlockFormFieldRuleViewModel[]>().forProps("visibilityRules")
+    TypeBuilder.fromType<RegistrationEntryFormFieldBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("guid").type<Guid>()
+    .makePropertiesWithName("fieldSource").type<RegistrationFieldSource>()
+    .makePropertiesWithName("visibilityRuleType").type<FilterExpressionType>()
+    .makePropertiesWithName("personFieldType").type<RegistrationPersonFieldType>()
+    .makePropertiesWithName("visibilityRules").type<RegistrationEntryBlockFormFieldRuleViewModel[] | null>()
     .build();
-export type RegistrationEntryBlockFormFieldViewModel = UnwrapBuilderType<typeof registrationEntryBlockFormFieldViewModelValue>;
+export type RegistrationEntryBlockFormFieldViewModel = UnwrapTypeBuilder<typeof registrationEntryBlockFormFieldViewModelValue>;
 
-export type RegistrationEntryBlockFormFieldRuleViewModel = {
-    comparedToRegistrationTemplateFormFieldGuid: Guid;
-    comparisonValue: ComparisonValue;
-};
+const registrationEntryBlockFormFieldRuleViewModelValue =
+    TypeBuilder.fromType<RegistrationEntryVisibilityBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("comparedToRegistrationTemplateFormFieldGuid").type<Guid>()
+    .build();
+export type RegistrationEntryBlockFormFieldRuleViewModel = UnwrapTypeBuilder<typeof registrationEntryBlockFormFieldRuleViewModelValue>;
 
 const registrantInfoValue =
-    buildTypeFrom<RegistrantBag>()
-    .withRequiredProps("familyGuid", "personGuid")
-    .withRequiredNonNullableProps("feeItemQuantities", "fieldValues", "guid")
+    TypeBuilder.fromType<RegistrantBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("guid").type<Guid>()
+    .makePropertiesWithName("familyGuid", "personGuid", "existingSignatureDocumentGuid").type<Guid | null>()
     .build();
-export type RegistrantInfo = UnwrapBuilderType<typeof registrantInfoValue>;
+export type RegistrantInfo = UnwrapTypeBuilder<typeof registrantInfoValue>;
 
 const registrarInfoValue =
-    buildTypeFrom<RegistrarBag>()
-    .withRequiredProps("familyGuid")
-    .withRequiredNonNullableProps("email", "lastName", "nickName")
+    TypeBuilder.fromType<RegistrarBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("familyGuid").type<Guid | null>()
     .build();
-export type RegistrarInfo = UnwrapBuilderType<typeof registrarInfoValue>;
+export type RegistrarInfo = UnwrapTypeBuilder<typeof registrarInfoValue>;
 
 const registrationEntryBlockSuccessViewModelValue =
-    buildTypeFrom<RegistrationEntrySuccessBag>()
-    .withRequiredNonNullableProps("gatewayPersonIdentifier", "messageHtml", "titleHtml", "transactionCode")
+    TypeBuilder.fromType<RegistrationEntrySuccessBag>()
+    .makeAllProperties().required()
     .build();
-export type RegistrationEntryBlockSuccessViewModel = UnwrapBuilderType<typeof registrationEntryBlockSuccessViewModelValue>;
+export type RegistrationEntryBlockSuccessViewModel = UnwrapTypeBuilder<typeof registrationEntryBlockSuccessViewModelValue>;
 
 const registrationEntryBlockArgsValue =
-    buildTypeFrom<RegistrationEntryArgsBag>()
-    .withRequiredProps(
-        "discountCode", "fieldValues", "gatewayToken", "registrants", "registrar",
-        "registrationGuid", "registrationSessionGuid", "savedAccountGuid")
-    .withOverriddenType<RegistrantInfo[]>().forProps("registrants")
-    .withOverriddenType<RegistrarInfo | null>().forProps("registrar")
+    TypeBuilder.fromType<RegistrationEntryArgsBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("registrationSessionGuid").type<Guid>()
+    .makePropertiesWithName("registrationGuid", "savedAccountGuid").type<Guid | null>()
+    .makePropertiesWithName("registrants").type<RegistrantInfo[] | null>()
+    .makePropertiesWithName("registrar").type<RegistrarInfo | null>()
     .build();
-export type RegistrationEntryBlockArgs = UnwrapBuilderType<typeof registrationEntryBlockArgsValue>;
+export type RegistrationEntryBlockArgs = UnwrapTypeBuilder<typeof registrationEntryBlockArgsValue>;
 
 const registrationEntryBlockSessionValue =
-    buildTypeFrom<RegistrationEntrySessionBag>()
-    .withRequiredProps(
-        "discountCode", "fieldValues", "gatewayToken", "registrants", "registrar",
-        "registrationGuid", "registrationSessionGuid")
-    .withOverriddenType<RegistrantInfo[]>().forProps("registrants")
-    .withOverriddenType<RegistrarInfo | null>().forProps("registrar")
+    TypeBuilder.fromType<RegistrationEntrySessionBag>()
+    .makeAllProperties().required()
+    .makePropertiesWithName("registrationSessionGuid").type<Guid>()
+    .makePropertiesWithName("registrationGuid").type<Guid | null>()
+    .makePropertiesWithName("registrants").type<RegistrantInfo[] | null>()
+    .makePropertiesWithName("registrar").type<RegistrarInfo | null>()
     .build();
-export type RegistrationEntryBlockSession = UnwrapBuilderType<typeof registrationEntryBlockSessionValue>;
+export type RegistrationEntryBlockSession = UnwrapTypeBuilder<typeof registrationEntryBlockSessionValue>;
 
 export const enum Step {
     Intro = "intro",

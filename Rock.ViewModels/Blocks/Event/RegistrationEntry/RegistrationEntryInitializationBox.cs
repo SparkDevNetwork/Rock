@@ -460,7 +460,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The payment deadline date.
         /// </value>
-        public DateTime? PaymentDeadlineDate { get; set; }
+        public DateTimeOffset? PaymentDeadlineDate { get; set; }
 
         /// <summary>
         /// Gets the collection of payment plan frequencies from which a registrant can select.
@@ -469,5 +469,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The collection of payment plan frequencies from which a registrant can select.
         /// </value>
         public List<ListItemBag> PaymentPlanFrequencies { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency information.
+        /// </summary>
+        /// <value>
+        /// The currency information.
+        /// </value>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }

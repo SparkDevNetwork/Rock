@@ -5,30 +5,30 @@
         <template v-if="useLoggedInPersonForRegistrar">
             <div class="row">
                 <div class="col-md-6 col-sm-6">
-                    <StaticFormControl label="First Name" v-model="registrar.nickName" />
+                    <StaticFormControl label="First Name" :modelValue="registrar.nickName ?? ''" />
                 </div>
                 <div class="col-md-6 col-sm-6">
-                    <StaticFormControl label="Last Name" v-model="registrar.lastName" />
+                    <StaticFormControl label="Last Name" :modelValue="registrar.lastName ?? ''" />
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 col-sm-6">
-                    <StaticFormControl label="Email" v-model="registrar.email" />
+                    <StaticFormControl label="Email" :modelValue="registrar.email ?? ''" />
                 </div>
             </div>
         </template>
         <template v-else>
             <div class="row">
                 <div class="col-md-6 col-sm-6">
-                    <TextBox label="First Name" rules="required" v-model="registrar.nickName" tabIndex="1" />
+                    <TextBox label="First Name" rules="required" :modelValue="registrar.nickName ?? ''" @update:modelValue="registrar.nickName = $event" tabIndex="1" />
                 </div>
                 <div class="col-md-6 col-sm-6">
-                    <TextBox label="Last Name" rules="required" v-model="registrar.lastName" tabIndex="2" />
+                    <TextBox label="Last Name" rules="required" :modelValue="registrar.lastName ?? ''" @update:modelValue="registrar.lastName = $event" tabIndex="2" />
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 col-sm-6">
-                    <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.email" tabIndex="3" />
+                    <EmailBox label="Send Confirmation Emails To" rules="required" :modelValue="registrar.email ?? ''" @update:modelValue="registrar.email = $event" tabIndex="3" />
                     <InlineCheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.updateEmail" />
                 </div>
                 <div class="col-md-6 col-sm-6">
@@ -114,7 +114,7 @@
         // Add previous registrants as options
         for (let i = 0; i < registrationEntryState.registrants.length; i++) {
             const registrant = registrationEntryState.registrants[i];
-            const info = getRegistrantBasicInfo(registrant, viewModel.value.registrantForms);
+            const info = getRegistrantBasicInfo(registrant, viewModel.value.registrantForms ?? []);
 
             if (registrant.familyGuid && !usedFamilyGuids[registrant.familyGuid] && info?.firstName && info.lastName) {
                 options.push({
@@ -161,7 +161,7 @@
 
         // If prefill or first-registrant, then the first registrants info is used (as least as a starting point)
         if (viewModel.value.registrarOption === RegistrarOption.PrefillFirstRegistrant || viewModel.value.registrarOption === RegistrarOption.UseFirstRegistrant) {
-            const firstRegistrantInfo = getRegistrantBasicInfo(firstRegistrant.value, viewModel.value.registrantForms);
+            const firstRegistrantInfo = getRegistrantBasicInfo(firstRegistrant.value, viewModel.value.registrantForms ?? []);
             registrar.value.nickName = firstRegistrantInfo.firstName;
             registrar.value.lastName = firstRegistrantInfo.lastName;
             registrar.value.email = firstRegistrantInfo.email;

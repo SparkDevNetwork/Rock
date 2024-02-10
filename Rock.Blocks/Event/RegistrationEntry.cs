@@ -37,6 +37,7 @@ using Rock.Model;
 using Rock.Pdf;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
@@ -3140,6 +3141,7 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
                 RegistrationAttributesStart = beforeAttributes,
@@ -3239,6 +3241,14 @@ namespace Rock.Blocks.Event
                 IsPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed,
                 PaymentDeadlineDate = context.RegistrationSettings.PaymentDeadlineDate,
                 PaymentPlanFrequencies = GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds ),
+
+                // Currency Code
+                CurrencyInfo = new CurrencyInfoBag
+                {
+                    DecimalPlaces = currencyInfo.DecimalPlaces,
+                    Symbol = currencyInfo.Symbol,
+                    SymbolLocation = currencyInfo.SymbolLocation,
+                }
             };
 
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired )

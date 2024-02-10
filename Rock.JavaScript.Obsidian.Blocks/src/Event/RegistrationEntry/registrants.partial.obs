@@ -42,7 +42,8 @@
             return;
         }
 
-        const lastFormIndex = registrationEntryState.viewModel.registrantForms.length - 1;
+        // TODO JMH Does this cause an error if the lastFormIndex is set to negative 1?
+        const lastFormIndex = (registrationEntryState.viewModel.registrantForms?.length ?? 0) - 1;
         registrationEntryState.currentRegistrantIndex--;
         registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
         await persistSession();
@@ -79,10 +80,25 @@
         hasCopiedCommonValues.value = true;
         const firstRegistrant = registrants.value[0];
 
+        if (!firstRegistrant.fieldValues) {
+            firstRegistrant.fieldValues = {};
+        }
+
+        if (!registrationEntryState.viewModel.registrantForms) {
+            registrationEntryState.viewModel.registrantForms = [];
+        }
+
         for (let i = 1; i < registrants.value.length; i++) {
             const currentRegistrant = registrants.value[i];
 
+            if (!currentRegistrant.fieldValues) {
+                currentRegistrant.fieldValues = {};
+            }
+
             for (const form of registrationEntryState.viewModel.registrantForms) {
+                if (!form.fields) {
+                    form.fields = [];
+                }
                 for (const field of form.fields) {
                     if (!field.isSharedValue) {
                         continue;

@@ -406,6 +406,21 @@ export class RockDateTime {
     }
 
     /**
+     * Creates a new RockDateTime instance that represents the end of the month
+     * for this instance.
+     */
+    public endOfMonth(): RockDateTime {
+        debugger;
+        const dateTime = this.dateTime.endOf("month");
+
+        if (!dateTime.isValid) {
+            throw "Operation produced an invalid date.";
+        }
+
+        return new RockDateTime(dateTime);
+    }
+
+    /**
      * Creates a new RockDateTime instance that represents the date and time
      * after adding the number of hours to this instance.
      *

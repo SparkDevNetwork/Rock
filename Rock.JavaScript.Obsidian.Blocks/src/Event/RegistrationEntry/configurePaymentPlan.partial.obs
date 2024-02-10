@@ -1,42 +1,194 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="row">
-        <div class="col-sm-offset-8 col-sm-4 fee-configure-payment-plan">
-            <RockButton btnType="default" btnSize="xs" @click="isModalShown = true">Configure a Payment Plan</RockButton>
+    <template v-if="isShown">
+        <div class="row">
+            <div class="col-sm-offset-8 col-sm-4 fee-configure-payment-plan">
+                <RockButton btnType="default" btnSize="xs" @click="isModalShown = true">Configure a Payment Plan</RockButton>
+            </div>
         </div>
-    </div>
 
-    <Modal v-model="isModalShown"
-           saveText="Select"
-           title="Configure Payment Plan"
-           @save="isModalShown = false">
-        The total amount of $749.00 is payable by February 10, 2024.
-        <DropDownList v-model="paymentFrequency" label="Select Your Desired Payment Frequency" :items="availablePaymentFrequencies" />
-    </Modal>
+        <Modal v-model="isModalShown"
+               saveText="Select"
+               title="Configure Payment Plan"
+               @save="isModalShown = false">
+            <template v-if="paymentDeadlineDate">
+                The total amount of $749.00 is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
+            </template>
+            <template v-else>
+                The total amount due is $749.00.
+            </template>
+            <div class="row">
+                <DropDownList v-model="paymentFrequency"
+                              :items="availablePaymentFrequencies"
+                              label="Select Your Desired Payment Frequency" />
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <CurrencyBox v-model="amountToPayToday"
+                                 label="Amount To Pay Today">
+                    </CurrencyBox>
+                    <small>A minimum of {{ toCurrencyOrNull(registrationEntryState.viewModel.initialAmountToPay ?? 0, registrationEntryState.viewModel.currencyInfo) }} is due today</small>
+                </div>
+
+                <div class="col-sm-6">
+                    <DropDownList v-model="numberOfPaymentsValue"
+                                  :items="numberOfPaymentsItems"
+                                  label="Number of Payments" />
+                </div>
+            </div>
+
+            <div class="row">
+                <RockLabel label="Plan Summary" />
+                <div class="col-sm-6">
+                    <div>Amount Due Today</div>
+                    <div>{{ registrationEntryState.amountToPayToday }}</div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div>Weekly Payment Amount</div>
+                    <div>X x {{ numberOfPayments }}</div>
+                </div>
+            </div>
+        </Modal>
+    </template>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CurrentRegistrationEntryState, use } from "./utils.partial";
-
-    const props = defineProps();
+    import { CurrentRegistrationEntryState, TransactionFrequency, getTransactionFrequency, nullTransactionFrequency, use } from "./utils.partial";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { Guid } from "@Obsidian/Types";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
 
     //#region Values
 
     const isModalShown = ref<boolean>(false);
-    const paymentFrequency = ref<string>("");
+    const paymentFrequency = ref<Guid>("");
+    const numberOfPaymentsValue = ref<string>("2");
+    const internalAmountToPayToday = ref<number>(registrationEntryState.viewModel.initialAmountToPay ?? 0);
 
     //#endregion
 
     //#region Computed Values
+    const amountToPayToday = computed<number>({
+        get(): number {
+            return internalAmountToPayToday.value;
+        },
+        set(value: number): void {
+            if (value < (registrationEntryState.viewModel.initialAmountToPay ?? 0)) {
+                internalAmountToPayToday.value = 0;
+            }
+            else {
+                internalAmountToPayToday.value = value;
+            }
+        }
+    });
+    const numberOfPayments = computed<number>(() => {
+        return parseInt(numberOfPaymentsValue.value);
+    });
+    const numberOfPaymentsItems = computed<ListItemBag[]>(() => {
+        if (!selectedTransactionFrequency.value) {
+            // A frequency must be selected to show the number of payments list.
+            return [];
+        }
 
+        function getListItemBagNumberRange(start: number, stop: number): ListItemBag[] {
+            stop = Math.max(start, stop);
+            return Array(stop - start + 1).fill(0).map((v, i) => i + start).map(n => ({
+                text: n.toString(),
+                value: n.toString()
+            }));
+        }
+
+        if (!paymentDeadlineDate.value) {
+            // There is no deadline date, so only allow 2 to 12 payments.
+            // TODO JMH What should be the allowed range here?
+            return getListItemBagNumberRange(2, 12);
+        }
+
+        const maxNumberOfPayments = selectedTransactionFrequency.value.getMaxNumberOfTransactionsBetweenDates(firstPaymentDate.value, paymentDeadlineDate.value);
+        return getListItemBagNumberRange(2, maxNumberOfPayments);
+
+    });
+    const firstPaymentDate = computed<RockDateTime>(() => {
+        let date: RockDateTime | undefined;
+
+        if (selectedTransactionFrequency.value) {
+            date = selectedTransactionFrequency.value.getNextTransactionDate();
+        }
+
+        return date ?? RockDateTime.now().date;
+    });
     const availablePaymentFrequencies = computed<ListItemBag[]>(() => registrationEntryState.viewModel.paymentPlanFrequencies ?? []);
+    const rankedPaymentFrequencies = computed<ListItemBag[]>(() => {
+        const order: Record<string, number> = {
+            [DefinedValue.TransactionFrequencyWeekly]: 1,
+            [DefinedValue.TransactionFrequencyBiweekly]: 2,
+            [DefinedValue.TransactionFrequencyFirstAndFifteenth]: 3,
+            [DefinedValue.TransactionFrequencyTwicemonthly]: 4,
+            [DefinedValue.TransactionFrequencyMonthly]: 5,
+            [DefinedValue.TransactionFrequencyQuarterly]: 6,
+            [DefinedValue.TransactionFrequencyTwiceyearly]: 7,
+            [DefinedValue.TransactionFrequencyOneTime]: 8,
+        };
+        const copy = [...availablePaymentFrequencies.value];
+        copy.sort((a, b): number => {
+            const aOrder = a.value ? order[a.value] : -1;
+            const bOrder = b.value ? order[b.value] : -1;
+
+            return aOrder < bOrder ? -1 : bOrder < aOrder ? 1 : 0;
+        });
+        return copy;
+    });
+    const paymentDeadlineDate = computed<RockDateTime | null>(() => {
+        if (!registrationEntryState.viewModel.paymentDeadlineDate) {
+            return null;
+        }
+
+        return RockDateTime.parseISO(registrationEntryState.viewModel.paymentDeadlineDate);
+    });
+    const isShown = computed<boolean>(() => {
+        if (!rankedPaymentFrequencies.value?.[0]?.value) {
+            // There are no available frequencies so hide the feature.
+            return false;
+        }
+
+        if (!paymentDeadlineDate.value) {
+            // There is no payment deadline so assume the individual can make payments
+            // regardless of the frequency and the deadline.
+            return true;
+        }
+
+        const startingTransactionDate = firstAvailableTransactionFrequency.value.getNextTransactionDate();
+        const numberOfPayments = firstAvailableTransactionFrequency.value.getMaxNumberOfTransactionsBetweenDates(startingTransactionDate, paymentDeadlineDate.value);
+        return numberOfPayments > 2;
+    });
+    const firstAvailableTransactionFrequency = computed<TransactionFrequency>(() => {
+        return getTransactionFrequency(rankedPaymentFrequencies.value[0]?.value ?? "") ?? nullTransactionFrequency;
+    });
+    const selectedTransactionFrequency = computed<TransactionFrequency>(() => {
+        return getTransactionFrequency(paymentFrequency.value) ?? nullTransactionFrequency;
+    });
+    const availableTransactionFrequencies = computed<TransactionFrequency[]>(() => {
+        const transactionFrequencies: TransactionFrequency[] = [];
+        availablePaymentFrequencies.value
+            .map(pf => getTransactionFrequency(pf.value ?? ""))
+            .filter(tf => !!tf)
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            .forEach(tf => transactionFrequencies.push(tf!));
+
+        return transactionFrequencies;
+    });
 
     //#endregion
 

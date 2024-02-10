@@ -16,16 +16,16 @@
 
                 <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
                     <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
-                        <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
-                        <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute || field.fieldSource === fieldSources.groupMemberAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" :formFields="currentFormFields" />
+                        <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField && currentRegistrant.fieldValues" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
+                        <RegistrantAttributeField v-else-if="(field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute || field.fieldSource === fieldSources.groupMemberAttribute) && currentRegistrant.fieldValues" :field="field" :fieldValues="currentRegistrant.fieldValues" :formFields="currentFormFields" />
                         <NotificationBox alertType="danger" v-else>Could not resolve field source {{ field.fieldSource }}</NotificationBox>
                     </template>
                 </ItemsWithPreAndPostHtml>
 
-                <div v-if="!isWaitList && isLastForm && viewModel.fees.length && viewModel.fees.some(f => !!f.items.length)" class="well registration-additional-options">
+                <div v-if="!isWaitList && isLastForm && viewModel.fees?.length && viewModel.fees.some(f => !!f.items?.length)" class="well registration-additional-options">
                     <h4>{{ pluralFeeTerm }}</h4>
                     <template v-for="fee in viewModel.fees" :key="fee.guid">
-                        <FeeField :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
+                        <FeeField v-if="currentRegistrant.feeItemQuantities" :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
                     </template>
                 </div>
             </template>
@@ -103,10 +103,20 @@
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
 
-    for (const fee of registrationEntryState.viewModel.fees ?? []) {
-        for (const feeItem of fee.items ?? []) {
-            if (feeItem.guid && typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
-                props.currentRegistrant.feeItemQuantities[feeItem.guid] = 0;
+    // Make sure current registrant properties are initialized.
+    if (!props.currentRegistrant.feeItemQuantities) {
+        props.currentRegistrant.feeItemQuantities = {};
+    }
+    if (!props.currentRegistrant.fieldValues) {
+        props.currentRegistrant.fieldValues = {};
+    }
+
+    if (registrationEntryState.viewModel.fees && props.currentRegistrant.feeItemQuantities) {
+        for (const fee of registrationEntryState.viewModel.fees) {
+            for (const feeItem of fee.items ?? []) {
+                if (feeItem.guid && typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
+                    props.currentRegistrant.feeItemQuantities[feeItem.guid] = 0;
+                }
             }
         }
     }
@@ -205,19 +215,19 @@
                 let isVisible = true;
                 switch (value.visibilityRuleType) {
                     case FilterExpressionType.GroupAll:
-                        isVisible = !!value.visibilityRules?.every(vr => isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        isVisible = !!value.visibilityRules?.every(vr => isRuleMet(vr, props.currentRegistrant.fieldValues ?? {}, fields));
                         break;
 
                     case FilterExpressionType.GroupAllFalse:
-                        isVisible = !!value.visibilityRules?.every(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        isVisible = !!value.visibilityRules?.every(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues ?? {}, fields));
                         break;
 
                     case FilterExpressionType.GroupAny:
-                        isVisible = !!value.visibilityRules?.some(vr => isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        isVisible = !!value.visibilityRules?.some(vr => isRuleMet(vr, props.currentRegistrant.fieldValues ?? {}, fields));
                         break;
 
                     case FilterExpressionType.GroupAnyFalse:
-                        isVisible = !!value.visibilityRules?.some(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues, fields));
+                        isVisible = !!value.visibilityRules?.some(vr => !isRuleMet(vr, props.currentRegistrant.fieldValues ?? {}, fields));
                         break;
 
                     default:
@@ -505,6 +515,10 @@
         }
 
         // If the family member selection is made then set all form fields where use existing value is enabled
+        if (!props.currentRegistrant.fieldValues) {
+            props.currentRegistrant.fieldValues = {};
+        }
+
         for (const form of viewModel.value.registrantForms ?? []) {
             for (const field of form.fields ?? []) {
                 if (!field.guid) {
@@ -550,6 +564,10 @@
         });
 
         if (result.isSuccess && result.data && viewModel.value.registrantForms) {
+            if (!props.currentRegistrant.fieldValues) {
+                props.currentRegistrant.fieldValues = {};
+            }
+
             for (const form of viewModel.value.registrantForms) {
                 if (form.fields) {
                     for (const field of form.fields) {
@@ -615,17 +633,21 @@
     watch(familyMember, () => {
         if (!familyMember.value) {
             // If the family member selection is cleared then clear all form fields
-            for (const form of viewModel.value.registrantForms) {
-                for (const field of form.fields) {
-                    // Do not touch common fields if they are of type
-                    // Registrant Attribute since we don't set them when
-                    // selecting a family member either.
-                    // Fixes issue #5610.
-                    if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
-                        continue;
-                    }
+            if (viewModel.value.registrantForms && props.currentRegistrant.fieldValues) {
+                for (const form of viewModel.value.registrantForms) {
+                    if (form.fields) {
+                        for (const field of form.fields) {
+                            // Do not touch common fields if they are of type
+                            // Registrant Attribute since we don't set them when
+                            // selecting a family member either.
+                            // Fixes issue #5610.
+                            if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                                continue;
+                            }
 
-                    delete props.currentRegistrant.fieldValues[field.guid];
+                            delete props.currentRegistrant.fieldValues[field.guid];
+                        }
+                    }
                 }
             }
         }

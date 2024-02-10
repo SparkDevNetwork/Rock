@@ -9,8 +9,6 @@
 
             <hr />
 
-            {{ JSON.stringify(gatewayControlModel) }}
-
             <div v-if="gatewayControlModel" class="payment-method-options">
                 <div v-if="hasSavedAccounts" v-for="savedAccount in savedAccountOptions" class="radio payment-method">
                     <label :for="getOptionUniqueId(savedAccount)">
@@ -109,7 +107,7 @@
     // #region Computed Values
 
     /** The settings for the gateway (MyWell, etc) control */
-    const gatewayControlModel = computed<GatewayControlBag>(() => {
+    const gatewayControlModel = computed<GatewayControlBag | null>(() => {
         return viewModel.value.gatewayControl;
     });
 

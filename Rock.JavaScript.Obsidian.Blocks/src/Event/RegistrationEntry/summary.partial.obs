@@ -83,7 +83,7 @@
         }
 
         // See if any of those fees have a cost.
-        const hasCostFees = registrationEntryState.viewModel.fees.some(f => f.items.some(i => i.cost > 0 && usedFeeIds.includes(i.guid)));
+        const hasCostFees = registrationEntryState.viewModel.fees?.some(f => f.items?.some(i => i.cost > 0 && usedFeeIds.includes(i.guid)));
 
         return hasCostFees || registrationEntryState.viewModel.cost > 0;
     });
@@ -95,17 +95,17 @@
 
     /** Info about the registrants made available by .FirstName instead of by field guid */
     const registrantInfos = computed<RegistrantBasicInfo[]>(() => {
-        return registrationEntryState.registrants.map(r => getRegistrantBasicInfo(r, viewModel.value.registrantForms));
+        return registrationEntryState.registrants.map(r => getRegistrantBasicInfo(r, viewModel.value.registrantForms ?? []));
     });
 
     /** The registrant term - plural if there are more than 1 */
     const registrantTerm = computed<string>(() => {
-        return registrantInfos.value.length === 1 ? viewModel.value.registrantTerm : viewModel.value.pluralRegistrantTerm;
+        return (registrantInfos.value.length === 1 ? viewModel.value.registrantTerm : viewModel.value.pluralRegistrantTerm) ?? "";
     });
 
     /** The name of this registration instance */
     const instanceName = computed<string>(() => {
-        return viewModel.value.instanceName;
+        return viewModel.value.instanceName ?? "";
     });
 
     /** The text to be displayed on the "Finish" button */

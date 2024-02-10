@@ -2,7 +2,7 @@
 <template>
     <template v-if="!isHidden">
         <CheckBox v-if="isCheckbox" :label="label" :validationTitle="props.fee.name" v-model="checkboxValue" :rules="rules" :disabled="isCheckboxDisabled" />
-        <NumberUpDown v-else-if="isNumberUpDown" :validationTitle="props.fee.name" :label="label" :min="0" :max="maxValue" v-model="quantityValue" :rules="rules" />
+        <NumberUpDown v-else-if="isNumberUpDown" :validationTitle="props.fee.name ?? undefined" :label="label" :min="0" :max="maxValue" v-model="quantityValue" :rules="rules" />
         <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
         <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="numberGroupValue" :rules="rules" />
         <NotificationBox v-else alertType="danger">This fee configuration is not supported</NotificationBox>
@@ -98,9 +98,11 @@
 
     const dropDownValue = computed({
         get(): string {
-            for (const item of props.fee.items) {
-                if (internalValue.value[item.guid]) {
-                    return item.guid;
+            if (props.fee.items) {
+                for (const item of props.fee.items) {
+                    if (internalValue.value[item.guid]) {
+                        return item.guid;
+                    }
                 }
             }
 
@@ -109,12 +111,14 @@
         set(value: string) {
             const newValue = {};
 
-            for (const item of props.fee.items) {
-                if (areEqual(value, item.guid)) {
-                    newValue[item.guid] = 1;
-                }
-                else {
-                    newValue[item.guid] = 0;
+            if (props.fee.items) {
+                for (const item of props.fee.items) {
+                    if (areEqual(value, item.guid)) {
+                        newValue[item.guid] = 1;
+                    }
+                    else {
+                        newValue[item.guid] = 0;
+                    }
                 }
             }
 
@@ -142,11 +146,11 @@
             return getItemLabel(singleItem.value);
         }
 
-        return props.fee.name;
+        return props.fee.name ?? "";
     });
 
     const singleItem = computed((): RegistrationEntryBlockFeeItemViewModel | null => {
-        if (props.fee.items.length !== 1) {
+        if (!props.fee.items || props.fee.items.length !== 1) {
             return null;
         }
 
@@ -154,7 +158,7 @@
     });
 
     const isHidden = computed((): boolean => {
-        if (!props.fee.items.length) {
+        if (!props.fee.items?.length) {
             return true;
         }
 
@@ -184,26 +188,26 @@
     });
 
     const isNumberUpDownGroup = computed((): boolean => {
-        return props.fee.items.length > 1 && props.fee.allowMultiple;
+        return !!props.fee.items && props.fee.items.length > 1 && props.fee.allowMultiple;
     });
 
     const isDropDown = computed((): boolean => {
-        return props.fee.items.length > 1 && !props.fee.allowMultiple;
+        return !!props.fee.items && props.fee.items.length > 1 && !props.fee.allowMultiple;
     });
 
     const dropDownListOptions = computed((): ListItemBag[] => {
         return props.fee.items
-            .filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || (i.countRemaining + internalValue.value[i.guid] ?? 0) > 0)
+            ?.filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || (i.countRemaining + internalValue.value[i.guid] ?? 0) > 0)
             .map(i => ({
                 text: getItemLabel(i),
                 value: i.guid,
                 disabled: i.countRemaining !== null && (i.countRemaining + internalValue.value[i.guid] ?? 0) === 0
-            }));
+            })) ?? [];
     });
 
     const numberUpDownGroupOptions = computed((): NumberUpDownGroupOption[] => {
         return props.fee.items
-            .filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || (i.countRemaining + internalValue.value[i.guid] ?? 0) > 0)
+            ?.filter(i => !props.fee.hideWhenNoneRemaining || i.countRemaining === null || (i.countRemaining + internalValue.value[i.guid] ?? 0) > 0)
             .map(i => ({
                 key: i.guid,
                 label: getItemLabel(i),
@@ -211,7 +215,7 @@
                     ? i.countRemaining + (internalValue.value[i.guid] ?? 0)
                     : 100,
                 min: 0
-            }));
+            })) ?? [];
     });
 
     const rules = computed((): string => {
@@ -223,7 +227,7 @@
             return "disabled";
         }
 
-        if (!checkboxValue.value && props.fee.items[0].countRemaining === 0) {
+        if (!checkboxValue.value && props.fee.items?.length && props.fee.items[0].countRemaining === 0) {
             return "disabled";
         }
 
@@ -241,7 +245,7 @@
     // If the fee is required see if we need to auto-select it.
     if (singleItem.value && props.fee.isRequired) {
         // If the fee is available then select it.
-        if (props.fee.items[0].countRemaining === null || props.fee.items[0].countRemaining > 0) {
+        if (props.fee.items?.length && (props.fee.items[0].countRemaining === null || props.fee.items[0].countRemaining > 0)) {
             if (isCheckbox.value && !checkboxValue.value) {
                 checkboxValue.value = true;
             }

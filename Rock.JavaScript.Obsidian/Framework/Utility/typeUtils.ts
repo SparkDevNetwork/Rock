@@ -16,6 +16,25 @@
 //
 
 /**
+ * Make all properties in T nullable.
+ *
+ * @example
+ * type Shape = {
+ *   length: number,
+ *   width: number
+ * };
+ *
+ * type StaticShape = Nullable<Shape>;
+ * // {
+ * //   length: number | null,
+ * //   width: number | null
+ * // }
+ */
+type Nullable<T> = {
+    [K in keyof T]: T[K] | null
+};
+
+/**
  * Make specific properties in T required,
  * while leaving the rest of the properties untouched.
  *
@@ -35,8 +54,130 @@ export type RequiredProps<T, K extends keyof T> = Omit<T, K> & {
     [P in keyof Pick<T, K>]-?: T[P]
 };
 
+// /**
+//  * Make all properties in T required, and unable to be set to undefined or null.
+//  *
+//  * @example
+//  * type Shape = {
+//  *   length?: number | null,
+//  *   width?: number | null
+//  * };
+//  *
+//  * type StaticShape = RequiredNonNullable<Shape>;
+//  * // {
+//  * //   length: number,
+//  * //   width: number
+//  * // }
+//  */
+// export type RequiredNonNullable<T> = {
+//     [K in keyof T]-?: NonNullable<T[K]>
+// };
+
 /**
- * Make all properties in T required, and unable to be set to undefined or null.
+ * Make specific properties in T able to null,
+ * while leaving the rest of the properties untouched.
+ *
+ * @example
+ * type Shape = {
+ *   length: number,
+ *   width: number
+ * };
+ *
+ * type StaticShape = NullableProps<Shape, "width">;
+ * // {
+ * //   length: number,
+ * //   width: number | null
+ * // }
+ */
+export type NullableProps<T, K extends keyof T> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]: T[P] | null
+};
+
+/**
+ * Make properties in T able to be set to undefined
+ *
+ * @example
+ * type Shape = {
+ *   length: number | null,
+ *   width: number | null
+ * };
+ *
+ * type StaticShape = Undefinable<Shape>;
+ * // {
+ * //   length: number | null | undefined,
+ * //   width: number | null | undefined
+ * // }
+ */
+export type Undefinable<T> = {
+    [K in keyof T]: T[K] | undefined
+};
+
+/**
+ * Make properties in T able to be set to undefined
+ *
+ * @example
+ * type Shape = {
+ *   length: number | null,
+ *   width: number | null
+ * };
+ *
+ * type StaticShape = UndefinableProps<Shape, "length">;
+ * // {
+ * //   length: number | null | undefined,
+ * //   width: number | null
+ * // }
+ */
+export type UndefinableProps<T, K extends keyof T> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]: T[P] | undefined
+};
+
+/**
+ * Returns type T if not of type U.
+ *
+ * Useful for removing union types (see NotNullable<T> and NotUndefinable<T>).
+ */
+type NotType<T, U> = T extends U ? never : T;
+
+/**
+ * Make properties in T not able to be set to undefined.
+ *
+ * @example
+ * type Shape = {
+ *   length: number | undefined,
+ *   width: number | undefined
+ * };
+ *
+ * type StaticShape = NotUndefinable<Shape>;
+ * // {
+ * //   length: number,
+ * //   width: number
+ * // }
+ */
+export type NotUndefinable<T> = {
+    [K in keyof T]: NotType<T[K], undefined>
+};
+
+/**
+ * Make specific properties in T not able to be set to undefined.
+ *
+ * @example
+ * type Shape = {
+ *   length: number | undefined,
+ *   width: number | undefined
+ * };
+ *
+ * type StaticShape = NotUndefinableProps<Shape, "length">;
+ * // {
+ * //   length: number,
+ * //   width: number | undefined
+ * // }
+ */
+export type NotUndefinableProps<T, K extends keyof T> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]: NotType<T[P], undefined>
+};
+
+/**
+ * Make properties in T not able to be set to null.
  *
  * @example
  * type Shape = {
@@ -44,18 +185,18 @@ export type RequiredProps<T, K extends keyof T> = Omit<T, K> & {
  *   width?: number | null
  * };
  *
- * type StaticShape = RequiredNonNullable<Shape>;
+ * type StaticShape = NotNull<Shape>;
  * // {
- * //   length: number,
- * //   width: number
+ * //   length?: number,
+ * //   width?: number
  * // }
  */
-export type RequiredNonNullable<T> = {
-    [K in keyof T]-?: NonNullable<T[K]>
+export type NotNullable<T> = {
+    [K in keyof T]: NotType<T[K], null>
 };
 
 /**
- * Make specific properties in T required, and unable to be set to undefined or null,
+ * Make specific properties in T not able to be set to null,
  * while leaving the rest of the properties untouched.
  *
  * @example
@@ -64,14 +205,54 @@ export type RequiredNonNullable<T> = {
  *   width?: number | null
  * };
  *
- * type StaticShape = RequiredNonNullableProps<Shape, "length">;
+ * type StaticShape = NotNullableProps<Shape, "length">;
  * // {
  * //   length: number,
  * //   width?: number | null
  * // }
  */
-export type RequiredNonNullableProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]-?: NonNullable<T[P]>
+export type NotNullableProps<T, K extends keyof T> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]: NotType<T[P], null>
+};
+
+// /**
+//  * Make specific properties in T required, and unable to be set to undefined or null,
+//  * while leaving the rest of the properties untouched.
+//  *
+//  * @example
+//  * type Shape = {
+//  *   length?: number | null,
+//  *   width?: number | null
+//  * };
+//  *
+//  * type StaticShape = RequiredNonNullableProps<Shape, "length">;
+//  * // {
+//  * //   length: number,
+//  * //   width?: number | null
+//  * // }
+//  */
+// export type RequiredNonNullableProps<T, K extends keyof T> = Omit<T, K> & {
+//     [P in keyof Pick<T, K>]-?: NonNullable<T[P]>
+// };
+
+/**
+ * Make specific properties in T unable to be set to undefined or null,
+ * while leaving the rest of the properties untouched.
+ *
+ * @example
+ * type Shape = {
+ *   length: number | null | undefined,
+ *   width: number | null | undefined
+ * };
+ *
+ * type StaticShape = NonNullableProps<Shape, "length">;
+ * // {
+ * //   length?: number,
+ * //   width?: number | null
+ * // }
+ */
+export type NonNullableProps<T, K extends keyof T> = Omit<T, K> & {
+    [P in keyof Pick<T, K>]: NonNullable<T[P]>
 };
 
 /**
@@ -84,57 +265,57 @@ export type RequiredNonNullableProps<T, K extends keyof T> = Omit<T, K> & {
  *   width: number
  * };
  *
- * type StaticShape = PartialProps<Shape, "width">;
+ * type StaticShape = OptionalProps<Shape, "width">;
  * // {
  * //   length: number,
  * //   width?: number
  * // }
  */
-export type PartialProps<T, K extends keyof T> = Omit<T, K> & {
+export type OptionalProps<T, K extends keyof T> = Omit<T, K> & {
     [P in keyof Pick<T, K>]+?: T[P]
 };
 
-/**
- * Make all properties in T optional, and able to be set to undefined or null.
- *
- * @example
- * type Shape = {
- *   length: number,
- *   width: number
- * };
- *
- * type StaticShape = PartialNullable<Shape>;
- * // {
- * //   length?: number | null,
- * //   width?: number | null
- * // }
- */
-export type PartialNullable<T> = {
-    [K in keyof T]+?: T[K] | null
-};
+// /**
+//  * Make properties in T optional, and able to be set to undefined or null.
+//  *
+//  * @example
+//  * type Shape = {
+//  *   length: number,
+//  *   width: number
+//  * };
+//  *
+//  * type StaticShape = PartialNullable<Shape>;
+//  * // {
+//  * //   length?: number | null,
+//  * //   width?: number | null
+//  * // }
+//  */
+// export type PartialNullable<T> = {
+//     [K in keyof T]+?: T[K] | null
+// };
+
+// /**
+//  * Make specific properties in T optional, and able to be set to undefined or null,
+//  * while leaving the rest of the properties untouched.
+//  *
+//  * @example
+//  * type Shape = {
+//  *   length: number,
+//  *   width: number
+//  * };
+//  *
+//  * type StaticShape = PartialNullableProps<Shape, "width">;
+//  * // {
+//  * //   length: number,
+//  * //   width?: number | null
+//  * // }
+//  */
+// export type PartialNullableProps<T, K extends keyof T> = Omit<T, K> & {
+//     [P in keyof Pick<T, K>]+?: T[P] | null
+// };
 
 /**
- * Make specific properties in T optional, and able to be set to undefined or null,
- * while leaving the rest of the properties untouched.
- *
- * @example
- * type Shape = {
- *   length: number,
- *   width: number
- * };
- *
- * type StaticShape = PartialNullableProps<Shape, "width">;
- * // {
- * //   length: number,
- * //   width?: number | null
- * // }
- */
-export type PartialNullableProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]+?: T[P] | null
-};
-
-/**
- * Make all properties in T have a specific type.
+ * Make properties in T have a specific type U.
  *
  * @example
  * type Shape = {
@@ -153,7 +334,7 @@ export type OverrideType<T, U> = {
 };
 
 /**
- * Make specific properties in T have a specific type,
+ * Make specific properties in T have a specific type U,
  * while leaving the rest of the properties untouched.
  *
  * @example
@@ -249,288 +430,594 @@ export type PropertiesOfType<T, P> = Pick<T, KeysOfType<T, P>>;
  *
  * @example
  */
-export type UnwrapBuilderType<T> = NonNullable<T>;
+export type UnwrapTypeBuilder<T> = NonNullable<T>;
 
-export function buildTypeFrom<T>(): TypeBuilder<T> {
-    return new TypeBuilder<T>();
+export class TypeBuilder {
+    static fromType<T>(): FromTypeTypeBuilder<T> {
+        return new FromTypeTypeBuilder<T>();
+    }
 }
 
-class TypeBuilder<T> {
-    /**
-     * Make all properties in T required.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length?: number | null,
-     *   width?: number | null
-     * };
-     *
-     * const newBuilder = builder.withAllRequiredProps();
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length: number | null,
-     * //   width: number | null
-     * // }
-     */
-    withAllRequiredProps(): TypeBuilder<Required<T>> {
-        return new TypeBuilder<Required<T>>();
+// interface IPropertyTypeBuilder<T> {
+//     nullable();
+//     nonNullable();
+//     required();
+
+//     /**
+//      * Make properties in T required, and unable to be set to undefined or null.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length?: number | null,
+//      *   width?: number | null
+//      * };
+//      *
+//      * const newBuilder = builder.withAllRequiredNonNullableProps();
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length: number,
+//      * //   width: number
+//      * // }
+//      */
+//     requiredAndNonNullable();
+//     requiredAndNullable();
+
+//     /**
+//      * Make properties in T optional, and able to be set to undefined.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length: number,
+//      *   width: number
+//      * };
+//      *
+//      * const newBuilder = builder.withAllOptionalProps();
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: number,
+//      * //   width?: number
+//      * // }
+//      */
+//     optional();
+//     optionalAndNonNullable();
+
+//     /**
+//      * Make specific properties in T optional, and able to be set to undefined or null,
+//      * while leaving the rest of the properties untouched.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length: number,
+//      *   width: number
+//      * };
+//      *
+//      * const newBuilder = builder.withOptionalNullableProps("length");
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: number | null,
+//      * //   width: number
+//      * // }
+//      */
+//     optionalAndNullable();
+//     type<U>();
+// }
+
+// class AllPropertiesTypeBuilder<T> implements IPropertyTypeBuilder<T> {
+//     requiredAndNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+//     optionalAndNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+//     nonNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     optionalAndNonNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     nullable() {
+//         return new FromTypeTypeBuilder<Nullable<T>>();
+//     }
+
+//     required() {
+//         return new FromTypeTypeBuilder<Required<T>>();
+//     }
+
+//     requiredAndNonNullable(): FromTypeTypeBuilder<RequiredNonNullable<T>> {
+//         return new FromTypeTypeBuilder<RequiredNonNullable<T>>();
+//     }
+
+//     optional() {
+//         return new FromTypeTypeBuilder<Partial<T>>();
+//     }
+
+//     type<U>() {
+//         return new FromTypeTypeBuilder<OverridePropertyTypeBuilder<T, U>>();
+//     }
+// }
+
+// class PropertiesOfTypeTypeBuilder<T, P> implements IPropertyTypeBuilder<T> {
+//     nonNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     requiredAndNonNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     optionalAndNonNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     nullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     required() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     optional() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     type<U>() {
+//         throw new Error("Method not implemented.");
+//     }
+// }
+
+// class PropertiesWithNameTypeBuilder<T, K extends keyof T> implements IPropertyTypeBuilder<T> {
+//     nonNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     optionalAndNonNullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     nullable() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     required() {
+//         throw new Error("Method not implemented.");
+//     }
+
+//     requiredAndNonNullable(): FromTypeTypeBuilder<RequiredNonNullableProps<T, K>> {
+//         return new FromTypeTypeBuilder<RequiredNonNullableProps<T, K>>();
+//     }
+
+//     optional() {
+//         return new FromTypeTypeBuilder<PartialProps<T, K>>();
+//     }
+
+//     type<U>() {
+//         throw new Error("Method not implemented.");
+//     }
+// }
+
+// class FromTypeTypeBuilder<T> {
+//     makeAllProperties(): AllPropertiesTypeBuilder<T> {
+//         return new AllPropertiesTypeBuilder<T>();
+//     }
+
+//     makePropertiesOfType<P>(): PropertiesOfTypeTypeBuilder<T, P> {
+//         return new PropertiesOfTypeTypeBuilder<T, P>();
+//     }
+
+//     makePropertiesWithName<K extends keyof T>(...props: K[]): PropertiesWithNameTypeBuilder<T, K> {
+//         return new PropertiesWithNameTypeBuilder<T, K>();
+//     }
+
+//     /**
+//      * Make specific properties in T optional, and able to be set to undefined or null,
+//      * while leaving the rest of the properties untouched.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length: number,
+//      *   width: number
+//      * };
+//      *
+//      * const newBuilder = builder.withOptionalNullableProps("length");
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: number | null,
+//      * //   width: number
+//      * // }
+//      */
+//     setPropertyTypeToOptionalAndNullable(): OptionalAndNullablePropertyTypeBuilder<T> {
+//         return new OptionalAndNullablePropertyTypeBuilder<T>();
+//     }
+
+//     /**
+//      * Make specific or all properties in T have a specific type.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length?: number | null,
+//      *   width?: number | null
+//      * };
+//      *
+//      * // For specific properties...
+//      * const newBuilder = builder.withOverriddenType<string>().forProps("width");
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: number | null,
+//      * //   width?: string
+//      * // }
+//      *
+//      * // For all properties...
+//      * const newBuilder = builder.withOverriddenType<string>().forAllProps();
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: string,
+//      * //   width?: string
+//      * // }
+//      */
+//     setPropertyTypeTo<U>(): OverridePropertyTypeBuilder<T, U> {
+//         return new OverridePropertyTypeBuilder<T, U>();
+//     }
+
+//     /**
+//      * Returns undefined, but should be used to extract the built type with:
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length?: number | null,
+//      *   width?: number | null
+//      * };
+//      *
+//      * const temp = buildTypeFrom<Shape>().withRequiredProps("length", "width").build();
+//      * type StaticShape = UnwrapBuilderType<typeof temp>;
+//      * // {
+//      * //   length: number | null,
+//      * //   width: number | null
+//      * // }
+//      */
+//     build(): T | undefined {
+//         return;
+//     }
+// }
+
+// class RequiredPropertyTypeBuilder<T> {
+
+// }
+
+// class RequiredAndNullablePropertyTypeBuilder<T> {
+
+// }
+
+// class OptionalPropertyTypeBuilder<T> {
+
+// }
+
+// class OptionalAndNullablePropertyTypeBuilder<T> {
+//     /**
+//      * Make all properties in T optional, and able to be set to undefined or null.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length: number,
+//      *   width: number
+//      * };
+//      *
+//      * const newBuilder = builder.withAllOptionalNullableProps();
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: number,
+//      * //   width: number
+//      * // }
+//      */
+//     forAllProperties(): FromTypeTypeBuilder<PartialNullable<T>> {
+//         return new FromTypeTypeBuilder<PartialNullable<T>>();
+//     }
+
+//     /**
+//      * Make specific properties in T optional, and able to be set to undefined or null,
+//      * while leaving the rest of the properties untouched.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length: number,
+//      *   width: number
+//      * };
+//      *
+//      * const newBuilder = builder.withOptionalNullableProps("length");
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: number | null,
+//      * //   width: number
+//      * // }
+//      */
+//     forProperties<K extends keyof T>(prop: K, ... props: K[]): FromTypeTypeBuilder<PartialNullableProps<T, K>> {
+//         return new FromTypeTypeBuilder<PartialNullableProps<T, K>>();
+//     }
+
+// }
+
+// class NullablePropertyTypeBuilder<T> {
+
+// }
+
+// class OverridePropertyTypeBuilder<T, U> {
+//     /**
+//      * Make specific properties in T be of type U,
+//      * while leaving the rest of the properties untouched.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length?: number | null,
+//      *   width?: number | null
+//      * };
+//      *
+//      * const newBuilder = builder.withOverriddenType<string>().forProps("width");
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: number | null,
+//      * //   width?: string
+//      * // }
+//      */
+//     forProperties<K extends keyof T>(... props: K[]): FromTypeTypeBuilder<OverrideTypeProps<T, K, U>> {
+//         return new FromTypeTypeBuilder<OverrideTypeProps<T, K, U>>();
+//     }
+
+//     /**
+//      * Make all properties in T be of type U.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length?: number | null,
+//      *   width?: number | null
+//      * };
+//      *
+//      * const newBuilder = builder.withOverriddenType<string>().forAllProps();
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length?: string,
+//      * //   width?: string
+//      * // }
+//      */
+//     forAllProperties(): FromTypeTypeBuilder<OverrideType<T, U>> {
+//         return new FromTypeTypeBuilder<OverrideType<T, U>>();
+//     }
+
+//     /**
+//      * Make all properties in T of type V be of type U.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length: number,
+//      *   width: number
+//      * };
+//      *
+//      * const newBuilder = builder.withOverriddenType<string>().forPropsOfType<number>();
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length: string,
+//      * //   width: string
+//      * // }
+//      */
+//     forPropertiesOfType<V>(): FromTypeTypeBuilder<OverrideTypeProps<T, keyof PropertiesOfType<T, V>, U>> {
+//         return new FromTypeTypeBuilder<OverrideTypeProps<T, keyof PropertiesOfType<T, V>, U>>();
+//     }
+
+//     /**
+//      * Make all properties in T of type V be of type U.
+//      *
+//      * @returns A new chainable builder.
+//      *
+//      * @example
+//      * type Shape = {
+//      *   length: number,
+//      *   width: number
+//      * };
+//      *
+//      * const newBuilder = builder.withOverriddenType<string>().forPropsOfType<number>();
+//      * // A type built with the newBuilder would have the structure:
+//      * // {
+//      * //   length: string,
+//      * //   width: string
+//      * // }
+//      */
+//     forAllPropertiesOfTypeSmart<V>() {
+//         type ReplaceType = OverrideTypeProps<T, keyof PropertiesOfType<T, V>, U>;
+//         type ReplaceTypeOrNull = OverrideTypeProps<ReplaceType, keyof PropertiesOfType<ReplaceType, V | null>, U | null>;
+//         type ReplaceTypeOrUndefined = OverrideTypeProps<ReplaceTypeOrNull, keyof PropertiesOfType<ReplaceTypeOrNull, V | undefined>, U | undefined>;
+//         type ReplaceTypeOrNullOrUndefined = OverrideTypeProps<ReplaceTypeOrUndefined, keyof PropertiesOfType<ReplaceTypeOrUndefined, V | null | undefined>, U | null | undefined>;
+
+//         // Do the same thing but with arrays of type U and V.
+//         type ReplaceArrayType = OverrideTypeProps<ReplaceTypeOrNullOrUndefined, keyof PropertiesOfType<ReplaceTypeOrNullOrUndefined, V[]>, U[]>;
+//         type ReplaceArrayTypeOrNull = OverrideTypeProps<ReplaceArrayType, keyof PropertiesOfType<ReplaceArrayType, V[] | null>, U[] | null>;
+//         type ReplaceArrayTypeOrUndefined = OverrideTypeProps<InnerT, keyof PropertiesOfType<InnerT, V[] | undefined>, U[] | undefined>;
+//         // Replaces properties in T of type V[] | null | undefined with type U[] | null | undefined.
+//         type TypeArrayOrNullOrUndefinedToTypeArrayOrNullOrUndefined<InnerT> = OverrideTypeProps<InnerT, keyof PropertiesOfType<InnerT, V[] | null | undefined>, U[] | null | undefined>;
+//         // Wrap them up into a smart type.
+//         type SmartTypeArrayOverride<TInner> = TypeArrayOrNullOrUndefinedToTypeArrayOrNullOrUndefined<ReplaceArrayTypeOrUndefined<ReplaceArrayTypeOrNull<ReplaceArrayType<TInner>>>>;
+
+//         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//         // @ts-ignore
+//         return new FromTypeTypeBuilder<SmartTypeArrayOverride<SmartTypeOverride<T>>>();
+//     }
+// }
+
+interface IPropertyTypeTypeBuilder<T> {
+    nullable(): unknown;
+    notNullable(): unknown;
+    undefined(): unknown;
+    notUndefined(): unknown;
+    optional(): unknown;
+    required(): unknown;
+    type<PNew>(): unknown;
+    defined(): unknown;
+}
+
+class AllPropertyTypeTypeBuilder<T> implements IPropertyTypeTypeBuilder<T> {
+    private transform<TNew>(): MoreFromTypeTypeBuilder<TNew, AllPropertyTypeTypeBuilder<TNew>> {
+        return new MoreFromTypeTypeBuilder<TNew, AllPropertyTypeTypeBuilder<TNew>>(new AllPropertyTypeTypeBuilder<TNew>());
     }
 
-    /**
-     * Make specific properties in T required,
-     * while leaving the rest of the properties untouched.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length?: number | null,
-     *   width?: number | null
-     * };
-     *
-     * const newBuilder = builder.withRequiredProps("length");
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length: number | null,
-     * //   width?: number | null
-     * // }
-     */
-    withRequiredProps<K extends keyof T>(prop: K, ... props: K[]): TypeBuilder<RequiredProps<T, K>> {
-        return new TypeBuilder<RequiredProps<T, K>>();
+    nullable(): MoreFromTypeTypeBuilder<Nullable<T>, AllPropertyTypeTypeBuilder<Nullable<T>>> {
+        return this.transform<Nullable<T>>();
     }
 
-    /**
-     * Make all properties in T required, and unable to be set to undefined or null.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length?: number | null,
-     *   width?: number | null
-     * };
-     *
-     * const newBuilder = builder.withAllRequiredNonNullableProps();
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length: number,
-     * //   width: number
-     * // }
-     */
-    withAllRequiredNonNullableProps(): TypeBuilder<RequiredNonNullable<T>> {
-        return new TypeBuilder<RequiredNonNullable<T>>();
+    notNullable(): MoreFromTypeTypeBuilder<NotNullable<T>, AllPropertyTypeTypeBuilder<NotNullable<T>>> {
+        return this.transform<NotNullable<T>>();
     }
 
-    /**
-     * Make specific properties in T required, and unable to be set to undefined or null,
-     * while leaving the rest of the properties untouched.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length?: number | null,
-     *   width?: number | null
-     * };
-     *
-     * const newBuilder = builder.withRequiredNonNullableProps("width");
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: number | null,
-     * //   width: number
-     * // }
-     */
-    withRequiredNonNullableProps<K extends keyof T>(prop: K, ... props: K[]): TypeBuilder<RequiredNonNullableProps<T, K>> {
-        return new TypeBuilder<RequiredNonNullableProps<T, K>>();
+    undefined(): MoreFromTypeTypeBuilder<Undefinable<T>, AllPropertyTypeTypeBuilder<Undefinable<T>>> {
+        return this.transform<Undefinable<T>>();
     }
 
-    /**
-     * Make all properties in T optional, and able to be set to undefined.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length: number,
-     *   width: number
-     * };
-     *
-     * const newBuilder = builder.withAllOptionalProps();
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: number,
-     * //   width?: number
-     * // }
-     */
-    withAllOptionalProps(): TypeBuilder<Partial<T>> {
-        return new TypeBuilder<Partial<T>>();
+    notUndefined(): MoreFromTypeTypeBuilder<NotUndefinable<T>, AllPropertyTypeTypeBuilder<NotUndefinable<T>>> {
+        return this.transform<NotUndefinable<T>>();
     }
 
-    /**
-     * Make specific properties in T optional, and able to be set to undefined,
-     * while leaving the rest of the properties untouched.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length: number,
-     *   width: number
-     * };
-     *
-     * const newBuilder = builder.withOptionalProps("length");
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: number,
-     * //   width: number
-     * // }
-     */
-    withOptionalProps<K extends keyof T>(prop: K, ... props: K[]): TypeBuilder<PartialProps<T, K>> {
-        return new TypeBuilder<PartialProps<T, K>>();
+    optional(): MoreFromTypeTypeBuilder<Partial<T>, AllPropertyTypeTypeBuilder<Partial<T>>> {
+        return this.transform<Partial<T>>();
     }
 
-    /**
-     * Make all properties in T optional, and able to be set to undefined or null.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length: number,
-     *   width: number
-     * };
-     *
-     * const newBuilder = builder.withAllOptionalNullableProps();
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: number,
-     * //   width: number
-     * // }
-     */
-    withAllOptionalNullableProps(): TypeBuilder<PartialNullable<T>> {
-        return new TypeBuilder<PartialNullable<T>>();
+    required(): MoreFromTypeTypeBuilder<Required<T>, AllPropertyTypeTypeBuilder<Required<T>>> {
+        return this.transform<Required<T>>();
     }
 
-    /**
-     * Make specific properties in T optional, and able to be set to undefined or null,
-     * while leaving the rest of the properties untouched.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length: number,
-     *   width: number
-     * };
-     *
-     * const newBuilder = builder.withOptionalNullableProps("length");
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: number | null,
-     * //   width: number
-     * // }
-     */
-    withOptionalNullableProps<K extends keyof T>(prop: K, ... props: K[]): TypeBuilder<PartialNullableProps<T, K>> {
-        return new TypeBuilder<PartialNullableProps<T, K>>();
+    type<PNew>(): MoreFromTypeTypeBuilder<OverrideType<T, PNew>, AllPropertyTypeTypeBuilder<OverrideType<T, PNew>>> {
+        return this.transform<OverrideType<T, PNew>>();
     }
 
-    /**
-     * Make specific or all properties in T have a specific type.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length?: number | null,
-     *   width?: number | null
-     * };
-     *
-     * // For specific properties...
-     * const newBuilder = builder.withOverriddenType<string>().forProps("width");
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: number | null,
-     * //   width?: string
-     * // }
-     *
-     * // For all properties...
-     * const newBuilder = builder.withOverriddenType<string>().forAllProps();
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: string,
-     * //   width?: string
-     * // }
-     */
-    withOverriddenType<U>(): OverridePropertyTypeBuilder<T, U> {
-        return new OverridePropertyTypeBuilder<T, U>();
+    defined(): MoreFromTypeTypeBuilder<NonNullable<T>, AllPropertyTypeTypeBuilder<NonNullable<T>>> {
+        return this.transform<NonNullable<T>>();
+    }
+}
+
+class PropertiesWithNamePropertyTypeTypeBuilder<T, K extends keyof T> implements IPropertyTypeTypeBuilder<T> {
+    private transform<TNew>(): MoreFromTypeTypeBuilder<TNew, PropertiesWithNamePropertyTypeTypeBuilder<TNew, keyof TNew>> {
+        return new MoreFromTypeTypeBuilder<TNew, PropertiesWithNamePropertyTypeTypeBuilder<TNew, keyof TNew>>(new PropertiesWithNamePropertyTypeTypeBuilder<TNew, keyof TNew>());
     }
 
-    /**
-     * Returns undefined, but should be used to extract the built type with:
-     *
-     * @example
-     * type Shape = {
-     *   length?: number | null,
-     *   width?: number | null
-     * };
-     *
-     * const temp = buildTypeFrom<Shape>().withRequiredProps("length", "width").build();
-     * type StaticShape = UnwrapBuilderType<typeof temp>;
-     * // {
-     * //   length: number | null,
-     * //   width: number | null
-     * // }
-     */
+    nullable(): MoreFromTypeTypeBuilder<NullableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<NullableProps<T, K>, keyof NullableProps<T, K>>> {
+        return this.transform<NullableProps<T, K>>();
+    }
+
+    notNullable(): MoreFromTypeTypeBuilder<NotNullableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<NotNullableProps<T, K>, keyof NotNullableProps<T, K>>> {
+        return this.transform<NotNullableProps<T, K>>();
+    }
+
+    undefined(): MoreFromTypeTypeBuilder<UndefinableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<UndefinableProps<T, K>, keyof UndefinableProps<T, K>>> {
+        return this.transform<UndefinableProps<T, K>>();
+    }
+
+    notUndefined(): MoreFromTypeTypeBuilder<NotUndefinableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<NotUndefinableProps<T, K>, keyof NotUndefinableProps<T, K>>> {
+        return this.transform<NotUndefinableProps<T, K>>();
+    }
+
+    optional(): MoreFromTypeTypeBuilder<OptionalProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<OptionalProps<T, K>, keyof OptionalProps<T, K>>> {
+        return this.transform<OptionalProps<T, K>>();
+    }
+
+    required(): MoreFromTypeTypeBuilder<RequiredProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<RequiredProps<T, K>, keyof RequiredProps<T, K>>> {
+        return this.transform<RequiredProps<T, K>>();
+    }
+
+    type<PNew>(): MoreFromTypeTypeBuilder<OverrideTypeProps<T, K, PNew>, PropertiesWithNamePropertyTypeTypeBuilder<OverrideTypeProps<T, K, PNew>, keyof OverrideTypeProps<T, K, PNew>>> {
+        return this.transform<OverrideTypeProps<T, K, PNew>>();
+    }
+
+    defined(): MoreFromTypeTypeBuilder<NonNullableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<NonNullableProps<T, K>, keyof NonNullableProps<T, K>>> {
+        return this.transform<NonNullableProps<T, K>>();
+    }
+}
+
+class PropertiesOfTypePropertyTypeTypeBuilder<T, P> implements IPropertyTypeTypeBuilder<T> {
+    private transform<TNew>(): MoreFromTypeTypeBuilder<TNew, PropertiesOfTypePropertyTypeTypeBuilder<TNew, P>> {
+        return new MoreFromTypeTypeBuilder<TNew, PropertiesOfTypePropertyTypeTypeBuilder<TNew, P>>(new PropertiesOfTypePropertyTypeTypeBuilder<TNew, P>());
+    }
+
+    nullable(): MoreFromTypeTypeBuilder<NullableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<NullableProps<T, keyof PropertiesOfType<T, P>>, P>> {
+        return this.transform<NullableProps<T, keyof PropertiesOfType<T, P>>>();
+    }
+
+    notNullable(): MoreFromTypeTypeBuilder<NotNullableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<NotNullableProps<T, keyof PropertiesOfType<T, P>>, P>> {
+        return this.transform<NotNullableProps<T, keyof PropertiesOfType<T, P>>>();
+    }
+
+    undefined(): MoreFromTypeTypeBuilder<UndefinableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<UndefinableProps<T, keyof PropertiesOfType<T, P>>, P>> {
+        return this.transform<UndefinableProps<T, keyof PropertiesOfType<T, P>>>();
+    }
+
+    notUndefined(): MoreFromTypeTypeBuilder<NotUndefinableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<NotUndefinableProps<T, keyof PropertiesOfType<T, P>>, P>> {
+        return this.transform<NotUndefinableProps<T, keyof PropertiesOfType<T, P>>>();
+    }
+
+    optional(): MoreFromTypeTypeBuilder<OptionalProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<OptionalProps<T, keyof PropertiesOfType<T, P>>, P>> {
+        return this.transform<OptionalProps<T, keyof PropertiesOfType<T, P>>>();
+    }
+
+    required(): MoreFromTypeTypeBuilder<RequiredProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<RequiredProps<T, keyof PropertiesOfType<T, P>>, P>> {
+        return this.transform<RequiredProps<T, keyof PropertiesOfType<T, P>>>();
+    }
+
+    type<PNew>(): MoreFromTypeTypeBuilder<OverrideTypeProps<T, keyof PropertiesOfType<T, P>, PNew>, PropertiesOfTypePropertyTypeTypeBuilder<OverrideTypeProps<T, keyof PropertiesOfType<T, P>, PNew>, P>> {
+        return this.transform<OverrideTypeProps<T, keyof PropertiesOfType<T, P>, PNew>>();
+    }
+
+    defined(): MoreFromTypeTypeBuilder<NonNullableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<NonNullableProps<T, keyof PropertiesOfType<T, P>>, P>> {
+        return this.transform<NonNullableProps<T, keyof PropertiesOfType<T, P>>>();
+    }
+}
+
+class FromTypeTypeBuilder<T> {
+    makeAllProperties(): AllPropertyTypeTypeBuilder<T> {
+        return new AllPropertyTypeTypeBuilder<T>();
+    }
+
+    makePropertiesWithName<K extends keyof T>(..._names: K[]): PropertiesWithNamePropertyTypeTypeBuilder<T, K> {
+        return new PropertiesWithNamePropertyTypeTypeBuilder<T, K>();
+    }
+
+    makePropertiesOfType<P>(): PropertiesOfTypePropertyTypeTypeBuilder<T, P> {
+        return new PropertiesOfTypePropertyTypeTypeBuilder<T, P>();
+    }
+}
+
+class MoreFromTypeTypeBuilder<T, B extends IPropertyTypeTypeBuilder<T>> {
+    constructor(public and: B) {}
+
+    makeAllProperties(): AllPropertyTypeTypeBuilder<T> {
+        return new AllPropertyTypeTypeBuilder<T>();
+    }
+
+    makePropertiesWithName<K extends keyof T>(..._names: K[]): PropertiesWithNamePropertyTypeTypeBuilder<T, K> {
+        return new PropertiesWithNamePropertyTypeTypeBuilder<T, K>();
+    }
+
+    makePropertiesOfType<P>(): PropertiesOfTypePropertyTypeTypeBuilder<T, P> {
+        return new PropertiesOfTypePropertyTypeTypeBuilder<T, P>();
+    }
+
     build(): T | undefined {
         return;
-    }
-}
-
-class OverridePropertyTypeBuilder<T, U> {
-    /**
-     * Make specific properties in T be of type U,
-     * while leaving the rest of the properties untouched.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length?: number | null,
-     *   width?: number | null
-     * };
-     *
-     * const newBuilder = builder.withOverriddenType<string>().forProps("width");
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: number | null,
-     * //   width?: string
-     * // }
-     */
-    forProps<K extends keyof T>(prop: K, ... props: K[]): TypeBuilder<OverrideTypeProps<T, K, U>> {
-        return new TypeBuilder<OverrideTypeProps<T, K, U>>();
-    }
-
-    /**
-     * Make all properties in T be of type U.
-     *
-     * @returns A new chainable builder.
-     *
-     * @example
-     * type Shape = {
-     *   length?: number | null,
-     *   width?: number | null
-     * };
-     *
-     * const newBuilder = builder.withOverriddenType<string>().forAllProps();
-     * // A type built with the newBuilder would have the structure:
-     * // {
-     * //   length?: string,
-     * //   width?: string
-     * // }
-     */
-    forAllProps(): TypeBuilder<OverrideType<T, U>> {
-        return new TypeBuilder<OverrideType<T, U>>();
     }
 }

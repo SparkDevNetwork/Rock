@@ -26,7 +26,7 @@
 
     /** The term to refer to a registrant */
     const registrationTerm = computed<string>(() => {
-        return registrationEntryState.viewModel.registrationTerm.toLowerCase();
+        return registrationEntryState.viewModel.registrationTerm?.toLowerCase() ?? "";
     });
 
     /** The success lava markup */

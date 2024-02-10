@@ -29,6 +29,7 @@ import { RegistrationEntrySessionBag } from "@Obsidian/ViewModels/Blocks/Event/R
 import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
 import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -48,6 +49,9 @@ export type RegistrationEntryInitializationBox = {
 
     /** Gets or sets the cost. */
     cost: number;
+
+    /** Gets or sets the currency information. */
+    currencyInfo?: CurrencyInfoBag | null;
 
     /** Gets or sets the current person family unique identifier. */
     currentPersonFamilyGuid?: Guid | null;

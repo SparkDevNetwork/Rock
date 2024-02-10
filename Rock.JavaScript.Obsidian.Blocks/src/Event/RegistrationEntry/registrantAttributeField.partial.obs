@@ -12,6 +12,7 @@
     import RockField from "@Obsidian/Controls/rockField.obs";
     import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
     import { Guid } from "@Obsidian/Types";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -33,6 +34,11 @@
         }
     });
 
+    // Ensure the field is configured.
+    if (!props.field.visibilityRules) {
+        props.field.visibilityRules = [];
+    }
+
     // #region Values
 
     const value = ref<string>((props.fieldValues[props.field.guid] as string) ?? "");
@@ -44,16 +50,16 @@
     const isVisible = computed<boolean>(() => {
         switch (props.field.visibilityRuleType) {
             case FilterExpressionType.GroupAll:
-                return props.field.visibilityRules.every(vr => isRuleMet(vr, props.fieldValues, props.formFields));
+                return props.field.visibilityRules?.every(vr => isRuleMet(vr, props.fieldValues, props.formFields)) ?? true;
 
             case FilterExpressionType.GroupAllFalse:
-                return props.field.visibilityRules.every(vr => !isRuleMet(vr, props.fieldValues, props.formFields));
+                return props.field.visibilityRules?.every(vr => !isRuleMet(vr, props.fieldValues, props.formFields)) ?? true;
 
             case FilterExpressionType.GroupAny:
-                return props.field.visibilityRules.some(vr => isRuleMet(vr, props.fieldValues, props.formFields));
+                return props.field.visibilityRules?.some(vr => isRuleMet(vr, props.fieldValues, props.formFields)) ?? true;
 
             case FilterExpressionType.GroupAnyFalse:
-                return props.field.visibilityRules.some(vr => !isRuleMet(vr, props.fieldValues, props.formFields));
+                return props.field.visibilityRules?.some(vr => !isRuleMet(vr, props.fieldValues, props.formFields)) ?? true;
         }
 
         return true;
@@ -91,7 +97,16 @@
             return false;
         }
 
-        return fieldType.doesValueMatchFilter(value, rule.comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+        if (!rule.comparisonValue) {
+            return false;
+        }
+
+        const comparisonValue: ComparisonValue = {
+            value: rule.comparisonValue.value ?? "",
+            comparisonType: rule.comparisonValue.comparisonType
+        };
+
+        return fieldType.doesValueMatchFilter(value, comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
     }
 
     // #endregion

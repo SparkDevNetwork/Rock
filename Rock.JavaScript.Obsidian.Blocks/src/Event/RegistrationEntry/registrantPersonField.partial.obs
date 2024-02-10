@@ -118,7 +118,7 @@
 
             case RegistrationPersonFieldType.Campus:
                 componentProps.label = "Campus";
-                componentProps.items = [...registrationEntryState.viewModel.campuses];
+                componentProps.items = [...registrationEntryState.viewModel.campuses ?? []];
                 break;
 
             case RegistrationPersonFieldType.Email:
@@ -142,17 +142,17 @@
 
             case RegistrationPersonFieldType.MaritalStatus:
                 componentProps.label = "Marital Status";
-                componentProps.items = [...registrationEntryState.viewModel.maritalStatuses];
+                componentProps.items = [...registrationEntryState.viewModel.maritalStatuses ?? []];
                 break;
 
             case RegistrationPersonFieldType.ConnectionStatus:
                 componentProps.label = "Connection Status";
-                componentProps.items = [...registrationEntryState.viewModel.connectionStatuses];
+                componentProps.items = [...registrationEntryState.viewModel.connectionStatuses ?? []];
                 break;
 
             case RegistrationPersonFieldType.Grade:
                 componentProps.label = "Grade";
-                componentProps.items = [...registrationEntryState.viewModel.grades];
+                componentProps.items = [...registrationEntryState.viewModel.grades ?? []];
                 break;
 
             case RegistrationPersonFieldType.HomePhone:
@@ -169,12 +169,12 @@
 
             case RegistrationPersonFieldType.Race:
                 componentProps.label = "Race";
-                componentProps.items = [...registrationEntryState.viewModel.races];
+                componentProps.items = [...registrationEntryState.viewModel.races ?? []];
                 break;
 
             case RegistrationPersonFieldType.Ethnicity:
                 componentProps.label = "Ethnicity";
-                componentProps.items = [...registrationEntryState.viewModel.ethnicities];
+                componentProps.items = [...registrationEntryState.viewModel.ethnicities ?? []];
                 break;
         }
 
