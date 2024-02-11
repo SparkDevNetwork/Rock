@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -155,6 +155,7 @@
     <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Finance\FinancialStatementTemplateDetail.cs" />
     <Compile Include="CheckIn\Config\CheckinTypeDetail.cs" />
+    <Compile Include="Finance\FinancialStatementTemplateList.cs" />
     <Compile Include="Group\GroupArchivedList.cs" />
     <Compile Include="Group\GroupTypeList.cs" />
     <Compile Include="Mobile\MobileLayoutDetail.cs" />

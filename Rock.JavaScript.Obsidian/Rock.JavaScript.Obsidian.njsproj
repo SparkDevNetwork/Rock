@@ -412,6 +412,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateList\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\" />
@@ -1027,6 +1028,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayList\financialGatewayListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateList\financialStatementTemplateListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupArchivedList\groupArchivedListOptionsBag.d.ts" />
