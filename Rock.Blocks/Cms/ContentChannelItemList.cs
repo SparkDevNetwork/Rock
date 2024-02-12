@@ -422,6 +422,35 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Changes the ordered position of a single item.
+        /// </summary>
+        /// <param name="key">The identifier of the item that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderItem( string key, string beforeKey )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Get the queryable and make sure it is ordered correctly.
+                var qry = GetListQueryable( rockContext );
+                qry = GetOrderedListQueryable( qry, rockContext );
+
+                // Get the entities from the database.
+                var items = GetListItems( qry, rockContext );
+
+                if ( !items.ReorderEntity( key, beforeKey ) )
+                {
+                    return ActionBadRequest( "Invalid reorder attempt." );
+                }
+
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
         /// Upload a content item to the content library
         /// </summary>
         /// <param name="key">The identifier of the item to be uploaded.</param>
