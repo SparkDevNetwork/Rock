@@ -12,7 +12,7 @@
                title="Configure Payment Plan"
                @save="isModalShown = false">
             <template v-if="paymentDeadlineDate">
-                The total amount of $749.00 is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
+                The total amount of {{ toCurrencyOrNull(registrationEntryState.registrants.map(r => r.cost)) }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
             </template>
             <template v-else>
                 The total amount due is $749.00.
@@ -26,8 +26,7 @@
             <div class="row">
                 <div class="col-sm-6">
                     <CurrencyBox v-model="amountToPayToday"
-                                 label="Amount To Pay Today">
-                    </CurrencyBox>
+                                 label="Amount To Pay Today" />
                     <small>A minimum of {{ toCurrencyOrNull(registrationEntryState.viewModel.initialAmountToPay ?? 0, registrationEntryState.viewModel.currencyInfo) }} is due today</small>
                 </div>
 

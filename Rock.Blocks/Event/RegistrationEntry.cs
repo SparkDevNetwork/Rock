@@ -402,7 +402,7 @@ namespace Rock.Blocks.Event
                 {
                     return ActionBadRequest( errorMessage );
                 }
-
+                session.Registration.BalanceDue
                 return ActionOk( new
                 {
                     ExpirationDateTime = session.ExpirationDateTime.ToRockDateTimeOffset()

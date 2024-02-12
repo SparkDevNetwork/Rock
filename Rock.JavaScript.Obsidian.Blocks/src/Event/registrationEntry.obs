@@ -253,15 +253,15 @@
             items.push({
                 key: "Start",
                 title: "Start",
-                subtitle: config.registrationTerm
+                subtitle: config.registrationTerm ?? ""
             });
         }
 
         if (hasPreAttributes) {
             items.push({
                 key: "Pre",
-                title: config.registrationAttributeTitleStart,
-                subtitle: config.registrationTerm
+                title: config.registrationAttributeTitleStart ?? "",
+                subtitle: config.registrationTerm ?? ""
             });
         }
 
@@ -269,13 +269,13 @@
             items.push({
                 key: "Registrant",
                 title: toTitleCase(config.registrantTerm),
-                subtitle: config.registrationTerm
+                subtitle: config.registrationTerm ?? ""
             });
         }
 
         for (let i = 0; i < registrationEntryState.value.registrants.length; i++) {
             const registrant = registrationEntryState.value.registrants[i];
-            const info = getRegistrantBasicInfo(registrant, config.registrantForms);
+            const info = getRegistrantBasicInfo(registrant, config.registrantForms ?? []);
 
             if (info?.firstName && info.lastName) {
                 items.push({
@@ -296,15 +296,15 @@
         if (hasPostAttributes) {
             items.push({
                 key: "Post",
-                title: config.registrationAttributeTitleEnd,
-                subtitle: config.registrationTerm
+                title: config.registrationAttributeTitleEnd ?? "",
+                subtitle: config.registrationTerm ?? ""
             });
         }
 
         items.push({
             key: "Finalize",
             title: "Finalize",
-            subtitle: config.registrationTerm
+            subtitle: config.registrationTerm ?? ""
         });
 
         return items;
@@ -319,15 +319,15 @@
             return false;
         }
 
-        const hasCostFees = new List<RegistrationEntryBlockFeeViewModel>(config.fees)
-            .any(f => new List(f.items).any(i => i.cost > 0));
+        const hasCostFees = new List<RegistrationEntryBlockFeeViewModel>(config.fees ?? [])
+            .any(f => new List(f.items ?? []).any(i => i.cost > 0));
 
         // If no cost or fees, then no gateway will be needed.
         if (config.cost <= 0 && !hasCostFees) {
             return false;
         }
 
-        if (config.isRedirectGateway || config.gatewayControl.fileUrl) {
+        if (config.isRedirectGateway || config.gatewayControl?.fileUrl) {
             return false;
         }
 
@@ -457,7 +457,8 @@
             registrationEntryState.value.currentStep = Step.RegistrationEndForm;
         }
         else {
-            const lastFormIndex = registrationEntryState.value.viewModel.registrantForms.length - 1;
+            // TODO JMH Will -1 cause an issue if registrantForms is null?
+            const lastFormIndex = (registrationEntryState.value.viewModel.registrantForms?.length ?? 0) - 1;
 
             registrationEntryState.value.currentRegistrantFormIndex = lastFormIndex;
             registrationEntryState.value.currentStep = Step.PerRegistrantForms;

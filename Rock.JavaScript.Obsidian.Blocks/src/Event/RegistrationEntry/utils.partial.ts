@@ -24,7 +24,6 @@ import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,

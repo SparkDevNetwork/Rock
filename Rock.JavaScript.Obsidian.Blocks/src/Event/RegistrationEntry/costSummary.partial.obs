@@ -19,12 +19,12 @@
                 </div>
                 <div class="col-sm-3 fee-value">
                     <span class="visible-xs-inline">Amount:</span>
-                    $ {{ lineItem.amountFormatted }}
+                    {{ `${currencyInfo.symbol} ${lineItem.amountFormatted}` }}
                 </div>
                 <div v-if="hasDiscount" class="col-sm-3 fee-value">
                     <HelpBlock v-if="lineItem.discountHelp" :text="lineItem.discountHelp" />
                     <span class="visible-xs-inline">Discounted Amount:</span>
-                    $ {{ lineItem.discountedAmountFormatted }}
+                    {{ `${currencyInfo.symbol} ${lineItem.discountedAmountFormatted}` }}
                 </div>
             </div>
             <div class="row fee-row-total">
@@ -64,8 +64,9 @@
     import Loading from "@Obsidian/Controls/loading.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
     import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 
     enum RegistrationCostSummaryType {
         Cost = 0,
@@ -103,14 +104,24 @@
 
     // #region Computed Values
 
+    const currencyInfo = computed<CurrencyInfoBag>(() => {
+        console.log("currencyInfo", registrationEntryState.viewModel.currencyInfo);
+        return registrationEntryState.viewModel.currencyInfo ?? {
+            decimalPlaces: 2,
+            symbol: "$"
+        };
+    });
+
     /** Line items with some extra info computed for table rendering */
     const augmentedLineItems = computed<AugmentedLineItem[]>(() => {
         return lineItems.value.map(li => ({
             ...li,
             isFee: li.type === RegistrationCostSummaryType.Fee,
             discountHelp: (hasDiscount.value && li.cost === li.discountedCost) ? "This item is not eligible for the discount." : "",
-            amountFormatted: asFormattedString(li.cost, 2),
-            discountedAmountFormatted: asFormattedString(li.discountedCost, 2)
+            // Ignore the currency symbol when formatting.
+            // It will be prepended with a space in the template.
+            amountFormatted: formatCurrency(li.cost, { symbol: "" }),
+            discountedAmountFormatted: formatCurrency(li.discountedCost, { symbol: "" })
         } as AugmentedLineItem));
     });
 
@@ -128,7 +139,7 @@
 
     /** The total before discounts as a formatted string */
     const totalFormatted = computed<string>(() => {
-        return `$${asFormattedString(total.value, 2)}`;
+        return formatCurrency(total.value);
     });
 
     /** The total cost before discounts */
@@ -169,7 +180,12 @@
 
     /** The total after discounts as a formatted string */
     const discountedTotalFormatted = computed<string>(() => {
-        return `$${asFormattedString(discountedTotal.value, 2)}`;
+        return formatCurrency(discountedTotal.value);
+    });
+
+    /** The final total cost to be paid. */
+    const finalTotalCost = computed<number>(() => {
+        return discountedTotal.value;
     });
 
     /** The min amount that must be paid today */
@@ -185,7 +201,7 @@
 
     /** The min amount that must be paid today as a formatted string */
     const amountDueTodayFormatted = computed<string>(() => {
-        return `$${asFormattedString(amountDueToday.value, 2)}`;
+        return formatCurrency(amountDueToday.value);
     });
 
     /** Should the amount that is due today be shown */
@@ -200,7 +216,7 @@
 
     /** The amount previously paid formatted as a string */
     const amountPreviouslyPaidFormatted = computed<string>(() => {
-        return `$${asFormattedString(amountPreviouslyPaid.value, 2)}`;
+        return formatCurrency(amountPreviouslyPaid.value);
     });
 
     /** The max amount that can be paid today */
@@ -215,7 +231,7 @@
 
     /** The max amount that can be paid today as a formatted string */
     const maxAmountCanBePaidFormatted = computed<string>(() => {
-        return `$${asFormattedString(maxAmountCanBePaid.value, 2)}`;
+        return formatCurrency(maxAmountCanBePaid.value);
     });
 
     /** The amount that would remain if the user paid the amount indicated in the currency box */
@@ -227,7 +243,7 @@
 
     /** The amount that would remain if the user paid the amount indicated in the currency box as a formatted string */
     const amountRemainingFormatted = computed<string>(() => {
-        return `$${asFormattedString(amountRemaining.value, 2)}`;
+        return formatCurrency(amountRemaining.value);
     });
 
     /** The vee-validate rules for the amount to pay today */
@@ -273,6 +289,21 @@
         }
         finally {
             isLoading.value = false;
+        }
+    }
+
+    function formatCurrency(value: number, overrides?: Partial<CurrencyInfoBag>): string {
+        const currencyBag: CurrencyInfoBag = {
+            ...currencyInfo.value,
+            ...overrides
+        };
+        const formattedValue = toCurrencyOrNull(value, currencyBag);
+
+        if (formattedValue) {
+            return formattedValue;
+        }
+        else {
+            return `${currencyBag.symbol}${asFormattedString(value, currencyBag.decimalPlaces)}`;
         }
     }
 
