@@ -2,7 +2,6 @@
 
   <!-- Location Select Values -->
   {% assign dateKey = 'Now' | Date:'yyyyMMdd' %}
-  {% assign dateKey = '20240107' | Date:'yyyyMMdd' %}
   {% assign campusGuid = Context.Campus.Guid %}
   {% assign scheduleId = Context.Schedule.Id %}
   {% assign locationId = 'Global' | PageParameter:'LocationId' %}
