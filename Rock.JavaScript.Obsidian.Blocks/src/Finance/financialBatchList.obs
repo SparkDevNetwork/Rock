@@ -607,7 +607,7 @@
      *
      * @param state The state object that describes the grid.
      */
-     async function onCloseSelectedBatches(state: IGridState): Promise<void> {
+    async function onCloseSelectedBatches(state: IGridState): Promise<void> {
         setBulkBatchStatus(state, false);
     }
 

@@ -68,6 +68,7 @@
     <Compile Include="Blocks\Cms\BlockTypeList\BlockTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelDetail\ContentChannelBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelDetail\ContentChannelDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentChannelItemList\ContentChannelItemListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelList\ContentChannelListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeList\ContentChannelTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeBag.cs" />

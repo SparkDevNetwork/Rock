@@ -1,0 +1,461 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="config"
+          :definition="config?.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="id"
+          :itemTerm="config?.options?.contentItemName + ' Items'"
+          :entityTypeGuid="EntityType.ContentChannelItem"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config?.isAddEnabled ? onAddItem : undefined"
+          :customActions="customActions"
+          @selectItem="onSelectItem">
+
+        <ReorderColumn v-if="config?.options?.showReorderColumn" @orderChanged="onOrderChanged" />
+
+        <TextColumn name="title"
+                    title="Title"
+                    field="title"
+                    :filter="config?.options?.showFilters ? textValueFilter : undefined" />
+
+        <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn && config?.options?.includeTime"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
+                        name="startDateTime"
+                        :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
+                        field="startDateTime"
+                        :filter="config?.options?.showFilters ? dateValueFilter : undefined"
+                        width="250" />
+
+        <DateColumn v-if="config?.options?.showStartDateTimeColumn && !config?.options?.includeTime"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
+                    name="startDateTime"
+                    :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
+                    field="startDateTime"
+                    :filter="config?.options?.showFilters ? dateValueFilter : undefined"
+                    width="250" />
+
+        <Column v-if="showScheduledIconColumn"
+                name="isScheduled"
+                title=""
+                width="45">
+            <template #format="{ row }">
+                <i class='fa fa-clock' v-if="RockDateTime.parseISO(row.startDateTime as string)?.isLaterThan(RockDateTime.now())"></i>
+            </template>
+        </Column>
+
+
+        <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn && config?.options?.includeTime"
+                        headerClass="text-right"
+                        itemClass="justify-content-end text-right"
+                        name="expireDateTime"
+                        title="Expire"
+                        field="expireDateTime"
+                        :filter="config?.options?.showFilters ? dateValueFilter : undefined"
+                        width="250" />
+
+        <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime"
+                    headerClass="text-right"
+                    itemClass="justify-content-end text-right"
+                    name="expireDateTime"
+                    title="Expire"
+                    field="expireDateTime"
+                    :filter="config?.options?.showFilters ? dateValueFilter : undefined"
+                    width="250" />
+
+        <NumberColumn v-if="config?.options?.showPriorityColumn"
+                      headerClass="text-right"
+                      itemClass="justify-content-end text-right"
+                      name="priority"
+                      title="Priority"
+                      field="priority"
+                      :filter="config?.options?.showFilters ? numberValueFilter : undefined"
+                      width="125" />
+
+        <BooleanColumn v-if="showOccurrencesColumn"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"
+                       name="occurrences"
+                       title="Event Occurrences"
+                       field="occurrences"
+                       :filter="config?.options?.showFilters ? booleanValueFilter : undefined"
+                       width="120" />
+
+        <Column v-if="config.options?.isContentLibraryEnabled"
+                itemClass="grid-columncommand justify-content-center"
+                name="library"
+                title="Library"
+                width="80">
+            <template #format="{ row }">
+                <RockButton v-if="row.isUploadedToContentLibrary"
+                            title="Update"
+                            btnType="default"
+                            btnSize="sm"
+                            class="text-info"
+                            @click.stop="showUpdateModal(row as GridRowItem)">
+                    <i class="fa fa-upload" aria-label="Update"></i>
+                </RockButton>
+                <RockButton v-else-if="row.isDownloadedFromContentLibrary"
+                            title="Re-Download"
+                            btnType="default"
+                            btnSize="sm"
+                            class="text-success"
+                            @click.stop="showRedownloadModal(row as GridRowItem)">
+                    <i class="fa fa-download" aria-label="Re-Download"></i>
+                </RockButton>
+                <RockButton v-else-if="!row.contentLibrarySourceIdentifier"
+                            title="Upload"
+                            btnType="default"
+                            btnSize="sm"
+                            class="text-muted"
+                            @click.stop="showUploadModal(row as GridRowItem)">
+                    <i class="fa fa-upload" aria-label="Upload"></i>
+                </RockButton>
+
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <AttributeColumns :attributes="config?.gridDefinition?.attributeFields ?? []" :filter="null" />
+
+        <LabelColumn v-if="config?.options?.showStatusColumn"
+                     name="status"
+                     title="Status"
+                     field="status"
+                     :filter="config?.options?.showFilters ? pickExistingValueFilter : undefined"
+                     :textSource="ContentChannelItemStatusDescription"
+                     :classSource="statusLabelColors"
+                     width="150" />
+
+        <SecurityColumn v-if="config?.options?.showSecurityColumn" />
+
+        <DeleteColumn v-if="config?.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+    <Modal v-model="isUpdateModalVisible"
+           title="Send to Library"
+           saveText="Update"
+           :isSaveButtonDisabled="isLoading"
+           @save="onUpdateModalSave"
+           @closeModal="onUpdateModalCancel">
+        <Loading :isLoading="isLoading">
+            <p>Are you sure you would like to update the item "{{ currentRow?.title }}" in the library? Updating an item will temporarily remove it from the library until it can be re-approved.</p>
+        </Loading>
+        <template #customButtons>
+            <LoadingIndicator v-if="isLoading" class="text-body pull-right p-2" isSmall />
+        </template>
+    </Modal>
+    <Modal v-model="isRedownloadModalVisible"
+           title="Re-download from Library"
+           saveText="Re-download"
+           :isSaveButtonDisabled="isLoading"
+           @save="onRedownloadModalSave"
+           @closeModal="onRedownloadModalCancel">
+        <Loading :isLoading="isLoading">
+            <div class="alert alert-warning">
+                <span class="js-notification-text">The action you are about to perform will overwrite the existing content of the item "Beta Test ChatGPT on Biblical New Years Resolutions.". Any changes will be lost. Are you sure you want to proceed with the update? </span>
+            </div>
+        </Loading>
+        <template #customButtons>
+            <LoadingIndicator v-if="isLoading" class="text-body pull-right p-2" isSmall />
+        </template>
+    </Modal>
+    <Modal v-model="isUploadModalVisible"
+           title="Send to Library"
+           saveText="Upload"
+           :isSaveButtonDisabled="isLoading"
+           @save="onUploadModalSave"
+           @closeModal="onUploadModalCancel">
+        <Loading :isLoading="isLoading">
+            <p>Are you sure you would like to upload the item "{{ currentRow?.title }}" to the library? This will be shared with the <a href="https://rockrms.com/library/licenses?utm_source=rock-item-uploaded" target="_blank">{{ config.options?.libraryLicenseName }} License</a></p>
+        </Loading>
+        <template #customButtons>
+            <LoadingIndicator v-if="isLoading" class="text-body pull-right p-2" isSmall />
+        </template>
+    </Modal>
+    <ModalAlert v-model="showError" type="Alert">
+        <div v-html="errorMessage"></div>
+    </ModalAlert>
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DateTimeColumn, DateColumn, dateValueFilter, DeleteColumn, SecurityColumn, LabelColumn, pickExistingValueFilter, BooleanColumn, booleanValueFilter, ReorderColumn, Column } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import { type GridAction } from "@Obsidian/Types/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { ContentChannelItemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemList/contentChannelItemListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./ContentChannelItemList/types.partial";
+    import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
+    import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    type GridRowItem = {
+        "id": string,
+        "idKey": string,
+        "contentChannelId": number,
+        "title": string,
+        "startDateTime": string,
+        "expireDateTime": string,
+        "isScheduled": boolean,
+        "occurrences": boolean,
+        "status": ContentChannelItemStatus,
+        "priority": number,
+        "isContentLibraryOwner": boolean | null,
+        "contentLibrarySourceIdentifier": boolean | null,
+        "isDownloadedFromContentLibrary": boolean,
+        "isUploadedToContentLibrary": boolean,
+        "contentLibraryLicenseTypeGuid": string | null,
+        "isSecurityDisabled": boolean
+    };
+
+    const config = useConfigurationValues<ListBlockBox<ContentChannelItemListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const hasEventOccurrences = ref(false);
+
+    // Content Library Modals
+    const isUpdateModalVisible = ref(false);
+    const isRedownloadModalVisible = ref(false);
+    const isUploadModalVisible = ref(false);
+    const isLoading = ref(false);
+
+    const currentRow = ref<GridRowItem>();
+
+    //Error Modal
+    const showError = ref(false);
+    const errorMessage = ref("");
+
+    const customActions = computed<GridAction[]>(() => {
+        if (config.options?.isContentLibraryEnabled) {
+            return [
+                {
+                    title: "Download from Library",
+                    tooltip: "Download from Library",
+                    isPrimary: true,
+                    iconCssClass: "fa fa-download",
+                    handler: () => {
+                        window.location = (config.navigationUrls?.[NavigationUrlKey.LibraryDownloadPage] ?? "/") as (string & Location);
+                    }
+                }
+            ];
+        }
+        return [];
+    });
+
+    const showOccurrencesColumn = computed(() => {
+        return hasEventOccurrences.value && config.options?.showOccurrencesColumn;
+    });
+
+    const showScheduledIconColumn = ref(false);
+
+    const statusLabelColors: Record<string, string> = {
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.PendingApproval]]: "default",
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Approved]]: "success",
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Denied]]: "danger"
+    };
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+
+            hasEventOccurrences.value = (gridData?.rows ?? []).some(i => i.occurrences);
+            showScheduledIconColumn.value = (gridData?.rows ?? []).some(i => RockDateTime.parseISO(i.startDateTime as string)?.isLaterThan(RockDateTime.now()));
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function showAlert(message: string): void {
+        errorMessage.value = escapeHtml(message).replace("\n", "<br>");
+        showError.value = true;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete content channel item.");
+        }
+
+        gridDataSource.value = loadGridData();
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.NewItemPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.NewItemPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        // TODO
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    function showUpdateModal(row: GridRowItem): void {
+        currentRow.value = row;
+        isUpdateModalVisible.value = true;
+    }
+
+    async function onUpdateModalSave(): Promise<void> {
+        isLoading.value = true;
+
+        const result = await invokeBlockAction<string>("UpdateContentLibraryItem", {
+            key: currentRow.value?.id ?? 0
+        });
+
+        isLoading.value = false;
+        isUpdateModalVisible.value = false;
+
+        if (result.isError) {
+            showAlert(result.errorMessage || "An unknown error occurred while updating.");
+        }
+    }
+
+    function onUpdateModalCancel(): void {
+        isLoading.value = false;
+        isUpdateModalVisible.value = false;
+    }
+
+    function showRedownloadModal(row: GridRowItem): void {
+        currentRow.value = row;
+        isRedownloadModalVisible.value = true;
+    }
+
+    async function onRedownloadModalSave(): Promise<void> {
+        isLoading.value = true;
+
+        const result = await invokeBlockAction<string>("ReDownloadContentLibraryItem", {
+            key: currentRow.value?.id ?? 0
+        });
+
+        isLoading.value = false;
+        isRedownloadModalVisible.value = false;
+
+        if (result.isError) {
+            showAlert(result.errorMessage || "An unknown error occurred while re-downloading.");
+        }
+    }
+
+    function onRedownloadModalCancel(): void {
+        isLoading.value = false;
+        isUploadModalVisible.value = false;
+    }
+
+    function showUploadModal(row: GridRowItem): void {
+        currentRow.value = row;
+        isUploadModalVisible.value = true;
+    }
+
+    async function onUploadModalSave(): Promise<void> {
+        isLoading.value = true;
+
+        const result = await invokeBlockAction<string>("UploadContentLibraryItem", {
+            key: currentRow.value?.id ?? 0
+        });
+
+        isLoading.value = false;
+        isUploadModalVisible.value = false;
+
+        if (result.isError) {
+            showAlert(result.errorMessage || "An unknown error occurred while re-downloading.");
+        }
+
+        // Make sure the grid is up-to-date so the "update" icon shows for this instead of
+        gridDataSource.value = loadGridData();
+    }
+
+    function onUploadModalCancel(): void {
+        isLoading.value = false;
+        isUploadModalVisible.value = false;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(showError, () => {
+        if (!showError.value) {
+            errorMessage.value = "";
+        }
+    });
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

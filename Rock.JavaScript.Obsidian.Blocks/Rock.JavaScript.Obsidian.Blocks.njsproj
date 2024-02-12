@@ -45,6 +45,7 @@
     <Content Include="src\Cms\contentChannelDetail.obs" />
     <Content Include="src\Cms\ContentChannelDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\ContentChannelDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\contentChannelItemList.obs" />
     <Content Include="src\Cms\contentChannelList.obs" />
     <Content Include="src\Cms\contentChannelTypeList.obs" />
     <Content Include="src\Cms\contentChannelTypeDetail.obs" />
@@ -342,6 +343,7 @@
     <Folder Include="src\Cms\AdaptiveMessageList\" />
     <Folder Include="src\Cms\BlockTypeDetail\" />
     <Folder Include="src\Cms\ContentChannelDetail\" />
+    <Folder Include="src\Cms\ContentChannelItemList\" />
     <Folder Include="src\Cms\ContentChannelList\" />
     <Folder Include="src\Cms\ContentChannelTypeList\" />
     <Folder Include="src\Cms\ContentChannelTypeDetail\" />
@@ -485,6 +487,7 @@
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\BlockTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentChannelDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentChannelItemList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentChannelList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentChannelTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentChannelTypeDetail\types.partial.ts" />
