@@ -1958,6 +1958,10 @@ const panelGallery = defineComponent({
                     text: "Drawer"
                 },
                 {
+                    value: "sidebar",
+                    text: "Sidebar"
+                },
+                {
                     value: "headerActions",
                     text: "Header Actions"
                 },
@@ -1991,6 +1995,7 @@ const panelGallery = defineComponent({
                 }
             ],
             simulateDrawer: computed((): boolean => simulateValues.value.includes("drawer")),
+            simulateSidebar: computed((): boolean => simulateValues.value.includes("sidebar")),
             simulateHeaderActions: computed((): boolean => simulateValues.value.includes("headerActions")),
             simulateSubheaderLeft: computed((): boolean => simulateValues.value.includes("subheaderLeft")),
             simulateSubheaderRight: computed((): boolean => simulateValues.value.includes("subheaderRight")),
@@ -2003,6 +2008,7 @@ const panelGallery = defineComponent({
             importCode: getSfcControlImportPath("panel"),
             exampleCode: `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">
     <template #helpContent>Help Content</template>
+    <template #sidebar>Sidebar Content</template>
     <template #drawer>Drawer Content</template>
     <template #headerActions>Header Actions</template>
     <template #subheaderLeft>Sub Header Left</template>
@@ -2025,6 +2031,10 @@ const panelGallery = defineComponent({
 
         <template v-if="simulateDrawer" #drawer>
             <div style="text-align: center;">Drawer Content</div>
+        </template>
+
+        <template v-if="simulateSidebar" #sidebar>
+            <div style="text-align: center;"><img src="https://placehold.co/280x158" /></div>
         </template>
 
         <template v-if="simulateHeaderActions" #headerActions>
@@ -2082,7 +2092,7 @@ const panelGallery = defineComponent({
             <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
             <CheckBox formGroupClasses="col-sm-3" v-model="hasZoom" label="Has Zoom" />
         </div>
-        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
+        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
 
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
