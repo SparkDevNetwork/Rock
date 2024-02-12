@@ -341,7 +341,7 @@ namespace Rock.SystemGuid
         /// The post update data migration job to chop the Login and Account Entry blocks.
         /// </summary>
         public const string DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS = "A65D26C1-229E-4198-B388-E269C3534BC0";
-        
+
         /// <summary>
         /// The post update data migration job to chop the Email Preference Entry block.
         /// </summary>

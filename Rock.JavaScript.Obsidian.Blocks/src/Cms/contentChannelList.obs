@@ -51,10 +51,17 @@
                            :infoMinimum="1"
                            visiblePriority="xs" />
 
-        <DateColumn name="itemLastCreated"
-                    title="Last Item Created"
-                    field="itemLastCreated"
-                    visiblePriority="xs" />
+        <Column name="itemLastCreated"
+                title="Last Item Created"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                {{ getElapsedTime(row.itemLastCreated) }}
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
 
         <SecurityColumn />
 
@@ -77,6 +84,9 @@
     import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./ContentChannelList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./ContentChannelList/gridSettingsModal.partial.obs";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<ContentChannelListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -160,7 +170,21 @@
      * Called when a row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
-    async function onDeleteClick(key: string): Promise<void> {
+    async function onDeleteClick(key: string, state: IGridState): Promise<void> {
+        const row = state.rows.find(r => r["idKey"] === key) as Record<string, unknown>;
+
+        if (row) {
+            var totalItems = row["totalItems"] as number;
+            if (totalItems > 0) {
+
+                const reallyConfirmed = await confirm("This Channel has items. Are you sure that you want to delete this Channel and all of its items?");
+
+                if (!reallyConfirmed) {
+                    return;
+                }
+            }
+        }
+
         const result = await invokeBlockAction<string>("Delete", {
             key
         });
@@ -194,6 +218,18 @@
     */
     function onGridSettingClick(): void {
         isGridSettingsVisible.value = true;
+    }
+
+    /**
+     * Converts the passed date time value to a time elapsed string.
+     * @param value The date time value.
+     */
+    function getElapsedTime(value: string): string {
+        if (!value) {
+            return "";
+        }
+        const dateValue = RockDateTime.parseISO(value);
+        return dateValue ? `${dateValue.toElapsedString()} Ago` : "";
     }
 
     // #endregion

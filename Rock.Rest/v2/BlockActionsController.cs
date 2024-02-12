@@ -31,9 +31,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Blocks;
-using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Utility.CaptchaApi;
+using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.v2
@@ -165,6 +166,20 @@ namespace Rock.Rest.v2
                     return new StatusCodeResult( HttpStatusCode.Unauthorized, controller );
                 }
 
+                // Check if we need to apply rate limiting to this request.
+                if ( pageCache.IsRateLimited )
+                {
+                    var canProcess = RateLimiterCache.CanProcessPage( pageCache.Id,
+                        controller.RockRequestContext.ClientInformation.IpAddress,
+                        TimeSpan.FromSeconds( pageCache.RateLimitPeriod.Value ),
+                        pageCache.RateLimitRequestPerPeriod.Value );
+
+                    if ( !canProcess )
+                    {
+                        return new StatusCodeResult( ( HttpStatusCode ) 429, controller );
+                    }
+                }
+
                 //
                 // Get the class that handles the logic for the block.
                 //
@@ -198,15 +213,24 @@ namespace Rock.Rest.v2
                         {
                             if ( kvp.Key == "__context" )
                             {
+                                var actionContext = kvp.Value.ToObject<BlockActionContextBag>();
+
                                 // If we are given any page parameters then
                                 // override the query string parameters. This
                                 // is what allows mobile and obsidian blocks to
                                 // pass in the original page parameters.
-                                if ( kvp.Value["pageParameters"] != null )
+                                if ( actionContext?.PageParameters != null )
                                 {
-                                    var pageParameters = kvp.Value["pageParameters"].ToObject<Dictionary<string, string>>();
+                                    rockBlock.RequestContext.SetPageParameters( actionContext.PageParameters );
+                                }
 
-                                    rockBlock.RequestContext.SetPageParameters( pageParameters );
+                                // If the block provided a captcha, validate it.
+                                if ( actionContext?.Captcha.IsNotNullOrWhiteSpace() == true )
+                                {
+                                    var api = new CloudflareApi();
+                                    var ipAddress = rockBlock.RequestContext.ClientInformation.IpAddress;
+
+                                    rockBlock.RequestContext.IsCaptchaValid = await api.IsTurnstileTokenValidAsync( actionContext.Captcha, ipAddress );
                                 }
                             }
                             else

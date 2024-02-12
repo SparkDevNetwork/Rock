@@ -96,15 +96,20 @@
     <Compile Include="Cms\ContentChannelItemList.cs" />
     <Compile Include="Cms\ContentChannelList.cs" />
     <Compile Include="Cms\ContentChannelTypeList.cs" />
+    <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
     <Compile Include="Cms\LayoutList.cs" />
+    <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
     <Compile Include="Cms\SiteList.cs" />
+    <Compile Include="Communication\CommunicationList.cs" />
+    <Compile Include="Communication\SmsPipelineList.cs" />
+    <Compile Include="Communication\SystemCommunicationPreview.cs" />
     <Compile Include="Core\AssetStorageProviderList.cs" />
     <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
@@ -127,6 +132,7 @@
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
     <Compile Include="Core\SignalTypeList.cs" />
+    <Compile Include="Core\TagList.cs" />
     <Compile Include="Crm\AssessmentTypeList.cs" />
     <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />
@@ -136,6 +142,7 @@
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
     <Compile Include="Engagement\StepProgramList.cs" />
+    <Compile Include="Event\EventCalendarItemList.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
     <Compile Include="Finance\BusinessList.cs" />
     <Compile Include="Finance\FinancialAccountDetail.cs" />
@@ -149,6 +156,9 @@
     <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Finance\FinancialStatementTemplateDetail.cs" />
     <Compile Include="CheckIn\Config\CheckinTypeDetail.cs" />
+    <Compile Include="Finance\FinancialStatementTemplateList.cs" />
+    <Compile Include="Group\GroupArchivedList.cs" />
+    <Compile Include="Group\GroupTypeList.cs" />
     <Compile Include="Mobile\MobileLayoutDetail.cs" />
     <Compile Include="Group\GroupMemberScheduleTemplateDetail.cs" />
     <Compile Include="Group\GroupRequirementTypeDetail.cs" />

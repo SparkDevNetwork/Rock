@@ -343,8 +343,6 @@ namespace Rock.Tests.Integration
 
         #region Sample Data
 
-        private static List<string> _loadedFeatureDataSets = new List<string>();
-
         public static class DataSetIdentifiers
         {
             public static string PrayerSampleData = "PrayerSampleData";
@@ -357,11 +355,6 @@ namespace Rock.Tests.Integration
         /// <param name="datasetIdentifier">A <c>SampleDataHelper.DataSetIdentifiers</c> value that uniquely identifies the data set.</param>
         public static void AddTestDataSet( string datasetIdentifier )
         {
-            if ( GetFeatureDataLoadState( datasetIdentifier ) )
-            {
-                return;
-            }
-
             var isValid = false;
 
             if ( datasetIdentifier == DataSetIdentifiers.PrayerSampleData )
@@ -384,17 +377,10 @@ namespace Rock.Tests.Integration
             {
                 throw new Exception( $"Invalid Data Set. The data set \"{datasetIdentifier}\" could not be loaded." );
             }
-
-            SetFeatureDataLoadState( datasetIdentifier );
         }
 
         public static void RemoveTestDataSet( string datasetIdentifier )
         {
-            if ( !GetFeatureDataLoadState( datasetIdentifier ) )
-            {
-                return;
-            }
-
             var isValid = false;
 
             if ( datasetIdentifier == DataSetIdentifiers.PrayerSampleData )
@@ -411,31 +397,6 @@ namespace Rock.Tests.Integration
             if ( !isValid )
             {
                 throw new Exception( $"Invalid Data Set. The data set \"{datasetIdentifier}\" could not be loaded." );
-            }
-
-            SetFeatureDataLoadState( datasetIdentifier );
-        }
-
-        private static bool GetFeatureDataLoadState( string datasetName )
-        {
-            return _loadedFeatureDataSets.Contains( datasetName );
-        }
-
-        private static void SetFeatureDataLoadState( string datasetName, bool isLoaded = true )
-        {
-            if ( _loadedFeatureDataSets.Contains( datasetName ) )
-            {
-                if ( !isLoaded )
-                {
-                    _loadedFeatureDataSets.Remove( datasetName );
-                }
-            }
-            else
-            {
-                if ( isLoaded )
-                {
-                    _loadedFeatureDataSets.Add( datasetName );
-                }
             }
         }
 

@@ -122,7 +122,7 @@
                                         <Rock:CacheabilityPicker ID="cpCacheSettings" runat="server" Label="" />
                                     </div>
                                     <div class="col-md-12">
-                                        <Rock:RockCheckBox runat="server" ID="cbEnableRateLimiting" CssClass="js-rate-limit-checkbox" Label="Rate Limiting Enable" Help="Rate Limiting will limit the number of request that can be made to this page. This will help prevent bots from spamming a certain page." />
+                                        <Rock:RockCheckBox runat="server" ID="cbEnableRateLimiting" CssClass="js-rate-limit-checkbox" Label="Rate Limiting Enable" Help="Rate Limiting restricts the number of requests from each IP Address, helping to protect pages from bot spam." />
                                     </div>
                                     <asp:Panel runat="server" ID="pnlRateLimitingSettings" CssClass="js-rate-limit-settings d-none">
                                         <div class="col-md-6">

@@ -23,15 +23,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Settings.Giving;
 using Rock.Web.Cache;
 
 using static Rock.Jobs.GivingAutomation;
 
-namespace Rock.Tests.Integration.Core.Jobs
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     [TestClass]
-    public class GivingAutomationClassificationTests
+    public class GivingAutomationClassificationTests : DatabaseTestsBase
     {
         #region SplitQuartileRanges
 
@@ -1054,7 +1055,6 @@ namespace Rock.Tests.Integration.Core.Jobs
         [DataRow( 30.437, 55, 3 )]
         [DataRow( 30.437, 56, 3 )]
         [DataRow( 30.437, 57, 3 )]
-        [Ignore("Failing test. Incorrect test data? [MP]")]
         public void CreateAlertsForLateTransaction_ConsistentGivers( double frequencyMean, double lastGaveDaysAgo, int alertCount, double frequencyStdDev = 0.0 )
         {
             var context = new GivingAutomation.GivingAutomationContext()

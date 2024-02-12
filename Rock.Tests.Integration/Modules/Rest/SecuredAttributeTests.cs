@@ -5,6 +5,7 @@ using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 using System;
 using System.Linq;
@@ -15,12 +16,11 @@ using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 
-namespace Rock.Tests.Integration.RestApi
+namespace Rock.Tests.Integration.Modules.Rest
 {
     [TestClass]
-    public class SecuredAttributeTests
+    public class SecuredAttributeTests : DatabaseTestsBase
     {
-        [Ignore("Fix required. [Last modified by KA]")]
         [TestMethod]
         public void AuthenticateWithoutPinAuthenticationActive()
         {
@@ -51,7 +51,7 @@ namespace Rock.Tests.Integration.RestApi
 
             actionFilter.OnActionExecuting( httpContext );
 
-            Assert.That.AreEqual( httpContext.Response.StatusCode, HttpStatusCode.OK );
+            Assert.That.AreEqual( HttpStatusCode.OK, httpContext.Response.StatusCode );
         }
     }
 }

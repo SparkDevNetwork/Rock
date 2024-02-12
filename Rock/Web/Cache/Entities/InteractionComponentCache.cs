@@ -50,15 +50,39 @@ namespace Rock.Web.Cache
 
         #endregion Base Property Overrides
 
-        #region Static Fields
+        #region Static Properties
 
-        private static ConcurrentDictionary<string, int> _interactionComponentLookupComponentIdByEntityId = new ConcurrentDictionary<string, int>();
+        private static ConcurrentDictionary<string, int> InteractionComponentLookupComponentIdByEntityId
+        {
+            get
+            {
+                var lookupTable = RockCacheManager<object>.Instance.Get( "InteractionComponentCacheLookupComponentIdByEntityId" ) as ConcurrentDictionary<string, int>;
 
-        #endregion
+                if ( lookupTable == null )
+                {
+                    lookupTable = new ConcurrentDictionary<string, int>();
+                    RockCacheManager<object>.Instance.AddOrUpdate( "InteractionComponentCacheLookupComponentIdByEntityId", lookupTable );
+                }
 
-        #region Static Fields
+                return lookupTable;
+            }
+        }
 
-        private static ConcurrentDictionary<string, int> _interactionComponentIdLookupFromForeignKey = new ConcurrentDictionary<string, int>();
+        private static ConcurrentDictionary<string, int> InteractionComponentIdLookupFromForeignKey
+        {
+            get
+            {
+                var lookupTable = RockCacheManager<object>.Instance.Get( "InteractionComponentCacheIdLookupFromForeignKey" ) as ConcurrentDictionary<string, int>;
+
+                if ( lookupTable == null )
+                {
+                    lookupTable = new ConcurrentDictionary<string, int>();
+                    RockCacheManager<object>.Instance.AddOrUpdate( "InteractionComponentCacheIdLookupFromForeignKey", lookupTable );
+                }
+
+                return lookupTable;
+            }
+        }
 
         #endregion
 
@@ -131,13 +155,13 @@ namespace Rock.Web.Cache
             ComponentData = interactionComponent.ComponentData;
             var lookupKeyComponentIdByEntityId = $"{InteractionChannelId}|{EntityId}";
 
-            _interactionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKeyComponentIdByEntityId, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
+            InteractionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKeyComponentIdByEntityId, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
 
             if ( interactionComponent.ForeignKey.IsNotNullOrWhiteSpace() )
             {
 
                 var lookupKeyFromForeignKey = $"{interactionComponent.ForeignKey}|interactionChannelId:{interactionComponent.InteractionChannelId}";
-                _interactionComponentIdLookupFromForeignKey.AddOrUpdate( lookupKeyFromForeignKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
+                InteractionComponentIdLookupFromForeignKey.AddOrUpdate( lookupKeyFromForeignKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
             }
         }
 
@@ -165,7 +189,7 @@ namespace Rock.Web.Cache
         {
             var lookupKey = $"{interactionChannelId}|{componentEntityId}";
 
-            if ( _interactionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
+            if ( InteractionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
             {
                 return componentId;
             }
@@ -181,7 +205,7 @@ namespace Rock.Web.Cache
                 if ( interactionComponent != null )
                 {
                     interactionComponentId = Get( interactionComponent ).Id;
-                    _interactionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, (k,v) => interactionComponent.Id );
+                    InteractionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, (k,v) => interactionComponent.Id );
                 }
 
                 return interactionComponentId.Value;
@@ -199,7 +223,7 @@ namespace Rock.Web.Cache
         {
             var lookupKey = $"{interactionChannelId}|{componentEntityId}";
 
-            if ( _interactionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
+            if ( InteractionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
             {
                 return componentId;
             }
@@ -215,7 +239,7 @@ namespace Rock.Web.Cache
                 if ( interactionComponent != null )
                 {
                     interactionComponentId = Get( interactionComponent ).Id;
-                    _interactionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, (k,v) => interactionComponent.Id );
+                    InteractionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, (k,v) => interactionComponent.Id );
                 }
 
                 return interactionComponentId.Value;
@@ -231,7 +255,7 @@ namespace Rock.Web.Cache
         public static int GetOrCreateComponentIdByName( int interactionChannelId, string componentName )
         {
             var lookupKey = $"{interactionChannelId}|name={componentName}";
-            if ( _interactionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
+            if ( InteractionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
             {
                 return componentId;
             }
@@ -247,7 +271,7 @@ namespace Rock.Web.Cache
                 if ( interactionComponent != null )
                 {
                     interactionComponentId = Get( interactionComponent ).Id;
-                    _interactionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
+                    InteractionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
                 }
 
                 return interactionComponentId.Value;
@@ -273,7 +297,7 @@ namespace Rock.Web.Cache
 
             var lookupKey = $"{foreignKey}|interactionChannelId:{interactionChannelId}";
 
-            if ( _interactionComponentIdLookupFromForeignKey.TryGetValue( lookupKey, out int channelId ) )
+            if ( InteractionComponentIdLookupFromForeignKey.TryGetValue( lookupKey, out int channelId ) )
             {
                 return channelId;
             }
@@ -295,7 +319,7 @@ namespace Rock.Web.Cache
                 }
 
                 var interactionComponentId = Get( interactionComponent ).Id;
-                _interactionComponentIdLookupFromForeignKey.AddOrUpdate( lookupKey, interactionComponentId, ( k, v ) => interactionComponentId );
+                InteractionComponentIdLookupFromForeignKey.AddOrUpdate( lookupKey, interactionComponentId, ( k, v ) => interactionComponentId );
 
                 return interactionComponentId;
             }

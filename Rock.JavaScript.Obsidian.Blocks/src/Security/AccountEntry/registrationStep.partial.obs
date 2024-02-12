@@ -19,7 +19,7 @@
                 :isMobile="isMobile" />
             </div>
 
-        <Captcha v-if="!disableCaptchaSupport" v-model="isCaptchaValid"></Captcha>
+        <slot name="captcha" />
 
         <div class="row">
             <div class="col-md-12">
@@ -39,7 +39,6 @@
     import PersonInfo from "./registrationStepPersonInfo.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import Captcha from "@Obsidian/Controls/captcha.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -88,10 +87,6 @@
 
     const isMobile = computed<boolean>(() => breakpoint.value === "xs");
 
-    const isCaptchaValid = ref("");
-
-    const disableCaptchaSupport = ref(props.config.disableCaptchaSupport);
-
     const shouldUsernameUpdateSetPersonInfoEmail = computed<boolean>(() => props.config.isEmailRequiredForUsername);
 
     const internalIsUsernameAvailable = useVModelPassthrough(props, "isUsernameAvailable", emit);
@@ -114,15 +109,13 @@
                     personInfo: {
                         ...props.modelValue.personInfo,
                         email: newValue?.username
-                    },
-                    isCaptchaValid: asBoolean(isCaptchaValid.value)
+                    }
                 };
             }
             else {
                 modelValue = {
                     ...props.modelValue,
-                    accountInfo: newValue,
-                    isCaptchaValid: asBoolean(isCaptchaValid.value)
+                    accountInfo: newValue
                 };
             }
 

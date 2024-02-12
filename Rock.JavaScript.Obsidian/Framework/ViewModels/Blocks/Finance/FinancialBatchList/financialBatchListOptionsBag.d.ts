@@ -21,9 +21,13 @@
 // </copyright>
 //
 
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type FinancialBatchListOptionsBag = {
+    /** Gets or sets the CurrencyInfo */
+    currencyInfo?: CurrencyInfoBag | null;
+
     /**
      * Determines if the organization is configured with multiple active
      * campuses or not.

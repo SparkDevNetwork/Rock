@@ -7,6 +7,7 @@
           :customActions="customActions"
           itemTerm="Block Type"
           :entityTypeGuid="EntityType.BlockType"
+          tooltipField="description"
           stickyHeader
           gridSettings
           :gridSettingsActive="hasSettingsFilters"
@@ -46,17 +47,18 @@
                     visiblePriority="xs"
                     width="15%" />
 
-        <Column name="Usage"
+        <NumberBadgeColumn name="Usage"
                 title="Usage"
-                :filter="textValueFilter"
+                :filter="numberValueFilter"
                 visiblePriority="xs"
+                field="blocksCount"
                 width="5%">
             <template #format="{ row }">
                 <div>
-                    <div v-if="row.blocksCount > '1'">
+                    <div v-if="row.blocksCount > 1">
                         <span class="badge badge-success">{{ row.blocksCount }}</span>
                     </div>
-                    <div v-else-if="row.blocksCount === '1'">
+                    <div v-else-if="row.blocksCount === 1">
                         <span class="badge badge-info">{{ row.blocksCount }}</span>
                     </div>
                     <div v-else>
@@ -68,7 +70,7 @@
             <template #skeleton>
                 <div class="skeleton skeleton-text skeleton-rounded" />
             </template>
-        </Column>
+        </NumberBadgeColumn>
 
         <Column name="Status"
                 title="Status"
@@ -110,7 +112,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, Column, NumberBadgeColumn, numberValueFilter, NumberColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { BlockTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeList/blockTypeListOptionsBag";

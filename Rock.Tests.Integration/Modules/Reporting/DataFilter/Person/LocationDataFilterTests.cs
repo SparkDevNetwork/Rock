@@ -16,10 +16,13 @@
 //
 using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
+using Rock.Tests.Integration.Modules.Reporting.DataFilter;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter

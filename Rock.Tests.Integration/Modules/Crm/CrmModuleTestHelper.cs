@@ -16,12 +16,14 @@
 //
 using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.TestData
+namespace Rock.Tests.Integration.Modules.Crm
 {
     /// <summary>
     /// Functions to assist with testing the Rock CRM module.

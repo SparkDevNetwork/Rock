@@ -50,6 +50,11 @@ namespace Rock.Logging
         /// <returns><c>true</c> if the object was parsed correctly, <c>false</c> otherwise.</returns>
         public bool LoadFromJson( string json, bool resetAllSettings )
         {
+            if ( string.IsNullOrEmpty( json ) )
+            {
+                return false;
+            }
+
             var data = resetAllSettings
                 ? new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
                 : new Dictionary<string, string>( Data, StringComparer.OrdinalIgnoreCase );

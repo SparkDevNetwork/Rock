@@ -20,7 +20,7 @@ using System.IO;
 
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
-
+using Rock.Observability;
 using Rock.SystemKey;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -384,6 +384,10 @@ namespace Rock.Pdf
 
             var pdfOptions = new PdfOptions();
 
+            // Set page size
+            pdfOptions.Format = this.PaperFormat;
+
+            // Set margins
             if ( this.MarginOptions != null )
             {
                 pdfOptions.MarginOptions = this.MarginOptions;
@@ -422,18 +426,23 @@ namespace Rock.Pdf
                 pdfOptions.FooterTemplate = this.FooterHtml;
             }
 
-            var pdfStreamTask = _puppeteerPage.PdfStreamAsync( pdfOptions );
+            using ( var activity = ObservabilityHelper.StartActivity( "PDF: Generate From HTML" ) )
+            {
+                activity.AddTag( "rock-pdf-htmlsize", html.Length.ToString() );
+               
+                var pdfStreamTask = _puppeteerPage.PdfStreamAsync( pdfOptions );
 
-            // It should only take a couple of seconds to create a PDF, even if it a big file. If it takes more than 30 seconds,
-            // chrome probably had a page crash ( an 'Aw, snap' error). So just give up.
-            TimeSpan maxWaitTime = TimeSpan.FromSeconds( 30 );
-            if ( !pdfStreamTask.Wait( maxWaitTime ) )
-            {
-                throw new PdfGeneratorException( "PDF Generator Time-Out" );
-            }
-            else
-            {
-                return pdfStreamTask.Result;
+                // It should only take a couple of seconds to create a PDF, even if it a big file. If it takes more than 30 seconds,
+                // chrome probably had a page crash ( an 'Aw, snap' error). So just give up.
+                TimeSpan maxWaitTime = TimeSpan.FromSeconds( 30 );
+                if ( !pdfStreamTask.Wait( maxWaitTime ) )
+                {
+                    throw new PdfGeneratorException( "PDF Generator Time-Out" );
+                }
+                else
+                {
+                    return pdfStreamTask.Result;
+                }
             }
         }
 

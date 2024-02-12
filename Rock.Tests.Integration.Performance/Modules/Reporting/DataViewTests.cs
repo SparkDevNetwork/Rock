@@ -16,20 +16,23 @@
 //
 using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Tests.Integration;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Performance.Reporting
+namespace Rock.Tests.Integration.Performance.Modules.Reporting
 {
     /// <summary>
     /// Tests that verify the performance of Data Views.
     /// </summary>
     [TestClass]
-    public class DataViewTests
+    public class DataViewTests : DatabaseTestsBase
     {
         private const string _allPeopleDataViewGuid = "462A34E4-9BE4-4573-8260-FE55726BA2CE";
 
@@ -39,6 +42,7 @@ namespace Rock.Tests.Integration.Performance.Reporting
         /// The test database should contain 100,000+ person records for this test.
         /// </summary>
         [TestMethod]
+        [Ignore( "This requires the test database to have over 100,000 person records in the data view. It should be updated to create a Group dataview since those can be created more quickly." )]
         public void DataView_CreateEntitySetForVeryLargeDataView_IsPerformant()
         {
             var rockContext = new RockContext();
@@ -86,6 +90,7 @@ namespace Rock.Tests.Integration.Performance.Reporting
         /// The test database should contain 100,000+ person records for this test.
         /// </summary>
         [TestMethod]
+        [Ignore( "This requires the test database to have over 100,000 person records in the data view. It should be updated to create a Group dataview since those can be created more quickly." )]
         public void DataView_PersistVeryLargeDataView_IsSuccessful()
         {
             var rockContext = new RockContext();

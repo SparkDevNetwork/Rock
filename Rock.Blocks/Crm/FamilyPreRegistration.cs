@@ -1626,10 +1626,10 @@ namespace Rock.Blocks.Crm
         {
             errorMessages = new List<string>();
 
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
-            if ( !disableCaptcha && !bag.IsCaptchaValid )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
-                errorMessages.Add( "There was an issue processing your request. Please try again. If the issue persists please contact us." );
+                errorMessages.Add( "Captcha was not valid." );
                 return false;
             }
 

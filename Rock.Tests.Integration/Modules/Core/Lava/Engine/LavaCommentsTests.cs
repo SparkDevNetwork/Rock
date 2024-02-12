@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// Tests for Lava Template comments.
@@ -342,6 +344,18 @@ Line 1<br>
             var expectedOutput = @"Line 1<br>";
 
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void ShorthandLineComment_WithLeadingWhiteSpace_RendersLineWithWhiteSpace()
+        {
+            var input = "Line 1\n   //-\nLine 2";
+            var expectedOutput = "Line 1\n   \nLine 2";
+
+            var renderOptions = new LavaTestRenderOptions { IgnoreWhiteSpace = false };
+            var result = TestHelper.GetTemplateRenderResult( typeof( FluidEngine ), input, options: renderOptions );
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input, options: renderOptions );
         }
 
         [TestMethod]

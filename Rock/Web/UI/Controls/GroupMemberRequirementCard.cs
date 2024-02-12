@@ -219,6 +219,7 @@ namespace Rock.Web.UI.Controls
                     Controls.Add( _lbManualRequirement );
                 }
 
+                // This _canOverride is determined by the GroupMemberRequirementContainer when it creates a GroupMemberRequirementCard.
                 if ( _canOverride )
                 {
                     _lbMarkAsMet = new LinkButton

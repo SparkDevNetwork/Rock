@@ -131,15 +131,7 @@ namespace Rock.Utility.SparkDataApi
                 for ( int i = 1; i <= addressArray.Length; i++ )
                 {
                     PersonAddressItem personAddressItem = addressArray[i - 1];
-                    data.AppendFormat( "{0}={1}&", "individual_id", $"{personAddressItem.PersonId}_{personAddressItem.PersonAliasId}_{personAddressItem.FamilyId}_{personAddressItem.LocationId}" );
-                    data.AppendFormat( "{0}={1}&", "individual_first_name", personAddressItem.FirstName );
-                    data.AppendFormat( "{0}={1}&", "individual_last_name", personAddressItem.LastName );
-                    data.AppendFormat( "{0}={1}&", "address_line_1", personAddressItem.Street1 );
-                    data.AppendFormat( "{0}={1}&", "address_line_2", personAddressItem.Street2 );
-                    data.AppendFormat( "{0}={1}&", "address_city_name", personAddressItem.City );
-                    data.AppendFormat( "{0}={1}&", "address_state_code", personAddressItem.State );
-                    data.AppendFormat( "{0}={1}&", "address_postal_code", personAddressItem.PostalCode );
-                    // data.AppendFormat( "{0}={1}&", "address_country_code", personAddressItem.Country );
+                    data.Append( personAddressItem.BuildUploadString() );
 
                     if ( i % _batchsize == 0 || i == addressArray.Length )
                     {
@@ -155,7 +147,7 @@ namespace Rock.Utility.SparkDataApi
 
                         if ( response.StatusCode != HttpStatusCode.OK )
                         {
-                            throw new Exception( $"Failed to upload addresses to NCOA. Status Code: {response.StatusCode}, Response: {response.Content.ToStringSafe()}" );
+                            throw new Exception( $"Failed to upload addresses to NCOA. Status Code: {response.StatusCode}, Response: {response.Content.ToStringSafe()}.  Please see NcoaException.log for details." );
                         }
 
                         data = new StringBuilder();

@@ -188,12 +188,12 @@ namespace Rock.Lava.Fluid
 
             // Block Comment Element: /- ... -/
             var blockCommentElement = LavaTagParsers.LavaBlockCommentStart
-                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaBlockCommentEnd ).And( LavaTagParsers.LavaBlockCommentEnd )
+                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaBlockCommentEnd, canBeEmpty:true ).And( LavaTagParsers.LavaBlockCommentEnd )
                     .Then<Statement>( x => new CommentStatement( x.Item1 ) ) );
 
-            // Inline Comment Element: /- ... <eol>
+            // Inline Comment Element: /-<eol>
             var inlineCommentElement = LavaTagParsers.LavaInlineCommentStart
-                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaInlineCommentEnd ) )
+                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaInlineCommentEnd, canBeEmpty:true ) )
                 .Then<Statement>( x => new CommentStatement( x ) );
 
             var commentElement = blockCommentElement.Or( inlineCommentElement );

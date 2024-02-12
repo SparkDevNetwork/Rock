@@ -286,6 +286,12 @@ namespace Rock.Observability
                 var machineName = _machineName.Value;
                 var instanceId = nodeName != machineName ? $"{machineName} ({nodeName})" : machineName;
 
+                if ( string.IsNullOrWhiteSpace( ServiceName ) )
+                {
+                    // The Observability service is not configured, so exit.
+                    return;
+                }
+
                 var resourceBuilder = ResourceBuilder.CreateDefault()
                     .AddService( serviceName: ServiceName, serviceVersion: "1.0.0", serviceInstanceId: instanceId );
 

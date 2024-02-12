@@ -311,6 +311,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelItemList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\" />
@@ -328,7 +329,9 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\SiteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\CommunicationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\SmsPipelineList\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\" />
@@ -356,6 +359,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SignalTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\TagList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\SignalTypeDetail\" />
@@ -388,6 +392,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakTypeExclusionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\EventCalendarItemList\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventItemDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\" />
@@ -408,9 +413,11 @@
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateList\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\" />
+    <Folder Include="Framework\ViewModels\Blocks\Group\GroupArchivedList\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupRequirementTypeDetail\" />
@@ -418,6 +425,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleSignup\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\" />
+    <Folder Include="Framework\ViewModels\Blocks\Group\GroupTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\" />
     <Folder Include="Framework\ViewModels\Blocks\Mobile\MobileLayoutDetail\" />
@@ -515,6 +523,7 @@
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\Login\loginMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\Login\passwordlessLoginStep.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\blockLocation.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Cms\botGuardianLevel.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentChannelDateType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentChannelItemStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentCollectionFilterControl.ts" />
@@ -769,6 +778,7 @@
     <TypeScriptCompile Include="Framework\Utility\form.ts" />
     <TypeScriptCompile Include="Framework\Utility\util.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonType.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockActionContextBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
@@ -793,6 +803,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelItemList\contentChannelItemListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelList\contentChannelListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeList\contentChannelTypeListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeDetail\contentChannelTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentChannelTypeDetail\contentChannelTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\attributeFilterBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\availableContentSourceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\contentCollectionBag.d.ts" />
@@ -837,9 +849,11 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionList\personalLinkSectionListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\SiteDetail\siteBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\SiteDetail\siteDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\CommunicationList\communicationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceIntializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SmsPipelineList\smsPipelineListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetBag.d.ts" />
@@ -903,6 +917,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\TagList\tagListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentList\assessmentListBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\documentTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\documentTypeDetailOptionsBag.d.ts" />
@@ -975,6 +990,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventCalendarBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventCalendarDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarItemList\eventCalendarItemListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventCalendarItemAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemDetailOptionsBag.d.ts" />
@@ -1014,8 +1030,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayList\financialGatewayListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateDetail\financialStatementTemplateDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialStatementTemplateList\financialStatementTemplateListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBlockBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupArchivedList\groupArchivedListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAddPersonRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAddPersonResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAttendanceBag.d.ts" />
@@ -1046,6 +1064,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\confirmDeclineBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleToolbox\contentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupScheduleUnavailability\contentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupTypeList\groupTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\landingPageContentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupScheduleOccurrenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerAppliedFiltersBag.d.ts" />
@@ -1384,6 +1403,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowPickerGetWorkflowsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowPickerGetWorkflowTypeForWorkflowOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowTypePickerGetWorkflowTypesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\currencyInfoBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesAccessedOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\debugTiming.d.ts" />

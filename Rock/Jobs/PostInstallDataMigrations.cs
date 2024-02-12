@@ -49,7 +49,7 @@ namespace Rock.Jobs
             // get the configured timeout, or default to 60 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
-            InsertAnalyitcsSourceDateData( commandTimeout );
+            InsertAnalyticsSourceDateData( commandTimeout );
             InsertIdentityVerificationCodeData( commandTimeout );
             InsertAnalyticsSourceZipCodeData( commandTimeout );
 
@@ -72,7 +72,7 @@ namespace Rock.Jobs
             }
         }
 
-        private void InsertAnalyitcsSourceDateData( int commandTimeout )
+        private void InsertAnalyticsSourceDateData( int commandTimeout )
         {
             using ( var rockContext = new RockContext() )
             {

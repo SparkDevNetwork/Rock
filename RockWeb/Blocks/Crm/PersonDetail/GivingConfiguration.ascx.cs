@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var btnScheduledTransactionInactivate = e.Item.FindControl( "btnScheduledTransactionInactivate" ) as LinkButton;
             btnScheduledTransactionInactivate.CommandArgument = financialScheduledTransaction.Guid.ToString();
 
-            if ( financialScheduledTransaction.IsActive )
+            if ( financialScheduledTransaction.IsActive && financialScheduledTransaction.FinancialGateway.GetGatewayComponent().UpdateScheduledPaymentSupported )
             {
                 btnScheduledTransactionInactivate.Visible = true;
             }

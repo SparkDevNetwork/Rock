@@ -76,12 +76,6 @@ namespace RockWeb
             // Read query string parameters
             var settings = ReadSettingsFromRequest( context.Request );
 
-            if ( settings.PhotoId.HasValue && !IsAuthorized( settings.PhotoId.Value ) )
-            {
-                SendNotAuthorized( context );
-                return;
-            }
-
             string cacheFolder = context.Request.MapPath( $"~/App_Data/Avatar/Cache/" );
             string cachedFilePath = $"{cacheFolder}{settings.CacheKey}.png";
 
@@ -155,6 +149,7 @@ namespace RockWeb
                 {
                     // Ignore the exception
                     context.ClearError();
+                    context.ApplicationInstance.CompleteRequest();
                 }
                 else
                 {
@@ -454,50 +449,6 @@ namespace RockWeb
             {
                 // if it fails, return null, which will result in fetching it from the database instead
                 return null;
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether the current user is authorized to view the Person Image.
-        /// Returns true without security check if the Person Image BinaryFileType has RequiresViewSecurity set to false.
-        /// The file type will need to be checked before fetching the file (see RockImage.GetPersonImageFromBinaryFileService())
-        /// Validates security and the BinaryFileType if RequiresViewSecurity is true.
-        /// </summary>
-        /// <param name="photoId"></param>
-        /// <returns>
-        ///   <c>true</c> if the current user is authorized; otherwise, <c>false</c>.</returns>
-        private Boolean IsAuthorized( int photoId )
-        {
-            var binaryFileTypeCache = BinaryFileTypeCache.Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
-            if ( binaryFileTypeCache.RequiresViewSecurity == false )
-            {
-                return true;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var binaryFile = new BinaryFileService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == photoId );
-                if ( binaryFile == null || binaryFile.BinaryFileTypeId != binaryFileTypeCache.Id )
-                {
-                    return false;
-                }
-
-                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                Person currentPerson = currentUser?.Person;
-                var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
-
-                // If no parent entity is specified then check if there is security on the BinaryFileType
-                if ( parentEntityAllowsView == null )
-                {
-                    if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                    {
-                        return false;
-                    }
-                }
-
-                // Check if there is parent security and use it if it exists, otherwise return true.
-                return parentEntityAllowsView ?? true;
             }
         }
 

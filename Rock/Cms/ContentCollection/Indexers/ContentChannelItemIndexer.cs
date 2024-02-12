@@ -95,6 +95,7 @@ namespace Rock.Cms.ContentCollection.Indexers
                 // Get all the content channel items for this source.
                 items = new ContentChannelItemService( rockContext ).Queryable()
                     .AsNoTracking()
+                    .Include( cci => cci.ContentChannelItemSlugs )
                     .Where( cci => cci.ContentChannelId == contentCollectionSourceCache.EntityId
                         && cci.StartDateTime <= now
                         && ( !cci.ExpireDateTime.HasValue || cci.ExpireDateTime.Value >= now ) )

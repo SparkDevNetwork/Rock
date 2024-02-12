@@ -15,20 +15,22 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
-using Rock.Model;
 using Rock.Lava.Fluid;
+using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using Rock.Lava.RockLiquid;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
 {
     /// <summary>
     /// Tests for Lava Filters categorized as "Miscellaneous".
@@ -447,12 +449,51 @@ BD8F1DCA377B95D905033E5FFC41CFCF8D4C11AE14A9BC964DFBD4BCEEB618F9795BE7F71295D3B7
 
         #endregion
 
+        #region FilterUnfollowed
+
+        [TestMethod]
+        public void FilterUnfollowed_ForEntityCollectionWithFollowedAndUnfollowed_ReturnsOnlyUnfollowed()
+        {
+            var values = AddPersonTedDeckerToMergeDictionary();
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "rockentity", MergeFields = values };
+
+            var template = @"
+{%- person where:'Guid == ""<benJonesGuid>"" || Guid == ""<billMarbleGuid>"" || Guid == ""<alishaMarbleGuid>""' iterator:'People' -%}
+  {%- assign followedItems = People | AppendFollowing | FilterUnfollowed | Sort:'FullName' -%}
+<ul>
+  {%- for item in followedItems -%}
+    <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>
+  {%- endfor -%}
+</ul>
+{%- endperson -%}
+";
+            template = template.Replace( "<benJonesGuid>", TestGuids.TestPeople.BenJones )
+                .Replace( "<billMarbleGuid>", TestGuids.TestPeople.BillMarble )
+                .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
+
+            // Alisha Marble should be excluded because she is not followed by Ted.
+            var matches = new List<LavaTestOutputMatchRequirement>()
+            {
+                new LavaTestOutputMatchRequirement("<li>Alisha Marble - false</li>", LavaTestOutputMatchTypeSpecifier.Contains ),
+                new LavaTestOutputMatchRequirement("<li>Ben Jones - true</li>", LavaTestOutputMatchTypeSpecifier.DoesNotContain ),
+                new LavaTestOutputMatchRequirement("<li>Bill Marble - true</li>", LavaTestOutputMatchTypeSpecifier.DoesNotContain ),
+            };
+
+            TestHelper.AssertTemplateOutput( matches,
+                template,
+                options );
+        }
+
+        #endregion
+
         #region FromCache
 
         /// <summary>
         /// Verify the documentation example for this filter.
         /// </summary>
         [TestMethod]
+        [Ignore( "Test needs to add Stepping Stone campus before running." )]
         public void FromCache_DocumentationExample_ReturnsExpectedOutput()
         {
             var template = @"

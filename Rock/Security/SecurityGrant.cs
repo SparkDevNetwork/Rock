@@ -28,7 +28,7 @@ namespace Rock.Security
     /// need to call an API to get information the user wouldn't normally
     /// have access to, but the block has explicitely given them permission.
     /// </summary>
-    internal class SecurityGrant
+    public class SecurityGrant
     {
         #region Fields
 

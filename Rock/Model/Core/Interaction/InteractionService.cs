@@ -226,7 +226,7 @@ namespace Rock.Model
             return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
 
-        private static ConcurrentDictionary<string, int> _deviceTypeIdLookup = new ConcurrentDictionary<string, int>();
+        private const string DeviceTypeIdLookupCacheKey = "InteractionServiceDeviceTypeIdLookup";
 
         /// <summary>
         /// Gets the interaction device type identifier.
@@ -238,12 +238,20 @@ namespace Rock.Model
         /// <returns></returns>
         public int GetInteractionDeviceTypeId( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
+            var lookupTable = RockCacheManager<object>.Instance.Get( DeviceTypeIdLookupCacheKey ) as ConcurrentDictionary<string, int>;
+
+            if ( lookupTable == null )
+            {
+                lookupTable = new ConcurrentDictionary<string, int>();
+                RockCacheManager<object>.Instance.AddOrUpdate( DeviceTypeIdLookupCacheKey, lookupTable );
+            }
+
             var lookupKey = $"{application}|{operatingSystem}|{clientType}";
-            int? deviceTypeId = _deviceTypeIdLookup.GetValueOrNull( lookupKey );
+            int? deviceTypeId = lookupTable.GetValueOrNull( lookupKey );
             if ( deviceTypeId == null )
             {
                 deviceTypeId = GetOrCreateInteractionDeviceTypeId( application, operatingSystem, clientType, deviceTypeData );
-                _deviceTypeIdLookup.AddOrReplace( lookupKey, deviceTypeId.Value );
+                lookupTable.AddOrReplace( lookupKey, deviceTypeId.Value );
             }
 
             return deviceTypeId.Value;

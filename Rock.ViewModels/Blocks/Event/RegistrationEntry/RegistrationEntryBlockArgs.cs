@@ -160,14 +160,6 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The amount to pay now.
         /// </value>
         public decimal AmountToPayNow { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the solved captcha is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the solved captcha is valid; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsCaptchaValid { get; set; }
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -93,7 +93,23 @@ namespace Rock.Storage.Provider
         public override void SaveContent( BinaryFile binaryFile, out long? fileSize )
         {
             var blobClient = GetBlobClient( binaryFile );
-            blobClient.Upload( binaryFile.ContentStream );
+
+            /*                
+                1/22/2024 - JMH
+
+                Azure Blob Storage upload was throwing an exception when adding an SMS image attachment
+                in the Communication Entry Wizard block that was wider than the Max SMS Image Width block setting.
+                Two file uploads occur in this case:
+                 1. By the FileUploader control when the attachment is first added.
+                 2. By the CommunicationEntryWizard block if the image is resized.
+                The exception was being thrown by the second call to BlobClient.Upload() when reuploading the
+                resized image because the `overwrite: true` argument was not provided to allow for updating existing files.
+            
+                Reason: Wide SMS image attachments stored in Azure cause exceptions in Communication Wizard.
+                https://github.com/SparkDevNetwork/Rock/issues/5719
+             */
+            blobClient.Upload( binaryFile.ContentStream, overwrite: true );
+
             fileSize = binaryFile.ContentStream.Length;
         }
 

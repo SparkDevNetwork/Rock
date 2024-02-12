@@ -276,10 +276,8 @@ namespace Rock.Data
             {
                 if ( HistoryItems.Any() )
                 {
-                    Task.Run( async () =>
+                    Task.Run( () =>
                     {
-                        // Wait 1 second to allow all post save actions to complete
-                        await Task.Delay( 1000 );
                         try
                         {
                             using ( var rockContext = new RockContext() )

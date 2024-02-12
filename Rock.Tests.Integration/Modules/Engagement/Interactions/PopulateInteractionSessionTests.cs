@@ -18,28 +18,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.IpAddress;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Tests.Integration.Data.Interactions;
 using Rock.Tests.Shared;
-using Rock.Web.Cache;
+using Rock.Tests.Shared.Mocks;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Engagement.Interactions
+namespace Rock.Tests.Integration.Modules.Engagement.Interactions
 {
     [TestClass]
-    public class PopulateInteractionSessionTests
+    public class PopulateInteractionSessionTests : DatabaseTestsBase
     {
-        /// <summary>
-        /// The API Keys associated with a valid ipregistry.com account.
-        /// For testing purposes, create a free account at http://ipregistery.co
-        /// and use the default API Key associated with the account.
-        /// </summary>
-        private const string IpRegistryApiKeyHasZeroCredit = "6y3c071363eqou2y";
-        private const string IpRegistryApiKeyHasPositiveCredit = "rg5z35nb9f8or00u";
-
         #region Lookup IP Addresses
 
         [TestMethod]
@@ -74,7 +69,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
 
             registryComponent = new IpRegistryMock()
             {
-                ApiKey = IpRegistryApiKeyHasPositiveCredit
+                ApiKey = IpRegistryMock.IpRegistryApiKeyHasPositiveCredit
             };
 
             // Request the service status twice, to verify that the available credits remain the same.
@@ -89,7 +84,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
             // Verify that the status is returned correctly for an account with a zero balance.
             registryComponent = new IpRegistryMock()
             {
-                ApiKey = IpRegistryApiKeyHasZeroCredit
+                ApiKey = IpRegistryMock.IpRegistryApiKeyHasZeroCredit
             };
 
             status1 = registryComponent.GetServiceStatus();
@@ -205,8 +200,6 @@ namespace Rock.Tests.Integration.Engagement.Interactions
 
                     interaction.ForeignKey = "IntegrationTestData";
 
-                    interactionService.Add( interaction );
-
                     rockContext.SaveChanges();
 
                     // Get the date/time for the next interaction.
@@ -223,7 +216,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
         {
             var registryComponent = new IpRegistryMock()
             {
-                ApiKey = IpRegistryApiKeyHasPositiveCredit
+                ApiKey = IpRegistryMock.IpRegistryApiKeyHasPositiveCredit
             };
             var job = new PopulateInteractionSessionDataMock()
             {
@@ -243,6 +236,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
         /// An interaction session recorded since the last successful run date shouild be processed.
         /// </summary>
         [TestMethod]
+        [IsolatedTestDatabase]
         public void InteractionSessionPopulateLocation_HavingSessionsWithUnknownDurationPriorToStartDate_ProcessesThoseSessions()
         {
             var interactionSessionDate = RockDateTime.New( 2023, 3, 1, 10, 0, 0, 0 );
@@ -250,7 +244,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
 
             var registryComponent = new IpRegistryMock()
             {
-                ApiKey = IpRegistryApiKeyHasPositiveCredit
+                ApiKey = IpRegistryMock.IpRegistryApiKeyHasPositiveCredit
             };
             var job = new PopulateInteractionSessionDataMock()
             {
@@ -274,7 +268,7 @@ namespace Rock.Tests.Integration.Engagement.Interactions
         {
             var registryComponent = new IpRegistryMock()
             {
-                ApiKey = IpRegistryApiKeyHasZeroCredit
+                ApiKey = IpRegistryMock.IpRegistryApiKeyHasZeroCredit
             };
             var job = new PopulateInteractionSessionDataMock()
             {
@@ -300,20 +294,6 @@ namespace Rock.Tests.Integration.Engagement.Interactions
             internal override IpAddressLookupComponent GetLookupComponent( string configuredProvider )
             {
                 return LookupComponent;
-            }
-        }
-
-        public class IpRegistryMock : IpRegistry
-        {
-            public string ApiKey { get; set; } = IpRegistryApiKeyHasPositiveCredit;
-
-            public override string GetAttributeValue( string key )
-            {
-                if ( key == "APIKey" )
-                {
-                    return ApiKey;
-                }
-                throw new Exception( "Invalid Test Attribute Key." );
             }
         }
 

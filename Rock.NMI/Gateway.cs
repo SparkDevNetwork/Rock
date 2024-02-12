@@ -35,7 +35,6 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.NMI.Controls;
-using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.NMI
@@ -2098,9 +2097,16 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         /// <returns></returns>
         public Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, string controlId, HostedPaymentInfoControlOptions options )
         {
-            NMIHostedPaymentControl nmiHostedPaymentControl = new NMIHostedPaymentControl { ID = controlId };
-            nmiHostedPaymentControl.NMIGateway = this;
+            NMIHostedPaymentControl nmiHostedPaymentControl = new NMIHostedPaymentControl
+            {
+                ID = controlId,
+                NMIGateway = this,
+                PromptForNameOnCard = this.PromptForNameOnCard( financialGateway ),
+                PromptForBillingAddress = options.EnableBillingAddressCollection && this.PromptForBillingAddress( financialGateway ),
+            };
+
             List<NMIPaymentType> enabledPaymentTypes = new List<NMIPaymentType>();
+
             if ( options?.EnableACH ?? true )
             {
                 enabledPaymentTypes.Add( NMIPaymentType.ach );
@@ -2153,6 +2159,12 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 tokenResponse = null;
             }
 
+            UpdateNameAndAddressFromPaymentControl( nmiHostedPaymentControl, referencePaymentInfo, out errorMessage );
+            if ( !string.IsNullOrWhiteSpace( errorMessage ) )
+            {
+                return;
+            }
+
             bool successful = tokenResponse?.IsSuccessStatus() ?? false;
 
             if ( !successful )
@@ -2171,6 +2183,48 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             {
                 referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
                 referencePaymentInfo.InitialCurrencyTypeValue = nmiHostedPaymentControl.CurrencyTypeValue;
+            }
+        }
+
+        /// <summary>
+        /// Sets the name and address data properties of a <see cref="ReferencePaymentInfo"/> object based on the settings of the <see cref="NMIHostedPaymentControl"/>, which should reflect the gateway configuration settings.
+        /// </summary>
+        /// <param name="nmiHostedPaymentControl">The <see cref="NMIHostedPaymentControl"/>.</param>
+        /// <param name="referencePaymentInfo">The <see cref="ReferencePaymentInfo"/>.</param>
+        /// <param name="errorMessage">The error message.</param>
+        private void UpdateNameAndAddressFromPaymentControl( NMIHostedPaymentControl nmiHostedPaymentControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( nmiHostedPaymentControl.SelectedPaymentType == NMIPaymentType.card )
+            {
+                if ( nmiHostedPaymentControl.PromptForNameOnCard )
+                {
+                    if ( !nmiHostedPaymentControl.CardHolderNameIsValid )
+                    {
+                        errorMessage = "Please enter the cardholder's name.";
+                        return;
+                    }
+
+                    referencePaymentInfo.FirstName = nmiHostedPaymentControl.CardFirstName;
+                    referencePaymentInfo.LastName = nmiHostedPaymentControl.CardLastName;
+                }
+
+                if ( nmiHostedPaymentControl.UseBillingAddress )
+                {
+                    if ( !nmiHostedPaymentControl.BillingAddressIsValid )
+                    {
+                        errorMessage = "Please enter a valid address.";
+                        return;
+                    }
+
+                    referencePaymentInfo.Street1 = nmiHostedPaymentControl.BillingAddressStreet1;
+                    referencePaymentInfo.Street2 = nmiHostedPaymentControl.BillingAddressStreet2;
+                    referencePaymentInfo.City = nmiHostedPaymentControl.BillingAddressCity;
+                    referencePaymentInfo.State = nmiHostedPaymentControl.BillingAddressState;
+                    referencePaymentInfo.PostalCode = nmiHostedPaymentControl.BillingAddressPostalCode;
+                    referencePaymentInfo.Country = nmiHostedPaymentControl.BillingAddressCountry;
+                }
             }
         }
 

@@ -138,6 +138,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string HISTORY_CONNECTION_REQUEST = "A8542DD2-91B1-4CCA-873A-D052BCD6EE06";
 
+        /// <summary>
+        /// History of location changes
+        /// </summary>
+        public const string HISTORY_LOCATION = "67E8F6D1-2F20-43FD-BAEC-144E70428AC3";
+
         #endregion
 
         #region Schedule Categories

@@ -130,7 +130,6 @@ namespace Rock.Blocks.Core
             var isViewable = BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
-            Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
             entity.LoadAttributes( rockContext );
 
             if ( entity.Id != 0 )
@@ -250,7 +249,6 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
-                    Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
                     entity.LoadAttributes( rockContext );
                     entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, true, IsAttributeIncluded );
                 } );
@@ -290,7 +288,6 @@ namespace Rock.Blocks.Core
 
                 if ( entity != null )
                 {
-                    Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
                     entity.LoadAttributes( rockContext );
                 }
 
@@ -391,7 +388,6 @@ namespace Rock.Blocks.Core
                     return actionError;
                 }
 
-                Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
                 entity.LoadAttributes( rockContext );
 
                 var box = new DetailBlockBox<AssetStorageProviderBag, AssetStorageProviderDetailOptionsBag>
@@ -508,7 +504,6 @@ namespace Rock.Blocks.Core
                 }
 
                 // Reload attributes based on the new property values.
-                Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
                 entity.LoadAttributes( rockContext );
 
                 var refreshedBox = new DetailBlockBox<AssetStorageProviderBag, AssetStorageProviderDetailOptionsBag>

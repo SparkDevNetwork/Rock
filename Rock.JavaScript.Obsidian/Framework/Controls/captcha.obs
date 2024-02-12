@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-bind="fieldProps" :rules="computedRules" name="captchaContent" :modelValue="modelValue">
+    <RockFormField v-bind="fieldProps" :rules="computedRules" name="captchaContent" :modelValue="internalValue">
         <div class="control-wrapper">
             <div :id="turnstileBoxId"></div>
         </div>
@@ -16,9 +16,9 @@
     import { CaptchaControlConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlConfigurationBag";
     import { CaptchaControlTokenValidateTokenResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlTokenValidateTokenResultBag";
     import { CaptchaControlValidateTokenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlValidateTokenOptionsBag";
-    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
 
     interface ITurnstile {
         render(elementQuery: string, options: unknown): string;
@@ -27,26 +27,39 @@
     }
 
     const props = defineProps({
-        /** the returned token */
-        modelValue: {
-            type: String as PropType<string | null>,
-            default: ""
+        /**
+         * If enabled, then validation with the server will be performed. This
+         * only validates the token, it does not provide a secure way to submit
+         * data and know it is not from a bot. When the validation has completed
+         * the `tokenValidated` event will be emitted.
+         */
+        performValidation: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: string): void
+        (e: "tokenValidated", isValid: boolean): void
     }>();
+
+    defineExpose({
+        getToken,
+        refreshToken
+    });
 
     // #region Values
 
     const fieldProps = useStandardRockFormFieldProps(props);
+    const internalValue = ref("");
     const http = useHttp();
     const widgetId = ref("");
     const turnstileBoxId = `turnstile-box-${newGuid()}`;
     let turnstile: ITurnstile | undefined;
+
+    let captchaPromiseSource = new PromiseCompletionSource<string | undefined>();
 
     // #endregion
 
@@ -86,7 +99,8 @@
     }
 
     /**
-     * Get validate the token with the server.
+     * Get validate the token with the server. This function is not currently
+     * used but is being left behind for later use by the captcha field type.
      */
     async function validateToken(token: string): Promise<CaptchaControlTokenValidateTokenResultBag | undefined> {
         const options: CaptchaControlValidateTokenOptionsBag = {
@@ -109,6 +123,28 @@
     }
 
     /**
+     * Gets a promise that will be resolved once the token becomes available.
+     * The returned token can only be used once, so if you need to make another
+     * call to validate the token you should call `refreshToken()` after calling
+     * this method.
+     */
+    function getToken(): Promise<string | undefined> {
+        return captchaPromiseSource.promise;
+    }
+
+    /**
+     * Begins refreshing the token so it can be used again.
+     */
+    function refreshToken(): void {
+        if (widgetId.value && turnstile) {
+            captchaPromiseSource.resolve(undefined);
+            captchaPromiseSource = new PromiseCompletionSource<string | undefined>();
+            internalValue.value = "";
+            turnstile.reset(widgetId.value);
+        }
+    }
+
+    /**
     * Renders the captcha control in the selected element after the turnstile script has been injected.
     */
     function renderCaptchaControl(siteKey: string): void {
@@ -126,8 +162,16 @@
      * Callback function invoked upon success of the challenge. The callback is passed a token that can be validated.
      */
     async function callback(response: string): Promise<void> {
-        var result = await validateToken(response);
-        emit("update:modelValue", asTrueOrFalseString(result?.isTokenValid));
+        if (props.performValidation) {
+            const result = await validateToken(response);
+
+            emit("tokenValidated", result?.isTokenValid ?? false);
+            internalValue.value = result?.isTokenValid ? response : "";
+        }
+        else {
+            captchaPromiseSource.resolve(response);
+            internalValue.value = response;
+        }
     }
 
     /**
@@ -136,16 +180,15 @@
      */
     function errorCallback(error: string): void {
         console.error("Captcha challenge failed.", error);
-        emit("update:modelValue", "False");
+        internalValue.value = "";
+        captchaPromiseSource.reject("Captcha challenge failed.");
     }
 
     /**
     * Callback function invoked when the token expires and does not reset the widget.
     */
     function expiredCallback(): void {
-        if (widgetId.value && turnstile) {
-            turnstile.reset(widgetId.value);
-        }
+        refreshToken();
     }
 
     /**
@@ -154,7 +197,7 @@
     function requiredValidator(value: unknown): ValidationResult {
         const invalidMessage = "is required";
 
-        if (!asBoolean(value)) {
+        if (!value) {
             return invalidMessage;
         }
 

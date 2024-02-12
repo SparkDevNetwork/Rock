@@ -28,7 +28,7 @@ export type ForgotUserNameInitializationBox = {
     /** A bag containing the required information to display various block captions. */
     captions?: ForgotUserNameCaptionsBag | null;
 
-    /** If set to true the CAPTCHA verification step will not be performed. */
+    /** If set to true if the Captcha verification step should not be performed. */
     disableCaptchaSupport: boolean;
 
     /**

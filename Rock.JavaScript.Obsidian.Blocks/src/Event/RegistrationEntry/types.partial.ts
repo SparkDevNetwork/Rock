@@ -217,7 +217,6 @@ export type RegistrationEntryBlockArgs = {
     gatewayToken: string | null;
     discountCode: string | null;
     amountToPayNow: number;
-    isCaptchaValid: boolean;
 };
 
 export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {

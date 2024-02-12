@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Rock.Tests.Integration.Performance
+namespace Rock.Tests.Integration.Performance.Modules.Lava
 {
     public class TestResultTracker
     {

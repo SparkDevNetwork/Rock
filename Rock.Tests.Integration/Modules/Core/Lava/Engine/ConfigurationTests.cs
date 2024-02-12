@@ -17,16 +17,21 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.DotLiquid;
+using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     [TestClass]
     public class LavaConfigurationTests : LavaIntegrationTestBase
@@ -58,13 +63,124 @@ namespace Rock.Tests.Integration.Core.Lava
 
         #endregion
 
+        #region Configuration: ACE Editor
+
+        /// <summary>
+        /// These filters are defined in code, but are not included in the Lava documentation.
+        /// </summary>
+        List<string> _undocumentedFilterNames = new List<string>
+            {
+                "Abs",
+                "AsColor",
+                "CalculateColorPair",
+                "CalculateContrastRatio",
+                "CalculateRecipeColor",
+                "Compact",
+                "Concat",
+                "EscapeOnce",
+                "Hue",
+                "Luminosity",
+                "RatingMarkup",
+                "Saturation"
+            };
+
+        /// <summary>
+        /// These filters are added by other libraries or plugins, but are not included in the Lava core code.
+        /// </summary>
+        List<string> _nonCoreFilterNames = new List<string>
+            {
+                "TriumphImgCdn",
+                "PersonImpersonationToken"
+            };
+
+        /// <summary>
+        /// Verify that the ACE editor configuration file contains a list of all active Lava filters.
+        /// </summary>
+        [TestMethod]
+        public void AceEditor_ConfigurationFile_ContainsAllLavaFilters()
+        {
+            // Get the list of available Lava Filters for the Fluid engine.
+            LavaService.SetCurrentEngine( typeof( FluidEngine ) );
+
+            var registeredFilterNames = LavaService.GetCurrentEngine().GetRegisteredFilterNames();
+
+            // Remove the default Liquid filters that have been replaced by Lava filters.
+            // These are included for compatibility, but should not be highlighted in the Lava editor.
+            var expectedFilterNames = registeredFilterNames
+                .Except( registeredFilterNames.Where( f => f == f.ToLower() ) )
+                .ToList();
+
+            expectedFilterNames.AddRange( _nonCoreFilterNames );
+            expectedFilterNames.RemoveAll( _undocumentedFilterNames );
+
+            expectedFilterNames = expectedFilterNames
+                .OrderBy( f => f )
+                .ToList();
+
+            LogHelper.Log( $"Expected Filter Configuration List:\n{expectedFilterNames.AsDelimited( "|" )}" );
+
+            // Read the ACE editor configuration file and extract the list of Lava Filter keywords.
+            var webSitePath = Path.GetFullPath( Directory.GetCurrentDirectory() + "..\\..\\..\\..\\RockWeb" );
+            var configFilePath = Path.GetFullPath( webSitePath + @"/Scripts/ace/mode-lava.js" );
+
+            var configText = File.ReadAllText( configFilePath );
+
+            var lavaFiltersRegex = @"
+(?:[\s\S]*)define\(""ace\/mode\/lava_highlight_rules"", \[""require"", ""exports"", ""module"", ""ace\/lib\/oop"", ""ace\/mode\/text_highlight_rules"", ""ace\/mode\/html_highlight_rules""\], function \(e, t, n\) \{ ""use strict""; var r = e\(""\.\.\/lib\/oop""\), i = e\(""\.\/text_highlight_rules""\)\.TextHighlightRules, s = e\(""\.\/html_highlight_rules""\)\.HtmlHighlightRules, o = function \(\) \{ s\.call\(this\); var e = ""(.*?)""
+";
+            var filterGroupList = string.Empty;
+
+            var match = Regex.Match( configText, lavaFiltersRegex.Trim() );
+            if ( !match.Success )
+            {
+                throw new Exception( "Unexpected file format. The Ace Editor configuration file does not match the expected layout." );
+            }
+
+            filterGroupList = match.Groups[1].Value;
+
+            var configuredFilterNames = filterGroupList.SplitDelimitedValues( "|" )
+                .OrderBy( n => n )
+                .ToList();
+
+            var unconfiguredFilterNames = new List<string>();
+
+            foreach ( var filter in expectedFilterNames )
+            {
+                if ( configuredFilterNames.Contains( filter ) )
+                {
+                    configuredFilterNames.Remove( filter );
+                }
+                else
+                {
+                    unconfiguredFilterNames.Add( filter );
+                }
+            }
+
+            var msg = string.Empty;
+            if ( configuredFilterNames.Any() )
+            {
+                msg += $"Unexpected Lava Filters found in configuration file. [FilterNames={configuredFilterNames.AsDelimited( ", " )}]\n";
+            }
+            if ( unconfiguredFilterNames.Any() )
+            {
+                msg += $"Lava Filters missing from configuration file. [FilterNames={unconfiguredFilterNames.AsDelimited( ", " )}]\n";
+            }
+
+            if ( !string.IsNullOrEmpty( msg ) )
+            {
+                Assert.Fail( msg );
+            }
+        }
+
+        #endregion
+
         #region Caching
 
         /// <summary>
         /// Verify that templates with varying amounts of whitespace are correctly cached and return the expected output.
         /// </summary>
         [TestMethod]
-        [Ignore("This test fails intermittently, because Rock cache services rely on a non-deterministic command-queueing mechanism that does not always fire in a timely fashion.")]
+        [Ignore( "This test fails intermittently, because Rock cache services rely on a non-deterministic command-queueing mechanism that does not always fire in a timely fashion." )]
         public void WebsiteLavaTemplateCacheService_WhitespaceTemplatesWithDifferentLengths_AreCachedIndependently()
         {
             var options = new LavaEngineConfigurationOptions();
@@ -75,7 +191,7 @@ namespace Rock.Tests.Integration.Core.Lava
 
             TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
             {
-                if ( defaultEngineInstance.GetType() == typeof ( RockLiquidEngine ) )
+                if ( defaultEngineInstance.GetType() == typeof( RockLiquidEngine ) )
                 {
                     Debug.Write( "Template caching cannot be tested by this methodology for the RockLiquid implementation." );
                     return;

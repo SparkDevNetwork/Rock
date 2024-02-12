@@ -48,6 +48,9 @@
     <Content Include="src\Cms\contentChannelItemList.obs" />
     <Content Include="src\Cms\contentChannelList.obs" />
     <Content Include="src\Cms\contentChannelTypeList.obs" />
+    <Content Include="src\Cms\contentChannelTypeDetail.obs" />
+    <Content Include="src\Cms\ContentChannelTypeDetail\editPanel.partial.obs" />
+    <Content Include="src\Cms\ContentChannelTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
@@ -59,6 +62,8 @@
     <Content Include="src\Cms\LibraryViewer\itemListSort.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
+    <Content Include="src\Communication\communicationList.obs" />
+    <Content Include="src\Communication\smsPipelineList.obs" />
     <Content Include="src\Core\assetStorageProviderList.obs" />
     <Content Include="src\Cms\personalLinkList.obs" />
     <Content Include="src\Core\attributeMatrixTemplateDetail.obs" />
@@ -106,6 +111,7 @@
     <Content Include="src\Core\taggedItemDetail.obs" />
     <Content Include="src\Core\TaggedItemDetail\editPanel.partial.obs" />
     <Content Include="src\Core\TaggedItemDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\tagList.obs" />
     <Content Include="src\Crm\assessmentList.obs" />
     <Content Include="src\Crm\familyPreRegistration.obs" />
     <Content Include="src\Crm\FamilyPreRegistration\preRegistrationChild.partial.obs" />
@@ -150,6 +156,7 @@
     <Content Include="src\Event\eventCalendarDetail.obs" />
     <Content Include="src\Event\EventCalendarDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventCalendarDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\eventCalendarItemList.obs" />
     <Content Include="src\Event\eventItemDetail.obs" />
     <Content Include="src\Event\EventItemDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventItemDetail\viewPanel.partial.obs" />
@@ -171,12 +178,15 @@
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
     <Content Include="src\Finance\financialGatewayList.obs" />
+    <Content Include="src\Finance\financialStatementTemplateList.obs" />
+    <Content Include="src\Group\groupList.obs" />
     <Content Include="src\Group\groupMemberScheduleTemplateDetail.obs" />
     <Content Include="src\Group\GroupMemberScheduleTemplateDetail\editPanel.partial.obs" />
     <Content Include="src\Group\GroupMemberScheduleTemplateDetail\viewPanel.partial.obs" />
     <Content Include="src\Group\groupRequirementTypeDetail.obs" />
     <Content Include="src\Group\GroupRequirementTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRequirementTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Group\groupTypeList.obs" />
     <Content Include="src\Group\Scheduling\groupScheduler.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\availableResources.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\cloneSchedules.partial.obs" />
@@ -336,6 +346,7 @@
     <Folder Include="src\Cms\ContentChannelItemList\" />
     <Folder Include="src\Cms\ContentChannelList\" />
     <Folder Include="src\Cms\ContentChannelTypeList\" />
+    <Folder Include="src\Cms\ContentChannelTypeDetail\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LavaShortcodeDetail\" />
@@ -353,6 +364,8 @@
     <Folder Include="src\Cms\PersonalLinkSectionList\" />
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
+    <Folder Include="src\Communication\CommunicationList\" />
+    <Folder Include="src\Communication\SmsPipelineList\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
@@ -378,6 +391,7 @@
     <Folder Include="src\Core\SuggestionDetail\" />
     <Folder Include="src\Core\ScheduleDetail\" />
     <Folder Include="src\Core\TaggedItemDetail\" />
+    <Folder Include="src\Core\TagList\" />
     <Folder Include="src\Crm\DocumentTypeDetail\" />
     <Folder Include="src\Core\LocationDetail\" />
     <Folder Include="src\Core\NoteTypeDetail\" />
@@ -400,6 +414,7 @@
     <Folder Include="src\Engagement\StreakTypeDetail\" />
     <Folder Include="src\Engagement\StreakTypeExclusionDetail\" />
     <Folder Include="src\Event\EventCalendarDetail\" />
+    <Folder Include="src\Event\EventCalendarItemList\" />
     <Folder Include="src\Event\EventItemDetail\" />
     <Folder Include="src\Finance\BenevolenceTypeDetail\" />
     <Folder Include="src\Finance\BusinessDetail\" />
@@ -410,8 +425,11 @@
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
     <Folder Include="src\Finance\FinancialGatewayList\" />
     <Folder Include="src\Finance\FinancialStatementTemplateDetail\" />
+    <Folder Include="src\Finance\FinancialStatementTemplateList\" />
+    <Folder Include="src\Group\GroupList\" />
     <Folder Include="src\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="src\Group\GroupRequirementTypeDetail\" />
+    <Folder Include="src\Group\GroupTypeList\" />
     <Folder Include="src\Group\Scheduling\" />
     <Folder Include="src\Group\Scheduling\GroupScheduler\" />
     <Folder Include="src\Group\Scheduling\GroupScheduleToolbox\" />
@@ -472,6 +490,7 @@
     <TypeScriptCompile Include="src\Cms\ContentChannelItemList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentChannelList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentChannelTypeList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentChannelTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\contentCollectionDetail.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\attributeSearchFilter.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\contentSources.partial.ts" />
@@ -524,6 +543,8 @@
     <TypeScriptCompile Include="src\Cms\SiteDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\CommunicationList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\SmsPipelineList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\assetStorageProviderDetail.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.partial.ts" />
@@ -555,6 +576,7 @@
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\ScheduleDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\TaggedItemDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\TagList\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\DocumentTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\SignalTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\locationDetail.ts" />
@@ -588,6 +610,7 @@
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\EventCalendarItemList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BenevolenceTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
@@ -597,8 +620,11 @@
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FinancialStatementTemplateList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\GroupList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\GroupTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\utils.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduleToolbox\types.partial.ts" />

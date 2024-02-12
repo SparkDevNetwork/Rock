@@ -420,7 +420,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                             else
                             {
-                                lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.", group.Name.Pluralize() );
+                                lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.</div>", group.Name.Pluralize() );
                             }
                         }
                         else

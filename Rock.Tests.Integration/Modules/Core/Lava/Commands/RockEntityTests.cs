@@ -15,20 +15,21 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 
-using Rock.Tests.Shared;
-using Rock.Lava.Blocks;
-using Rock.Lava;
-using Rock.Web.Cache;
 using Rock.Data;
-using System.Linq;
+using Rock.Lava;
+using Rock.Lava.Blocks;
 using Rock.Model;
 using Rock.Tests.Integration.Events;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
+using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
     [TestClass]
     public class RockEntityTests : LavaIntegrationTestBase
@@ -433,9 +434,9 @@ TedDecker<br/>
         public void EntityCommandBlock_WithCountParameterIsTrue_ReturnsCountVariableInContext()
         {
             var input = @"
-{% group count:'true' expression:'Id != 0' limit:'10' %}
+{% person count:'true' expression:'Id != 0' limit:'10' %}
 {{ count }}
-{% endgroup %}
+{% endperson %}
 ";
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>

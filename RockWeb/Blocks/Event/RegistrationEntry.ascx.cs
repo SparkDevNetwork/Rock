@@ -825,7 +825,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( RegistrationTemplate == null )
                 {
-                   FindMatchingRegistrationInstance();
+                    FindMatchingRegistrationInstance();
                 }
             }
         }
@@ -838,28 +838,12 @@ namespace RockWeb.Blocks.Event
             /*
                 03/16/2022 - KA
 
-                If a RegistrationInstanceId parameter was provided, it is used to retrieve the
-                associated RegistrationInstance without the StartDate EndDate filter used in
-                SetRegistrationState, this is to help generate an appropriate errorMessage for
-                the user. It is only called in OnLoad after SetRegistrationState returns a null
-                RegistrationInstanceState.
+                Attempt to retrieve the associated RegistrationInstance without the StartDate EndDate filter 
+                used in SetRegistrationState, this is to help generate an appropriate errorMessage for
+                the user. It is only called in OnLoad after SetRegistrationState returns a null RegistrationInstanceState.
             */
 
-            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
-
-            if ( !registrationInstanceId.HasValue )
-            {
-                return;
-            }
-
-            var registrationInstance = new RegistrationInstanceService( new RockContext() )
-                .Queryable()
-                .Where( r =>
-                    r.Id == registrationInstanceId.Value &&
-                    r.IsActive &&
-                    r.RegistrationTemplate != null &&
-                    r.RegistrationTemplate.IsActive )
-                .FirstOrDefault();
+            var registrationInstance = GetRegistrationInstance();
 
             if ( registrationInstance == null )
             {
@@ -876,6 +860,71 @@ namespace RockWeb.Blocks.Event
             else
             {
                 ShowWarning( String.Empty, string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the registration instance by using the RegistrationInstanceId, Slug or RegistrationId query params without applying a Start and End Date filter.
+        /// </summary>
+        /// <returns></returns>
+        private RegistrationInstance GetRegistrationInstance()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+                if ( registrationInstanceId.HasValue )
+                {
+                    var registrationInstance = new RegistrationInstanceService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( r =>
+                                r.Id == registrationInstanceId.Value &&
+                                r.IsActive &&
+                                r.RegistrationTemplate != null &&
+                                r.RegistrationTemplate.IsActive )
+                            .FirstOrDefault();
+
+                    if ( registrationInstance != null )
+                    {
+                        return registrationInstance;
+                    }
+                }
+
+                var slug = PageParameter( SLUG_PARAM_NAME );
+                if ( !slug.IsNullOrWhiteSpace() )
+                {
+                    var registrationInstance = new EventItemOccurrenceGroupMapService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( l =>
+                            l.UrlSlug == slug &&
+                            l.RegistrationInstanceId.HasValue )
+                        .Select( l => l.RegistrationInstance )
+                        .FirstOrDefault();
+
+                    if ( registrationInstance != null )
+                    {
+                        return registrationInstance;
+                    }
+                }
+
+                var registrationId = PageParameter( REGISTRATION_ID_PARAM_NAME ).AsIntegerOrNull();
+                if ( registrationId.HasValue )
+                {
+                    var registrationInstance = new RegistrationService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( r => r.Id == registrationId.Value )
+                        .Select( r => r.RegistrationInstance )
+                        .FirstOrDefault();
+
+                    if ( registrationInstance != null )
+                    {
+                        return registrationInstance;
+                    }
+                }
+
+                return default;
             }
         }
 
@@ -1331,7 +1380,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantNext_Click( object sender, EventArgs e )
         {
-            if ( !ValidateControls( phRegistrantControls.Controls) )
+            if ( !ValidateControls( phRegistrantControls.Controls ) )
             {
                 return;
             }
@@ -1354,7 +1403,7 @@ namespace RockWeb.Blocks.Event
         {
             var isValid = true;
 
-            foreach( Control control in controls )
+            foreach ( Control control in controls )
             {
                 if ( control is FieldVisibilityWrapper )
                 {
@@ -2703,7 +2752,7 @@ namespace RockWeb.Blocks.Event
             var logCurrentPersonDetails = $"Current Person Name: {this.CurrentPerson?.FullName} (Person ID: {this.CurrentPerson?.Id});";
             var logMsgPrefix = $"Legacy{( logInstanceOrTemplateName.IsNotNullOrWhiteSpace() ? $@" ""{logInstanceOrTemplateName}""" : string.Empty )} Registration; {logCurrentPersonDetails}{Environment.NewLine}";
 
-            var ( wereFieldsMissing, missingFieldsDetails ) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( RegistrationTemplate?.Forms?.ToList() );
+            var (wereFieldsMissing, missingFieldsDetails) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( RegistrationTemplate?.Forms?.ToList() );
             if ( wereFieldsMissing )
             {
                 var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
@@ -3157,15 +3206,15 @@ namespace RockWeb.Blocks.Event
                         }
                         else
                         {
-                        // If a match was not found, create a new person
-                        person = new Person();
-                        person.FirstName = firstName;
-                        person.LastName = lastName;
-                        person.IsEmailActive = true;
-                        person.Email = email;
-                        person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                        if ( dvcConnectionStatus != null )
+                            // If a match was not found, create a new person
+                            person = new Person();
+                            person.FirstName = firstName;
+                            person.LastName = lastName;
+                            person.IsEmailActive = true;
+                            person.Email = email;
+                            person.EmailPreference = EmailPreference.EmailAllowed;
+                            person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            if ( dvcConnectionStatus != null )
                             {
                                 person.ConnectionStatusValueId = dvcConnectionStatus.Id;
                             }
@@ -4948,7 +4997,7 @@ namespace RockWeb.Blocks.Event
             string resolvedUrl = ResolveRockUrl( relativeUrl ).RemoveLeadingForwardslash();
             var proxySafeUri = Request.UrlProxySafe();
 
-            string url = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority }".EnsureTrailingForwardslash() + resolvedUrl;
+            string url = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}".EnsureTrailingForwardslash() + resolvedUrl;
 
             try
             {

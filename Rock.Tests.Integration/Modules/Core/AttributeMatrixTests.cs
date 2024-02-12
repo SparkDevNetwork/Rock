@@ -19,21 +19,24 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core
+namespace Rock.Tests.Integration.Modules.Core
 {
     /// <summary>
     /// Tests for Entity Attributes.
     /// </summary>
     [TestClass]
-    public class AttributeMatrixTests
+    public class AttributeMatrixTests : DatabaseTestsBase
     {
         [ClassInitialize]
         public static void Initialize( TestContext context )

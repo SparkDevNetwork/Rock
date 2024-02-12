@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
@@ -7,15 +23,12 @@ using System.Data.Entity.Spatial;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Serialization;
 
 using EntityFramework.Utilities;
 
 using Newtonsoft.Json;
 
 using OfficeOpenXml;
-
-using RestSharp;
 
 using Rock.Data;
 
@@ -67,11 +80,11 @@ namespace Rock.Model
                 // Longitude data on the DbGeography, which doesn't exist for polygon based DbGeography.
 
                 // Batch size
-                int batchSize = 1000;
+                var batchSize = 1000;
                 RockContext rockContext = new RockContext();
 
                 // Calculate the number of batches
-                int batches = ( int ) Math.Ceiling( ( double ) analyticsZipCodes.Count / batchSize );
+                var batches = ( int ) Math.Ceiling( ( double ) analyticsZipCodes.Count / batchSize );
                 for ( int i = 0; i < batches; i++ )
                 {
                     rockContext = new RockContext();
@@ -138,9 +151,9 @@ namespace Rock.Model
                     return new List<AnalyticsSourceZipCode>();
                 }
 
-                int noOfCol = workSheet.Dimension.End.Column;
-                int noOfRow = workSheet.Dimension.End.Row;
-                int rowIndex = 1;
+                var noOfCol = workSheet.Dimension.End.Column;
+                var noOfRow = workSheet.Dimension.End.Row;
+                var rowIndex = 1;
 
                 // Get headers
                 for ( int c = 1; c <= noOfCol; c++ )
@@ -160,7 +173,7 @@ namespace Rock.Model
                     table.Rows.Add( dr );
                 }
 
-                // Deserialize data as AnalyticsSourceZipCode and ignore any parsing errors fro DataType mismatch, some decimal columns contain string '**'
+                // Deserialize data as AnalyticsSourceZipCode and ignore any parsing errors from DataType mismatch, some decimal columns contain string '**'
                 // values so we ignore these and leave their values as default.
                 var data = JsonConvert.DeserializeObject<List<AnalyticsSourceZipCode>>( JsonConvert.SerializeObject( table ), new JsonSerializerSettings()
                 {
@@ -171,12 +184,13 @@ namespace Rock.Model
             }
         }
 
+#pragma warning disable CS1587
         /**
-          * 01/08/2024 - KA
-          * 
-          * The download method is commented out at the moment due to the large file that would otherwise be downloaded (over 900MB).
-          * There might be a future change to allow end users to selectively choose to download the boundary data.
-          */
+        * 01/08/2024 - KA
+        * 
+        * The download method is commented out at the moment due to the large file that would otherwise be downloaded (over 900MB).
+        * There might be a future change to allow end users to selectively choose to download the boundary data.
+        */
 
         /// <summary>
         /// Downloads the Boundary data as a memory stream.
@@ -239,6 +253,8 @@ namespace Rock.Model
         //    return data.OrderBy( z => z.ZipCode ).ToList();
         //}
 
+#pragma warning restore CS1587
+
         /// <summary>
         /// Set serialization errors as handled so properties that cannot be parsed are left as their default value.
         /// </summary>
@@ -259,21 +275,21 @@ namespace Rock.Model
             if ( !string.IsNullOrWhiteSpace( coordinates ) )
             {
                 // Assuming the coordinates are in the format "longitude1,latitude1,0 longitude2,latitude2,0 ..."
-                string[] pointStrings = coordinates.Split( ' ' );
+                var pointStrings = coordinates.Split( ' ' );
 
                 if ( pointStrings.Length >= 2 )
                 {
                     // Extract latitude and longitude pairs
                     var points = pointStrings.Select( pointString =>
                     {
-                        string[] values = pointString.Split( ',' );
-                        double longitude = double.Parse( values[0] );
-                        double latitude = double.Parse( values[1] );
+                        var values = pointString.Split( ',' );
+                        var longitude = double.Parse( values[0] );
+                        var latitude = double.Parse( values[1] );
                         return new Tuple<double, double>( latitude, longitude );
                     } ).ToList();
 
                     // Create the WKT representation of the polygon
-                    string wkt = $"POLYGON(({string.Join( ", ", points.Select( p => $"{p.Item2} {p.Item1}" ) )}))";
+                    var wkt = $"POLYGON(({string.Join( ", ", points.Select( p => $"{p.Item2} {p.Item1}" ) )}))";
 
                     // Create the DbGeography instance from the WKT representation
                     return DbGeography.PolygonFromText( wkt, 4326 );

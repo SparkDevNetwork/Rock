@@ -22,7 +22,7 @@ export type PageConfig = {
     executionStartTime: number;
     pageId: number;
     pageGuid: Guid;
-    pageParameters: Record<string, unknown>;
+    pageParameters: Record<string, string>;
     currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;
     loginUrlWithReturnUrl: string;
