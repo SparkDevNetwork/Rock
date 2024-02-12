@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
+<%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 <script runat="server">
 
     // keep code below to call base class init method
@@ -38,6 +38,7 @@
         <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
 
         <Rock:PageDescription ID="PageDescription" runat="server" />
+        <Rock:Zone Name="Filters" runat="server" />
     </section>
 
     <section id="page-content">

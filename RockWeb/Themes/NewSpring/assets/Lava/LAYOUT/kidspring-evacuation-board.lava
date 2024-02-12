@@ -1,298 +1,156 @@
+{% assign status = 'Global' | PageParameter:'Status' | Default:'unmarked' %}
 {% assign CurrentUrl = 'Global' | Page:'Url' | EscapeDataString %}
 {% assign pageId = 'Global' | Page:'Id' %}
-{% assign queryParamsArray = 'Global' | Page:'QueryString'  %}
-{% capture queryParams %}{% for item in queryParamsArray offset:1 %}{% assign kvItem = item | PropertyToKeyValue %}{{ kvItem.Key }}={{ kvItem.Value }}{% unless forloop.last %}&{% endunless %}{% endfor %}{% endcapture %}
+
 
 //- Set these page parameters up to pass through to SQL
 {% assign date = 'Now' | Date %}
 {% assign dateKey = 'Now' | Date:'yyyyMMdd' %}
-{% assign dateKey = '20230618' %}
+{% assign dateKey = '20240107' %}
 
 {% assign campusGuid = Context.Campus.Guid %}
 {% assign scheduleId = Context.Schedule.Id %}
 {% assign locationId = 'Global' | PageParameter:'LocationId' %}
 
-{% if dateKey == '' or campusGuid == '' or scheduleId == '' or locationId == '' %}
+{% if dateKey == '' or campusGuid == '' or scheduleId == '' or locationId == ''
+%}
 
-  <p class="p-3 alert alert-danger"><i class="fas fa-exclamation-triangle mr-1 text-danger"></i> Select a value for all filters in the filters drawer above to continue.</p>
+<p class="p-3 alert alert-danger"><i
+    class="fas fa-exclamation-triangle mr-1 text-danger"></i> Select a value for
+  all filters in the filters drawer above to continue.</p>
 
 {% else %}
 
-  //- Get attendance data based on the
-  {% sql datekey:'{{ dateKey }}' scheduleid:'{{ scheduleId }}' locationid:'{{ locationId }}' campusguid:'{{ campusGuid }}' %}
-    SELECT
-        a.[Id]
-        ,   a.[Guid] AS [AttendanceGuid]
-        ,   ao.[Id] AS [OccurrenceId]
-        ,   pa.[PersonId]
-        ,   p.[LastName]
-        ,   p.[NickName] AS [FirstName]
-        ,   ac.[Code] AS [AttendanceCode]
-        ,   a.[StartDateTime]
-        ,   a.[PresentDateTime]
-        ,   a.[EndDateTime]
-        ,   CAST(CASE av.[Value] WHEN 1 THEN 1 ELSE 0 END AS BIT) AS [IsMarkedSafe]
-        ,   av.[ModifiedDateTime] AS [IsMarkedSafeModifiedDateTime]
-    FROM [AttendanceOccurrence] ao
-    JOIN [Attendance] a ON a.[OccurrenceId] = ao.[Id]
-    LEFT JOIN [AttributeValue] av ON av.[EntityId] = a.[Id] AND av.[AttributeId] = 157200
-    LEFT JOIN [Attribute] attr ON attr.[Id] = av.[AttributeId]
-    JOIN [PersonAlias] pa ON a.[PersonAliasId] = pa.[Id]
-    JOIN [Person] p ON pa.[PersonId] = p.[Id]
-    JOIN [AttendanceCode] ac ON a.[AttendanceCodeId] = ac.[Id]
-    WHERE ao.[OccurrenceDateKey] = @datekey
-    AND ao.[ScheduleId] = @scheduleid
-    AND ao.[LocationId] = @locationid
-    AND a.[DidAttend] = 1
-  {% endsql %}
+//- Get attendance data based on the
+{% sql datekey:'{{ dateKey }}' scheduleid:'{{ scheduleId }}'  locationid:'{{ locationId }}' campusguid:'{{ campusGuid }}' %}
+  SELECT
+    a.[Id]
+    , a.[Guid] AS [AttendanceGuid]
+    , ao.[Id] AS [OccurrenceId]
+    , pa.[PersonId]
+    , p.[LastName]
+    , p.[NickName] AS [FirstName]
+    , ac.[Code] AS [AttendanceCode]
+    , a.[StartDateTime]
+    , a.[PresentDateTime]
+    , a.[EndDateTime]
+    , CAST(CASE av.[Value] WHEN 1 THEN 1 ELSE 0 END AS BIT) AS [IsMarkedSafe]
+  FROM [AttendanceOccurrence] ao
+  JOIN [Attendance] a ON a.[OccurrenceId] = ao.[Id]
+  LEFT JOIN [AttributeValue] av ON av.[EntityId] = a.[Id] AND av.[AttributeId] = 157200
+  LEFT JOIN [Attribute] attr ON attr.[Id] = av.[AttributeId]
+  JOIN [PersonAlias] pa ON a.[PersonAliasId] = pa.[Id]
+  JOIN [Person] p ON pa.[PersonId] = p.[Id]
+  JOIN [AttendanceCode] ac ON a.[AttendanceCodeId] = ac.[Id]
+  WHERE ao.[OccurrenceDateKey] = @datekey
+  AND ao.[ScheduleId] = @scheduleid
+  AND ao.[LocationId] = @locationid
+  AND a.[DidAttend] = 1
+{% endsql %}
 
-  //- This looks terrible, but because the Where lava filter doesn't let you check against datetime columns, it's the only way I know how to break the results apart into separate arrays
-  {% capture notMarked %}[]{% endcapture %}
-  {% capture marked %}[]{% endcapture %}
-  {% capture checkedOut %}[]{% endcapture %}
-  {% assign notMarked = notMarked | FromJSON %}
-  {% assign marked = notMarked | FromJSON %}
-  {% assign checkedOut = notMarked | FromJSON %}
+//- This looks terrible, but because the Where lava filter doesn't let you check against datetime columns, it's the only way I know how to break the results apart into separate arrays
+{% capture notMarked %}[]{% endcapture %}
+{% capture marked %}[]{% endcapture %}
+{% capture checkedOut %}[]{% endcapture %}
+{% assign notMarked = notMarked | FromJSON %}
+{% assign marked = notMarked | FromJSON %}
+{% assign checkedOut = notMarked | FromJSON %}
 
-  //- Loop through results and distribute to corresponding array
-  {% for result in results %}
-    {% if result.EndDateTime != null %}
-      {% assign checkedOut = checkedOut | AddToArray:result | OrderBy:'LastName, FirstName' %}
-    {% elseif result.IsMarkedSafe == true %}
-      {% assign marked = marked | AddToArray:result | OrderBy:'LastName, FirstName' %}
-    {% else %}
-      {% assign notMarked = notMarked | AddToArray:result | OrderBy:'LastName, FirstName' %}
-    {% endif %}
-  {% endfor %}
+//- Loop through results and distribute to corresponding array
+{% for result in results %}
+{% if result.EndDateTime != null %}
+{% assign checkedOut = checkedOut | AddToArray:result | OrderBy:'LastName,
+FirstName' %}
+{% elseif result.IsMarkedSafe == true %}
+{% assign marked = marked | AddToArray:result | OrderBy:'LastName, FirstName' %}
+{% else %}
+{% assign notMarked = notMarked | AddToArray:result | OrderBy:'LastName,
+FirstName' %}
+{% endif %}
+{% endfor %}
 
-  {% assign notMarkedCount = notMarked | Size %}
-  {% assign markedCount = marked | Size %}
-  {% assign checkedOutCount = checkedOut | Size %}
-
-  <div class="px-3 p-sm-0">
-
-    //- Nav tabs
-    <ul class="nav nav-tabs mb-3" role="tablist">
-      <li class="{% if pageId == 16085 %}active{% endif %}"><a href="/page/16085{% if queryParams != '' %}{{ queryParams | Prepend:'?' }}{% endif %}" class="{% if notMarkedCount > 0 %}text-danger font-weight-semibold pulse-opacity{% endif %}">Not Marked Safe ({{ notMarked | Size }})</a></li>
-      <li class="{% if pageId == 16090 %}active{% endif %}"><a href="/page/16090{% if queryParams != '' %}{{ queryParams | Prepend:'?' }}{% endif %}">Marked Safe ({{ marked | Size }})</a></li>
-      <li class="{% if pageId == 16091 %}active{% endif %}"><a href="/page/16091{% if queryParams != '' %}{{ queryParams | Prepend:'?' }}{% endif %}">Checked Out ({{ checkedOut | Size }})</a></li>
-    </ul>
+{% assign notMarkedCount = notMarked | Size %}
+{% assign markedCount = marked | Size %}
+{% assign checkedOutCount = checkedOut | Size %}
 
 
-    //- Tab Panes
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane {% if activeTab == 'notMarkedSafe' %}active{% endif %}" id="notMarkedSafe">
+//- Set array to loop through based on status from URL
+{% if status == 'unmarked' %}
+  {% assign rows = notMarked %}
+{% elseif status == 'marked' %}
+  {% assign rows = marked %}
+{% else %}
+  {% assign rows = checkedOut %}
+{% endif %}
 
-        //- Not Marked Safe
-        <div class="panel panel-default">
-          <div class="panel-body p-0">
-            {% if notMarkedCount == 0 and markedCount == 0 %}
-              <p class="p-3 alert alert-default mb-0"><i class="fas fa-check mr-1 text-success"></i> All individuals have been checked out.</p>
-            {% elseif notMarkedCount == 0 %}
-              <p class="p-3 alert alert-default mb-0"><i class="fas fa-check mr-1 text-success"></i> All individuals have been marked safe.</p>
-            {% else %}
-              <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+//- Sort array
+{% assign rows = rows | OrderBy:'LastName' | RemoveFromArray:null %}
 
-                  <colgroup>
-                    <col span="1" style="width: 3%;">
-                    <col span="1" style="width: 15%;">
-                    <col span="1" style="width: 15%;">
-                    <col span="1" style="width: 3%;">
-                    <col span="1">
-                  </colgroup>
+{% if status == 'marked' and markedCount == 0 and notMarkedCount >= 1 %}
+  <div class="alert alert-danger mt-3" role="alert"><b>{{ notMarkedCount }} Not Marked Safe remaining</b></div>
+{% elseif status != 'checkedOut' and notMarkedCount == 0 %}
+  <div class="alert alert-success mt-3" role="alert"><b>All attendees have been marked safe and/or checked out.</b></div>
+{% endif %}
 
-                  <thead>
-                    <tr>
-                      <th></th>
-                      <th>Last Name</th>
-                      <th>First Name</th>
-                      <th class="text-center">Code</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for row in notMarked %}
-                      {% assign person = row.PersonId | PersonById %}
-                    <tr>
-                      <td>
-                        <a href="/person/{{ row.PersonId }} target="_blank" class="btn btn-xs btn-default">
-                          <i class="fas fa-user"></i>
-                        </a>
-                      </td>
-                      <td>{{ person.LastName }}</td>
-                      <td>{{ person.NickName }}</td>
-                      <td class="text-center"><span class="label label-info">{{ row.AttendanceCode }}</span></td>
 
-                      <td>
-                        <a href="/workflows/969?Attendance={{ row.AttendanceGuid }}&ReturnUrl={{ CurrentUrl }}" class="btn btn-xs btn-success">Mark Safe <i class="fas fa-check ml-1"></i></a>
-
-                        {% assign parents = person | Parents | OrderBy:'Gender' %}
-                        {% if parents != empty %}
-                          {% for parent in parents limit:1 %}
-                            {% assign mobileNumber = parent.PhoneNumbers | Where:'NumberTypeValueId',12 | First | Property:'FullNumber' %}
-
-                            {% if mobileNumber != '' %}
-                              <a href="tel:+{{ mobileNumber }}" class="btn btn-xs btn-default"><i class="fas fa-phone mr-1"></i> {{ parent.FullName }}</a>
-                            {% endif %}
-
-                          {% endfor %}
-                        {% endif %}
-
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            {% endif %}
-
+<div class="d-grid grid-cols-md-2 gap-3 gap-lg-4 mt-3 mb-5">
+  {% for row in rows %}
+  {% assign person = row.PersonId | PersonById %}
+  <div class="panel mb-0">
+    <div class="panel-heading pl-2 d-flex justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <a href="/page/301?PersonId={{ row.PersonId }}"
+          class="text-black text-decoration-none">
+          <div
+            class="ratio-square bg-black rounded-circle background-cover background-center"
+            style="background-image:url('{{ person.PhotoUrl }}'); width: 30px;">
           </div>
-        </div>
-
+        </a>
+        <h4 class="mb-0" style="margin-top:3px;"><a href="/page/301?PersonId={{ row.PersonId }}"
+            class="text-black text-decoration-none">{{ person.LastName }}, {{
+            person.NickName }}</a></h4>
       </div>
-      <div role="tabpanel" class="tab-pane {% if activeTab == 'markedSafe' %}active{% endif %}" id="markedSafe">
-
-        //- Marked Safe
-        <div class="panel panel-default">
-          <div class="panel-body p-0">
-
-            {% if notMarkedCount == 0 and markedCount == 0 %}
-              <p class="p-3 alert alert-default mb-0"><i class="fas fa-check mr-1 text-success"></i> All individuals have been checked out.</p>
-            {% elseif notMarkedCount > 0 and markedCount == 0 %}
-            <p class="p-3 alert alert-danger mb-0"><i class="fas fa-exclamation-triangle mr-1 text-danger"></i> {{ notMarkedCount }} {% if notMarkedCount > 1 %}individuals are{% else %}individual has{% endif %} yet to be marked safe.</p>
-            {% else %}
-              <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-
-                  <colgroup>
-                    <col span="1" style="width: 3%;">
-                    <col span="1" style="width: 15%;">
-                    <col span="1" style="width: 15%;">
-                    <col span="1" style="width: 3%;">
-                    <col span="1">
-                  </colgroup>
-
-                  <thead>
-                    <tr>
-                      <th></th>
-                      <th>Last Name</th>
-                      <th>First Name</th>
-                      <th class="text-center">Code</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for row in marked %}
-                      {% assign person = row.PersonId | PersonById %}
-                    <tr>
-                      <td>
-                        <a href="/person/{{ row.PersonId }} target="_blank" class="btn btn-xs btn-default">
-                          <i class="fas fa-user"></i>
-                        </a>
-                      </td>
-                      <td>{{ person.LastName }}</td>
-                      <td>{{ person.NickName }}</td>
-                      <td class="text-center"><span class="label label-info">{{ row.AttendanceCode }}</span></td>
-
-                      <td>
-                        <a href="/workflows/969?Attendance={{ row.AttendanceGuid }}&ReturnUrl={{ CurrentUrl }}" class="btn btn-xs btn-danger">Unmark as Safe <i class="fas fa-undo-alt ml-1"></i></a>
-                        <a href="/workflows/971?Attendance={{ row.AttendanceGuid }}&ReturnUrl={{ CurrentUrl }}" class="btn btn-xs btn-success">Check Out <i class="fas fa-sign-out ml-1"></i></a>
-
-                        {% assign parents = person | Parents | OrderBy:'Gender' %}
-                        {% if parents != empty %}
-                          {% for parent in parents limit:1 %}
-                            {% assign mobileNumber = parent.PhoneNumbers | Where:'NumberTypeValueId',12 | First | Property:'FullNumber' %}
-
-                            {% if mobileNumber != '' %}
-                              <a href="tel:+{{ mobileNumber }}" class="btn btn-xs btn-default"><i class="fas fa-phone mr-1"></i> {{ parent.FullName }}</a>
-                            {% endif %}
-
-                          {% endfor %}
-                        {% endif %}
-
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            {% endif %}
-
-          </div>
-        </div>
-
-
-      </div>
-      <div role="tabpanel" class="tab-pane {% if activeTab == 'checkedOut' %}active{% endif %}" id="checkedOut">
-
-        //- Checked Out
-        <div class="panel panel-default">
-          <div class="panel-body p-0">
-
-            <div class="table-responsive">
-              <table class="table table-bordered table-striped">
-
-                <colgroup>
-                  <col span="1" style="width: 3%;">
-                  <col span="1" style="width: 15%;">
-                  <col span="1" style="width: 15%;">
-                  <col span="1" style="width: 3%;">
-                  <col span="1">
-                </colgroup>
-
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Last Name</th>
-                    <th>First Name</th>
-                    <th class="text-center">Code</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for row in checkedOut %}
-                    {% assign person = row.PersonId | PersonById %}
-                  <tr>
-                    <td>
-                      <a href="/person/{{ row.PersonId }} target="_blank" class="btn btn-xs btn-default">
-                        <i class="fas fa-user"></i>
-                      </a>
-                    </td>
-                    <td>{{ person.LastName }}</td>
-                    <td>{{ person.NickName }}</td>
-                    <td class="text-center"><span class="label label-info">{{ row.AttendanceCode }}</span></td>
-
-                    <td>
-                      <a href="/workflows/971?Attendance={{ row.AttendanceGuid }}&ReturnUrl={{ CurrentUrl }}" class="btn btn-xs btn-danger">Mark Present <i class="fas fa-undo-alt ml-1"></i></a>
-
-                      {% assign parents = person | Parents | OrderBy:'Gender' %}
-                      {% if parents != empty %}
-                        {% for parent in parents limit:1 %}
-                          {% assign mobileNumber = parent.PhoneNumbers | Where:'NumberTypeValueId',12 | First | Property:'FullNumber' %}
-
-                          {% if mobileNumber != '' %}
-                            <a href="tel:+{{ mobileNumber }}" class="btn btn-xs btn-default"><i class="fas fa-phone mr-1"></i> {{ parent.FullName }}</a>
-                          {% endif %}
-
-                        {% endfor %}
-                      {% endif %}
-
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-
-          </div>
-        </div>
-
-
-      </div>
+      <p class="mb-0">
+        {% if row.EndDateTime == null and row.PresentDateTime == null %}
+          <span class="d-inline-block w-auto px-2 label label-warning" style="font-size: 14px;">En Route</span>
+        {% endif %}
+        <span class="d-inline-block w-auto px-2 label label-info"
+          style="font-size: 14px;">{{ row.AttendanceCode }}</span>
+      </p>
     </div>
+    <div class="panel-footer">
+      <div class="d-flex justify-content-end gap-2">
+        <!-- Actions -->
+        <div class="d-flex flex-column flex-sm-row gap-2">
+          {% if status == 'unmarked' %}
+          //- Mark Safe Link
+          <a href="/workflows/969?Attendance={{ row.AttendanceGuid }}&ReturnUrl={{ CurrentUrl }}"
+            class="btn btn-xs btn-success"><i class="fas fa-check mr-1"></i>
+            Mark Safe</a>
+          {% elseif status == 'marked' %}
+          //- Unmark Safe Link
+          <a href="/workflows/969?Attendance={{ row.AttendanceGuid }}&ReturnUrl={{ CurrentUrl }}"
+            class="btn btn-xs btn-warning"><i class="fas fa-undo-alt mr-1"></i>
+            Unmark as Safe</a>
 
+          //- Check Out Link
+          <a href="/workflows/971?Attendance={{ row.AttendanceGuid }}&ReturnUrl={{ CurrentUrl }}"
+            class="btn btn-xs btn-success"><i class="fas fa-sign-out mr-1"></i>
+            Check Out</a>
+          {% else %}
+          //- Mark Present Link
+          <a href="/workflows/971?Attendance={{ row.AttendanceGuid }}&ReturnUrl={{ CurrentUrl }}"
+            class="btn btn-xs btn-warning"><i class="fas fa-undo-alt mr-1"></i>
+            Mark Present</a>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
   </div>
+  {% endfor %}
+</div>
+
 {% endif %}
 
 <style>
@@ -301,7 +159,72 @@
     top: 1px;
   }
 
-  .table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td {
+  .table>thead>tr>th,
+  .table>tbody>tr>th,
+  .table>tfoot>tr>th,
+  .table>thead>tr>td,
+  .table>tbody>tr>td,
+  .table>tfoot>tr>td {
     padding: 8px 6px;
+  }
+</style>
+
+<style>
+
+  .progress {
+    height: 30px;
+    line-height: 30px;
+  }
+
+  .overflow-hidden {
+    overflow: hidden;
+  }
+
+  .max-h-max {
+    height: max-content;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -1px;
+  }
+
+  h5,
+  h6 {
+    letter-spacing: -.5px;
+  }
+
+  .w-10 {
+    width: 10%;
+  }
+
+  .btn-xs {
+    font-weight: 500;
+    padding-top: 1px;
+  }
+
+  .background-cover {
+    background-size: cover;
+  }
+
+  .background-center {
+    background-position: center;
+  }
+
+  .text-medium {
+    font-weight: 500;
+  }
+
+  @media screen and (max-width: 667px) {
+    .label {
+      padding-top: 5px;
+      padding-bottom: 3px;
+    }
+
+    .btn-xs {
+      padding: 2px 8px 0;
+    }
   }
 </style>
