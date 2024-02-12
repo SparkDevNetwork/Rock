@@ -130,18 +130,6 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
-        {
-            //var entity = new Location();
-
-            //return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-            return false;
-        }
-
-        /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
@@ -156,35 +144,27 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<Location> GetListQueryable( RockContext rockContext )
         {
-            bool isFiltered = false;
-            var queryable = base.GetListQueryable( rockContext ).Where( l => l.Street1 != null && l.Street1 != string.Empty );
-
-            if ( !string.IsNullOrWhiteSpace( FilterStreetAddress ) )
-            {
-                queryable = queryable.Where( l => l.Street1.StartsWith( FilterStreetAddress ) );
-                isFiltered = true;
-            }
-
-            if ( !string.IsNullOrWhiteSpace( FilterCity ) )
-            {
-                queryable = queryable.Where( l => l.City.StartsWith( FilterCity ) );
-                isFiltered = true;
-            }
-
-            if ( FilterNotGeocoded )
-            {
-                queryable = queryable.Where( l => l.GeoPoint == null );
-                isFiltered = true;
-            }
+            bool isFiltered = !string.IsNullOrWhiteSpace( FilterStreetAddress ) || !string.IsNullOrWhiteSpace( FilterCity ) || FilterNotGeocoded;
 
             if ( !isFiltered )
             {
                 return Enumerable.Empty<Location>().AsQueryable();
             }
-            else
-            {
-                return queryable;
-            }
+
+            var queryable = base.GetListQueryable( rockContext )
+                .Where( l =>
+                    // Base Filters
+                    l.Street1 != null
+                    && l.Street1 != string.Empty
+                    // Street Address Filter
+                    && ( string.IsNullOrEmpty( FilterStreetAddress ) || l.Street1.StartsWith( FilterStreetAddress ) )
+                    // City Filter
+                    && ( string.IsNullOrEmpty( FilterCity ) || l.City.StartsWith( FilterCity ) )
+                    // Not Geocoded Filter
+                    && ( !FilterNotGeocoded || l.GeoPoint == null )
+                );
+
+            return queryable;
         }
 
         /// <inheritdoc/>
