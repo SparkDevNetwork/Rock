@@ -58,22 +58,27 @@ DECLARE @ScheduleId int = (
     FROM Category 
     WHERE Guid = '5A794741-5444-43F0-90D7-48E47276D426'
 )
+
+Declare @linebreak varchar(50) = Concat(CHAR(13),CHAR(10))
+Declare @iCalendarContent varchar(max) = Concat_ws( @linebreak,
+   'BEGIN:VCALENDAR',
+   'PRODID:-//github.com/rianjs/ical.net//NONSGML ical.net 4.0//EN',
+   'VERSION:2.0',
+   'BEGIN:VEVENT',
+   'DTEND:20230301T050100',
+   'DTSTAMP:20230301T102849',
+   'DTSTART:20230301T050000',
+   'RRULE:FREQ=MONTHLY;BYMONTHDAY=1',
+   'SEQUENCE:0',
+   'UID:3736edbb-2e51-4114-bd4f-3ed62b98ed12',
+   'END:VEVENT',
+   'END:VCALENDAR',
+   '' )
+
 IF @ScheduleId IS NULL
 BEGIN
 	INSERT [dbo].[Schedule] ([Name], [Description], [iCalendarContent], [CategoryId], [Guid], [IsActive])
-	VALUES (N'Insights Metrics Schedule', NULL, N'BEGIN:VCALENDAR
-PRODID:-//github.com/rianjs/ical.net//NONSGML ical.net 4.0//EN
-VERSION:2.0
-BEGIN:VEVENT
-DTEND:20230301T050001
-DTSTAMP:20230301T102849
-DTSTART:20230301T050000
-RRULE:FREQ=MONTHLY;BYMONTHDAY=1
-SEQUENCE:0
-UID:3736edbb-2e51-4114-bd4f-3ed62b98ed12
-END:VEVENT
-END:VCALENDAR',
-@MetricsCategoryId, N'{WHO_WE_ARE_SCHEDULE_GUID}', 1)
+	VALUES (N'Insights Metrics Schedule', NULL, @iCalendarContent,@MetricsCategoryId, N'{WHO_WE_ARE_SCHEDULE_GUID}', 1)
 END" );
         }
 
