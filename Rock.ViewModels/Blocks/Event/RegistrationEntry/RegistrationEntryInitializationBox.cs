@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using Rock.Model;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Finance;
 using Rock.ViewModels.Utility;
@@ -186,7 +186,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The registrar option.
         /// </value>
-        public int RegistrarOption { get; set; }
+        public RegistrarOption RegistrarOption { get; set; }
 
         /// <summary>
         /// Gets or sets the cost.

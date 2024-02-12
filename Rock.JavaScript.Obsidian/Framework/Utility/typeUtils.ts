@@ -15,120 +15,103 @@
 // </copyright>
 //
 
+// #region Utility Types
+
 /**
- * Make all properties in T nullable.
+ * Make all properties in Type able to be set to null.
  *
  * @example
  * type Shape = {
- *   length: number,
- *   width: number
+ *   length: number;
+ *   width?: number | undefined;
  * };
  *
- * type StaticShape = Nullable<Shape>;
+ * type NewShape = Nullable<Shape>;
  * // {
- * //   length: number | null,
- * //   width: number | null
+ * //   length: number | null;
+ * //   width?: number | null | undefined;
  * // }
  */
-type Nullable<T> = {
-    [K in keyof T]: T[K] | null
+type Nullable<Type> = {
+    [PropertyKey in keyof Type]: Type[PropertyKey] | null
 };
 
 /**
- * Make specific properties in T required,
+ * Make specific properties in Type required,
+ * while leaving the rest of the properties untouched. (optional properties will become required and cannot be set to undefined)
+ *
+ * @example
+ * type Shape = {
+ *   length: number | null | undefined;
+ *   width?: number | null | undefined;
+ * };
+ *
+ * type NewShape = RequiredProps<Shape, "length" | "width">;
+ * // {
+ * //   length: number | null | undefined;
+ * //   width: number | null;
+ * // }
+ */
+export type RequiredProps<Type, RequiredPropertyKey extends keyof Type> = Omit<Type, RequiredPropertyKey> & {
+    [PropertyKey in keyof Pick<Type, RequiredPropertyKey>]-?: Type[PropertyKey]
+};
+
+/**
+ * Make properties of type PropertyType in Type able to be set to null,
  * while leaving the rest of the properties untouched.
  *
  * @example
  * type Shape = {
- *   length?: number | null,
- *   width?: number | null
+ *   length: number;
+ *   width?: number | undefined;
  * };
  *
- * type StaticShape = RequiredProps<Shape, "length">;
+ * type NewShape = NullableProps<Shape, "width">;
  * // {
- * //   length: number | null,
- * //   width?: number | null
+ * //   length: number;
+ * //   width?: number | null | undefined;
  * // }
  */
-export type RequiredProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]-?: T[P]
-};
-
-// /**
-//  * Make all properties in T required, and unable to be set to undefined or null.
-//  *
-//  * @example
-//  * type Shape = {
-//  *   length?: number | null,
-//  *   width?: number | null
-//  * };
-//  *
-//  * type StaticShape = RequiredNonNullable<Shape>;
-//  * // {
-//  * //   length: number,
-//  * //   width: number
-//  * // }
-//  */
-// export type RequiredNonNullable<T> = {
-//     [K in keyof T]-?: NonNullable<T[K]>
-// };
-
-/**
- * Make specific properties in T able to null,
- * while leaving the rest of the properties untouched.
- *
- * @example
- * type Shape = {
- *   length: number,
- *   width: number
- * };
- *
- * type StaticShape = NullableProps<Shape, "width">;
- * // {
- * //   length: number,
- * //   width: number | null
- * // }
- */
-export type NullableProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]: T[P] | null
+export type NullableProps<Type, NullablePropertyKey extends keyof Type> = Omit<Type, NullablePropertyKey> & {
+    [PropertyKey in keyof Pick<Type, NullablePropertyKey>]: Type[PropertyKey] | null
 };
 
 /**
- * Make properties in T able to be set to undefined
+ * Make all properties in Type able to be set to undefined.
  *
  * @example
  * type Shape = {
- *   length: number | null,
- *   width: number | null
+ *   length: number | null;
+ *   width: number | null;
  * };
  *
- * type StaticShape = Undefinable<Shape>;
+ * type NewShape = Undefinable<Shape>;
  * // {
- * //   length: number | null | undefined,
- * //   width: number | null | undefined
+ * //   length: number | null | undefined;
+ * //   width: number | null | undefined;
  * // }
  */
-export type Undefinable<T> = {
-    [K in keyof T]: T[K] | undefined
+export type Undefinable<Type> = {
+    [PropertyKey in keyof Type]: Type[PropertyKey] | undefined
 };
 
 /**
- * Make properties in T able to be set to undefined
+ * Make specific properties in Type able to be set to undefined.
  *
  * @example
  * type Shape = {
- *   length: number | null,
- *   width: number | null
+ *   length: number | null;
+ *   width: number | null;
  * };
  *
- * type StaticShape = UndefinableProps<Shape, "length">;
+ * type NewShape = UndefinableProps<Shape, "length">;
  * // {
- * //   length: number | null | undefined,
- * //   width: number | null
+ * //   length: number | null | undefined;
+ * //   width: number | null;
  * // }
  */
-export type UndefinableProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]: T[P] | undefined
+export type UndefinableProps<Type, UndefinablePropertyKey extends keyof Type> = Omit<Type, UndefinablePropertyKey> & {
+    [PropertyKey in keyof Pick<Type, UndefinablePropertyKey>]: Type[PropertyKey] | undefined
 };
 
 /**
@@ -136,225 +119,279 @@ export type UndefinableProps<T, K extends keyof T> = Omit<T, K> & {
  *
  * Useful for removing union types (see NotNullable<T> and NotUndefinable<T>).
  */
-type NotType<T, U> = T extends U ? never : T;
+type NotType<Type, NotOfType> = Type extends NotOfType ? never : Type;
 
 /**
- * Make properties in T not able to be set to undefined.
+ * Make all properties in Type not able to be set to undefined. (does nothing to optional properties)
  *
  * @example
  * type Shape = {
- *   length: number | undefined,
- *   width: number | undefined
+ *   length: number | undefined;
+ *   width?: number | undefined;
  * };
  *
- * type StaticShape = NotUndefinable<Shape>;
+ * type NewShape = NotUndefinable<Shape>;
  * // {
- * //   length: number,
- * //   width: number
+ * //   length: number;
+ * //   width?: number | undefined;
  * // }
  */
-export type NotUndefinable<T> = {
-    [K in keyof T]: NotType<T[K], undefined>
+export type NotUndefinable<Type> = {
+    [PropertyKey in keyof Type]: NotType<Type[PropertyKey], undefined>
 };
 
 /**
- * Make specific properties in T not able to be set to undefined.
+ * Make specific properties in Type not able to be set to undefined. (does nothing to optional properties)
  *
  * @example
  * type Shape = {
- *   length: number | undefined,
- *   width: number | undefined
+ *   length: number | undefined;
+ *   width?: number | undefined;
  * };
  *
- * type StaticShape = NotUndefinableProps<Shape, "length">;
+ * type NewShape = NotUndefinableProps<Shape, "length">;
  * // {
- * //   length: number,
- * //   width: number | undefined
+ * //   length: number;
+ * //   width?: number | undefined;
  * // }
  */
-export type NotUndefinableProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]: NotType<T[P], undefined>
+export type NotUndefinableProps<Type, NotUndefinablePropertyKey extends keyof Type> = Omit<Type, NotUndefinablePropertyKey> & {
+    [PropertyKey in keyof Pick<Type, NotUndefinablePropertyKey>]: NotType<Type[PropertyKey], undefined>
 };
 
 /**
- * Make properties in T not able to be set to null.
+ * Make properties in Type not able to be set to null.
  *
  * @example
  * type Shape = {
- *   length?: number | null,
- *   width?: number | null
+ *   length?: number | null;
+ *   width?: number | null;
  * };
  *
- * type StaticShape = NotNull<Shape>;
+ * type NewShape = NotNullable<Shape>;
  * // {
- * //   length?: number,
- * //   width?: number
+ * //   length?: number;
+ * //   width?: number;
  * // }
  */
-export type NotNullable<T> = {
-    [K in keyof T]: NotType<T[K], null>
+export type NotNullable<Type> = {
+    [PropertyKey in keyof Type]: NotType<Type[PropertyKey], null>
 };
 
 /**
- * Make specific properties in T not able to be set to null,
+ * Make specific properties in Type not able to be set to null,
  * while leaving the rest of the properties untouched.
  *
  * @example
  * type Shape = {
- *   length?: number | null,
- *   width?: number | null
+ *   length?: number | null | undefined;
+ *   width?: number | null | undefined;
  * };
  *
- * type StaticShape = NotNullableProps<Shape, "length">;
+ * type NewShape = NotNullableProps<Shape, "length">;
  * // {
- * //   length: number,
- * //   width?: number | null
+ * //   length?: number;
+ * //   width?: number | null | undefined;
  * // }
  */
-export type NotNullableProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]: NotType<T[P], null>
+export type NotNullableProps<Type, NotNullablePropertyKey extends keyof Type> = Omit<Type, NotNullablePropertyKey> & {
+    [PropertyKey in keyof Pick<Type, NotNullablePropertyKey>]: NotType<Type[PropertyKey], null>
 };
 
-// /**
-//  * Make specific properties in T required, and unable to be set to undefined or null,
-//  * while leaving the rest of the properties untouched.
-//  *
-//  * @example
-//  * type Shape = {
-//  *   length?: number | null,
-//  *   width?: number | null
-//  * };
-//  *
-//  * type StaticShape = RequiredNonNullableProps<Shape, "length">;
-//  * // {
-//  * //   length: number,
-//  * //   width?: number | null
-//  * // }
-//  */
-// export type RequiredNonNullableProps<T, K extends keyof T> = Omit<T, K> & {
-//     [P in keyof Pick<T, K>]-?: NonNullable<T[P]>
-// };
+/**
+ * Make specific properties in Type unable to be set to null or undefined,
+ * while leaving the rest of the properties untouched. (optional properties can still be set to undefined)
+ *
+ * @example
+ * type Shape = {
+ *   length: number | null | undefined;
+ *   width?: number | null | undefined;
+ * };
+ *
+ * type NewShape = DefinedProps<Shape, "length" | "width">;
+ * // {
+ * //   length: number;
+ * //   width?: number | undefined;
+ * // }
+ */
+export type DefinedProps<Type, DefinedPropertyKey extends keyof Type> = Omit<Type, DefinedPropertyKey> & {
+    [PropertyKey in keyof Pick<Type, DefinedPropertyKey>]: NonNullable<Type[PropertyKey]>
+};
 
 /**
- * Make specific properties in T unable to be set to undefined or null,
+ * Make specific properties in Type optional,
  * while leaving the rest of the properties untouched.
  *
  * @example
  * type Shape = {
- *   length: number | null | undefined,
- *   width: number | null | undefined
+ *   length: number;
+ *   width: number;
  * };
  *
- * type StaticShape = NonNullableProps<Shape, "length">;
+ * type NewShape = OptionalProps<Shape, "width">;
  * // {
- * //   length?: number,
- * //   width?: number | null
+ * //   length: number;
+ * //   width?: number | undefined;
  * // }
  */
-export type NonNullableProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]: NonNullable<T[P]>
+export type OptionalProps<Type, PropertyKey extends keyof Type> = Omit<Type, PropertyKey> & {
+    [Property in keyof Pick<Type, PropertyKey>]+?: Type[Property]
 };
 
 /**
- * Make specific properties in T optional, and able to be set to undefined,
+ * Make all properties in Type be of type PropertyType.
+ *
+ * @example
+ * type Shape = {
+ *   length: number;
+ *   width: number;
+ * };
+ *
+ * type NewShape = OverrideType<Shape, string>;
+ * // {
+ * //   length: string;
+ * //   width: string;
+ * // }
+ */
+export type OverrideType<Type, PropertyType> = {
+    [Property in keyof Pick<Type, keyof Type>]: PropertyType
+};
+
+/**
+ * Make specific properties in Type be of type PropertyType,
  * while leaving the rest of the properties untouched.
  *
  * @example
  * type Shape = {
- *   length: number,
- *   width: number
+ *   length: number;
+ *   width: number;
  * };
  *
- * type StaticShape = OptionalProps<Shape, "width">;
+ * type NewShape = OverrideTypeProps<Shape, "width", string>;
  * // {
- * //   length: number,
- * //   width?: number
+ * //   length: number;
+ * //   width: string;
  * // }
  */
-export type OptionalProps<T, K extends keyof T> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]+?: T[P]
+export type OverrideTypeProps<Type, PropertyKey extends keyof Type, PropertyType> = Omit<Type, PropertyKey> & {
+    [Property in keyof Pick<Type, PropertyKey>]: PropertyType
 };
 
-// /**
-//  * Make properties in T optional, and able to be set to undefined or null.
-//  *
-//  * @example
-//  * type Shape = {
-//  *   length: number,
-//  *   width: number
-//  * };
-//  *
-//  * type StaticShape = PartialNullable<Shape>;
-//  * // {
-//  * //   length?: number | null,
-//  * //   width?: number | null
-//  * // }
-//  */
-// export type PartialNullable<T> = {
-//     [K in keyof T]+?: T[K] | null
-// };
-
-// /**
-//  * Make specific properties in T optional, and able to be set to undefined or null,
-//  * while leaving the rest of the properties untouched.
-//  *
-//  * @example
-//  * type Shape = {
-//  *   length: number,
-//  *   width: number
-//  * };
-//  *
-//  * type StaticShape = PartialNullableProps<Shape, "width">;
-//  * // {
-//  * //   length: number,
-//  * //   width?: number | null
-//  * // }
-//  */
-// export type PartialNullableProps<T, K extends keyof T> = Omit<T, K> & {
-//     [P in keyof Pick<T, K>]+?: T[P] | null
-// };
-
 /**
- * Make properties in T have a specific type U.
+ * Make all properties in Type have a specific prefix. (first letter of previous property name is capitalized)
  *
  * @example
  * type Shape = {
- *   length: number,
- *   width: number
+ *   length: number;
+ *   width: number;
  * };
  *
- * type StaticShape = OverrideType<Shape, string>;
+ * type NewShape = PrefixedProps<Shape, "dimension">;
  * // {
- * //   length: number,
- * //   width: string
+ * //   dimensionLength: number;
+ * //   dimensionWidth: number;
  * // }
  */
-export type OverrideType<T, U> = {
-    [P in keyof Pick<T, keyof T>]: U
+type Prefixed<Type, Prefix extends string> = {
+    [PropertyKey in keyof Type as `${Prefix}${Capitalize<string & PropertyKey>}`]: Type[PropertyKey]
 };
 
 /**
- * Make specific properties in T have a specific type U,
- * while leaving the rest of the properties untouched.
+ * Make specific properties in Type have a specific prefix. (first letter of previous property name is capitalized)
  *
  * @example
  * type Shape = {
- *   length: number,
- *   width: number
+ *   length: number;
+ *   width: number;
  * };
  *
- * type StaticShape = OverrideTypeProps<Shape, "width", string>;
+ * type NewShape = PrefixedProps<Shape, "length", "dimension">;
  * // {
- * //   length: number,
- * //   width: string
+ * //   dimensionLength: number;
+ * //   width: number;
  * // }
  */
-export type OverrideTypeProps<T, K extends keyof T, U> = Omit<T, K> & {
-    [P in keyof Pick<T, K>]: U
+type PrefixedProps<Type, PrefixedPropertyKey extends keyof Type, Prefix extends string> = Omit<Type, PrefixedPropertyKey> & {
+    [PropertyKey in keyof Pick<Type, PrefixedPropertyKey> as `${Prefix}${Capitalize<string & PropertyKey>}`]: Type[PropertyKey]
 };
 
 /**
- * Get the union of keys from T where the properties are of type P.
+ * Make all properties in Type have a specific suffix. (case is not automatically fixed)
+ *
+ * @example
+ * type Shape = {
+ *   length: number;
+ *   width: number;
+ * };
+ *
+ * type NewShape = Suffixed<Shape, "Inches">;
+ * // {
+ * //   lengthInches: number;
+ * //   widthInches: number;
+ * // }
+ */
+type Suffixed<Type, Suffix extends string> = {
+    [PropertyKey in keyof Type as `${string & PropertyKey}${Suffix}`]: Type[PropertyKey]
+};
+
+/**
+ * Make specific properties in Type have a specific suffix. (case is not automatically fixed)
+ *
+ * @example
+ * type Shape = {
+ *   length: number;
+ *   width: number;
+ * };
+ *
+ * type NewShape = SuffixedProps<Shape, "length", "Inches">;
+ * // {
+ * //   lengthInches: number;
+ * //   width: number;
+ * // }
+ */
+type SuffixedProps<Type, SuffixedPropertyKey extends keyof Type, Suffix extends string> = Omit<Type, SuffixedPropertyKey> & {
+    [PropertyKey in keyof Pick<Type, SuffixedPropertyKey> as `${string & PropertyKey}${Suffix}`]: Type[PropertyKey]
+};
+
+/**
+ * Make all properties in Type have a specific key. (merges properties into one property with the union type of old properties)
+ *
+ * @example
+ * type Shape = {
+ *   length: number;
+ *   width: string;
+ * };
+ *
+ * type NewShape = Named<Shape, "props">;
+ * // {
+ * //   props: number | string;
+ * // }
+ */
+type Named<Type, PropertyName extends string> = {
+    [PropertyKey in keyof Type as PropertyName]: Type[PropertyKey]
+};
+
+/**
+ * Make specific properties in Type have a specific key. (merges multiple properties into one property with the union type of old properties)
+ *
+ * @example
+ * type Shape = {
+ *   length: number;
+ *   width: number;
+ * };
+ *
+ * type NewShape = NamedProps<Shape, "length", "height">;
+ * // {
+ * //   height: number;
+ * //   width: number;
+ * // }
+ */
+type NamedProps<Type, NamedPropertyKey extends keyof Type, PropertyName extends string> = Omit<Type, NamedPropertyKey> & {
+    [PropertyKey in keyof Pick<Type, NamedPropertyKey> as PropertyName]: Type[PropertyKey]
+};
+
+/**
+ * Get the union of keys from T where the properties are of type PropertyType.
  *
  * @example
  * type Shape = {
@@ -372,9 +409,9 @@ export type OverrideTypeProps<T, K extends keyof T, U> = Omit<T, K> & {
  * // ...or you can convert Shape to a RequiredNonNullable type for the first generic type argument...
  * type ShapeProperties = KeysOfType<RequiredNonNullable<Shape>, number>; // "length" | "width" | "height"
  */
-export type KeysOfType<T, P> = Exclude<{
-    [K in keyof T]: T[K] extends P ? K : never;
-}[keyof T], undefined>;
+export type KeysOfType<Type, PropertyType> = Exclude<{
+    [PropertyKey in keyof Type]: Type[PropertyKey] extends PropertyType ? PropertyKey : never;
+}[keyof Type], undefined>;
 
 /**
  * Utility type that returns a new type from TObj with properties of type TKey.
@@ -410,614 +447,757 @@ export type KeysOfType<T, P> = Exclude<{
  * //   height: number; (This approach makes "height" a required, non-nullable property!)
  * // }
  */
-export type PropertiesOfType<T, P> = Pick<T, KeysOfType<T, P>>;
+export type PropertiesOfType<Type, PropertyType> = Pick<Type, KeysOfType<Type, PropertyType>>;
 
-/**
- * Use alongside buildTypeFrom<T>() to get a "dynamically" built type.
- *
- * @example
- * type Shape = {
- *   length?: number | null,
- *   width?: number | null
- * };
- *
- * const temp = buildTypeFrom<Shape>().withRequiredProps<"length" | "width">().build();
- * type StaticShape = UnwrapBuilderType<typeof temp>;
- * // {
- * //   length: number | null,
- * //   width: number | null
- * // }
- *
- * @example
- */
-export type UnwrapTypeBuilder<T> = NonNullable<T>;
+// #endregion Utility Types
 
-export class TypeBuilder {
-    static fromType<T>(): FromTypeTypeBuilder<T> {
-        return new FromTypeTypeBuilder<T>();
+// #region Fluid Type Builder
+
+export const TypeBuilder = {
+    createTypeFrom<Type>(): CreateTypeFromBuilder<Type> {
+        return createTypeFromBuilder<Type>();
     }
+} as const;
+
+type CreateTypeFromBuilder<Type> = {
+    /** Make all properties in Type… */
+    makeAllProperties(): AllPropertiesPropertyBuilder<Type>;
+    /** Make properties with keys in Type… */
+    makeProperties<PropertyKey extends keyof Type>(..._propertyKeys: PropertyKey[]): PropertiesWithKeysPropertyBuilder<Type, PropertyKey>;
+    /** Make properties of type PropertyType in Type… */
+    makePropertiesOfType<PropertyType>(): PropertiesOfTypePropertyBuilder<Type, PropertyType>;
+};
+
+type CreateTypeFromMoreBuilder<Type, LastBuilder> = {
+    /**
+     * Gets an `undefined` value shaped like type T.
+     *
+     * Use this property with `typeof` to get this builder's type.
+     *
+     * @example
+     * type Shape = {
+     *   length?: number;
+     *   width?: number;
+     * };
+     * const newShape = TypeBuilder.fromType<Shape>().makeAllProperties().required().build;
+     * const NewShape = typeof newShape;
+     * // {
+     * //   length: number;
+     * //   width: number;
+     * // }
+     */
+    readonly build: Type;
+    /** Allows chaining more modifications to the last builder. */
+    readonly and: LastBuilder;
+    /** Make all properties in Type… */
+    makeAllProperties(): AllPropertiesPropertyBuilder<Type>;
+    /** Make properties with keys in Type… */
+    makeProperties<PropertyKey extends keyof Type>(..._propertyKeys: PropertyKey[]): PropertiesWithKeysPropertyBuilder<Type, PropertyKey>;
+    /** Make properties of type PropertyType in Type… */
+    makePropertiesOfType<PropertyType>(): PropertiesOfTypePropertyBuilder<Type, PropertyType>;
+};
+
+type AllPropertiesPropertyBuilder<Type> = {
+    /**
+     * Make all properties in Type able to be set to null.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = Nullable<Shape>;
+     * // {
+     * //   length: number | null;
+     * //   width: number | null;
+     * // }
+     */
+    nullable(): CreateTypeFromMoreBuilder<Nullable<Type>, AllPropertiesPropertyBuilder<Nullable<Type>>>;
+    /**
+     * Make properties in Type not able to be set to null.
+     *
+     * @example
+     * type Shape = {
+     *   length?: number | null;
+     *   width?: number | null;
+     * };
+     *
+     * type NewShape = NotNullable<Shape>;
+     * // {
+     * //   length?: number;
+     * //   width?: number;
+     * // }
+     */
+    notNullable(): CreateTypeFromMoreBuilder<NotNullable<Type>, AllPropertiesPropertyBuilder<NotNullable<Type>>>;
+    /**
+     * Make all properties in Type able to be set to undefined.
+     *
+     * @example
+     * type Shape = {
+     *   length: number | null;
+     *   width: number | null;
+     * };
+     *
+     * type NewShape = Undefinable<Shape>;
+     * // {
+     * //   length: number | null | undefined;
+     * //   width: number | null | undefined;
+     * // }
+     */
+    undefined(): CreateTypeFromMoreBuilder<Undefinable<Type>, AllPropertiesPropertyBuilder<Undefinable<Type>>>;
+    /**
+     * Make all properties in Type not able to be set to undefined. (does nothing to optional properties)
+     *
+     * @example
+     * type Shape = {
+     *   length: number | undefined;
+     *   width?: number | undefined;
+     * };
+     *
+     * type NewShape = NotUndefinable<Shape>;
+     * // {
+     * //   length: number;
+     * //   width?: number | undefined;
+     * // }
+     */
+    notUndefined(): CreateTypeFromMoreBuilder<NotUndefinable<Type>, AllPropertiesPropertyBuilder<NotUndefinable<Type>>>;
+    /**
+     * Make all properties in Type optional.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = Partial<Shape>;
+     * // {
+     * //   length?: number | undefined;
+     * //   width?: number | undefined;
+     * // }
+     */
+    optional(): CreateTypeFromMoreBuilder<Partial<Type>, AllPropertiesPropertyBuilder<Partial<Type>>>;
+    /**
+     * Make all properties in Type required. (optional properties will become required and cannot be set to undefined)
+     *
+     * @example
+     * type Shape = {
+     *   length?: number | undefined;
+     *   width?: number | undefined;
+     * };
+     *
+     * type NewShape = Required<Shape>;
+     * // {
+     * //   length: number;
+     * //   width: number;
+     * // }
+     */
+    required(): CreateTypeFromMoreBuilder<Required<Type>, AllPropertiesPropertyBuilder<Required<Type>>>;
+    /**
+     * Make all properties in Type be of type PropertyType.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = OverrideType<Shape, string>;
+     * // {
+     * //   length: string;
+     * //   width: string;
+     * // }
+     */
+    typed<PropertyType>(): CreateTypeFromMoreBuilder<OverrideType<Type, PropertyType>, AllPropertiesPropertyBuilder<OverrideType<Type, PropertyType>>>;
+    /**
+     * Make all properties in Type unable to be set to null or undefined. (optional properties can still be set to undefined)
+     *
+     * @example
+     * type Shape = {
+     *   length: number | null | undefined;
+     *   width?: number | null | undefined;
+     * };
+     *
+     * type NewShape = NonNullable<Shape>;
+     * // {
+     * //   length: number;
+     * //   width?: number | undefined;
+     * // }
+     */
+    defined(): CreateTypeFromMoreBuilder<NonNullable<Type>, AllPropertiesPropertyBuilder<NonNullable<Type>>>;
+    /**
+     * Make all properties in Type have a specific prefix. (first letter of previous property name is capitalized)
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = PrefixedProps<Shape, "dimension">;
+     * // {
+     * //   dimensionLength: number;
+     * //   dimensionWidth: number;
+     * // }
+     */
+    prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<Prefixed<Type, Prefix>, AllPropertiesPropertyBuilder<Prefixed<Type, Prefix>>>;
+    /**
+     * Make all properties in Type have a specific suffix. (case is not automatically fixed)
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = Suffixed<Shape, "Inches">;
+     * // {
+     * //   lengthInches: number;
+     * //   widthInches: number;
+     * // }
+     */
+    suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<Suffixed<Type, Suffix>, AllPropertiesPropertyBuilder<Suffixed<Type, Suffix>>>;
+    /**
+     * Make all properties in Type have a specific key. (merges properties into one property with the union type of old properties)
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: string;
+     * };
+     *
+     * type NewShape = Named<Shape, "props">;
+     * // {
+     * //   props: number | string;
+     * // }
+     */
+    named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<Named<Type, PropertyName>, AllPropertiesPropertyBuilder<Named<Type, PropertyName>>>;
+};
+
+type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
+    /**
+     * Make specific properties in Type able to be set to null,
+     * while leaving the rest of the properties untouched.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width?: number | undefined;
+     * };
+     *
+     * type NewShape = NullableProps<Shape, "width">;
+     * // {
+     * //   length: number;
+     * //   width?: number | null | undefined;
+     * // }
+     */
+    nullable(): CreateTypeFromMoreBuilder<NullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NullableProps<Type, PropertyKey>, PropertyKey>>;
+    /**
+     * Make specific properties in Type not able to be set to null,
+     * while leaving the rest of the properties untouched.
+     *
+     * @example
+     * type Shape = {
+     *   length?: number | null | undefined;
+     *   width?: number | null | undefined;
+     * };
+     *
+     * type NewShape = NotNullableProps<Shape, "length">;
+     * // {
+     * //   length?: number;
+     * //   width?: number | null | undefined;
+     * // }
+     */
+    notNullable(): CreateTypeFromMoreBuilder<NotNullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotNullableProps<Type, PropertyKey>, PropertyKey>>;
+    /**
+     * Make specific properties in Type able to be set to undefined.
+     *
+     * @example
+     * type Shape = {
+     *   length: number | null;
+     *   width: number | null;
+     * };
+     *
+     * type NewShape = UndefinableProps<Shape, "length">;
+     * // {
+     * //   length: number | null | undefined;
+     * //   width: number | null;
+     * // }
+     */
+    undefined(): CreateTypeFromMoreBuilder<UndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<UndefinableProps<Type, PropertyKey>, PropertyKey>>;
+    /**
+     * Make specific properties in Type not able to be set to undefined. (does nothing to optional properties)
+     *
+     * @example
+     * type Shape = {
+     *   length: number | undefined;
+     *   width?: number | undefined;
+     * };
+     *
+     * type NewShape = NotUndefinableProps<Shape, "length">;
+     * // {
+     * //   length: number;
+     * //   width?: number | undefined;
+     * // }
+     */
+    notUndefined(): CreateTypeFromMoreBuilder<NotUndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotUndefinableProps<Type, PropertyKey>, PropertyKey>>;
+    /**
+     * Make specific properties in Type optional,
+     * while leaving the rest of the properties untouched.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = OptionalProps<Shape, "width">;
+     * // {
+     * //   length: number;
+     * //   width?: number | undefined;
+     * // }
+     */
+    optional(): CreateTypeFromMoreBuilder<OptionalProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<OptionalProps<Type, PropertyKey>, PropertyKey>>;
+    /**
+     * Make specific properties in Type required,
+     * while leaving the rest of the properties untouched. (optional properties will become required and cannot be set to undefined)
+     *
+     * @example
+     * type Shape = {
+     *   length?: number | null | undefined;
+     *   width?: number | null | undefined;
+     * };
+     *
+     * type NewShape = RequiredProps<Shape, "length">;
+     * // {
+     * //   length: number | null;
+     * //   width?: number | null | undefined;
+     * // }
+     */
+    required(): CreateTypeFromMoreBuilder<RequiredProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<RequiredProps<Type, PropertyKey>, PropertyKey>>;
+    /**
+     * Make specific properties in Type be of type PropertyType,
+     * while leaving the rest of the properties untouched.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = OverrideTypeProps<Shape, "width", string>;
+     * // {
+     * //   length: number;
+     * //   width: string;
+     * // }
+     */
+    typed<PropertyType>(): CreateTypeFromMoreBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertiesWithKeysPropertyBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertyKey>>;
+    /**
+     * Make specific properties in Type unable to be set to null or undefined,
+     * while leaving the rest of the properties untouched. (optional properties can still be set to undefined)
+     *
+     * @example
+     * type Shape = {
+     *   length: number | null | undefined;
+     *   width?: number | null | undefined;
+     * };
+     *
+     * type NewShape = DefinedProps<Shape, "length" | "width">;
+     * // {
+     * //   length: number;
+     * //   width?: number | undefined;
+     * // }
+     */
+    defined(): CreateTypeFromMoreBuilder<DefinedProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<DefinedProps<Type, PropertyKey>, PropertyKey>>;
+    /**
+     * Make specific properties in Type have a specific prefix. (first letter of previous property name is capitalized)
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = PrefixedProps<Shape, "length", "dimension">;
+     * // {
+     * //   dimensionLength: number;
+     * //   width: number;
+     * // }
+     */
+    prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<PrefixedProps<Type, PropertyKey, Prefix>, PropertiesWithKeysPropertyBuilder<PrefixedProps<Type, PropertyKey, Prefix>, Exclude<keyof PrefixedProps<Type, PropertyKey, Prefix>, keyof Type>>>;
+    /**
+     * Make specific properties in Type have a specific suffix. (case is not automatically fixed)
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = SuffixedProps<Shape, "length", "Inches">;
+     * // {
+     * //   lengthInches: number;
+     * //   width: number;
+     * // }
+     */
+    suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<SuffixedProps<Type, PropertyKey, Suffix>, PropertiesWithKeysPropertyBuilder<SuffixedProps<Type, PropertyKey, Suffix>, Exclude<keyof SuffixedProps<Type, PropertyKey, Suffix>, keyof Type>>>;
+    /**
+     * Make specific properties in Type have a specific key. (merges multiple properties into one property with the union type of old properties)
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = NamedProps<Shape, "length", "height">;
+     * // {
+     * //   height: number;
+     * //   width: number;
+     * // }
+     */
+    named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<NamedProps<Type, PropertyKey, PropertyName>, PropertiesWithKeysPropertyBuilder<NamedProps<Type, PropertyKey, PropertyName>, Exclude<keyof NamedProps<Type, PropertyKey, PropertyName>, keyof Type>>>;
+};
+
+type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
+    /**
+     * Make properties of type PropertyType in Type able to be set to null,
+     * while leaving the rest of the properties untouched.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width?: number | undefined;
+     * };
+     *
+     * type NewShape = NullableProps<Shape, keyof PropertiesOfType<Shape, number>>;
+     * // {
+     * //   length: number | null;
+     * //   width?: number | null | undefined;
+     * // }
+     */
+    nullable(): CreateTypeFromMoreBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type not able to be set to null,
+     * while leaving the rest of the properties untouched.
+     *
+     * @example
+     * type Shape = {
+     *   length: number | null;
+     *   width?: number | null | undefined;
+     * };
+     *
+     * type NewShape = NotNullableProps<Shape, keyof PropertiesOfType<Shape, number>>;
+     * // {
+     * //   length: number;
+     * //   width?: number | undefined;
+     * // }
+     */
+    notNullable(): CreateTypeFromMoreBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type able to be set to undefined.
+     *
+     * @example
+     * type Shape = {
+     *   length: number | null;
+     *   width: number | null;
+     * };
+     *
+     * type NewShape = UndefinableProps<Shape, keyof PropertiesOfType<Shape, number>>;
+     * // {
+     * //   length: number | null | undefined;
+     * //   width: number | null | undefined;
+     * // }
+     */
+    undefined(): CreateTypeFromMoreBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type not able to be set to undefined. (does nothing to optional properties)
+     *
+     * @example
+     * type Shape = {
+     *   length: number | undefined;
+     *   width?: number | undefined;
+     * };
+     *
+     * type NewShape = NotUndefinableProps<Shape, keyof PropertiesOfType<Shape, number>>;
+     * // {
+     * //   length: number;
+     * //   width?: number | undefined;
+     * // }
+     */
+    notUndefined(): CreateTypeFromMoreBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type optional,
+     * while leaving the rest of the properties untouched.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = OptionalProps<Shape, keyof PropertiesOfType<Shape, number>>;
+     * // {
+     * //   length?: number | undefined;
+     * //   width?: number | undefined;
+     * // }
+     */
+    optional(): CreateTypeFromMoreBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type required,
+     * while leaving the rest of the properties untouched. (optional properties will become required and cannot be set to undefined)
+     *
+     * @example
+     * type Shape = {
+     *   length: number | null | undefined;
+     *   width?: number | null | undefined;
+     * };
+     *
+     * type NewShape = RequiredProps<Shape, keyof PropertiesOfType<Shape, number>>;
+     * // {
+     * //   length: number | null | undefined;
+     * //   width: number | null;
+     * // }
+     */
+    required(): CreateTypeFromMoreBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type be of type NewPropertyType,
+     * while leaving the rest of the properties untouched.
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = OverrideTypeProps<Shape, keyof PropertiesOfType<Shape, number>, string>;
+     * // {
+     * //   length: string;
+     * //   width: string;
+     * // }
+     */
+    typed<NewPropertyType>(): CreateTypeFromMoreBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, PropertiesOfTypePropertyBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, NewPropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type unable to be set to null or undefined,
+     * while leaving the rest of the properties untouched. (optional properties can still be set to undefined)
+     *
+     * @example
+     * type Shape = {
+     *   length: number | null | undefined;
+     *   width?: number | null | undefined;
+     * };
+     *
+     * type NewShape = DefinedProps<Shape, keyof PropertiesOfType<Shape, number>>;
+     * // {
+     * //   length: number;
+     * //   width?: number | undefined;
+     * // }
+     */
+    defined(): CreateTypeFromMoreBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type have a specific prefix. (first letter of previous property name is capitalized)
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = PrefixedProps<Shape, keyof PropertiesOfType<Shape, number>, "dimension">;
+     * // {
+     * //   dimensionLength: number;
+     * //   dimensionWidth: number;
+     * // }
+     */
+    prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertiesOfTypePropertyBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type have a specific suffix. (case is not automatically fixed)
+     *
+     * @example
+     * type Shape = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = SuffixedProps<Shape, keyof PropertiesOfType<Shape, number>, "Inches">;
+     * // {
+     * //   lengthInches: number;
+     * //   widthInches: number;
+     * // }
+     */
+    suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertiesOfTypePropertyBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertyType>>;
+    /**
+     * Make properties of type PropertyType in Type have a specific key. (merges multiple properties into one property with the union type of old properties)
+     *
+     * @example
+     * type Square = {
+     *   length: number;
+     *   width: number;
+     * };
+     *
+     * type NewShape = NamedProps<Square, keyof PropertiesOfType<Square, number>, "side">;
+     * // {
+     * //   side: number;
+     * // }
+     */
+    named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertiesOfTypePropertyBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertyType>>;
+};
+
+function createAllPropertiesPropertyBuilder<Type>(): AllPropertiesPropertyBuilder<Type> {
+    function transformTo<NewType>(): CreateTypeFromMoreBuilder<NewType, AllPropertiesPropertyBuilder<NewType>> {
+        return createTypeFromMoreBuilder<NewType, AllPropertiesPropertyBuilder<NewType>>(createAllPropertiesPropertyBuilder<NewType>());
+    }
+
+    return {
+        nullable(): CreateTypeFromMoreBuilder<Nullable<Type>, AllPropertiesPropertyBuilder<Nullable<Type>>> {
+            return transformTo<Nullable<Type>>();
+        },
+        notNullable(): CreateTypeFromMoreBuilder<NotNullable<Type>, AllPropertiesPropertyBuilder<NotNullable<Type>>> {
+            return transformTo<NotNullable<Type>>();
+        },
+        undefined(): CreateTypeFromMoreBuilder<Undefinable<Type>, AllPropertiesPropertyBuilder<Undefinable<Type>>> {
+            return transformTo<Undefinable<Type>>();
+        },
+        notUndefined(): CreateTypeFromMoreBuilder<NotUndefinable<Type>, AllPropertiesPropertyBuilder<NotUndefinable<Type>>> {
+            return transformTo<NotUndefinable<Type>>();
+        },
+        optional(): CreateTypeFromMoreBuilder<Partial<Type>, AllPropertiesPropertyBuilder<Partial<Type>>> {
+            return transformTo<Partial<Type>>();
+        },
+        required(): CreateTypeFromMoreBuilder<Required<Type>, AllPropertiesPropertyBuilder<Required<Type>>> {
+            return transformTo<Required<Type>>();
+        },
+        typed<PropertyType>(): CreateTypeFromMoreBuilder<OverrideType<Type, PropertyType>, AllPropertiesPropertyBuilder<OverrideType<Type, PropertyType>>> {
+            return transformTo<OverrideType<Type, PropertyType>>();
+        },
+        defined(): CreateTypeFromMoreBuilder<NonNullable<Type>, AllPropertiesPropertyBuilder<NonNullable<Type>>> {
+            return transformTo<NonNullable<Type>>();
+        },
+        prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<Prefixed<Type, Prefix>, AllPropertiesPropertyBuilder<Prefixed<Type, Prefix>>> {
+            return transformTo<Prefixed<Type, Prefix>>();
+        },
+        suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<Suffixed<Type, Suffix>, AllPropertiesPropertyBuilder<Suffixed<Type, Suffix>>> {
+            return transformTo<Suffixed<Type, Suffix>>();
+        },
+        named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<Named<Type, PropertyName>, AllPropertiesPropertyBuilder<Named<Type, PropertyName>>> {
+            return transformTo<Named<Type, PropertyName>>();
+        }
+    };
 }
 
-// interface IPropertyTypeBuilder<T> {
-//     nullable();
-//     nonNullable();
-//     required();
+function createPropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type>(): PropertiesWithKeysPropertyBuilder<Type, PropertyKey> {
+    function transformTo<NewType, NewPropertyKey extends keyof NewType>(): CreateTypeFromMoreBuilder<NewType, PropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>> {
+        return createTypeFromMoreBuilder<NewType, PropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>>(createPropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>());
+    }
 
-//     /**
-//      * Make properties in T required, and unable to be set to undefined or null.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length?: number | null,
-//      *   width?: number | null
-//      * };
-//      *
-//      * const newBuilder = builder.withAllRequiredNonNullableProps();
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length: number,
-//      * //   width: number
-//      * // }
-//      */
-//     requiredAndNonNullable();
-//     requiredAndNullable();
-
-//     /**
-//      * Make properties in T optional, and able to be set to undefined.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length: number,
-//      *   width: number
-//      * };
-//      *
-//      * const newBuilder = builder.withAllOptionalProps();
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: number,
-//      * //   width?: number
-//      * // }
-//      */
-//     optional();
-//     optionalAndNonNullable();
-
-//     /**
-//      * Make specific properties in T optional, and able to be set to undefined or null,
-//      * while leaving the rest of the properties untouched.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length: number,
-//      *   width: number
-//      * };
-//      *
-//      * const newBuilder = builder.withOptionalNullableProps("length");
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: number | null,
-//      * //   width: number
-//      * // }
-//      */
-//     optionalAndNullable();
-//     type<U>();
-// }
-
-// class AllPropertiesTypeBuilder<T> implements IPropertyTypeBuilder<T> {
-//     requiredAndNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-//     optionalAndNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-//     nonNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     optionalAndNonNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     nullable() {
-//         return new FromTypeTypeBuilder<Nullable<T>>();
-//     }
-
-//     required() {
-//         return new FromTypeTypeBuilder<Required<T>>();
-//     }
-
-//     requiredAndNonNullable(): FromTypeTypeBuilder<RequiredNonNullable<T>> {
-//         return new FromTypeTypeBuilder<RequiredNonNullable<T>>();
-//     }
-
-//     optional() {
-//         return new FromTypeTypeBuilder<Partial<T>>();
-//     }
-
-//     type<U>() {
-//         return new FromTypeTypeBuilder<OverridePropertyTypeBuilder<T, U>>();
-//     }
-// }
-
-// class PropertiesOfTypeTypeBuilder<T, P> implements IPropertyTypeBuilder<T> {
-//     nonNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     requiredAndNonNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     optionalAndNonNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     nullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     required() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     optional() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     type<U>() {
-//         throw new Error("Method not implemented.");
-//     }
-// }
-
-// class PropertiesWithNameTypeBuilder<T, K extends keyof T> implements IPropertyTypeBuilder<T> {
-//     nonNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     optionalAndNonNullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     nullable() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     required() {
-//         throw new Error("Method not implemented.");
-//     }
-
-//     requiredAndNonNullable(): FromTypeTypeBuilder<RequiredNonNullableProps<T, K>> {
-//         return new FromTypeTypeBuilder<RequiredNonNullableProps<T, K>>();
-//     }
-
-//     optional() {
-//         return new FromTypeTypeBuilder<PartialProps<T, K>>();
-//     }
-
-//     type<U>() {
-//         throw new Error("Method not implemented.");
-//     }
-// }
-
-// class FromTypeTypeBuilder<T> {
-//     makeAllProperties(): AllPropertiesTypeBuilder<T> {
-//         return new AllPropertiesTypeBuilder<T>();
-//     }
-
-//     makePropertiesOfType<P>(): PropertiesOfTypeTypeBuilder<T, P> {
-//         return new PropertiesOfTypeTypeBuilder<T, P>();
-//     }
-
-//     makePropertiesWithName<K extends keyof T>(...props: K[]): PropertiesWithNameTypeBuilder<T, K> {
-//         return new PropertiesWithNameTypeBuilder<T, K>();
-//     }
-
-//     /**
-//      * Make specific properties in T optional, and able to be set to undefined or null,
-//      * while leaving the rest of the properties untouched.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length: number,
-//      *   width: number
-//      * };
-//      *
-//      * const newBuilder = builder.withOptionalNullableProps("length");
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: number | null,
-//      * //   width: number
-//      * // }
-//      */
-//     setPropertyTypeToOptionalAndNullable(): OptionalAndNullablePropertyTypeBuilder<T> {
-//         return new OptionalAndNullablePropertyTypeBuilder<T>();
-//     }
-
-//     /**
-//      * Make specific or all properties in T have a specific type.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length?: number | null,
-//      *   width?: number | null
-//      * };
-//      *
-//      * // For specific properties...
-//      * const newBuilder = builder.withOverriddenType<string>().forProps("width");
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: number | null,
-//      * //   width?: string
-//      * // }
-//      *
-//      * // For all properties...
-//      * const newBuilder = builder.withOverriddenType<string>().forAllProps();
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: string,
-//      * //   width?: string
-//      * // }
-//      */
-//     setPropertyTypeTo<U>(): OverridePropertyTypeBuilder<T, U> {
-//         return new OverridePropertyTypeBuilder<T, U>();
-//     }
-
-//     /**
-//      * Returns undefined, but should be used to extract the built type with:
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length?: number | null,
-//      *   width?: number | null
-//      * };
-//      *
-//      * const temp = buildTypeFrom<Shape>().withRequiredProps("length", "width").build();
-//      * type StaticShape = UnwrapBuilderType<typeof temp>;
-//      * // {
-//      * //   length: number | null,
-//      * //   width: number | null
-//      * // }
-//      */
-//     build(): T | undefined {
-//         return;
-//     }
-// }
-
-// class RequiredPropertyTypeBuilder<T> {
-
-// }
-
-// class RequiredAndNullablePropertyTypeBuilder<T> {
-
-// }
-
-// class OptionalPropertyTypeBuilder<T> {
-
-// }
-
-// class OptionalAndNullablePropertyTypeBuilder<T> {
-//     /**
-//      * Make all properties in T optional, and able to be set to undefined or null.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length: number,
-//      *   width: number
-//      * };
-//      *
-//      * const newBuilder = builder.withAllOptionalNullableProps();
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: number,
-//      * //   width: number
-//      * // }
-//      */
-//     forAllProperties(): FromTypeTypeBuilder<PartialNullable<T>> {
-//         return new FromTypeTypeBuilder<PartialNullable<T>>();
-//     }
-
-//     /**
-//      * Make specific properties in T optional, and able to be set to undefined or null,
-//      * while leaving the rest of the properties untouched.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length: number,
-//      *   width: number
-//      * };
-//      *
-//      * const newBuilder = builder.withOptionalNullableProps("length");
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: number | null,
-//      * //   width: number
-//      * // }
-//      */
-//     forProperties<K extends keyof T>(prop: K, ... props: K[]): FromTypeTypeBuilder<PartialNullableProps<T, K>> {
-//         return new FromTypeTypeBuilder<PartialNullableProps<T, K>>();
-//     }
-
-// }
-
-// class NullablePropertyTypeBuilder<T> {
-
-// }
-
-// class OverridePropertyTypeBuilder<T, U> {
-//     /**
-//      * Make specific properties in T be of type U,
-//      * while leaving the rest of the properties untouched.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length?: number | null,
-//      *   width?: number | null
-//      * };
-//      *
-//      * const newBuilder = builder.withOverriddenType<string>().forProps("width");
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: number | null,
-//      * //   width?: string
-//      * // }
-//      */
-//     forProperties<K extends keyof T>(... props: K[]): FromTypeTypeBuilder<OverrideTypeProps<T, K, U>> {
-//         return new FromTypeTypeBuilder<OverrideTypeProps<T, K, U>>();
-//     }
-
-//     /**
-//      * Make all properties in T be of type U.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length?: number | null,
-//      *   width?: number | null
-//      * };
-//      *
-//      * const newBuilder = builder.withOverriddenType<string>().forAllProps();
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length?: string,
-//      * //   width?: string
-//      * // }
-//      */
-//     forAllProperties(): FromTypeTypeBuilder<OverrideType<T, U>> {
-//         return new FromTypeTypeBuilder<OverrideType<T, U>>();
-//     }
-
-//     /**
-//      * Make all properties in T of type V be of type U.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length: number,
-//      *   width: number
-//      * };
-//      *
-//      * const newBuilder = builder.withOverriddenType<string>().forPropsOfType<number>();
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length: string,
-//      * //   width: string
-//      * // }
-//      */
-//     forPropertiesOfType<V>(): FromTypeTypeBuilder<OverrideTypeProps<T, keyof PropertiesOfType<T, V>, U>> {
-//         return new FromTypeTypeBuilder<OverrideTypeProps<T, keyof PropertiesOfType<T, V>, U>>();
-//     }
-
-//     /**
-//      * Make all properties in T of type V be of type U.
-//      *
-//      * @returns A new chainable builder.
-//      *
-//      * @example
-//      * type Shape = {
-//      *   length: number,
-//      *   width: number
-//      * };
-//      *
-//      * const newBuilder = builder.withOverriddenType<string>().forPropsOfType<number>();
-//      * // A type built with the newBuilder would have the structure:
-//      * // {
-//      * //   length: string,
-//      * //   width: string
-//      * // }
-//      */
-//     forAllPropertiesOfTypeSmart<V>() {
-//         type ReplaceType = OverrideTypeProps<T, keyof PropertiesOfType<T, V>, U>;
-//         type ReplaceTypeOrNull = OverrideTypeProps<ReplaceType, keyof PropertiesOfType<ReplaceType, V | null>, U | null>;
-//         type ReplaceTypeOrUndefined = OverrideTypeProps<ReplaceTypeOrNull, keyof PropertiesOfType<ReplaceTypeOrNull, V | undefined>, U | undefined>;
-//         type ReplaceTypeOrNullOrUndefined = OverrideTypeProps<ReplaceTypeOrUndefined, keyof PropertiesOfType<ReplaceTypeOrUndefined, V | null | undefined>, U | null | undefined>;
-
-//         // Do the same thing but with arrays of type U and V.
-//         type ReplaceArrayType = OverrideTypeProps<ReplaceTypeOrNullOrUndefined, keyof PropertiesOfType<ReplaceTypeOrNullOrUndefined, V[]>, U[]>;
-//         type ReplaceArrayTypeOrNull = OverrideTypeProps<ReplaceArrayType, keyof PropertiesOfType<ReplaceArrayType, V[] | null>, U[] | null>;
-//         type ReplaceArrayTypeOrUndefined = OverrideTypeProps<InnerT, keyof PropertiesOfType<InnerT, V[] | undefined>, U[] | undefined>;
-//         // Replaces properties in T of type V[] | null | undefined with type U[] | null | undefined.
-//         type TypeArrayOrNullOrUndefinedToTypeArrayOrNullOrUndefined<InnerT> = OverrideTypeProps<InnerT, keyof PropertiesOfType<InnerT, V[] | null | undefined>, U[] | null | undefined>;
-//         // Wrap them up into a smart type.
-//         type SmartTypeArrayOverride<TInner> = TypeArrayOrNullOrUndefinedToTypeArrayOrNullOrUndefined<ReplaceArrayTypeOrUndefined<ReplaceArrayTypeOrNull<ReplaceArrayType<TInner>>>>;
-
-//         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//         // @ts-ignore
-//         return new FromTypeTypeBuilder<SmartTypeArrayOverride<SmartTypeOverride<T>>>();
-//     }
-// }
-
-interface IPropertyTypeTypeBuilder<T> {
-    nullable(): unknown;
-    notNullable(): unknown;
-    undefined(): unknown;
-    notUndefined(): unknown;
-    optional(): unknown;
-    required(): unknown;
-    type<PNew>(): unknown;
-    defined(): unknown;
+    return {
+        nullable(): CreateTypeFromMoreBuilder<NullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NullableProps<Type, PropertyKey>, PropertyKey>> {
+            return transformTo<NullableProps<Type, PropertyKey>, PropertyKey>();
+        },
+        notNullable(): CreateTypeFromMoreBuilder<NotNullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotNullableProps<Type, PropertyKey>, PropertyKey>> {
+            return transformTo<NotNullableProps<Type, PropertyKey>, PropertyKey>();
+        },
+        undefined(): CreateTypeFromMoreBuilder<UndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<UndefinableProps<Type, PropertyKey>, PropertyKey>> {
+            return transformTo<UndefinableProps<Type, PropertyKey>, PropertyKey>();
+        },
+        notUndefined(): CreateTypeFromMoreBuilder<NotUndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotUndefinableProps<Type, PropertyKey>, PropertyKey>> {
+            return transformTo<NotUndefinableProps<Type, PropertyKey>, PropertyKey>();
+        },
+        optional(): CreateTypeFromMoreBuilder<OptionalProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<OptionalProps<Type, PropertyKey>, PropertyKey>> {
+            return transformTo<OptionalProps<Type, PropertyKey>, PropertyKey>();
+        },
+        required(): CreateTypeFromMoreBuilder<RequiredProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<RequiredProps<Type, PropertyKey>, PropertyKey>> {
+            return transformTo<RequiredProps<Type, PropertyKey>, PropertyKey>();
+        },
+        typed<PropertyType>(): CreateTypeFromMoreBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertiesWithKeysPropertyBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertyKey>> {
+            return transformTo<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertyKey>();
+        },
+        defined(): CreateTypeFromMoreBuilder<DefinedProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<DefinedProps<Type, PropertyKey>, PropertyKey>> {
+            return transformTo<DefinedProps<Type, PropertyKey>, PropertyKey>();
+        },
+        prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<PrefixedProps<Type, PropertyKey, Prefix>, PropertiesWithKeysPropertyBuilder<PrefixedProps<Type, PropertyKey, Prefix>, Exclude<keyof PrefixedProps<Type, PropertyKey, Prefix>, keyof Type>>> {
+            return transformTo<PrefixedProps<Type, PropertyKey, Prefix>, Exclude<keyof PrefixedProps<Type, PropertyKey, Prefix>, keyof Type>>();
+        },
+        suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<SuffixedProps<Type, PropertyKey, Suffix>, PropertiesWithKeysPropertyBuilder<SuffixedProps<Type, PropertyKey, Suffix>, Exclude<keyof SuffixedProps<Type, PropertyKey, Suffix>, keyof Type>>> {
+            return transformTo<SuffixedProps<Type, PropertyKey, Suffix>, Exclude<keyof SuffixedProps<Type, PropertyKey, Suffix>, keyof Type>>();
+        },
+        named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<NamedProps<Type, PropertyKey, PropertyName>, PropertiesWithKeysPropertyBuilder<NamedProps<Type, PropertyKey, PropertyName>, Exclude<keyof NamedProps<Type, PropertyKey, PropertyName>, keyof Type>>> {
+            return transformTo<NamedProps<Type, PropertyKey, PropertyName>, Exclude<keyof NamedProps<Type, PropertyKey, PropertyName>, keyof Type>>();
+        }
+    };
 }
 
-class AllPropertyTypeTypeBuilder<T> implements IPropertyTypeTypeBuilder<T> {
-    private transform<TNew>(): MoreFromTypeTypeBuilder<TNew, AllPropertyTypeTypeBuilder<TNew>> {
-        return new MoreFromTypeTypeBuilder<TNew, AllPropertyTypeTypeBuilder<TNew>>(new AllPropertyTypeTypeBuilder<TNew>());
+function createPropertiesOfTypePropertyBuilder<Type, PropertyType>(): PropertiesOfTypePropertyBuilder<Type, PropertyType> {
+    function transformTo<NewType>(): CreateTypeFromMoreBuilder<NewType, PropertiesOfTypePropertyBuilder<NewType, PropertyType>> {
+        return createTypeFromMoreBuilder<NewType, PropertiesOfTypePropertyBuilder<NewType, PropertyType>>(createPropertiesOfTypePropertyBuilder<NewType, PropertyType>());
     }
 
-    nullable(): MoreFromTypeTypeBuilder<Nullable<T>, AllPropertyTypeTypeBuilder<Nullable<T>>> {
-        return this.transform<Nullable<T>>();
-    }
-
-    notNullable(): MoreFromTypeTypeBuilder<NotNullable<T>, AllPropertyTypeTypeBuilder<NotNullable<T>>> {
-        return this.transform<NotNullable<T>>();
-    }
-
-    undefined(): MoreFromTypeTypeBuilder<Undefinable<T>, AllPropertyTypeTypeBuilder<Undefinable<T>>> {
-        return this.transform<Undefinable<T>>();
-    }
-
-    notUndefined(): MoreFromTypeTypeBuilder<NotUndefinable<T>, AllPropertyTypeTypeBuilder<NotUndefinable<T>>> {
-        return this.transform<NotUndefinable<T>>();
-    }
-
-    optional(): MoreFromTypeTypeBuilder<Partial<T>, AllPropertyTypeTypeBuilder<Partial<T>>> {
-        return this.transform<Partial<T>>();
-    }
-
-    required(): MoreFromTypeTypeBuilder<Required<T>, AllPropertyTypeTypeBuilder<Required<T>>> {
-        return this.transform<Required<T>>();
-    }
-
-    type<PNew>(): MoreFromTypeTypeBuilder<OverrideType<T, PNew>, AllPropertyTypeTypeBuilder<OverrideType<T, PNew>>> {
-        return this.transform<OverrideType<T, PNew>>();
-    }
-
-    defined(): MoreFromTypeTypeBuilder<NonNullable<T>, AllPropertyTypeTypeBuilder<NonNullable<T>>> {
-        return this.transform<NonNullable<T>>();
-    }
+    return {
+        nullable(): CreateTypeFromMoreBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+            return transformTo<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
+        },
+        notNullable(): CreateTypeFromMoreBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+            return transformTo<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
+        },
+        undefined(): CreateTypeFromMoreBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+            return transformTo<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
+        },
+        notUndefined(): CreateTypeFromMoreBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+            return transformTo<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
+        },
+        optional(): CreateTypeFromMoreBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+            return transformTo<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
+        },
+        required(): CreateTypeFromMoreBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+            return transformTo<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
+        },
+        typed<NewPropertyType>(): CreateTypeFromMoreBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, PropertiesOfTypePropertyBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, NewPropertyType>> {
+            return transformTo<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>>();
+        },
+        defined(): CreateTypeFromMoreBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+            return transformTo<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
+        },
+        prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertiesOfTypePropertyBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertyType>> {
+            return transformTo<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>>();
+        },
+        suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertiesOfTypePropertyBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertyType>> {
+            return transformTo<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>>();
+        },
+        named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertiesOfTypePropertyBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertyType>> {
+            return transformTo<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>>();
+        }
+    };
 }
 
-class PropertiesWithNamePropertyTypeTypeBuilder<T, K extends keyof T> implements IPropertyTypeTypeBuilder<T> {
-    private transform<TNew>(): MoreFromTypeTypeBuilder<TNew, PropertiesWithNamePropertyTypeTypeBuilder<TNew, keyof TNew>> {
-        return new MoreFromTypeTypeBuilder<TNew, PropertiesWithNamePropertyTypeTypeBuilder<TNew, keyof TNew>>(new PropertiesWithNamePropertyTypeTypeBuilder<TNew, keyof TNew>());
-    }
-
-    nullable(): MoreFromTypeTypeBuilder<NullableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<NullableProps<T, K>, keyof NullableProps<T, K>>> {
-        return this.transform<NullableProps<T, K>>();
-    }
-
-    notNullable(): MoreFromTypeTypeBuilder<NotNullableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<NotNullableProps<T, K>, keyof NotNullableProps<T, K>>> {
-        return this.transform<NotNullableProps<T, K>>();
-    }
-
-    undefined(): MoreFromTypeTypeBuilder<UndefinableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<UndefinableProps<T, K>, keyof UndefinableProps<T, K>>> {
-        return this.transform<UndefinableProps<T, K>>();
-    }
-
-    notUndefined(): MoreFromTypeTypeBuilder<NotUndefinableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<NotUndefinableProps<T, K>, keyof NotUndefinableProps<T, K>>> {
-        return this.transform<NotUndefinableProps<T, K>>();
-    }
-
-    optional(): MoreFromTypeTypeBuilder<OptionalProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<OptionalProps<T, K>, keyof OptionalProps<T, K>>> {
-        return this.transform<OptionalProps<T, K>>();
-    }
-
-    required(): MoreFromTypeTypeBuilder<RequiredProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<RequiredProps<T, K>, keyof RequiredProps<T, K>>> {
-        return this.transform<RequiredProps<T, K>>();
-    }
-
-    type<PNew>(): MoreFromTypeTypeBuilder<OverrideTypeProps<T, K, PNew>, PropertiesWithNamePropertyTypeTypeBuilder<OverrideTypeProps<T, K, PNew>, keyof OverrideTypeProps<T, K, PNew>>> {
-        return this.transform<OverrideTypeProps<T, K, PNew>>();
-    }
-
-    defined(): MoreFromTypeTypeBuilder<NonNullableProps<T, K>, PropertiesWithNamePropertyTypeTypeBuilder<NonNullableProps<T, K>, keyof NonNullableProps<T, K>>> {
-        return this.transform<NonNullableProps<T, K>>();
-    }
+function createTypeFromBuilder<Type>(): CreateTypeFromBuilder<Type> {
+    return {
+        makeAllProperties(): AllPropertiesPropertyBuilder<Type> {
+            return createAllPropertiesPropertyBuilder<Type>();
+        },
+        makeProperties<PropertyKey extends keyof Type>(..._propertyKeys: PropertyKey[]): PropertiesWithKeysPropertyBuilder<Type, PropertyKey> {
+            return createPropertiesWithKeysPropertyBuilder<Type, PropertyKey>();
+        },
+        makePropertiesOfType<PropertyType>(): PropertiesOfTypePropertyBuilder<Type, PropertyType> {
+            return createPropertiesOfTypePropertyBuilder<Type, PropertyType>();
+        }
+    };
 }
 
-class PropertiesOfTypePropertyTypeTypeBuilder<T, P> implements IPropertyTypeTypeBuilder<T> {
-    private transform<TNew>(): MoreFromTypeTypeBuilder<TNew, PropertiesOfTypePropertyTypeTypeBuilder<TNew, P>> {
-        return new MoreFromTypeTypeBuilder<TNew, PropertiesOfTypePropertyTypeTypeBuilder<TNew, P>>(new PropertiesOfTypePropertyTypeTypeBuilder<TNew, P>());
-    }
-
-    nullable(): MoreFromTypeTypeBuilder<NullableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<NullableProps<T, keyof PropertiesOfType<T, P>>, P>> {
-        return this.transform<NullableProps<T, keyof PropertiesOfType<T, P>>>();
-    }
-
-    notNullable(): MoreFromTypeTypeBuilder<NotNullableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<NotNullableProps<T, keyof PropertiesOfType<T, P>>, P>> {
-        return this.transform<NotNullableProps<T, keyof PropertiesOfType<T, P>>>();
-    }
-
-    undefined(): MoreFromTypeTypeBuilder<UndefinableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<UndefinableProps<T, keyof PropertiesOfType<T, P>>, P>> {
-        return this.transform<UndefinableProps<T, keyof PropertiesOfType<T, P>>>();
-    }
-
-    notUndefined(): MoreFromTypeTypeBuilder<NotUndefinableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<NotUndefinableProps<T, keyof PropertiesOfType<T, P>>, P>> {
-        return this.transform<NotUndefinableProps<T, keyof PropertiesOfType<T, P>>>();
-    }
-
-    optional(): MoreFromTypeTypeBuilder<OptionalProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<OptionalProps<T, keyof PropertiesOfType<T, P>>, P>> {
-        return this.transform<OptionalProps<T, keyof PropertiesOfType<T, P>>>();
-    }
-
-    required(): MoreFromTypeTypeBuilder<RequiredProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<RequiredProps<T, keyof PropertiesOfType<T, P>>, P>> {
-        return this.transform<RequiredProps<T, keyof PropertiesOfType<T, P>>>();
-    }
-
-    type<PNew>(): MoreFromTypeTypeBuilder<OverrideTypeProps<T, keyof PropertiesOfType<T, P>, PNew>, PropertiesOfTypePropertyTypeTypeBuilder<OverrideTypeProps<T, keyof PropertiesOfType<T, P>, PNew>, P>> {
-        return this.transform<OverrideTypeProps<T, keyof PropertiesOfType<T, P>, PNew>>();
-    }
-
-    defined(): MoreFromTypeTypeBuilder<NonNullableProps<T, keyof PropertiesOfType<T, P>>, PropertiesOfTypePropertyTypeTypeBuilder<NonNullableProps<T, keyof PropertiesOfType<T, P>>, P>> {
-        return this.transform<NonNullableProps<T, keyof PropertiesOfType<T, P>>>();
-    }
+function createTypeFromMoreBuilder<Type, LastBuilder>(lastBuilder: LastBuilder): CreateTypeFromMoreBuilder<Type, LastBuilder> {
+    return {
+        build: undefined as unknown as Type,
+        and: lastBuilder,
+        makeAllProperties(): AllPropertiesPropertyBuilder<Type> {
+            return createAllPropertiesPropertyBuilder<Type>();
+        },
+        makeProperties<PropertyKey extends keyof Type>(..._propertyKeys: PropertyKey[]): PropertiesWithKeysPropertyBuilder<Type, PropertyKey> {
+            return createPropertiesWithKeysPropertyBuilder<Type, PropertyKey>();
+        },
+        makePropertiesOfType<PropertyType>(): PropertiesOfTypePropertyBuilder<Type, PropertyType> {
+            return createPropertiesOfTypePropertyBuilder<Type, PropertyType>();
+        }
+    };
 }
 
-class FromTypeTypeBuilder<T> {
-    makeAllProperties(): AllPropertyTypeTypeBuilder<T> {
-        return new AllPropertyTypeTypeBuilder<T>();
-    }
-
-    makePropertiesWithName<K extends keyof T>(..._names: K[]): PropertiesWithNamePropertyTypeTypeBuilder<T, K> {
-        return new PropertiesWithNamePropertyTypeTypeBuilder<T, K>();
-    }
-
-    makePropertiesOfType<P>(): PropertiesOfTypePropertyTypeTypeBuilder<T, P> {
-        return new PropertiesOfTypePropertyTypeTypeBuilder<T, P>();
-    }
-}
-
-class MoreFromTypeTypeBuilder<T, B extends IPropertyTypeTypeBuilder<T>> {
-    constructor(public and: B) {}
-
-    makeAllProperties(): AllPropertyTypeTypeBuilder<T> {
-        return new AllPropertyTypeTypeBuilder<T>();
-    }
-
-    makePropertiesWithName<K extends keyof T>(..._names: K[]): PropertiesWithNamePropertyTypeTypeBuilder<T, K> {
-        return new PropertiesWithNamePropertyTypeTypeBuilder<T, K>();
-    }
-
-    makePropertiesOfType<P>(): PropertiesOfTypePropertyTypeTypeBuilder<T, P> {
-        return new PropertiesOfTypePropertyTypeTypeBuilder<T, P>();
-    }
-
-    build(): T | undefined {
-        return;
-    }
-}
+// #endregion Fluid Type Builder

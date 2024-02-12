@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
@@ -40,7 +41,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The field source.
         /// </value>
-        public int FieldSource { get; set; }
+        public RegistrationFieldSource FieldSource { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the person field.
@@ -48,7 +49,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The type of the person field.
         /// </value>
-        public int PersonFieldType { get; set; }
+        public RegistrationPersonFieldType PersonFieldType { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is required.

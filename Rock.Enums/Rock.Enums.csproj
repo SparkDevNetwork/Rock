@@ -186,5 +186,8 @@
     <Compile Include="Workflow\WorkflowTriggerType.cs" />
     <Compile Include="Workflow\WorkflowTriggerValueChangeType.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Blocks\Event\RegistrationEntry\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
