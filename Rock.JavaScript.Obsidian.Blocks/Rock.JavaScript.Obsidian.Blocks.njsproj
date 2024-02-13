@@ -64,6 +64,7 @@
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
     <Content Include="src\Communication\communicationList.obs" />
     <Content Include="src\Communication\smsPipelineList.obs" />
+    <Content Include="src\Communication\systemCommunicationList.obs" />
     <Content Include="src\Core\assetStorageProviderList.obs" />
     <Content Include="src\Cms\personalLinkList.obs" />
     <Content Include="src\Core\attributeMatrixTemplateDetail.obs" />
@@ -368,6 +369,7 @@
     <Folder Include="src\Communication\SmsPipelineList\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
+    <Folder Include="src\Communication\SystemCommunicationList\" />
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
@@ -545,6 +547,7 @@
     <TypeScriptCompile Include="src\Cms\SiteDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Communication\CommunicationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SmsPipelineList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\SystemCommunicationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\assetStorageProviderDetail.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.partial.ts" />
