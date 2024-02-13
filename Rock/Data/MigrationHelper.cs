@@ -383,6 +383,11 @@ namespace Rock.Data
         /// Updates the BlockType by Path (if it exists).
         /// otherwise it inserts a new record. In either case it will be marked IsSystem.
         /// </summary>
+        /// <remarks>
+        ///     NOTE: This is not for use with Mobile/Obsidian block types.
+        ///           See <see cref="AddOrUpdateEntityBlockType(string, string, string, string, string)" />
+        ///           to add Mobile/Obsidian blocks types.
+        /// </remarks>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="path">The path.</param>
@@ -426,6 +431,11 @@ namespace Rock.Data
         /// Updates the BlockType by Guid (if it exists).
         /// otherwise it inserts a new record. In either case it will be marked IsSystem.
         /// </summary>
+        /// <remarks>
+        ///     NOTE: This is not for use with Mobile/Obsidian block types.
+        ///           See <see cref="AddOrUpdateEntityBlockType(string, string, string, string, string)" />
+        ///           to add Mobile/Obsidian blocks types.
+        /// </remarks>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="path">The path.</param>
@@ -465,6 +475,11 @@ namespace Rock.Data
         /// <summary>
         /// Adds a new BlockType.
         /// </summary>
+        /// <remarks>
+        ///     NOTE: This is not for use with Mobile/Obsidian block types.
+        ///           See <see cref="AddOrUpdateEntityBlockType(string, string, string, string, string)" />
+        ///           to add Mobile/Obsidian blocks types.
+        /// </remarks>
         /// <param name="name"></param>
         /// <param name="description"></param>
         /// <param name="path"></param>
