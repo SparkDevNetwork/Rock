@@ -25,6 +25,8 @@ import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicCom
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */

@@ -391,29 +391,6 @@ export type NamedProps<Type, NamedPropertyKey extends keyof Type, PropertyName e
 };
 
 /**
- * Get the union of keys from T where the properties are of type PropertyType.
- *
- * @example
- * type Shape = {
- *   name: string;
- *   length: number;
- *   width: number;
- *   height?: number | null;
- * };
- *
- * type ShapeProperties = KeysOfType<Shape, number>; // "length" | "width"; notice "height" does not appear because it can be a number, null, or undefined.
- *
- * // To include "height", you can either expand the second generic type argument to include null and undefined...
- * type ShapeProperties = KeysOfType<Shape, number | null | undefined>; // "length" | "width" | "height"
- *
- * // ...or you can convert Shape to a RequiredNonNullable type for the first generic type argument...
- * type ShapeProperties = KeysOfType<RequiredNonNullable<Shape>, number>; // "length" | "width" | "height"
- */
-export type KeysOfType<Type, PropertyType> = Exclude<{
-    [PropertyKey in keyof Type]: Type[PropertyKey] extends PropertyType ? PropertyKey : never;
-}[keyof Type], undefined>;
-
-/**
  * Utility type that returns a new type from TObj with properties of type TKey.
  *
  * @example
@@ -447,7 +424,7 @@ export type KeysOfType<Type, PropertyType> = Exclude<{
  * //   height: number; (This approach makes "height" a required, non-nullable property!)
  * // }
  */
-export type PropertiesOfType<Type, PropertyType> = Pick<Type, KeysOfType<Type, PropertyType>>;
+export type PropertiesOfType<Type, PropertyType> = Pick<Type, Extract<keyof Type, PropertyType>>;
 
 // #endregion Utility Types
 
