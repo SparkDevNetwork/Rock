@@ -171,15 +171,19 @@ namespace Rock.Jobs
 
                             UpdateLastStatusMessage( $"Saving ZipCode Data ({i * batchSize}/{censusData.Count})." );
                         }
-
-                        failedAttempts = 0;
-
-                        UpdateLastStatusMessage( $"Saved ZipCode Data ({rockContext.AnalyticsSourceZipCodes.Count()}/{censusData.Count})." );
-                        SetAttributeValue( AttributeKey.FailedAttempts, failedAttempts.ToString() );
                     }
 
+                    failedAttempts = 0;
+                    UpdateLastStatusMessage( $"Saved ZipCode Data ({rockContext.AnalyticsSourceZipCodes.Count()}/{censusData.Count})." );
+                    SetAttributeValue( AttributeKey.FailedAttempts, failedAttempts.ToString() );
                     rockContext.Dispose();
                 }
+            }
+
+            if ( failedAttempts == 0 )
+            {
+                AnalyticsSourceZipCode.DeleteCensusDataFile();
+                DeleteJob();
             }
         }
 
@@ -222,6 +226,21 @@ namespace Rock.Jobs
         {
             ServiceJob.SetAttributeValue( key, value );
             ServiceJob.SaveAttributeValues();
+        }
+
+        private void DeleteJob()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var jobService = new ServiceJobService( rockContext );
+                var job = jobService.Get( GetJobId() );
+
+                if ( job != null )
+                {
+                    jobService.Delete( job );
+                    rockContext.SaveChanges();
+                }
+            }
         }
     }
 }

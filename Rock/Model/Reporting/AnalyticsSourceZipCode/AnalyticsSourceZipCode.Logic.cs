@@ -39,6 +39,8 @@ namespace Rock.Model
     /// </summary>
     public partial class AnalyticsSourceZipCode
     {
+        private const string CensusDataPath = "App_Data\\Formatted_Census_Data.xlsx";
+
         /// <summary>
         /// Saves the analytics source zip code data.
         /// </summary>
@@ -137,7 +139,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static List<AnalyticsSourceZipCode> GetZipCodeCensusData()
         {
-            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Content\\InternalSite\\Formatted_Census_Data.xlsx" );
+            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, CensusDataPath );
             var fileInfo = new FileInfo( path );
 
             using ( var excelPackage = new ExcelPackage( fileInfo ) )
@@ -181,6 +183,19 @@ namespace Rock.Model
                 } );
 
                 return data.OrderBy( z => z.ZipCode ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Deletes the census data file.
+        /// </summary>
+        public static void DeleteCensusDataFile()
+        {
+            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, CensusDataPath );
+
+            if ( File.Exists( path ) )
+            {
+                File.Delete( path );
             }
         }
 

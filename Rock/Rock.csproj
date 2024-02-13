@@ -1056,6 +1056,7 @@
     <Compile Include="Lava\Blocks\ObserveBlock.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Text.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
+    <Compile Include="Lava\Filters\LavaFilters.EntitySets.cs" />
     <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
     <Compile Include="Logging\DynamicConfigurationProvider.cs" />
     <Compile Include="Logging\RockJobLogger.cs" />
@@ -1131,6 +1132,7 @@
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.SaveHook.cs" />
     <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.cs" />
     <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.Logic.cs" />

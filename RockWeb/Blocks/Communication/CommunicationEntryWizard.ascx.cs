@@ -4268,11 +4268,14 @@ function onTaskCompleted( resultData )
 
                 using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Get Recipient Person Id Persisted List (add new EntitySet)" ) )
                 {
-                    var entitySetId = service.AddEntitySet(
-                        "RecipientPersonEntitySet_Communication",
-                        Rock.Web.Cache.EntityTypeCache.Get<Rock.Model.Person>().Id,
-                        personIdList,
-                    20 );
+                    var args = new AddEntitySetActionOptions
+                    {
+                        Name = "RecipientPersonEntitySet_Communication",
+                        EntityTypeId = Rock.Web.Cache.EntityTypeCache.Get<Rock.Model.Person>().Id,
+                        EntityIdList = personIdList,
+                        ExpiryInMinutes = 20
+                    };
+                    var entitySetId = service.AddEntitySet( args );
 
                     activity?.AddTag( "rock-communication-entity-set-id", entitySetId );
 

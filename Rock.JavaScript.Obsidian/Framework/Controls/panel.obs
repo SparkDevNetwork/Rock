@@ -1,6 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Fullscreen v-model="isFullscreen" :isPageOnly="isFullscreenPageOnly">
+    <Fullscreen v-model="isFullscreen" :isPageOnly="isFullscreenPageOnly" :class="fullScreenClass">
+        <div v-if="$slots.sidebar" class="panel-sidebar-content">
+            <slot name="sidebar" />
+        </div>
+
         <div :class="panelClass" ref="panelElement" v-bind="$attrs" :tabIndex="panelTabIndex" @keydown="onPanelKeyDown">
 
             <div :class="panelHeadingClass" @click="onPanelHeadingClick">
@@ -123,7 +127,7 @@
 </script>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUpdate, PropType, ref, useSlots, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import Fullscreen from "./fullscreen.obs";
     import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
@@ -206,6 +210,8 @@
         "update:isFullscreen"
     ]);
 
+    const slots = useSlots();
+
     /** The internal state of the collapsable panel content. */
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
@@ -230,6 +236,15 @@
     const isZoomSupported = !/Firefox\/([0-9.]+)(?:\s|$)/.test(navigator.userAgent)
         && !/FxiOS\/([0-9.]+)/.test(navigator.userAgent);
 
+    /** True if we have a sidebar template defined. */
+    const hasSidebar = ref(!!slots.sidebar);
+
+    /** The CSS class names to be applied to the full screen wrapper. */
+    const fullScreenClass = computed((): string[] => {
+        console.log("fullScreenClass");
+        return hasSidebar.value ? ["panel-with-sidebar"] : [];
+    });
+
     /** The CSS class names to be applied to the panel. */
     const panelClass = computed((): string[] => {
         const classes = ["panel", "panel-flex"];
@@ -238,6 +253,10 @@
 
         if (isFullscreen.value) {
             classes.push("panel-fullscreen");
+        }
+
+        if (hasSidebar.value) {
+            classes.push("flex-grow-1");
         }
 
         return classes;
@@ -382,5 +401,11 @@
         if (headerSecondaryActionMenu.value) {
             $(headerSecondaryActionMenu.value).dropdown();
         }
+    });
+
+    onBeforeUpdate(() => {
+        // Normally this would be a computed. But it doesn't seem to work
+        // anymore. Either it's a bug in Vue or was changed by design.
+        hasSidebar.value = !!slots.sidebar;
     });
 </script>
