@@ -15,85 +15,37 @@
 // </copyright>
 //
 
+import { TypeBuilder } from "@Obsidian/Utility/typeUtils";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
 import { FamilyPreRegistrationCreateAccountRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationCreateAccountRequestBag";
+import { Guid } from "@Obsidian/Types";
 
-/**
- * Utility type that makes specific properties in T required and non-nullable.
- *
- * @example
- * type Shape = {
- *  length?: number | null,
- *  width?: number | null
- * };
- *
- * type StaticShape = RequiredProperties<Shape, "length" | "width">;
- * // {
- * //   length: number,
- * //   width: number
- * // }
- */
-export type RequiredProperties<T, K extends keyof T> = Omit<T, K> & {
-    [L in keyof Pick<T, K>]-?: NonNullable<T[L]>
-};
-
+const personRequestBag =
+    TypeBuilder
+    .from<FamilyPreRegistrationPersonBag>()
+    .makeProperties("firstName", "lastName", "email", "mobilePhone", "mobilePhoneCountryCode", "attributeValues").required().and.notNullable()
+    .build;
 /**
  * Represents a person pre-registration request.
  */
-export type PersonRequestBag = RequiredProperties<
-    FamilyPreRegistrationPersonBag,
-    "firstName"
-    | "lastName"
-    | "email"
-    | "mobilePhone"
-    | "mobilePhoneCountryCode"
-    | "attributeValues"
->;
+export type PersonRequestBag = typeof personRequestBag;
 
+const childRequestBag =
+    TypeBuilder
+    .from<PersonRequestBag>()
+    .makeProperties("familyRoleGuid").required().and.typed<Guid>()
+    .build;
 /**
  * Represents a child pre-registration request.
  */
-export type ChildRequestBag = RequiredProperties<PersonRequestBag, "familyRoleGuid">;
+export type ChildRequestBag = typeof childRequestBag;
 
+const createAccountRequest =
+    TypeBuilder
+    .from<FamilyPreRegistrationCreateAccountRequestBag>()
+    .makeProperties("username", "password").required().and.notNullable()
+    .build;
 /**
  * Represents a create account request.
  */
-export type CreateAccountRequest = RequiredProperties<
-    FamilyPreRegistrationCreateAccountRequestBag,
-    "username"
-    | "password"
->;
-
-/**
- * Utility type that returns the union of TObj properties that are of type TKey.
- *
- * @example
- * type Shape = {
- *   name: string;
- *   length: number;
- *   width: number;
- * };
- *
- * type ShapeNumberProperties = KeysOfType<Shape, number>; // "length" | "width"
- */
-export type KeysOfType<TObj, TKey> = {
-    [K in keyof TObj]: TObj[K] extends TKey ? K : never;
-}[keyof TObj];
-
-/**
- * Utility type that returns a new type from TObj with properties of type TKey.
- *
- * @example
- * type Shape = {
- *   name: string;
- *   length: number;
- *   width: number;
- * };
- *
- * type ShapeWithNumberProperties = PropertiesOfType<Shape, number>;
- * // {
- * //   length: number;
- * //   width: number;
- * // }
- */
-export type PropertiesOfType<TObj, TKey> = Pick<TObj, KeysOfType<TObj, TKey>>;
+export type CreateAccountRequest = typeof createAccountRequest;
