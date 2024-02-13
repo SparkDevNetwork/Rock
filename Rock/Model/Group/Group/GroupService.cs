@@ -717,7 +717,7 @@ namespace Rock.Model
                         .Select( x => x.Id )
                         .All( r =>
                             a.GroupMemberRequirements
-                                .Where( mr => mr.RequirementMetDateTime.HasValue )
+                                .Where( mr => mr.RequirementMetDateTime.HasValue || mr.WasOverridden )
                                 .Select( x => x.GroupRequirementId )
                                 .Contains( r ) ) )
                 .Select( a => a.Id )
