@@ -402,7 +402,7 @@ namespace Rock.Blocks.Event
                 {
                     return ActionBadRequest( errorMessage );
                 }
-                session.Registration.BalanceDue
+
                 return ActionOk( new
                 {
                     ExpirationDateTime = session.ExpirationDateTime.ToRockDateTimeOffset()
@@ -742,7 +742,7 @@ namespace Rock.Blocks.Event
                     foreach ( var fieldViewModel in form.Fields )
                     {
                         // There are no default values for a PersonField, so skip those.
-                        if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.PersonField )
+                        if ( fieldViewModel.FieldSource == RegistrationFieldSource.PersonField )
                         {
                             continue;
                         }
@@ -750,12 +750,12 @@ namespace Rock.Blocks.Event
                         var field = new RegistrationTemplateFormFieldService( rockContext ).Get( fieldViewModel.Guid );
 
                         // Get the field values
-                        if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.PersonAttribute )
+                        if ( fieldViewModel.FieldSource == RegistrationFieldSource.PersonAttribute )
                         {
                             var personAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, person, field );
                             fieldValues.AddOrIgnore( fieldViewModel.Guid, personAttributeValue );
                         }
-                        else if ( fieldViewModel.FieldSource == ( int ) RegistrationFieldSource.RegistrantAttribute )
+                        else if ( fieldViewModel.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                         {
                             var registrantAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
                             fieldValues.AddOrIgnore( fieldViewModel.Guid, registrantAttributeValue );
@@ -2917,11 +2917,11 @@ namespace Rock.Blocks.Event
 
                     field.Guid = fieldModel.Guid;
                     field.Attribute = attribute != null ? PublicAttributeHelper.GetPublicAttributeForEdit( attribute ) : null;
-                    field.FieldSource = ( int ) fieldModel.FieldSource;
-                    field.PersonFieldType = ( int ) fieldModel.PersonFieldType;
+                    field.FieldSource = fieldModel.FieldSource;
+                    field.PersonFieldType = fieldModel.PersonFieldType;
                     field.IsRequired = fieldModel.IsRequired;
                     field.IsSharedValue = fieldModel.IsSharedValue;
-                    field.VisibilityRuleType = ( int ) fieldModel.FieldVisibilityRules.FilterExpressionType;
+                    field.VisibilityRuleType = fieldModel.FieldVisibilityRules.FilterExpressionType;
                     field.PreHtml = fieldModel.PreText;
                     field.PostHtml = fieldModel.PostText;
                     field.ShowOnWaitList = fieldModel.ShowOnWaitlist;
@@ -3161,7 +3161,7 @@ namespace Rock.Blocks.Event
                 ShowSmsOptIn = context.RegistrationSettings.ShowSmsOptIn,
                 RegistrantsSameFamily = ( int ) context.RegistrationSettings.RegistrantsSameFamily,
                 ForceEmailUpdate = forceEmailUpdate,
-                RegistrarOption = ( int ) context.RegistrationSettings.RegistrarOption,
+                RegistrarOption = context.RegistrationSettings.RegistrarOption,
                 Cost = baseCost,
                 GatewayControl = isRedirectGateway ? null : new GatewayControlBag
                 {

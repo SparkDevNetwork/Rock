@@ -73,7 +73,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         /// The type of the visibility rule.
         /// </value>
-        public int VisibilityRuleType { get; set; }
+        public FilterExpressionType VisibilityRuleType { get; set; }
 
         /// <summary>
         /// Gets or sets the visibility rules.

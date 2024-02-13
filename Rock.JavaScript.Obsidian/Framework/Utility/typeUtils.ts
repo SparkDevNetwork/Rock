@@ -32,7 +32,7 @@
  * //   width?: number | null | undefined;
  * // }
  */
-type Nullable<Type> = {
+export type Nullable<Type> = {
     [PropertyKey in keyof Type]: Type[PropertyKey] | null
 };
 
@@ -119,7 +119,7 @@ export type UndefinableProps<Type, UndefinablePropertyKey extends keyof Type> = 
  *
  * Useful for removing union types (see NotNullable<T> and NotUndefinable<T>).
  */
-type NotType<Type, NotOfType> = Type extends NotOfType ? never : Type;
+export type NotType<Type, NotOfType> = Type extends NotOfType ? never : Type;
 
 /**
  * Make all properties in Type not able to be set to undefined. (does nothing to optional properties)
@@ -292,7 +292,7 @@ export type OverrideTypeProps<Type, PropertyKey extends keyof Type, PropertyType
  * //   dimensionWidth: number;
  * // }
  */
-type Prefixed<Type, Prefix extends string> = {
+export type Prefixed<Type, Prefix extends string> = {
     [PropertyKey in keyof Type as `${Prefix}${Capitalize<string & PropertyKey>}`]: Type[PropertyKey]
 };
 
@@ -311,7 +311,7 @@ type Prefixed<Type, Prefix extends string> = {
  * //   width: number;
  * // }
  */
-type PrefixedProps<Type, PrefixedPropertyKey extends keyof Type, Prefix extends string> = Omit<Type, PrefixedPropertyKey> & {
+export type PrefixedProps<Type, PrefixedPropertyKey extends keyof Type, Prefix extends string> = Omit<Type, PrefixedPropertyKey> & {
     [PropertyKey in keyof Pick<Type, PrefixedPropertyKey> as `${Prefix}${Capitalize<string & PropertyKey>}`]: Type[PropertyKey]
 };
 
@@ -330,7 +330,7 @@ type PrefixedProps<Type, PrefixedPropertyKey extends keyof Type, Prefix extends 
  * //   widthInches: number;
  * // }
  */
-type Suffixed<Type, Suffix extends string> = {
+export type Suffixed<Type, Suffix extends string> = {
     [PropertyKey in keyof Type as `${string & PropertyKey}${Suffix}`]: Type[PropertyKey]
 };
 
@@ -349,7 +349,7 @@ type Suffixed<Type, Suffix extends string> = {
  * //   width: number;
  * // }
  */
-type SuffixedProps<Type, SuffixedPropertyKey extends keyof Type, Suffix extends string> = Omit<Type, SuffixedPropertyKey> & {
+export type SuffixedProps<Type, SuffixedPropertyKey extends keyof Type, Suffix extends string> = Omit<Type, SuffixedPropertyKey> & {
     [PropertyKey in keyof Pick<Type, SuffixedPropertyKey> as `${string & PropertyKey}${Suffix}`]: Type[PropertyKey]
 };
 
@@ -367,7 +367,7 @@ type SuffixedProps<Type, SuffixedPropertyKey extends keyof Type, Suffix extends 
  * //   props: number | string;
  * // }
  */
-type Named<Type, PropertyName extends string> = {
+export type Named<Type, PropertyName extends string> = {
     [PropertyKey in keyof Type as PropertyName]: Type[PropertyKey]
 };
 
@@ -386,7 +386,7 @@ type Named<Type, PropertyName extends string> = {
  * //   width: number;
  * // }
  */
-type NamedProps<Type, NamedPropertyKey extends keyof Type, PropertyName extends string> = Omit<Type, NamedPropertyKey> & {
+export type NamedProps<Type, NamedPropertyKey extends keyof Type, PropertyName extends string> = Omit<Type, NamedPropertyKey> & {
     [PropertyKey in keyof Pick<Type, NamedPropertyKey> as PropertyName]: Type[PropertyKey]
 };
 
@@ -453,13 +453,15 @@ export type PropertiesOfType<Type, PropertyType> = Pick<Type, KeysOfType<Type, P
 
 // #region Fluid Type Builder
 
+/** Builds types using a fluid syntax. */
 export const TypeBuilder = {
-    createTypeFrom<Type>(): CreateTypeFromBuilder<Type> {
-        return createTypeFromBuilder<Type>();
+    /** Begins building a new type definition from an existing type. */
+    from<Type>(): FromTypeBuilder<Type> {
+        return createFromTypeBuilder<Type>();
     }
 } as const;
 
-type CreateTypeFromBuilder<Type> = {
+type FromTypeBuilder<Type> = {
     /** Make all properties in Type… */
     makeAllProperties(): AllPropertiesPropertyBuilder<Type>;
     /** Make properties with keys in Type… */
@@ -468,7 +470,7 @@ type CreateTypeFromBuilder<Type> = {
     makePropertiesOfType<PropertyType>(): PropertiesOfTypePropertyBuilder<Type, PropertyType>;
 };
 
-type CreateTypeFromMoreBuilder<Type, LastBuilder> = {
+type FromModifiedTypeBuilder<Type, LastBuilder> = {
     /**
      * Gets an `undefined` value shaped like type T.
      *
@@ -513,7 +515,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   width: number | null;
      * // }
      */
-    nullable(): CreateTypeFromMoreBuilder<Nullable<Type>, AllPropertiesPropertyBuilder<Nullable<Type>>>;
+    nullable(): FromModifiedTypeBuilder<Nullable<Type>, AllPropertiesPropertyBuilder<Nullable<Type>>>;
     /**
      * Make properties in Type not able to be set to null.
      *
@@ -529,7 +531,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   width?: number;
      * // }
      */
-    notNullable(): CreateTypeFromMoreBuilder<NotNullable<Type>, AllPropertiesPropertyBuilder<NotNullable<Type>>>;
+    notNullable(): FromModifiedTypeBuilder<NotNullable<Type>, AllPropertiesPropertyBuilder<NotNullable<Type>>>;
     /**
      * Make all properties in Type able to be set to undefined.
      *
@@ -545,7 +547,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   width: number | null | undefined;
      * // }
      */
-    undefined(): CreateTypeFromMoreBuilder<Undefinable<Type>, AllPropertiesPropertyBuilder<Undefinable<Type>>>;
+    undefined(): FromModifiedTypeBuilder<Undefinable<Type>, AllPropertiesPropertyBuilder<Undefinable<Type>>>;
     /**
      * Make all properties in Type not able to be set to undefined. (does nothing to optional properties)
      *
@@ -561,7 +563,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   width?: number | undefined;
      * // }
      */
-    notUndefined(): CreateTypeFromMoreBuilder<NotUndefinable<Type>, AllPropertiesPropertyBuilder<NotUndefinable<Type>>>;
+    notUndefined(): FromModifiedTypeBuilder<NotUndefinable<Type>, AllPropertiesPropertyBuilder<NotUndefinable<Type>>>;
     /**
      * Make all properties in Type optional.
      *
@@ -577,7 +579,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   width?: number | undefined;
      * // }
      */
-    optional(): CreateTypeFromMoreBuilder<Partial<Type>, AllPropertiesPropertyBuilder<Partial<Type>>>;
+    optional(): FromModifiedTypeBuilder<Partial<Type>, AllPropertiesPropertyBuilder<Partial<Type>>>;
     /**
      * Make all properties in Type required. (optional properties will become required and cannot be set to undefined)
      *
@@ -593,7 +595,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   width: number;
      * // }
      */
-    required(): CreateTypeFromMoreBuilder<Required<Type>, AllPropertiesPropertyBuilder<Required<Type>>>;
+    required(): FromModifiedTypeBuilder<Required<Type>, AllPropertiesPropertyBuilder<Required<Type>>>;
     /**
      * Make all properties in Type be of type PropertyType.
      *
@@ -609,7 +611,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   width: string;
      * // }
      */
-    typed<PropertyType>(): CreateTypeFromMoreBuilder<OverrideType<Type, PropertyType>, AllPropertiesPropertyBuilder<OverrideType<Type, PropertyType>>>;
+    typed<PropertyType>(): FromModifiedTypeBuilder<OverrideType<Type, PropertyType>, AllPropertiesPropertyBuilder<OverrideType<Type, PropertyType>>>;
     /**
      * Make all properties in Type unable to be set to null or undefined. (optional properties can still be set to undefined)
      *
@@ -625,7 +627,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   width?: number | undefined;
      * // }
      */
-    defined(): CreateTypeFromMoreBuilder<NonNullable<Type>, AllPropertiesPropertyBuilder<NonNullable<Type>>>;
+    defined(): FromModifiedTypeBuilder<NonNullable<Type>, AllPropertiesPropertyBuilder<NonNullable<Type>>>;
     /**
      * Make all properties in Type have a specific prefix. (first letter of previous property name is capitalized)
      *
@@ -641,7 +643,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   dimensionWidth: number;
      * // }
      */
-    prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<Prefixed<Type, Prefix>, AllPropertiesPropertyBuilder<Prefixed<Type, Prefix>>>;
+    prefixed<Prefix extends string>(_prefix: Prefix): FromModifiedTypeBuilder<Prefixed<Type, Prefix>, AllPropertiesPropertyBuilder<Prefixed<Type, Prefix>>>;
     /**
      * Make all properties in Type have a specific suffix. (case is not automatically fixed)
      *
@@ -657,7 +659,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   widthInches: number;
      * // }
      */
-    suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<Suffixed<Type, Suffix>, AllPropertiesPropertyBuilder<Suffixed<Type, Suffix>>>;
+    suffixed<Suffix extends string>(_suffix: Suffix): FromModifiedTypeBuilder<Suffixed<Type, Suffix>, AllPropertiesPropertyBuilder<Suffixed<Type, Suffix>>>;
     /**
      * Make all properties in Type have a specific key. (merges properties into one property with the union type of old properties)
      *
@@ -672,7 +674,7 @@ type AllPropertiesPropertyBuilder<Type> = {
      * //   props: number | string;
      * // }
      */
-    named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<Named<Type, PropertyName>, AllPropertiesPropertyBuilder<Named<Type, PropertyName>>>;
+    named<PropertyName extends string>(_propertyName: PropertyName): FromModifiedTypeBuilder<Named<Type, PropertyName>, AllPropertiesPropertyBuilder<Named<Type, PropertyName>>>;
 };
 
 type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
@@ -692,7 +694,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width?: number | null | undefined;
      * // }
      */
-    nullable(): CreateTypeFromMoreBuilder<NullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NullableProps<Type, PropertyKey>, PropertyKey>>;
+    nullable(): FromModifiedTypeBuilder<NullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NullableProps<Type, PropertyKey>, PropertyKey>>;
     /**
      * Make specific properties in Type not able to be set to null,
      * while leaving the rest of the properties untouched.
@@ -709,7 +711,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width?: number | null | undefined;
      * // }
      */
-    notNullable(): CreateTypeFromMoreBuilder<NotNullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotNullableProps<Type, PropertyKey>, PropertyKey>>;
+    notNullable(): FromModifiedTypeBuilder<NotNullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotNullableProps<Type, PropertyKey>, PropertyKey>>;
     /**
      * Make specific properties in Type able to be set to undefined.
      *
@@ -725,7 +727,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width: number | null;
      * // }
      */
-    undefined(): CreateTypeFromMoreBuilder<UndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<UndefinableProps<Type, PropertyKey>, PropertyKey>>;
+    undefined(): FromModifiedTypeBuilder<UndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<UndefinableProps<Type, PropertyKey>, PropertyKey>>;
     /**
      * Make specific properties in Type not able to be set to undefined. (does nothing to optional properties)
      *
@@ -741,7 +743,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width?: number | undefined;
      * // }
      */
-    notUndefined(): CreateTypeFromMoreBuilder<NotUndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotUndefinableProps<Type, PropertyKey>, PropertyKey>>;
+    notUndefined(): FromModifiedTypeBuilder<NotUndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotUndefinableProps<Type, PropertyKey>, PropertyKey>>;
     /**
      * Make specific properties in Type optional,
      * while leaving the rest of the properties untouched.
@@ -758,7 +760,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width?: number | undefined;
      * // }
      */
-    optional(): CreateTypeFromMoreBuilder<OptionalProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<OptionalProps<Type, PropertyKey>, PropertyKey>>;
+    optional(): FromModifiedTypeBuilder<OptionalProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<OptionalProps<Type, PropertyKey>, PropertyKey>>;
     /**
      * Make specific properties in Type required,
      * while leaving the rest of the properties untouched. (optional properties will become required and cannot be set to undefined)
@@ -775,7 +777,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width?: number | null | undefined;
      * // }
      */
-    required(): CreateTypeFromMoreBuilder<RequiredProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<RequiredProps<Type, PropertyKey>, PropertyKey>>;
+    required(): FromModifiedTypeBuilder<RequiredProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<RequiredProps<Type, PropertyKey>, PropertyKey>>;
     /**
      * Make specific properties in Type be of type PropertyType,
      * while leaving the rest of the properties untouched.
@@ -792,7 +794,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width: string;
      * // }
      */
-    typed<PropertyType>(): CreateTypeFromMoreBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertiesWithKeysPropertyBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertyKey>>;
+    typed<PropertyType>(): FromModifiedTypeBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertiesWithKeysPropertyBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertyKey>>;
     /**
      * Make specific properties in Type unable to be set to null or undefined,
      * while leaving the rest of the properties untouched. (optional properties can still be set to undefined)
@@ -809,7 +811,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width?: number | undefined;
      * // }
      */
-    defined(): CreateTypeFromMoreBuilder<DefinedProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<DefinedProps<Type, PropertyKey>, PropertyKey>>;
+    defined(): FromModifiedTypeBuilder<DefinedProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<DefinedProps<Type, PropertyKey>, PropertyKey>>;
     /**
      * Make specific properties in Type have a specific prefix. (first letter of previous property name is capitalized)
      *
@@ -825,7 +827,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width: number;
      * // }
      */
-    prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<PrefixedProps<Type, PropertyKey, Prefix>, PropertiesWithKeysPropertyBuilder<PrefixedProps<Type, PropertyKey, Prefix>, Exclude<keyof PrefixedProps<Type, PropertyKey, Prefix>, keyof Type>>>;
+    prefixed<Prefix extends string>(_prefix: Prefix): FromModifiedTypeBuilder<PrefixedProps<Type, PropertyKey, Prefix>, PropertiesWithKeysPropertyBuilder<PrefixedProps<Type, PropertyKey, Prefix>, Exclude<keyof PrefixedProps<Type, PropertyKey, Prefix>, keyof Type>>>;
     /**
      * Make specific properties in Type have a specific suffix. (case is not automatically fixed)
      *
@@ -841,7 +843,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width: number;
      * // }
      */
-    suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<SuffixedProps<Type, PropertyKey, Suffix>, PropertiesWithKeysPropertyBuilder<SuffixedProps<Type, PropertyKey, Suffix>, Exclude<keyof SuffixedProps<Type, PropertyKey, Suffix>, keyof Type>>>;
+    suffixed<Suffix extends string>(_suffix: Suffix): FromModifiedTypeBuilder<SuffixedProps<Type, PropertyKey, Suffix>, PropertiesWithKeysPropertyBuilder<SuffixedProps<Type, PropertyKey, Suffix>, Exclude<keyof SuffixedProps<Type, PropertyKey, Suffix>, keyof Type>>>;
     /**
      * Make specific properties in Type have a specific key. (merges multiple properties into one property with the union type of old properties)
      *
@@ -857,7 +859,7 @@ type PropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type> = {
      * //   width: number;
      * // }
      */
-    named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<NamedProps<Type, PropertyKey, PropertyName>, PropertiesWithKeysPropertyBuilder<NamedProps<Type, PropertyKey, PropertyName>, Exclude<keyof NamedProps<Type, PropertyKey, PropertyName>, keyof Type>>>;
+    named<PropertyName extends string>(_propertyName: PropertyName): FromModifiedTypeBuilder<NamedProps<Type, PropertyKey, PropertyName>, PropertiesWithKeysPropertyBuilder<NamedProps<Type, PropertyKey, PropertyName>, Exclude<keyof NamedProps<Type, PropertyKey, PropertyName>, keyof Type>>>;
 };
 
 type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
@@ -877,7 +879,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   width?: number | null | undefined;
      * // }
      */
-    nullable(): CreateTypeFromMoreBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    nullable(): FromModifiedTypeBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type not able to be set to null,
      * while leaving the rest of the properties untouched.
@@ -894,7 +896,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   width?: number | undefined;
      * // }
      */
-    notNullable(): CreateTypeFromMoreBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    notNullable(): FromModifiedTypeBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type able to be set to undefined.
      *
@@ -910,7 +912,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   width: number | null | undefined;
      * // }
      */
-    undefined(): CreateTypeFromMoreBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    undefined(): FromModifiedTypeBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type not able to be set to undefined. (does nothing to optional properties)
      *
@@ -926,7 +928,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   width?: number | undefined;
      * // }
      */
-    notUndefined(): CreateTypeFromMoreBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    notUndefined(): FromModifiedTypeBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type optional,
      * while leaving the rest of the properties untouched.
@@ -943,7 +945,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   width?: number | undefined;
      * // }
      */
-    optional(): CreateTypeFromMoreBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    optional(): FromModifiedTypeBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type required,
      * while leaving the rest of the properties untouched. (optional properties will become required and cannot be set to undefined)
@@ -960,7 +962,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   width: number | null;
      * // }
      */
-    required(): CreateTypeFromMoreBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    required(): FromModifiedTypeBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type be of type NewPropertyType,
      * while leaving the rest of the properties untouched.
@@ -977,7 +979,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   width: string;
      * // }
      */
-    typed<NewPropertyType>(): CreateTypeFromMoreBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, PropertiesOfTypePropertyBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, NewPropertyType>>;
+    typed<NewPropertyType>(): FromModifiedTypeBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, PropertiesOfTypePropertyBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, NewPropertyType>>;
     /**
      * Make properties of type PropertyType in Type unable to be set to null or undefined,
      * while leaving the rest of the properties untouched. (optional properties can still be set to undefined)
@@ -994,7 +996,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   width?: number | undefined;
      * // }
      */
-    defined(): CreateTypeFromMoreBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
+    defined(): FromModifiedTypeBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type have a specific prefix. (first letter of previous property name is capitalized)
      *
@@ -1010,7 +1012,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   dimensionWidth: number;
      * // }
      */
-    prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertiesOfTypePropertyBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertyType>>;
+    prefixed<Prefix extends string>(_prefix: Prefix): FromModifiedTypeBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertiesOfTypePropertyBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type have a specific suffix. (case is not automatically fixed)
      *
@@ -1026,7 +1028,7 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   widthInches: number;
      * // }
      */
-    suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertiesOfTypePropertyBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertyType>>;
+    suffixed<Suffix extends string>(_suffix: Suffix): FromModifiedTypeBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertiesOfTypePropertyBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertyType>>;
     /**
      * Make properties of type PropertyType in Type have a specific key. (merges multiple properties into one property with the union type of old properties)
      *
@@ -1041,136 +1043,136 @@ type PropertiesOfTypePropertyBuilder<Type, PropertyType> = {
      * //   side: number;
      * // }
      */
-    named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertiesOfTypePropertyBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertyType>>;
+    named<PropertyName extends string>(_propertyName: PropertyName): FromModifiedTypeBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertiesOfTypePropertyBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertyType>>;
 };
 
 function createAllPropertiesPropertyBuilder<Type>(): AllPropertiesPropertyBuilder<Type> {
-    function transformTo<NewType>(): CreateTypeFromMoreBuilder<NewType, AllPropertiesPropertyBuilder<NewType>> {
-        return createTypeFromMoreBuilder<NewType, AllPropertiesPropertyBuilder<NewType>>(createAllPropertiesPropertyBuilder<NewType>());
+    function transformTo<NewType>(): FromModifiedTypeBuilder<NewType, AllPropertiesPropertyBuilder<NewType>> {
+        return createFromModifiedTypeBuilder<NewType, AllPropertiesPropertyBuilder<NewType>>(createAllPropertiesPropertyBuilder<NewType>());
     }
 
     return {
-        nullable(): CreateTypeFromMoreBuilder<Nullable<Type>, AllPropertiesPropertyBuilder<Nullable<Type>>> {
+        nullable(): FromModifiedTypeBuilder<Nullable<Type>, AllPropertiesPropertyBuilder<Nullable<Type>>> {
             return transformTo<Nullable<Type>>();
         },
-        notNullable(): CreateTypeFromMoreBuilder<NotNullable<Type>, AllPropertiesPropertyBuilder<NotNullable<Type>>> {
+        notNullable(): FromModifiedTypeBuilder<NotNullable<Type>, AllPropertiesPropertyBuilder<NotNullable<Type>>> {
             return transformTo<NotNullable<Type>>();
         },
-        undefined(): CreateTypeFromMoreBuilder<Undefinable<Type>, AllPropertiesPropertyBuilder<Undefinable<Type>>> {
+        undefined(): FromModifiedTypeBuilder<Undefinable<Type>, AllPropertiesPropertyBuilder<Undefinable<Type>>> {
             return transformTo<Undefinable<Type>>();
         },
-        notUndefined(): CreateTypeFromMoreBuilder<NotUndefinable<Type>, AllPropertiesPropertyBuilder<NotUndefinable<Type>>> {
+        notUndefined(): FromModifiedTypeBuilder<NotUndefinable<Type>, AllPropertiesPropertyBuilder<NotUndefinable<Type>>> {
             return transformTo<NotUndefinable<Type>>();
         },
-        optional(): CreateTypeFromMoreBuilder<Partial<Type>, AllPropertiesPropertyBuilder<Partial<Type>>> {
+        optional(): FromModifiedTypeBuilder<Partial<Type>, AllPropertiesPropertyBuilder<Partial<Type>>> {
             return transformTo<Partial<Type>>();
         },
-        required(): CreateTypeFromMoreBuilder<Required<Type>, AllPropertiesPropertyBuilder<Required<Type>>> {
+        required(): FromModifiedTypeBuilder<Required<Type>, AllPropertiesPropertyBuilder<Required<Type>>> {
             return transformTo<Required<Type>>();
         },
-        typed<PropertyType>(): CreateTypeFromMoreBuilder<OverrideType<Type, PropertyType>, AllPropertiesPropertyBuilder<OverrideType<Type, PropertyType>>> {
+        typed<PropertyType>(): FromModifiedTypeBuilder<OverrideType<Type, PropertyType>, AllPropertiesPropertyBuilder<OverrideType<Type, PropertyType>>> {
             return transformTo<OverrideType<Type, PropertyType>>();
         },
-        defined(): CreateTypeFromMoreBuilder<NonNullable<Type>, AllPropertiesPropertyBuilder<NonNullable<Type>>> {
+        defined(): FromModifiedTypeBuilder<NonNullable<Type>, AllPropertiesPropertyBuilder<NonNullable<Type>>> {
             return transformTo<NonNullable<Type>>();
         },
-        prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<Prefixed<Type, Prefix>, AllPropertiesPropertyBuilder<Prefixed<Type, Prefix>>> {
+        prefixed<Prefix extends string>(_prefix: Prefix): FromModifiedTypeBuilder<Prefixed<Type, Prefix>, AllPropertiesPropertyBuilder<Prefixed<Type, Prefix>>> {
             return transformTo<Prefixed<Type, Prefix>>();
         },
-        suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<Suffixed<Type, Suffix>, AllPropertiesPropertyBuilder<Suffixed<Type, Suffix>>> {
+        suffixed<Suffix extends string>(_suffix: Suffix): FromModifiedTypeBuilder<Suffixed<Type, Suffix>, AllPropertiesPropertyBuilder<Suffixed<Type, Suffix>>> {
             return transformTo<Suffixed<Type, Suffix>>();
         },
-        named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<Named<Type, PropertyName>, AllPropertiesPropertyBuilder<Named<Type, PropertyName>>> {
+        named<PropertyName extends string>(_propertyName: PropertyName): FromModifiedTypeBuilder<Named<Type, PropertyName>, AllPropertiesPropertyBuilder<Named<Type, PropertyName>>> {
             return transformTo<Named<Type, PropertyName>>();
         }
     };
 }
 
 function createPropertiesWithKeysPropertyBuilder<Type, PropertyKey extends keyof Type>(): PropertiesWithKeysPropertyBuilder<Type, PropertyKey> {
-    function transformTo<NewType, NewPropertyKey extends keyof NewType>(): CreateTypeFromMoreBuilder<NewType, PropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>> {
-        return createTypeFromMoreBuilder<NewType, PropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>>(createPropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>());
+    function transformTo<NewType, NewPropertyKey extends keyof NewType>(): FromModifiedTypeBuilder<NewType, PropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>> {
+        return createFromModifiedTypeBuilder<NewType, PropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>>(createPropertiesWithKeysPropertyBuilder<NewType, NewPropertyKey>());
     }
 
     return {
-        nullable(): CreateTypeFromMoreBuilder<NullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NullableProps<Type, PropertyKey>, PropertyKey>> {
+        nullable(): FromModifiedTypeBuilder<NullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NullableProps<Type, PropertyKey>, PropertyKey>> {
             return transformTo<NullableProps<Type, PropertyKey>, PropertyKey>();
         },
-        notNullable(): CreateTypeFromMoreBuilder<NotNullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotNullableProps<Type, PropertyKey>, PropertyKey>> {
+        notNullable(): FromModifiedTypeBuilder<NotNullableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotNullableProps<Type, PropertyKey>, PropertyKey>> {
             return transformTo<NotNullableProps<Type, PropertyKey>, PropertyKey>();
         },
-        undefined(): CreateTypeFromMoreBuilder<UndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<UndefinableProps<Type, PropertyKey>, PropertyKey>> {
+        undefined(): FromModifiedTypeBuilder<UndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<UndefinableProps<Type, PropertyKey>, PropertyKey>> {
             return transformTo<UndefinableProps<Type, PropertyKey>, PropertyKey>();
         },
-        notUndefined(): CreateTypeFromMoreBuilder<NotUndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotUndefinableProps<Type, PropertyKey>, PropertyKey>> {
+        notUndefined(): FromModifiedTypeBuilder<NotUndefinableProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<NotUndefinableProps<Type, PropertyKey>, PropertyKey>> {
             return transformTo<NotUndefinableProps<Type, PropertyKey>, PropertyKey>();
         },
-        optional(): CreateTypeFromMoreBuilder<OptionalProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<OptionalProps<Type, PropertyKey>, PropertyKey>> {
+        optional(): FromModifiedTypeBuilder<OptionalProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<OptionalProps<Type, PropertyKey>, PropertyKey>> {
             return transformTo<OptionalProps<Type, PropertyKey>, PropertyKey>();
         },
-        required(): CreateTypeFromMoreBuilder<RequiredProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<RequiredProps<Type, PropertyKey>, PropertyKey>> {
+        required(): FromModifiedTypeBuilder<RequiredProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<RequiredProps<Type, PropertyKey>, PropertyKey>> {
             return transformTo<RequiredProps<Type, PropertyKey>, PropertyKey>();
         },
-        typed<PropertyType>(): CreateTypeFromMoreBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertiesWithKeysPropertyBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertyKey>> {
+        typed<PropertyType>(): FromModifiedTypeBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertiesWithKeysPropertyBuilder<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertyKey>> {
             return transformTo<OverrideTypeProps<Type, PropertyKey, PropertyType>, PropertyKey>();
         },
-        defined(): CreateTypeFromMoreBuilder<DefinedProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<DefinedProps<Type, PropertyKey>, PropertyKey>> {
+        defined(): FromModifiedTypeBuilder<DefinedProps<Type, PropertyKey>, PropertiesWithKeysPropertyBuilder<DefinedProps<Type, PropertyKey>, PropertyKey>> {
             return transformTo<DefinedProps<Type, PropertyKey>, PropertyKey>();
         },
-        prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<PrefixedProps<Type, PropertyKey, Prefix>, PropertiesWithKeysPropertyBuilder<PrefixedProps<Type, PropertyKey, Prefix>, Exclude<keyof PrefixedProps<Type, PropertyKey, Prefix>, keyof Type>>> {
+        prefixed<Prefix extends string>(_prefix: Prefix): FromModifiedTypeBuilder<PrefixedProps<Type, PropertyKey, Prefix>, PropertiesWithKeysPropertyBuilder<PrefixedProps<Type, PropertyKey, Prefix>, Exclude<keyof PrefixedProps<Type, PropertyKey, Prefix>, keyof Type>>> {
             return transformTo<PrefixedProps<Type, PropertyKey, Prefix>, Exclude<keyof PrefixedProps<Type, PropertyKey, Prefix>, keyof Type>>();
         },
-        suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<SuffixedProps<Type, PropertyKey, Suffix>, PropertiesWithKeysPropertyBuilder<SuffixedProps<Type, PropertyKey, Suffix>, Exclude<keyof SuffixedProps<Type, PropertyKey, Suffix>, keyof Type>>> {
+        suffixed<Suffix extends string>(_suffix: Suffix): FromModifiedTypeBuilder<SuffixedProps<Type, PropertyKey, Suffix>, PropertiesWithKeysPropertyBuilder<SuffixedProps<Type, PropertyKey, Suffix>, Exclude<keyof SuffixedProps<Type, PropertyKey, Suffix>, keyof Type>>> {
             return transformTo<SuffixedProps<Type, PropertyKey, Suffix>, Exclude<keyof SuffixedProps<Type, PropertyKey, Suffix>, keyof Type>>();
         },
-        named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<NamedProps<Type, PropertyKey, PropertyName>, PropertiesWithKeysPropertyBuilder<NamedProps<Type, PropertyKey, PropertyName>, Exclude<keyof NamedProps<Type, PropertyKey, PropertyName>, keyof Type>>> {
+        named<PropertyName extends string>(_propertyName: PropertyName): FromModifiedTypeBuilder<NamedProps<Type, PropertyKey, PropertyName>, PropertiesWithKeysPropertyBuilder<NamedProps<Type, PropertyKey, PropertyName>, Exclude<keyof NamedProps<Type, PropertyKey, PropertyName>, keyof Type>>> {
             return transformTo<NamedProps<Type, PropertyKey, PropertyName>, Exclude<keyof NamedProps<Type, PropertyKey, PropertyName>, keyof Type>>();
         }
     };
 }
 
 function createPropertiesOfTypePropertyBuilder<Type, PropertyType>(): PropertiesOfTypePropertyBuilder<Type, PropertyType> {
-    function transformTo<NewType>(): CreateTypeFromMoreBuilder<NewType, PropertiesOfTypePropertyBuilder<NewType, PropertyType>> {
-        return createTypeFromMoreBuilder<NewType, PropertiesOfTypePropertyBuilder<NewType, PropertyType>>(createPropertiesOfTypePropertyBuilder<NewType, PropertyType>());
+    function transformTo<NewType>(): FromModifiedTypeBuilder<NewType, PropertiesOfTypePropertyBuilder<NewType, PropertyType>> {
+        return createFromModifiedTypeBuilder<NewType, PropertiesOfTypePropertyBuilder<NewType, PropertyType>>(createPropertiesOfTypePropertyBuilder<NewType, PropertyType>());
     }
 
     return {
-        nullable(): CreateTypeFromMoreBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+        nullable(): FromModifiedTypeBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
             return transformTo<NullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
         },
-        notNullable(): CreateTypeFromMoreBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+        notNullable(): FromModifiedTypeBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
             return transformTo<NotNullableProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
         },
-        undefined(): CreateTypeFromMoreBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+        undefined(): FromModifiedTypeBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
             return transformTo<UndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
         },
-        notUndefined(): CreateTypeFromMoreBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+        notUndefined(): FromModifiedTypeBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
             return transformTo<NotUndefinableProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
         },
-        optional(): CreateTypeFromMoreBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+        optional(): FromModifiedTypeBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
             return transformTo<OptionalProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
         },
-        required(): CreateTypeFromMoreBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+        required(): FromModifiedTypeBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
             return transformTo<RequiredProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
         },
-        typed<NewPropertyType>(): CreateTypeFromMoreBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, PropertiesOfTypePropertyBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, NewPropertyType>> {
+        typed<NewPropertyType>(): FromModifiedTypeBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, PropertiesOfTypePropertyBuilder<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>, NewPropertyType>> {
             return transformTo<OverrideTypeProps<Type, keyof PropertiesOfType<Type, PropertyType>, NewPropertyType>>();
         },
-        defined(): CreateTypeFromMoreBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
+        defined(): FromModifiedTypeBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertiesOfTypePropertyBuilder<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>, PropertyType>> {
             return transformTo<DefinedProps<Type, keyof PropertiesOfType<Type, PropertyType>>>();
         },
-        prefixed<Prefix extends string>(_prefix: Prefix): CreateTypeFromMoreBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertiesOfTypePropertyBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertyType>> {
+        prefixed<Prefix extends string>(_prefix: Prefix): FromModifiedTypeBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertiesOfTypePropertyBuilder<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>, PropertyType>> {
             return transformTo<PrefixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Prefix>>();
         },
-        suffixed<Suffix extends string>(_suffix: Suffix): CreateTypeFromMoreBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertiesOfTypePropertyBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertyType>> {
+        suffixed<Suffix extends string>(_suffix: Suffix): FromModifiedTypeBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertiesOfTypePropertyBuilder<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>, PropertyType>> {
             return transformTo<SuffixedProps<Type, keyof PropertiesOfType<Type, PropertyType>, Suffix>>();
         },
-        named<PropertyName extends string>(_propertyName: PropertyName): CreateTypeFromMoreBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertiesOfTypePropertyBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertyType>> {
+        named<PropertyName extends string>(_propertyName: PropertyName): FromModifiedTypeBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertiesOfTypePropertyBuilder<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>, PropertyType>> {
             return transformTo<NamedProps<Type, keyof PropertiesOfType<Type, PropertyType>, PropertyName>>();
         }
     };
 }
 
-function createTypeFromBuilder<Type>(): CreateTypeFromBuilder<Type> {
+function createFromTypeBuilder<Type>(): FromTypeBuilder<Type> {
     return {
         makeAllProperties(): AllPropertiesPropertyBuilder<Type> {
             return createAllPropertiesPropertyBuilder<Type>();
@@ -1184,7 +1186,7 @@ function createTypeFromBuilder<Type>(): CreateTypeFromBuilder<Type> {
     };
 }
 
-function createTypeFromMoreBuilder<Type, LastBuilder>(lastBuilder: LastBuilder): CreateTypeFromMoreBuilder<Type, LastBuilder> {
+function createFromModifiedTypeBuilder<Type, LastBuilder>(lastBuilder: LastBuilder): FromModifiedTypeBuilder<Type, LastBuilder> {
     return {
         build: undefined as unknown as Type,
         and: lastBuilder,
