@@ -326,11 +326,15 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             _groupMemberRequirement = new GroupMemberRequirementService( new RockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
+            var meetsGroupRequirement = _groupMemberRequirement.WasOverridden ?
+                MeetsGroupRequirement.Meets :
+                MeetsGroupRequirement;
+
             if ( this.Title.Trim() != string.Empty )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12 col-sm-6 col-md-4 requirement-item" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, CardStatus( MeetsGroupRequirement ) + " alert-requirement" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, CardStatus( meetsGroupRequirement ) + " alert-requirement" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( !string.IsNullOrWhiteSpace( TypeIconCssClass ) )
