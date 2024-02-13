@@ -18,7 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-import { RegistrantsSameFamily, RegistrationPersonFieldType, RegistrationFieldSource, RegistrationEntryState, RegistrantBasicInfo, RegistrantInfo, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs } from "./types.partial";
+import { RegistrationEntryState, RegistrantBasicInfo } from "./types.partial";
 import { InjectionKey, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
@@ -35,7 +35,7 @@ const unknownSingleFamilyGuid = newGuid();
  * @param currentPerson
  * @param viewModel
  */
-export function getForcedFamilyGuid(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryBlockViewModel): string | null {
+export function getForcedFamilyGuid(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryInitializationBox): string | null {
     return (currentPerson && viewModel.registrantsSameFamily === RegistrantsSameFamily.Yes) ?
         (viewModel.currentPersonFamilyGuid || unknownSingleFamilyGuid) :
         null;
@@ -47,7 +47,7 @@ export function getForcedFamilyGuid(currentPerson: CurrentPersonBag | null, view
  * @param viewModel
  * @param familyGuid
  */
-export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryBlockViewModel, familyGuid: Guid | null): RegistrantInfo {
+export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryInitializationBox, familyGuid: Guid | null): RegistrantInfo {
     const forcedFamilyGuid = getForcedFamilyGuid(currentPerson, viewModel);
 
     if (forcedFamilyGuid) {

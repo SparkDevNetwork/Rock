@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { BatchStatus } from "@Obsidian/Enums/Finance/batchStatus";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -83,5 +84,5 @@ export type FinancialBatchBag = {
     note?: string | null;
 
     /** Gets or sets the status of the batch. */
-    status?: number | null;
+    status?: BatchStatus | null;
 };

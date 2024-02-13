@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
+import { RegistrarOption } from "@Obsidian/Enums/Event/registrarOption";
 import { Guid } from "@Obsidian/Types";
 import { RegistrationEntryFamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFamilyMemberBag";
 import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
@@ -150,13 +152,13 @@ export type RegistrationEntryInitializationBox = {
     registrantForms?: RegistrationEntryFormBag[] | null;
 
     /** Gets or sets a value indicating whether [do ask for family]. */
-    registrantsSameFamily: number;
+    registrantsSameFamily: RegistrantsSameFamily;
 
     /** Gets or sets the registrant term. */
     registrantTerm?: string | null;
 
     /** Gets or sets the registrar option. */
-    registrarOption: number;
+    registrarOption: RegistrarOption;
 
     /** Gets or sets the registration attributes end. */
     registrationAttributesEnd?: PublicAttributeBag[] | null;

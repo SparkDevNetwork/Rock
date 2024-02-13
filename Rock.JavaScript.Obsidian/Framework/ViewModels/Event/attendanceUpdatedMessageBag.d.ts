@@ -22,6 +22,7 @@
 //
 
 import { AttendanceStatus } from "@Obsidian/Enums/Event/attendanceStatus";
+import { RSVP } from "@Obsidian/Enums/Event/rSVP";
 import { Guid } from "@Obsidian/Types";
 
 /**
@@ -57,7 +58,7 @@ export type AttendanceUpdatedMessageBag = {
     personPhotoUrl?: string | null;
 
     /** Gets or sets the RSVP state of this attendance record. */
-    rSVP: number;
+    rSVP: RSVP;
 
     /**
      * Gets or sets the attendance status which indicates if the persent

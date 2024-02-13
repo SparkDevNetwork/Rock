@@ -3159,7 +3159,7 @@ namespace Rock.Blocks.Event
                 FamilyMembers = familyMembers,
                 MaxRegistrants = context.RegistrationSettings.MaxRegistrants ?? 25,
                 ShowSmsOptIn = context.RegistrationSettings.ShowSmsOptIn,
-                RegistrantsSameFamily = ( int ) context.RegistrationSettings.RegistrantsSameFamily,
+                RegistrantsSameFamily = context.RegistrationSettings.RegistrantsSameFamily,
                 ForceEmailUpdate = forceEmailUpdate,
                 RegistrarOption = context.RegistrationSettings.RegistrarOption,
                 Cost = baseCost,

@@ -170,7 +170,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// <value>
         ///   <c>true</c> if [do ask for family]; otherwise, <c>false</c>.
         /// </value>
-        public int RegistrantsSameFamily { get; set; }
+        public RegistrantsSameFamily RegistrantsSameFamily { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [force email update].

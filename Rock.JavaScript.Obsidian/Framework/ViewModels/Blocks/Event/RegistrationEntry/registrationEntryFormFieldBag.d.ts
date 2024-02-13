@@ -21,6 +21,9 @@
 // </copyright>
 //
 
+import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
+import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
 import { Guid } from "@Obsidian/Types";
 import { RegistrationEntryVisibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryVisibilityBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -31,7 +34,7 @@ export type RegistrationEntryFormFieldBag = {
     attribute?: PublicAttributeBag | null;
 
     /** Gets or sets the field source. */
-    fieldSource: number;
+    fieldSource: RegistrationFieldSource;
 
     /** Gets or sets the unique identifier. */
     guid?: Guid | null;
@@ -43,7 +46,7 @@ export type RegistrationEntryFormFieldBag = {
     isSharedValue: boolean;
 
     /** Gets or sets the type of the person field. */
-    personFieldType: number;
+    personFieldType: RegistrationPersonFieldType;
 
     /** Gets or sets the post HTML. */
     postHtml?: string | null;
@@ -58,5 +61,5 @@ export type RegistrationEntryFormFieldBag = {
     visibilityRules?: RegistrationEntryVisibilityBag[] | null;
 
     /** Gets or sets the type of the visibility rule. */
-    visibilityRuleType: number;
+    visibilityRuleType: FilterExpressionType;
 };
