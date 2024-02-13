@@ -366,7 +366,7 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Gets the event calendar from the PageParameters or from the block's context entity.
+        /// Gets the event calendar from the PageParameters.
         /// </summary>
         /// <returns><see cref="EventCalendar"/></returns>
         private EventCalendar GetEventCalendar()
