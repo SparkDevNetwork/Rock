@@ -315,6 +315,11 @@ namespace RockWeb.Blocks.Crm
                 $('#{2}').closest('.form-group').toggleClass('bulk-item-selected', enabled)
             }}
 
+            // Enhanced lists need special handling
+            var enhancedList = $(this).parent().find('.chosen-select');
+            if (enhancedList.length) {{
+                $(enhancedList).trigger('chosen:updated');
+            }}
         }});
 
         // Update the hidden field with the client id of each selected control, (if client id ends with '_hf' as in the case of multi-select attributes, strip the ending '_hf').
