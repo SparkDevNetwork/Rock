@@ -46,7 +46,7 @@ namespace Rock.Tests.Shared.TestFramework
                 {
                     await BuildContainerAsync( container );
                 }
-                catch ( Exception ex )
+                catch
                 {
                     System.Diagnostics.Debug.WriteLine( ex.Message );
                     await container.DisposeAsync();

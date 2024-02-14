@@ -96,7 +96,7 @@ namespace Rock.Tests.Shared.TestFramework
                     }
                     catch ( Exception ex )
                     {
-                        throw new Exception( $"Test Database Container initialization failed. The Docker Client is not available; make sure that Docker Desktop is installed and configured correctly. Refer to the README document for more information. [Uri={dockerClient.Configuration.EndpointBaseUri}]" );
+                        throw new Exception( $"Test Database Container initialization failed. The Docker Client is not available; make sure that Docker Desktop is installed and configured correctly. Refer to the README document for more information. [Uri={dockerClient.Configuration.EndpointBaseUri}]", ex );
                     }
 
                     var images = await dockerClient.Images.ListImagesAsync( new ImagesListParameters

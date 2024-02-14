@@ -39,6 +39,34 @@ namespace Rock.Tests.UnitTests.Lava
         /// Ensure that a plain text string containing URL special characters is encoded in such a way that it can be trasmitted in a URL.
         /// </summary>
         [TestMethod]
+        public void EscapeOnce_DocumentationExample_ReturnsExpectedOutput()
+        {
+            var inputTemplate = @"
+{% assign unescaped = ""Have you read 'The Lion, The Witch & the Wardrobe by C.S. Lewis'?"" %}
+{% assign escaped = unescaped | Escape %}
+Source Text: {{ unescaped }}
+Applying the Escape filter twice to the source text:
+{{ unescaped | Escape | Escape }}
+Applying the EscapeOnce filter twice to the source text:
+{{ unescaped | EscapeOnce | EscapeOnce }}
+";
+            var expectedOutput = @"
+Source Text: Have you read 'The Lion, The Witch & the Wardrobe by C.S. Lewis'?
+Applying the Escape filter twice to the source text:
+Have you read &amp;#39;The Lion, The Witch &amp;amp; the Wardrobe by C.S. Lewis&amp;#39;?
+Applying the EscapeOnce filter twice to the source text:
+Have you read &#39;The Lion, The Witch &amp; the Wardrobe by C.S. Lewis&#39;?
+";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
+                expectedOutput,
+                inputTemplate, ignoreWhitespace:true );
+        }
+
+        /// <summary>
+        /// Ensure that a plain text string containing URL special characters is encoded in such a way that it can be trasmitted in a URL.
+        /// </summary>
+        [TestMethod]
         public void EscapeOnce_WithInputContainingReservedCharacter_IsEncoded()
         {
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ),

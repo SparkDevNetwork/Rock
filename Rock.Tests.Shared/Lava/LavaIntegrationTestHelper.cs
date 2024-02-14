@@ -175,16 +175,38 @@ namespace Rock.Tests.Shared.Lava
             } );
         }
 
+        /// <summary>
+        /// Gets a new Lava Engine instance of the specified type.
+        /// </summary>
+        /// <param name="engineType"></param>
+        /// <param name="engineOptions"></param>
+        /// <returns></returns>
         public static ILavaEngine NewEngineInstance( Type engineType, LavaEngineConfigurationOptions engineOptions )
         {
             engineOptions = engineOptions ?? new LavaEngineConfigurationOptions();
 
-            // Initialize the Rock variant of the DotLiquid Engine
             var engine = global::Rock.Lava.LavaService.NewEngineInstance( engineType, engineOptions );
-
             return engine;
         }
 
+        /// <summary>
+        /// Gets an existing Lava Engine instance of the specified type and sets it as the current engine.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static T GetEngineInstance<T>()
+            where T: class, ILavaEngine
+        {
+            var engine = GetEngineInstance( typeof( T ) ) as T;
+            return engine;
+        }
+
+        /// <summary>
+        /// Gets an existing Lava Engine instance of the specified type and sets it as the current engine.
+        /// </summary>
+        /// <param name="engineType"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static ILavaEngine GetEngineInstance( Type engineType )
         {
             ILavaEngine engine = null;
