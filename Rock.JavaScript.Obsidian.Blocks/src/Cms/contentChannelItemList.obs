@@ -203,22 +203,22 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     type GridRowItem = {
-        "id": string,
-        "idKey": string,
-        "contentChannelId": number,
-        "title": string,
-        "startDateTime": string,
-        "expireDateTime": string,
-        "isScheduled": boolean,
-        "occurrences": boolean,
-        "status": ContentChannelItemStatus,
-        "priority": number,
-        "isContentLibraryOwner": boolean | null,
-        "contentLibrarySourceIdentifier": boolean | null,
-        "isDownloadedFromContentLibrary": boolean,
-        "isUploadedToContentLibrary": boolean,
-        "contentLibraryLicenseTypeGuid": string | null,
-        "isSecurityDisabled": boolean
+        id: string,
+        idKey: string,
+        contentChannelId: number,
+        title: string,
+        startDateTime: string,
+        expireDateTime: string,
+        isScheduled: boolean,
+        occurrences: boolean,
+        status: ContentChannelItemStatus,
+        priority: number,
+        isContentLibraryOwner: boolean | null,
+        contentLibrarySourceIdentifier: boolean | null,
+        isDownloadedFromContentLibrary: boolean,
+        isUploadedToContentLibrary: boolean,
+        contentLibraryLicenseTypeGuid: string | null,
+        isSecurityDisabled: boolean
     };
 
     const config = useConfigurationValues<ListBlockBox<ContentChannelItemListOptionsBag>>();
@@ -326,7 +326,7 @@
 
         if (result.isSuccess) {
             if (gridData && gridData.rows) {
-                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+                const index = gridData.rows.findIndex(r => r["id"] === key);
 
                 if (index !== -1) {
                     gridData.rows?.splice(index, 1);
@@ -336,8 +336,6 @@
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete content channel item.");
         }
-
-        gridDataSource.value = loadGridData();
     }
 
     /**
@@ -358,7 +356,6 @@
      * @returns `true` if the operation succeeded; otherwise `false`.
      */
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        // TODO
         const result = await invokeBlockAction<string>("ReorderItem", {
             key: item["idKey"],
             beforeKey: beforeItem?.["idKey"] ?? null
