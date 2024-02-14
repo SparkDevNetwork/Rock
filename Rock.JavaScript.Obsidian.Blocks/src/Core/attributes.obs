@@ -11,11 +11,65 @@
                               label="Entity Type"
                               grouped
                               enhanceForLongLists
-                              :items="entityTypeOptions" />
+                              :items="entityTypeOptions"
+                              style="min-width:250px;" />
             </div>
         </template>
 
         <template #default>
+            <Grid v-if="entityTypeSelectionIsValid"
+                  :data="gridData"
+                  keyField="id"
+                  itemTerm="Attribute"
+                  :showLaunchWorkflow="false"
+                  showExport
+                  showMergeTemplate
+                  liveUpdates>
+                <!-- <Column name="something" title="Something">
+                    <template #format="{ row }">
+                        <span>{{ row.name }}</span>
+                    </template>
+                </Column> -->
+
+                <ReorderColumn @orderChanged="onOrderChanged" />
+
+                <TextColumn name="id" title="Id" field="id" width="80" />
+
+                <TextColumn name="qualifier"
+                            title="Qualifier"
+                            field="qualifier"
+                            :filter="pickExistingValueFilter" />
+
+                <TextColumn name="name"
+                            title="Name"
+                            field="name"
+                            :filter="textValueFilter" />
+
+                <TextColumn name="categories"
+                            title="Categories"
+                            field="categories"
+                            :filter="textValueFilter" />
+
+                <Column name="value"
+                        title="Value"
+                        field="value"
+                        :filter="textValueFilter">
+                    <template #format="{ row }">
+                        <RockField :modelValue="row.value" :attribute="row.attribute" :showLabel="false" isCondensed />
+                    </template>
+                </Column>
+
+                <EditColumn />
+                <SecurityColumn />
+                <DeleteColumn />
+            </Grid>
+
+
+
+
+
+
+
             <div v-if="entityTypeSelectionIsValid" class="grid grid-panel">
                 <div class="grid-actions border-bottom border-panel">
                     <RockButton class="btn-add btn-grid-action" btnType="link" @click="onAddAttribute"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
@@ -101,6 +155,7 @@
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
     import { computed, ref, watch } from "vue";
+    import Grid, { Column, NumberColumn, TextColumn, ReorderColumn, SecurityColumn, DeleteColumn, EditColumn, pickExistingValueFilter, textValueFilter, RockFieldColumn } from "@Obsidian/Controls/grid";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockField from "@Obsidian/Controls/rockField.obs";
@@ -209,6 +264,10 @@
         }
 
         return "";
+    });
+
+    const gridData = computed(() => {
+        return { rows: attributes.value };
     });
 
     /**
@@ -362,6 +421,23 @@
         editAttributeValue.value = result.data.value;
         showEditAttributeValueModal.value = true;
     };
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
 
     /**
      * Request that the edit value form attempt to validate and submit.
