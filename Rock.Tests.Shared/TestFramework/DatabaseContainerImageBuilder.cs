@@ -46,7 +46,7 @@ namespace Rock.Tests.Shared.TestFramework
                 {
                     await BuildContainerAsync( container );
                 }
-                catch ( Exception ex )
+                catch
                 {
                     await container.DisposeAsync();
                     throw;
@@ -58,7 +58,7 @@ namespace Rock.Tests.Shared.TestFramework
                 {
                     ContainerID = container.Id,
                     RepositoryName = RepositoryName,
-                    Tag = GetTargetMigration(),
+                    Tag = GetTargetMigration().Truncate(15),
                     Changes = new List<string>
                     {
                         $"LABEL {ResourceReaper.ResourceReaperSessionLabel}="
@@ -139,11 +139,17 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 TargetDatabase = connection
             };
 
+            var targetMigrationName = GetTargetMigration();
+
+            LogHelper.Log( $"Migrate Database: running... [Target={targetMigrationName}]" );
+
             var migrator = new System.Data.Entity.Migrations.DbMigrator( config );
 
             try
             {
-                migrator.Update();
+                migrator.Update( targetMigrationName );
+
+                LogHelper.Log( $"Migrate Database: complete." );
             }
             catch ( Exception ex )
             {
@@ -161,7 +167,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 .GetExportedTypes()
                 .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
                 .Select( a => ( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ) Activator.CreateInstance( a ) )
-                .Select( a => a.Id.Substring( 0, 15 ) )
+                .Select( a => a.Id )
                 .OrderByDescending( a => a )
                 .First();
         }
@@ -172,7 +178,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <param name="sampleDataUrl">The URL to get the sample data from.</param>
         private static void AddSampleData( string sampleDataUrl )
         {
-            TestHelper.Log( "Loading sample data..." );
+            TestHelper.Log( $"Load Sample Data: running... [Source={sampleDataUrl}]" );
 
             // Initialize the Lava Engine first, because it is needed by
             // the sample data loader..
@@ -212,7 +218,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             // Set the sample data identifiers.
             SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
 
-            TestHelper.Log( $"Sample Data loaded." );
+            TestHelper.Log( $"Load Sample Data: complete." );
         }
 
         /// <summary>
@@ -237,7 +243,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <returns></returns>
         public static string GetRepositoryAndTag()
         {
-            return $"{RepositoryName}:{GetTargetMigration()}";
+            return $"{RepositoryName}:{GetTargetMigration().Truncate(15)}";
         }
     }
 }

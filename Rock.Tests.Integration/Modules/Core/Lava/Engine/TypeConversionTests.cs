@@ -17,6 +17,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
@@ -25,6 +26,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
     /// Tests that verify the correct handling of various data types in the Lava Engine and associated Liquid framework.
     /// </summary>
     [TestClass]
+    [TestCategory( TestFeatures.Lava )]
     public class TypeConversionTests
     {
         private LavaIntegrationTestHelper _TestHelper = LavaIntegrationTestHelper.CurrentInstance;

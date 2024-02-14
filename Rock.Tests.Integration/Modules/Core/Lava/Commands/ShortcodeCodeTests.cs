@@ -355,10 +355,10 @@ Schedule Active = {{isScheduleActive}}
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
                 // Verify that the result emits the expected parse error.
-                var error = result.Error?.InnerException;
-                if ( !(error is LavaParseException ) )
+                var error = result.Error;
+                if ( !(error is LavaException ) )
                 {
-                    throw new Exception( "Parse exception expected but not encountered." );
+                    throw new Exception( "Lava Exception expected but not encountered." );
                 }
 
                 if ( engine.GetType() == typeof( FluidEngine ) )
@@ -388,10 +388,10 @@ Schedule Active = {{isScheduleActive}}
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
                 // Verify that the result emits the expected parse error.
-                var error = result.Error?.InnerException;
-                if ( !( error is LavaParseException ) )
+                var error = result.Error;
+                if ( !( error is LavaException ) )
                 {
-                    throw new Exception( "Parse exception expected but not encountered." );
+                    throw new Exception( "Lava Exception expected but not encountered." );
                 }
 
                 // In Fluid, parse error should correctly identify the invalid shortcode.

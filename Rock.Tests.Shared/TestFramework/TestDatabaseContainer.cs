@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -88,6 +89,16 @@ namespace Rock.Tests.Shared.TestFramework
 
                 using ( var dockerClient = new DockerClientConfiguration().CreateClient() )
                 {
+                    // Check if the docker client is available.
+                    try
+                    {
+                        await dockerClient.System.PingAsync();
+                    }
+                    catch ( Exception ex )
+                    {
+                        throw new Exception( $"Test Database Container initialization failed. The Docker Client is not available; make sure that Docker Desktop is installed and configured correctly. Refer to the README document for more information. [Uri={dockerClient.Configuration.EndpointBaseUri}]", ex );
+                    }
+
                     var images = await dockerClient.Images.ListImagesAsync( new ImagesListParameters
                     {
                         All = true

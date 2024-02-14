@@ -22,6 +22,7 @@ using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava
 {
+    [TestCategory( TestFeatures.Lava )]
     public abstract class LavaIntegrationTestBase : DatabaseTestsBase
     {
         public static LavaIntegrationTestHelper TestHelper

@@ -131,7 +131,6 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
             var campusManager = CampusDataManager.Instance;
             campusManager.AddCampusTestDataSet();
 
-            //var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
 
             var template = @"
