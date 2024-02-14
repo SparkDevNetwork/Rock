@@ -1,0 +1,13 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Footer.lava' %} {% endcomment %}
+
+{% assign logoId = CurrentPage.Layout.Site.SiteLogoBinaryFileId %}
+
+<img class="brand-logo mb-3" src="{{ logoId | ImageUrl }}" alt="The Advantage">
+
+<address class="mb-0">
+    <strong>The Advantage</strong><br>
+    27-31 E. Main Street<br>
+    Suite 3A<br>
+    Lititz, PA 17543<br>
+    Phone:(717) 949-7669
+</address>

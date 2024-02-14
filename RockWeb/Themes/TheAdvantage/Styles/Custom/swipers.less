@@ -1,0 +1,201 @@
+// swipers.less
+
+// ---------------------------------------
+
+// Table of Contents
+// 0. General Swiper Styles
+// 1. Testimonials Swiper
+// 2. Pastors Swiper
+
+// ---------------------------------------
+
+// 0. General Swiper Styles
+// ------------------------
+
+:root {
+    --opa: 0.25;
+
+    @media(min-width:768px) {
+        --opa: 1;
+    }
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    background: #022138;
+    border-radius: 999px;
+    width: 50px !important;
+    height: 50px !important;
+    border: 1px solid #415361;
+
+    @media @md {
+        display: flex !important;
+    }
+}
+
+.swiper-testimonial .swiper-button-next,
+.swiper-testimonial .swiper-button-prev {
+    display: none !important;
+
+    @media @md {
+        display: flex !important;
+    }
+}
+
+
+.swiper-button-prev:after,
+.swiper-button-next:after {
+    font-family: 'FontAwesome' !important;
+    font-size: 2rem !important;
+    color: #fff;
+    font-weight: 900;
+}
+
+.swiper-button-next:after {
+    content: '\f054' !important;
+}
+
+.swiper-button-prev:after {
+    content: '\f053' !important;
+}
+
+// 1. Testimonials Swiper
+// ------------------------
+
+.swiper-testimonial {
+    .swiper-wrapper {
+        align-items: center;
+    }
+
+    .swiper-slide.swiper-slide-active {
+        &>div {
+            opacity: 1;
+            transition: all 150ms ease-in-out;
+            max-width: 850px;
+            margin: 0 auto !important;
+        }
+    }
+
+    .swiper-slide:not(.swiper-slide-active) {
+        &>div {
+            opacity: 0.5;
+
+            @media @md {
+                transition: all 100ms ease-in-out;
+                transition-delay: 100ms;
+                max-width: 850px;
+                transform: scale(0.8);
+                transform-origin: center;
+            }
+        }
+    }
+
+    .swiper-slide.swiper-slide-prev>div {
+        margin: 0 !important;
+        margin-left: auto !important;
+    }
+}
+
+// 2. Pastors Swiper
+// ------------------------
+
+.swiper-pastors {
+    padding-bottom: 1.75rem;
+    .swiper-slide:not(.swiper-slide-active) {
+        opacity: var(--opa);
+        transition-property: opacity;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+    }
+
+    .card {
+        // Makes images follow the shape of the card
+        // When scaling when hovered
+        overflow: hidden;
+
+        // Remove regular link styles on mobile
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        @media @sm {
+            a:hover {
+                color: #f79428;
+            }
+
+            img {
+                transform-origin: center bottom;
+                // This transition is applied when mouse hovers out
+                transition: all 150ms ease-in-out;
+            }
+
+            &:hover img {
+                transition: all 250ms ease-in-out;
+                transform: scale(1.05);
+                transform-origin: center bottom;
+            }
+        }
+    }
+
+    .card-content {
+        text-align: center;
+
+        @media @md {
+            text-align: left;
+        }
+    }
+
+    .learn-more {
+        opacity: 0;
+        width: max-content;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        position: absolute;
+    }
+
+    .swiper-slide-active .learn-more {
+        transition: all 250ms ease-in-out;
+        opacity: 1;
+        border-radius: 999px;
+        background: #e1ebee;
+        padding: 8px 16px;
+        margin-bottom: 12px;
+        color: #2f495c;
+        font-size: 16px;
+
+
+        @media @md {
+            display: none !important;
+        }
+    }
+
+    .swiper-pagination {
+        display: none !important;
+    }
+}
+
+
+// Swiper arrows position for the testimonials
+.what-others-are-saying {
+    .swiper-button-next {
+        right: 20% !important;
+    }
+
+    .swiper-button-prev {
+        left: 20% !important;
+    }
+
+}
+
+.swiper-testimonial:hover~.swiper-button-prev:not(.swiper-button-disabled),
+.swiper-testimonial:hover~.swiper-button-next:not(.swiper-button-disabled) {
+    opacity: 1;
+}
+
+.swiper-testimonial~.swiper-button-prev,
+.swiper-testimonial~.swiper-button-next {
+    opacity: 0.35;
+    transition: opacity 250ms ease-in-out;
+}

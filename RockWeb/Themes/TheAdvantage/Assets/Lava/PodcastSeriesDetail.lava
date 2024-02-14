@@ -1,0 +1,87 @@
+﻿<style>
+	.series-banner {
+		height: 220px;
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+	}
+
+	@media (min-width: 992px) {
+		.series-banner {
+			height: 420px;
+		}
+	}
+
+	.series-title{
+		margin-bottom: 4px;
+	}
+
+	.series-dates {
+		opacity: .6;
+	}
+
+	.messages-title {
+		font-size: 24px;
+	}
+
+	.messages {
+		font-size: 18px;
+	}
+</style>
+
+{% assign item = Items | First %}
+{% if item %}
+
+	<article class="series-detail">
+		{% assign seriesImageGuid = item | Attribute:'SeriesImage','RawValue' %}
+		<div class="series-banner" style="background-image: url('/GetImage.ashx?Guid={{ seriesImageGuid }}');" ></div>
+
+		<h1 class="series-title">{{ item.Title }}</h1>
+		<p class="series-dates">
+			<strong>{{ item.StartDateTime | Date:'M/d/yyyy' }}
+				{% if item.StartDateTime != item.ExpireDateTime %}
+					- {{ item.ExpireDateTime | Date:'M/d/yyyy' }}
+				{% endif %}
+			</strong>
+		</p>
+
+
+		<script>function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
+    <ul class="socialsharing">
+			<li>
+				<a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
+					<i class="fa fa-fw fa-facebook"></i>
+				</a>
+			</li>
+			<li>
+				<a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
+					<i class="fa fa-fw fa-twitter"></i>
+				</a>
+			</li>
+			<li>
+				<a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' }}"  class="socialicon socialicon-email" title="" data-original-title="Share via Email">
+					<i class="fa fa-fw fa-envelope-o"></i>
+				</a>
+			</li>
+		</ul>
+
+		<div class="margin-t-lg">
+			{{ item.Content }}
+		</div>
+
+		<h4 class="messages-title margin-t-lg">In This Series</h4>
+		<ol class="messages">
+			{% for message in item.ChildItems %}
+				<li>
+					<a href="{{ LinkedPages.DetailPage }}?Item={{ message.ChildContentChannelItem.Id }}">
+						{{ message.ChildContentChannelItem.Title }}
+					</a>
+        </li>
+			{% endfor %}
+		</ol>
+
+	</article>
+
+{% else %}
+	<h1>Could not find series.</h1>
+{% endif %}

@@ -1,0 +1,153 @@
+// controlgallery-overrides.less
+
+// ---------------------------------------
+
+// Table of Contents
+// 1. Control Panel Updates
+// 2. CSS Utilities
+
+// ---------------------------------------
+
+// 1. Control Panel Updates
+// --------------------------------
+
+.alert {
+  border-radius: 4px;
+}
+
+.checkbox>label,
+.radio>label {
+  display: inline-flex;
+  align-items: flex-start;
+
+  &>.label-text {
+    line-height: normal;
+  }
+}
+
+.radio-inline,
+.checkbox-inline {
+  display: flex !important;
+  align-items: center;
+
+  .label-text {
+    line-height: normal;
+  }
+}
+
+.chosen-choices {
+  border: 1px solid #e1e1e8 !important;
+}
+
+.chosen-results>.active-result {
+  background: #fff !important;
+
+  &.highlighted {
+    background: #f7fafb !important;
+    color: @brand-primary  !important;
+  }
+}
+
+.chosen-results>.group-result {
+  color: @brand-primary  !important;
+}
+
+.chosen-container .chosen-drop {
+  background: #fff;
+}
+
+.datepicker {
+  font-size: 16px !important;
+}
+
+.image-editor-photo .options {
+  top: unset !important;
+  bottom: 0 !important;
+  border-radius: 4px;
+}
+
+.chosen-container-single a:not([href]):not([tabindex]).chosen-single:not(.chosen-default) {
+  color: @brand-primary  !important;
+}
+
+
+.input-group-btn>.btn {
+  padding: 6px 12px !important;
+  border: 1px solid #ccc;
+}
+
+.chosen-container-single .chosen-single abbr::before,
+.chosen-container-single .chosen-search::after {
+  color: inherit;
+}
+
+.scroll-container.scroll-container-picker {
+  font-size: 16px;
+}
+
+.picker .selected-names {
+  width: calc(100% - 45px) !important;
+}
+
+.btn-group>.btn.btn-default {
+  border: 1px solid @brand-primary;
+}
+
+.picker-folders .actions .btn-sm {
+  padding: 4px 8px;
+}
+
+.grid .grid-actions {
+  background: #fff;
+}
+
+// Grid fix so that sort icon does not sit on the border
+.table>thead>tr>th>a:not(.btn)::after {
+  margin-right: 0px;
+}
+
+.panel-widget {
+  border-color: #E0ECF0;
+
+  &>.panel-heading {
+    background-color: #f7fafb;
+    color: @brand-primary;
+  }
+}
+
+.rockbadge.rockbadge-icon,
+.rockbadge.rockbadge-overlay {
+  color: #008cd0;
+}
+
+.form-control {
+  box-shadow: none !important;
+}
+
+.form-group {
+  label:not(.checkbox-list-wrapper label) {
+    font-size: 16px;
+    opacity: 0.8;
+  }
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:hover, .nav-tabs>li.active>a:focus {
+  border: 1px solid #153456;
+  border-bottom-color: transparent;
+}
+
+// 2. CSS Utilities
+// --------------------------------
+
+.flex-1 {
+  flex: 1;
+}
+
+.featured-circle-icon {
+  align-self: center;
+  width: 90px;
+  height: 90px;
+  padding: 20px;
+  font-size: 42px;
+  color: #5ac4f6;
+}

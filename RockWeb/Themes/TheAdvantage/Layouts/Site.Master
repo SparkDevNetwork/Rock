@@ -1,0 +1,202 @@
+<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<html >
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <%-- Font files --%>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <script src="https://kit.fontawesome.com/271cb020cc.js" crossorigin="anonymous" defer></script>
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+
+    <!-- AOS Library (https://github.com/michalsnik/aos) -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+        <!-- Page Header -->
+        <header>
+            <%-- Navbar --%>
+            <nav class="position-absolute w-100 py-4 z-20">
+                <div class="container">
+                    <div class="d-flex align-items-center justify-content-between mt-lg-4 mt-0">
+                        <Rock:Zone Name="Brand" runat="server" />
+                        <button type="button" class="navbar-toggle m-0 text-white z-10" data-toggle="collapse" data-target="#navbar" aria-expanded="true" aria-controls="navbar">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="fa fa-bars"></span>
+                        </button>
+                        <div class="d-none d-sm-block">
+                        <Rock:Zone Name="Navigation" runat="server" />
+                        </div>
+
+                    </div>
+                </div>
+                <div id="navbar" class="nav-drawer-wrapper navbar-collapse collapse z-20" aria-expanded="false">
+                    <Rock:Lava ID="navMenuMobile" runat="server">
+                        {% contentchannelitem where:'ContentChannelId == 92' iterator:'Items' prefetchattributes:'URL' %} {% endcontentchannelitem %}
+                        
+                        <div class="d-flex flex-column navmenu">
+                            <button onclick="return false;" class="navbar-toggle m-0 mt-4 mb-2 align-self-end" data-toggle="collapse" data-target="#navbar"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="#153456" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"/></svg></button>
+                            <ul class="nav navbar-nav d-block d-sm-none">
+                                {% for item in Items %}
+                                    {% assign page = item | Attribute: 'URL','RawValue' %}
+                                    <li>
+                                        <a class="w-100 p-3" href="{{ page }}">{{ item.Title }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </Rock:Lava>
+                </div>
+            </nav>
+
+            <!-- For layouts other than the Homepage Layout **** START **** -->
+            <Rock:Lava ID="HeroLayout" runat="server">
+                {% if CurrentPage.LayoutId != 276 %}
+                    <div class="hero">
+                        <div class="container d-flex align-items-end pt-heading">                       
+                            <h1 class="display hero-page-title" data-aos="fade-up" data-aos-delay="50"></h1>
+
+                            {% assign pageTitleOverride = CurrentPage | Attribute:'PageTitleOverride' %}
+
+                            {% if pageTitleOverride and pageTitleOverride != '' %}
+                                {{ pageTitleOverride | SetPageTitle }}
+                            {% endif %}
+                {% endif %}
+            </Rock:Lava>
+            <Rock:Zone Name="TopHeader" runat="server" />
+            <Rock:Lava ID="ContainerEndDiv" runat="server">
+                {% if CurrentPage.LayoutId != 276 %}
+                    <%-- Closes Line 88 --%>
+                    </div>
+                {% endif %}
+            </Rock:Lava>
+            <!-- For layouts other than the Homepage Layout **** END **** -->
+
+
+            <%-- Only for Homepage Layouts **** START **** --%>
+            <Rock:Lava ID="HeroHomepageLayout" runat="server">
+                {% if CurrentPage.LayoutId == 276 %}
+                    {% assign hasOverlay = CurrentPage | Attribute:'HasOverlay' %}
+                    {% assign videoUrl = CurrentPage | Attribute:'HeroVideoURL' %}
+                    <div class="hero-homepage">
+                        <div class="hero-scroll bounce">
+                            <i class="fa fa-arrow-down" style="font-size: 1.5rem"></i>
+                        </div>
+                        {% if hasOverlay == 'Yes' %}
+                            <div class="hero-overlay">
+                                <video loop playsinline class="position-absolute left-0 top-0 w-100 h-100 {{ hasOverlayClass }}" autoplay muted style="object-fit:cover; z-index: -1;" fetchpriority="high" preload="auto">
+                                    <source src="{{ videoUrl }}" type="video/mp4">
+                                </video>
+                            </div>
+                        {% else %}
+                            <video loop playsinline class="position-absolute left-0 top-0 w-100 h-100" autoplay muted style="object-fit:cover; z-index: -1;" fetchpriority="high" preload="auto">
+                                <source src="{{ videoUrl }}" type="video/mp4">
+                            </video>
+                        {% endif %}
+                {% endif %}
+            </Rock:Lava>
+
+            <div class="homepage-hero-zone">
+                <div class="container">
+                    <Rock:Zone Name="HeroContent" runat="server" />
+                </div>
+            </div>
+            <%-- Only for Homepage Layouts **** END **** --%>
+
+            <%-- Closes either .hero OR .hero-homepage --%>
+            </div>
+        </header>
+
+        <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+	    <footer class="py-0 py-md-3">
+            <div class="container h-100 d-flex align-items-center py-5 justify-content-center justify-content-md-start">
+				<Rock:Zone Name="Footer" runat="server" />
+            </div>
+	    </footer>
+
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>     
+
+    <script>
+        Sys.Application.add_load(HandleBackForwardCache);
+
+        // Fixes an issue with the wait spinner caused by browser Back/Forward caching.
+        function HandleBackForwardCache() {
+
+            // Forcibly hide the wait spinner if the page is being reloaded from cache.
+            // Browsers that implement back/forward caching may otherwise continue to display the wait spinner when the page is restored.
+            // This fix is not effective for Safari browsers prior to v13, due to a known bug in the bfcache implementation.
+            // (https://bugs.webkit.org/show_bug.cgi?id=156356)
+            $(window).bind('pageshow', function (e) {
+                if ( e.originalEvent.persisted )
+                {
+                    $('#updateProgress').hide();
+                }
+            });
+        }
+
+    </script>
+    <Rock:Lava ID="themescripts" runat="server">
+        <script src="{{ "~~/Assets/Scripts/theme.js" | ResolveRockUrl }}" type="module" defer></script>
+    </Rock:Lava>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        AOS.init();
+    </script>
+
+</body>
+
+</html>
+    
+   

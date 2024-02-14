@@ -1,0 +1,14 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/MainNav.lava' %}{% endcomment %}
+
+{% for item in Items %}
+    {% assign page = item | Attribute: 'URL','RawValue' %}
+
+    {% if forloop.first %}
+        <ul class="nav navbar-nav navbar-desktop">
+    {% endif %}
+    <li class="position-relative border-0"><a class="stretched-link px-2 py-2" style="color: #fff;" href="/theadvantage{{ page }}">{{ item.Title }}</a></li>
+    {% assign isActive = false %}
+    {% if forloop.last %}
+        </ul>
+    {% endif %}
+{% endfor %}

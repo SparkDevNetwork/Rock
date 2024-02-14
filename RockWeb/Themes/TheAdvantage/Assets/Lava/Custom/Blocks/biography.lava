@@ -1,0 +1,22 @@
+{% assign photoUrl = Item | Attribute:'Photo', 'RawValue' | ImageUrl %}
+{% assign teamRole = Item | Attribute:'Role' %}
+
+<div class="py-md-5 py-3" style="background: #f7fafb;">
+    <div class="py-3 container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="px-3">
+                    <img src="{{ photoUrl }}" alt="{{ Item.Title }}" width="364" height="364" class="img-responsive w-100 rounded-lg">
+                    <h2 class="h3 text-advantage-blue mb-1">{{ Item.Title }}</h2>
+                    <span class="o-80 font-weight-semibold">{{ teamRole }}</span>
+                </div>
+            </div>
+            <hr class="d-block d-md-none mx-4 my-3" style="border-width: 2px;">
+            <div class="col-md-8">
+                <div class="px-3 px-md-5">
+                    {{ Item.Content }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

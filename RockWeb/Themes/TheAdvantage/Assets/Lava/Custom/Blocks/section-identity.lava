@@ -1,0 +1,31 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Blocks/section-identity.lava' %} {% endcomment %}
+
+<div class="container py-md-5 my-md-5 py-0 my-0">
+    <div class="row row-no-gutters d-block d-md-flex align-items-center">
+        <div class="col-md-6">
+            <div class="content-wrapper py-5 my-md-5 my-0 px-3 px-md-0">
+                <h2 class="h1 mt-0 mt-3">WHAT WE DO</h2>
+                <p style="max-width:650px;">According to a 2022 Barna study, 65 percent of pastors report feelings of loneliness and isolation. The Advantage brings pastors together in authentic communities of peers, where they find encouragement, creative ideas, and shared learnings.</p>
+            </div>
+        </div>
+
+        <div class="col-md-6 d-none d-md-block text-right">
+            <div class="image-wrapper position-relative d-inline-block p-3">
+                <img src="~~/Assets/Images/advantage-roundtable.webp" width="600" height="450" class="img-responsive w-100" alt="" loading="lazy">
+                <img src="~~/Assets/Images/orange-chevron.svg" width="175" class="orange-arrow-accent position-absolute" alt="" loading="lazy">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% stylesheet id:'what-we-do' compile:'less' cacheduration:'3600' %}
+    .image-wrapper {
+        width: fit-content;
+    }
+
+    .orange-arrow-accent {
+        right: -0.5rem;
+        bottom: -5rem;
+        z-index: -1;
+    }
+{% endstylesheet %}

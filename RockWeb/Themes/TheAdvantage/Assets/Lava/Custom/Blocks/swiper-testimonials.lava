@@ -1,0 +1,42 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Blocks/swiper-testimonials.lava' %} {% endcomment %}
+
+{% contentchannelitem where:'ContentChannelId == 93' iterator:'testimonials' prefetchattributes:'PartnerChurch,PartnerTitle' %} {% endcontentchannelitem %}
+
+<div class="what-others-are-saying position-relative text-center text-white py-5" style="background-color: #022138;">
+    <div class="container pt-md-5 pt-0">
+        <div class="px-3 px-md-0 mb-4 mb-md-3">
+            <h2 class="h1 text-white mb-4 mb-md-5">WHAT OTHERS ARE SAYING</h2>
+            <div class="mx-auto" style="max-width:850px; border-radius: 8px; overflow: hidden;">
+                    {[ wistia embedcode:'cevst5rf6i' playercolor:'#008cd0' ]}
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-hidden">
+        {[ swiper spacebetween:'48' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1.95' containerclass:'swiper-testimonial pb-5 pb-md-0' initialslide:'1' breakpoints:'300-1.25|48,500-1.25|48,768-1.5|48,991-1.95|48' autoplay:'7000' ]}
+            {% for item in testimonials %}
+                {% assign testimonialContent = item.Content %}
+                {% assign partnerName = item.Title %}
+                {% assign partnerChurch = item | Attribute:'PartnerChurch' %}
+                {% assign partnerTitle = item | Attribute: 'PartnerTitle' %}
+                {% assign partnerPhoto = item | Attribute: 'PartnerPhoto','RawValue' | ImageUrl %}
+
+                [[ slide ]]
+                <div class="m-md-0">
+                    <div class="card border-0 bg-transparent">
+                        <div class="d-block d-lg-flex align-items-center pt-2 pt-md-5" style="gap:3rem;">
+                            <blockquote>{{ testimonialContent }}</blockquote>
+                            <div class="d-flex flex-column align-items-center text-center text-lg-left align-items-lg-start" style="min-width:max-content; align-items: flex-start;">
+                                <img src="{{ partnerPhoto }}" class="img-responsive rounded-circle" width="50" height="50">
+                                <span class="h5">{{ partnerName }}</span>
+                                <span class="text-muted" style="line-height: 1.4;">{{ partnerTitle }}<br>{{ partnerChurch }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                [[ endslide ]]
+            {% endfor %}
+        {[ endswiper ]}
+    </div>
+
+</div>

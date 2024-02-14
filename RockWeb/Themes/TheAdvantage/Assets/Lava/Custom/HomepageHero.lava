@@ -1,0 +1,8 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/HomepageHero.lava' %} {% endcomment %}
+
+<div class="row d-flex flex-wrap overflow-hidden">
+    <div class="col-lg-5 col-xs-11 col-md-7 col-sm-6 pt-0 my-0 py-md-0 my-md-0 py-sm-3 my-sm-3 d-flex flex-column justify-content-center align-items-start" data-aos="fade-up" data-aos-delay="50">
+        <h1 class="display mb-2 mt-md-0 mt-0 pt-md-0 mt-lg-4 pt-lg-4" style="line-height:1;">CHURCH LEADERSHIP WILL NEVER <br/>BE EASY...</h1>
+        <h2 class="display text-advantage-orange mt-0 mb-4">BUT IT DOESN'T HAVE TO BE LONELY</h2>
+    </div>
+</div>

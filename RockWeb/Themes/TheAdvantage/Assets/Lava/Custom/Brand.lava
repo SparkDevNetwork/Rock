@@ -1,0 +1,14 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/Brand.lava' %} {% endcomment %}
+
+{% assign faviconId = CurrentPage.Layout.Site.FavIconBinaryFileId %}
+{% assign logoId = CurrentPage.Layout.Site.SiteLogoBinaryFileId %}
+{% assign layoutId = CurrentPage.Layout.Id %}
+
+<a href="/theadvantage">
+    <span class="sr-only">The Advantage - A Leadership Collaborative</span>
+    {% if layoutId == 276 %}
+        <img class="brand-logo homepage" src="~~/Assets/Images/theadvantage-enlarged.svg" alt="The Advantage - A Leadership Collaborative">
+        {% else %}
+        <img class="brand-logo" src="{{ logoId | ImageUrl }}" width="261" height="42" alt="The Advantage - A Leadership Collaborative">
+    {% endif %}
+</a>

@@ -1,0 +1,73 @@
+.hero {
+  background-color: #153456;
+  min-height: 232px;
+
+  @media @md {
+    min-height: 426px;
+  }
+}
+
+// It inherits the size of .hero to correctly apply the background
+.hero>.container {
+  min-height: inherit;
+  background: url('../../../Assets/Images/header-accent-advantage.svg');
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: 60vw;
+  // Progressively enhance if browser supports clamp (If not, 60vw will be the fallback value)
+  background-size: clamp(343px, 50vw, 767px);
+  color: #fff;
+}
+
+// The following styles are only applied to Homepage Layout pages
+.hero-homepage {
+  min-height: 95vh;
+  position: relative;
+}
+
+.homepage-hero-zone {
+  display: grid;
+  align-items: center;
+  height: 95vh;
+  // Progressive enhancement
+  color: #fff;
+}
+
+// If the homepage hero zone is found in .hero (a regular page),
+// Hide it from view
+.hero .homepage-hero-zone {
+  display: none;
+}
+
+.hero-scroll {
+  position: absolute;
+  left: 49.5%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  color: #fff;
+}
+
+.bounce {
+  -moz-animation: bounce 2s infinite;
+  -webkit-animation: bounce 2s infinite;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-30px);
+  }
+
+  60% {
+    transform: translateY(-15px);
+  }
+}

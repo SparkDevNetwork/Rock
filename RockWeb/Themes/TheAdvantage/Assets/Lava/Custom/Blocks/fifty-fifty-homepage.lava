@@ -1,0 +1,26 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Blocks/fifty-fifty-homepage.lava' %} {% endcomment %}
+
+<div class="row row-no-gutters d-flex flex-wrap">
+    <div class="col-xs-12 col-sm-12 col-md-6 bg-chevron-blue">
+        <div class="container py-md-3 py-0" style="max-width: fit-content;">
+            <div class="px-3 py-5 my-md-5 px-md-0 mx-0 my-0 mx-md-5 text-white">
+                <h2 class="h1">WHAT IS THE ADVANTAGE?</h2>
+                <div style="max-width:650px;">
+                    <p>Church leaders in lifegiving relationship, collaborating to reach the 8 million people in Pennsylvania who have no church home.</p>
+                    <p class="o-80">If you’ve ever thought, “Am I the only one struggling to figure this out?” You’re not. We can figure it out together.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 bg-chevrons-orange">
+        <div class="container py-md-3 py-0" style="max-width: fit-content;">
+            <div class="px-3 py-5 my-md-5 px-md-0 mx-0 my-0 mx-md-5">
+                <h2 class="h1">WHY WE EXIST</h2>
+                <div style="max-width:650px;">
+                    <p>In Acts 18:27, Apollos proved to be a great benefit (or ADVANTAGE) to those who had believed. As the name implies, our heart is to be an advantage to church leaders across Pennsylvania.</p>
+                    <p class="o-80">We want to help you move beyond surviving, to thriving in your pastoral leadership.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

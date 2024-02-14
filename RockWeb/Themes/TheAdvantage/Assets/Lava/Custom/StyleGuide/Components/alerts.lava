@@ -1,0 +1,47 @@
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% capture alerts %}
+    <div class="alert alert-success fade in" role="alert">
+        <strong>Alert Title</strong> Alert message goes here.
+    </div>
+    <div class="alert alert-info fade in" role="alert">
+        <strong>Alert Title</strong> Alert message goes here.
+    </div>
+    <div class="alert alert-danger fade in" role="alert">
+        <strong>Alert Title</strong> Alert message goes here.
+    </div>
+    <div class="alert alert-warning fade in" role="alert">
+        <strong>Alert Title</strong> Alert message goes here.
+    </div>
+{% endcapture %}
+
+{% capture alertsEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Alerts</blockquote>
+    {{ alerts | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+{% capture dismissableAlerts %}
+    <div class="alert alert-info alert-dismissible fade in" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+        <strong>Alert Title</strong> Alert message goes here.
+    </div>
+{% endcapture %}
+
+{% capture dismissableAlertsEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Alerts</blockquote>
+    {{ dismissableAlerts | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+<h3 class="sg-section-header">Alerts</h3>
+    {{ alerts }}
+    {{ alertsEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Dismissable Alerts</h3>
+    {{ dismissableAlerts }}
+    {{ dismissableAlertsEscaped }}
