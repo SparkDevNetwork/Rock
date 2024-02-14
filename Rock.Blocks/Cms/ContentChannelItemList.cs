@@ -283,19 +283,21 @@ namespace Rock.Blocks.Cms
                 query = query.Where( i => i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.PersonId == person.Id );
             }
 
-            query = query.OrderBy( i => i.Order );
-
-            if ( !contentChannel.ItemsManuallyOrdered )
-            {
-                query = query.OrderByDescending( p => p.StartDateTime );
-            }
-
             return query;
         }
 
         /// <inheritdoc/>
         protected override IQueryable<ContentChannelItem> GetOrderedListQueryable( IQueryable<ContentChannelItem> queryable, RockContext rockContext )
         {
+            var contentChannel = GetContentChannel();
+
+            var query = queryable.OrderBy( i => i.Order );
+
+            if ( contentChannel != null && !contentChannel.ItemsManuallyOrdered )
+            {
+                query = query.OrderByDescending( p => p.StartDateTime );
+            }
+
             return queryable;
         }
 
