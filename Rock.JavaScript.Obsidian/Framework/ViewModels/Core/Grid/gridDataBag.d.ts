@@ -22,7 +22,7 @@
 //
 
 /** The data that describes the contents of a grid. */
-export type GridDataBag = {
+export type GridDataBag<T = Record<string, unknown>> = {
     /** Gets or sets the row data to display in the grid. */
-    rows?: Record<string, unknown>[] | null;
+    rows?: T[] | null;
 };

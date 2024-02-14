@@ -1,10 +1,47 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox alertType="warning">
-        This is an experimental block and should not be used in production.
-    </NotificationBox>
+    <Grid :data="gridDataSource"
+          keyField="guid"
+          itemTerm="Attribute"
+          :showLaunchWorkflow="false"
+          showExport
+          showMergeTemplate
+          liveUpdates>
 
-    <Block title="Attribute List">
+        <template #gridHeaderPrepend v-if="showEntityTypePicker">
+            <div class="form-inline d-flex justify-content-end p-3">
+                <DropDownList v-model="entityTypeGuid"
+                              label="Entity Type"
+                              grouped
+                              enhanceForLongLists
+                              :items="entityTypeOptions"
+                              style="min-width:250px;" />
+            </div>
+
+        </template>
+
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <TextColumn name="id" title="Id" field="id" width="80" />
+
+        <TextColumn name="qualifier" title="Qualifier" field="qualifier" :filter="pickExistingValueFilter" />
+
+        <TextColumn name="name" title="Name" field="name" :filter="textValueFilter" />
+
+        <TextColumn name="categories" title="Categories" field="categories" :filter="textValueFilter" />
+
+        <Column name="value" title="Value" field="value" :filter="textValueFilter">
+            <template #format="{ row }">
+                <RockField :modelValue="row.value" :attribute="row.attribute" :showLabel="false" isCondensed isEscaped />
+            </template>
+        </Column>
+
+        <EditColumn @click="onEditAttribute" />
+        <SecurityColumn />
+        <DeleteColumn />
+    </Grid>
+
+    <Block title="Attribute List" class="mt-5">
         <template #headerActions>
             <div v-if="showEntityTypePicker" class="form-inline panel-labels">
                 <DropDownList v-model="entityTypeGuid"
@@ -17,59 +54,6 @@
         </template>
 
         <template #default>
-            <Grid v-if="entityTypeSelectionIsValid"
-                  :data="gridData"
-                  keyField="id"
-                  itemTerm="Attribute"
-                  :showLaunchWorkflow="false"
-                  showExport
-                  showMergeTemplate
-                  liveUpdates>
-                <!-- <Column name="something" title="Something">
-                    <template #format="{ row }">
-                        <span>{{ row.name }}</span>
-                    </template>
-                </Column> -->
-
-                <ReorderColumn @orderChanged="onOrderChanged" />
-
-                <TextColumn name="id" title="Id" field="id" width="80" />
-
-                <TextColumn name="qualifier"
-                            title="Qualifier"
-                            field="qualifier"
-                            :filter="pickExistingValueFilter" />
-
-                <TextColumn name="name"
-                            title="Name"
-                            field="name"
-                            :filter="textValueFilter" />
-
-                <TextColumn name="categories"
-                            title="Categories"
-                            field="categories"
-                            :filter="textValueFilter" />
-
-                <Column name="value"
-                        title="Value"
-                        field="value"
-                        :filter="textValueFilter">
-                    <template #format="{ row }">
-                        <RockField :modelValue="row.value" :attribute="row.attribute" :showLabel="false" isCondensed />
-                    </template>
-                </Column>
-
-                <EditColumn />
-                <SecurityColumn />
-                <DeleteColumn />
-            </Grid>
-
-
-
-
-
-
-
             <div v-if="entityTypeSelectionIsValid" class="grid grid-panel">
                 <div class="grid-actions border-bottom border-panel">
                     <RockButton class="btn-add btn-grid-action" btnType="link" @click="onAddAttribute"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
@@ -113,7 +97,7 @@
                     </table>
                 </div>
             </div>
-            <NotificationBox v-else alertType="warning">
+            <NotificationBox v-else-if="false" alertType="warning">
                 Please select an entity to display attributes for.
             </NotificationBox>
         </template>
@@ -154,7 +138,7 @@
 
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
-    import { computed, ref, watch } from "vue";
+    import { computed, reactive, ref, watch } from "vue";
     import Grid, { Column, NumberColumn, TextColumn, ReorderColumn, SecurityColumn, DeleteColumn, EditColumn, pickExistingValueFilter, textValueFilter, RockFieldColumn } from "@Obsidian/Controls/grid";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -172,6 +156,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
     type BlockConfiguration = {
         attributeEntityTypeId: number;
@@ -266,18 +251,21 @@
         return "";
     });
 
-    const gridData = computed(() => {
-        return { rows: attributes.value };
-    });
+    const gridDataSource = ref<Promise<GridDataBag<GridRow>>>(
+        entityTypeSelectionIsValid.value
+            ? Promise.resolve({ rows: attributes.value })
+            : Promise.reject("Please select an entity to display attributes for.")
+    );
+    let gridData: GridDataBag<GridRow> | undefined;
 
     /**
      * Start editing an attribute on the given row.
      *
      * @param row The row that represents the attribute.
      */
-    const onEditAttribute = async (row: GridRow): Promise<void> => {
+    const onEditAttribute = async (guid: Guid): Promise<void> => {
         const result = await invokeBlockAction<EditAttribute>("GetEditAttribute", {
-            attributeGuid: row.guid
+            attributeGuid: guid
         });
 
         if (!result.isSuccess || !result.data) {
@@ -404,7 +392,7 @@
      *
      * @param row The row that initiated the action.
      */
-    const onEditAttributeValue = async (row: GridRow): Promise<void> => {
+    async function onEditAttributeValue(row: GridRow): Promise<void> {
         if (!config.allowSettingOfValues) {
             return;
         }
@@ -420,7 +408,7 @@
         editAttribute.value = result.data.attribute;
         editAttributeValue.value = result.data.value;
         showEditAttributeValueModal.value = true;
-    };
+    }
 
     /**
      * Called when a row has been dragged from one position to a new position.
@@ -442,14 +430,14 @@
     /**
      * Request that the edit value form attempt to validate and submit.
      */
-    const startSaveEditAttributeValue = (): void => {
+    function startSaveEditAttributeValue(): void {
         submitEditAttributeValue.value = true;
-    };
+    }
 
     /**
      * Performs the save operation for editing an attribute value.
      */
-    const saveEditAttributeValue = async (): Promise<void> => {
+    async function saveEditAttributeValue(): Promise<void> {
         const result = await invokeBlockAction<GridRow>("SaveEditAttributeValue", {
             attributeGuid: editAttribute.value?.attributeGuid,
             value: editAttributeValue.value
@@ -468,7 +456,7 @@
         editAttribute.value = {} as PublicAttributeBag;
         editAttributeValue.value = "";
         showEditAttributeValueModal.value = false;
-    };
+    }
 
     // #endregion
 
@@ -479,7 +467,7 @@
      *
      * @returns An array of class names.
      */
-    const getDeleteButtonClass = (row: GridRow): string[] => {
+    function getDeleteButtonClass(row: GridRow): string[] {
         const classes: string[] = ["btn", "btn-danger", "btn-sm", "grid-delete-button"];
 
         if (!row.isDeleteEnabled) {
@@ -487,7 +475,7 @@
         }
 
         return classes;
-    };
+    }
 
     /**
      * Gets the CSS classes to be applied to the data cell of a row.
@@ -496,25 +484,19 @@
      *
      * @returns An array of class names.
      */
-    const getDataCellClass = (_row: GridRow): string[] => {
+    function getDataCellClass(_row: GridRow): string[] {
         if (config.allowSettingOfValues) {
             return ["grid-select-cell"];
         }
         else {
             return ["grid-cell"];
         }
-    };
-
-    function onIgnore(): void {
-        /* Intentionally blank. */
     }
 
-    // Watch for changes to the user-selection of the entity type and update
-    // the list of attributes in the grid.
-    watch(entityTypeGuid, async () => {
-        if (entityTypeGuid.value === "") {
+    async function loadGridData(): Promise<GridDataBag<GridRow>> {
+        if (!entityTypeGuid.value) {
             attributes.value = [];
-            return;
+            throw "Please select an entity to display attributes for.";
         }
 
         const result = await invokeBlockAction<GridRow[]>("GetAttributes", {
@@ -522,9 +504,23 @@
         });
 
         if (!result.isSuccess || !result.data) {
-            return;
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
 
+        gridData = reactive({ rows: result.data });
+
         attributes.value = result.data;
+
+        return { rows: result.data };
+    }
+
+    function onIgnore(): void {
+        /* Intentionally blank. */
+    }
+
+    // Watch for changes to the user-selection of the entity type and update
+    // the list of attributes in the grid.
+    watch(entityTypeGuid, () => {
+        gridDataSource.value = loadGridData();
     });
 </script>

@@ -133,6 +133,8 @@ namespace Rock.Blocks.Core
         {
             var entityTypeGuid = GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull();
 
+            var builder = GetGridBuilder();
+
             return new
             {
                 AttributeEntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>().Id,
@@ -141,7 +143,8 @@ namespace Rock.Blocks.Core
                 Attributes = entityTypeGuid.HasValue ? GetAttributeRows( entityTypeGuid ) : new List<GridRow>(),
                 HideColumns = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).SplitDelimitedValues(),
                 EnableShowInGrid = GetAttributeValue( AttributeKey.EnableShowInGrid ).AsBoolean(),
-                AllowSettingOfValues = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean()
+                AllowSettingOfValues = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean(),
+                GridDefinition = builder.BuildDefinition()
             };
         }
 
