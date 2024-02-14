@@ -86,7 +86,7 @@ export const EditComponent = defineComponent({
         },
     },
 
-    template: `<DropDownList :multiple="allowMultipleValues" v-model="internalValue" :items="options" />`
+    template: `<DropDownList :multiple="allowMultipleValues" v-model="internalValue" :items="options" enhanceForLongLists />`
 });
 
 export const ConfigurationComponent = defineComponent({

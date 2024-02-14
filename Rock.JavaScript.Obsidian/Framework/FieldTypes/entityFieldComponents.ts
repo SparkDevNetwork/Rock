@@ -68,7 +68,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-    <EntityPicker v-model="internalValue" v-model:entityType="entityType" :entityControlHelpTextFormat="helpTextFormat" />
+    <EntityPicker v-model="internalValue" v-model:entityType="entityType" :entityControlHelpTextFormat="helpTextFormat" enhanceForLongLists />
 `
 });
 
