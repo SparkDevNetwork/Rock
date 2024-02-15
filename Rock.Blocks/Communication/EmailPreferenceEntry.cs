@@ -213,7 +213,6 @@ We have unsubscribed you from the following lists:
         private const string NO_EMAILS = "No Emails";
         private const string NOT_INVOLVED = "Not Involved";
 
-        private Person _person = null;
         private Model.Communication _communication = null;
 
         #endregion
@@ -244,33 +243,26 @@ We have unsubscribed you from the following lists:
             var mergeFields = RequestContext.GetCommonMergeFields();
             var box = new EmailPreferenceEntryInitializationBox();
             var communication = GetCommunication( rockContext );
-            var person = GetPerson( rockContext );
+            var ( person, isPersonAutoUnsubscribing ) = GetPerson( rockContext );
 
             if ( communication != null )
             {
                 mergeFields.Add( "Communication", communication );
             }
 
-            var service = new PersonService( rockContext );
-            var key = PageParameter( PageParameterKey.Person );
-            if ( !string.IsNullOrWhiteSpace( key ) )
-            {
-                person = service.GetByPersonActionIdentifier( key, "Unsubscribe" );
-                if ( person == null )
-                {
-                    person = service.GetByUrlEncodedKey( key );
-                }
-            }
-
-            if ( person == null && GetCurrentPerson() != null )
-            {
-                person = GetCurrentPerson();
-            }
-
             box.AllowInactivatingFamily = SetAllowInactivatingFamilyVisibility( person );
 
-            if ( person != null )
+            if ( person == null )
             {
+                box.EmailPreferenceUpdateAlertType = nameof( NotificationBoxType.Danger ).ToLower();
+                box.EmailPreferenceUpdateMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
+                return box;
+            }
+
+            if ( isPersonAutoUnsubscribing )
+            {
+                var service = new PersonService( rockContext );
+
                 if ( communication?.ListGroupId.HasValue == true )
                 {
                     // Auto-unsubscribe from a specific communication list.
@@ -284,15 +276,11 @@ We have unsubscribed you from the following lists:
                     // Auto-unsubscribe from all email.
                     service.UnsubscribeFromEmail( person );
                 }
-                rockContext.SaveChanges();
 
-                SetEmailPreferenceData( rockContext, box, mergeFields );
+                rockContext.SaveChanges();
             }
-            else
-            {
-                box.EmailPreferenceUpdateAlertType = nameof( NotificationBoxType.Danger ).ToLower();
-                box.EmailPreferenceUpdateMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
-            }
+
+            SetEmailPreferenceData( rockContext, box, mergeFields, person, isPersonAutoUnsubscribing );
 
             return box;
         }
@@ -303,12 +291,10 @@ We have unsubscribed you from the following lists:
         /// <param name="rockContext">The rock context.</param>
         /// <param name="box">The box.</param>
         /// <param name="mergeFields">The merge fields.</param>
-        private void SetEmailPreferenceData( RockContext rockContext, EmailPreferenceEntryInitializationBox box, Dictionary<string, object> mergeFields )
+        /// <param name="isPersonUnsubscribed">Whether the person is unsubscribed.</param>
+        private void SetEmailPreferenceData( RockContext rockContext, EmailPreferenceEntryInitializationBox box, Dictionary<string, object> mergeFields, Person person, bool isPersonUnsubscribed )
         {
-            // The person has already been unsubscribed at this point.
-
             var availableOptions = GetAttributeValue( AttributeKey.AvailableOptions ).SplitDelimitedValues( false );
-            var person = GetPerson( rockContext );
 
             var isUnsubscribeVisible = availableOptions.Contains( UNSUBSCRIBE );
             box.UnsubscribeText = isUnsubscribeVisible ? GetAttributeValue( AttributeKey.UnsubscribefromListsText ).ResolveMergeFields( mergeFields ) : null;
@@ -378,7 +364,7 @@ We have unsubscribed you from the following lists:
                 {
                     box.EmailPreference = UNSUBSCRIBE;
                     box.UnsubscribeFromList = new List<ViewModels.Utility.ListItemBag>() { box.UnsubscribeFromListOptions.Find( l => l.Value == communication.ListGroup.Guid.ToString() ) };
-                    box.SuccessfullyUnsubscribedText = $"You have been successfully unsubscribed from the \"{communication.ListGroup}\" communication list. If you would like to be removed from all communications see the options below.";
+                    box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from the \"{communication.ListGroup}\" communication list. If you would like to be removed from all communications see the options below." : null;
                 }
                 else
                 {
@@ -401,7 +387,7 @@ We have unsubscribed you from the following lists:
                                 box.EmailPreference = NO_MASS_EMAILS;
                                 anyOptionChecked = true;
                             }
-                            box.SuccessfullyUnsubscribedText = $"You have been successfully unsubscribed from all mass communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}.";
+                            box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from all mass communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}." : null;
                             break;
                         }
                         case EmailPreference.DoNotEmail:
@@ -429,7 +415,7 @@ We have unsubscribed you from the following lists:
 
                                 box.InActiveNote = person.ReviewReasonNote;
                             }
-                            box.SuccessfullyUnsubscribedText = $"You have been successfully unsubscribed from all communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}.";
+                            box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from all communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}." : null;
                             break;
                         }
                     }
@@ -517,10 +503,9 @@ We have unsubscribed you from the following lists:
             }
         }
 
-        private EmailPreferenceEntrySaveResponseBag UnsubscribeFromLists( RockContext rockContext, EmailPreferenceEntrySaveRequestBag bag )
+        private EmailPreferenceEntrySaveResponseBag UnsubscribeFromLists( RockContext rockContext, EmailPreferenceEntrySaveRequestBag bag, Person person )
         {
             var responseBag = GetSuccessResponseBag();
-            var person = GetPerson( rockContext );
             var communication = GetCommunication( rockContext );
 
             if ( person == null )
@@ -616,7 +601,7 @@ We have unsubscribed you from the following lists:
         /// <summary>
         /// Updates the person email
         /// </summary>
-        private EmailPreferenceEntrySaveResponseBag UpdateEmail( RockContext rockContext, string email )
+        private EmailPreferenceEntrySaveResponseBag UpdateEmail( RockContext rockContext, string email, Person person )
         {
             var responseBag = new EmailPreferenceEntrySaveResponseBag()
             {
@@ -624,7 +609,6 @@ We have unsubscribed you from the following lists:
                 ErrorMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are."
             };
 
-            var person = GetPerson( rockContext );
             if ( person != null )
             {
                 var service = new PersonService( rockContext );
@@ -651,31 +635,31 @@ We have unsubscribed you from the following lists:
         /// </summary>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private Person GetPerson( RockContext rockContext )
+        private (Person person, bool isFromPageParameter) GetPerson( RockContext rockContext )
         {
-            if ( _person != null )
+            // Return the person associated with the page parameter first,
+            // as they likely got to this page from an unsubscribe link to unsubscribe.
+            // If there is none, then use the authenticated person,
+            // as they likely navigated to this page to modify their preferences.
+            Person person = null;
+            var key = PageParameter( PageParameterKey.Person );
+            if ( !string.IsNullOrWhiteSpace( key ) )
             {
-                return _person;
+                var service = new PersonService( rockContext );
+                person = service.GetByPersonActionIdentifier( key, "Unsubscribe" );
+                if ( person == null )
+                {
+                    person = service.GetByUrlEncodedKey( key );
+                }
+            }
+
+            if ( person != null )
+            {
+                return ( person, true );
             }
             else
             {
-                var key = PageParameter( PageParameterKey.Person );
-                if ( !string.IsNullOrWhiteSpace( key ) )
-                {
-                    var service = new PersonService( rockContext );
-                    _person = service.GetByPersonActionIdentifier( key, "Unsubscribe" );
-                    if ( _person == null )
-                    {
-                        _person = new PersonService( rockContext ).GetByUrlEncodedKey( key );
-                    }
-                }
-
-                if ( _person == null && GetCurrentPerson() != null )
-                {
-                    _person = GetCurrentPerson();
-                }
-
-                return _person;
+                return ( GetCurrentPerson(), false );
             }
         }
 
@@ -710,11 +694,11 @@ We have unsubscribed you from the following lists:
             using ( var rockContext = new RockContext() )
             {
                 var responseBag = GetSuccessResponseBag();
-                var person = GetPerson( rockContext );
+                var ( person, _ ) = GetPerson( rockContext );
 
                 if ( bag.EmailPreference == UNSUBSCRIBE )
                 {
-                    responseBag = UnsubscribeFromLists( rockContext, bag );
+                    responseBag = UnsubscribeFromLists( rockContext, bag, person );
 
                     if ( responseBag.ErrorMessage.IsNullOrWhiteSpace() )
                     {
@@ -758,7 +742,7 @@ We have unsubscribed you from the following lists:
                     }
                     else
                     {
-                        responseBag = UpdateEmail( rockContext, bag.Email );
+                        responseBag = UpdateEmail( rockContext, bag.Email, person );
                     }
 
                     return ActionOk( responseBag );
