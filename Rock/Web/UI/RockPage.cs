@@ -4427,7 +4427,13 @@ $.ajax({
         /// <returns></returns>
         public static string GetClientIpAddress()
         {
-            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
+            var request = HttpContext.Current?.Request;
+            if ( request == null )
+            {
+                return string.Empty;
+            }
+
+            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper(request) );
         }
 
         #endregion

@@ -64,48 +64,64 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202401041703106_Rollup_20240104.cs" />
-    <Compile Include="Migrations\202401041703106_Rollup_20240104.designer.cs">
+    <Compile Include="Migrations\202402151659503_Rollup_20240215.cs" />
+    <Compile Include="Migrations\202402151659503_Rollup_20240215.designer.cs">
+      <DependentUpon>202402151659503_Rollup_20240215.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202402151750399_CodeGenerated_20240215.cs" />
+    <Compile Include="Migrations\202402151750399_CodeGenerated_20240215.designer.cs">
+      <DependentUpon>202402151750399_CodeGenerated_20240215.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.designer.cs">
+      <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.designer.cs">
+      <DependentUpon>202402051838570_AddBotGuardianLevelToPageAndSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.designer.cs">
       <DependentUpon>202401041703106_Rollup_20240104.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202401041745490_CodeGenerated_20240104.cs" />
-    <Compile Include="Migrations\202401041745490_CodeGenerated_20240104.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041745490_CodeGenerated_20240104.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401041745490_CodeGenerated_20240104.designer.cs">
       <DependentUpon>202401041745490_CodeGenerated_20240104.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.cs" />
-    <Compile Include="Migrations\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.designer.cs">
       <DependentUpon>202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202401122007330_AddCheckInStatusToAttendance.cs" />
-    <Compile Include="Migrations\202401122007330_AddCheckInStatusToAttendance.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401122007330_AddCheckInStatusToAttendance.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401122007330_AddCheckInStatusToAttendance.designer.cs">
       <DependentUpon>202401122007330_AddCheckInStatusToAttendance.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202401182112484_CodeGenerated_20240118.cs" />
-    <Compile Include="Migrations\202401182112484_CodeGenerated_20240118.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401182112484_CodeGenerated_20240118.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401182112484_CodeGenerated_20240118.designer.cs">
       <DependentUpon>202401182112484_CodeGenerated_20240118.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202401211244562_AddAnalyticsSourceZipCode.cs" />
-    <Compile Include="Migrations\202401211244562_AddAnalyticsSourceZipCode.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401211244562_AddAnalyticsSourceZipCode.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401211244562_AddAnalyticsSourceZipCode.designer.cs">
       <DependentUpon>202401211244562_AddAnalyticsSourceZipCode.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202401162245280_DataViewIcon.cs" />
-    <Compile Include="Migrations\202401162245280_DataViewIcon.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401162245280_DataViewIcon.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401162245280_DataViewIcon.designer.cs">
       <DependentUpon>202401162245280_DataViewIcon.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202401292333035_AddEventRegistrationPaymentPlansSupport.cs" />
-    <Compile Include="Migrations\202401292333035_AddEventRegistrationPaymentPlansSupport.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401292333035_AddEventRegistrationPaymentPlansSupport.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401292333035_AddEventRegistrationPaymentPlansSupport.designer.cs">
       <DependentUpon>202401292333035_AddEventRegistrationPaymentPlansSupport.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202401302113422_PublicProfileEditAttribute.cs" />
-    <Compile Include="Migrations\202401302113422_PublicProfileEditAttribute.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401302113422_PublicProfileEditAttribute.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202401302113422_PublicProfileEditAttribute.designer.cs">
       <DependentUpon>202401302113422_PublicProfileEditAttribute.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202402011802539_Rollup_20240201.cs" />
-    <Compile Include="Migrations\202402011802539_Rollup_20240201.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402011802539_Rollup_20240201.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402011802539_Rollup_20240201.designer.cs">
       <DependentUpon>202402011802539_Rollup_20240201.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202402011906172_CodeGenerated_20240201.cs" />
-    <Compile Include="Migrations\202402011906172_CodeGenerated_20240201.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402011906172_CodeGenerated_20240201.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402011906172_CodeGenerated_20240201.designer.cs">
       <DependentUpon>202402011906172_CodeGenerated_20240201.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.cs" />
@@ -1950,37 +1966,49 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202401041703106_Rollup_20240104.resx">
+    <EmbeddedResource Include="Migrations\202402151659503_Rollup_20240215.resx">
+      <DependentUpon>202402151659503_Rollup_20240215.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202402151750399_CodeGenerated_20240215.resx">
+      <DependentUpon>202402151750399_CodeGenerated_20240215.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.resx">
+      <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402051838570_AddBotGuardianLevelToPageAndSite.resx">
+      <DependentUpon>202402051838570_AddBotGuardianLevelToPageAndSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401041703106_Rollup_20240104.resx">
       <DependentUpon>202401041703106_Rollup_20240104.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202401041745490_CodeGenerated_20240104.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401041745490_CodeGenerated_20240104.resx">
       <DependentUpon>202401041745490_CodeGenerated_20240104.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.resx">
       <DependentUpon>202401101901169_AddAdditionalSettingsJsonToPageAndContentChannelItem.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202401122007330_AddCheckInStatusToAttendance.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401122007330_AddCheckInStatusToAttendance.resx">
       <DependentUpon>202401122007330_AddCheckInStatusToAttendance.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202401182112484_CodeGenerated_20240118.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401182112484_CodeGenerated_20240118.resx">
       <DependentUpon>202401182112484_CodeGenerated_20240118.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202401211244562_AddAnalyticsSourceZipCode.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401211244562_AddAnalyticsSourceZipCode.resx">
       <DependentUpon>202401211244562_AddAnalyticsSourceZipCode.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202401162245280_DataViewIcon.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401162245280_DataViewIcon.resx">
       <DependentUpon>202401162245280_DataViewIcon.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202401292333035_AddEventRegistrationPaymentPlansSupport.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401292333035_AddEventRegistrationPaymentPlansSupport.resx">
       <DependentUpon>202401292333035_AddEventRegistrationPaymentPlansSupport.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202401302113422_PublicProfileEditAttribute.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202401302113422_PublicProfileEditAttribute.resx">
       <DependentUpon>202401302113422_PublicProfileEditAttribute.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202402011802539_Rollup_20240201.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402011802539_Rollup_20240201.resx">
       <DependentUpon>202402011802539_Rollup_20240201.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202402011906172_CodeGenerated_20240201.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402011906172_CodeGenerated_20240201.resx">
       <DependentUpon>202402011906172_CodeGenerated_20240201.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.1\202311301719499_Rollup_20231130.resx">

@@ -94,7 +94,12 @@
                         <Rock:CodeEditor ID="ceCustomConfiguration"
                             runat="server"
                             Label="Custom Configuration"
-                            Help="This allows custom configuration by way of writing a JSON object that will be passed to the configuration parser."
+                            Help="This allows custom configuration by way of writing a JSON object that will be passed to the configuration parser. Example:<pre><small><small>{
+  &quot;LogLevel&quot;: {
+    &quot;CMS&quot;: &quot;Information&quot;,
+    &quot;org.rsc.MyClass&quot;: &quot;Error&quot;
+  }
+}</small></small></pre>"
                             EditorMode="JavaScript"
                             />
                     </Rock:PanelWidget>

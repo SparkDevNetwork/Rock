@@ -108,7 +108,10 @@
 .text-color,
 .text-body { color: @text-color !important; }
 
-.text-muted { color: inherit !important; opacity: .8; }
+.text-muted {
+    // color: inherit !important;  -- JE 2/12/2024 Commented this out as it was blocking the theme colors.
+    opacity: .8;
+}
 
 .text-black-50 { color: fade(#000, 50%) !important; }
 .text-white-50 { color: fade(#fff, 50%) !important; }

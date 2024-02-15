@@ -124,10 +124,10 @@ namespace Rock.Model
         public decimal Families10kTo14kPercent { get; set; }
 
         /// <summary>
-        /// Gets or sets the families 10k to 14k percent.
+        /// Gets or sets the families 15k to 24k percent.
         /// </summary>
         /// <value>
-        /// The families 10k to 14k percent.
+        /// The families 15k to 24k percent.
         /// </value>
         [DataMember]
         [DecimalPrecision( 18, 2 )]

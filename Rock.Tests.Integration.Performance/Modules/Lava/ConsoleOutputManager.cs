@@ -18,7 +18,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Rock.Tests.Integration.Performance
+namespace Rock.Tests.Integration.Performance.Modules.Lava
 {
     public enum OutputMessageTypeSpecifier
     {

@@ -94,12 +94,19 @@ namespace Rock.Blocks.Types.Mobile.Communication
         Key = AttributeKey.HidePersonalSmsNumbers,
         Order = 8 )]
 
+    [IntegerField( "SMS Character Limit",
+        Description = "The number of characters to limit the SMS communication body to. Set to 0 to disable.",
+        IsRequired = false,
+        Key = AttributeKey.SmsCharacterLimit,
+        DefaultIntegerValue = 0,
+        Order = 9 )]
+
     [LinkedPage(
         "Person Profile Page",
         Description = "Page to link to when user taps on a person listed in the 'Failed to Deliver' section. PersonGuid is passed in the query string.",
         IsRequired = false,
         Key = AttributeKey.PersonProfilePage,
-        Order = 9 )]
+        Order = 10 )]
 
     #endregion
 
@@ -171,6 +178,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
             public const string HidePersonalSmsNumbers = "HidePersonalSmsNumbers";
 
             /// <summary>
+            /// The number of characters to limit the SMS communication body to.
+            /// </summary>
+            public const string SmsCharacterLimit = "SmsCharacterLimit";
+
+            /// <summary>
             /// The person profile page attribute key.
             /// </summary>
             public const string PersonProfilePage = "PersonProfilePage";
@@ -217,6 +229,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
         public bool ShowReplyTo => GetAttributeValue( AttributeKey.ShowReplyTo ).AsBoolean();
 
         /// <summary>
+        /// Gets the max number of characters allowed in an SMS message.
+        /// </summary>
+        public int SmsCharacterLimit => GetAttributeValue( AttributeKey.SmsCharacterLimit ).AsIntegerOrNull() ?? 0;
+
+        /// <summary>
         /// Gets the person profile page unique identifier.
         /// </summary>
         /// <value>
@@ -245,7 +262,8 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 IsBulk = IsBulk,
                 ShowFromName = ShowFromName,
                 ShowReplyTo = ShowReplyTo,
-                PersonProfilePageGuid = PersonProfilePageGuid
+                SmsCharacterLimit = SmsCharacterLimit,
+                PersonProfilePageGuid = PersonProfilePageGuid,
             };
         }
 

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Fluid;
 using Fluid.Ast;
@@ -188,12 +189,12 @@ namespace Rock.Lava.Fluid
 
             // Block Comment Element: /- ... -/
             var blockCommentElement = LavaTagParsers.LavaBlockCommentStart
-                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaBlockCommentEnd, canBeEmpty:true ).And( LavaTagParsers.LavaBlockCommentEnd )
+                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaBlockCommentEnd, canBeEmpty: true ).And( LavaTagParsers.LavaBlockCommentEnd )
                     .Then<Statement>( x => new CommentStatement( x.Item1 ) ) );
 
             // Inline Comment Element: /-<eol>
             var inlineCommentElement = LavaTagParsers.LavaInlineCommentStart
-                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaInlineCommentEnd, canBeEmpty:true ) )
+                .SkipAnd( AnyCharBefore( LavaTagParsers.LavaInlineCommentEnd, canBeEmpty: true ) )
                 .Then<Statement>( x => new CommentStatement( x ) );
 
             var commentElement = blockCommentElement.Or( inlineCommentElement );
@@ -349,35 +350,55 @@ namespace Rock.Lava.Fluid
 
         /// <summary>
         /// Re-implement the {% liquid %} tag to be Lava-friendly.
+        /// This implementation modifies the following behaviour:
+        /// * Adds processing of Lava shorthand comments.
+        /// * Adds processing of shortcodes.
+        /// * Adds the {% lava %} tag alias.
         /// </summary>
         private void RegisterLavaTag()
         {
             var LiquidTag = Literals.WhiteSpace( true ) // {% liquid %} can start with new lines
-                .Then( ( context, x ) => { ( ( FluidParseContext ) context ).InsideLiquidTag = true; return x; } )
-                .SkipAnd( OneOrMany( Identifier.Switch( ( context, previous ) =>
+                .Then( ( context, x ) =>
                 {
-                    // Because tags like 'else' are not listed, they won't count in TagsList, and will stop being processed
-                    // as inner tags in blocks like {% if %} TagsList {% endif $}
-                    var tagName = previous;
+                    ( ( FluidParseContext ) context ).InsideLiquidTag = true;
+                    return x;
+                } )
+                .SkipAnd(
+                    OneOrMany(
+                        OneOf(
+                            SkipWhiteSpace( LavaInlineCommentParser.AsFluidTagResultParser() )
+                                .Then<Statement>( x => new CommentStatement( x.ToStringSafe() ) ),
+                            SkipWhiteSpace( LavaBlockCommentParser.AsFluidTagResultParser() )
+                                .Then<Statement>( x => new CommentStatement( x.ToStringSafe() ) ),
+                            Identifier.Switch( ( context, previous ) =>
+                            {
+                                // Because tags like 'else' are not listed, they won't count in TagsList, and will stop being processed
+                                // as inner tags in blocks like {% if %} TagsList {% endif $}
+                                var tagName = previous;
 
-                    if ( RegisteredTags.TryGetValue( tagName, out var tag ) )
-                    {
-                        return tag;
-                    }
-                    // If the tag name matches a shortcode, return it.
-                    // Note that there is some potential for collision between built-in tags and shortcodes,
-                    // which may require this parser to be refined further.
-                    else if ( RegisteredTags.TryGetValue( tagName + "_", out var shortcodeTag ) )
-                    {
-                        return shortcodeTag;
-                    }
-                    else
-                    {
-                        throw new ParseException( $"Unknown tag '{tagName}' at {context.Scanner.Cursor.Position}" );
-                    }
-                } ) ) )
-                .Then( ( context, x ) => { ( ( FluidParseContext ) context ).InsideLiquidTag = false; return x; } )
-                .AndSkip( TagEnd ).Then<Statement>( x => new LiquidStatement( x ) );
+                                if ( RegisteredTags.TryGetValue( tagName, out var tag ) )
+                                {
+                                    return tag;
+                                }
+                                // If the tag name matches a shortcode, return it.
+                                // Note that there is some potential for collision between built-in tags and shortcodes,
+                                // which may require this parser to be refined further.
+                                else if ( RegisteredTags.TryGetValue( tagName + "_", out var shortcodeTag ) )
+                                {
+                                    return shortcodeTag;
+                                }
+                                else
+                                {
+                                    throw new ParseException( $"Unknown tag '{tagName}' at {context.Scanner.Cursor.Position}" );
+                                }
+                            } ) ) ) )
+                .Then( ( context, x ) =>
+                {
+                    ( ( FluidParseContext ) context ).InsideLiquidTag = false;
+                    return x;
+                } )
+                .AndSkip( TagEnd )
+                .Then<Statement>( x => new LiquidStatement( x ) );
 
             // Register the new tag, and add an alias for the "{% lava %}" tag.
             RegisteredTags["liquid"] = LiquidTag;
@@ -568,7 +589,7 @@ namespace Rock.Lava.Fluid
             .Or( LavaShortcodeTokenParser )
             .Or( LavaTagTokenParser )
             .Or( LavaTextTokenParser )
-            .Or( LavaBlockCommentParser)
+            .Or( LavaBlockCommentParser )
             .Or( LavaInlineCommentParser ) );
 
         /// <summary>
@@ -587,7 +608,7 @@ namespace Rock.Lava.Fluid
         /// <param name="template"></param>
         /// <param name="includeComments">If set to true, comment tokens are included in the output.</param>
         /// <returns></returns>
-        public static List<string> ParseToTokens( string template, bool includeComments = false )
+        public static List<string> ParseToTokens( string template, bool includeComments = false, bool includeParserTrace = false )
         {
             var context = new FluidParseContext( template );
 
@@ -642,6 +663,35 @@ namespace Rock.Lava.Fluid
             };
 
             return lavaTokens;
+        }
+
+        /// <summary>
+        /// Parse the supplied template into a collection of trace statements that can be used to debug parsing activity.
+        /// </summary>
+        /// <param name="template"></param>
+        /// <returns></returns>
+        public static List<string> ParseToTrace( string template )
+        {
+            var parserTrace = new List<string>();
+            int lastMatchPos = 0;
+            object lastParser = null;
+
+            var context = new FluidParseContext( template );
+            context.OnEnterParser = ( parser, parseContext ) =>
+            {
+                var thisCursorPos = parseContext.Scanner.Cursor.Position.Offset;
+                if ( thisCursorPos != lastMatchPos )
+                {
+                    var captureText = parseContext.Scanner.Buffer.SubstringSafe( lastMatchPos, thisCursorPos - lastMatchPos );
+                    var parserDescription = lastParser.ToString();
+                    parserTrace.Add( $"[{thisCursorPos:00000}|{parserDescription}] {captureText}" );
+                    lastMatchPos = thisCursorPos;
+                }
+
+                lastParser = parser;
+            };
+
+            return parserTrace;
         }
 
         #endregion

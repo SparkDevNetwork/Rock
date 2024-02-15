@@ -44,8 +44,13 @@ namespace Rock.Utility.Settings
             _serviceInstance = new RockInstanceConfigurationService();
 
             var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"];
-
             _serviceInstance.Database.SetConnectionString( connectionString.ToStringSafe() );
+
+            connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContextReadOnly"];
+            _serviceInstance.Database.SetReadOnlyConnectionString( connectionString?.ConnectionString );
+
+            connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContextAnalytics"];
+            _serviceInstance.Database.SetAnalyticsConnectionString( connectionString?.ConnectionString );
         }
 
         /// <summary>

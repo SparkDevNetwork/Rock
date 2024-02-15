@@ -50,7 +50,7 @@ export default defineComponent({
          * The filter component to used for filtering these attributes.
          */
         filter: {
-            type: Object as PropType<ColumnFilter>,
+            type: Object as PropType<ColumnFilter | null>,
             default: {
                 component: PickExistingFilter,
                 matches: pickExistingFilterMatches

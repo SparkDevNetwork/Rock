@@ -17,13 +17,16 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// Tests that verify the correct handling of various data types in the Lava Engine and associated Liquid framework.
     /// </summary>
     [TestClass]
+    [TestCategory( TestFeatures.Lava )]
     public class TypeConversionTests
     {
         private LavaIntegrationTestHelper _TestHelper = LavaIntegrationTestHelper.CurrentInstance;
@@ -32,6 +35,7 @@ namespace Rock.Tests.Integration.Core.Lava
         /// Verifies the resolution of a specific Issue.
         /// </summary>
         [TestMethod]
+        [Ignore( "Expected output needs to be re-written to work with multiple locale settings for date formats." )]
         public void TimeSpan_TimeSpanValue_IsCorrectlyParsedAndRendered()
         {
             /* The Fluid Lava Engine incorrectly renders the Schedule.StartTimeOfDay property as a UTC DateTime rather than a TimeSpan.

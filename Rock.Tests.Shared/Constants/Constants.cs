@@ -54,6 +54,7 @@ namespace Rock.Tests.Shared
         public const string Groups = "Groups";
         public const string Personalization = "Personalization";
 
+        public const string Lava = "Core.Lava";
     }
 
     public static class TestPurposes

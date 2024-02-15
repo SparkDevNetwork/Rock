@@ -2,31 +2,32 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
+
 using SmtpServer;
 using SmtpServer.Mail;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
 
-namespace Rock.Tests.Integration.Core.Jobs
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     [TestClass]
-    [Ignore( "Fix required. [Last modified by MP]" )]
-    public class RockJobListenerTests
+    public class RockJobListenerTests : DatabaseTestsBase
     {
         public static ConcurrentStack<string> actualEmails = new ConcurrentStack<string>();
         private int smtpPort;
@@ -337,6 +338,8 @@ namespace Rock.Tests.Integration.Core.Jobs
 
         public ServiceJob GetAddTestJob( Dictionary<string, string> jobDataMapDictionary, JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
         {
+            ServiceJobService.UpdateAttributesIfNeeded( typeof( RockJobListenerTestJob ) );
+
             var testJob = new ServiceJob
             {
                 IsSystem = true,

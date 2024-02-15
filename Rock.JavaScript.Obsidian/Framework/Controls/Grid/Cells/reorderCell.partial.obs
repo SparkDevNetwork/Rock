@@ -17,7 +17,7 @@
 
     /** Contains the custom style values to apply to the icon. */
     const iconStyle = computed((): Record<string, string> => {
-        const disabled = dropOperationInProgress.value || isFiltered.value || isSorted.value;
+        const disabled = dropOperationInProgress?.value || isFiltered.value || isSorted.value;
 
         // Make the handles look disabled if we are currently processing
         // a drop operation.

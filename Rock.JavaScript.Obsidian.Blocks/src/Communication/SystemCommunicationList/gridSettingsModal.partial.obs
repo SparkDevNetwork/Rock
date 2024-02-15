@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+
+            <div class="col-md-4">
+                <CategoryPicker v-model="category"
+                                label="Category"
+                                :entityTypeGuid="EntityType.SystemCommunication"
+                                showBlankItem />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="supports"
+                              label="Supports"
+                              :items="supportsItems" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="activeStatus"
+                              label="Active Status"
+                              :items="activeStatusItems" />
+            </div>
+
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const activeStatus = ref(props.modelValue.activeStatus ?? "");
+    const category = ref(props.modelValue.category ?? null);
+    const supports = ref(props.modelValue.supports ?? "");
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const supportsItems = [
+        {
+            text: "SMS",
+            value: "SMS"
+        },
+        {
+            text: "Push Notification",
+            value: "Push Notification"
+        }
+    ] as ListItemBag[];
+
+    const activeStatusItems = [
+        {
+            text: "Active",
+            value: "Active"
+        },
+        {
+            text: "Inactive",
+            value: "Inactive"
+        }
+    ] as ListItemBag[];
+
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            activeStatus: activeStatus.value,
+            category: category.value,
+            supports: supports.value,
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        activeStatus.value = props.modelValue.activeStatus ?? "";
+        category.value = props.modelValue.category ?? null;
+        supports.value = props.modelValue.supports ?? "";
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

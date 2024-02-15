@@ -291,11 +291,15 @@ namespace Rock.SystemKey
         /// <summary>
         /// The name of the standard Rock Context.
         /// </summary>
+        [Obsolete( "Use RockInstanceConfig to get connection strings." )]
+        [RockObsolete( "1.16.3" )]
         public const string ROCK_CONTEXT = "RockContext";
 
         /// <summary>
         /// The name of the standard Rock Context for Read Only queries.
         /// </summary>
+        [Obsolete( "Use RockInstanceConfig to get connection strings." )]
+        [RockObsolete( "1.16.3" )]
         public const string ROCK_CONTEXT_READ_ONLY = "RockContextReadOnly";
 
         /// <summary>

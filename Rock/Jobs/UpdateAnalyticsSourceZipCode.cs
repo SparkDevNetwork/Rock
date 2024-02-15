@@ -98,7 +98,7 @@ namespace Rock.Jobs
                 var censusData = AnalyticsSourceZipCode.GetZipCodeCensusData();
                 var query = rockContext.AnalyticsSourceZipCodes.AsQueryable();
                 List<AnalyticsSourceZipCode.ZipCodeBoundary> boundaryData = null;
-                int batchSize = 100;
+                var batchSize = 100;
 
                 // If an attempt has been made try and figure where we left off previously by comparing the last database entry ZipCode with the last Census data ZipCode
                 var lastDatabaseEntryZipCode = query.OrderByDescending( az => az.ZipCode ).Select( az => az.ZipCode ).FirstOrDefault();
@@ -122,7 +122,7 @@ namespace Rock.Jobs
                         var remainingCount = censusData.Count - skipCount;
 
                         // Calculate the number of batches needed to save the remaining records.
-                        int batches = ( int ) Math.Ceiling( ( double ) remainingCount / batchSize );
+                        var batches = ( int ) Math.Ceiling( ( double ) remainingCount / batchSize );
                         for ( int i = 0; i < batches; i++ )
                         {
                             // Renew context to clear saved entries from memory, this is done to speed up the process since we are 
@@ -145,7 +145,7 @@ namespace Rock.Jobs
                     if ( boundaryData?.Any() == true )
                     {
                         // Calculate the number of batches needed to save the updated records.
-                        int updateBatches = ( int ) Math.Ceiling( ( double ) censusData.Count / batchSize );
+                        var updateBatches = ( int ) Math.Ceiling( ( double ) censusData.Count / batchSize );
                         for ( int i = 0; i < updateBatches; i++ )
                         {
                             rockContext = new RockContext();
@@ -171,15 +171,19 @@ namespace Rock.Jobs
 
                             UpdateLastStatusMessage( $"Saving ZipCode Data ({i * batchSize}/{censusData.Count})." );
                         }
-
-                        failedAttempts = 0;
-
-                        UpdateLastStatusMessage( $"Saved ZipCode Data ({rockContext.AnalyticsSourceZipCodes.Count()}/{censusData.Count})." );
-                        SetAttributeValue( AttributeKey.FailedAttempts, failedAttempts.ToString() );
                     }
 
+                    failedAttempts = 0;
+                    UpdateLastStatusMessage( $"Saved ZipCode Data ({rockContext.AnalyticsSourceZipCodes.Count()}/{censusData.Count})." );
+                    SetAttributeValue( AttributeKey.FailedAttempts, failedAttempts.ToString() );
                     rockContext.Dispose();
                 }
+            }
+
+            if ( failedAttempts == 0 )
+            {
+                AnalyticsSourceZipCode.DeleteCensusDataFile();
+                DeleteJob();
             }
         }
 
@@ -222,6 +226,21 @@ namespace Rock.Jobs
         {
             ServiceJob.SetAttributeValue( key, value );
             ServiceJob.SaveAttributeValues();
+        }
+
+        private void DeleteJob()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var jobService = new ServiceJobService( rockContext );
+                var job = jobService.Get( GetJobId() );
+
+                if ( job != null )
+                {
+                    jobService.Delete( job );
+                    rockContext.SaveChanges();
+                }
+            }
         }
     }
 }

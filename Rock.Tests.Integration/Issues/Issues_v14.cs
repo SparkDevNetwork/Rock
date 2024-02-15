@@ -19,14 +19,17 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
-using Rock.Tests.Integration.Core.Lava;
+using Rock.Tests.Integration.Modules.Core.Lava;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.BugFixes
 {

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -68,8 +68,11 @@
     <Compile Include="Blocks\Cms\BlockTypeList\BlockTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelDetail\ContentChannelBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelDetail\ContentChannelDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentChannelItemList\ContentChannelItemListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelList\ContentChannelListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeList\ContentChannelTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeBag.cs" />
+    <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
@@ -80,12 +83,15 @@
     <Compile Include="Blocks\Cms\PersonalLinkList\SavePersonalLinkRequestBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationList\CommunicationListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerDownloadItemBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
     <Compile Include="Blocks\Communication\SmsPipelineList\SmsPipelineListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\SystemCommunicationPreview\SystemCommunicationPreviewInitializationBox.cs" />
+    <Compile Include="Blocks\Communication\SystemCommunicationList\SystemCommunicationListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AssetStorageProviderList\AssetStorageProviderListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateDetailOptionsBag.cs" />
@@ -112,6 +118,7 @@
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignalTypeList\SignalTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
+    <Compile Include="Blocks\Core\TagList\TagListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeList\AssessmentTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
@@ -152,6 +159,8 @@
     <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialStatementTemplateList\FinancialStatementTemplateListOptionsBag.cs" />
+    <Compile Include="Blocks\Group\GroupArchivedList\GroupArchivedListOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupTypeList\GroupTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutDetailOptionsBag.cs" />
@@ -509,6 +518,9 @@
     <Compile Include="Rest\Controls\AttributeMatrixEditorPublicItemBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
+    <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
+    <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
@@ -601,6 +613,7 @@
     <Compile Include="Rest\Controls\LocationListSaveNewLocationOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowPickerGetWorkflowOptionsBag.cs" />
+    <Compile Include="Utility\CurrencyInfoBag.cs" />
     <Compile Include="Rest\Utilities\UpdatePersonPreferencesAccessedOptionsBag.cs" />
     <Compile Include="Rest\Utilities\UpdatePersonPreferencesOptionsBag.cs" />
     <Compile Include="Utility\IValidPropertiesBox.cs" />

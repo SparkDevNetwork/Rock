@@ -645,6 +645,9 @@ namespace Rock.Communication
             // Communication record for tracking opens & clicks
             templateRockEmailMessage.MessageMetaData = emailMessage.MessageMetaData;
 
+            // Headers
+            templateRockEmailMessage.EmailHeaders = new Dictionary<string, string>( emailMessage.EmailHeaders );
+
             return templateRockEmailMessage;
         }
 
@@ -780,6 +783,7 @@ namespace Rock.Communication
             recipientEmail.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
 
             // Headers
+            recipientEmail.EmailHeaders = new Dictionary<string, string>( emailMessage.EmailHeaders );
 
             if ( emailMessage.CreateCommunicationRecord )
             {
@@ -950,16 +954,18 @@ namespace Rock.Communication
             
             if ( communication.ListGroupId.HasValue )
             {
-                recipientEmail.MessageMetaData[ListIdHeaderKey] = $"{communication.ListGroup?.Name ?? globalAttributes.GetValue( "OrganizationName" )} <{communication.ListGroupId.Value}.{hostDomain}>";
+                recipientEmail.EmailHeaders[ListIdHeaderKey] = $"{communication.ListGroup?.Name ?? globalAttributes.GetValue( "OrganizationName" )} <{communication.ListGroupId.Value}.{hostDomain}>";
             }
             else
             {
-                recipientEmail.MessageMetaData[ListIdHeaderKey] = $"{globalAttributes.GetValue( "OrganizationName" )} <general.{hostDomain}>";
+                recipientEmail.EmailHeaders[ListIdHeaderKey] = $"{globalAttributes.GetValue( "OrganizationName" )} <general.{hostDomain}>";
             }
         }
 
         private void AddListUnsubscribeEmailHeaders( RockEmailMessage recipientEmail, Rock.Model.Communication communication, CommunicationRecipient communicationRecipient, IDictionary<string, string> mediumAttributes, GlobalAttributesCache globalAttributes, IDictionary<string, object> mergeFields )
         {
+            const string ListUnsubscribeHeaderKey = "List-Unsubscribe";
+            const string ListUnsubscribePostHeaderKey = "List-Unsubscribe-Post";
             var listUnsubscribeHeaderValues = new List<string>();
 
             var unsubscribeEmail = mediumAttributes.GetValueOrNull( "RequestUnsubscribeEmail" );
@@ -1012,12 +1018,12 @@ namespace Rock.Communication
 
             if ( listUnsubscribeHeaderValues.Any() )
             {
-                recipientEmail.MessageMetaData["List-Unsubscribe"] = string.Join( ", ", listUnsubscribeHeaderValues );
+                recipientEmail.EmailHeaders[ListUnsubscribeHeaderKey] = string.Join( ", ", listUnsubscribeHeaderValues );
 
                 // Only add the post header if the List-Unsubscribe header is added.
                 if ( isOneClickUnsubscribeEnabled )
                 {
-                    recipientEmail.MessageMetaData["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+                    recipientEmail.EmailHeaders[ListUnsubscribePostHeaderKey] = "List-Unsubscribe=One-Click";
                 }
             }
         }

@@ -20,7 +20,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.DotLiquid;
@@ -29,7 +31,7 @@ using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     [TestClass]
     public class LavaConfigurationTests : LavaIntegrationTestBase
@@ -120,6 +122,8 @@ namespace Rock.Tests.Integration.Core.Lava
             // Read the ACE editor configuration file and extract the list of Lava Filter keywords.
             var webSitePath = Path.GetFullPath( Directory.GetCurrentDirectory() + "..\\..\\..\\..\\RockWeb" );
             var configFilePath = Path.GetFullPath( webSitePath + @"/Scripts/ace/mode-lava.js" );
+
+            LogHelper.Log( $"Reading configuration file...\n{configFilePath}" );
 
             var configText = File.ReadAllText( configFilePath );
 
@@ -311,7 +315,6 @@ namespace Rock.Tests.Integration.Core.Lava
                 TestHelper.AssertTemplateOutput( engine, "Goodbye!", "{[ TestShortcode1 ]}" );
             } );
         }
-
 
         #endregion
 

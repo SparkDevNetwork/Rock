@@ -170,13 +170,13 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override IQueryable<EventCalendarItem> GetListQueryable( RockContext rockContext )
         {
-            var eventCalendar = GetEventCalendar();
+            var eventCalendarId = GetEventCalendar()?.Id ?? 0;
 
             var qry = new EventCalendarItemService( rockContext )
                 .Queryable( "EventCalendar,EventItem.EventItemAudiences,EventItem.EventItemOccurrences.Schedule" )
                 .Where( m =>
                     m.EventItem != null &&
-                    m.EventCalendarId == eventCalendar.Id );
+                    m.EventCalendarId == eventCalendarId );
 
             // Filter by Status
             if ( FilterStatus == "Active" )
@@ -381,18 +381,9 @@ namespace Rock.Blocks.Event
 
             if ( eventCalendarId.HasValue )
             {
-                _eventCalendar = RequestContext.GetContextEntity<EventCalendar>();
-                if ( _eventCalendar == null )
-                {
-                    _eventCalendar = new EventCalendarService( new RockContext() ).Queryable()
-                        .Where( g => g.Id == eventCalendarId )
-                        .FirstOrDefault();
-                }
-
-                if ( _eventCalendar != null )
-                {
-                    RequestContext.ContextEntities.AddOrReplace( _eventCalendar.GetType(), new Lazy<IEntity>( () => _eventCalendar ) );
-                }
+                _eventCalendar = new EventCalendarService( new RockContext() ).Queryable()
+                    .Where( g => g.Id == eventCalendarId )
+                    .FirstOrDefault();
             }
 
             return _eventCalendar;

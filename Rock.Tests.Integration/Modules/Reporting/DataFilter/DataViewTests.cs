@@ -18,15 +18,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Reporting
+namespace Rock.Tests.Integration.Modules.Reporting.DataFilter
 {
     [TestClass]
-    public class DataViewTests
+    public class DataViewTests : DatabaseTestsBase
     {
         #region Tests
 

@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
 {
     /// <summary>
@@ -87,5 +89,10 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
         /// The Defined Type Guid for the Batch Name Defined Type Picker if the Defined Type is specified.
         /// </summary>
         public string BatchNameDefinedTypeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CurrencyInfo
+        /// </summary>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }

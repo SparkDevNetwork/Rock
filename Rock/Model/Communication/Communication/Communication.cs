@@ -77,6 +77,7 @@ namespace Rock.Model
         /// The list group identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? ListGroupId { get; set; }
 
         /// <summary>
