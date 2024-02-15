@@ -366,64 +366,72 @@ We have unsubscribed you from the following lists:
                     box.UnsubscribeFromList = new List<ViewModels.Utility.ListItemBag>() { box.UnsubscribeFromListOptions.Find( l => l.Value == communication.ListGroup.Guid.ToString() ) };
                     box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from the \"{communication.ListGroup}\" communication list. If you would like to be removed from all communications see the options below." : null;
                 }
-                else
+
+                var anyOptionChecked = false;
+                switch ( person.EmailPreference )
                 {
-                    bool anyOptionChecked = false;
-                    switch ( person.EmailPreference )
+                    case EmailPreference.EmailAllowed:
                     {
-                        case EmailPreference.EmailAllowed:
+                        if ( box.EmailsAllowedText.IsNotNullOrWhiteSpace() )
                         {
-                            if ( box.EmailsAllowedText.IsNotNullOrWhiteSpace() )
+                            box.EmailPreference = EMAILS_ALLOWED;
+                            anyOptionChecked = true;
+                        }
+                        break;
+                    }
+                    case EmailPreference.NoMassEmails:
+                    {
+                        if ( box.NoMassEmailsText.IsNotNullOrWhiteSpace() )
+                        {
+                            box.EmailPreference = NO_MASS_EMAILS;
+                            anyOptionChecked = true;
+                        }
+
+                        if ( isPersonUnsubscribed )
+                        {
+                            // Only update the unsubscribed message if it hasn't already been set.
+                            box.SuccessfullyUnsubscribedText = box.SuccessfullyUnsubscribedText ?? $"You have been successfully unsubscribed from all mass communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}.";
+                        }
+                        break;
+                    }
+                    case EmailPreference.DoNotEmail:
+                    {
+                        if ( person.RecordStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
+                        {
+                            if ( box.NoEmailsText.IsNotNullOrWhiteSpace() )
                             {
-                                box.EmailPreference = EMAILS_ALLOWED;
+                                box.EmailPreference = NO_EMAILS;
                                 anyOptionChecked = true;
                             }
-                            break;
                         }
-                        case EmailPreference.NoMassEmails:
+                        else
                         {
-                            if ( box.NoMassEmailsText.IsNotNullOrWhiteSpace() )
+                            if ( box.NotInvolvedText.IsNotNullOrWhiteSpace() )
                             {
-                                box.EmailPreference = NO_MASS_EMAILS;
+                                box.EmailPreference = NOT_INVOLVED;
                                 anyOptionChecked = true;
                             }
-                            box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from all mass communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}." : null;
-                            break;
+
+                            if ( person.RecordStatusReasonValueId.HasValue )
+                            {
+                                box.InActiveReason = person.RecordStatusReasonValue.Guid.ToString();
+                            }
+
+                            box.InActiveNote = person.ReviewReasonNote;
                         }
-                        case EmailPreference.DoNotEmail:
+
+                        if ( isPersonUnsubscribed )
                         {
-                            if ( person.RecordStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
-                            {
-                                if ( box.NoEmailsText.IsNotNullOrWhiteSpace() )
-                                {
-                                    box.EmailPreference = NO_EMAILS;
-                                    anyOptionChecked = true;
-                                }
-                            }
-                            else
-                            {
-                                if ( box.NotInvolvedText.IsNotNullOrWhiteSpace() )
-                                {
-                                    box.EmailPreference = NOT_INVOLVED;
-                                    anyOptionChecked = true;
-                                }
-
-                                if ( person.RecordStatusReasonValueId.HasValue )
-                                {
-                                    box.InActiveReason = person.RecordStatusReasonValue.Guid.ToString();
-                                }
-
-                                box.InActiveNote = person.ReviewReasonNote;
-                            }
-                            box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from all communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}." : null;
-                            break;
+                            // Only update the unsubscribed message if it hasn't already been set.
+                            box.SuccessfullyUnsubscribedText = box.SuccessfullyUnsubscribedText ?? $"You have been successfully unsubscribed from all communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}.";
                         }
+                        break;
                     }
+                }
 
-                    if ( !anyOptionChecked && box.UpdateEmailAddressText.IsNotNullOrWhiteSpace() )
-                    {
-                        box.EmailPreference = UPDATE_EMAIL_ADDRESS;
-                    }
+                if ( !anyOptionChecked && box.UpdateEmailAddressText.IsNotNullOrWhiteSpace() )
+                {
+                    box.EmailPreference = UPDATE_EMAIL_ADDRESS;
                 }
 
                 box.Email = person.Email;
