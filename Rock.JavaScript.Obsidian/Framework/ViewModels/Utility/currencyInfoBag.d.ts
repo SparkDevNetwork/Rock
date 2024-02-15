@@ -21,28 +21,14 @@
 // </copyright>
 //
 
-import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+/** Defines the attribute values of the Currency defined by the Organization Currency Code Global Attribute. */
+export type CurrencyInfoBag = {
+    /** Gets or sets the number of decimal places that the currency needs to display */
+    decimalPlaces: number;
 
-export type FinancialBatchListOptionsBag = {
-    /** Gets or sets the CurrencyInfo */
-    currencyInfo?: CurrencyInfoBag | null;
+    /** Gets or sets the symbol of the currency */
+    symbol?: string | null;
 
-    /**
-     * Determines if the organization is configured with multiple active
-     * campuses or not.
-     */
-    hasMultipleCampuses: boolean;
-
-    /** Determines if the accounting system code column should be displayed. */
-    showAccountingSystemCodeColumn: boolean;
-
-    /** Determines if the accounts column should be displayed. */
-    showAccountsColumn: boolean;
-
-    /** The sources that can be used to filter the results. */
-    sources?: ListItemBag[] | null;
-
-    /** The transaction types that can be used to filter the results. */
-    transactionTypes?: ListItemBag[] | null;
+    /** Gets or sets if the currency code needs to be displayed on the left or the right side. */
+    symbolLocation?: string | null;
 };
