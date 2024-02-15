@@ -3960,7 +3960,7 @@ namespace Rock.Blocks.Event
                         var parameters = new Dictionary<string, string>();
                         parameters.Add( "RegistrationId", item.RegistrationId.ToString() );
                         parameters.Add( "RegistrationRegistrantId", item.Id.ToString() );
-                        newRegistration.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
+                        item.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
                     }
 
                     if ( settings.WorkflowTypeIds.Any() )
