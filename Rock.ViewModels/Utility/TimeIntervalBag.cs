@@ -15,35 +15,29 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Tv.AppleTvPageDetail
+using Rock.Utility;
+
+namespace Rock.ViewModels.Utility
 {
     /// <summary>
-    /// 
+    /// Represents the unit and value of time.
     /// </summary>
-    public class RockCacheabilityBag
+    public class TimeIntervalBag
     {
         /// <summary>
-        /// Gets or sets the type of the rock cacheability type.
+        /// Gets or sets the value.
         /// </summary>
         /// <value>
-        /// The type of the rock cacheability.
+        /// The value.
         /// </value>
-        public int RockCacheabilityType { get; set; }
+        public int? Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum age.
+        /// Gets or sets the unit.
         /// </summary>
         /// <value>
-        /// The maximum age.
+        /// The unit.
         /// </value>
-        public TimeIntervalBag MaxAge { get; set; }
-
-        /// <summary>
-        /// Gets or sets the shared maximum age.
-        /// </summary>
-        /// <value>
-        /// The shared maximum age.
-        /// </value>
-        public TimeIntervalBag SharedMaxAge { get; set; }
+        public TimeIntervalUnit Unit { get; set; }
     }
 }

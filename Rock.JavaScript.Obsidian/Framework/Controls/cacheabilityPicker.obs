@@ -38,6 +38,13 @@
         };
     }
 
+    function defaultTimeIntervalValue(): TimeInterval {
+        return {
+            unit: TimeIntervalUnit.Minutes,
+            value: null
+        };
+    }
+
     const internalValue = computed<RockCacheability>({
         get() {
             // Don't ever use null here because we want to ensure (sub)properties exist
@@ -70,7 +77,7 @@
 
     const maxAge = computed<TimeInterval>({
         get() {
-            return internalValue.value.maxAge;
+            return internalValue.value.maxAge ?? defaultTimeIntervalValue();
         },
         set(newValue) {
             internalValue.value = {
@@ -83,7 +90,7 @@
 
     const sharedMaxAge = computed<TimeInterval>({
         get() {
-            return internalValue.value.sharedMaxAge;
+            return internalValue.value.sharedMaxAge ?? defaultTimeIntervalValue();
         },
         set(newValue) {
             internalValue.value = {
