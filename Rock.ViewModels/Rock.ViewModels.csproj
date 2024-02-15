@@ -520,6 +520,7 @@
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
+    <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
