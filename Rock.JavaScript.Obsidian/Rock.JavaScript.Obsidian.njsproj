@@ -1239,6 +1239,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowTypePickerGetWorkflowTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesAccessedOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\currencyInfoBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\debugTiming.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\entityAuditBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\listItemBag.d.ts" />
