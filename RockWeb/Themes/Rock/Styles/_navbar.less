@@ -173,10 +173,12 @@ body.navbar-side-open {
       }
 
       &:hover,
-      &.open {
+      &.open,
+      &.current {
         background-color: var(--nav-childpages-bg);
         box-shadow: inset 3px 0 0 0 @brand-primary;
       }
+
       // TODO: This is split into a separate selector because it feels buggy when toggled open
       &.open {
         .nav-childpages {
