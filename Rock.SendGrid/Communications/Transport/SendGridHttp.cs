@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -230,6 +230,9 @@ namespace Rock.Communication.Transport
                     OpenTracking = new OpenTracking { Enable = true }
                 };
             }
+
+            // Headers
+            sendGridMessage.AddHeaders( rockEmailMessage.EmailHeaders );
 
             // Attachments
             if ( rockEmailMessage.Attachments.Any() )
