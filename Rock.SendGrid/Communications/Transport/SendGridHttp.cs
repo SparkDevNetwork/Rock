@@ -232,7 +232,10 @@ namespace Rock.Communication.Transport
             }
 
             // Headers
-            sendGridMessage.AddHeaders( rockEmailMessage.EmailHeaders );
+            if ( rockEmailMessage.EmailHeaders?.Any() == true )
+            {
+                sendGridMessage.AddHeaders( rockEmailMessage.EmailHeaders );
+            }
 
             // Attachments
             if ( rockEmailMessage.Attachments.Any() )
