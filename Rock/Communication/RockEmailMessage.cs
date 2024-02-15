@@ -118,6 +118,14 @@ namespace Rock.Communication
         public Dictionary<string, string> MessageMetaData { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
+        /// Gets or sets the email headers.
+        /// </summary>
+        /// <value>
+        /// The email headers.
+        /// </value>
+        public Dictionary<string, string> EmailHeaders { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
         /// Gets or sets the email attachments.
         /// </summary>
         /// <value>
