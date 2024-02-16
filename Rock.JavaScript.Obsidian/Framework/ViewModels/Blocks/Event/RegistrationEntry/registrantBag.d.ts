@@ -41,7 +41,7 @@ export type RegistrantBag = {
     fieldValues?: Record<Guid, unknown> | null;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets a value indicating whether this instance is on wait list. */
     isOnWaitList: boolean;

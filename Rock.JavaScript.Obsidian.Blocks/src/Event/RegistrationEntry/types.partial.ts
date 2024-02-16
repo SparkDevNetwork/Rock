@@ -18,8 +18,13 @@
 import { Guid } from "@Obsidian/Types";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { RegistrationEntryInitializationBox as GeneratedRegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { RegistrationEntryFeeBag as GeneratedRegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
+import { RegistrationEntryFeeItemBag as GeneratedRegistrationEntryFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeItemBag";
 import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
+import { RegistrationEntryFormFieldBag as GeneratedRegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
+import { TypeBuilder } from "@Obsidian/Utility/typeUtils";
+import { RegistrationEntryFormBag as GeneratedRegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
 
 export const enum Step {
     Intro = "intro",
@@ -37,6 +42,33 @@ export type RegistrantBasicInfo = {
     email: string;
     guid: Guid;
 };
+
+const registrationEntryFeeItemBagBuilder = TypeBuilder.createFrom<GeneratedRegistrationEntryFeeItemBag>()
+    // Fix the RegistrationEntryFeeItemBag.guid property to be required and not nullable.
+    .makeProperties("guid").required().and.defined()
+    // Fix the RegistrationEntryFeeItemBag.countRemaining property to not be undefinable.
+    .makeProperties("countRemaining").required();
+export type RegistrationEntryFeeItemBag = typeof registrationEntryFeeItemBagBuilder.build;
+
+const registrationEntryFeeBagBuilder = TypeBuilder.createFrom<GeneratedRegistrationEntryFeeBag>()
+    // Used the fixed items type.
+    .makeProperties("items").required().and.typed<RegistrationEntryFeeItemBag[] | null>();
+export type RegistrationEntryFeeBag = typeof registrationEntryFeeBagBuilder.build;
+
+const registrationEntryInitializationBoxBuilder = TypeBuilder.createFrom<GeneratedRegistrationEntryInitializationBox>()
+    // Make optional properties required since they cannot be set to undefined, and must be null or have a value.
+    .makeProperties("spotsRemaining", "gatewayControl", "savedAccounts").required()
+    .makeProperties("registrantForms").required().and.typed<RegistrationEntryFormBag[] | null>()
+    .makeProperties("fees").required().and.typed<RegistrationEntryFeeBag[] | null>();
+export type RegistrationEntryInitializationBox = typeof registrationEntryInitializationBoxBuilder.build;
+
+const registrationEntryFormBagBuilder = TypeBuilder.createFrom<GeneratedRegistrationEntryFormBag>()
+    .makeProperties("fields").required().and.typed<RegistrationEntryFormFieldBag[] | null>();
+export type RegistrationEntryFormBag = typeof registrationEntryFormBagBuilder.build;
+
+const registrationEntryFormFieldBagBuilder = TypeBuilder.createFrom<GeneratedRegistrationEntryFormFieldBag>()
+    .makeProperties("guid").required().and.typed<Guid>();
+export type RegistrationEntryFormFieldBag = typeof registrationEntryFormFieldBagBuilder.build;
 
 export type RegistrationEntryState = {
     steps: Record<Step, Step>;

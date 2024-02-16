@@ -27,7 +27,7 @@ import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicCom
 /** RegistrationEntryBlockVisibilityViewModel */
 export type RegistrationEntryVisibilityBag = {
     /** Gets or sets the compared to registration template form field unique identifier. */
-    comparedToRegistrationTemplateFormFieldGuid?: Guid | null;
+    comparedToRegistrationTemplateFormFieldGuid: Guid;
 
     /** Gets or sets the comparison value for this field. */
     comparisonValue?: PublicComparisonValueBag | null;

@@ -41,5 +41,5 @@ export type RegistrationEntryLineItemBag = {
     isFee: boolean;
 
     /** Gets or sets the key. */
-    key?: Guid | null;
+    key: Guid;
 };

@@ -11,8 +11,8 @@
                saveText="Select"
                title="Configure Payment Plan"
                @save="isModalShown = false">
-            <template v-if="paymentDeadlineDate">
-                The total amount of {{ toCurrencyOrNull(registrationEntryState.registrants.map(r => r.cost)) }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
+            <template v-if="paymentDeadlineDate"><!--TODO JMH toCurrencyOrNull fix-->
+                The total amount of {{ toCurrencyOrNull(0) }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
             </template>
             <template v-else>
                 The total amount due is $749.00.

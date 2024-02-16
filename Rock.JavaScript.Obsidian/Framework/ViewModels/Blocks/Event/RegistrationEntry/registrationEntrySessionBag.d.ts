@@ -64,7 +64,7 @@ export type RegistrationEntrySessionBag = {
     registrationGuid?: Guid | null;
 
     /** Gets or sets the registration session unique identifier. */
-    registrationSessionGuid?: Guid | null;
+    registrationSessionGuid: Guid;
 
     /** Gets or sets the slug used for this RegistrationInstance. Note a RegistrationInstance can have multiple slugs so the one used has to be stored. */
     slug?: string | null;

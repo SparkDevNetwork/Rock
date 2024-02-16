@@ -47,15 +47,19 @@
 </template>
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from "./types.partial";
     import { CurrentRegistrationEntryState, getRegistrantBasicInfo, use } from "./utils.partial";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
+    import { RegistrarOption } from "@Obsidian/Enums/Event/registrarOption";
     import { useStore } from "@Obsidian/PageState";
     import { Guid } from "@Obsidian/Types";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
+    import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
+    import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -82,17 +86,17 @@
     });
 
     /** The person entering the registration information. This object is part of the registration state. */
-    const registrar = computed<RegistrarInfo>(() => {
+    const registrar = computed<RegistrarBag>(() => {
         return registrationEntryState.registrar;
     });
 
     /** The first registrant entered into the registration. */
-    const firstRegistrant = computed<RegistrantInfo>(() => {
+    const firstRegistrant = computed<RegistrantBag>(() => {
         return registrationEntryState.registrants[0];
     });
 
     /** This is the data sent from the C# code behind when the block initialized. */
-    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+    const viewModel = computed<RegistrationEntryInitializationBox>(() => {
         return registrationEntryState.viewModel;
     });
 

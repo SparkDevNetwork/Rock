@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** RegistrationEntryBlockFamilyMemberViewModel */
 export type RegistrationEntryFamilyMemberBag = {
     /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+    familyGuid: Guid;
 
     /** Gets or sets the field values. */
     fieldValues?: Record<Guid, unknown> | null;
@@ -35,5 +35,5 @@ export type RegistrationEntryFamilyMemberBag = {
     fullName?: string | null;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 };

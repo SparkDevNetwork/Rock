@@ -32,7 +32,7 @@ export type RegistrationEntryFeeItemBag = {
     countRemaining?: number | null;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the name. */
     name?: string | null;

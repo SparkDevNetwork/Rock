@@ -42,7 +42,7 @@
 </template>
 <script setup lang="ts">
     import { computed, nextTick, ref, watch } from "vue";
-    import { RegistrationEntryBlockViewModel } from "./types.partial";
+    import { RegistrationEntryInitializationBox } from "./types.partial";
     import { CurrentRegistrationEntryState, getDefaultRegistrantInfo, getForcedFamilyGuid, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
@@ -78,7 +78,7 @@
     });
 
     /** The view model sent by the C# code behind. This is just a convenient shortcut to the shared object. */
-    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+    const viewModel = computed<RegistrationEntryInitializationBox>(() => {
         return registrationEntryState.viewModel;
     });
 

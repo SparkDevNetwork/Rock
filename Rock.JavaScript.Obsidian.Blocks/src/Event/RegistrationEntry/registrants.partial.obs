@@ -15,9 +15,9 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import Registrant from "./registrant.partial.obs";
-    import { RegistrantInfo } from "./types.partial";
     import { CurrentRegistrationEntryState, PersistSession, scrollToTopAfterNextRender, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const persistSession = use(PersistSession);
@@ -137,7 +137,7 @@
         return (registrationEntryState.viewModel.registrantTerm || "registrant").toLowerCase();
     });
 
-    const registrants = computed<RegistrantInfo[]>(() => {
+    const registrants = computed<RegistrantBag[]>(() => {
         return registrationEntryState.registrants;
     });
 

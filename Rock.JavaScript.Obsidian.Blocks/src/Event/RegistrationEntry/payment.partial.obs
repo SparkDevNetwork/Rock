@@ -60,7 +60,7 @@
 </template>
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from "./types.partial";
+    import { RegistrationEntryInitializationBox } from "./types.partial";
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
     import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -71,6 +71,7 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
     import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
     import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
 
@@ -112,7 +113,7 @@
     });
 
     /** This is the data sent from the C# code behind when the block initialized. */
-    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+    const viewModel = computed<RegistrationEntryInitializationBox>(() => {
         return registrationEntryState.viewModel;
     });
 
@@ -298,7 +299,7 @@
     async function submit(): Promise<boolean> {
         submitErrorMessage.value = "";
 
-        const result = await invokeBlockAction<RegistrationEntryBlockSuccessViewModel>("SubmitRegistration", {
+        const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {
             args: getRegistrationEntryBlockArgs()
         });
 

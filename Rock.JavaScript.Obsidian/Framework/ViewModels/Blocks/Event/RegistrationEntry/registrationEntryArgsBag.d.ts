@@ -49,7 +49,7 @@ export type RegistrationEntryArgsBag = {
     registrationGuid?: Guid | null;
 
     /** Gets or sets the registration session unique identifier. */
-    registrationSessionGuid?: Guid | null;
+    registrationSessionGuid: Guid;
 
     /** Gets or sets the saved account unique identifier. */
     savedAccountGuid?: Guid | null;

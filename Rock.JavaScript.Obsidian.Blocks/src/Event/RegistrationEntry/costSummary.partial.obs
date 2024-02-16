@@ -183,11 +183,6 @@
         return formatCurrency(discountedTotal.value);
     });
 
-    /** The final total cost to be paid. */
-    const finalTotalCost = computed<number>(() => {
-        return discountedTotal.value;
-    });
-
     /** The min amount that must be paid today */
     const amountDueToday = computed<number>(() => {
         if (amountPreviouslyPaid.value) {

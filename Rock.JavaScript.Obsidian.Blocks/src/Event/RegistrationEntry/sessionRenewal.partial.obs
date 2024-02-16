@@ -50,7 +50,6 @@
 </template>
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
-    import { SessionRenewalResult } from "./types.partial";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
     import Dialog from "@Obsidian/Controls/dialog.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
@@ -59,6 +58,7 @@
     import { toWord } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { pluralConditional } from "@Obsidian/Utility/stringUtils";
+    import { SessionRenewalResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/sessionRenewalResultBag";
 
     const props = defineProps({
         isSessionExpired: {
@@ -140,12 +140,12 @@
         isLoading.value = true;
 
         try {
-            const response = await invokeBlockAction<SessionRenewalResult>("TryToRenewSession", {
+            const response = await invokeBlockAction<SessionRenewalResultBag>("TryToRenewSession", {
                 registrationSessionGuid: registrationEntryState.registrationSessionGuid
             });
 
             if (response.isSuccess && response.data) {
-                const asDate = RockDateTime.parseISO(response.data.expirationDateTime);
+                const asDate = RockDateTime.parseISO(response.data.expirationDateTime ?? "");
                 registrationEntryState.sessionExpirationDateMs = asDate?.toMilliseconds() ?? null;
                 spotsSecured.value = response.data.spotsSecured;
             }

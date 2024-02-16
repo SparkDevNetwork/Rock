@@ -61,7 +61,7 @@
     import FeeField from "./feeField.partial.obs";
     import RegistrantAttributeField from "./registrantAttributeField.partial.obs";
     import RegistrantPersonField from "./registrantPersonField.partial.obs";
-    import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from "./types.partial";
+    import { RegistrationEntryInitializationBox, RegistrationEntryFormBag, RegistrationEntryFormFieldBag } from "./types.partial";
     import { convertComparisonValue, CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, scrollToTopAfterNextRender, use } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
@@ -71,6 +71,8 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
+    import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
     import { useStore } from "@Obsidian/PageState";
     import { Guid } from "@Obsidian/Types";
     import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
@@ -78,13 +80,16 @@
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import StringFilter from "@Obsidian/Utility/stringUtils";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
+    import { RegistrationEntryFamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFamilyMemberBag";
+    import { RegistrationEntryVisibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryVisibilityBag";
     import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         currentRegistrant: {
-            type: Object as PropType<RegistrantInfo>,
+            type: Object as PropType<RegistrantBag>,
             required: true
         },
         isWaitList: {
@@ -163,7 +168,7 @@
         return false;
     });
 
-    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+    const viewModel = computed<RegistrationEntryInitializationBox>(() => {
         return registrationEntryState.viewModel;
     });
 
@@ -171,7 +176,7 @@
         return registrationEntryState.currentRegistrantFormIndex;
     });
 
-    const currentForm = computed<RegistrationEntryBlockFormViewModel | null>(() => {
+    const currentForm = computed<RegistrationEntryFormBag | null>(() => {
         return formsToShow.value[currentFormIndex.value] || null;
     });
 
@@ -192,7 +197,7 @@
     });
 
     /** The filtered list of forms that will be shown */
-    const formsToShow = computed<RegistrationEntryBlockFormViewModel[]>(() => {
+    const formsToShow = computed<RegistrationEntryFormBag[]>(() => {
         if (!props.isWaitList) {
             return viewModel.value.registrantForms ?? [];
         }
@@ -201,14 +206,14 @@
     });
 
     /** The filtered fields to show on the current form */
-    const currentFormFields = computed<RegistrationEntryBlockFormFieldViewModel[]>(() => {
+    const currentFormFields = computed<RegistrationEntryFormFieldBag[]>(() => {
         return (currentForm.value?.fields || [])
             .filter(f => !props.isWaitList || f.showOnWaitList);
     });
 
     /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
-    const currentFormFieldsAugmented = computed<RegistrationEntryBlockFormFieldViewModel[]>(() => {
-        const fields = JSON.parse(JSON.stringify(currentFormFields.value)) as RegistrationEntryBlockFormFieldViewModel[];
+    const currentFormFieldsAugmented = computed<RegistrationEntryFormFieldBag[]>(() => {
+        const fields = JSON.parse(JSON.stringify(currentFormFields.value)) as RegistrationEntryFormFieldBag[];
 
         fields.forEach(value => {
             if (value.fieldSource != fieldSources.personField) {
@@ -334,7 +339,7 @@
         return getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms ?? []).firstName;
     });
 
-    const familyMember = computed<RegistrationEntryBlockFamilyMemberViewModel | null>(() => {
+    const familyMember = computed<RegistrationEntryFamilyMemberBag | null>(() => {
         const personGuid = props.currentRegistrant.personGuid;
 
         if (!personGuid) {
@@ -352,7 +357,7 @@
 
     // #region Functions
 
-    function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
+    function isRuleMet(rule: RegistrationEntryVisibilityBag, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryFormFieldBag[]): boolean {
         const value = !rule.comparedToRegistrationTemplateFormFieldGuid ? "" : fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
 
         if (typeof value !== "string") {

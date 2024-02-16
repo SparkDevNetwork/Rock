@@ -26,7 +26,13 @@ import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
 import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
+import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
+import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
+import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
+import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -49,7 +55,7 @@ export function getForcedFamilyGuid(currentPerson: CurrentPersonBag | null, view
  * @param viewModel
  * @param familyGuid
  */
-export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryInitializationBox, familyGuid: Guid | null): RegistrantInfo {
+export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null, viewModel: RegistrationEntryInitializationBox, familyGuid: Guid | null): RegistrantBag {
     const forcedFamilyGuid = getForcedFamilyGuid(currentPerson, viewModel);
 
     if (forcedFamilyGuid) {
@@ -61,18 +67,21 @@ export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null,
         familyGuid = newGuid();
     }
 
-    return {
+    const registrantBag: RegistrantBag = {
+        cost: 0,
         isOnWaitList: false,
         familyGuid: familyGuid,
         fieldValues: {},
         feeItemQuantities: {},
         guid: newGuid(),
         personGuid: null
-    } as RegistrantInfo;
+    };
+
+    return registrantBag;
 }
 
-export function getRegistrantBasicInfo(registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[]): RegistrantBasicInfo {
-    const fields = registrantForms?.reduce((acc, f) => acc.concat(f.fields ?? []), [] as RegistrationEntryBlockFormFieldViewModel[]) || [];
+export function getRegistrantBasicInfo(registrant: RegistrantBag, registrantForms: RegistrationEntryFormBag[]): RegistrantBasicInfo {
+    const fields = registrantForms?.reduce((acc, f) => acc.concat(f.fields ?? []), [] as RegistrationEntryFormFieldBag[]) || [];
 
     const firstNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
     const lastNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
@@ -116,7 +125,7 @@ export function convertComparisonValue(value: PublicComparisonValueBag): Compari
 export const CurrentRegistrationEntryState: InjectionKey<RegistrationEntryState> = Symbol("registration-entry-state");
 
 /** An injection key to provide the function that gets the args to persist the session. */
-export const GetPersistSessionArgs: InjectionKey<() => RegistrationEntryBlockArgs> = Symbol("get-persist-session-args");
+export const GetPersistSessionArgs: InjectionKey<() => RegistrationEntryArgsBag> = Symbol("get-persist-session-args");
 
 /** An injection key to provide the function that persists the session. */
 export const PersistSession: InjectionKey<(force?: boolean) => Promise<void>> = Symbol("persist-session");

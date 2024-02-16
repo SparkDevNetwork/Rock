@@ -7,7 +7,7 @@
 </template>
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types.partial";
+    import { RegistrationEntryFormFieldBag } from "./types.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockField from "@Obsidian/Controls/rockField.obs";
     import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
@@ -15,11 +15,12 @@
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { RegistrationEntryVisibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryVisibilityBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const props = defineProps({
         field: {
-            type: Object as PropType<RegistrationEntryBlockFormFieldViewModel>,
+            type: Object as PropType<RegistrationEntryFormFieldBag>,
             required: true
         },
 
@@ -29,7 +30,7 @@
         },
 
         formFields: {
-            type: Array as PropType<RegistrationEntryBlockFormFieldViewModel[]>,
+            type: Array as PropType<RegistrationEntryFormFieldBag[]>,
             required: true
         }
     });
@@ -79,7 +80,7 @@
 
     // #region Functions
 
-    function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryBlockFormFieldViewModel[]): boolean {
+    function isRuleMet(rule: RegistrationEntryVisibilityBag, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryFormFieldBag[]): boolean {
         const value = fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
 
         if (typeof value !== "string") {

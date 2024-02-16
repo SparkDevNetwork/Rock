@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types.partial";
+    import { RegistrationEntryFeeBag, RegistrationEntryFeeItemBag } from "./types.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -30,7 +30,7 @@
         },
 
         fee: {
-            type: Object as PropType<RegistrationEntryBlockFeeViewModel>,
+            type: Object as PropType<RegistrationEntryFeeBag>,
             required: true
         }
     });
@@ -41,7 +41,7 @@
 
     const internalValue = ref({ ...props.modelValue });
 
-    function getItemLabel(item: RegistrationEntryBlockFeeItemViewModel): string {
+    function getItemLabel(item: RegistrationEntryFeeItemBag): string {
         const formattedCost = asFormattedString(item.cost, 2);
 
         if (item.countRemaining !== null && item.countRemaining !== undefined) {
@@ -52,7 +52,7 @@
         return `${item.name} ($${formattedCost})`;
     }
 
-    const maxValue = computed((): number => {
+    const maxValue = computed<number>((): number => {
         if (!singleItem.value || singleItem.value.countRemaining === null) {
             return 100;
         }
@@ -60,7 +60,7 @@
         return singleItem.value.countRemaining + quantityValue.value;
     });
 
-    const checkboxValue = computed({
+    const checkboxValue = computed<boolean>({
         get(): boolean {
             if (singleItem.value) {
                 return internalValue.value[singleItem.value.guid] === 1 ? true : false;
@@ -149,7 +149,7 @@
         return props.fee.name ?? "";
     });
 
-    const singleItem = computed((): RegistrationEntryBlockFeeItemViewModel | null => {
+    const singleItem = computed((): RegistrationEntryFeeItemBag | null => {
         if (!props.fee.items || props.fee.items.length !== 1) {
             return null;
         }

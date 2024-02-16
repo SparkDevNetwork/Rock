@@ -33,7 +33,7 @@ export type RegistrationEntryFeeBag = {
     discountApplies: boolean;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets a value indicating whether [hide when none remaining]. */
     hideWhenNoneRemaining: boolean;
