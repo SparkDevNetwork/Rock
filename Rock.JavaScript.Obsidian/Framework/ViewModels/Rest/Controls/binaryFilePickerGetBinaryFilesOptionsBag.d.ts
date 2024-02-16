@@ -29,5 +29,5 @@ import { Guid } from "@Obsidian/Types";
  */
 export type BinaryFilePickerGetBinaryFilesOptionsBag = {
     /** The type of binary files to search for */
-    binaryFileTypeGuid?: Guid | null;
+    binaryFileTypeGuid: Guid;
 };

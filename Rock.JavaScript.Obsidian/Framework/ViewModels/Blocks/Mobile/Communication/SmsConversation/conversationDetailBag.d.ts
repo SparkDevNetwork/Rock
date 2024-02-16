@@ -40,7 +40,7 @@ export type ConversationDetailBag = {
     messages?: ConversationMessageBag[] | null;
 
     /** Gets or sets the person unique identifier. */
-    personGuid?: Guid | null;
+    personGuid: Guid;
 
     /** Gets or sets the phone number for the person. */
     phoneNumber?: string | null;

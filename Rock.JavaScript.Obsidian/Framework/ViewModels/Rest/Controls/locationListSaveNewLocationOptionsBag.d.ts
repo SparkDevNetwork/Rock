@@ -36,13 +36,13 @@ export type LocationListSaveNewLocationOptionsBag = {
     attributeValues?: Record<string, string> | null;
 
     /** The GUID of the defined type specifying the new location's type */
-    locationTypeValueGuid?: Guid | null;
+    locationTypeValueGuid: Guid;
 
     /** The new location's name */
     name?: string | null;
 
     /** The GUID of the location that will be the new location's parent */
-    parentLocationGuid?: Guid | null;
+    parentLocationGuid: Guid;
 
     /** The security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;

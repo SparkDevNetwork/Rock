@@ -32,7 +32,7 @@ export type PagePickerGetPageNameOptionsBag = {
      * Gets or sets the unique identifier of the page we're
      * retrieving the name of.
      */
-    pageGuid?: Guid | null;
+    pageGuid: Guid;
 
     /**
      * Gets or sets the security grant token to use when performing

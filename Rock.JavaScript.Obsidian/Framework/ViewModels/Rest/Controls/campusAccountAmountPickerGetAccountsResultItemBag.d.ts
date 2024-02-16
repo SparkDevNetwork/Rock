@@ -39,5 +39,5 @@ export type CampusAccountAmountPickerGetAccountsResultItemBag = {
     name?: string | null;
 
     /** GUID of the account */
-    value?: Guid | null;
+    value: Guid;
 };

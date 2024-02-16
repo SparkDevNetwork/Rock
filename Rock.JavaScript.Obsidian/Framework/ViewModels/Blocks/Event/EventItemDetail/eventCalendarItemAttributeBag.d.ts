@@ -32,7 +32,7 @@ export type EventCalendarItemAttributeBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the event calendar unique identifier. */
-    eventCalendarGuid?: Guid | null;
+    eventCalendarGuid: Guid;
 
     /** Gets or sets the name of the event calendar. */
     eventCalendarName?: string | null;

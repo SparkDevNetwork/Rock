@@ -40,13 +40,14 @@
     import CostSummary from "./costSummary.partial.obs";
     import DiscountCodeForm from "./discountCodeForm.partial.obs";
     import Registrar from "./registrar.partial.obs";
-    import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo } from "./types.partial";
+    import { RegistrantBasicInfo, RegistrationEntryInitializationBox } from "./types.partial";
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, PersistSession, getRegistrantBasicInfo, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
 
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
@@ -89,7 +90,7 @@
     });
 
     /** This is the data sent from the C# code behind when the block initialized. */
-    const viewModel = computed<RegistrationEntryBlockViewModel>(() => {
+    const viewModel = computed<RegistrationEntryInitializationBox>(() => {
         return registrationEntryState.viewModel;
     });
 
@@ -165,7 +166,7 @@
     async function submit(): Promise<boolean> {
         submitErrorMessage.value = "";
 
-        const result = await invokeBlockAction<RegistrationEntryBlockSuccessViewModel>("SubmitRegistration", {
+        const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {
             args: getRegistrationEntryBlockArgs()
         });
 

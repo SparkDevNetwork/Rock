@@ -38,5 +38,5 @@ export type VisualizerRenderConfigurationBag = {
     title?: string | null;
 
     /** Gets or sets the visualizer type unique identifier. */
-    visualizerTypeGuid?: Guid | null;
+    visualizerTypeGuid: Guid;
 };

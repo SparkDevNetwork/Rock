@@ -47,6 +47,7 @@
 </template>
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
+    import { RegistrationEntryInitializationBox } from "./types.partial";
     import { CurrentRegistrationEntryState, getRegistrantBasicInfo, use } from "./utils.partial";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
@@ -59,7 +60,6 @@
     import { Guid } from "@Obsidian/Types";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
     import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
-    import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

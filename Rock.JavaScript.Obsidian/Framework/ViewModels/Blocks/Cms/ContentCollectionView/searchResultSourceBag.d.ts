@@ -41,7 +41,7 @@ export type SearchResultSourceBag = {
      * Gets or sets the source unique identifier. This will be an empty
      * Guid if grouping has not been enabled in the block settings.
      */
-    sourceGuid?: Guid | null;
+    sourceGuid: Guid;
 
     /**
      * Gets or sets the template to use when rendering the search

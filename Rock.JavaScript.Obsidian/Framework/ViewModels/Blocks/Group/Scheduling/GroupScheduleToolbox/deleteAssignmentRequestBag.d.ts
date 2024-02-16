@@ -26,8 +26,8 @@ import { Guid } from "@Obsidian/Types";
 /** A bag that contains information about a schedule preference assignment to be deleted for the group schedule toolbox block. */
 export type DeleteAssignmentRequestBag = {
     /** Gets or sets the unique identifier of the assignment to be deleted. */
-    deleteAssignmentGuid?: Guid | null;
+    deleteAssignmentGuid: Guid;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 };

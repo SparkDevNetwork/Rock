@@ -33,7 +33,7 @@ export type AvailableContentSourceBag = {
     attributes?: ListItemBag[] | null;
 
     /** Gets or sets the unique identifier of the potential source. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the friendly name of the potential source. */
     name?: string | null;

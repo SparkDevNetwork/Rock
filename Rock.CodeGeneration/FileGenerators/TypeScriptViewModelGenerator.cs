@@ -77,6 +77,9 @@ namespace Rock.CodeGeneration.FileGenerators
                 // If its nullable that means it could also be undefined.
                 if ( isNullable )
                 {
+                    // TODO JMH The only reason for optional properties (properties with '?') is if they might be omitted from JSON objects sent to/from the server.
+                    // If a property is nullable, that doesn't implicitly mean that it can also be undefined unless JSON serialization is set up to omit null values from serialized objects.
+                    // That being said, we need a new attribute to adorn to properties that truly are optional before we can remove this.
                     sb.Append( "?" );
                 }
 
@@ -416,7 +419,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns><c>true</c> if the type is non-nullable; otherwise, <c>false</c>.</returns>
         private static bool IsNonNullType( Type type )
         {
-            return type.IsPrimitive || type.IsEnum || type == typeof( decimal );
+            return type.IsPrimitive || type.IsEnum || type == typeof( decimal ) || type == typeof( Guid );
         }
 
         /// <summary>

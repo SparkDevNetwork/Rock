@@ -5,6 +5,7 @@
 </template>
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import { RegistrationEntryFormFieldBag } from "./types.partial";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -17,7 +18,6 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
     import { Guid } from "@Obsidian/Types";
-    import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 
     const props = defineProps({
         field: {

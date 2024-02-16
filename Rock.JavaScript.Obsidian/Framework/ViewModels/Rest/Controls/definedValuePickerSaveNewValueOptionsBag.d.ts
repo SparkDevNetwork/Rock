@@ -32,7 +32,7 @@ export type DefinedValuePickerSaveNewValueOptionsBag = {
     attributeValues?: Record<string, string> | null;
 
     /** The GUID of the defined type of the value we're saving */
-    definedTypeGuid?: Guid | null;
+    definedTypeGuid: Guid;
 
     /** The description property of the new defined value */
     description?: string | null;

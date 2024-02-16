@@ -18,19 +18,16 @@
 import { Guid } from "@Obsidian/Types";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-import { RegistrationEntryState, RegistrantBasicInfo } from "./types.partial";
+import { RegistrationEntryFormBag, RegistrationEntryFormFieldBag, RegistrationEntryInitializationBox, RegistrationEntryState, RegistrantBasicInfo } from "./types.partial";
 import { InjectionKey, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
 import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
-import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
-import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
 import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
 

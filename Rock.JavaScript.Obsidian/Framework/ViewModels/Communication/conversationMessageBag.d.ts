@@ -79,7 +79,7 @@ export type ConversationMessageBag = {
      * Gets or sets the unique identifier of the person being
      * communicated with.
      */
-    personGuid?: Guid | null;
+    personGuid: Guid;
 
     /**
      * Gets or sets the photo URL for the person. Value will be null

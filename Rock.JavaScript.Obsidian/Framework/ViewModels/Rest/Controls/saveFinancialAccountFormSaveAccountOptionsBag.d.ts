@@ -29,7 +29,7 @@ import { Guid } from "@Obsidian/Types";
  */
 export type SaveFinancialAccountFormSaveAccountOptionsBag = {
     /** Gets or sets the gateway unique identifier. */
-    gatewayGuid?: Guid | null;
+    gatewayGuid: Guid;
 
     /** Gets or sets the gateway token. */
     gatewayPersonIdentifier?: string | null;

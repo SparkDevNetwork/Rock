@@ -36,7 +36,7 @@ export type FieldFilterSourceBag = {
     attribute?: PublicAttributeBag | null;
 
     /** Gets or sets the unique identifier of this source item. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets the type of this source item. This indicates which

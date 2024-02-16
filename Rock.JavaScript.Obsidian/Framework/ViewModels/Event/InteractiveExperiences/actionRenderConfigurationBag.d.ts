@@ -29,7 +29,7 @@ export type ActionRenderConfigurationBag = {
     actionId: number;
 
     /** Gets or sets the action type unique identifier. */
-    actionTypeGuid?: Guid | null;
+    actionTypeGuid: Guid;
 
     /** Gets or sets the configuration values for the action type. */
     configurationValues?: Record<string, string> | null;
