@@ -53,28 +53,29 @@
 </template>
 <script setup lang="ts">
     import { computed, onMounted, provide, ref, watch } from "vue";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
-    import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
-    import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
-    import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
-    import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
-    import { useStore } from "@Obsidian/PageState";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { newGuid } from "@Obsidian/Utility/guid";
-    import { List } from "@Obsidian/Utility/linq";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import RegistrationEntryIntro from "./RegistrationEntry/intro.partial.obs";
+    import RegistrationEntryPayment from "./RegistrationEntry/payment.partial.obs";
     import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial.obs";
     import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial.obs";
-    import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types.partial";
     import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial.obs";
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial.obs";
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
-    import RegistrationEntryPayment from "./RegistrationEntry/payment.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
+    import { RegistrationEntryFeeBag, RegistrationEntryInitializationBox, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
     import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo, scrollToTopAfterNextRender } from "./RegistrationEntry/utils.partial";
+    import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
+    import { useStore } from "@Obsidian/PageState";
+    import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { List } from "@Obsidian/Utility/linq";
+    import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
+    import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
 
     const store = useStore();
     const steps: Record<Step, Step> = {
@@ -88,7 +89,7 @@
     };
 
     const invokeBlockAction = useInvokeBlockAction();
-    const config = useConfigurationValues<RegistrationEntryBlockViewModel>();
+    const config = useConfigurationValues<RegistrationEntryInitializationBox>();
     const notFound = !!config.registrationInstanceNotFoundMessage || !config.registrationAttributesStart;
     const notFoundMessage = config.registrationInstanceNotFoundMessage || "The selected registration could not be found or is no longer active.";
     const hasPreAttributes = (config.registrationAttributesStart?.length ?? 0) > 0;
@@ -140,7 +141,7 @@
         discountAmount: config.session?.discountAmount || 0,
         discountPercentage: config.session?.discountPercentage || 0,
         discountMaxRegistrants: config.session?.discountMaxRegistrants || 0,
-        successViewModel: config.successViewModel,
+        successViewModel: config.successViewModel ?? null,
         amountToPayToday: 0,
         sessionExpirationDateMs: null,
         registrationSessionGuid: config.session?.registrationSessionGuid || newGuid(),
@@ -268,7 +269,7 @@
         if (!registrationEntryState.value.registrants.length) {
             items.push({
                 key: "Registrant",
-                title: toTitleCase(config.registrantTerm),
+                title: toTitleCase(config.registrantTerm ?? ""),
                 subtitle: config.registrationTerm ?? ""
             });
         }
@@ -287,7 +288,7 @@
             else {
                 items.push({
                     key: `Registrant-${registrant.guid}`,
-                    title: toTitleCase(config.registrantTerm),
+                    title: toTitleCase(config.registrantTerm ?? ""),
                     subtitle: toTitleCase(toWord(i + 1))
                 });
             }
@@ -319,7 +320,7 @@
             return false;
         }
 
-        const hasCostFees = new List<RegistrationEntryBlockFeeViewModel>(config.fees ?? [])
+        const hasCostFees = new List<RegistrationEntryFeeBag>(config.fees ?? [])
             .any(f => new List(f.items ?? []).any(i => i.cost > 0));
 
         // If no cost or fees, then no gateway will be needed.
@@ -363,7 +364,7 @@
     // #region Functions
 
     /** Gets the args needed for persisting the session. */
-    function getRegistrationEntryBlockArgs(): RegistrationEntryBlockArgs {
+    function getRegistrationEntryBlockArgs(): RegistrationEntryArgsBag {
         return {
             registrationSessionGuid: registrationEntryState.value.registrationSessionGuid,
             gatewayToken: registrationEntryState.value.gatewayToken,
