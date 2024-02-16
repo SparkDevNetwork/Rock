@@ -10,7 +10,7 @@
 
         <template #gridHeaderPrepend v-if="showEntityTypePicker">
             <div class="form-inline d-flex justify-content-end p-3">
-                <DropDownList v-model="entityTypeGuid"
+                <DropDownList v-model="entityTypeGuidFilter"
                               label="Entity Type"
                               grouped
                               enhanceForLongLists
@@ -150,13 +150,15 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
     import { normalize as normalizeGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PreferenceKey } from "./Attributes/types.partial";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 
     type BlockConfiguration = {
         attributeEntityTypeId: number;
@@ -206,18 +208,23 @@
 
     const config = useConfigurationValues<BlockConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    const entityTypeGuidFilter = ref(preferences.getValue(PreferenceKey.FilterEntityTypeGuid));
+    const categoriesFilter = ref(preferences.getValue(PreferenceKey.FilterCategories));
+    const activeFilter = ref(asBoolean(preferences.getValue(PreferenceKey.FilterActive)));
 
     /** True if the entity type picker should be visible on the page. */
     const showEntityTypePicker = computed(() => !config.entityTypeGuid);
 
     /** The currently selected entity type by the user. */
-    const entityTypeGuid = ref("");
+    const entityTypeGuid = computed(() => config.entityTypeGuid || entityTypeGuidFilter.value);
 
     /** The list of entity types to show in the entity type picker. */
     const entityTypeOptions = computed(() => config.entityTypes ?? []);
 
     /** True if we have a valid entity type selected or via configuration. */
-    const entityTypeSelectionIsValid = computed(() => !!config.entityTypeGuid || entityTypeGuid.value !== "");
+    const entityTypeSelectionIsValid = computed(() => !!config.entityTypeGuid || entityTypeGuidFilter.value !== "");
 
     /** True if the entity type qualifier text boxes should be shown. */
     const showEntityTypeQualifier = computed(() => !config.entityTypeGuid);
@@ -257,6 +264,7 @@
             : Promise.reject("Please select an entity to display attributes for.")
     );
     let gridData: GridDataBag<GridRow> | undefined;
+
 
     /**
      * Start editing an attribute on the given row.
@@ -516,6 +524,15 @@
 
     function onIgnore(): void {
         /* Intentionally blank. */
+    }
+
+    async function onSubmitFilter(): Promise<void> {
+        preferences.setValue(PreferenceKey.FilterCategories, categoriesFilter.value);
+        preferences.setValue(PreferenceKey.FilterActive, asTrueOrFalseString(activeFilter.value));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
     }
 
     // Watch for changes to the user-selection of the entity type and update

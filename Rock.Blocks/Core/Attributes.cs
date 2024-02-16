@@ -23,6 +23,8 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -112,7 +114,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "A7D9C259-1CD0-42C2-B708-4D95F2469B18" )]
     [Rock.SystemGuid.BlockTypeGuid( "791DB49B-58A4-44E1-AEF5-ABFF2F37E197" )]
-    public class Attributes : RockBlockType
+    public class Attributes : RockEntityListBlockType<Model.Attribute>
     {
         public static class AttributeKey
         {
@@ -124,6 +126,13 @@ namespace Rock.Blocks.Core
             public const string EnableShowInGrid = "EnableShowInGrid";
             public const string CategoryFilter = "CategoryFilter";
             public const string HideColumnsOnGrid = "HideColumnsOnGrid";
+        }
+
+        private static class PreferenceKey
+        {
+            public const string FilterEntityTypeGuid = "filter-entity-type-guid";
+            public const string FilterCategories = "filter-categories";
+            public const string FilterActive = "filter-active";
         }
 
         #region Methods
@@ -373,6 +382,140 @@ namespace Rock.Blocks.Core
                 return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
             }
         }
+
+        private Guid GetEntityTypeGuid
+
+
+
+
+
+
+
+
+
+        /// <inheritdoc/>
+        protected override IQueryable<Model.Attribute> GetListQueryable( RockContext rockContext )
+        {
+            var data = GetAttributeQuery( rockContext, entityTypeGuid );
+
+
+
+
+            IQueryable<Rock.Model.Attribute> query = null;
+            AttributeService attributeService = new AttributeService( rockContext );
+
+            if ( entityTypeGuid.HasValue )
+            {
+                if ( entityTypeGuid.Value == default )
+                {
+                    // entity type not configured in block or in filter, so get Global Attributes
+                    query = attributeService.GetByEntityTypeId( null, true );
+                    query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" );
+                }
+                else if ( GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull().HasValue )
+                {
+                    // entity type is configured in block, so get by the entityType and qualifiers specified in the block settings
+                    var entityTypeCache = EntityTypeCache.Get( entityTypeGuid.Value );
+                    var entityQualifierColumn = GetAttributeValue( AttributeKey.EntityQualifierColumn );
+                    var entityQualifierValue = GetAttributeValue( AttributeKey.EntityQualifierValue );
+                    query = attributeService.GetByEntityTypeQualifier( entityTypeCache.Id, entityQualifierColumn, entityQualifierValue, true );
+                }
+                else
+                {
+                    // entity type is selected in the filter, so get all the attributes for that entityType. (There is no userfilter for qualifiers, so don't filter by those)
+                    var entityTypeCache = EntityTypeCache.Get( entityTypeGuid.Value );
+                    query = attributeService.GetByEntityTypeId( entityTypeCache.Id, true );
+                }
+            }
+
+            // if filtering by block setting of categories
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CategoryFilter ) ) )
+            {
+                try
+                {
+                    var categoryGuids = GetAttributeValue( AttributeKey.CategoryFilter ).Split( ',' ).Select( Guid.Parse ).ToList();
+
+                    query = query.Where( a => a.Categories.Any( c => categoryGuids.Contains( c.Guid ) ) );
+                }
+                catch { }
+            }
+
+            query = query.OrderBy( a => a.Order );
+
+            return query.Select( a => a.Id )
+                    .ToList()
+                    .Select( id => AttributeCache.Get( id ) )
+                    .Select( a => GetAttributeRow( a, rockContext ) )
+                    .AsQueryable();
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<Model.Attribute> GetOrderedListQueryable( IQueryable<Model.Attribute> queryable, RockContext rockContext )
+        {
+            var contentChannel = GetContentChannel();
+
+            var query = queryable.OrderBy( i => i.Order );
+
+            if ( contentChannel != null && !contentChannel.ItemsManuallyOrdered )
+            {
+                query = query.OrderByDescending( p => p.StartDateTime );
+            }
+
+            return queryable;
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<Model.Attribute> GetGridBuilder()
+        {
+            var contentChannel = GetContentChannel();
+
+
+            //Guid = attribute.Guid,
+            //    Id = attribute.Id,
+            //    Name = attribute.Name,
+            //    Categories = attribute.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ),
+            //    IsActive = attribute.IsActive,
+            //    Qualifier = GetAttributeQualifier( attribute ),
+            //    Attribute = GetPublicAttribute( rockContext, attribute ),
+            //    Value = GetPublicAttributeValue( rockContext, attribute ),
+            //    IsDeleteEnabled = !attribute.IsSystem,
+            //    IsSecurityEnabled = false
+
+            var builder = new GridBuilder<Model.Attribute>()
+                .WithBlock( this )
+                .AddTextField( "id", a => a.Id.ToString() )
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddField( "contentChannelId", a => a.ContentChannelId )
+                .AddField( "order", a => a.Order )
+                .AddTextField( "title", a => a.Title )
+                .AddDateTimeField( "startDateTime", a => a.StartDateTime )
+                .AddDateTimeField( "expireDateTime", a => a.ExpireDateTime )
+                .AddField( "isScheduled", a => a.StartDateTime > RockDateTime.Now )
+                .AddField( "occurrences", a => a.EventItemOccurrences.Any() )
+                .AddField( "status", a => a.Status )
+                .AddField( "priority", a => a.Priority )
+                .AddField( "isContentLibraryOwner", a => a.IsContentLibraryOwner )
+                .AddField( "contentLibrarySourceIdentifier", a => a.ContentLibrarySourceIdentifier )
+                .AddField( "isDownloadedFromContentLibrary", a => a.IsDownloadedFromContentLibrary )
+                .AddField( "isUploadedToContentLibrary", a => a.IsUploadedToContentLibrary )
+                .AddField( "contentLibraryLicenseTypeGuid", a => a.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( a.ContentLibraryLicenseTypeValueId.Value )?.Guid : null )
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddAttributeFields( GetGridAttributes() );
+
+            return builder;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
         #endregion
 
