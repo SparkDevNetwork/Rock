@@ -284,10 +284,6 @@ namespace RockWeb.Blocks.Groups
                     PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull()
                 );
             }
-            else
-            {
-                SetRequirementStatuses( new RockContext() );
-            }
         }
 
         /// <summary>
