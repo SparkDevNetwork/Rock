@@ -251,12 +251,6 @@ Update Family Status: {updateFamilyStatus}
                     personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsPersonAttributesEnabled, settings.PersonAttributes, excludeAttributeIds, settings.PersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsInteractionsEnabled, settings.Interactions, rockContext ) );
 
-                    var dataViewQry = GetPeopleInDataViewQuery( settings.IsIncludeDataViewEnabled, settings.IncludeDataView, rockContext );
-                    if ( dataViewQry != null )
-                    {
-                        personIds.AddRange( dataViewQry.ToList() );
-                    }
-
                     // Get the distinct person ids
                     personIds = personIds.Distinct().ToList();
 
@@ -274,6 +268,15 @@ Update Family Status: {updateFamilyStatus}
                         .Select( p => p.PersonId )
                         .ToList();
                     personIds = personIds.Distinct().ToList();
+
+                    // If any people should be included based on being part of a dataview, add those people.
+                    // Do this after expanding the list to include family members so only the people in the dataview
+                    // are reactivated.
+                    var dataViewQry = GetPeopleInDataViewQuery( settings.IsIncludeDataViewEnabled, settings.IncludeDataView, rockContext );
+                    if ( dataViewQry != null )
+                    {
+                        personIds.AddRange( dataViewQry.ToList() );
+                    }
 
                     // Create a new queryable of family member person ids
                     personIdQry = CreateEntitySetIdQuery( personIds, rockContext );
