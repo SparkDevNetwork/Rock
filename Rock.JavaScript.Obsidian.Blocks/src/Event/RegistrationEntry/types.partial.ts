@@ -43,6 +43,12 @@ export type RegistrantBasicInfo = {
     guid: Guid;
 };
 
+export type RegistrationCostSummaryInfo = {
+    paidAmount: number;
+    remainingAmount: number;
+    minimumRemainingAmount: number;
+};
+
 const registrationEntryFeeItemBagBuilder = TypeBuilder.createFrom<GeneratedRegistrationEntryFeeItemBag>()
     // Fix the RegistrationEntryFeeItemBag.guid property to be required and not nullable.
     .makeProperties("guid").required().and.defined()

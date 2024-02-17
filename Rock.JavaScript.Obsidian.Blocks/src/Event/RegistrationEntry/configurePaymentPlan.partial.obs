@@ -11,92 +11,159 @@
                saveText="Select"
                title="Configure Payment Plan"
                @save="isModalShown = false">
-            <template v-if="paymentDeadlineDate"><!--TODO JMH toCurrencyOrNull fix-->
-                The total amount of {{ toCurrencyOrNull(0) }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
+            <template v-if="paymentDeadlineDate">
+                The total amount of {{ formatCurrency(totalAmount, registrationEntryState.viewModel.currencyInfo) }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
             </template>
             <template v-else>
-                The total amount due is $749.00.
+                The total amount due is {{ formatCurrency(totalAmount, registrationEntryState.viewModel.currencyInfo) }}.
             </template>
             <div class="row">
-                <DropDownList v-model="paymentFrequency"
-                              :items="availablePaymentFrequencies"
+                <DropDownList v-model="paymentFrequencyGuid"
+                              :items="paymentFrequencyItems"
                               label="Select Your Desired Payment Frequency" />
             </div>
 
-            <div class="row">
-                <div class="col-sm-6">
-                    <CurrencyBox v-model="amountToPayToday"
-                                 label="Amount To Pay Today" />
-                    <small>A minimum of {{ toCurrencyOrNull(registrationEntryState.viewModel.initialAmountToPay ?? 0, registrationEntryState.viewModel.currencyInfo) }} is due today</small>
+            <template v-if="paymentFrequencyGuid">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <CurrencyBox v-model="desiredAmountToPayToday"
+                                     label="Amount To Pay Today"
+                                     :rules="validateAmountToPayTodayRule" />
+                        <small>A minimum of {{ formatCurrency(minimumRemainingAmount, registrationEntryState.viewModel.currencyInfo) }} is due today</small>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <DropDownList v-model="numberOfPayments"
+                                      :items="numberOfPaymentsItems"
+                                      label="Number of Payments" />
+                    </div>
                 </div>
 
-                <div class="col-sm-6">
-                    <DropDownList v-model="numberOfPaymentsValue"
-                                  :items="numberOfPaymentsItems"
-                                  label="Number of Payments" />
-                </div>
-            </div>
-
-            <div class="row">
-                <RockLabel label="Plan Summary" />
-                <div class="col-sm-6">
-                    <div>Amount Due Today</div>
-                    <div>{{ registrationEntryState.amountToPayToday }}</div>
+                <div class="row">
+                    <RockLabel label="Plan Summary">Plan Summary</RockLabel>
                 </div>
 
-                <div class="col-sm-6">
-                    <div>Weekly Payment Amount</div>
-                    <div>X x {{ numberOfPayments }}</div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div>Amount Due Today</div>
+                        <div>{{ actualAmountDueTodayMessage }}</div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div>Weekly Payment Amount</div>
+                        <div>{{ formatCurrency(amountPerPayment, registrationEntryState.viewModel.currencyInfo) }} x {{ numberOfPaymentsAsNumber }}</div>
+                    </div>
                 </div>
-            </div>
+            </template>
         </Modal>
     </template>
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, nextTick, ref, watch } from "vue";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CurrentRegistrationEntryState, TransactionFrequency, getTransactionFrequency, nullTransactionFrequency, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, RegistrationCostSummary, TransactionFrequency, formatCurrency, getTransactionFrequency, nullTransactionFrequency, use } from "./utils.partial";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
-    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const { readonlyRegistrationCostSummary } = use(RegistrationCostSummary);
+
+    const validateAmountToPayTodayRule: ValidationRuleFunction = (value: unknown, params?: unknown[]): ValidationResult => {
+        if (registrationEntryState.amountToPayToday < minimumRemainingAmount.value) {
+            return "must be greater than or equal to the minimum amount";
+        }
+        else {
+            return true;
+        }
+    };
 
     //#region Values
 
     const isModalShown = ref<boolean>(false);
-    const paymentFrequency = ref<Guid>("");
-    const numberOfPaymentsValue = ref<string>("2");
-    const internalAmountToPayToday = ref<number>(registrationEntryState.viewModel.initialAmountToPay ?? 0);
+    const paymentFrequencyGuid = ref<Guid>("");
+    const numberOfPayments = ref<string>("2");
+    const internalDesiredAmountToPayToday = ref<number>(registrationEntryState.amountToPayToday);
 
     //#endregion
 
     //#region Computed Values
-    const amountToPayToday = computed<number>({
+
+    const actualAmountDueTodayMessage = computed<string>(() => {
+        let suffix = "";
+        if (remainderWholeCents.value) {
+            suffix = ` (${formatCurrency(remainderWholeCents.value / 100, registrationEntryState.viewModel.currencyInfo)} will be added to evenly distribute remaining payments)`;
+        }
+        return `${formatCurrency(registrationEntryState.amountToPayToday, registrationEntryState.viewModel.currencyInfo)}${suffix}`;
+    });
+
+    const desiredAmountToPayToday = computed<number>({
         get(): number {
-            return internalAmountToPayToday.value;
+            return internalDesiredAmountToPayToday.value;
         },
         set(value: number): void {
-            if (value < (registrationEntryState.viewModel.initialAmountToPay ?? 0)) {
-                internalAmountToPayToday.value = 0;
-            }
-            else {
-                internalAmountToPayToday.value = value;
-            }
+            internalDesiredAmountToPayToday.value = value;
+            // Change the actual amount to pay today value. This will trigger a watcher that may update the real value.
+            registrationEntryState.amountToPayToday = value;
         }
     });
-    const numberOfPayments = computed<number>(() => {
-        return parseInt(numberOfPaymentsValue.value);
+
+    const remainderWholeCents = computed<number>(() => {
+        if (numberOfPaymentsAsNumber.value === 0 || readonlyRegistrationCostSummary.value.remainingAmount === 0) {
+            return 0;
+        }
+
+        return ((readonlyRegistrationCostSummary.value.remainingAmount - desiredAmountToPayToday.value) * 100) % (numberOfPaymentsAsNumber.value);
     });
+
+    /** Gets the minimum remaining amount to be paid today, before the recurring payments, in order to get evenly split recurring payments. */
+    const minimumRemainingAmount = computed<number>(() => {
+        const originalMinimumRemainingAmount = readonlyRegistrationCostSummary.value.minimumRemainingAmount;
+        return originalMinimumRemainingAmount;
+
+        // if (remainderWholeCents.value !== 0) {
+        //     const remainder = remainderWholeCents.value / 100;
+        //     // TODO JMH This should probably be in a watch update the amountToPay.
+        //     //amountToPayToday.value = amountToPayToday.value + remainder;
+        //     // Add the amount necessary to make the number of payments an even number.
+        //     return originalMinimumRemainingAmount + remainder;
+        // }
+        // else {
+        //     // The remaining less the minimum amount can be evenly split into the requested number of payments.
+        //     return originalMinimumRemainingAmount;
+        // }
+    });
+
+    /** Gets the total amount for the registration, including paid amounts. */
+    const totalAmount = computed<number>(() => {
+        return readonlyRegistrationCostSummary.value.paidAmount + readonlyRegistrationCostSummary.value.remainingAmount;
+    });
+
+    /** Gets the amount per recurring payment. */
+    const amountPerPayment = computed<number>(() => {
+        if (numberOfPaymentsAsNumber.value === 0) {
+            return 0;
+        }
+        else {
+            return (readonlyRegistrationCostSummary.value.remainingAmount - registrationEntryState.amountToPayToday) / numberOfPaymentsAsNumber.value;
+        }
+    });
+
+    /** Gets the number of payments as a number. */
+    const numberOfPaymentsAsNumber = computed<number>(() => {
+        return parseInt(numberOfPayments.value);
+    });
+
+    /** Gets the items for the Number of Payments drop-down control. */
     const numberOfPaymentsItems = computed<ListItemBag[]>(() => {
-        if (!selectedTransactionFrequency.value) {
+        if (!paymentFrequencyAsTransactionFrequency.value) {
             // A frequency must be selected to show the number of payments list.
             return [];
         }
@@ -115,22 +182,29 @@
             return getListItemBagNumberRange(2, 12);
         }
 
-        const maxNumberOfPayments = selectedTransactionFrequency.value.getMaxNumberOfTransactionsBetweenDates(firstPaymentDate.value, paymentDeadlineDate.value);
+        const maxNumberOfPayments = paymentFrequencyAsTransactionFrequency.value.getMaxNumberOfTransactionsBetweenDates(firstPaymentDate.value, paymentDeadlineDate.value);
         return getListItemBagNumberRange(2, maxNumberOfPayments);
 
     });
+
+    /** Gets the first recurring payment date for the selected payment frequency. */
     const firstPaymentDate = computed<RockDateTime>(() => {
         let date: RockDateTime | undefined;
 
-        if (selectedTransactionFrequency.value) {
-            date = selectedTransactionFrequency.value.getNextTransactionDate();
+        if (paymentFrequencyAsTransactionFrequency.value) {
+            date = paymentFrequencyAsTransactionFrequency.value.getNextTransactionDate();
         }
 
         return date ?? RockDateTime.now().date;
     });
-    const availablePaymentFrequencies = computed<ListItemBag[]>(() => registrationEntryState.viewModel.paymentPlanFrequencies ?? []);
-    const rankedPaymentFrequencies = computed<ListItemBag[]>(() => {
-        const order: Record<string, number> = {
+
+    /** Gets the items for the payment frequency drop-down control. */
+    const paymentFrequencyItems = computed<ListItemBag[]>(() => {
+        // Create a copy of the array so it can be sorted.
+        const items = [...registrationEntryState.viewModel.paymentPlanFrequencies ?? []];
+
+        // Sort the frequencies.
+        const rank: Record<string, number> = {
             [DefinedValue.TransactionFrequencyWeekly]: 1,
             [DefinedValue.TransactionFrequencyBiweekly]: 2,
             [DefinedValue.TransactionFrequencyFirstAndFifteenth]: 3,
@@ -140,15 +214,17 @@
             [DefinedValue.TransactionFrequencyTwiceyearly]: 7,
             [DefinedValue.TransactionFrequencyOneTime]: 8,
         };
-        const copy = [...availablePaymentFrequencies.value];
-        copy.sort((a, b): number => {
-            const aOrder = a.value ? order[a.value] : -1;
-            const bOrder = b.value ? order[b.value] : -1;
+        items.sort((a, b): number => {
+            const aOrder = a.value ? rank[a.value] : -1;
+            const bOrder = b.value ? rank[b.value] : -1;
 
             return aOrder < bOrder ? -1 : bOrder < aOrder ? 1 : 0;
         });
-        return copy;
+
+        return items;
     });
+
+    /** Gets the payment deadline date as a RockDateTime. */
     const paymentDeadlineDate = computed<RockDateTime | null>(() => {
         if (!registrationEntryState.viewModel.paymentDeadlineDate) {
             return null;
@@ -156,8 +232,10 @@
 
         return RockDateTime.parseISO(registrationEntryState.viewModel.paymentDeadlineDate);
     });
+
+    /** Gets whether or not the payment plan feature can be shown. */
     const isShown = computed<boolean>(() => {
-        if (!rankedPaymentFrequencies.value?.[0]?.value) {
+        if (!paymentFrequencyItems.value?.[0]?.value) {
             // There are no available frequencies so hide the feature.
             return false;
         }
@@ -168,25 +246,15 @@
             return true;
         }
 
-        const startingTransactionDate = firstAvailableTransactionFrequency.value.getNextTransactionDate();
-        const numberOfPayments = firstAvailableTransactionFrequency.value.getMaxNumberOfTransactionsBetweenDates(startingTransactionDate, paymentDeadlineDate.value);
+        const firstAvailableTransactionFrequency = getTransactionFrequency(paymentFrequencyItems.value[0]?.value ?? "") ?? nullTransactionFrequency;
+        const startingTransactionDate = firstAvailableTransactionFrequency.getNextTransactionDate();
+        const numberOfPayments = firstAvailableTransactionFrequency.getMaxNumberOfTransactionsBetweenDates(startingTransactionDate, paymentDeadlineDate.value);
         return numberOfPayments > 2;
     });
-    const firstAvailableTransactionFrequency = computed<TransactionFrequency>(() => {
-        return getTransactionFrequency(rankedPaymentFrequencies.value[0]?.value ?? "") ?? nullTransactionFrequency;
-    });
-    const selectedTransactionFrequency = computed<TransactionFrequency>(() => {
-        return getTransactionFrequency(paymentFrequency.value) ?? nullTransactionFrequency;
-    });
-    const availableTransactionFrequencies = computed<TransactionFrequency[]>(() => {
-        const transactionFrequencies: TransactionFrequency[] = [];
-        availablePaymentFrequencies.value
-            .map(pf => getTransactionFrequency(pf.value ?? ""))
-            .filter(tf => !!tf)
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            .forEach(tf => transactionFrequencies.push(tf!));
 
-        return transactionFrequencies;
+    /** Gets the selected payment frequency as a TransactionFrequency. */
+    const paymentFrequencyAsTransactionFrequency = computed<TransactionFrequency>(() => {
+        return getTransactionFrequency(paymentFrequencyGuid.value) ?? nullTransactionFrequency;
     });
 
     //#endregion
@@ -200,6 +268,25 @@
     //#endregion
 
     //#region Watchers
+
+    watch([remainderWholeCents, desiredAmountToPayToday], ([newCents, newAmountToPay]: [number, number], [oldCents, oldAmountToPay]: [number, number]) => {
+        if (newCents !== oldCents || newAmountToPay !== oldAmountToPay) {
+            // Whenever amountToPayToday is changed,
+            // check if it needs to be updated to another value
+            // so that the amount per payment is an even number.
+            if (remainderWholeCents.value !== 0) {
+                // The amountToPay needs to be updated. Do it after the next render so the value has time to update.
+                nextTick(() => {
+                    registrationEntryState.amountToPayToday = desiredAmountToPayToday.value + (remainderWholeCents.value / 100);
+                });
+            }
+            else {
+                nextTick(() => {
+                    registrationEntryState.amountToPayToday = desiredAmountToPayToday.value;
+                });
+            }
+        }
+    });
 
     //#endregion
 </script>

@@ -906,6 +906,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrantBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrarBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryArgsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryCostSummaryBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryFamilyMemberBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryFeeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryFeeItemBag.d.ts" />

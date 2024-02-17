@@ -75,6 +75,7 @@
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrantBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrarBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryCostSummaryBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFamilyMemberBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFeeBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFeeItemBag.cs" />

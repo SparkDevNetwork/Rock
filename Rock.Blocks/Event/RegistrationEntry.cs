@@ -283,14 +283,16 @@ namespace Rock.Blocks.Event
                 }
                 else if ( registration != null && registration.DiscountCode.IsNotNullOrWhiteSpace() )
                 {
-                    // At this point use the code saved in the registration if it exists without checking in case the code is no longer valid (e.g. expired)
+                    // At this point use the code saved in the registration if it exists without checking in case the code is no longer valid (e.g. expired);
+                    // however, try to get the max registrants if the discount is valid.
+                    discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
                     return ActionOk( new
                     {
                         DiscountCode = registration.DiscountCode,
                         RegistrationUsagesRemaining = ( int? ) null,
                         DiscountAmount = registration.DiscountAmount,
                         DiscountPercentage = registration.DiscountPercentage,
-                        DiscountMaxRegistrants = discount.RegistrationTemplateDiscount.MaxRegistrants.Value
+                        DiscountMaxRegistrants = discount?.RegistrationTemplateDiscount.MaxRegistrants
                     } );
                 }
 
@@ -428,7 +430,17 @@ namespace Rock.Blocks.Event
                 }
 
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
-                var costs = registrationInstanceService.GetRegistrationCostSummaryInfo( context, args );
+                var costs = registrationInstanceService.GetRegistrationCostSummaryInfo( context, args )
+                    ?.Select( cost => new RegistrationEntryCostSummaryBag
+                    {
+                        Cost = cost.Cost,
+                        DefaultPaymentAmount = cost.DefaultPayment,
+                        Description = cost.Description,
+                        DiscountedCost = cost.DiscountedCost,
+                        MinimumPaymentAmount = cost.MinPayment,
+                        Type = cost.Type,
+                    } )
+                    .ToList();
 
                 return ActionOk( costs );
             }

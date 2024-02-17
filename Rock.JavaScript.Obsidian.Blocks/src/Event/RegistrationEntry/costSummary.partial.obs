@@ -58,14 +58,14 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use } from "./utils.partial";
+    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary, formatCurrency } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
     import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { RegistrationEntryCostSummaryBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCostSummaryBag";
     import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 
     enum RegistrationCostSummaryType {
@@ -75,16 +75,7 @@
         Total = 3
     }
 
-    type LineItem = {
-        type: RegistrationCostSummaryType;
-        description: string;
-        cost: number;
-        discountedCost: number;
-        minPayment: number;
-        defaultPayment: number | null;
-    };
-
-    type AugmentedLineItem = LineItem & {
+    type AugmentedLineItem = RegistrationEntryCostSummaryBag & {
         isFee: boolean;
         discountHelp: string;
         discountedAmountFormatted: string;
@@ -94,11 +85,12 @@
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const { updateRegistrationCostSummary } = use(RegistrationCostSummary);
 
     // #region Values
 
     const isLoading = ref<boolean>(false);
-    const lineItems = ref<LineItem[]>([]);
+    const lineItems = ref<RegistrationEntryCostSummaryBag[]>([]);
 
     // #endregion
 
@@ -148,9 +140,9 @@
         let hasDefault = false;
 
         lineItems.value.forEach(li => {
-            if (li.defaultPayment) {
+            if (li.defaultPaymentAmount) {
                 hasDefault = true;
-                total += li.defaultPayment;
+                total += li.defaultPaymentAmount;
             }
         });
 
@@ -190,7 +182,7 @@
         }
 
         let total = 0;
-        lineItems.value.forEach(li => total += (Math.min(li.minPayment, li.discountedCost)));
+        lineItems.value.forEach(li => total += (Math.min(li.minimumPaymentAmount, li.discountedCost)));
         return total;
     });
 
@@ -274,7 +266,7 @@
         lineItems.value = [];
 
         try {
-            const response = await invokeBlockAction<LineItem[]>("CalculateCost", {
+            const response = await invokeBlockAction<RegistrationEntryCostSummaryBag[]>("CalculateCost", {
                 args: getRegistrationEntryBlockArgs()
             });
 
@@ -285,21 +277,13 @@
         finally {
             isLoading.value = false;
         }
-    }
 
-    function formatCurrency(value: number, overrides?: Partial<CurrencyInfoBag>): string {
-        const currencyBag: CurrencyInfoBag = {
-            ...currencyInfo.value,
-            ...overrides
-        };
-        const formattedValue = toCurrencyOrNull(value, currencyBag);
-
-        if (formattedValue) {
-            return formattedValue;
-        }
-        else {
-            return `${currencyBag.symbol}${asFormattedString(value, currencyBag.decimalPlaces)}`;
-        }
+        // Update the shared registration cost data.
+        updateRegistrationCostSummary({
+            paidAmount: amountPreviouslyPaid.value,
+            remainingAmount: amountRemaining.value,
+            minimumRemainingAmount: amountDueToday.value
+        });
     }
 
     // #endregion

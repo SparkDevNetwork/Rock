@@ -18,8 +18,8 @@
 import { Guid } from "@Obsidian/Types";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-import { RegistrationEntryFormBag, RegistrationEntryFormFieldBag, RegistrationEntryInitializationBox, RegistrationEntryState, RegistrantBasicInfo } from "./types.partial";
-import { InjectionKey, inject, nextTick } from "vue";
+import { RegistrationEntryFormBag, RegistrationEntryFormFieldBag, RegistrationEntryInitializationBox, RegistrationEntryState, RegistrantBasicInfo, RegistrationCostSummaryInfo } from "./types.partial";
+import { InjectionKey, Ref, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
@@ -30,6 +30,8 @@ import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFami
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
 import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -126,6 +128,12 @@ export const GetPersistSessionArgs: InjectionKey<() => RegistrationEntryArgsBag>
 
 /** An injection key to provide the function that persists the session. */
 export const PersistSession: InjectionKey<(force?: boolean) => Promise<void>> = Symbol("persist-session");
+
+/** An injection key to provide the cost summary for the entire registration. */
+export const RegistrationCostSummary: InjectionKey<{
+        readonlyRegistrationCostSummary: Ref<RegistrationCostSummaryInfo>;
+        updateRegistrationCostSummary: (newValue: RegistrationCostSummaryInfo) => void;
+    }> = Symbol("registration-cost-summary");
 
 export type TransactionFrequency = {
     /** Determines if this transaction frequency matches the definedValueGuid. */
@@ -489,5 +497,21 @@ export function getTransactionFrequency(definedValueGuid: Guid): TransactionFreq
     }
     else {
         return null;
+    }
+}
+
+export function formatCurrency(value: number, overrides?: Partial<CurrencyInfoBag> | null | undefined): string {
+    const currencyBag: CurrencyInfoBag = {
+        decimalPlaces: 2,
+        symbol: "$",
+        ...overrides
+    };
+    const formattedValue = toCurrencyOrNull(value, currencyBag);
+
+    if (formattedValue) {
+        return formattedValue;
+    }
+    else {
+        return `${currencyBag.symbol}${asFormattedString(value, currencyBag.decimalPlaces)}`;
     }
 }

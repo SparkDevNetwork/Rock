@@ -52,7 +52,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { computed, onMounted, provide, ref, watch } from "vue";
+    import { computed, onMounted, provide, readonly, ref, watch } from "vue";
     import RegistrationEntryIntro from "./RegistrationEntry/intro.partial.obs";
     import RegistrationEntryPayment from "./RegistrationEntry/payment.partial.obs";
     import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial.obs";
@@ -61,8 +61,8 @@
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial.obs";
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
-    import { RegistrationEntryFeeBag, RegistrationEntryInitializationBox, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
-    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo, scrollToTopAfterNextRender } from "./RegistrationEntry/utils.partial";
+    import { RegistrationCostSummaryInfo, RegistrationEntryFeeBag, RegistrationEntryInitializationBox, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
+    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo, scrollToTopAfterNextRender, RegistrationCostSummary } from "./RegistrationEntry/utils.partial";
     import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
@@ -146,6 +146,11 @@
         sessionExpirationDateMs: null,
         registrationSessionGuid: config.session?.registrationSessionGuid || newGuid(),
         ownFamilyGuid: config.currentPersonFamilyGuid || newGuid()
+    });
+    const registrationCostSummary = ref<RegistrationCostSummaryInfo>({
+        paidAmount: 0,
+        remainingAmount: 0,
+        minimumRemainingAmount: 0
     });
 
     // #endregion
@@ -528,6 +533,15 @@
     provide(CurrentRegistrationEntryState, registrationEntryState.value);
     provide(GetPersistSessionArgs, getRegistrationEntryBlockArgs);
     provide(PersistSession, persistSession);
+    provide(RegistrationCostSummary, {
+        // Provide a read-only version of the registrationCostSummary so
+        // child components can only use the updateRegistrationCostSummary() to update
+        // the reactive value.
+        readonlyRegistrationCostSummary: readonly(registrationCostSummary),
+        updateRegistrationCostSummary: (value: RegistrationCostSummaryInfo) => {
+            registrationCostSummary.value = value;
+        }
+    });
 
     onMounted(() => {
         if (config.loginRequiredToRegister && !currentPerson.value) {
