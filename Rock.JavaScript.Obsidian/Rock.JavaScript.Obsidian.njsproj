@@ -300,6 +300,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Bus\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\QueueDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\" />
+    <Folder Include="Framework\ViewModels\Blocks\CheckIn\AttendanceHistoryList\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\Config\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
@@ -783,6 +784,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\AttendanceHistoryList\attendanceHistoryListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInAdvancedSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInBarcodeSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Config\CheckinTypeDetail\checkInDisplaySettingsBag.d.ts" />

@@ -35,6 +35,7 @@
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
     <Content Include="src\Bus\queueDetail.vue" />
+    <Content Include="src\CheckIn\attendanceHistoryList.obs" />
     <Content Include="src\CheckIn\Config\checkinTypeDetail.obs" />
     <Content Include="src\CheckIn\Config\CheckinTypeDetail\editPanel.partial.obs" />
     <Content Include="src\CheckIn\Config\CheckinTypeDetail\viewPanel.partial.obs" />
@@ -336,6 +337,7 @@
     <Folder Include="src\" />
     <Folder Include="src\Bus\QueueDetail\" />
     <Folder Include="src\CheckIn\" />
+    <Folder Include="src\CheckIn\AttendanceHistoryList\" />
     <Folder Include="src\CheckIn\Config\" />
     <Folder Include="src\CheckIn\Config\CheckinTypeDetail\" />
     <Folder Include="src\Cms\" />
@@ -480,6 +482,7 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\CheckIn\AttendanceHistoryList\types.partial.ts" />
     <TypeScriptCompile Include="src\CheckIn\Config\CheckinTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\AdaptiveMessageAdaptationDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\AdaptiveMessageDetail\types.partial.ts" />

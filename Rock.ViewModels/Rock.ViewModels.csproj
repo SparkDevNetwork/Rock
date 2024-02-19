@@ -132,6 +132,7 @@
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListOptionsBag.cs" />
+    <Compile Include="Blocks\CheckIn\AttendanceHistoryList\AttendanceHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Event\EventCalendarItemList\EventCalendarItemListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
