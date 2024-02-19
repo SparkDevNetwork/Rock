@@ -225,6 +225,7 @@
     <Content Include="src\Group\groupRegistration.obs" />
     <Content Include="src\Group\GroupRegistration\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRegistration\viewPanel.partial.obs" />
+    <Content Include="src\Reporting\persistedDataViewList.obs" />
     <Content Include="src\Reporting\metricValueDetail.obs" />
     <Content Include="src\Reporting\MetricValueDetail\editPanel.partial.obs" />
     <Content Include="src\Reporting\MetricValueDetail\viewPanel.partial.obs" />
@@ -446,6 +447,7 @@
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupRegistration\" />
+    <Folder Include="src\Reporting\PersistedDataViewList\" />
     <Folder Include="src\Reporting\MetricValueDetail\" />
     <Folder Include="src\Security\ConfirmAccount\" />
     <Folder Include="src\Security\RestKeyDetail\" />
@@ -645,6 +647,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Group\GroupRegistration\types.d.ts" />
+    <TypeScriptCompile Include="src\Reporting\PersistedDataViewList\types.partial.ts" />
     <TypeScriptCompile Include="src\Reporting\MetricValueDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\events.d.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\views.ts" />
