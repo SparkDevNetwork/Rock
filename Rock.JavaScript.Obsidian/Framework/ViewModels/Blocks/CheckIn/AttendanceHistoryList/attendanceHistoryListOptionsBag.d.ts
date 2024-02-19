@@ -25,7 +25,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Attendance List block. */
 export type AttendanceHistoryListOptionsBag = {
-    /** Gets or sets a value indicating whether the Attended filter should default to true. */
+    /** Gets or sets a value indicating whether the DidAttend filter should default to true. */
     filterAttendanceByDefault: boolean;
 
     /** Gets or sets the group items for the group filter picker. */

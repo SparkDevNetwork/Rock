@@ -74,6 +74,7 @@
     <Content Include="src\Cms\mediaAccountList.obs" />
     <Content Include="src\Cms\mediaFolderList.obs" />
     <Content Include="src\Cms\personalLinkSectionList.obs" />
+    <Content Include="src\Core\attributeMatrixTemplateList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -377,6 +378,7 @@
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\AssetStorageProviderList\" />
     <Folder Include="src\Core\AttributeMatrixTemplateDetail\" />
+    <Folder Include="src\Core\AttributeMatrixTemplateList\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\BinaryFileList\" />
     <Folder Include="src\Core\BinaryFileTypeDetail\" />
@@ -560,6 +562,7 @@
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileList\types.partial.ts" />
