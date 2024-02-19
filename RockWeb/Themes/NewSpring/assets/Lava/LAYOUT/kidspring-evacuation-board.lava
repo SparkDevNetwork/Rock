@@ -2,21 +2,21 @@
 {% assign CurrentUrl = 'Global' | Page:'Url' | EscapeDataString %}
 {% assign pageId = 'Global' | Page:'Id' %}
 
-
 //- Set these page parameters up to pass through to SQL
 {% assign date = 'Now' | Date %}
 {% assign dateKey = 'Now' | Date:'yyyyMMdd' %}
+//- {% assign dateKey = '20240107' %}
 
 {% assign campusGuid = Context.Campus.Guid %}
 {% assign scheduleId = Context.Schedule.Id %}
 {% assign locationId = 'Global' | PageParameter:'LocationId' %}
 
-{% if dateKey == '' or campusGuid == '' or scheduleId == '' or locationId == ''
+{% if dateKey == null or campusGuid == null or scheduleId == null or locationId == null
 %}
 
-<p class="p-3 alert alert-danger"><i
-    class="fas fa-exclamation-triangle mr-1 text-danger"></i> Select a value for
-  all filters in the filters drawer above to continue.</p>
+<p class="p-3 alert alert-danger text-bold mt-3"><i
+    class="fas fa-exclamation-triangle mr-1"></i> Please select values for
+  all options in the filter bar at the top to continue.</p>
 
 {% else %}
 
@@ -86,9 +86,11 @@ FirstName' %}
 {% assign rows = rows | OrderBy:'LastName' | RemoveFromArray:null %}
 
 {% if status == 'marked' and markedCount == 0 and notMarkedCount >= 1 %}
-  <div class="alert alert-danger mt-3" role="alert"><b>{{ notMarkedCount }} Not Marked Safe remaining</b></div>
+    <div class="alert alert-danger mt-3 text-bold" role="alert"><i
+        class="fas fa-exclamation-triangle mr-1"></i> <b>{{ notMarkedCount }} Not Marked Safe remaining</b></div>
 {% elseif status != 'checkedOut' and notMarkedCount == 0 %}
-  <div class="alert alert-success mt-3" role="alert"><b>All attendees have been marked safe and/or checked out.</b></div>
+    <div class="alert alert-success mt-3 text-bold" role="alert"><i
+        class="fas fa-check-square mr-1"></i> <b>All attendees have been marked safe and/or checked out.</b></div>
 {% endif %}
 
 
