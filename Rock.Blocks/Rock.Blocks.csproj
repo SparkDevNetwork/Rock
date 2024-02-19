@@ -161,6 +161,7 @@
     <Compile Include="CheckIn\Config\CheckinTypeDetail.cs" />
     <Compile Include="Finance\FinancialStatementTemplateList.cs" />
     <Compile Include="Group\GroupArchivedList.cs" />
+    <Compile Include="Group\GroupRequirementTypeList.cs" />
     <Compile Include="Group\GroupTypeList.cs" />
     <Compile Include="Mobile\MobileLayoutDetail.cs" />
     <Compile Include="Group\GroupMemberScheduleTemplateDetail.cs" />
