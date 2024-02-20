@@ -346,6 +346,19 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
         #region CreateEntitySet filter
 
         [TestMethod]
+        public void CreateEntitySet_WithInvalidInput_RendersErrorMessage()
+        {
+            var inputTemplate = @"
+{% assign entitySet = null | CreateEntitySet %}
+{{ entitySet.Id }}
+";
+            var options = new LavaTestRenderOptions { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput };
+            var output = TestHelper.GetTemplateOutput( typeof( FluidEngine ), inputTemplate, options );
+
+            Assert.That.Contains( output, "CreateEntitySet failed." );
+        }
+
+        [TestMethod]
         public void CreateEntitySet_WithInputAsEntityArray_ReturnsExpectedOutput()
         {
             var personList = GetTestPersonEntityList();

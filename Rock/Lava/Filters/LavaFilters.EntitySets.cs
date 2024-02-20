@@ -115,7 +115,7 @@ namespace Rock.Lava
             }
             else 
             {
-                throw new Exception( $"CreateEntitySet failed. The input must be a delimited list of key values or a collection of Rock Entities or keys. [InputType={input.GetType().Name}]" );
+                throw new Exception( $"CreateEntitySet failed. The input must be a delimited list of key values or a collection of Rock Entities or keys. [InputType={input?.GetType().Name ?? "(empty)"}]" );
             }
 
             if ( !entityTypeId.HasValue )
