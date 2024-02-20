@@ -3122,11 +3122,16 @@ END
                 var personService = new PersonService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupService = new GroupService( rockContext );
-                var persons = personService.Queryable()
+                var persons = personService.Queryable( new Rock.Model.PersonService.PersonQueryOptions()
+                {
+                    IncludeRestUsers = false
+                } )
                     .Where( p => !p.PrimaryFamilyId.HasValue )
-                    .Select( p => new { p.Id, p.LastName } )
+                    .Select( p => new { p.Id, p.LastName, p.RecordTypeValueId } )
                     .ToList();
+
                 var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                var businessRecord = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS );
 
                 foreach ( var person in persons )
                 {
@@ -3134,9 +3139,10 @@ END
 
                     if ( groupMember == null )
                     {
+                        var groupName = person.RecordTypeValueId == businessRecord.Id ? $"{person.LastName} Business" : $"{person.LastName} Family";
                         var group = new Group
                         {
-                            Name = $"{person.LastName} Family".Trim(),
+                            Name = groupName.Trim(),
                             GroupTypeId = familyGroupType.Id
                         };
                         groupService.Add( group );
