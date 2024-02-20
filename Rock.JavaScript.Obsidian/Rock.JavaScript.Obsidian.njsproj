@@ -361,6 +361,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SignalTypeList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\TagList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentList\" />
@@ -922,6 +923,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignalTypeList\signalTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateDetail\getPdfPreviewUrlRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateList\signatureDocumentTemplateListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleBag.d.ts" />
