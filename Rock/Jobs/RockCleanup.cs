@@ -3122,7 +3122,10 @@ END
                 var personService = new PersonService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupService = new GroupService( rockContext );
-                var persons = personService.Queryable().Where( p => !p.PrimaryFamilyId.HasValue ).Select( p => new { p.Id, p.LastName } ).ToList();
+                var persons = personService.Queryable()
+                    .Where( p => !p.PrimaryFamilyId.HasValue )
+                    .Select( p => new { p.Id, p.LastName } )
+                    .ToList();
                 var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
                 foreach ( var person in persons )
@@ -3133,7 +3136,7 @@ END
                     {
                         var group = new Group
                         {
-                            Name = person.LastName,
+                            Name = $"{person.LastName} Family".Trim(),
                             GroupTypeId = familyGroupType.Id
                         };
                         groupService.Add( group );
