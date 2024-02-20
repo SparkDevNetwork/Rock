@@ -18,9 +18,11 @@
                 The total amount due is {{ formatCurrency(totalAmount, registrationEntryState.viewModel.currencyInfo) }}.
             </template>
             <div class="row">
-                <DropDownList v-model="paymentFrequencyGuid"
-                              :items="paymentFrequencyItems"
-                              label="Select Your Desired Payment Frequency" />
+                <div class="col">
+                    <DropDownList v-model="paymentFrequencyGuid"
+                                  :items="paymentFrequencyItems"
+                                  label="Select Your Desired Payment Frequency" />
+                </div>
             </div>
 
             <template v-if="paymentFrequencyGuid">
@@ -28,8 +30,11 @@
                     <div class="col-sm-6">
                         <CurrencyBox v-model="desiredAmountToPayToday"
                                      label="Amount To Pay Today"
-                                     :rules="validateAmountToPayTodayRule" />
-                        <small>A minimum of {{ formatCurrency(minimumRemainingAmount, registrationEntryState.viewModel.currencyInfo) }} is due today</small>
+                                     :rules="validateAmountToPayTodayRule">
+                            <template #append>
+                                <small>A minimum of {{ formatCurrency(minimumRemainingAmount, registrationEntryState.viewModel.currencyInfo) }} is due today.</small>
+                            </template>
+                        </CurrencyBox>
                     </div>
 
                     <div class="col-sm-6">
@@ -40,7 +45,9 @@
                 </div>
 
                 <div class="row">
-                    <RockLabel label="Plan Summary">Plan Summary</RockLabel>
+                    <div class="col">
+                        <RockLabel label="Plan Summary">Plan Summary</RockLabel>
+                    </div>
                 </div>
 
                 <div class="row">
