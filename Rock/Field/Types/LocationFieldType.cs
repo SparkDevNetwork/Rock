@@ -44,16 +44,26 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a location value
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LOCATION )]
     public class LocationFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
-        private const string ALLOWED_PICKER_MODES = "allowedPickerModes";
         private const string CURRENT_PICKER_MODE = "currentPickerMode";
 
-        #endregion Configuration
+        /// <summary>
+        /// A class that has all of the configuration keys for Location List Field Type.
+        /// </summary>
+        public static class ConfigurationKey
+        {
+            /// <summary>
+            /// The location type
+            /// </summary>
+            public const string AllowedPickerMode = "allowedPickerModes";
+        }
+
+        #endregion
 
         #region Formatting
 
@@ -235,7 +245,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( ALLOWED_PICKER_MODES );
+            configKeys.Add( ConfigurationKey.AllowedPickerMode );
             configKeys.Add( CURRENT_PICKER_MODE );
 
             return configKeys;
@@ -297,14 +307,14 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( ALLOWED_PICKER_MODES, new ConfigurationValue( "Available Location Types", "Select the location types that can be used by the Location Picker.", string.Empty ) );
+            configurationValues.Add( ConfigurationKey.AllowedPickerMode, new ConfigurationValue( "Available Location Types", "Select the location types that can be used by the Location Picker.", string.Empty ) );
             configurationValues.Add( CURRENT_PICKER_MODE, new ConfigurationValue( "Default Location Type", "Select the location type that is initially displayed.", string.Empty ) );
 
             if ( controls != null && controls.Count == 2 )
             {
                 if ( controls[0] != null && controls[0] is RockCheckBoxList )
                 {
-                    configurationValues[ALLOWED_PICKER_MODES].Value = ( ( RockCheckBoxList ) controls[0] ).SelectedValues.AsDelimited( "," );
+                    configurationValues[ConfigurationKey.AllowedPickerMode].Value = ( ( RockCheckBoxList ) controls[0] ).SelectedValues.AsDelimited( "," );
                 }
 
                 if ( controls[1] != null && controls[1] is RockRadioButtonList )
@@ -325,9 +335,9 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Count == 2 )
             {
-                if ( controls[0] != null && controls[0] is RockCheckBoxList && configurationValues.ContainsKey( ALLOWED_PICKER_MODES ) )
+                if ( controls[0] != null && controls[0] is RockCheckBoxList && configurationValues.ContainsKey( ConfigurationKey.AllowedPickerMode ) )
                 {
-                    var selectedValues = configurationValues[ALLOWED_PICKER_MODES].Value?.Split( ',' );
+                    var selectedValues = configurationValues[ConfigurationKey.AllowedPickerMode].Value?.Split( ',' );
                     if ( selectedValues != null )
                     {
                         ( ( RockCheckBoxList ) controls[0] ).Items.Cast<ListItem>().ToList().ForEach( li => li.Selected = selectedValues.Any( v => v == li.Value ) );
@@ -384,9 +394,9 @@ namespace Rock.Field.Types
             var currentPickerMode = configurationValues.ContainsKey( CURRENT_PICKER_MODE ) ? configurationValues[CURRENT_PICKER_MODE].Value.ConvertToEnumOrNull<LocationPickerMode>() ?? LocationPickerMode.Address : LocationPickerMode.Address;
 
             string[] allowedPickerModesConfig = null;
-            if ( configurationValues.ContainsKey(ALLOWED_PICKER_MODES) && configurationValues[ALLOWED_PICKER_MODES].Value.IsNotNullOrWhiteSpace() )
+            if ( configurationValues.ContainsKey( ConfigurationKey.AllowedPickerMode ) && configurationValues[ConfigurationKey.AllowedPickerMode].Value.IsNotNullOrWhiteSpace() )
             {
-                allowedPickerModesConfig = configurationValues[ALLOWED_PICKER_MODES].Value.Split( ',' );
+                allowedPickerModesConfig = configurationValues[ConfigurationKey.AllowedPickerMode].Value.Split( ',' );
             }
 
             if ( allowedPickerModesConfig != null && allowedPickerModesConfig.Any() )
