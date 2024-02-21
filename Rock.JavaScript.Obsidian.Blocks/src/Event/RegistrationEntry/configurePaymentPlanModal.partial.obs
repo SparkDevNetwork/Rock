@@ -15,7 +15,8 @@
             <div class="col">
                 <DropDownList v-model="paymentFrequencyGuid"
                               :items="paymentFrequencyItems"
-                              label="Select Your Desired Payment Frequency" />
+                              label="Select Your Desired Payment Frequency"
+                              rules="required" />
             </div>
         </div>
 
@@ -23,7 +24,7 @@
             <div class="col-sm-6">
                 <CurrencyBox v-model="desiredAmountToPayToday"
                              label="Amount To Pay Today"
-                             :rules="validateAmountToPayTodayRule">
+                             :rules="['required',validateAmountToPayTodayRule]">
                     <template #append>
                         <small>A minimum of {{ formatCurrency(minimumRemainingAmount, registrationEntryState.viewModel.currencyInfo) }} is due today.</small>
                     </template>
@@ -33,7 +34,8 @@
             <div class="col-sm-6">
                 <DropDownList v-model="numberOfPayments"
                               :items="numberOfPaymentsItems"
-                              label="Number of Payments" />
+                              label="Number of Payments"
+                              rules="required" />
             </div>
         </div>
 
