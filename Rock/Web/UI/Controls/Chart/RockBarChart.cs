@@ -151,8 +151,13 @@ namespace Rock.Web.UI.Controls
             var args = new ChartJsTimeSeriesDataFactory.GetJsonArgs();
 
             args.ContainerControlId = this.ClientID;
-            args.LegendPosition = this.LegendPosition;
+
+            GetChartJsLegendLocationSettings( out string legendPosition, out string legendAlignment );
+
+            args.LegendPosition = legendPosition;
+            args.LegendAlignment = legendAlignment;
             args.DisplayLegend = this.ShowLegend;
+
             args.DisableAnimation = this.Page.IsPostBack;
             args.YValueFormatString = this.YValueFormatString;
 
@@ -168,8 +173,13 @@ namespace Rock.Web.UI.Controls
             var args = new ChartJsCategorySeriesDataFactory.GetJsonArgs();
 
             args.ContainerControlId = this.ClientID;
-            args.LegendPosition = this.LegendPosition;
+
+            GetChartJsLegendLocationSettings( out string legendPosition, out string legendAlignment );
+
+            args.LegendPosition = legendPosition;
+            args.LegendAlignment = legendAlignment;
             args.DisplayLegend = this.ShowLegend;
+
             args.DisableAnimation = this.Page.IsPostBack;
             args.YValueFormatString = this.YValueFormatString;
 

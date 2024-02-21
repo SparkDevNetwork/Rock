@@ -349,6 +349,42 @@ namespace Rock.Web.UI.Controls
         public string LegendPosition { get; set; }
 
         /// <summary>
+        /// Gets the corresponding ChartJs legend location settings for the current Rock Chart settings.
+        /// </summary>
+        /// <param name="legendPosition"></param>
+        /// <param name="legendAlignment"></param>
+        protected void GetChartJsLegendLocationSettings( out string legendPosition, out string legendAlignment )
+        {
+            var rockLegendPosition = this.LegendPosition?.ToLower() ?? string.Empty;
+
+            if ( rockLegendPosition == "ne" )
+            {
+                legendPosition = "top";
+                legendAlignment = "end";
+            }
+            else if ( rockLegendPosition.StartsWith( "nw" ) )
+            {
+                legendPosition = "top";
+                legendAlignment = "start";
+            }
+            else if ( rockLegendPosition.StartsWith( "se" ) )
+            {
+                legendPosition = "bottom";
+                legendAlignment = "end";
+            }
+            else if ( rockLegendPosition.StartsWith( "sw" ) )
+            {
+                legendPosition = "bottom";
+                legendAlignment = "start";
+            }
+            else
+            {
+                legendPosition = "bottom";
+                legendAlignment = "center";
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a flag indicating if a legend is displayed on the chart.
         /// </summary>
         public bool ShowLegend { get; set; }
