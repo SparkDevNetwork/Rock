@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Communication
             var securityField = gSnippets.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Get<SmsPipeline>().Id;
+                securityField.EntityTypeId = EntityTypeCache.Get<Snippet>().Id;
             }
         }
 
