@@ -331,6 +331,7 @@
     <Compile Include="TestData\Core\TestDataHelper.Web.cs" />
     <Compile Include="TestData\Core\SampleDataHelper.cs" />
     <Compile Include="TestData\Reporting\ReportingDataManager.cs" />
+    <Compile Include="TestData\Metrics\MetricsDataManager.cs" />
     <Compile Include="TestData\Reporting\TestDataHelper.Reporting.cs" />
     <Compile Include="Modules\Core\Model\AttendanceOccurrenceTests.cs" />
     <Compile Include="Modules\Core\Model\BenevolenceRequestTests.cs" />
@@ -343,6 +344,7 @@
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestData\Tests\SampleDataTests.cs" />
     <Compile Include="TestExtensionMethods.cs" />
     <Compile Include="Modules\Core\Logging\RockLogConfigurationTest.cs" />
     <Compile Include="Modules\Core\Logging\RockLoggerTests.cs" />
