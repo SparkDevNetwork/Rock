@@ -18,6 +18,7 @@
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export const enum ConfigurationValueKey {
     FileName = "fileName",
@@ -45,12 +46,12 @@ export class VideoFileFieldType extends FieldTypeBase {
         return configurationComponent;
     }
 
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         const filePath = configurationValues[ConfigurationValueKey.FilePath];
         const mimeType = configurationValues[ConfigurationValueKey.MimeType];
         const fileGuid = configurationValues[ConfigurationValueKey.FileGuid];
 
-        return `<video
+        const html = `<video
         src='${filePath}?guid=${fileGuid}'
         class='js-media-video'
         type='${mimeType}'
@@ -65,10 +66,22 @@ export class VideoFileFieldType extends FieldTypeBase {
     <script>
         Rock.controls.mediaPlayer.initialize();
     </script>`;
+
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
+
+        return html;
     }
 
-    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         const fileGuid = configurationValues[ConfigurationValueKey.FileGuid];
-        return `<a href="/GetFile.ashx?guid=${fileGuid}">${value}</a>`;
+        const html = `<a href="/GetFile.ashx?guid=${fileGuid}">${value}</a>`;
+
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
+
+        return html;
     }
 }

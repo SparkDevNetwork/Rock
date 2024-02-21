@@ -41,14 +41,16 @@ export interface IFieldType {
     /**
      * Get the HTML representation of the attribute value. This will be used
      * as literal HTML so if you are returning plain text it must be encoded
-     * for HTML entities first.
+     * for HTML entities first. If you are returning renderable HTML, make sure
+     * to esacpe that HTML if the `isEscaped` parameter is set to `true`.
      *
      * @param value The attribute value.
      * @param configurationValues The configuration values that will provide the necessary information to format the value.
+     * @param isEscaped If true, escape the renderable HTML
      *
      * @returns A string that contains a user-friendly HTML representation of the value.
      */
-    getHtmlValue(value: string, configurationValues: Record<string, string>): string;
+    getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string;
 
     /**
      * Get the condensed plain text representation of the attribute value.
@@ -65,15 +67,18 @@ export interface IFieldType {
     /**
      * Get the condensed HTML representation of the attribute value. This will
      * be used as literal HTML so if you are returning plain text it must be
-     * encoded for HTML entities first. This should be a more concise
-     * representation of the {@link FieldType.getHtmlValue getHtmlValue()}.
+     * encoded for HTML entities first. If you are returning renderable HTML, make
+     * sure to esacpe that HTML if the `isEscaped` parameter is set to `true`.
+     *
+     * This should be a more concise representation of the {@link FieldType.getHtmlValue getHtmlValue()}.
      *
      * @param value The attribute value.
      * @param configurationValues The configuration values that will provide the necessary information to format the value.
+     * @param isEscaped If true, escape the renderable HTML
      *
      * @returns A string that contains a condensed version of {@link FieldType.getHtmlValue getHtmlValue()}.
      */
-    getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string;
+    getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string;
 
     /**
      * Get the component that will be used to display the formatted value.

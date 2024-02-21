@@ -20,6 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export const enum ConfigurationValueKey {
     FilePath = "filePath",
@@ -59,7 +60,7 @@ export class LabelFieldType extends FieldTypeBase {
         return ComparisonType.IsBlank | ComparisonType.IsNotBlank;
     }
 
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         if (!value) {
             return "";
         }
@@ -76,10 +77,14 @@ export class LabelFieldType extends FieldTypeBase {
     View
 </a>`;
 
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
+
         return html;
     }
 
-    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string {
-        return this.getHtmlValue(value, configurationValues);
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
+        return this.getHtmlValue(value, configurationValues, isEscaped);
     }
 }

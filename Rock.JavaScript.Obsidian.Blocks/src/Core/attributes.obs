@@ -75,7 +75,7 @@
                         </thead>
 
                         <tbody>
-                            <tr v-for="attribute in attributes" :key="attribute.id" align="left" @click.stop="onEditAttributeValue(attribute)">
+                            <tr v-for="attribute in gridData?.rows" :key="attribute.id" align="left" @click.stop="onEditAttributeValue(attribute)">
                                 <td :class="getDataCellClass(attribute)" data-priority="1" style="white-space: nowrap;" align="right">{{ attribute.id }}</td>
                                 <td :class="getDataCellClass(attribute)" data-priority="1" style="white-space: nowrap;">{{ attribute.qualifier }}</td>
                                 <td :class="getDataCellClass(attribute)" data-priority="1">{{ attribute.name }}</td>
@@ -84,7 +84,7 @@
                                     <RockField :modelValue="attribute.value" :attribute="attribute.attribute" :showLabel="false" isCondensed />
                                 </td>
                                 <td class="grid-columncommand" data-priority="1" align="center" @click.stop="onIgnore">
-                                    <a title="Edit" class="btn btn-default btn-sm" @click.prevent.stop="onEditAttribute(attribute)"><i class="fa fa-pencil"></i></a>
+                                    <a title="Edit" class="btn btn-default btn-sm" @click.prevent.stop="onEditAttribute(attribute.guid)"><i class="fa fa-pencil"></i></a>
                                 </td>
                                 <td class="grid-columncommand" data-priority="1" align="center" @click.stop="onIgnore">
                                     <a title="Security" class="btn btn-security btn-sm disabled"><i class="fa fa-lock"></i></a>
@@ -235,9 +235,6 @@
     /** The current value of the entity type qualifier value. */
     const entityTypeQualifierValue = ref("");
 
-    /** The attributes currently displayed in the pseudo-grid. */
-    const attributes = ref<GridRow[]>(config.attributes);
-
     // #region Attribute Editing
 
     /** The current attribute in an editable format. */
@@ -258,12 +255,12 @@
         return "";
     });
 
+    let gridData: GridDataBag<GridRow> | undefined = entityTypeSelectionIsValid.value ? reactive({ rows: config.attributes }) : undefined;
     const gridDataSource = ref<Promise<GridDataBag<GridRow>>>(
         entityTypeSelectionIsValid.value
-            ? Promise.resolve({ rows: attributes.value })
+            ? Promise.resolve(gridData ?? { rows: [] })
             : Promise.reject("Please select an entity to display attributes for.")
     );
-    let gridData: GridDataBag<GridRow> | undefined;
 
 
     /**
@@ -309,13 +306,17 @@
             return alert(result.errorMessage ?? "Unable to save attribute.");
         }
 
-        const index = attributes.value.findIndex(a => a.guid === result.data?.guid);
+        if (!gridData?.rows) {
+            return;
+        }
+
+        const index = gridData?.rows.findIndex(a => a.guid === result.data?.guid);
 
         if (index !== -1) {
-            attributes.value.splice(index, 1, result.data);
+            gridData?.rows.splice(index, 1, result.data);
         }
         else {
-            attributes.value.push(result.data);
+            gridData?.rows.push(result.data);
         }
 
         editableAttribute.value = null;
@@ -365,10 +366,14 @@
             return alert(result.errorMessage || "Unable to delete attribute.");
         }
 
-        const index = attributes.value.findIndex(a => a.guid === row.guid);
+        if (!gridData?.rows) {
+            return;
+        }
+
+        const index = gridData.rows.findIndex(a => a.guid === row.guid);
 
         if (index !== -1) {
-            attributes.value.splice(index, 1);
+            gridData.rows.splice(index, 1);
         }
     };
 
@@ -455,10 +460,13 @@
             return alert(result.errorMessage ?? "Unable to save attribute value.");
         }
 
-        const index = attributes.value.findIndex(a => a.guid === result.data?.guid);
+        if (gridData?.rows) {
 
-        if (index !== -1) {
-            attributes.value.splice(index, 1, result.data);
+            const index = gridData.rows.findIndex(a => a.guid === result.data?.guid);
+
+            if (index !== -1) {
+                gridData.rows.splice(index, 1, result.data);
+            }
         }
 
         editAttribute.value = {} as PublicAttributeBag;
@@ -501,30 +509,36 @@
         }
     }
 
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
     async function loadGridData(): Promise<GridDataBag<GridRow>> {
         if (!entityTypeGuid.value) {
-            attributes.value = [];
+            gridData = undefined;
             throw "Please select an entity to display attributes for.";
         }
 
-        const result = await invokeBlockAction<GridRow[]>("GetAttributes", {
-            entityTypeGuid: entityTypeGuid.value,
-        });
+        // const result = await invokeBlockAction<GridRow[]>("GetAttributes", {
+        //     entityTypeGuid: entityTypeGuid.value,
+        // });
+
+        const result = await invokeBlockAction<GridDataBag<GridRow>>("GetGridData");
 
         if (!result.isSuccess || !result.data) {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
 
-        gridData = reactive({ rows: result.data });
+        gridData = reactive(result.data);
 
-        attributes.value = result.data;
-
-        return { rows: result.data };
+        return gridData;
     }
+
 
     function onIgnore(): void {
         /* Intentionally blank. */
     }
+
+
 
     async function onSubmitFilter(): Promise<void> {
         preferences.setValue(PreferenceKey.FilterCategories, categoriesFilter.value);
@@ -535,9 +549,17 @@
         gridDataSource.value = loadGridData();
     }
 
+    watch(entityTypeGuidFilter, async () => {
+        preferences.setValue(PreferenceKey.FilterEntityTypeGuid, entityTypeGuidFilter.value);
+
+        await preferences.save();
+    });
+
     // Watch for changes to the user-selection of the entity type and update
     // the list of attributes in the grid.
     watch(entityTypeGuid, () => {
         gridDataSource.value = loadGridData();
     });
+
+    gridDataSource.value = loadGridData();
 </script>
