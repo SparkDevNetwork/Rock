@@ -47,8 +47,24 @@
                 <StaticFormControl v-if="amountPreviouslyPaid" v-model="amountPreviouslyPaidFormatted" label="Previously Paid" />
                 <template v-if="showAmountDueToday && maxAmountCanBePaid">
                     <StaticFormControl v-model="amountDueTodayFormatted" label="Minimum Due Today" />
-                    <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.amountToPayToday" formGroupClasses="form-right" inputGroupClasses="input-width-md amount-to-pay" />
-                    <StaticFormControl v-model="amountRemainingFormatted" label="Amount Remaining After Payment" />
+                    <ConfigurePaymentPlanModal v-model="isConfigurePaymentPlanModalShown" />
+                    <template v-if="!isPaymentPlanConfigured">
+                        <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.amountToPayToday" formGroupClasses="form-right" inputGroupClasses="input-width-md amount-to-pay" />
+                        <StaticFormControl v-model="amountRemainingFormatted" label="Amount Remaining After Payment" />
+                        <div class="form-group">
+                            <RockButton btnType="default" btnSize="xs" @click="onConfigurePaymentPlanClicked">Configure a Payment Plan</RockButton>
+                        </div>
+                        <br />
+                    </template>
+                    <template v-else>
+                        <div class="payment-plan well">
+                            <RockLabel class="primary-label">Payment Plan</RockLabel>
+                            <StaticFormControl label="Amount Due Today" :modelValue="formatCurrency(registrationEntryState.amountToPayToday, registrationEntryState.viewModel.currencyInfo)" />
+                            <StaticFormControl :label="`${registrationEntryState.paymentPlanFrequencyText} Payment Amount`" :modelValue="`${formatCurrency(registrationEntryState.paymentPlanAmountPerPayment ?? 0, registrationEntryState.viewModel.currencyInfo)} x ${registrationEntryState.paymentPlanNumberOfPayments ?? 0}`" />
+                            <RockButton btnType="default" btnSize="xs" @click="onConfigurePaymentPlanClicked">Change</RockButton>
+                            <RockButton btnType="link" btnSize="xs" @click="onUnconfigurePaymentPlanClicked">Cancel</RockButton>
+                        </div>
+                    </template>
                 </template>
                 <StaticFormControl v-else v-model="maxAmountCanBePaidFormatted" label="Amount Due" />
             </div>
@@ -56,8 +72,14 @@
     </Loading>
 </template>
 
+<style scoped>
+.payment-plan :deep(.control-label:not(.primary-label)) {
+    font-weight: normal;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
+    import { computed, nextTick, ref, watch } from "vue";
     import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary, formatCurrency } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
@@ -67,6 +89,9 @@
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { RegistrationEntryCostSummaryBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCostSummaryBag";
     import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ConfigurePaymentPlanModal from "./configurePaymentPlanModal.partial.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     enum RegistrationCostSummaryType {
         Cost = 0,
@@ -91,10 +116,34 @@
 
     const isLoading = ref<boolean>(false);
     const lineItems = ref<RegistrationEntryCostSummaryBag[]>([]);
+    const isConfigurePaymentPlanModalShown = ref<boolean>(false);
+    const isPaymentPlanConfigured = ref<boolean>(!!registrationEntryState.paymentPlanNumberOfPayments && !!registrationEntryState.paymentPlanAmountPerPayment);
+    watch([() => registrationEntryState.paymentPlanFrequencyGuid, () => registrationEntryState.paymentPlanAmountPerPayment, () => registrationEntryState.paymentPlanNumberOfPayments], () => {
+        isPaymentPlanConfigured.value = !!registrationEntryState?.paymentPlanNumberOfPayments && !!registrationEntryState.paymentPlanAmountPerPayment;
+    });
 
     // #endregion
 
     // #region Computed Values
+
+    /** TODO JMH Gets whether or not the payment plan feature can be shown. */
+    // const isPaymentPlanConfigurationSupported = computed<boolean>(() => {
+    //     if (!paymentFrequencyItems.value?.[0]?.value) {
+    //         // There are no available frequencies so hide the feature.
+    //         return false;
+    //     }
+
+    //     if (!paymentDeadlineDate.value) {
+    //         // There is no payment deadline so assume the individual can make payments
+    //         // regardless of the frequency and the deadline.
+    //         return true;
+    //     }
+
+    //     const firstAvailableTransactionFrequency = getTransactionFrequency(paymentFrequencyItems.value[0]?.value ?? "") ?? nullTransactionFrequency;
+    //     const startingTransactionDate = firstAvailableTransactionFrequency.getNextTransactionDate();
+    //     const numberOfPayments = firstAvailableTransactionFrequency.getMaxNumberOfTransactionsBetweenDates(startingTransactionDate, paymentDeadlineDate.value);
+    //     return numberOfPayments > 2;
+    // });
 
     const currencyInfo = computed<CurrencyInfoBag>(() => {
         console.log("currencyInfo", registrationEntryState.viewModel.currencyInfo);
@@ -284,6 +333,25 @@
             remainingAmount: amountRemaining.value,
             minimumRemainingAmount: amountDueToday.value
         });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onConfigurePaymentPlanClicked(): void {
+        console.debug(`costSummary: onConfigurePaymentPlanClicked(); // Old value: ${isConfigurePaymentPlanModalShown.value}`);
+        // Open the modal on the next tick to avoid situations where the modal cannot be reopened.
+        nextTick(() => {
+            isConfigurePaymentPlanModalShown.value = true;
+        });
+    }
+
+    function onUnconfigurePaymentPlanClicked(): void {
+        console.debug(`costSummary: onUnconfigurePaymentPlanClicked(); // Old value: ${isConfigurePaymentPlanModalShown.value}`);
+        // Open the modal on the next tick to avoid situations where the modal cannot be reopened.
+        registrationEntryState.paymentPlanAmountPerPayment = null;
+        registrationEntryState.paymentPlanFrequencyGuid = null;
     }
 
     // #endregion

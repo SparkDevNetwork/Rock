@@ -161,7 +161,7 @@ const transactionFrequencyOneTime: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
-    }
+    },
 };
 
 const transactionFrequencyWeekly: TransactionFrequency = {
@@ -186,7 +186,7 @@ const transactionFrequencyWeekly: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
-    }
+    },
 };
 
 const transactionFrequencyBiWeekly: TransactionFrequency = {
@@ -210,7 +210,7 @@ const transactionFrequencyBiWeekly: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
-    }
+    },
 };
 
 // These must be strings.
@@ -362,7 +362,7 @@ const transactionFrequencyTwiceAMonth: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return getNextDay(1, 15) ?? RockDateTime.now().date;
-    }
+    },
 };
 
 const transactionFrequencyMonthly: TransactionFrequency = {
@@ -387,7 +387,7 @@ const transactionFrequencyMonthly: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
-    }
+    },
 };
 
 const transactionFrequencyQuarterly: TransactionFrequency = {
@@ -412,7 +412,7 @@ const transactionFrequencyQuarterly: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
-    }
+    },
 };
 
 const transactionFrequencyTwiceAYear: TransactionFrequency = {
@@ -437,7 +437,7 @@ const transactionFrequencyTwiceAYear: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
-    }
+    },
 };
 
 const transactionFrequencyYearly: TransactionFrequency = {
@@ -462,7 +462,7 @@ const transactionFrequencyYearly: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
-    }
+    },
 };
 
 const transactionFrequencies: TransactionFrequency[] = [
@@ -487,7 +487,7 @@ export const nullTransactionFrequency: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
-    }
+    },
 };
 
 export function getTransactionFrequency(definedValueGuid: Guid): TransactionFrequency | null {

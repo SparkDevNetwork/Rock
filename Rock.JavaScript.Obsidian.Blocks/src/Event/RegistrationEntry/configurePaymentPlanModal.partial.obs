@@ -1,114 +1,115 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <template v-if="isShown">
+    <Modal v-model="internalIsShown"
+           saveText="Select"
+           title="Configure Payment Plan"
+           @save="onConfigurePaymentPlan"
+           @closeModal="onUnconfigurePaymentPlan">
+        <template v-if="paymentDeadlineDate">
+            The total amount of {{ formatCurrency(totalAmount, registrationEntryState.viewModel.currencyInfo) }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
+        </template>
+        <template v-else>
+            The total amount due is {{ formatCurrency(totalAmount, registrationEntryState.viewModel.currencyInfo) }}.
+        </template>
         <div class="row">
-            <div class="col-sm-offset-8 col-sm-4 fee-configure-payment-plan">
-                <RockButton btnType="default" btnSize="xs" @click="isModalShown = true">Configure a Payment Plan</RockButton>
+            <div class="col">
+                <DropDownList v-model="paymentFrequencyGuid"
+                              :items="paymentFrequencyItems"
+                              label="Select Your Desired Payment Frequency" />
             </div>
         </div>
 
-        <Modal v-model="isModalShown"
-               saveText="Select"
-               title="Configure Payment Plan"
-               @save="isModalShown = false">
-            <template v-if="paymentDeadlineDate">
-                The total amount of {{ formatCurrency(totalAmount, registrationEntryState.viewModel.currencyInfo) }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
-            </template>
-            <template v-else>
-                The total amount due is {{ formatCurrency(totalAmount, registrationEntryState.viewModel.currencyInfo) }}.
-            </template>
-            <div class="row">
-                <div class="col">
-                    <DropDownList v-model="paymentFrequencyGuid"
-                                  :items="paymentFrequencyItems"
-                                  label="Select Your Desired Payment Frequency" />
-                </div>
+        <div :class="['row', !paymentFrequencyGuid ? 'invisible' : '']">
+            <div class="col-sm-6">
+                <CurrencyBox v-model="desiredAmountToPayToday"
+                             label="Amount To Pay Today"
+                             :rules="validateAmountToPayTodayRule">
+                    <template #append>
+                        <small>A minimum of {{ formatCurrency(minimumRemainingAmount, registrationEntryState.viewModel.currencyInfo) }} is due today.</small>
+                    </template>
+                </CurrencyBox>
             </div>
 
-            <template v-if="paymentFrequencyGuid">
-                <div class="row">
-                    <div class="col-sm-6">
-                        <CurrencyBox v-model="desiredAmountToPayToday"
-                                     label="Amount To Pay Today"
-                                     :rules="validateAmountToPayTodayRule">
-                            <template #append>
-                                <small>A minimum of {{ formatCurrency(minimumRemainingAmount, registrationEntryState.viewModel.currencyInfo) }} is due today.</small>
-                            </template>
-                        </CurrencyBox>
-                    </div>
+            <div class="col-sm-6">
+                <DropDownList v-model="numberOfPayments"
+                              :items="numberOfPaymentsItems"
+                              label="Number of Payments" />
+            </div>
+        </div>
 
-                    <div class="col-sm-6">
-                        <DropDownList v-model="numberOfPayments"
-                                      :items="numberOfPaymentsItems"
-                                      label="Number of Payments" />
-                    </div>
-                </div>
+        <div :class="['row', !paymentFrequencyGuid ? 'invisible' : '']">
+            <div class="col">
+                <RockLabel label="Plan Summary">Plan Summary</RockLabel>
+            </div>
+        </div>
 
-                <div class="row">
-                    <div class="col">
-                        <RockLabel label="Plan Summary">Plan Summary</RockLabel>
-                    </div>
-                </div>
+        <div :class="['row', !paymentFrequencyGuid ? 'invisible' : '']">
+            <div class="col-sm-6">
+                <div>Amount Due Today</div>
+                <div>{{ actualAmountDueTodayMessage }}</div>
+            </div>
 
-                <div class="row">
-                    <div class="col-sm-6">
-                        <div>Amount Due Today</div>
-                        <div>{{ actualAmountDueTodayMessage }}</div>
-                    </div>
-
-                    <div class="col-sm-6">
-                        <div>Weekly Payment Amount</div>
-                        <div>{{ formatCurrency(amountPerPayment, registrationEntryState.viewModel.currencyInfo) }} x {{ numberOfPaymentsAsNumber }}</div>
-                    </div>
-                </div>
-            </template>
-        </Modal>
-    </template>
+            <div class="col-sm-6">
+                <div>{{ selectedFrequencyText }} Payment Amount</div>
+                <div>{{ formatCurrency(amountPerPayment, registrationEntryState.viewModel.currencyInfo) }} x {{ numberOfPaymentsAsNumber }}</div>
+            </div>
+        </div>
+    </Modal>
 </template>
 
+<style scoped></style>
+
 <script setup lang="ts">
-    import { computed, nextTick, ref, watch } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { CurrentRegistrationEntryState, RegistrationCostSummary, TransactionFrequency, formatCurrency, getTransactionFrequency, nullTransactionFrequency, use } from "./utils.partial";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
-    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { ValidationResult } from "@Obsidian/ValidationRules";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void
+    }>();
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const { readonlyRegistrationCostSummary } = use(RegistrationCostSummary);
 
-    const validateAmountToPayTodayRule: ValidationRuleFunction = (value: unknown, params?: unknown[]): ValidationResult => {
-        if (registrationEntryState.amountToPayToday < minimumRemainingAmount.value) {
-            return "must be greater than or equal to the minimum amount";
-        }
-        else {
-            return true;
-        }
-    };
-
     //#region Values
 
-    const isModalShown = ref<boolean>(false);
-    const paymentFrequencyGuid = ref<Guid>("");
+    const paymentFrequencyGuid = ref<Guid>(registrationEntryState.paymentPlanFrequencyGuid ?? "");
     const numberOfPayments = ref<string>("2");
     const internalDesiredAmountToPayToday = ref<number>(registrationEntryState.amountToPayToday);
+    const inProgressAmountToPayToday = ref<number>(registrationEntryState.amountToPayToday);
 
     //#endregion
 
     //#region Computed Values
+
+    const internalIsShown = useVModelPassthrough(props, "modelValue", emit);
+
+    const selectedFrequencyText = computed<string>(() => {
+        return registrationEntryState.viewModel.paymentPlanFrequencies?.find(l => l.value === paymentFrequencyGuid.value)?.text ?? "";
+    });
 
     const actualAmountDueTodayMessage = computed<string>(() => {
         let suffix = "";
         if (remainderWholeCents.value) {
             suffix = ` (${formatCurrency(remainderWholeCents.value / 100, registrationEntryState.viewModel.currencyInfo)} will be added to evenly distribute remaining payments)`;
         }
-        return `${formatCurrency(registrationEntryState.amountToPayToday, registrationEntryState.viewModel.currencyInfo)}${suffix}`;
+        return `${formatCurrency(inProgressAmountToPayToday.value, registrationEntryState.viewModel.currencyInfo)}${suffix}`;
     });
 
     const desiredAmountToPayToday = computed<number>({
@@ -118,7 +119,7 @@
         set(value: number): void {
             internalDesiredAmountToPayToday.value = value;
             // Change the actual amount to pay today value. This will trigger a watcher that may update the real value.
-            registrationEntryState.amountToPayToday = value;
+            inProgressAmountToPayToday.value = value;
         }
     });
 
@@ -159,7 +160,7 @@
             return 0;
         }
         else {
-            return (readonlyRegistrationCostSummary.value.remainingAmount - registrationEntryState.amountToPayToday) / numberOfPaymentsAsNumber.value;
+            return (readonlyRegistrationCostSummary.value.remainingAmount - inProgressAmountToPayToday.value) / numberOfPaymentsAsNumber.value;
         }
     });
 
@@ -240,25 +241,6 @@
         return RockDateTime.parseISO(registrationEntryState.viewModel.paymentDeadlineDate);
     });
 
-    /** Gets whether or not the payment plan feature can be shown. */
-    const isShown = computed<boolean>(() => {
-        if (!paymentFrequencyItems.value?.[0]?.value) {
-            // There are no available frequencies so hide the feature.
-            return false;
-        }
-
-        if (!paymentDeadlineDate.value) {
-            // There is no payment deadline so assume the individual can make payments
-            // regardless of the frequency and the deadline.
-            return true;
-        }
-
-        const firstAvailableTransactionFrequency = getTransactionFrequency(paymentFrequencyItems.value[0]?.value ?? "") ?? nullTransactionFrequency;
-        const startingTransactionDate = firstAvailableTransactionFrequency.getNextTransactionDate();
-        const numberOfPayments = firstAvailableTransactionFrequency.getMaxNumberOfTransactionsBetweenDates(startingTransactionDate, paymentDeadlineDate.value);
-        return numberOfPayments > 2;
-    });
-
     /** Gets the selected payment frequency as a TransactionFrequency. */
     const paymentFrequencyAsTransactionFrequency = computed<TransactionFrequency>(() => {
         return getTransactionFrequency(paymentFrequencyGuid.value) ?? nullTransactionFrequency;
@@ -268,9 +250,43 @@
 
     //#region Functions
 
+    function validateAmountToPayTodayRule(value: unknown, params?: unknown[]): ValidationResult {
+        if (inProgressAmountToPayToday.value < minimumRemainingAmount.value) {
+            return "must be greater than or equal to the minimum amount";
+        }
+        else {
+            return true;
+        }
+    }
+
     //#endregion
 
     //#region Event Handlers
+
+    function onConfigurePaymentPlan(): void {
+        // Set the values on the shared state.
+        registrationEntryState.amountToPayToday = inProgressAmountToPayToday.value;
+        registrationEntryState.paymentPlanFrequencyGuid = paymentFrequencyGuid.value;
+        registrationEntryState.paymentPlanAmountPerPayment = amountPerPayment.value;
+        registrationEntryState.paymentPlanNumberOfPayments = numberOfPaymentsAsNumber.value;
+        registrationEntryState.paymentPlanFrequencyText = selectedFrequencyText.value;
+
+        // Close the modal on the next tick to avoid situations where the modal cannot be reopened.
+        //nextTick(() => {
+        internalIsShown.value = false;
+        //});
+    }
+
+    function onUnconfigurePaymentPlan(): void {
+        // Don't change the values on the shared state.
+        // registrationEntryState.paymentPlanFrequencyGuid = null;
+        // registrationEntryState.paymentPlanAmountPerPayment = null;
+
+        // Close the modal on the next tick to avoid situations where the modal cannot be reopened.
+        //nextTick(() => {
+        //    internalIsShown.value = false;
+        //});
+    }
 
     //#endregion
 
@@ -283,14 +299,14 @@
             // so that the amount per payment is an even number.
             if (remainderWholeCents.value !== 0) {
                 // The amountToPay needs to be updated. Do it after the next render so the value has time to update.
-                nextTick(() => {
-                    registrationEntryState.amountToPayToday = desiredAmountToPayToday.value + (remainderWholeCents.value / 100);
-                });
+                //nextTick(() => {
+                inProgressAmountToPayToday.value = desiredAmountToPayToday.value + (remainderWholeCents.value / 100);
+                //});
             }
             else {
-                nextTick(() => {
-                    registrationEntryState.amountToPayToday = desiredAmountToPayToday.value;
-                });
+                //nextTick(() => {
+                inProgressAmountToPayToday.value = desiredAmountToPayToday.value;
+                //});
             }
         }
     });

@@ -9,7 +9,6 @@
                 <h4>Payment Summary</h4>
                 <DiscountCodeForm />
                 <CostSummary />
-                <ConfigurePaymentPlan />
             </div>
 
             <div v-if="!hasPaymentCost" class="margin-b-md">
@@ -36,7 +35,6 @@
 </template>
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import ConfigurePaymentPlan from "./configurePaymentPlan.partial.obs";
     import CostSummary from "./costSummary.partial.obs";
     import DiscountCodeForm from "./discountCodeForm.partial.obs";
     import Registrar from "./registrar.partial.obs";

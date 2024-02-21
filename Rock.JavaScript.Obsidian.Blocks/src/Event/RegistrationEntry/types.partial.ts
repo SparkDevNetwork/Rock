@@ -98,4 +98,8 @@ export type RegistrationEntryState = {
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;
     ownFamilyGuid: Guid;
+    paymentPlanFrequencyGuid: string | null;
+    paymentPlanAmountPerPayment: number | null;
+    paymentPlanNumberOfPayments: number | null;
+    paymentPlanFrequencyText: string | null;
 };
