@@ -83,15 +83,6 @@ namespace Rock.Web.UI
 
             if (fingerprint)
             {
-                /*
-                 ISSUE #4436 ⁃ Merge Fields Not Populating in Communication Wizard
-                 Fixed the bug that happens when relaxedUrlToFileSystemMapping="false"
-                 */
-                if ( resolvedUrl.Contains( "?" ) )
-                {
-                    resolvedUrl = resolvedUrl.Remove( resolvedUrl.IndexOf( '?' ) );
-                }
-
                 resolvedUrl = Fingerprint.Tag( resolvedUrl );
             }
 
