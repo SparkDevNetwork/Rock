@@ -2,7 +2,10 @@
 <template>
     <li v-if="resource" :class="resourceCssClass">
         <img :src="imgSrc" class="avatar" draggable="false">
-        <span class="resource-name">
+        <span class="resource-name"
+              ref="resourceNameElement"
+              data-toggle="tooltip"
+              :data-original-title="declinedReasonTooltip">
             {{ personName }}
             <i v-if="conflictTooltip"
                ref="conflictElement"
@@ -137,6 +140,7 @@
     const imgSrc = ref<string>(props.resource?.PersonPhotoUrl ?? "");
     const personName = ref<string>(props.resource?.PersonName ?? "");
 
+    const resourceNameElement = ref<HTMLElement | null>(null);
     const conflictElement = ref<HTMLElement | null>(null);
     const preferenceElement = ref<HTMLElement | null>(null);
 
@@ -166,6 +170,10 @@
 
     const isSchedulingDisabled = computed((): boolean => {
         return props.disabled || isUpdatingResource.value;
+    });
+
+    const declinedReasonTooltip = computed((): string | null | undefined => {
+        return props.resource.DeclinedReason;
     });
 
     const preferenceList = computed((): ISchedulerResourceAssignment[] => {
@@ -249,6 +257,10 @@
      * Configures the conflict & preference tooltips.
      */
     function configureTooltips(): void {
+        if (resourceNameElement.value) {
+            tooltip(resourceNameElement.value);
+        }
+
         if (conflictElement.value) {
             tooltip(conflictElement.value, { html: true });
         }
@@ -313,6 +325,7 @@
     // #endregion
 
     watch([
+        resourceNameElement,
         conflictElement,
         preferenceElement
     ], () => {
@@ -320,6 +333,7 @@
     });
 
     watch([
+        declinedReasonTooltip,
         conflictTooltip,
         preferenceTooltip
     ], () => {
