@@ -1,6 +1,6 @@
 
 /********************************************************************************************************************
- Short Term Serving Projects - View slots available by opportunity.
+ Sign-Ups - View slots available by opportunity.
 *********************************************************************************************************************/
 
 DECLARE @SignUpGroupTypeId [int] = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '499B1367-06B3-4538-9D56-56D53F55DCB1');
