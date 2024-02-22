@@ -351,6 +351,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\DeviceDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\EventList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingSuggestionTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\LocationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
@@ -889,6 +890,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedTypeList\definedTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DeviceDetail\deviceDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\EventList\eventListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\FollowingSuggestionTypeList\followingSuggestionTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\LocationList\locationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\deleteNoteRequestBag.d.ts" />
