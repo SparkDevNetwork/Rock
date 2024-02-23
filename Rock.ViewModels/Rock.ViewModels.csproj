@@ -95,6 +95,7 @@
     <Compile Include="Blocks\Core\AssetStorageProviderList\AssetStorageProviderListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\AttributeMatrixTemplateList\AttributeMatrixTemplateListOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileList\BinaryFileListOptionsBag.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceList\DeviceListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\EventList\EventListOptionsBag.cs" />
     <Compile Include="Blocks\Core\LocationList\LocationListOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteTypeList\NoteTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\FollowingSuggestionTypeList\FollowingSuggestionTypeListOptionsBag.cs" />
@@ -118,6 +120,7 @@
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignalTypeList\SignalTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentTemplateList\SignatureDocumentTemplateListOptionsBag.cs" />
     <Compile Include="Blocks\Core\TagList\TagListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeList\AssessmentTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
@@ -129,9 +132,11 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\AchievementAttemptList\AchievementAttemptListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListOptionsBag.cs" />
+    <Compile Include="Blocks\CheckIn\AttendanceHistoryList\AttendanceHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Event\EventCalendarItemList\EventCalendarItemListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeBag.cs" />
     <Compile Include="Blocks\Finance\BenevolenceTypeDetail\BenevolenceTypeDetailOptionsBag.cs" />
@@ -161,6 +166,7 @@
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialStatementTemplateList\FinancialStatementTemplateListOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupArchivedList\GroupArchivedListOptionsBag.cs" />
+    <Compile Include="Blocks\Group\GroupRequirementTypeList\GroupRequirementTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupTypeList\GroupTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutDetailOptionsBag.cs" />
@@ -168,6 +174,7 @@
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateBox.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeBag.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\PersistedDataViewList\PersistedDataViewListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\InteractionDetail\InteractionDetailInitializationBox.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUnassignedResourceCountBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\AssignmentOptionsBag.cs" />
@@ -520,6 +527,7 @@
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
+    <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />

@@ -15,10 +15,8 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -26,7 +24,6 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tv.Classes;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Tv.AppleTvAppDetail;
@@ -136,45 +133,28 @@ namespace Rock.Blocks.Tv
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
-            if ( entity.Id != 0 )
+            // New entity is being created, prepare for edit mode by default.
+            if ( box.IsEditable )
             {
-                // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
-                {
-                    box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Page.FriendlyTypeName );
-                }
+                box.Entity = GetEntityBagForEdit( entity );
+                box.SecurityGrantToken = GetSecurityGrantToken( entity );
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
-                if ( box.IsEditable )
-                {
-                    box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Page.FriendlyTypeName );
-                }
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Page.FriendlyTypeName );
             }
         }
 
         /// <summary>
-        /// Gets the entity bag that is common between both view and edit modes.
+        /// Gets the bag for editing the specified entity.
         /// </summary>
-        /// <param name="entity">The entity to be represented as a bag.</param>
+        /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="AppleTvPageBag"/> that represents the entity.</returns>
-        private AppleTvPageBag GetCommonEntityBag( Page entity )
+        private AppleTvPageBag GetEntityBagForEdit( Page entity )
         {
             if ( entity == null )
             {
@@ -184,7 +164,7 @@ namespace Rock.Blocks.Tv
             var response = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
             var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>();
 
-            return new AppleTvPageBag
+            var bag = new AppleTvPageBag
             {
                 Description = entity.Description,
                 IdKey = entity.IdKey,
@@ -192,141 +172,9 @@ namespace Rock.Blocks.Tv
                 ShowInMenu = entity.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed,
                 PageTVML = response.Content,
                 IsSystem = entity.IsSystem,
-                RockCacheability = ToCacheabilityBag( cacheability ),
+                RockCacheability = cacheability.ToCacheabilityBag(),
+                PageGuid = entity.Guid.ToString()
             };
-        }
-
-        /// <summary>
-        /// Converts the <see cref="RockCacheability"/> entity to a <see cref="RockCacheabilityBag"/>
-        /// </summary>
-        /// <param name="cacheability">The <see cref="RockCacheability"/> entity</param>
-        /// <returns></returns>
-        private RockCacheabilityBag ToCacheabilityBag( RockCacheability cacheability )
-        {
-            var bag = new RockCacheabilityBag()
-            {
-                MaxAge = new TimeIntervalBag
-                {
-                    Unit = TimeIntervalUnit.Minutes,
-                    Value = 0
-                },
-                RockCacheabilityType = RockCacheablityType.Public.ConvertToInt(),
-                SharedMaxAge = new TimeIntervalBag
-                {
-                    Unit = TimeIntervalUnit.Minutes,
-                    Value = 0
-                }
-            };
-
-            if ( cacheability == null )
-            {
-                return bag;
-            }
-
-            if ( cacheability.MaxAge != null )
-            {
-                bag.MaxAge = new TimeIntervalBag
-                {
-                    Unit = cacheability.MaxAge.Unit,
-                    Value = cacheability.MaxAge.Value
-                };
-            }
-
-            if ( cacheability.RockCacheablityType == RockCacheablityType.Private )
-            {
-                bag.RockCacheabilityType = cacheability.RockCacheablityType.ConvertToInt();
-            }
-            else
-            {
-                bag.RockCacheabilityType = cacheability.RockCacheablityType.ConvertToInt();
-
-                if ( cacheability.SharedMaxAge != null )
-                {
-                    bag.SharedMaxAge = new TimeIntervalBag
-                    {
-                        Unit = cacheability.SharedMaxAge.Unit,
-                        Value = cacheability.SharedMaxAge.Value
-                    };
-                }
-            }
-
-            return bag;
-        }
-
-        /// <summary>
-        /// Converts the <see cref="RockCacheabilityBag"/> to a <see cref="RockCacheability"/>.
-        /// </summary>
-        /// <param name="cacheControlHeaderSettings">The cacheability bag.</param>
-        /// <returns></returns>
-        private static RockCacheability ToCacheability( RockCacheabilityBag cacheControlHeaderSettings )
-        {
-            var cacheability = new RockCacheability()
-            {
-                MaxAge = new TimeInterval
-                {
-                    Unit = cacheControlHeaderSettings.MaxAge.Unit,
-                    Value = cacheControlHeaderSettings.MaxAge.Value,
-                },
-                RockCacheablityType = ( RockCacheablityType ) cacheControlHeaderSettings.RockCacheabilityType,
-            };
-
-            if ( cacheability.RockCacheablityType == RockCacheablityType.Public )
-            {
-                cacheability.SharedMaxAge = new TimeInterval
-                {
-                    Unit = cacheControlHeaderSettings.SharedMaxAge.Unit,
-                    Value = cacheControlHeaderSettings.SharedMaxAge.Value,
-                };
-            }
-
-            return cacheability;
-        }
-
-        /// <summary>
-        /// Updates the additional settings fot the entity.
-        /// </summary>
-        /// <param name="bag">The bag.</param>
-        /// <param name="entity">The entity.</param>
-        private static void SaveAdditionalSettings( AppleTvPageBag bag, Page entity )
-        {
-            var pageResponse = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
-            pageResponse.Content = bag.PageTVML;
-            entity.AdditionalSettings = pageResponse.ToJson();
-        }
-
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="AppleTvPageBag"/> that represents the entity.</returns>
-        private AppleTvPageBag GetEntityBagForView( Page entity )
-        {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
-            bag.PageGuid = entity.Guid.ToString();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-
-            return bag;
-        }
-
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>A <see cref="AppleTvPageBag"/> that represents the entity.</returns>
-        private AppleTvPageBag GetEntityBagForEdit( Page entity )
-        {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
@@ -361,11 +209,11 @@ namespace Rock.Blocks.Tv
             box.IfValidProperty( nameof( box.Entity.ShowInMenu ),
                 () => entity.DisplayInNavWhen = box.Entity.ShowInMenu ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never );
 
-            box.IfValidProperty( nameof( box.Entity.RockCacheability ),
-                () => entity.CacheControlHeaderSettings = ToCacheability( box.Entity.RockCacheability ).ToJson() );
-
             box.IfValidProperty( nameof( box.Entity.PageTVML ),
-                () => SaveAdditionalSettings( box.Entity, entity ) );
+                () => UpdatePageResponseContent( box.Entity, entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.RockCacheability ),
+                () => UpdateCacheability( box.Entity, entity ) );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -376,6 +224,29 @@ namespace Rock.Blocks.Tv
                 } );
 
             return true;
+        }
+
+        /// <summary>
+        /// Updates the <see cref="Page.CacheControlHeaderSettings"/> with the <see cref="AppleTvPageBag.RockCacheability"/>.
+        /// </summary>
+        /// <param name="bag">The bag.</param>
+        /// <param name="entity">The entity.</param>
+        private static void UpdateCacheability( AppleTvPageBag bag, Page entity )
+        {
+            var cacheability = bag.RockCacheability.ToCacheability();
+            entity.CacheControlHeaderSettings = cacheability?.ToJson();
+        }
+
+        /// <summary>
+        /// Updates the <see cref="Page.AdditionalSettings"/> with the <see cref="AppleTvPageBag.PageTVML"/>.
+        /// </summary>
+        /// <param name="bag">The bag.</param>
+        /// <param name="entity">The entity.</param>
+        private static void UpdatePageResponseContent( AppleTvPageBag bag, Page entity )
+        {
+            var pageResponse = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
+            pageResponse.Content = bag.PageTVML;
+            entity.AdditionalSettings = pageResponse.ToJson();
         }
 
         /// <summary>
@@ -397,9 +268,9 @@ namespace Rock.Blocks.Tv
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>()
                 {
-                    [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId )
+                        { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) }
                 } )
             };
         }
@@ -481,33 +352,6 @@ namespace Rock.Blocks.Tv
         #region Block Actions
 
         /// <summary>
-        /// Gets the box that will contain all the information needed to begin
-        /// the edit operation.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be edited.</param>
-        /// <returns>A box that contains the entity and any other information required.</returns>
-        [BlockAction]
-        public BlockActionResult Edit( string key )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<AppleTvPageBag, AppleTvAppDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
-            }
-        }
-
-        /// <summary>
         /// Saves the entity contained in the box.
         /// </summary>
         /// <param name="box">The box that contains all the information required to save.</param>
@@ -568,39 +412,10 @@ namespace Rock.Blocks.Tv
 
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( new Dictionary<string, string>
                 {
-                    [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId )
+                    [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId ),
                 } ) );
-            }
-        }
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new PageService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
             }
         }
 

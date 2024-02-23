@@ -1170,6 +1170,7 @@
     <Compile Include="Model\Reporting\AnalyticsSourceZipCode\AnalyticsSourceZipCode.Logic.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourceZipCode\ZipCodeBoundary.cs" />
     <Compile Include="Model\Group\Group\Options\CopyGroupOptions.cs" />
+    <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.SaveHook.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Net\BrowserCookie.cs" />
@@ -1249,6 +1250,7 @@
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
+    <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
@@ -1311,6 +1313,10 @@
     <Compile Include="Reporting\DataFilter\Person\GroupTypeFirstAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
+    <Compile Include="Reporting\DataViewQueryBuilder.cs" />
+    <Compile Include="Reporting\GetQueryableOptions.cs" />
+    <Compile Include="Reporting\IDataViewDefinition.cs" />
+    <Compile Include="Reporting\IDataViewFilterDefinition.cs" />
     <Compile Include="Security\Authentication\Credential\CredentialAuthenticationOptions.cs" />
     <Compile Include="Security\Authentication\ExternalRedirect\ExternalRedirectAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\ExternalRedirect\ExternalRedirectAuthenticationOptions.cs" />
@@ -1912,6 +1918,7 @@
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
     <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
     <Compile Include="Utility\ExtensionMethods\AdditionalSettingsExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\RockCacheabilityExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\CommunicationRecipientResponseExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
@@ -2160,6 +2167,7 @@
     <Compile Include="WebFarm\RockWebFarm.cs" />
     <Compile Include="Blocks\BreadCrumbResult.cs" />
     <Compile Include="Web\BreadCrumbLink.cs" />
+    <Compile Include="Web\Cache\AlternateIdListCache.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
@@ -2169,6 +2177,8 @@
     <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
+    <Compile Include="Web\Cache\Entities\DataViewCache.cs" />
+    <Compile Include="Web\Cache\Entities\DataViewFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />

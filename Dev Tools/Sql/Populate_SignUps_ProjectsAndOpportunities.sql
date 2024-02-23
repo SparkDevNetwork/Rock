@@ -1,6 +1,6 @@
 
 /********************************************************************************************************************
- Sign-Ups - Add/remove Projects and Opportunities sample data.
+ Sign-Ups - Add/remove sample data.
 
  NOTE: This script assumes Sample Data (Power Tools > Sample Data) has been added for Rock version 1.15.0 or higher.
 *********************************************************************************************************************/

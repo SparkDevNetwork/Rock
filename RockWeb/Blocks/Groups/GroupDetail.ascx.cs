@@ -3504,7 +3504,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     dpDueDate.Visible = true;
                     dpDueDate.Required = true;
-                    dpDueDate.SelectedDate = selectedGroupRequirement.DueDateStaticDate.Value;
+                    dpDueDate.SelectedDate = selectedGroupRequirement.DueDateStaticDate;
                 }
             }
             else

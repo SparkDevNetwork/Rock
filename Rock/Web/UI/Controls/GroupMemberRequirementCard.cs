@@ -326,7 +326,7 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             _groupMemberRequirement = new GroupMemberRequirementService( new RockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
-            var meetsGroupRequirement = _groupMemberRequirement.WasOverridden ?
+            var meetsGroupRequirement = _groupMemberRequirement?.WasOverridden == true ?
                 MeetsGroupRequirement.Meets :
                 MeetsGroupRequirement;
 

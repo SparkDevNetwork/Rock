@@ -558,8 +558,7 @@ namespace Rock.Model
                 qry = qry.Where( t => t.TransactionDateTime >= startDateTime );
             }
 
-            var qryTransactionDetails = new FinancialTransactionDetailService( rockContext ).Queryable()
-                .Where( t => t.Account.IsTaxDeductible );
+            var qryTransactionDetails = new FinancialTransactionDetailService( rockContext ).Queryable();
 
             // Select all Transaction Detail records related to the Transaction.
             var monthlyAccountGivingHistoryList = qryTransactionDetails

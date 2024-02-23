@@ -35,6 +35,7 @@
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
     <Content Include="src\Bus\queueDetail.vue" />
+    <Content Include="src\CheckIn\attendanceHistoryList.obs" />
     <Content Include="src\CheckIn\Config\checkinTypeDetail.obs" />
     <Content Include="src\CheckIn\Config\CheckinTypeDetail\editPanel.partial.obs" />
     <Content Include="src\CheckIn\Config\CheckinTypeDetail\viewPanel.partial.obs" />
@@ -73,6 +74,7 @@
     <Content Include="src\Cms\mediaAccountList.obs" />
     <Content Include="src\Cms\mediaFolderList.obs" />
     <Content Include="src\Cms\personalLinkSectionList.obs" />
+    <Content Include="src\Core\attributeMatrixTemplateList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -92,6 +94,7 @@
     <Content Include="src\Core\deviceDetail.obs" />
     <Content Include="src\Core\DeviceDetail\editPanel.partial.obs" />
     <Content Include="src\Core\DeviceDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\eventList.obs" />
     <Content Include="src\Core\followingEventTypeDetail.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\viewPanel.partial.obs" />
@@ -104,6 +107,7 @@
     <Content Include="src\Core\NoteWatchDetail\editPanel.partial.obs" />
     <Content Include="src\Core\NoteWatchDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\signalTypeList.obs" />
+    <Content Include="src\Core\signatureDocumentTemplateList.obs" />
     <Content Include="src\Core\suggestionDetail.obs" />
     <Content Include="src\Core\SuggestionDetail\editPanel.partial.obs" />
     <Content Include="src\Core\scheduleDetail.obs" />
@@ -135,6 +139,7 @@
     <Content Include="src\Engagement\achievementAttemptDetail.obs" />
     <Content Include="src\Engagement\AchievementAttemptDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\AchievementAttemptDetail\viewPanel.partial.obs" />
+    <Content Include="src\Engagement\achievementAttemptList.obs" />
     <Content Include="src\Engagement\achievementTypeDetail.obs" />
     <Content Include="src\Engagement\AchievementTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\AchievementTypeDetail\viewPanel.partial.obs" />
@@ -187,6 +192,7 @@
     <Content Include="src\Group\groupRequirementTypeDetail.obs" />
     <Content Include="src\Group\GroupRequirementTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRequirementTypeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Group\groupRequirementTypeList.obs" />
     <Content Include="src\Group\groupTypeList.obs" />
     <Content Include="src\Group\Scheduling\groupScheduler.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\availableResources.partial.obs" />
@@ -222,6 +228,7 @@
     <Content Include="src\Group\groupRegistration.obs" />
     <Content Include="src\Group\GroupRegistration\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRegistration\viewPanel.partial.obs" />
+    <Content Include="src\Reporting\persistedDataViewList.obs" />
     <Content Include="src\Reporting\metricValueDetail.obs" />
     <Content Include="src\Reporting\MetricValueDetail\editPanel.partial.obs" />
     <Content Include="src\Reporting\MetricValueDetail\viewPanel.partial.obs" />
@@ -336,6 +343,7 @@
     <Folder Include="src\" />
     <Folder Include="src\Bus\QueueDetail\" />
     <Folder Include="src\CheckIn\" />
+    <Folder Include="src\CheckIn\AttendanceHistoryList\" />
     <Folder Include="src\CheckIn\Config\" />
     <Folder Include="src\CheckIn\Config\CheckinTypeDetail\" />
     <Folder Include="src\Cms\" />
@@ -375,6 +383,7 @@
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\AssetStorageProviderList\" />
     <Folder Include="src\Core\AttributeMatrixTemplateDetail\" />
+    <Folder Include="src\Core\AttributeMatrixTemplateList\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\BinaryFileList\" />
     <Folder Include="src\Core\BinaryFileTypeDetail\" />
@@ -384,12 +393,14 @@
     <Folder Include="src\Core\DefinedTypeDetail\" />
     <Folder Include="src\Core\DefinedTypeList\" />
     <Folder Include="src\Core\DeviceDetail\" />
+    <Folder Include="src\Core\EventList\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\FollowingSuggestionTypeList\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
     <Folder Include="src\Core\LocationList\" />
     <Folder Include="src\Core\NoteWatchDetail\" />
     <Folder Include="src\Core\SignalTypeList\" />
+    <Folder Include="src\Core\SignatureDocumentTemplateList\" />
     <Folder Include="src\Core\SuggestionDetail\" />
     <Folder Include="src\Core\ScheduleDetail\" />
     <Folder Include="src\Core\TaggedItemDetail\" />
@@ -407,6 +418,7 @@
     <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Crm\SignalTypeDetail\" />
     <Folder Include="src\Engagement\AchievementAttemptDetail\" />
+    <Folder Include="src\Engagement\AchievementAttemptList\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
     <Folder Include="src\Engagement\ConnectionOpportunityList\" />
@@ -431,6 +443,7 @@
     <Folder Include="src\Group\GroupList\" />
     <Folder Include="src\Group\GroupMemberScheduleTemplateDetail\" />
     <Folder Include="src\Group\GroupRequirementTypeDetail\" />
+    <Folder Include="src\Group\GroupRequirementTypeList\" />
     <Folder Include="src\Group\GroupTypeList\" />
     <Folder Include="src\Group\Scheduling\" />
     <Folder Include="src\Group\Scheduling\GroupScheduler\" />
@@ -440,6 +453,7 @@
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupRegistration\" />
+    <Folder Include="src\Reporting\PersistedDataViewList\" />
     <Folder Include="src\Reporting\MetricValueDetail\" />
     <Folder Include="src\Security\ConfirmAccount\" />
     <Folder Include="src\Security\RestKeyDetail\" />
@@ -480,6 +494,7 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\CheckIn\AttendanceHistoryList\types.partial.ts" />
     <TypeScriptCompile Include="src\CheckIn\Config\CheckinTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\AdaptiveMessageAdaptationDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\AdaptiveMessageDetail\types.partial.ts" />
@@ -557,6 +572,7 @@
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileList\types.partial.ts" />
@@ -570,12 +586,14 @@
     <TypeScriptCompile Include="src\Core\DefinedTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DefinedTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DeviceDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\EventList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingSuggestionTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\LocationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteWatchDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SignalTypeList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\SignatureDocumentTemplateList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\ScheduleDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\TaggedItemDetail\types.partial.ts" />
@@ -605,6 +623,7 @@
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementAttemptDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Engagement\AchievementAttemptList\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\ConnectionOpportunityList\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StepProgramDetail\types.partial.ts" />
@@ -627,6 +646,7 @@
     <TypeScriptCompile Include="src\Group\GroupList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupMemberScheduleTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\GroupRequirementTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\utils.partial.ts" />
@@ -636,6 +656,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Group\GroupRegistration\types.d.ts" />
+    <TypeScriptCompile Include="src\Reporting\PersistedDataViewList\types.partial.ts" />
     <TypeScriptCompile Include="src\Reporting\MetricValueDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\events.d.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\views.ts" />

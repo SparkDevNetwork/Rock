@@ -70,15 +70,22 @@ namespace Rock.Tests.Shared
 
         public static class DataViews
         {
-
-            // A DataView that returns all of the locations outside the state of Arizona.
-            public static string LocationsOutsideArizona = "14B1854D-4F45-4F4D-AFFF-C0A1E06353DF";
-            public static string LocationsInsideArizona = "C39B353E-3E44-42C0-9D85-2107FB5E8C04";
-
             public static string MembersAndAttendees = "CB4BB264-A1F4-4EDB-908F-2CCF3A534BC7";
             public static string AdultMembersAndAttendees = "0da5f82f-cffe-45af-b725-49b3899a1f72";
             public static string AdultMembersAndAttendeesMales = "D0846DB2-7AE8-4897-867F-1AF5CC1DE95A";
             public static string AdultMembersAndAttendeesFemales = "1D144B43-F985-4122-B2E3-D548CC3B2A82";
+            public static string Males = "c43983d7-1f22-4e94-9f5c-342da3a0e168";
+            public static string Females = "e2cc2258-bf35-4db2-91e2-9be1b68156a3";
+            public static string UnderThirtyFive = "ff608842-bb10-4c9c-aa18-9d5c407590d3";
+            public static string ThirtyFiveAndOlder = "5537d54c-1b9b-4b81-aa63-f10d676fae77";
+
+            public static string LocationsOutsideArizona = "14B1854D-4F45-4F4D-AFFF-C0A1E06353DF";
+            public static string LocationsInsideArizona = "C39B353E-3E44-42C0-9D85-2107FB5E8C04";
+        }
+
+        public static class DataFilters
+        {
+            public static string ContentChannel = "4049b6d7-ba63-494d-b0fd-8171617a1db9";
         }
 
         public static class Events

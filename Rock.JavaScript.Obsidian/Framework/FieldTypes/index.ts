@@ -53,6 +53,9 @@ registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType()
 import { BenevolenceRequestFieldType } from "./benevolenceRequestField.partial";
 registerFieldType(FieldTypeGuids.BenevolenceRequest, new BenevolenceRequestFieldType());
 
+import { BinaryFileFieldType } from "./binaryFileField.partial";
+registerFieldType(FieldTypeGuids.BinaryFile, new BinaryFileFieldType());
+
 import { BinaryFileTypeFieldType } from "./binaryFileTypeField.partial";
 registerFieldType(FieldTypeGuids.BinaryFileType, new BinaryFileTypeFieldType());
 
