@@ -213,6 +213,10 @@
             turnstile = window["turnstile"];
             renderCaptchaControl(config.siteKey);
         }
+        else {
+            // If captcha is not enabled globally then resolve to an empty string.
+            captchaPromiseSource.resolve("");
+        }
     });
 
     onUnmounted(() => {
