@@ -5487,7 +5487,7 @@ namespace RockWeb.Blocks.Connection
             var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
             var query = connectionRequestActivityService.Queryable()
                 .AsNoTracking()
-                .Where( a => a.ConnectionRequest.PersonAliasId == connectionRequestViewModel.PersonAliasId );
+                .Where( a => a.ConnectionRequest.PersonAlias.PersonId == connectionRequestViewModel.PersonId );
 
             if ( connectionType.EnableFullActivityList )
             {
