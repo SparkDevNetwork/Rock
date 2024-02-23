@@ -381,6 +381,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\ConnectionOpportunityList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\" />
@@ -963,6 +964,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptList\achievementAttemptListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\achievementTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\achievementTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\ConnectionOpportunityList\connectionOpportunityListOptionsBag.d.ts" />

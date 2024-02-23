@@ -132,6 +132,7 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\AchievementAttemptList\AchievementAttemptListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListOptionsBag.cs" />

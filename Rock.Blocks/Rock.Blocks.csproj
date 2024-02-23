@@ -143,6 +143,7 @@
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
+    <Compile Include="Engagement\AchievementAttemptList.cs" />
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
     <Compile Include="Engagement\StepProgramList.cs" />
