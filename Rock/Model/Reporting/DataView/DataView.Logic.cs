@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -31,7 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a filterable DataView in Rock.
     /// </summary>
-    public partial class DataView : Model<DataView>, ICategorized
+    public partial class DataView : Model<DataView>, ICategorized, ICacheable
     {
         /// <summary>
         /// Gets the parent security authority for the DataView which is its Category
@@ -225,13 +226,13 @@ namespace Rock.Model
 
             if ( dataViewEntityTypeCache?.AssemblyName == null )
             {
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine DataView Assembly for EntityTypeId { EntityTypeId }" );
+                throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this.DataViewFilter, $"Unable to determine DataView Assembly for EntityTypeId { EntityTypeId }" );
             }
 
             Type dataViewEntityTypeType = dataViewEntityTypeCache.GetEntityType();
             if ( dataViewEntityTypeType == null )
             {
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine DataView EntityType for { dataViewEntityTypeCache }." );
+                throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this.DataViewFilter, $"Unable to determine DataView EntityType for { dataViewEntityTypeCache }." );
             }
 
             // DataViews must have a DataViewFilter (something has gone wrong it doesn't have one)
@@ -239,7 +240,7 @@ namespace Rock.Model
             // This is because the DataViewFilter might be just in memory and not saved to the database (for example, a Preview or a DynamicReport)
             if ( this.DataViewFilter == null )
             {
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"DataViewFilter is null for DataView { this.Name } ({this.Id})." );
+                throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this.DataViewFilter, $"DataViewFilter is null for DataView { this.Name } ({this.Id})." );
             }
 
             var usePersistedValues = this.IsPersisted() && this.PersistedLastRefreshDateTime.HasValue;
@@ -292,7 +293,7 @@ namespace Rock.Model
                     if ( transformedExpression == null )
                     {
                         // if TransformEntityTypeId is defined, but we got null back, we'll get unexpected results, so throw an exception
-                        throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine transform expression for TransformEntityTypeId: {TransformEntityTypeId}" );
+                        throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this.DataViewFilter, $"Unable to determine transform expression for TransformEntityTypeId: {TransformEntityTypeId}" );
                     }
 
                     return transformedExpression;
@@ -344,7 +345,7 @@ namespace Rock.Model
             if ( entityType == null )
             {
                 // if we can't determine EntityType, throw an exception so we don't return incorrect results
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine TransformEntityType {entityType.Name}" );
+                throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this.DataViewFilter, $"Unable to determine TransformEntityType {entityType.Name}" );
             }
 
 
@@ -352,10 +353,26 @@ namespace Rock.Model
             if ( component == null )
             {
                 // if we can't determine component, throw an exception so we don't return incorrect results
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine transform component for {entityType.Name}" );
+                throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this.DataViewFilter, $"Unable to determine transform component for {entityType.Name}" );
             }
 
             return component.GetExpression( service, parameterExpression, whereExpression );
         }
+
+        #region ICacheable
+
+        /// <inheritdoc/>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            DataViewCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        /// <inheritdoc/>
+        public IEntityCache GetCacheObject()
+        {
+            return DataViewCache.Get( Id );
+        }
+
+        #endregion ICacheable
     }
 }

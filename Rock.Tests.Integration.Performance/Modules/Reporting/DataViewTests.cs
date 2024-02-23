@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Tests.Integration;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
@@ -113,7 +114,9 @@ namespace Rock.Tests.Integration.Performance.Modules.Reporting
                 dataView.PersistResult();
             } );
 
-            var itemCount = dataView.GetQuery().Count();
+            var query = DataViewQueryBuilder.Instance.GetDataViewQuery( dataView );
+            var itemCount = query.Count();
+
             TestHelper.Log( $"DataView persisted with {itemCount} records." );
 
             // Assert results.
