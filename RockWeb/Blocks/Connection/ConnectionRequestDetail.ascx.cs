@@ -897,6 +897,8 @@ namespace RockWeb.Blocks.Connection
                 {
                     groupMember.SaveAttributeValues( rockContext );
                 }
+
+                ShowDetail( connectionRequest.Id, connectionRequest.ConnectionOpportunityId );
             }
         }
 
