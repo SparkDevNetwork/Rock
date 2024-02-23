@@ -72,7 +72,7 @@ namespace Rock.Jobs
             }
         }
 
-        private void InsertAnalyitcsSourceDateData( int commandTimeout )
+        internal void InsertAnalyitcsSourceDateData( int commandTimeout )
         {
             using ( var rockContext = new RockContext() )
             {

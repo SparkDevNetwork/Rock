@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Reporting;
 
 namespace Rock.Model
 {
@@ -31,7 +32,7 @@ namespace Rock.Model
     [Table( "DataView" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.DATAVIEW )]
-    public partial class DataView : Model<DataView>, ICategorized
+    public partial class DataView : Model<DataView>, ICategorized, IDataViewDefinition
     {
         #region Entity Properties
 
@@ -259,6 +260,13 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Schedule PersistedSchedule { get; set; }
+
+        #endregion
+
+        #region IDataViewDefinition Implementation
+
+        /// <inheritdoc/>
+        IDataViewFilterDefinition IDataViewDefinition.DataViewFilter => this.DataViewFilter;
 
         #endregion
     }

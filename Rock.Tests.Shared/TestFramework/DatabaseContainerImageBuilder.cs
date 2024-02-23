@@ -58,7 +58,7 @@ namespace Rock.Tests.Shared.TestFramework
                 {
                     ContainerID = container.Id,
                     RepositoryName = RepositoryName,
-                    Tag = GetTargetMigration().Truncate(15),
+                    Tag = GetTargetMigration().Truncate( 15, false ),
                     Changes = new List<string>
                     {
                         $"LABEL {ResourceReaper.ResourceReaperSessionLabel}="
@@ -204,7 +204,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             // Run Rock Jobs to ensure calculated fields are updated.
 
-            // Rock Cleanup
+            new Rock.Jobs.PostInstallDataMigrations().InsertAnalyitcsSourceDateData( 300 );
+            ExecuteRockJob<Rock.Jobs.PostInstallDataMigrations>();
             ExecuteRockJob<Rock.Jobs.RockCleanup>();
             ExecuteRockJob<Rock.Jobs.CalculateFamilyAnalytics>();
             ExecuteRockJob<Rock.Jobs.ProcessBIAnalytics>( new Dictionary<string, string>
@@ -243,7 +244,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <returns></returns>
         public static string GetRepositoryAndTag()
         {
-            return $"{RepositoryName}:{GetTargetMigration().Truncate(15)}";
+            return $"{RepositoryName}:{GetTargetMigration().Truncate( 15, false )}";
         }
     }
 }

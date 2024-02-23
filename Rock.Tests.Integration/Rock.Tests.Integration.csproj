@@ -330,6 +330,7 @@
     <Compile Include="TestData\Crm\TestDataHelper.Crm.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Web.cs" />
     <Compile Include="TestData\Core\SampleDataHelper.cs" />
+    <Compile Include="TestData\Reporting\ReportingDataManager.cs" />
     <Compile Include="TestData\Reporting\TestDataHelper.Reporting.cs" />
     <Compile Include="Modules\Core\Model\AttendanceOccurrenceTests.cs" />
     <Compile Include="Modules\Core\Model\BenevolenceRequestTests.cs" />
