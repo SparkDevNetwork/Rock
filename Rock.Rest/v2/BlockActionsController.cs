@@ -224,8 +224,18 @@ namespace Rock.Rest.v2
                                     rockBlock.RequestContext.SetPageParameters( actionContext.PageParameters );
                                 }
 
-                                // If the block provided a captcha, validate it.
-                                if ( actionContext?.Captcha.IsNotNullOrWhiteSpace() == true )
+                                /*
+                                    02/22/2024 - JSC
+
+                                    It's important that we perform the captcha
+                                    validation even when the actionContext.Captcha
+                                    is whitespace. Null indicates the captcha is
+                                    not in use by the block, but an empty string
+                                    indicates that the global configuration is missing.
+                                    In the latter case we still need to return true
+                                    so captcha doesn't fail when it's not configured.
+                                */
+                                if ( actionContext?.Captcha != null )
                                 {
                                     var api = new CloudflareApi();
                                     var ipAddress = rockBlock.RequestContext.ClientInformation.IpAddress;
