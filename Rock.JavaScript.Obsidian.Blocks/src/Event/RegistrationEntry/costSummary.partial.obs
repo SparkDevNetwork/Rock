@@ -180,7 +180,7 @@
 
     /** The total before discounts as a formatted string */
     const totalFormatted = computed<string>(() => {
-        return formatCurrency(total.value);
+        return formatCurrency(total.value, registrationEntryState.viewModel.currencyInfo);
     });
 
     /** The total cost before discounts */
@@ -221,7 +221,7 @@
 
     /** The total after discounts as a formatted string */
     const discountedTotalFormatted = computed<string>(() => {
-        return formatCurrency(discountedTotal.value);
+        return formatCurrency(discountedTotal.value, registrationEntryState.viewModel.currencyInfo);
     });
 
     /** The min amount that must be paid today */
@@ -237,7 +237,7 @@
 
     /** The min amount that must be paid today as a formatted string */
     const amountDueTodayFormatted = computed<string>(() => {
-        return formatCurrency(amountDueToday.value);
+        return formatCurrency(amountDueToday.value, registrationEntryState.viewModel.currencyInfo);
     });
 
     /** Should the amount that is due today be shown */
@@ -252,7 +252,7 @@
 
     /** The amount previously paid formatted as a string */
     const amountPreviouslyPaidFormatted = computed<string>(() => {
-        return formatCurrency(amountPreviouslyPaid.value);
+        return formatCurrency(amountPreviouslyPaid.value, registrationEntryState.viewModel.currencyInfo);
     });
 
     /** The max amount that can be paid today */
@@ -267,7 +267,7 @@
 
     /** The max amount that can be paid today as a formatted string */
     const maxAmountCanBePaidFormatted = computed<string>(() => {
-        return formatCurrency(maxAmountCanBePaid.value);
+        return formatCurrency(maxAmountCanBePaid.value, registrationEntryState.viewModel.currencyInfo);
     });
 
     /** The amount that would remain if the user paid the amount indicated in the currency box */
@@ -279,7 +279,7 @@
 
     /** The amount that would remain if the user paid the amount indicated in the currency box as a formatted string */
     const amountRemainingFormatted = computed<string>(() => {
-        return formatCurrency(amountRemaining.value);
+        return formatCurrency(amountRemaining.value, registrationEntryState.viewModel.currencyInfo);
     });
 
     /** The vee-validate rules for the amount to pay today */

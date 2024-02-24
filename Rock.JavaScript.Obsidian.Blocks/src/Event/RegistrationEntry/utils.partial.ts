@@ -132,7 +132,7 @@ export const PersistSession: InjectionKey<(force?: boolean) => Promise<void>> = 
 /** An injection key to provide the cost summary for the entire registration. */
 export const RegistrationCostSummary: InjectionKey<{
         readonlyRegistrationCostSummary: Ref<RegistrationCostSummaryInfo>;
-        updateRegistrationCostSummary: (newValue: RegistrationCostSummaryInfo) => void;
+        updateRegistrationCostSummary: (newValue: Partial<RegistrationCostSummaryInfo>) => void;
     }> = Symbol("registration-cost-summary");
 
 export type TransactionFrequency = {

@@ -52,7 +52,7 @@
                 </RockButton>
 
                 <RockButton v-if="gatewayControlModel" btnType="primary" type="submit" :isLoading="loading" autoDisable>
-                    {{ finishButtonText }}
+                    Pay
                 </RockButton>
             </div>
         </RockForm>
@@ -115,11 +115,6 @@
     /** This is the data sent from the C# code behind when the block initialized. */
     const viewModel = computed<RegistrationEntryInitializationBox>(() => {
         return registrationEntryState.viewModel;
-    });
-
-    /** The text to be displayed on the "Finish" button */
-    const finishButtonText = computed<string>(() => {
-        return "Pay";
     });
 
     /** true if there are any saved accounts to be selected. */

@@ -914,6 +914,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryFormFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryLineItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryPaymentPlanBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntrySessionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntrySignatureDocumentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntrySuccessBag.d.ts" />

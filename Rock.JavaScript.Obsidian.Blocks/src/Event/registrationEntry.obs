@@ -76,6 +76,7 @@
     import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
+    import { RegistrationEntryPaymentPlanBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryPaymentPlanBag";
 
     const store = useStore();
     const steps: Record<Step, Step> = {
@@ -145,7 +146,11 @@
         amountToPayToday: 0,
         sessionExpirationDateMs: null,
         registrationSessionGuid: config.session?.registrationSessionGuid || newGuid(),
-        ownFamilyGuid: config.currentPersonFamilyGuid || newGuid()
+        ownFamilyGuid: config.currentPersonFamilyGuid || newGuid(),
+        paymentPlanAmountPerPayment: null,
+        paymentPlanFrequencyGuid: null,
+        paymentPlanFrequencyText: null,
+        paymentPlanNumberOfPayments: null
     });
     const registrationCostSummary = ref<RegistrationCostSummaryInfo>({
         paidAmount: 0,
@@ -370,6 +375,21 @@
 
     /** Gets the args needed for persisting the session. */
     function getRegistrationEntryBlockArgs(): RegistrationEntryArgsBag {
+        const {
+            paymentPlanAmountPerPayment,
+            paymentPlanFrequencyGuid,
+            paymentPlanNumberOfPayments
+        } = registrationEntryState.value;
+        let paymentPlan: RegistrationEntryPaymentPlanBag | null = null;
+        if (paymentPlanAmountPerPayment
+            && paymentPlanFrequencyGuid
+            && paymentPlanNumberOfPayments) {
+            paymentPlan = {
+                amountToPayPerPayment: paymentPlanAmountPerPayment,
+                numberOfPayments: paymentPlanNumberOfPayments,
+                transactionFrequencyGuid: paymentPlanFrequencyGuid
+            };
+        }
         return {
             registrationSessionGuid: registrationEntryState.value.registrationSessionGuid,
             gatewayToken: registrationEntryState.value.gatewayToken,
@@ -379,7 +399,8 @@
             registrar: registrationEntryState.value.registrar,
             registrants: registrationEntryState.value.registrants,
             amountToPayNow: registrationEntryState.value.amountToPayToday,
-            registrationGuid: config.session?.registrationGuid || null
+            registrationGuid: config.session?.registrationGuid || null,
+            paymentPlan
         };
     }
 
@@ -474,7 +495,7 @@
     }
 
     function onSummaryNext(): void {
-        if (registrationEntryState.value.amountToPayToday) {
+        if (registrationEntryState.value.amountToPayToday || (registrationEntryState.value.paymentPlanAmountPerPayment && registrationEntryState.value.paymentPlanNumberOfPayments)) {
             registrationEntryState.value.currentStep = Step.Payment;
         }
         else {
@@ -538,8 +559,19 @@
         // child components can only use the updateRegistrationCostSummary() to update
         // the reactive value.
         readonlyRegistrationCostSummary: readonly(registrationCostSummary),
-        updateRegistrationCostSummary: (value: RegistrationCostSummaryInfo) => {
-            registrationCostSummary.value = value;
+        updateRegistrationCostSummary: (value: Partial<RegistrationCostSummaryInfo>) => {
+            const remainingAmount = typeof value.remainingAmount !== "undefined" ? Math.round(value.remainingAmount * 100) / 100 : registrationCostSummary.value.remainingAmount;
+            const minimumRemainingAmount = typeof value.minimumRemainingAmount !== "undefined" ? Math.round(value.minimumRemainingAmount * 100) / 100 : registrationCostSummary.value.minimumRemainingAmount;
+            const paidAmount = typeof value.paidAmount !== "undefined" ? Math.round(value.paidAmount * 100) / 100 : registrationCostSummary.value.paidAmount;
+            registrationCostSummary.value = {
+                ...registrationCostSummary.value,
+                ...{
+                    ...value,
+                    remainingAmount,
+                    minimumRemainingAmount,
+                    paidAmount
+                }
+            };
         }
     });
 

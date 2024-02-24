@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
 using System.Security.Cryptography;
@@ -1223,7 +1224,7 @@ namespace Rock.Blocks.Event
 
                 rockContext.SaveChanges();
 
-                var transactionGuid = args.AmountToPayNow > 0 ?
+                var transactionGuid = args.AmountToPayNow > 0 || args.PaymentPlan != null ?
                     ProcessPayment( rockContext, context, args, out errorMessage ) :
                     null;
 
@@ -3500,30 +3501,55 @@ namespace Rock.Blocks.Event
                 transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
             }
 
-            return SaveTransaction( financialGateway, gateway, context, transaction, paymentInfo, rockContext, paymentInfo.Amount, paymentInfo.GatewayPersonIdentifier );
+            var transactionGuid = SaveTransaction( gateway, context, transaction, paymentInfo, rockContext );
+
+            // Set up recurring payments if necessary.
+            if ( args.PaymentPlan != null && gateway is IScheduledNumberOfPaymentsGateway )
+            {
+                var paymentSchedule = new PaymentSchedule
+                {
+                    PersonId = context.Registration.PersonId ?? 0,
+                    NumberOfPayments = args.PaymentPlan.NumberOfPayments,
+                    TransactionFrequencyValue = DefinedValueCache.Get( args.PaymentPlan.TransactionFrequencyGuid ),
+                    StartDate = args.PaymentPlan.StartDate.Date
+                };
+
+                // Reuse the paymentInfo used for the one-time payment,
+                // but update the amount to the recurring payment amount.
+                paymentInfo.Amount = args.PaymentPlan.AmountToPayPerPayment;
+
+                var financialScheduledTransaction = gateway.AddScheduledPayment( financialGateway, paymentSchedule, paymentInfo, out errorMessage );
+                if ( financialScheduledTransaction != null )
+                {
+                    SaveScheduledTransaction( financialGateway.Id, gateway, context, paymentInfo, paymentSchedule, financialScheduledTransaction, rockContext );
+                }
+                else
+                {
+                    // TODO JMH An error occurred while scheduling the recurring payment, but the one-time payment may have gone through.
+                    // I'm thinking the front-end should be updated to have a zero dollar one-time amount, with the same payment plan info,
+                    // so the user can resubmit.
+                    return null;
+                }
+            }
+
+            return transactionGuid;
         }
 
         /// <summary>
         /// Saves the transaction.
         /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="gateway">The gateway.</param>
         /// <param name="context">The context.</param>
         /// <param name="transaction">The transaction.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="amount">The amount.</param>
-        /// <param name="gatewayPersonIdentifier">The gateway person identifier.</param>
         /// <returns></returns>
         private Guid? SaveTransaction(
-            FinancialGateway financialGateway,
             GatewayComponent gateway,
             RegistrationContext context,
             FinancialTransaction transaction,
             PaymentInfo paymentInfo,
-            RockContext rockContext,
-            decimal amount,
-            string gatewayPersonIdentifier )
+            RockContext rockContext )
         {
             if ( transaction is null )
             {
@@ -3583,7 +3609,7 @@ namespace Rock.Blocks.Event
                 transaction.TransactionDetails.Add( transactionDetail );
             }
 
-            transactionDetail.Amount = amount;
+            transactionDetail.Amount = paymentInfo.Amount;
             transactionDetail.AccountId = context.RegistrationSettings.FinancialAccountId ?? transactionDetail.AccountId;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = context.Registration.Id;
@@ -3647,8 +3673,54 @@ namespace Rock.Blocks.Event
                     currentPerson?.PrimaryAliasId ) );
 
             context.TransactionCode = transaction.TransactionCode;
-            context.GatewayPersonIdentifier = gatewayPersonIdentifier;
+            context.GatewayPersonIdentifier = ( paymentInfo as ReferencePaymentInfo )?.GatewayPersonIdentifier;
             return transaction.Guid;
+        }
+        
+        private void SaveScheduledTransaction( int financialGatewayId, GatewayComponent gateway, RegistrationContext context, PaymentInfo paymentInfo, PaymentSchedule paymentSchedule, FinancialScheduledTransaction scheduledTransaction, RockContext rockContext )
+        {
+            // This method was copied from the UtilityPaymentEntry block and repurposed for saving a scheduled recurring
+            // transaction for event registration when the registrar opts for a payment plan.
+
+            // The scheduled transaction passed to this method is from the gateway component.
+            // Make sure properties from the payment schedule are used.
+            scheduledTransaction.TransactionFrequencyValueId = paymentSchedule.TransactionFrequencyValue.Id;
+            scheduledTransaction.StartDate = paymentSchedule.StartDate;
+            // TODO JMH Ensure the person alias id is set!
+            scheduledTransaction.AuthorizedPersonAliasId = context.Registration.PersonAliasId.Value;
+            scheduledTransaction.FinancialGatewayId = financialGatewayId;
+            scheduledTransaction.TransactionTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid() );
+            scheduledTransaction.Summary = paymentInfo.Comment1;
+
+            if ( scheduledTransaction.FinancialPaymentDetail == null )
+            {
+                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            }
+
+            scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
+
+            var sourceGuid = GetAttributeValue( AttributeKey.Source ).AsGuidOrNull();
+            if ( sourceGuid.HasValue )
+            {
+                scheduledTransaction.SourceTypeValueId = DefinedValueCache.GetId( sourceGuid.Value );
+            }
+
+            var transactionService = new FinancialScheduledTransactionService( rockContext );
+            transactionService.Add( scheduledTransaction );
+            rockContext.SaveChanges();
+
+            // TODO JMH DSD ? - Do we need to handle: If this is a transfer, now we can delete the old transaction
+            //if ( _scheduledTransactionToBeTransferred != null )
+            //{
+            //    DeleteOldTransaction( _scheduledTransactionToBeTransferred.Id );
+            //}
+            //rockContext.SaveChanges();
+
+            //ScheduleId = scheduledTransaction.Id;
+            //TransactionCode = scheduledTransaction.TransactionCode;
+
+            // TODO JMH DSD ? - Do we need to publish any bus events?
+            //Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftCreated ) );
         }
 
         /// <summary>
