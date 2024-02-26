@@ -13,6 +13,7 @@
     { "path": "./src/Event" },
     { "path": "./src/Example" },
     { "path": "./src/Finance" },
+    { "path": "./src/Fundraising" },
     { "path": "./src/Group" },
     { "path": "./src/Mobile" },
     { "path": "./src/Prayer" },

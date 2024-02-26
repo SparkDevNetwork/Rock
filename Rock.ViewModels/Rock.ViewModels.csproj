@@ -165,6 +165,7 @@
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialStatementTemplateList\FinancialStatementTemplateListOptionsBag.cs" />
+    <Compile Include="Blocks\Fundraising\FundraisingDonationList\FundraisingDonationListOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupArchivedList\GroupArchivedListOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupMemberScheduleTemplateList\GroupMemberScheduleTemplateListOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeList\GroupRequirementTypeListOptionsBag.cs" />

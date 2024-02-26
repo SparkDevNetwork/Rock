@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/Controls" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/Core" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/Directives" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/Enums" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/FieldTypes" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/Libs" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/PageState" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/SystemGuids" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/Templates" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/Utility" },
+    { "path": "../../../Rock.JavaScript.Obsidian/Framework/ValidationRules" }
+  ],
+  "include": [
+    "./**/*.ts",
+    "./**/*.obs",
+    "../shims-vue.d.ts"
+  ]
+}
