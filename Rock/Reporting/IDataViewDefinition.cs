@@ -16,11 +16,14 @@
 //
 using System;
 
+using Rock.Attribute;
+
 namespace Rock.Reporting
 {
     /// <summary>
     /// A representation of a Data View that can be materialized to construct an Entity queryable.
     /// </summary>
+    [RockInternal( "1.16.3", true )]
     public interface IDataViewDefinition
     {
         /// <summary>

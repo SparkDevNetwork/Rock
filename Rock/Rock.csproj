@@ -1158,8 +1158,10 @@
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Net\BrowserCookie.cs" />
+    <Compile Include="Net\IRockRequestContextAccessor.cs" />
     <Compile Include="Net\IRockResponseContext.cs" />
     <Compile Include="Net\NullRockResponseContext.cs" />
+    <Compile Include="Net\RockRequestContextAccessor.cs" />
     <Compile Include="Net\RockResponseContext.WebForms.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
@@ -2077,6 +2079,9 @@
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
     <Compile Include="Utility\NestedDictionaryConverter.cs" />
+    <Compile Include="Utility\Performance\BenchmarkResult.cs" />
+    <Compile Include="Utility\Performance\BenchmarkStatistics.cs" />
+    <Compile Include="Utility\Performance\MicroBench.cs" />
     <Compile Include="Utility\PersonPreferenceCollection.cs" />
     <Compile Include="Utility\PrayerRequestLastPrayedDetail.cs" />
     <Compile Include="Utility\PrayerRequestQueryOptions.cs" />

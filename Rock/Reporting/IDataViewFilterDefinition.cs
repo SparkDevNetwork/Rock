@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Reporting
@@ -24,6 +25,7 @@ namespace Rock.Reporting
     /// <summary>
     /// Represents a filter that forms part of a Data View.
     /// </summary>
+    [RockInternal( "1.16.3", true )]
     public interface IDataViewFilterDefinition
     {
         /// <summary>
