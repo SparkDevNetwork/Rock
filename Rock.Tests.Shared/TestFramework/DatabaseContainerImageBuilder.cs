@@ -205,7 +205,6 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             // Run Rock Jobs to ensure calculated fields are updated.
 
             new Rock.Jobs.PostInstallDataMigrations().InsertAnalyitcsSourceDateData( 300 );
-            ExecuteRockJob<Rock.Jobs.PostInstallDataMigrations>();
             ExecuteRockJob<Rock.Jobs.RockCleanup>();
             ExecuteRockJob<Rock.Jobs.CalculateFamilyAnalytics>();
             ExecuteRockJob<Rock.Jobs.ProcessBIAnalytics>( new Dictionary<string, string>
