@@ -137,54 +137,6 @@ namespace Rock.Reporting.Dashboard
             }
         }
 
-        //private ChartJsChart MetricChart
-        //{
-        //    get
-        //    {
-        //        return this.ControlsOfTypeRecursive<ChartJsChart>().First( a => a.ID == "metricChart" );
-        //    }
-        //}
-
-        //private NotificationBox nbMetricWarning
-        //{
-        //    get
-        //    {
-        //        return this.ControlsOfTypeRecursive<NotificationBox>().First( a => a.ID == "nbMetricWarning" );
-        //    }
-        //}
-
-        //private Panel pnlDashboardTitle
-        //{
-        //    get
-        //    {
-        //        return this.ControlsOfTypeRecursive<Panel>().First( a => a.ID == "pnlDashboardTitle" );
-        //    }
-        //}
-
-        //private Panel pnlDashboardSubtitle
-        //{
-        //    get
-        //    {
-        //        return this.ControlsOfTypeRecursive<Panel>().First( a => a.ID == "pnlDashboardSubtitle" );
-        //    }
-        //}
-
-        //private Literal lDashboardTitle
-        //{
-        //    get
-        //    {
-        //        return this.ControlsOfTypeRecursive<Literal>().First( a => a.ID == "lDashboardTitle" );
-        //    }
-        //}
-
-        //private Literal lDashboardSubtitle
-        //{
-        //    get
-        //    {
-        //        return this.ControlsOfTypeRecursive<Literal>().First( a => a.ID == "lDashboardSubtitle" );
-        //    }
-        //}
-
         private SlidingDateRangePicker drpSlidingDateRange
         {
             get
@@ -323,7 +275,7 @@ namespace Rock.Reporting.Dashboard
             }
 
             var chartControl = GetChartControl();
-            //chartControl.Visible = false;
+
             pnlEditModel.Visible = true;
 
             var rockContext = new RockContext();
@@ -871,7 +823,7 @@ namespace Rock.Reporting.Dashboard
         #region Support Classes
 
         /// <summary>
-        ///
+        /// Represents a Metric Partition Value.
         /// </summary>
         public class MetricPartitionEntityId
         {
