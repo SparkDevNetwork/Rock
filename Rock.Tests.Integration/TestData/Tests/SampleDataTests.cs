@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Tests.Integration.Crm.Steps;
 using Rock.Tests.Integration.Metrics;
 
 namespace Rock.Tests.Integration.TestData
@@ -28,6 +29,14 @@ namespace Rock.Tests.Integration.TestData
         public void AddMetricsTestData()
         {
             MetricsDataManager.Instance.AddDataForWeeklyAttendanceMetrics();
+        }
+
+        [TestMethod]
+        [TestProperty( "Utility", "SampleData" )]
+        public void AddStepsTestData()
+        {
+            StepsFeatureDataHelper.AddSampleTestData();
+            StepsFeatureDataHelper.AddStepsRandomParticipationEntries();
         }
     }
 }
