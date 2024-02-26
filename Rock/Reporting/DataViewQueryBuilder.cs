@@ -341,17 +341,6 @@ namespace Rock.Reporting
                 usePersistedValues = usePersistedValues && !dataViewFilterOverrides.IgnoreDataViewPersistedValues.Contains( dataView.Id );
             }
 
-            // If dataViewFilterOverrides is null assume true in order to preserve current functionality.
-            if ( dataViewFilterOverrides == null || dataViewFilterOverrides.ShouldUpdateStatics )
-            {
-                DataViewService.AddRunDataViewTransaction( dataView.Id );
-            }
-
-            // We need to call GetExpression regardless of whether or not usePresistedValues is true so the child queries get their stats updated.
-            var filterExpression = dataView.DataViewFilter != null
-                ? GetDataFilterExpression( dataViewFilter, resultEntityType, serviceInstance, paramExpression, dataViewFilterOverrides )
-                : null;
-
             if ( usePersistedValues )
             {
                 // If this is a persisted DataView, get the ids for the expression by querying DataViewPersistedValue instead of evaluating all the filters
@@ -368,6 +357,21 @@ namespace Rock.Reporting
             }
             else
             {
+                // It was decided on 2024-02-26 during a review with PO that we
+                // only update statistics if the data view actually executes.
+                // That means we don't update statistics if we are using the
+                // persisted values.
+
+                // If dataViewFilterOverrides is null assume true in order to preserve current functionality.
+                if ( dataViewFilterOverrides == null || dataViewFilterOverrides.ShouldUpdateStatics )
+                {
+                    DataViewService.AddRunDataViewTransaction( dataView.Id );
+                }
+
+                var filterExpression = dataViewFilter != null
+                    ? GetDataFilterExpression( dataViewFilter, resultEntityType, serviceInstance, paramExpression, dataViewFilterOverrides )
+                    : null;
+
                 if ( dataView.TransformEntityTypeId.HasValue )
                 {
                     Expression transformedExpression = GetTransformExpression( dataView, dataView.TransformEntityTypeId.Value, serviceInstance, paramExpression, filterExpression );

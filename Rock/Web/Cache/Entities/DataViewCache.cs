@@ -96,15 +96,53 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? PersistedLastRunDurationMilliseconds { get; private set; }
 
-        /// <inheritdoc cref="Rock.Model.DataView.LastRunDateTime" />
+        /// <summary>
+        /// <para>
+        /// Gets the last run date time. This is only updated when the
+        /// data view is actually executed, not when we access the persisted
+        /// values directly.
+        /// </para>
+        /// <para>
+        /// This value may be slightly out of sync with the database so it
+        /// should not be used for critical logic decisions.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The last run date time.
+        /// </value>
         [DataMember]
         public DateTime? LastRunDateTime { get; private set; }
 
-        /// <inheritdoc cref="Rock.Model.DataView.RunCount" />
+        /// <summary>
+        /// <para>
+        /// Gets the run count. This is only updated when the data view
+        /// is actually executed, not when we access the persisted values directly.
+        /// </para>
+        /// <para>
+        /// This value may be slightly out of sync with the database so it
+        /// should not be used for critical logic decisions.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The run count.
+        /// </value>
         [DataMember]
         public int? RunCount { get; private set; }
 
-        /// <inheritdoc cref="Rock.Model.DataView.TimeToRunDurationMilliseconds" />
+        /// <summary>
+        /// <para>
+        /// Gets the amount of time in milliseconds that it took to run the
+        /// <see cref="DataView"/>. This is only updated when the data view
+        /// is actually executed, not when we access the persisted values directly.
+        /// </para>
+        /// <para>
+        /// This value may be slightly out of sync with the database so it
+        /// should not be used for critical logic decisions.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The time to run in ms.
+        /// </value>
         [DataMember]
         public double? TimeToRunDurationMilliseconds { get; private set; }
 
