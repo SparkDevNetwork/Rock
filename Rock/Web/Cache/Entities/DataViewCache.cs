@@ -120,6 +120,14 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? PersistedScheduleId { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.DataView.IconCssClass"/>
+        [DataMember]
+        public string IconCssClass { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.DataView.HighlightColor"/>
+        [DataMember]
+        public string HighlightColor { get; private set; }
+
         #endregion
 
         #region Navigation Properties
@@ -132,6 +140,12 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="Rock.Model.DataView.DataViewFilter" />
         public DataViewFilterCache DataViewFilter => DataViewFilterId.HasValue ? DataViewFilterCache.Get( DataViewFilterId.Value ) : null;
+
+        /// <inheritdoc cref="DataView.PersistedSchedule"/>
+        public NamedScheduleCache PersistedSchedule => PersistedScheduleId.HasValue ? NamedScheduleCache.Get( PersistedScheduleId.Value ) : null;
+
+        /// <inheritdoc cref="DataView.TransformEntityType"/>
+        public EntityTypeCache TransformEntityType => TransformEntityTypeId.HasValue ? EntityTypeCache.Get( TransformEntityTypeId.Value ) : null;
 
         #endregion
 
@@ -171,6 +185,8 @@ namespace Rock.Web.Cache
             Description = dataView.Description;
             DisableUseOfReadOnlyContext = dataView.DisableUseOfReadOnlyContext;
             EntityTypeId = dataView.EntityTypeId;
+            HighlightColor = dataView.HighlightColor;
+            IconCssClass = dataView.IconCssClass;
             IncludeDeceased = dataView.IncludeDeceased;
             IsSystem = dataView.IsSystem;
             LastRunDateTime = dataView.LastRunDateTime;
