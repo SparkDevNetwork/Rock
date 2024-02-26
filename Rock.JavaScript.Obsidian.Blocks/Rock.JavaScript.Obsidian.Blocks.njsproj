@@ -194,6 +194,7 @@
     <Content Include="src\Group\GroupRequirementTypeDetail\viewPanel.partial.obs" />
     <Content Include="src\Group\groupRequirementTypeList.obs" />
     <Content Include="src\Group\groupTypeList.obs" />
+    <Content Include="src\Group\Scheduling\groupMemberScheduleTemplateList.obs" />
     <Content Include="src\Group\Scheduling\groupScheduler.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\availableResources.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\cloneSchedules.partial.obs" />
@@ -446,6 +447,7 @@
     <Folder Include="src\Group\GroupRequirementTypeList\" />
     <Folder Include="src\Group\GroupTypeList\" />
     <Folder Include="src\Group\Scheduling\" />
+    <Folder Include="src\Group\Scheduling\GroupMemberScheduleTemplateList\" />
     <Folder Include="src\Group\Scheduling\GroupScheduler\" />
     <Folder Include="src\Group\Scheduling\GroupScheduleToolbox\" />
     <Folder Include="src\Prayer\" />
@@ -648,6 +650,7 @@
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupRequirementTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\GroupTypeList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Group\Scheduling\GroupMemberScheduleTemplateList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\utils.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduleToolbox\types.partial.ts" />
