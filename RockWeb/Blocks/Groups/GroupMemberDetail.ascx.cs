@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        public Dictionary<int, IEnumerable<GroupRequirementStatus>> GroupRequirementStatusesByPersonState { get; set; } = new Dictionary<int, IEnumerable<GroupRequirementStatus>>();
+        private Dictionary<int, IEnumerable<GroupRequirementStatus>> GroupRequirementStatusesByPersonState { get; set; } = new Dictionary<int, IEnumerable<GroupRequirementStatus>>();
 
         #endregion
 

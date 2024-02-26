@@ -22,7 +22,6 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Data;
-using Rock.Logging;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
