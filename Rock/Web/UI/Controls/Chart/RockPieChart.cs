@@ -120,6 +120,8 @@ namespace Rock.Web.UI.Controls
             args.LegendAlignment = legendAlignment;
             args.DisplayLegend = this.ShowLegend;
 
+            args.MaintainAspectRatio = this.MaintainAspectRatio;
+
             args.DisableAnimation = this.Page.IsPostBack;
             args.ShowSegmentLabels = this.ShowSegmentLabels;
 

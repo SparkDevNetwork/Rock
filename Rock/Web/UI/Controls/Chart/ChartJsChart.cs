@@ -399,6 +399,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public ChartTextElementStyle SubtitleFormat { get; set; }
 
+        /// <inheritdoc/>
+        public bool MaintainAspectRatio { get; set; }
+
         /// <summary>
         /// Override this method to generate the JSON model used as the data source for the chart.
         /// This object represents the "data" element of the ChartJs configuration model.

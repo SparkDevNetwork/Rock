@@ -171,7 +171,7 @@ namespace Rock.Web.UI.Controls
             args.DisableAnimation = this.Page.IsPostBack;
             args.YValueFormatString = this.YValueFormatString;
 
-            args.MaintainAspectRatio = true;
+            args.MaintainAspectRatio = this.MaintainAspectRatio;
 
             return args;
         }
@@ -195,7 +195,7 @@ namespace Rock.Web.UI.Controls
             args.DisableAnimation = this.Page.IsPostBack;
             args.YValueFormatString = this.YValueFormatString;
 
-            args.MaintainAspectRatio = true;
+            args.MaintainAspectRatio = this.MaintainAspectRatio;
 
             return args;
         }
