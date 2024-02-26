@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -595,7 +594,7 @@ namespace Rock.Reporting.Dashboard
         /// An entity is uniquely identified by an entity type and instance id.
         /// </summary>
         /// <returns></returns>
-        protected List<MetricService.EntityIdentifierByTypeAndId> GetPartitionEntityIdentifiers()
+        protected List<MetricService.EntityIdentifierByTypeAndId> GetSelectedPartitionEntityIdentifiers()
         {
             var entityPartitionValues = new List<MetricService.EntityIdentifierByTypeAndId>();
 
@@ -667,14 +666,21 @@ namespace Rock.Reporting.Dashboard
                     // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
                     if ( !result.EntityId.HasValue )
                     {
-                        // figure out what the param name should be ("CampusId, GroupId, etc") depending on metric's entityType
+                        // Figure out what the parameter name should be ("CampusId, GroupId, etc") depending on the Metric's Entity Type.
                         var entityParamName = "EntityId";
                         if ( entityTypeCache != null )
                         {
-                            entityParamName = entityTypeCache.Name + "Id";
+                            entityParamName = entityTypeCache.FriendlyName + "Id";
                         }
 
                         result.EntityId = this.PageParameter( entityParamName ).AsIntegerOrNull();
+                    }
+
+                    // ... if we still don't have a context entity, check the Page context.
+                    if ( !result.EntityId.HasValue )
+                    {
+                        var contextEntity = this.RockPage.GetCurrentContext( entityTypeCache );
+                        result.EntityId = contextEntity?.Id;
                     }
 
                     results.Add( result );
@@ -799,6 +805,14 @@ namespace Rock.Reporting.Dashboard
                 rockChart.ChartClick += ChartClickHandler;
             }
 
+            // Dashboard widgets have a user-definable width (set as a number of bootstrap columns),
+            // but are set to a specific height when the "panel-dashboard" css style is applied.
+            // The chart must be set to stretch rather than maintain its aspect ratio,
+            // or it will overflow the vertical container boundary and corrupt the page layout.
+            // We should consider creating a new "panel-dashboard-chart" css style to omit the height specification
+            // and thereby allow vertical resizing to maintain the aspect ratio.
+            rockChart.MaintainAspectRatio = false;
+
             // Load the specific chart instance.
             OnLoadChart();
         }
@@ -809,10 +823,10 @@ namespace Rock.Reporting.Dashboard
         public abstract void OnLoadChart();
 
         /// <summary>
-        /// Lcs the example_ chart click.
+        /// Handles a chart click event.
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void ChartClickHandler( object sender, ChartClickArgs e )
         {
             Guid? detailPageGuid = ( GetAttributeValue( AttributeKeys.DetailPage ) ?? string.Empty ).AsGuidOrNull();
@@ -879,6 +893,5 @@ namespace Rock.Reporting.Dashboard
         }
 
         #endregion
-
     }
 }
