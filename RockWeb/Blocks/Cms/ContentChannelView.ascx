@@ -86,6 +86,7 @@
 
                             <div class="row">
                                 <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlContextAttribute" runat="server" Label="Context Filter Attribute" Help="Item attribute to compare when filtering items using the block Context. If the block doesn't have a context, this setting will be ignored." />
                                     <Rock:RockCheckBox ID="cbQueryParamFiltering" runat="server" Label="Enable Query/Route Parameter Filtering" Text="Yes"
                                         Help="Enabling this option will allow results to be filtered further by any query string our route parameters that are included. This includes item properties or attributes. This will disable Cache Tags." />
                                     <Rock:KeyValueList ID="kvlOrder" runat="server" Label="Order Items By" KeyPrompt="Field" ValuePrompt="Direction"
