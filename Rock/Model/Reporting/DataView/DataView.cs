@@ -143,7 +143,9 @@ namespace Rock.Model
         public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the last run date time.
+        /// Gets or sets the last run date time. This is only updated when the
+        /// data view is actually executed, not when we access the persisted
+        /// values directly.
         /// </summary>
         /// <value>
         /// The last run date time.
@@ -152,7 +154,8 @@ namespace Rock.Model
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the run count.
+        /// Gets or sets the run count. This is only updated when the data view
+        /// is actually executed, not when we access the persisted values directly.
         /// </summary>
         /// <value>
         /// The run count.
@@ -161,7 +164,9 @@ namespace Rock.Model
         public int? RunCount { get; set; }
 
         /// <summary>
-        /// The amount of time in milliseconds that it took to run the <see cref="DataView"/>
+        /// Gets or sets the amount of time in milliseconds that it took to run the
+        /// <see cref="DataView"/>. This is only updated when the data view
+        /// is actually executed, not when we access the persisted values directly.
         /// </summary>
         /// <value>
         /// The time to run in ms.
