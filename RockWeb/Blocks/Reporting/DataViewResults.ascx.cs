@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                 };
 
-                var qry = dataView.GetQueryable( dataViewGetQueryArgs );
+                var qry = dataView.GetQuery( dataViewGetQueryArgs );
 
                 gDataViewResults.SetLinqDataSource( qry.AsNoTracking() );
                 gDataViewResults.DataBind();
