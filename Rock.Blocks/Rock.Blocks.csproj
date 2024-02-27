@@ -149,6 +149,7 @@
     <Compile Include="Engagement\StepProgramList.cs" />
     <Compile Include="CheckIn\AttendanceHistoryList.cs" />
     <Compile Include="Event\EventCalendarItemList.cs" />
+    <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
     <Compile Include="Finance\BusinessList.cs" />
     <Compile Include="Finance\FinancialAccountDetail.cs" />
