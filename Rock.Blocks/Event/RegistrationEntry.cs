@@ -234,7 +234,7 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         [BlockAction]
         public BlockActionResult CheckDiscountCode( string code, int registrantCount, Guid? registrationGuid, bool isAutoApply )
-        {
+        {   
             using ( var rockContext = new RockContext() )
             {
                 var registrationInstanceId = GetRegistrationInstanceId( rockContext );

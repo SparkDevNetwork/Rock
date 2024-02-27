@@ -8,6 +8,7 @@
         <div>moneyDesiredPerPaymentsRemainder {{ moneyDesiredPerPaymentsRemainder }}</div>
         <div>moneyRemainingAmount {{ moneyRemainingAmount }}</div>
         <div>moneyDesiredAmountToPayToday {{ moneyDesiredAmountToPayToday }}</div>
+        <div>moneyInProgressAmountToPayToday {{ moneyInProgressAmountToPayToday }}</div>
         <template v-if="paymentDeadlineDate">
             The total amount of {{ moneyTotalAmount }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
         </template>
@@ -65,19 +66,19 @@
 <style scoped></style>
 
 <script setup lang="ts">
-    import { PropType, Ref, WritableComputedRef, computed, ref, watch } from "vue";
+    import { PropType, nextTick, computed, ref, watch } from "vue";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CurrentRegistrationEntryState, RegistrationCostSummary, TransactionFrequency, formatCurrency, getTransactionFrequency, nullTransactionFrequency, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, RegistrationCostSummary, TransactionFrequency, getTransactionFrequency, nullTransactionFrequency, use } from "./utils.partial";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
     import { ValidationResult } from "@Obsidian/ValidationRules";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { Money, MoneyOptions, createMoneyOptions } from "./types.partial";
+    import { Currency, CurrencyOptions, createReadonlyCurrencyOptions } from "./types.partial";
 
     const props = defineProps({
         modelValue: {
@@ -92,8 +93,8 @@
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const { readonlyRegistrationCostSummary } = use(RegistrationCostSummary);
-    const moneyOptions: MoneyOptions = createMoneyOptions({
-        decimals: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
+    const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
+        precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
         symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined
     });
 
@@ -102,7 +103,8 @@
     const paymentFrequencyGuid = ref<Guid>(registrationEntryState.paymentPlanFrequencyGuid ?? "");
     const numberOfPayments = ref<string>("2");
     const internalDesiredAmountToPayToday = ref<number>(registrationEntryState.amountToPayToday);
-    const moneyInProgressAmountToPayToday = ref<Money>(new Money(registrationEntryState.amountToPayToday, moneyOptions));
+    const moneyInProgressAmountToPayToday = ref<Currency>(new Currency(registrationEntryState.amountToPayToday, currencyOptions));
+    const moneyAdded = ref<Currency>(new Currency(0, currencyOptions));
 
     //#endregion
 
@@ -116,19 +118,19 @@
 
     const actualAmountDueTodayMessage = computed<string>(() => {
         let suffix = "";
-        if (moneyDesiredPerPaymentsRemainder.value) {
-            suffix = ` (${moneyDesiredPerPaymentsRemainder.value} will be added to evenly distribute remaining payments)`;
+        if (!moneyAdded.value.isZero) {
+            suffix = ` (${moneyAdded.value} will be added to evenly distribute remaining payments)`;
         }
         return `${moneyInProgressAmountToPayToday.value}${suffix}`;
     });
 
-    const moneyDesiredAmountToPayToday = computed<Money>(() => new Money(internalDesiredAmountToPayToday.value, moneyOptions));
+    const moneyDesiredAmountToPayToday = computed<Currency>(() => new Currency(internalDesiredAmountToPayToday.value, currencyOptions));
 
-    const moneyRemainingAmount = computed<Money>(() => new Money(readonlyRegistrationCostSummary.value.remainingAmount, moneyOptions));
-
-    const moneyDesiredPerPaymentsRemainder = computed<Money>(() => {
+    const moneyRemainingAmount = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions));
+    //2.50
+    const moneyDesiredPerPaymentsRemainder = computed<Currency>(() => {
         if (numberOfPaymentsAsInteger.value === 0 || moneyRemainingAmount.value.isEqualTo(0)) {
-            return new Money(0, moneyOptions);
+            return new Currency(0, currencyOptions);
         }
 
         // excessCents = temporarilyRemoveDec(remaining - desiredOneTimePayment) mod numberPayments
@@ -138,20 +140,21 @@
     });
 
     /** Gets the minimum remaining amount to be paid today, before the recurring payments, in order to get evenly split recurring payments. */
-    const moneyMinimumRemainingAmount = computed<Money>(() => new Money(readonlyRegistrationCostSummary.value.minimumRemainingAmount, moneyOptions));
+    const moneyMinimumRemainingAmount = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.minimumRemainingAmount, currencyOptions));
 
     /** Gets the total amount for the registration, including paid amounts. */
-    const moneyTotalAmount = computed<Money>(() => {
-        return new Money(readonlyRegistrationCostSummary.value.paidAmount, moneyOptions).add(new Money(readonlyRegistrationCostSummary.value.remainingAmount, moneyOptions));
+    const moneyTotalAmount = computed<Currency>(() => {
+        console.debug("marker");
+        return new Currency(readonlyRegistrationCostSummary.value.paidAmount, currencyOptions).add(new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions));
     });
 
     /** Gets the amount per recurring payment. */
-    const moneyAmountPerPayment = computed<Money>(() => {
+    const moneyAmountPerPayment = computed<Currency>(() => {
         if (numberOfPaymentsAsInteger.value === 0) {
-            return new Money(0, moneyOptions);
+            return new Currency(0, currencyOptions);
         }
         else {
-            return new Money(readonlyRegistrationCostSummary.value.remainingAmount, moneyOptions).subtract(moneyInProgressAmountToPayToday.value).divide(numberOfPaymentsAsInteger.value).quotient;
+            return new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions).subtract(moneyInProgressAmountToPayToday.value).divide(numberOfPaymentsAsInteger.value).quotient;
         }
     });
 
@@ -256,7 +259,7 @@
 
     function onConfigurePaymentPlan(): void {
         // Set the values on the shared state.
-        debugger; // TODO JMH How can we ensure the correct (non-rounding error) number is used here?
+        // TODO JMH How can we ensure the correct (non-rounding error) number is used here?
         registrationEntryState.amountToPayToday = Number(moneyInProgressAmountToPayToday.value.toString());
         registrationEntryState.paymentPlanFrequencyGuid = paymentFrequencyGuid.value;
         registrationEntryState.paymentPlanAmountPerPayment = Number(moneyAmountPerPayment.value.toString());
@@ -284,21 +287,25 @@
 
     //#region Watchers
 
-    watch([moneyDesiredPerPaymentsRemainder, moneyDesiredAmountToPayToday], ([newCents, newAmountToPay]: [Money, Money], [oldCents, oldAmountToPay]: [Money, Money]) => {
+    watch([moneyDesiredPerPaymentsRemainder, moneyDesiredAmountToPayToday], ([newCents, newAmountToPay]: [Currency, Currency], [oldCents, oldAmountToPay]: [Currency, Currency]) => {
         if (newCents.isNotEqualTo(oldCents) || newAmountToPay.isNotEqualTo(oldAmountToPay)) {
             // Whenever amountToPayToday is changed,
+            // TODO JMH Figure out how we update the remaining amount message with this crazy loop.
             // check if it needs to be updated to another value
             // so that the amount per payment is an even number.
             if (moneyDesiredPerPaymentsRemainder.value.isNotEqualTo(0)) {
                 // The amountToPay needs to be updated. Do it after the next render so the value has time to update.
-                //nextTick(() => {
                 moneyInProgressAmountToPayToday.value = moneyDesiredAmountToPayToday.value.add(moneyDesiredPerPaymentsRemainder.value);
-                //});
+                moneyAdded.value = moneyDesiredPerPaymentsRemainder.value;
             }
             else {
-                //nextTick(() => {
                 moneyInProgressAmountToPayToday.value = moneyDesiredAmountToPayToday.value;
-                //});
+            }
+
+            if (moneyInProgressAmountToPayToday.value.isNotEqualTo(internalDesiredAmountToPayToday.value)) {
+                nextTick(() => {
+                    internalDesiredAmountToPayToday.value = +moneyInProgressAmountToPayToday.value.format("-#,###.%");
+                });
             }
         }
     });

@@ -104,494 +104,857 @@ export type RegistrationEntryState = {
     paymentPlanFrequencyText: string | null;
 };
 
-export type MoneyOptions = {
-    decimals: number,
+export type CurrencyOptions = {
+    precision: number,
     symbol: string,
-    thousandsSeparator: string,
-    fractionalSeparator: string
+    code: string,
+    formatString: string
 };
 
-export type MoneyNumber = {
+export type CurrencyParts = {
     isNegative: boolean;
-    wholeUnits: string;
-    fractionalUnits: string;
+    majorUnits: string;
+    minorUnits: string;
 };
 
-export function createMoneyOptions(options?: Partial<MoneyOptions>): MoneyOptions {
+export function createReadonlyCurrencyOptions(options?: Partial<CurrencyOptions>): CurrencyOptions {
     return {
         ...{
-            decimals: options?.decimals ?? defaultMoneyOptions.decimals,
-            fractionalSeparator: options?.fractionalSeparator ?? defaultMoneyOptions.fractionalSeparator,
-            symbol: options?.symbol ?? defaultMoneyOptions.fractionalSeparator,
-            thousandsSeparator: options?.symbol ?? defaultMoneyOptions.thousandsSeparator
+            precision: options?.precision ?? defaultCurrencyOptions.precision,
+            symbol: options?.symbol ?? defaultCurrencyOptions.symbol,
+            code: options?.code ?? defaultCurrencyOptions.code,
+            formatString: options?.formatString ?? defaultCurrencyOptions.formatString,
         }
     } as const;
 }
 
-const defaultMoneyOptions: MoneyOptions = {
-    decimals: 2,
-    fractionalSeparator: ".",
-    symbol: "$",
-    thousandsSeparator: ","
+export const CurrencyFormatString = {
+    default: "-!#,###.%",
+    defaultCodeSuffix: "-!#,###.% @",
+    indic: "-!#,##,###.%",
+    indicCodeSuffix: "-!#,##,###.% @",
 } as const;
 
-export class Money {
-    readonly privateOptions: MoneyOptions;
-    readonly privateNumber: MoneyNumber;
-    readonly privateIsZero: boolean;
+const defaultCurrencyOptions: CurrencyOptions = {
+    precision: 2,
+    symbol: "$",
+    code: "USD",
+    formatString: CurrencyFormatString.default
+} as const;
 
+export class Currency {
+    // #region Fields
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    readonly _currencyOptions: CurrencyOptions;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    readonly _currencyParts: CurrencyParts;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    readonly _isZero: boolean;
+
+    // TODO JMH Remove __createdFrom once the constructor issue is resolved.
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    readonly __createdFrom: number | CurrencyParts;
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    _toString: string | null = null;
+
+    // #endregion Fields
+
+    // #region Properties
+
+    /** Returns `true` if this currency is negative; otherwise, `false` is returned. */
     get isNegative(): boolean {
-        return this.privateNumber.isNegative;
+        return this._currencyParts.isNegative;
     }
 
-    get wholeUnits(): string {
-        return this.privateNumber.wholeUnits;
+    /** Gets the major units (the number of units before the decimal). */
+    get majorUnits(): string {
+        return this._currencyParts.majorUnits;
     }
 
-    get fractionalUnits(): string {
-        return this.privateNumber.fractionalUnits;
+    /** Gets the minor units (the number of units after the decimal). */
+    get minorUnits(): string {
+        return this._currencyParts.minorUnits;
     }
 
-    get decimals(): number {
-        return this.privateOptions.decimals;
+    /** Gets the precision (the number of minor unit digits after the decimal). */
+    get precision(): number {
+        return this._currencyOptions.precision;
     }
 
-    get thousandsSeparator(): string {
-        return this.privateOptions.thousandsSeparator;
-    }
-
-    get fractionalSeparator(): string {
-        return this.privateOptions.fractionalSeparator;
-    }
-
+    /** Gets the symbol. */
     get symbol(): string {
-        return this.privateOptions.symbol;
+        return this._currencyOptions.symbol;
     }
 
-    get isZero(): boolean {
-        return this.privateIsZero;
+    /** Gets the code. */
+    get code(): string {
+        return this._currencyOptions.code;
     }
+
+    /** Returns `true` if this currency is equal to 0; otherwise, `false`. */
+    get isZero(): boolean {
+        return this._isZero;
+    }
+
+    /** Gets the format string. */
+    get formatString(): string {
+        return this._currencyOptions.formatString;
+    }
+
+    // #endregion Properties
+
+    // #region Constructors
 
     /**
-     * Creates a new instance of the Money type.
+     * Creates a new instance of the Currency type.
      */
     constructor(
-        number: number | MoneyNumber,
-        options?: Partial<MoneyOptions>) {
-        // Create a readonly, const copy of the options so they cannot be modified.
-        this.privateOptions = createMoneyOptions(options);
+        currency: number | CurrencyParts,
+        options?: Partial<CurrencyOptions>) {
+        // Set the currency options as readonly and const so they cannot be modified once set.
+        this._currencyOptions = createReadonlyCurrencyOptions(options);
 
-        if (typeof number === "number") {
-            const { isNegative, wholeUnits, fractionalUnits } = Money.getNumberParts(number);
-            this.privateNumber = {
+        // TODO JMH Remove this debug tracking code.
+        // Set the origin from which this currency is created.
+        this.__createdFrom = currency;
+
+        if (typeof currency === "number") {
+            // Get the currency parts from the number.
+            const { isNegative, majorUnits, minorUnits } = Currency.getCurrencyParts(currency);
+
+            // Set the currency parts as readonly and const so they cannot be modified once set.
+            this._currencyParts = {
                 isNegative,
-                wholeUnits,
-                fractionalUnits: Money.appendPaddedZeroesOrTruncate(fractionalUnits, this.decimals)
+                majorUnits,
+                // Enforce the precision here.
+                minorUnits: Currency.appendPaddedZeroesOrTruncateEnd(minorUnits, this.precision)
             } as const;
-            this.privateIsZero = number === 0;
+
+            // Set whether or not this currency is equal to zero.
+            this._isZero = currency === 0;
         }
         else {
-            this.privateNumber = {
-                isNegative: number.isNegative,
-                wholeUnits: number.wholeUnits,
-                fractionalUnits: Money.appendPaddedZeroesOrTruncate(number.fractionalUnits, this.decimals)
+            // Set the currency parts as readonly and const so they cannot be modified once set.
+            this._currencyParts = {
+                isNegative: currency.isNegative,
+                majorUnits: currency.majorUnits,
+                minorUnits: Currency.appendPaddedZeroesOrTruncateEnd(currency.minorUnits, this.precision)
             } as const;
+
+            // Set whether or not this currency is equal to zero.
             const zeroRegex = /^0*$/;
-            this.privateIsZero = zeroRegex.test(number.wholeUnits) && zeroRegex.test(number.fractionalUnits);
+            this._isZero = zeroRegex.test(currency.majorUnits) && zeroRegex.test(currency.minorUnits);
         }
     }
 
-    add(number: Money | number): Money {
-        const numberParts = Money.getNumberParts(number);
-        const { isNegative, wholeUnits: numberWholeUnits } = numberParts;
-        let { fractionalUnits: numberFractionalUnits } = numberParts;
+    // #endregion Constructors
 
-        // Ensure the fractional part of the number matches this Money's decimal precision.
-        numberFractionalUnits = Money.appendPaddedZeroesOrTruncate(numberFractionalUnits, this.decimals);
+    // #region Public Methods
+
+    /**
+     * Adds an amount to this Currency.
+     *
+     * @param currency The amount to add to this currency. Fractional amounts that exceed this currency's precision will be truncated; e.g., if this currency has a precision of two ($31.45), and the amount being added has a precision of three ($2.289), the "9" will be truncated to $2.28.
+     * @returns A new Currency instance containing the sum of the two currencies.
+     * @example
+     * new Currency(2.61).add(3.999);               // returns new Currency(6.60)
+     * new Currency(2.61).add(new Currency(3.999)); // returns new Currency(6.60)
+     */
+    add(currency: Currency | number): Currency {
+        const $return = ((currency: Currency): Currency => {
+            console.debug(`${this} + ${currency} = ${currency}`);
+            return currency;
+        }).bind(this);
+
+        if (this.isZero) {
+            // 0 + n = n (identity property).
+            // This currency is 0, so return the other currency.
+            return $return(typeof currency === "number" ? new Currency(currency, this._currencyOptions) : currency);
+        }
+        else if (Currency.isCurrencyZero(currency)) {
+            // n + 0 = n (identity property).
+            // The other currency is 0, so return this currency.
+            return $return(this);
+        }
+
+        const currencyParts = Currency.getCurrencyParts(currency);
+        const { isNegative, majorUnits } = currencyParts;
+        let { minorUnits } = currencyParts;
+
+        // Ensure the minor units match this Currency's decimal precision.
+        minorUnits = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits, this.precision);
 
         if (this.isNegative === isNegative) {
-            // If both are positive or both are negative,
-            // add the numbers.
-            let newWholeUnits = Money.addWholeUnits(this.wholeUnits, numberWholeUnits);
-            const { wholeUnits: extraWholeUnits, fractionalUnits: newFractionalUnits } = Money.addFractionalUnits(this.fractionalUnits, numberFractionalUnits);
-            if (extraWholeUnits) {
-                newWholeUnits = Money.addWholeUnits(newWholeUnits, extraWholeUnits);
+            // TODO JMH Concat the major and minor units, then do the addition. (no need to add major and minor separately)
+            // Add the currencies if they have the same sign (+/-).
+            let newMajorUnits = Currency.addMajorUnits(this.majorUnits, majorUnits);
+            const { majorUnits: extraMajorUnits, minorUnits: newMinorUnits } = Currency.addMinorUnits(this.minorUnits, minorUnits);
+            if (extraMajorUnits) {
+                newMajorUnits = Currency.addMajorUnits(newMajorUnits, extraMajorUnits);
             }
 
-            // Return the new Money object.
-            return new Money(
+            // Return the new Currency object.
+            return new Currency(
                 {
-                    isNegative: this.privateNumber.isNegative,
-                    fractionalUnits: newFractionalUnits,
-                    wholeUnits: newWholeUnits
+                    isNegative: this._currencyParts.isNegative,
+                    majorUnits: newMajorUnits,
+                    minorUnits: newMinorUnits,
                 },
-                this.privateOptions
+                this._currencyOptions
             );
         }
         else {
-            // Subtract the negative number from the positive number.
-            let wholeUnitsResult: { isNegative: boolean; wholeUnits: string; };
-            let fractionalUnitsResult: { isNegative: boolean; fractionalUnits: string; };
+            // Adding currencies with a different sign (+/-) is the
+            // same as subtracting one from the other.
 
+            if (this.majorUnits === majorUnits && this.minorUnits === minorUnits) {
+                // Adding n and -n is zero (additive inverse).
+                return $return(Currency.createZeroCurrency(this._currencyOptions));
+            }
+
+            let majorUnitsResult: { isNegative: boolean; majorUnits: string; };
+            let minorUnitsResult: { isNegative: boolean; minorUnits: string; };
+
+            // TODO JMH Subtraction should apply to concatenated units. (no need to do two subtractions)
             if (!this.isNegative) {
                 // Subtract the numbers.
-                wholeUnitsResult = Money.subtractWholeUnits(this.wholeUnits, numberWholeUnits);
-                fractionalUnitsResult = Money.subtractFractionalUnits(this.fractionalUnits, numberFractionalUnits);
+                majorUnitsResult = Currency.subtractMajorUnits(this.majorUnits, majorUnits);
+                minorUnitsResult = Currency.subtractMinorUnits(this.minorUnits, minorUnits);
             }
             else {
-                wholeUnitsResult = Money.subtractWholeUnits(numberWholeUnits, this.wholeUnits);
-                fractionalUnitsResult = Money.subtractFractionalUnits(numberFractionalUnits, this.fractionalUnits);
+                majorUnitsResult = Currency.subtractMajorUnits(majorUnits, this.majorUnits);
+                minorUnitsResult = Currency.subtractMinorUnits(minorUnits, this.minorUnits);
             }
 
-            const { isNegative: newIsNegativeWhole } = wholeUnitsResult;
-            let { wholeUnits: newWholeUnits } = wholeUnitsResult;
-            const { isNegative: newIsNegativeFractional } = fractionalUnitsResult;
-            let { fractionalUnits: newFractionalUnits } = fractionalUnitsResult;
+            const { isNegative: isNegativeMajorUnits } = majorUnitsResult;
+            let { majorUnits: newMajorUnits } = majorUnitsResult;
+            const { isNegative: isNegativeMinorUnits } = minorUnitsResult;
+            let { minorUnits: newMinorUnits } = minorUnitsResult;
 
-            if (newWholeUnits !== "0".repeat(newWholeUnits.length) && newIsNegativeWhole !== newIsNegativeFractional) {
-                // Whole needs to be reduced by 1.
-                const { wholeUnits: adjustedWholeUnits } = Money.subtractWholeUnits(newWholeUnits, Money.prependPaddedZeroesOrTruncate("1", newWholeUnits.length));
-                newWholeUnits = adjustedWholeUnits;
-                // The fractional units need to be inversed. Ex, if fractional units were "999", then we need to do "1000" - "0999".
-                const { fractionalUnits: adjustedFractionalUnits } = Money.subtractFractionalUnits(Money.appendPaddedZeroesOrTruncate("1", newFractionalUnits.length + 1), Money.prependPaddedZeroesOrTruncate(newFractionalUnits, newFractionalUnits.length + 1));
-                newFractionalUnits = adjustedFractionalUnits;
+            if (newMajorUnits !== "0".repeat(newMajorUnits.length) && isNegativeMajorUnits !== isNegativeMinorUnits) {
+                // Major units need to be reduced by 1.
+                const { majorUnits: adjustedWholeDigits } = Currency.subtractMajorUnits(newMajorUnits, Currency.prependPaddedZeroesOrTruncateStart("1", newMajorUnits.length));
+                newMajorUnits = adjustedWholeDigits;
+                // Minor units need to be inversed; e.g., if minor units were "999", then it needs to be "1000" - "0999" = "001".
+                const { minorUnits: adjustedFractionalDigits } = Currency.subtractMinorUnits(Currency.appendPaddedZeroesOrTruncateEnd("1", newMinorUnits.length + 1), Currency.prependPaddedZeroesOrTruncateStart(newMinorUnits, newMinorUnits.length + 1));
+                newMinorUnits = adjustedFractionalDigits;
             }
 
-            return new Money({
-                    isNegative: newIsNegativeWhole || newIsNegativeFractional,
-                    wholeUnits: newWholeUnits,
-                    fractionalUnits: newFractionalUnits,
+            return $return(new Currency({
+                    isNegative: isNegativeMajorUnits || isNegativeMinorUnits,
+                    majorUnits: newMajorUnits,
+                    minorUnits: newMinorUnits,
                 },
-                this.privateOptions
-            );
-        }
-    }
-
-    subtract(number: number | Money): Money {
-        const numberParts = Money.getNumberParts(number);
-        const { isNegative: numberIsNegative, wholeUnits: numberWholeUnits } = numberParts;
-        let { fractionalUnits: numberFractionalUnits } = numberParts;
-
-        // Ensure the fractional part of the number matches this Money's decimal precision.
-        numberFractionalUnits = Money.appendPaddedZeroesOrTruncate(numberFractionalUnits, this.decimals);
-
-        if (this.isNegative !== numberIsNegative) {
-            // Subtracting a number from a number with a different sign,
-            // is the same as adding them together and keeping the sign from the first number.
-            let newWholeUnits = Money.addWholeUnits(this.wholeUnits, numberWholeUnits);
-            const { wholeUnits: extraWholeUnits, fractionalUnits: newFractionalUnits } = Money.addFractionalUnits(this.fractionalUnits, numberFractionalUnits);
-            if (extraWholeUnits) {
-                newWholeUnits = Money.addWholeUnits(newWholeUnits, extraWholeUnits);
-            }
-
-            // Return the new Money object.
-            return new Money({
-                    isNegative: this.isNegative, // The result always has the same negation as the first operand.
-                    wholeUnits: newWholeUnits,
-                    fractionalUnits: newFractionalUnits,
-                },
-                this.privateOptions
-            );
-        }
-        else {
-            // The numbers have the same sign (+/-).
-
-            // Subtract the numbers.
-            const wholeUnitsResult = Money.subtractWholeUnits(this.wholeUnits, numberWholeUnits);
-            const { isNegative: newIsNegativeWhole } = wholeUnitsResult;
-            let { wholeUnits: newWholeUnits } = wholeUnitsResult;
-            const fractionalUnitsResult = Money.subtractFractionalUnits(this.fractionalUnits, numberFractionalUnits);
-            const { isNegative: newIsNegativeFractional } = fractionalUnitsResult;
-            let { fractionalUnits: newFractionalUnits } = fractionalUnitsResult;
-
-            // 1.000
-            // 1.001
-            // wholeRes = { wholeUnits: "0", isNegative: false }
-            // fracRes = { fracUnits: "001", isNegative: true }
-            // -0.001 (negation is wholeNeg || fracNeg)
-
-            // 1.000
-            // 2.001
-            // wholeRes = { wholeUnits: "1", isNegative: true }
-            // fracRes = { fracUnits: "001", isNegative: true }
-            // -1.001 (negation is wholeNeg || fracNeg)
-
-            // 5.001
-            // 7.000
-            // wholeRes = { wholeUnits: "2", isNegative: true }
-            // fracRes = { fracUnits: "001", isNegative: false }
-            // Because whole is neg and frac is positive,
-            // whole needs to be reduced by 1 (regardless of sign),
-            // and frac needs to be assigned "1000" - "001".
-            // -1.999 (negation is wholeNeg || fracNeg)
-            // TODO JMH This can be made more efficient by doing the whole number calc first,
-            // then only doing one adjusted fractional calc.
-            if (newWholeUnits !== "0".repeat(newWholeUnits.length) && newIsNegativeWhole !== newIsNegativeFractional) {
-                // Whole needs to be reduced by 1.
-                const { wholeUnits: adjustedWholeUnits } = Money.subtractWholeUnits(newWholeUnits, Money.prependPaddedZeroesOrTruncate("1", newWholeUnits.length));
-                newWholeUnits = adjustedWholeUnits;
-                // The fractional units need to be inversed. Ex, if fractional units were "999", then we need to do "1000" - "0999".
-                const { fractionalUnits: adjustedFractionalUnits } = Money.subtractFractionalUnits(Money.appendPaddedZeroesOrTruncate("1", newFractionalUnits.length + 1), Money.prependPaddedZeroesOrTruncate(newFractionalUnits, newFractionalUnits.length + 1));
-                newFractionalUnits = adjustedFractionalUnits;
-            }
-
-            return new Money({
-                    isNegative: newIsNegativeWhole || newIsNegativeFractional,
-                    wholeUnits: newWholeUnits,
-                    fractionalUnits: newFractionalUnits,
-                },
-                this.privateOptions
-            );
-        }
-    }
-
-    isEqualTo(number: Money | number): boolean {
-        if (this.isZero) {
-            // Skip character matching logic for the zero case.
-            return (typeof number === "number" && number === 0) || (typeof number !== "number" && number.isZero);
-        }
-
-        const numberParts = Money.getNumberParts(number);
-
-        return numberParts.isNegative === this.isNegative
-            && numberParts.wholeUnits === this.wholeUnits
-            && numberParts.fractionalUnits === this.fractionalUnits;
-    }
-
-    isNotEqualTo(number: Money | number): boolean {
-        return !this.isEqualTo(number);
-    }
-
-    isLessThan(number: Money | number): boolean {
-        if (this.isZero) {
-            // Skip character matching logic for the zero case.
-            const isOtherNumberZero = (typeof number === "number" && number === 0) || (typeof number !== "number" && number.isZero);
-            if (isOtherNumberZero) {
-                return false;
-            }
-        }
-
-        const numberParts = Money.getNumberParts(number);
-
-        if (this.isNegative && !numberParts.isNegative) {
-            // Return true if this number is negative and the other number is positive.
-            return true;
-        }
-
-        /**
-         * Returns -1 if units1 < units2; 0 if units1 === units2; 1 if units1 > units2.
-         *
-         * Assumes units1 and units2 are the same length.
-         */
-        function compareUnits(units1: string, units2: string): -1 | 0 | 1 {
-            if (units1.length !== units2.length) {
-                throw "Units must be the same length to compare them.";
-            }
-
-            for (let i = 0; i < units1.length; i++) {
-                const thisDigit = units1[i];
-                const otherDigit = units2[i];
-                if (thisDigit < otherDigit) {
-                    // Return -1 once we find a digit that is less than a digit in the other number at the same index.
-                    return -1;
-                }
-                else if (thisDigit > otherDigit) {
-                    // Return 1 once we find a digit in the other number that is less than a digit in this number at the same index.
-                    return 1;
-                }
-                else {
-                    // Keep processing.
-                }
-            }
-
-            // If we get to this point then the digits are the same.
-            return 0;
-        }
-
-        const wholeUnitsLengthDiff = this.wholeUnits.length - numberParts.wholeUnits.length;
-        if (wholeUnitsLengthDiff < 0) {
-            // Return true if this whole number is smaller than the other whole number in length.
-            return true;
-        }
-        else if (wholeUnitsLengthDiff > 0) {
-            // Return false if this whole number is larger than the other whole number in length.
-            return false;
-        }
-        else {
-            const comparison = compareUnits(this.wholeUnits, numberParts.wholeUnits);
-            if (comparison === -1) {
-                // Return true if this whole number is larger than the other whole number in value.
-                return true;
-            }
-        }
-
-        // If we get to this point, we need to check the fractional parts of the this and the other number.
-        // It is impossible to determine which fractional number is larger or smaller based on the string length;
-        // e.g., .1 and .1001 (the first is smaller and shorter length), .3 and .1001 (the first is LARGER and shorter length).
-
-        // Zero-pad so they are the same length.
-        const fractionUnitsLengthDiff = this.fractionalUnits.length - numberParts.fractionalUnits.length;
-        if (fractionUnitsLengthDiff < 0) {
-            // Zero-pad this number.
-            return -1 === compareUnits(Money.appendPaddedZeroesOrTruncate(this.fractionalUnits, numberParts.fractionalUnits.length), numberParts.fractionalUnits);
-        }
-        else if (fractionUnitsLengthDiff > 0) {
-            // Zero-pad the other number.
-            return -1 === compareUnits(this.fractionalUnits, Money.appendPaddedZeroesOrTruncate(numberParts.fractionalUnits, this.fractionalUnits.length));
-        }
-        else {
-            return -1 === compareUnits(this.fractionalUnits, numberParts.fractionalUnits);
+                this._currencyOptions
+            ));
         }
     }
 
     /**
-     * Returns the remainder after dividing this money by another number.
+     * Gets the negation of this Currency.
+     *
+     * @returns A new Currency instance containing the negation of this Currency.
+     * @example
+     * new Currency(2.61).negate(); // returns new Currency(-2.61)
      */
-    mod(divisor: number): Money {
-        // excessCents = temporarilyRemoveDec(remaining - desiredOneTimePayment) mod numberPayments
-        // This is the smallest fractional unit that needs to be subtracted from the original number to be able to divide evenly by numberPayments.
-        // (numberPayments - excessCents) is the smallest fractional unit that needs to be added to the original number to be able to divide evenly by numberPayments.
+    negate(): Currency {
+        const $return = ((currency: Currency): Currency => {
+            console.debug(`-${this} = ${currency}`);
+            return currency;
+        }).bind(this);
+
+        return $return(new Currency(
+            {
+                isNegative: !this.isNegative,
+                majorUnits: this.majorUnits,
+                minorUnits: this.minorUnits
+            },
+            this._currencyOptions
+        ));
+    }
+
+    /**
+     * Divides this currency by a number.
+     *
+     * @param divisor The number by which to divide this currency.
+     * @returns The quotient and remainder of the division as separate Currency instances.
+     * @example
+     * new Currency(3.50).divide(3); // returns { quotient: new Currency(1.16), remainder: new Currency(0.02) }
+     */
+    divide(divisor: number): { quotient: Currency, remainder: Currency } {
+        const $return = ((quotient: Currency, remainder: Currency): { quotient: Currency, remainder: Currency } => {
+            console.debug(`${this} / ${divisor} = ${quotient} r${remainder}`);
+            return {
+                quotient,
+                remainder
+            };
+        }).bind(this);
 
         if (this.isZero) {
-            // Short-circuit the calculation if this Money value is 0; i.e., 0 % anything is 0.
-            // Since money objects are immutable, it's safe to return this zero-amount money object as the remainder.
-            return this;
+            // 0 / n = 0 (zero property)
+            return $return(this, this);
+        }
+        else if (divisor === 1) {
+            // n / 1 = n (identity property)
+            return $return(this, Currency.createZeroCurrency(this._currencyOptions));
+        }
+
+        // TODO JMH This should be a private field of this class and arithmetic operations should be performed on it.
+        // Temporarily join the major and minor bits together. The decimal will be added at the end.
+        const currencyParts = Currency.getCurrencyParts(divisor);
+
+        const dividend = `${this.majorUnits}${this.minorUnits}${"0".repeat(currencyParts.minorUnits.length)}`;
+
+        let dividendIndex: number = -1;
+        let dividendPart: string = "";
+        const quotientParts: string[] = [];
+
+        while (++dividendIndex < dividend.length) {
+            dividendPart += dividend[dividendIndex];
+            const currentDividend = +dividendPart;
+            // Truncate the fractional bits. (~~ is the same as floor for positive numbers and ceiling for negative numbers)
+            const currentQuotient = ~~(currentDividend / divisor);
+            quotientParts.push(currentQuotient.toString());
+
+            if (currentQuotient !== 0) {
+                const currentRemainder = currentDividend - (currentQuotient * divisor);
+                dividendPart = currentRemainder.toString();
+            }
+
+            if (dividendPart === "0") {
+                dividendPart = "";
+            }
+        }
+
+        // The result is negative if only the dividend or the divisor is negative, but not both.
+        const isNegative = this.isNegative ? !currencyParts.isNegative : currencyParts.isNegative;
+        const quotient: Currency = new Currency(
+            {
+                isNegative,
+                majorUnits: quotientParts.slice(0, quotientParts.length - this.precision).join(""),
+                minorUnits: quotientParts.slice(quotientParts.length - this.precision).join("")
+            },
+            this._currencyOptions
+        );
+
+        // The leftover dividend is the remainder.
+        // Prepend zeroes to convert the remainder to a major and minor amount without the decimal point.
+        if (dividendPart.length < (this.precision + 1)) {
+            dividendPart = Currency.prependPaddedZeroesOrTruncateStart(dividendPart, this.precision + 1);
+        }
+        const remainder: Currency = new Currency(
+            {
+                isNegative,
+                majorUnits: dividendPart.slice(0, dividendPart.length - this.precision) || "0",
+                minorUnits: dividendPart.slice(dividendPart.length - this.precision) || "0"
+            },
+            this._currencyOptions
+        );
+
+        return $return(quotient, remainder);
+    }
+
+    /**
+     * Subtracts an amount from this currency.
+     *
+     * @param currency The amount to subtract from this currency. Fractional amounts that exceed this currency's precision will be truncated; e.g., if this currency has a precision of two ($31.45), and the amount being subtracted has a precision of three ($2.289), the "9" will be truncated to $2.28.
+     * @returns A new Currency instance containing the difference of the two currencies.
+     * @example
+     * new Currency(2.61).subtract(3.999);               // returns new Currency(-1.38)
+     * new Currency(2.61).subtract(new Currency(3.999)); // returns new Currency(-1.38)
+     */
+    subtract(currency: number | Currency): Currency {
+        const $return = ((currency: Currency): Currency => {
+            console.debug(`${this} - ${currency} = ${currency}`);
+            return currency;
+        }).bind(this);
+
+        if (this.isZero) {
+            // 0 - n = -n (identity property; 0 + -n = -n)
+            return $return(Currency.negate(currency));
+        }
+        else if (Currency.isCurrencyZero(currency)) {
+            // n - 0 = n (identity property).
+            return $return(this);
+        }
+
+        const currencyParts = Currency.getCurrencyParts(currency);
+        const { isNegative, majorUnits } = currencyParts;
+        let { minorUnits } = currencyParts;
+
+        // Ensure the minor units of the number matches this Currency's decimal precision.
+        minorUnits = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits, this.precision);
+
+        if (this.isNegative !== isNegative) {
+            // Subtracting one currency from another with a different sign (+/-),
+            // is the same as adding them together and keeping the sign from the first currency.
+            // n - (-m) = n + m
+            let newMajorUnits = Currency.addMajorUnits(this.majorUnits, majorUnits);
+            const { majorUnits: extraMajorUnits, minorUnits: newMinorUnits } = Currency.addMinorUnits(this.minorUnits, minorUnits);
+            if (extraMajorUnits) {
+                newMajorUnits = Currency.addMajorUnits(newMajorUnits, extraMajorUnits);
+            }
+
+            return $return(new Currency({
+                    isNegative: this.isNegative, // The result always has the same sign this currency.
+                    majorUnits: newMajorUnits,
+                    minorUnits: newMinorUnits,
+                },
+                this._currencyOptions
+            ));
+        }
+        else {
+            // The currrencies have the same sign (+/-).
+
+            if (this.majorUnits === majorUnits && this.minorUnits === minorUnits) {
+                // n - n = 0 (zero identity)
+                return $return(Currency.createZeroCurrency(this._currencyOptions));
+            }
+
+            // Subtract the currencies.
+            // TODO JMH This should be a private readonly field.
+            const combinedUnits1 = Currency.joinUnits(this.majorUnits, this.minorUnits);
+            const combinedUnits2 = Currency.prependPaddedZeroesOrTruncateStart(`${majorUnits}${minorUnits}`, combinedUnits1.length);
+            const { units, isNegative } = Currency.substractUnits(combinedUnits1, combinedUnits2);
+            const { majorUnits: newMajorUnits, minorUnits: newMinorUnits } = Currency.splitUnits(units, this.precision);
+
+            return $return(new Currency({
+                majorUnits: newMajorUnits.join(""),
+                minorUnits: newMinorUnits.join(""),
+                isNegative: this.isNegative ? !isNegative : isNegative
+            }, this._currencyOptions));
+        }
+    }
+
+    /**
+     * Formats the currency as a string using the following placeholders:
+     *
+     * - `"-"` for the negative symbol
+     * - `"!"` for the currency symbol
+     * - `"#"` for the major units (the number to the left of the decimal)
+     *   - These must appear consecutively if multiple "#" are used in the format string.
+     *   - Grouping characters can be specified like the comma in `"#,###"`. Some currencies use `"."` instead of `","`.
+     *   - The left-most grouping will be used repeatedly to format large numbers;
+     *     - `"#,###"` will add a `","` for every thousandth like in `"1,234,567"`.
+     * - `"%"` for the minor units (the number to the right of the decimal).
+     * - `"@"` for the currency code ("USD", "CAD", etc.).
+     *
+     * @param formatString The format string. (defaults to `"-!#,###.%"`, see `CurrencyFormatString` for common formats)
+     * @example
+     * new Currency(-3467.56).format(); // default format "-$3,467.56"
+     * new Currency(-3467.56).format("-#.%"); // omit the symbol and ignore grouping "-3467.56"
+     * new Currency(-12345678.90).format("-₹#,##,###.%") // The indic numbering system groups the first thousand, then every ten digits after "-₹1,23,45,678.90"
+     * new Currency(-12345678.90).format("!#") // absolute value integer with currency symbol "$12345678"
+     * new Currency(12.50).format("-!#,###.% @"); // default format with currency code "$12.50 USD"
+     */
+    format(formatString: string = CurrencyFormatString.default): string {
+        type MajorUnitGroup = {
+            count: number;
+            separator: string;
+        };
+
+        function getGroupSeparator(units: string, startFromIndex: number): { group: MajorUnitGroup | null, nextIndex: number } {
+            let groupSeparatorStart: number = -1;
+            let groupSeparatorEnd: number = -1;
+
+            for (let i = startFromIndex; i < units.length; i++) {
+                if (units[i] !== "#") {
+                    if (groupSeparatorStart === -1) {
+                        groupSeparatorStart = i;
+                        groupSeparatorEnd = i + 1;
+                    }
+                }
+                else {
+                    if (groupSeparatorStart !== -1) {
+                        if (groupSeparatorEnd === -1) {
+                            groupSeparatorEnd = i;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const count = groupSeparatorEnd - groupSeparatorStart;
+
+            return {
+                group: count === 0 ? null : {
+                    count: count,
+                    separator: units.substring(groupSeparatorStart, groupSeparatorEnd)
+                },
+                nextIndex: groupSeparatorEnd,
+            };
+        }
+
+        // Create the group strategy.
+        function formatMajorUnits(number: string, groups: MajorUnitGroup[]): string {
+            if (groups.length === 0) {
+                // No need to format the number if there are no groups.
+                return number;
+            }
+
+            const groupsCopy: MajorUnitGroup[] = [...groups];
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const repeatGroup: MajorUnitGroup = groupsCopy.pop()!;
+
+            function getNextGroup(): MajorUnitGroup {
+                return groupsCopy.pop() ?? repeatGroup;
+            }
+
+            let currentGroup: MajorUnitGroup = getNextGroup();
+            let currentGroupCount: number = 0;
+
+            let groupedNumber: string = "";
+
+            for (let i = number.length - 1; i >= 0; i--) {
+                currentGroupCount++;
+
+                if (currentGroupCount === currentGroup.count) {
+                    groupedNumber = currentGroup.separator + number[i] + groupedNumber;
+                    currentGroup = getNextGroup();
+                    currentGroupCount = 0;
+                }
+                else {
+                    groupedNumber = number[i] + groupedNumber;
+                }
+            }
+
+            return groupedNumber;
+        }
+
+        // Get the minor units format section.
+        const minorUnitsStart = formatString.indexOf("%");
+        const minorUnitsEnd = formatString.lastIndexOf("%");
+        if (minorUnitsStart !== -1 && minorUnitsEnd !== -1) {
+            formatString = formatString.slice(0, minorUnitsStart) + "MINOR_UNITS" + formatString.slice(minorUnitsEnd + 1);
+        }
+
+        // Get the major units format section.
+        const majorUnitsStart = formatString.indexOf("#");
+        const majorUnitsEnd = formatString.lastIndexOf("#");
+        const groups: { count: number, separator: string }[] = [];
+        if (majorUnitsStart !== -1 && majorUnitsEnd !== -1) {
+            const majorUnitsFormatSection = formatString.substring(majorUnitsStart, majorUnitsEnd + 1);
+            formatString = formatString.slice(0, majorUnitsStart) + "MAJOR_UNITS" + formatString.slice(majorUnitsEnd + 1);
+
+            // Figure out the group strategy.
+            // Starting from the group separator, get the number of characters per group.
+            // The first group is the one that will repeat.
+            let { group, nextIndex } = getGroupSeparator(majorUnitsFormatSection, 0);
+            while (group !== null) {
+                groups.unshift(group);
+                { group, nextIndex } = getGroupSeparator(majorUnitsFormatSection, nextIndex);
+            }
+            // TODO JMH REmove this.
+            // if (groupSeparatorEnd !== -1) {
+            //     let currentGroupCount: number = 0;
+            //     let nextGroupSeparator: string = groupSeparator;
+
+            //     for (let i = groupSeparatorStart + 1; i < majorUnitsFormatSection.length; i++) {
+            //         if (majorUnitsFormatSection[i] === "#") {
+            //             currentGroupCount++;
+            //         }
+            //         else {
+            //             groups.unshift({ count: currentGroupCount, separator: nextGroupSeparator });
+
+            //             // Reset the group count and separator.
+            //             nextGroupSeparator = majorUnitsFormatSection[i];
+            //             currentGroupCount = 0;
+            //         }
+            //     }
+
+            //     // Add the group.
+            //     if (currentGroupCount > 0) {
+            //         groups.unshift({ count: currentGroupCount, separator: nextGroupSeparator });
+            //     }
+            // }
+        }
+
+        return formatString
+            .replace("-", this.isNegative ? "-" : "")
+            .replace("!", this.symbol)
+            .replace("MAJOR_UNITS", formatMajorUnits(this.majorUnits, groups))
+            .replace("MINOR_UNITS", this.minorUnits)
+            .replace("@", this.code);
+    }
+
+    /**
+     * Determines if this currency is equal another currency.
+     *
+     * @param currency The currency to which to compare.
+     * @returns `true` if the currencies are equal; otherwise, `false` is returned.
+     */
+    isEqualTo(currency: Currency | number): boolean {
+        const $return = ((result: boolean): boolean => {
+            console.debug(`${this} == ${currency} = ${result}`);
+            return result;
+        }).bind(this);
+
+        const isZero = Currency.isCurrencyZero(currency);
+        if (this.isZero || isZero) {
+            // Both currencies must be 0.
+            return $return(this.isZero && isZero);
+        }
+
+        const currencyParts = Currency.getCurrencyParts(currency);
+
+        return $return(currencyParts.isNegative === this.isNegative
+            && currencyParts.majorUnits === this.majorUnits
+            && currencyParts.minorUnits === this.minorUnits);
+    }
+
+    /**
+     * Determines if this currency is not equal to another currency.
+     *
+     * @param currency The currency to which to compare.
+     * @returns `true` if the currencies are not equal; otherwise, `false` is returned.
+     */
+    isNotEqualTo(currency: Currency | number): boolean {
+        const $return = ((result: boolean): boolean => {
+            console.debug(`${this} != ${currency} = ${result}`);
+            return result;
+        }).bind(this);
+
+        const isZero = Currency.isCurrencyZero(currency);
+        if (this.isZero || isZero) {
+            // Both currencies must not be 0.
+            return $return(!(this.isZero && isZero));
+        }
+
+        const currencyParts = Currency.getCurrencyParts(currency);
+
+        return $return(currencyParts.isNegative !== this.isNegative
+            || currencyParts.majorUnits !== this.majorUnits
+            || currencyParts.minorUnits !== this.minorUnits);
+    }
+
+    /**
+     * Determines if this currency is less than to another currency.
+     *
+     * @param currency The currency to which to compare.
+     * @returns `true` if this currency is less than the provided currency; otherwise, `false` is returned.
+     */
+    isLessThan(currency: Currency | number): boolean {
+        const $return = ((result: boolean): boolean => {
+            console.debug(`${this} < ${currency} = ${result}`);
+            return result;
+        }).bind(this);
+
+        if (this.isZero && Currency.isCurrencyZero(currency)) {
+            // 0 < 0 (false)
+            return $return(false);
+        }
+
+        const currencyParts = Currency.getCurrencyParts(currency);
+
+        if (this.isNegative && !currencyParts.isNegative) {
+            // -n < m? Always. A negative number is always less than a positive number.
+            return $return(true);
+        }
+        else if (!this.isNegative && currencyParts.isNegative) {
+            // n < -m? Never. A positive number is never less than a negative number.
+            return $return(false);
+        }
+
+        const majorUnitsLengthDiff = this.majorUnits.length - currencyParts.majorUnits.length;
+        if (majorUnitsLengthDiff < 0) {
+            // Return true if the length of this currency's major units is smaller than the other major units' length.
+            return $return(true);
+        }
+        else if (majorUnitsLengthDiff > 0) {
+            // Return false if the length of this currency's major units is larger than the other major units' length.
+            return $return(false);
+        }
+        else {
+            // The major units have the same string length.
+            // Compare them by value.
+
+            const comparison = this.majorUnits.localeCompare(currencyParts.majorUnits);
+            if (comparison < 0) {
+                // Return true if the major units are smaller than the other major units.
+                return $return(true);
+            }
+            else if (comparison > 0) {
+                // Return false if the major units are larger than the other major units.
+                return $return(false);
+            }
+            else {
+                // TODO JMH This comparison should be done on the combined units.
+                // The major units are the same.
+                // Compare the minor units.
+                // The lengths cannot be used to short-circuit the comparison of minor units
+                // so zero-pad accordingly.
+                // e.g.,
+                // .1 < .1001? yes and .1 has shorter length
+                // .3 < .1001? no and .3 has shorter length
+
+                const minorUnitsLengthDiff = this.minorUnits.length - currencyParts.minorUnits.length;
+                if (minorUnitsLengthDiff < 0) {
+                    // Zero-pad this currency's minor units.
+                    return Currency.appendPaddedZeroesOrTruncateEnd(this.minorUnits, currencyParts.minorUnits.length).localeCompare(currencyParts.minorUnits) < 0;
+                }
+                else if (minorUnitsLengthDiff > 0) {
+                    // Zero-pad the other currency's minor units.
+                    return $return(this.minorUnits.localeCompare(Currency.appendPaddedZeroesOrTruncateEnd(currencyParts.minorUnits, this.minorUnits.length)) < 0);
+                }
+                else {
+                    // The minor units have the same string length.
+                    // Compare them without padding.
+                    return $return(this.minorUnits.localeCompare(currencyParts.minorUnits) < 0);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the remainder after dividing this currency by a number.
+     */
+    mod(divisor: number): Currency {
+        const $return = ((currency: Currency): Currency => {
+            console.debug(`${this} % ${divisor} = ${currency}`);
+            return currency;
+        }).bind(this);
+
+        if (this.isZero) {
+            // 0 % n = 0 (zero property)
+            return $return(this);
+        }
+
+        if (Currency.isCurrencyZero(divisor)) {
+            // n % 0 = n (identity property)
+            return $return(this);
         }
 
         if (this.isLessThan(divisor)) {
-            // If this number is less than the divisor, then this amount IS the remainder.
-            return this;
+            if (!this.isLessThan(0)) {
+                // n % m = n, where 0 <= n < m
+                return $return(this);
+            }
+            else {
+                // n % m = n + m, where n < 0 < m
+                return $return(this.add(divisor));
+            }
         }
 
         // Calculate the remainder by division.
         const { remainder } = this.divide(divisor);
-        return remainder;
+        return $return(remainder);
     }
 
-    divide(divisor: number): { quotient: Money, remainder: Money } {
-        if (this.isZero) {
-            // Since money objects are immutable, it's safe to return this zero-amount money object as the quotient and remainder.
-            return { quotient: this, remainder: this };
+    /**
+     * Gets the formatted string value of this currency.
+     */
+    toString = (): string => {
+        // Cache the formatted value of this immutable currency.
+        if (this._toString === null) {
+            this._toString = this.format(this._currencyOptions.formatString);
         }
 
-        // Temporarily join the whole and fractional bits together. The decimal will be added at the end.
-        const numberParts = Money.getNumberParts(divisor);
+        return this._toString;
+    };
 
-        const longDividend = `${this.wholeUnits}${this.fractionalUnits}${"0".repeat(numberParts.fractionalUnits.length)}`;
-        const longDivisorString = `${numberParts.wholeUnits}${numberParts.fractionalUnits}`;
-        const longDivisor = +longDivisorString;
-        const longDividendLength = longDividend.length;
-        const longDivisorLength = longDivisorString.length;
-        let dividend = longDividend;
+    // #endregion Public Methods
 
-        // Do long division and capture the remainder.
-        const dividendChunkSize: number = longDivisorLength;
-        const quotientParts: string[] = [];
-        while(dividendChunkSize <= dividend.length) {
-            let currentChunkSize = dividendChunkSize;
-            let dividendChunk: number = +dividend.substring(0, currentChunkSize);
-            if (dividendChunk < longDivisor) {
-                if (dividendChunkSize === dividend.length) {
-                    // We have no more numbers to divide.
-                    break;
-                }
-                else {
-                    quotientParts.push("0");
-                    currentChunkSize++;
-                    dividendChunk = +dividend.substring(0, currentChunkSize);
-                }
-            }
+    // #region Private Static Methods
 
-            const quotientPart: number = Math.floor(dividendChunk / longDivisor);
-            quotientParts.push(quotientPart.toString());
-
-            const remainder: number = dividendChunk - (quotientPart * longDivisor);
-            dividend = `${remainder}${dividend.substring(currentChunkSize)}`;
+    private static splitUnits(units: string[] | string, precision: number): { majorUnits: string[], minorUnits: string[] } {
+        if (typeof units === "string") {
+            units = units.split("");
         }
 
-        // The left over dividend is the remainder.
-
-        // The result is negative if only the dividend or the divisor is negative, but not both.
-        const isNegative = this.isNegative ? !numberParts.isNegative : numberParts.isNegative;
-        const quotient: Money = new Money(
-            {
-                isNegative,
-                wholeUnits: quotientParts.slice(0, quotientParts.length - this.decimals).join(),
-                fractionalUnits: quotientParts.slice(quotientParts.length - this.decimals).join()
-            },
-            this.privateOptions
-        );
-        const remainder: Money = new Money(
-            {
-                isNegative,
-                wholeUnits: dividend.slice(0, dividend.length - this.decimals) || "0",
-                fractionalUnits: dividend.slice(dividend.length - this.decimals) || "0"
-            },
-            this.privateOptions
-        );
-        return { quotient, remainder };
+        return {
+            majorUnits: units.slice(0, units.length - precision),
+            minorUnits: units.slice(precision)
+        };
     }
 
-    private static subtractWholeUnits(wholeUnits1: string, wholeUnits2: string): { isNegative: boolean; wholeUnits: string; } {
-        // Zero-pad the units so they are the same size.
-        if (wholeUnits1.length > wholeUnits2.length) {
-            wholeUnits2 = Money.prependPaddedZeroesOrTruncate(wholeUnits2, wholeUnits1.length);
-        }
-        else if (wholeUnits1.length < wholeUnits2.length) {
-            wholeUnits1 = Money.prependPaddedZeroesOrTruncate(wholeUnits1, wholeUnits2.length);
-        }
-
-        const { isNegative, digits } = Money.substractUnits(wholeUnits1, wholeUnits2);
-        return { isNegative, wholeUnits: digits.join() };
+    private static isCurrencyZero(currency: Currency | number): boolean {
+        return (typeof currency === "number" && currency === 0) || (typeof currency !== "number" && currency.isZero);
     }
 
-    private static subtractFractionalUnits(fractionalUnits1: string, fractionalUnits2: string): { isNegative: boolean; fractionalUnits: string; } {
-        // Zero-pad the units so they are the same size.
-        if (fractionalUnits1.length > fractionalUnits2.length) {
-            fractionalUnits2 = Money.appendPaddedZeroesOrTruncate(fractionalUnits2, fractionalUnits1.length);
-        }
-        else if (fractionalUnits1.length < fractionalUnits2.length) {
-            fractionalUnits1 = Money.appendPaddedZeroesOrTruncate(fractionalUnits1, fractionalUnits2.length);
-        }
-
-        const { digits, isNegative } = Money.substractUnits(fractionalUnits1, fractionalUnits2);
-        return { isNegative, fractionalUnits: digits.join() };
-    }
-
-    private static prependPaddedZeroesOrTruncate(integerUnits: string, precision: number): string {
-        if (integerUnits.length === precision) {
-            return integerUnits;
-        }
-        else if (integerUnits.length < precision) {
-            // Pad the units with 0s until the same precision is met.
-            return "0".repeat(precision - integerUnits.length) + integerUnits;
+    private static negate(currency: Currency | number, options?: Partial<CurrencyOptions>): Currency {
+        if (typeof currency === "number") {
+            return new Currency(
+                currency * -1,
+                options
+            );
         }
         else {
-            // Truncate if the units are more precise than the allowed precision.
-            return integerUnits.substring(integerUnits.length - precision);
+            return currency.negate();
         }
     }
 
-    private static appendPaddedZeroesOrTruncate(fractionalUnits: string, precision: number): string {
-        if (fractionalUnits.length === precision) {
-            return fractionalUnits;
+    private static createZeroCurrency(options?: Partial<CurrencyOptions>): Currency {
+        return new Currency(0, options);
+    }
+
+    private static subtractMajorUnits(majorUnits1: string, majorUnits2: string): { isNegative: boolean; majorUnits: string; } {
+        // Zero-pad the units so they are the same size.
+        if (majorUnits1.length > majorUnits2.length) {
+            majorUnits2 = Currency.prependPaddedZeroesOrTruncateStart(majorUnits2, majorUnits1.length);
         }
-        else if (fractionalUnits.length < precision) {
-            // Pad the fractional units with 0s until the same precision is met.
-            return fractionalUnits + "0".repeat(precision - fractionalUnits.length);
+        else if (majorUnits1.length < majorUnits2.length) {
+            majorUnits1 = Currency.prependPaddedZeroesOrTruncateStart(majorUnits1, majorUnits2.length);
+        }
+
+        const { isNegative, units } = Currency.substractUnits(majorUnits1, majorUnits2);
+        return { isNegative, majorUnits: units.join("") };
+    }
+
+    private static subtractMinorUnits(minorUnits1: string, minorUnits2: string): { isNegative: boolean; minorUnits: string; } {
+        // Zero-pad the units so they are the same size.
+        if (minorUnits1.length > minorUnits2.length) {
+            minorUnits2 = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits2, minorUnits1.length);
+        }
+        else if (minorUnits1.length < minorUnits2.length) {
+            minorUnits1 = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits1, minorUnits2.length);
+        }
+
+        const { units, isNegative } = Currency.substractUnits(minorUnits1, minorUnits2);
+        return { isNegative, minorUnits: units.join("") };
+    }
+
+    // TODO JMH This should go away once we have a concatenated readonly field per currency.
+    private static joinUnits(majorUnits: string, minorUnits: string): string {
+        return `${majorUnits}${minorUnits}`;
+    }
+
+    private static prependPaddedZeroesOrTruncateStart(units: string, length: number): string {
+        if (units.length === length) {
+            return units;
+        }
+        else if (units.length < length) {
+            // Prepend 0s until the same length is met.
+            return "0".repeat(length - units.length) + units;
         }
         else {
-            // Truncate if the fractional units are more precise than the allowed precision.
-            return fractionalUnits.substring(0, precision);
+            // Truncate if the units are larger than the allowed length.
+            return units.substring(units.length - length);
         }
     }
 
-    private static getNumberParts(number: number | Money): { isNegative: boolean, wholeUnits: string, fractionalUnits: string } {
-        if (typeof number !== "number") {
+    private static appendPaddedZeroesOrTruncateEnd(units: string, length: number): string {
+        if (units.length === length) {
+            return units;
+        }
+        else if (units.length < length) {
+            // Append 0s until the same length is met.
+            return units + "0".repeat(length - units.length);
+        }
+        else {
+            // Truncate if the units are larger than the allowed length.
+            return units.substring(0, length);
+        }
+    }
+
+    private static getCurrencyParts(currency: number | Currency): { isNegative: boolean, majorUnits: string, minorUnits: string } {
+        if (typeof currency !== "number") {
             return {
-                isNegative: number.isNegative,
-                fractionalUnits: number.fractionalUnits,
-                wholeUnits: number.wholeUnits
+                isNegative: currency.isNegative,
+                minorUnits: currency.minorUnits,
+                majorUnits: currency.majorUnits
             };
         }
 
@@ -599,43 +962,46 @@ export class Money {
         // If the number is not a whole number, the decimal point . is used to separate the decimal places.
         // Therefore, it is safe to split number.toString() by "." to get the whole and fractional parts of a number,
         // assuming the number is not NaN, Infinity, NegativeInfinity, or scientific notation.
-        if (!Number.isFinite(number)) {
-            throw "The number to add must be a finite number.";
+        if (!Number.isFinite(currency)) {
+            throw "The currency must be a finite number.";
         }
 
-        let numberAsString = number.toString();
+        let currencyAsString = currency.toString();
 
-        if (numberAsString.includes("e")) {
-            // Convert scientific notation to number.
-            numberAsString = Money.eToNumber(numberAsString);
+        if (currencyAsString.includes("e")) {
+            // Convert scientific notation to decimal number.
+            currencyAsString = Currency.eToNumber(currencyAsString);
         }
 
-        const numberParts = numberAsString.split(".");
-        let [numberWholeUnits] = numberParts;
-        const [_, numberFractionalUnits] = numberParts;
-        const isNegative: boolean = numberWholeUnits.charAt(0) === "-";
+        // It is safe to split the decimal number by "." here regardless of the locale.
+        const parts = currencyAsString.split(".");
+
+        let [majorUnits] = parts;
+        const [_, minorUnits] = parts;
+        const isNegative: boolean = majorUnits.charAt(0) === "-";
 
         // Remove the sign.
-        numberWholeUnits = isNegative ? numberWholeUnits.substring(1) : numberWholeUnits;
+        majorUnits = isNegative ? majorUnits.substring(1) : majorUnits;
 
         return {
             isNegative,
-            wholeUnits: numberWholeUnits ?? "",
-            fractionalUnits: numberFractionalUnits ?? ""
+            majorUnits: majorUnits ?? "0",
+            minorUnits: minorUnits ?? "0"
         };
     }
 
-    private static addWholeUnits(wholeUnits1: string, wholeUnits2: string): string {
+    private static addMajorUnits(majorUnits1: string, majorUnits2: string): string {
         // Zero-pad the units so they are the same size.
-        if (wholeUnits1.length > wholeUnits2.length) {
-            wholeUnits2 = Money.prependPaddedZeroesOrTruncate(wholeUnits2, wholeUnits1.length);
+        if (majorUnits1.length > majorUnits2.length) {
+            majorUnits2 = Currency.prependPaddedZeroesOrTruncateStart(majorUnits2, majorUnits1.length);
         }
-        else if (wholeUnits2.length > wholeUnits1.length) {
-            wholeUnits1 = Money.prependPaddedZeroesOrTruncate(wholeUnits1, wholeUnits2.length);
+        else if (majorUnits2.length > majorUnits1.length) {
+            majorUnits1 = Currency.prependPaddedZeroesOrTruncateStart(majorUnits1, majorUnits2.length);
         }
 
-        const { digits } = Money.addUnits(wholeUnits1, wholeUnits2);
-        return digits.join();
+        // TODO JMH Do we need addUnits to return an array or can we return the string?
+        const { units } = Currency.addUnits(majorUnits1, majorUnits2);
+        return units.join("");
     }
 
     /**
@@ -646,32 +1012,39 @@ export class Money {
      * The resulting subtraction array will have the same length as the input arguments,
      * and each element will be a single number character including leading and trailing zeroes.
      */
-    private static substractUnits(units1: string, units2: string): { digits: string[]; isNegative: boolean; } {
+    private static substractUnits(units1: string, units2: string): { units: string[]; isNegative: boolean; } {
         if (units1.length !== units2.length) {
-            throw "The number strings must be the same size (the smaller string should have zeroes prepended or appended depending on whether they whole numbers or fractional numbers)";
+            throw "The units must be the same size (the smaller string should have zeroes prepended or appended depending on whether they are major or minor units)";
         }
 
         if (units1 === units2) {
-            // The numbers are the same so return zeroes the same length as the numbers.
-            return { digits: [..."0".repeat(units1.length)], isNegative: false };
+            // The units are the same value so return zeroes.
+            return { units: [..."0".repeat(units1.length)], isNegative: false };
         }
 
         let isNegative: boolean = false;
 
-        // Make sure the bigger and smaller numbers variables are accurately assigned.
-        // Working from left-to-right, the bigger number should always be >= the smaller number at the same index.
+        // Make sure the bigger and smaller unit variables are accurately assigned.
+        // When subtracting, working from left-to-right, the bigger number should always be >= the smaller number at the same index.
         let units1Array: number[] = Array<number>(units1.length);
         let units2Array: number[] = Array<number>(units1.length);
 
+        let checkForNegative = true;
         for (let i = 0; i < units1.length; i++) {
             // Convert the strings into a number array.
             units1Array[i] = +units1[i];
             units2Array[i] = +units2[i];
 
-            if (units1Array[i] < units2Array[i]) {
-                // The second number is bigger than the first number,
-                // so the subtraction will result in a negative number.
-                isNegative = true;
+            if (checkForNegative) {
+                if (units1Array[i] < units2Array[i]) {
+                    // The second number is bigger than the first number,
+                    // so the subtraction will result in a negative number.
+                    isNegative = true;
+                    checkForNegative = false;
+                }
+                else if (units1Array[i] !== units2Array[i]) {
+                    checkForNegative = false;
+                }
             }
         }
 
@@ -683,7 +1056,7 @@ export class Money {
             units2Array = temp;
         }
 
-        const digits: string[] = [];
+        const units: string[] = [];
 
         for (let i = units1Array.length - 1; i >= 0; i--) {
             let unit1: number = units1Array[i];
@@ -720,78 +1093,79 @@ export class Money {
 
             // Perform the subtraction and store the result.
             const difference: number = unit1 - unit2;
-            digits.unshift(difference.toString());
+            units.unshift(difference.toString());
         }
 
         return {
-            digits,
+            units,
             isNegative
         };
     }
 
-    private static addUnits(units1: string, units2: string): { digits: string[]; isFirstElementCarriedOver: boolean; } {
+    // TODO JMH Do we ever use `isFirstElementCarriedOver`?
+    private static addUnits(units1: string, units2: string): { units: string[]; isFirstElementCarriedOver: boolean; } {
         if (units1.length !== units2.length) {
             throw "The numbers must be the same size";
         }
 
-        const digits: string[] = [];
+        const units: string[] = [];
         let isCarriedOver: boolean = false;
 
         for (let i = units1.length - 1; i >= 0; i--) {
-            const int1: number = +units1[i];
-            const int2: number = +units2[i];
-            const sum: number = int1 + int2 + (isCarriedOver ? 1 : 0);
+            const unit1: number = +units1[i];
+            const unit2: number = +units2[i];
+            const sum: number = unit1 + unit2 + (isCarriedOver ? 1 : 0);
 
             if (sum <= 9) {
                 isCarriedOver = false;
-                digits.unshift(sum.toString());
+                units.unshift(sum.toString());
             }
             else {
                 const sumParts = sum.toString().split("");
                 if (i > 0) {
                     isCarriedOver = true;
-                    digits.unshift(sumParts[1]);
+                    units.unshift(sumParts[1]);
                 }
                 else {
                     // This is the last number,
                     // so no need to carry again.
-                    digits.unshift(...sumParts);
+                    units.unshift(...sumParts);
                 }
             }
         }
 
         return {
-            digits: digits,
+            units,
             isFirstElementCarriedOver: isCarriedOver
         };
     }
 
-    private static addFractionalUnits(fractionalUnits1: string, fractionalUnits2: string): { wholeUnits: string; fractionalUnits: string; } {
+    private static addMinorUnits(minorUnits1: string, minorUnits2: string): { majorUnits: string; minorUnits: string; } {
         // Zero-pad the units so they are the same size.
-        if (fractionalUnits1.length > fractionalUnits2.length) {
-            fractionalUnits2 = Money.appendPaddedZeroesOrTruncate(fractionalUnits2, fractionalUnits1.length);
+        if (minorUnits1.length > minorUnits2.length) {
+            minorUnits2 = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits2, minorUnits1.length);
         }
-        else if (fractionalUnits2.length > fractionalUnits1.length) {
-            fractionalUnits1 = Money.appendPaddedZeroesOrTruncate(fractionalUnits1, fractionalUnits2.length);
+        else if (minorUnits2.length > minorUnits1.length) {
+            minorUnits1 = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits1, minorUnits2.length);
         }
 
-        const { digits: addition, isFirstElementCarriedOver } = Money.addUnits(fractionalUnits1, fractionalUnits2);
+        const { units: summedUnits, isFirstElementCarriedOver } = Currency.addUnits(minorUnits1, minorUnits2);
 
-        // If summing two fractional units end in a carry,
-        // then the first element represents a whole unit.
-        // 0.999 + 0.990 = 1.989 => { addition: [1,9,8,9], isFirstElementCarriedOver: true }
+        // If summing two minor units end in a carry,
+        // then the first element represents a single major unit.
+        // 0.999 + 0.990 = 1.989 => { units: [1,9,8,9], isFirstElementCarriedOver: true }
         if (isFirstElementCarriedOver) {
-            // The first element represents whole unit,
-            // while the remaining elements are the fractional units.
-            const wholeUnits = addition[0];
+            // The first element represents major unit,
+            // while the remaining elements are the minor units.
+            const majorUnits = summedUnits[0];
 
-            // Remove the whole units from the fractional units.
-            addition.splice(0, 1);
+            // Remove the major units to be left with the minor units.
+            summedUnits.splice(0, 1);
 
-            return { wholeUnits, fractionalUnits: addition.join() };
+            return { majorUnits, minorUnits: summedUnits.join("") };
         }
         else {
-            return { wholeUnits: "", fractionalUnits: addition.join() };
+            return { majorUnits: "", minorUnits: summedUnits.join("") };
         }
     }
 
@@ -843,32 +1217,5 @@ export class Money {
         return sign + decimalNumberString;
     }
 
-    privateToStringCached: string | null = null;
-    public toString = (): string => {
-        function addThousandsSeparator(number: string, separator: string): string {
-            if (!separator) {
-                // There is no separator, so just return the number.
-                return number;
-            }
-            const chars: string[] = [];
-            let thousandsCounter = 0;
-            for (let i = number.length - 1; i >= 0; i--) {
-                thousandsCounter++;
-                if (thousandsCounter === 3) {
-                    chars.unshift(separator, number[i]);
-                    thousandsCounter = 0;
-                }
-                else {
-                    chars.unshift(number[i]);
-                }
-            }
-            return chars.join();
-        }
-
-        if (this.privateToStringCached === null) {
-            this.privateToStringCached = `${this.isNegative ? "-" : ""}${this.symbol}${addThousandsSeparator(this.wholeUnits, this.thousandsSeparator)}${this.fractionalSeparator}${this.fractionalUnits}`;
-        }
-
-        return this.privateToStringCached;
-    };
+    // #endregion Private Static Methods
 }

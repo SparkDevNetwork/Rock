@@ -410,7 +410,6 @@ export class RockDateTime {
      * for this instance.
      */
     public endOfMonth(): RockDateTime {
-        debugger;
         const dateTime = this.dateTime.endOf("month");
 
         if (!dateTime.isValid) {

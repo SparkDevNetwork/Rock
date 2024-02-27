@@ -309,7 +309,6 @@ function getNextDay(...days: (number | GetNextDayOption)[]): RockDateTime | null
                 // and the next allowed date is the end of the current month,
                 // so return the end of the current month.
                 // TODO JMH Does the date get modified by calling endOfMonth?
-                debugger;
                 return date.endOfMonth();
             }
         }

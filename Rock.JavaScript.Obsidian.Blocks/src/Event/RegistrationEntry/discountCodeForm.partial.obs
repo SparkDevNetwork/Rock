@@ -150,7 +150,7 @@
 
     // #endregion
 
-    onMounted(() => {
-        tryDiscountCode(true);
+    onMounted(async () => {
+        await tryDiscountCode(true);
     });
 </script>
