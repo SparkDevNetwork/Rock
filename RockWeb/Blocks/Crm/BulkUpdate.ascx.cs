@@ -2248,7 +2248,7 @@ namespace RockWeb.Blocks.Crm
                 if ( this.UpdateGroupAction != GroupChangeActionSpecifier.None )
                 {
                     var group = new GroupService( rockContext ).Get( UpdateGroupId.Value );
-                    if ( group != null )
+                    if ( group != null && ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson ) ) )
                     {
                         var groupMemberService = new GroupMemberService( rockContext );
 
