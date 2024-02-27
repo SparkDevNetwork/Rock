@@ -19,15 +19,15 @@ using Rock.Attribute;
 namespace Rock.Data
 {
     /// <summary>
-    /// Represents a model that supports reading and writing categorized, additional settings.
+    /// Represents a model that supports reading categorized, additional settings.
     /// </summary>
-    public interface IHasAdditionalSettings : IHasReadOnlyAdditionalSettings
+    public interface IHasReadOnlyAdditionalSettings
     {
         /// <summary>
-        /// Gets or sets the additional settings JSON string.
+        /// Gets the additional settings JSON string.
         /// <para>
-        /// DO NOT read from or write to this property directly. Instead, use the <see cref="IHasAdditionalSettings"/>
-        /// extension methods to ensure data is properly serialized and deserialized to and from this property.
+        /// DO NOT read from this property directly. Instead, use the <see cref="IHasReadOnlyAdditionalSettings"/>
+        /// extension methods to ensure data is properly deserialized from this property.
         /// </para>
         /// </summary>
         /// <value>
@@ -42,6 +42,6 @@ namespace Rock.Data
         ///     </para>
         /// </remarks>
         [RockInternal( "1.16.4" )]
-        new string AdditionalSettingsJson { get; set; }
+        string AdditionalSettingsJson { get; }
     }
 }

@@ -966,6 +966,7 @@
     <Compile Include="Core\NotificationMessageTypes\NoteMention.cs" />
     <Compile Include="Core\NotificationMessageTypes\SmsConversation.cs" />
     <Compile Include="Data\IHasAdditionalSettings.cs" />
+    <Compile Include="Data\IHasReadOnlyAdditionalSettings.cs" />
     <Compile Include="Data\IncludeForModelMapAttribute.cs" />
     <Compile Include="Data\EntityContextState.cs" />
     <Compile Include="Data\EntitySaveHook.cs" />
@@ -1043,6 +1044,7 @@
     <Compile Include="Jobs\UpdateAnalyticsSourceZipCode.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Blocks\AdaptiveMessageBlock.cs" />
+    <Compile Include="Lava\Blocks\InteractionIntentWriteTag.cs" />
     <Compile Include="Lava\Blocks\ObserveBlock.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Text.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
@@ -1290,6 +1292,7 @@
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupFirstAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupTypeFirstAttendanceFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InteractionIntentsFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
     <Compile Include="Reporting\DataViewQueryBuilder.cs" />

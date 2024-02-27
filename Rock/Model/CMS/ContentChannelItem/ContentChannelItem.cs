@@ -24,6 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
 using Rock.Enums.Cms;
@@ -242,6 +243,7 @@ namespace Rock.Model
         public ContentLibraryItemExperienceLevel? ExperienceLevel { get; set; }
 
         /// <inheritdoc/>
+        [RockInternal( "1.16.4" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 
