@@ -948,7 +948,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Interaction Channel Type: UrlShortener
-        /// </summary>        
+        /// </summary>
         public const string INTERACTIONCHANNELTYPE_URLSHORTENER = "371066D5-C5F9-4783-88C8-D9AC8DC67468";
 
         /// <summary>
@@ -980,6 +980,11 @@ namespace Rock.SystemGuid
         /// Interaction Channel Type: Challenge Progress
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_CHALLENGE_PROGRESS = "6AA529BD-9FA5-43AD-A98E-B8DF5F997146";
+
+        /// <summary>
+        /// Interaction Channel Type: Interaction Intents
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_INTERACTION_INTENTS = "A64DA89B-F634-4D58-ADC7-32243F84224B";
 
         /// <summary>
         /// The PBX CDR medium value

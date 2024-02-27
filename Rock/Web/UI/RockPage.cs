@@ -2480,6 +2480,10 @@ Sys.Application.add_load(function () {
                     new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
 
                 pageViewTransaction.Enqueue();
+
+                var intentSettings = _pageCache.GetAdditionalSettings<PageService.IntentSettings>();
+                InteractionService.RegisterIntentInteractions( intentSettings.InteractionIntentValueIds );
+
                 return;
             }
 

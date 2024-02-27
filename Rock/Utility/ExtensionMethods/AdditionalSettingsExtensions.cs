@@ -20,7 +20,7 @@ using Newtonsoft.Json.Linq;
 using Rock.Attribute;
 using Rock.Data;
 
-namespace Rock.Utility.ExtensionMethods
+namespace Rock
 {
     /// <summary>
     /// Extension methods to facilitate the consistent saving and retrieval of a model's categorized, additional settings property value.
@@ -53,14 +53,41 @@ namespace Rock.Utility.ExtensionMethods
         #region Public Methods
 
         /// <summary>
-        /// Gets the deserialized settings object matching the provided <paramref name="categoryKey"/> from
-        /// <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>. If it can't be found or deserialized,
-        /// returns <see langword="null"/>.
+        /// Gets the deserialized settings object matching the provided <typeparamref name="TSettings"/> <see cref="System.Type"/> from
+        /// <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/>.
+        /// <para>
+        /// This will never return <c>null</c>. If <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/> doesn't already
+        /// have a settings object of this type, a new instance will be created and returned.
+        /// </para>
         /// </summary>
-        /// <typeparam name="T">
+        /// <typeparam name="TSettings">
         /// The <see cref="System.Type"/> of category settings object into which the underlying JSON string should be deserialized.
         /// </typeparam>
-        /// <param name="settings">The <see cref="IHasAdditionalSettings"/> instance containing the desired, categorized settings.</param>
+        /// <param name="settings">The <see cref="IHasReadOnlyAdditionalSettings"/> instance containing the desired, categorized settings.</param>
+        /// <returns>The deserialized settings object or a new instance if one didn't already exist.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        public static TSettings GetAdditionalSettings<TSettings>( this IHasReadOnlyAdditionalSettings settings ) where TSettings : class, new()
+        {
+            return settings.GetAdditionalSettings<TSettings>( typeof( TSettings ).Name ) ?? new TSettings();
+        }
+
+        /// <summary>
+        /// Gets the deserialized settings object matching the provided <paramref name="categoryKey"/> from
+        /// <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/>. If it can't be found or deserialized,
+        /// returns <see langword="null"/>.
+        /// </summary>
+        /// <typeparam name="TSettings">
+        /// The <see cref="System.Type"/> of category settings object into which the underlying JSON string should be deserialized.
+        /// </typeparam>
+        /// <param name="settings">The <see cref="IHasReadOnlyAdditionalSettings"/> instance containing the desired, categorized settings.</param>
         /// <param name="categoryKey">The category key of the settings object to be returned.</param>
         /// <returns>The deserialized settings object or <see langword="null"/> if not found or deserialization fails.</returns>
         /// <remarks>
@@ -71,8 +98,8 @@ namespace Rock.Utility.ExtensionMethods
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.16.2" )]
-        public static T GetAdditionalSettings<T>( this IHasAdditionalSettings settings, string categoryKey ) where T : class, new()
+        [RockInternal( "1.16.4" )]
+        public static TSettings GetAdditionalSettings<TSettings>( this IHasReadOnlyAdditionalSettings settings, string categoryKey ) where TSettings : class, new()
         {
             if ( categoryKey.IsNullOrWhiteSpace() )
             {
@@ -83,7 +110,7 @@ namespace Rock.Utility.ExtensionMethods
             if ( root != null && root.TryGetValue( categoryKey, out var value ) )
             {
                 // Ignore any deserialization errors (this might return null).
-                return value.ToObject<T>( JsonSerializer.Create( JsonSerializerSettings ) );
+                return value.ToObject<TSettings>( JsonSerializer.Create( JsonSerializerSettings ) );
             }
 
             return null;
@@ -91,18 +118,52 @@ namespace Rock.Utility.ExtensionMethods
 
         /// <summary>
         /// Serializes and sets the provided settings object within <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>,
-        /// assigning it to the provided <paramref name="categoryKey"/> property.
-        /// <list type="bullet">
-        /// <item>
-        /// To follow consistent naming conventions, the <paramref name="categoryKey"/> should have a suffix of
-        /// "Settings" (i.e. "SiteSettings", "TriumphAnalyticsSettings"). If this pattern isn't followed, the
-        /// value will not be set.
-        /// </item>
-        /// <item>
+        /// assigning it to a property matching the name of the <typeparamref name="TSettings"/> <see cref="System.Type"/>.
+        /// <para>
+        /// Changes made to the database are not saved until you call <see cref="DbContext.SaveChanges()"/>.
+        /// </para>
+        /// <para>
+        /// To follow consistent naming conventions, the <typeparamref name="TSettings"/> <see cref="System.Type"/> name
+        /// must have a suffix of "Settings" (i.e. "SiteSettings", "TriumphAnalyticsSettings"). If this pattern isn't followed,
+        /// <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/> will not be modified.
+        /// </para>
+        /// <para>
         /// If the provided <paramref name="categorySettings"/> object serialization fails, <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>
         /// will not be modified.
-        /// </item>
-        /// </list>
+        /// </para>
+        /// </summary>
+        /// <typeparam name="TSettings">The <see cref="System.Type"/> of category settings object.</typeparam>
+        /// <param name="settings">The <see cref="IHasAdditionalSettings"/> instance into which the settings should be set.</param>
+        /// <param name="categorySettings">The settings object to be to be serialized and set.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        public static void SetAdditionalSettings<TSettings>( this IHasAdditionalSettings settings, TSettings categorySettings ) where TSettings : class, new()
+        {
+            settings.SetAdditionalSettings( typeof( TSettings ).Name, categorySettings );
+        }
+
+        /// <summary>
+        /// Serializes and sets the provided settings object within <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>,
+        /// assigning it to a property matching the provided <paramref name="categoryKey"/>.
+        /// <para>
+        /// Changes made to the database are not saved until you call <see cref="DbContext.SaveChanges()"/>.
+        /// </para>
+        /// <para>
+        /// To follow consistent naming conventions, the <paramref name="categoryKey"/> must have a suffix of
+        /// "Settings" (i.e. "SiteSettings", "TriumphAnalyticsSettings"). If this pattern isn't followed,
+        /// <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/> will not be modified.
+        /// </para>
+        /// <para>
+        /// If the provided <paramref name="categorySettings"/> object serialization fails, <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>
+        /// will not be modified.
+        /// </para>
         /// </summary>
         /// <param name="settings">The <see cref="IHasAdditionalSettings"/> instance into which the settings should be set.</param>
         /// <param name="categoryKey">The category key of the settings to be set within the <see cref="IHasAdditionalSettings"/> instance.</param>
@@ -115,7 +176,7 @@ namespace Rock.Utility.ExtensionMethods
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.16.2" )]
+        [RockInternal( "1.16.4" )]
         public static void SetAdditionalSettings( this IHasAdditionalSettings settings, string categoryKey, object categorySettings )
         {
             if ( categoryKey.IsNullOrWhiteSpace() || !categoryKey.EndsWith( "Settings" ) || categorySettings == null )
@@ -138,11 +199,40 @@ namespace Rock.Utility.ExtensionMethods
         }
 
         /// <summary>
-        /// Removes the category settings object with the specified <paramref name="categoryKey"/> from
+        /// Removes the category settings object matching the provided <typeparamref name="TSettings"/> <see cref="System.Type"/>
+        /// from <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/> if it exists.
+        /// </summary>
+        /// <typeparam name="TSettings">The <see cref="System.Type"/> of category settings object to be removed.</typeparam>
+        /// <param name="settings">The <see cref="IHasAdditionalSettings"/> instance containing the category settings to be removed.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        public static void RemoveAdditionalSettings<TSettings>( this IHasAdditionalSettings settings ) where TSettings : class, new()
+        {
+            settings.RemoveAdditionalSettings( typeof( TSettings ).Name );
+        }
+
+        /// <summary>
+        /// Removes the category settings object matching the specified <paramref name="categoryKey"/> from
         /// <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/> if it exists.
         /// </summary>
         /// <param name="settings">The <see cref="IHasAdditionalSettings"/> instance containing the category settings to be removed.</param>
         /// <param name="categoryKey">The category key of the settings object to be removed.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
         public static void RemoveAdditionalSettings( this IHasAdditionalSettings settings, string categoryKey )
         {
             if ( categoryKey.IsNullOrWhiteSpace() )
@@ -166,11 +256,11 @@ namespace Rock.Utility.ExtensionMethods
         #region Private Methods
 
         /// <summary>
-        /// Gets the deserialized root object from <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>.
+        /// Gets the deserialized root object from <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/>.
         /// </summary>
-        /// <param name="settings">The <see cref="IHasAdditionalSettings"/> object containing the serialized additional settings.</param>
-        /// <returns>The deserialized root object from <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>.</returns>
-        private static JObject GetAdditionalSettingsRoot( this IHasAdditionalSettings settings )
+        /// <param name="settings">The <see cref="IHasReadOnlyAdditionalSettings"/> object containing the serialized additional settings.</param>
+        /// <returns>The deserialized root object from <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/>.</returns>
+        private static JObject GetAdditionalSettingsRoot( this IHasReadOnlyAdditionalSettings settings )
         {
             if ( settings?.AdditionalSettingsJson.IsNotNullOrWhiteSpace() != true )
             {
