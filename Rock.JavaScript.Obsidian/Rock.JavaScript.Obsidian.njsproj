@@ -389,6 +389,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\StepParticipantList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StepProgramList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\Steps\" />
@@ -982,6 +983,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegisterRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegisterResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpRegister\signUpRegistrantBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepParticipantList\stepParticipantListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramList\stepProgramListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\stepProgramBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StepProgramDetail\stepProgramDetailOptionsBag.d.ts" />
