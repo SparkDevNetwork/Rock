@@ -944,9 +944,11 @@ $(document).ready(function() {
             DataViewService dataViewService = new DataViewService( rockContext );
 
             // Get any related DataViews (using RelatedDataViewId )
-            var relatedDataViews = dataViewService.Queryable().AsNoTracking()
-                .Where( d => d.DataViewFilter.ChildFilters.Any( f => f.RelatedDataViewId.HasValue && f.RelatedDataViewId == dataView.Id ) )
-                .AsNoTracking().ToList();
+            var relatedDataViews = new DataViewFilterService( rockContext ).Queryable()
+                .AsNoTracking()
+                .Where( f => f.RelatedDataViewId == dataView.Id )
+                .Select( f => f.DataView )
+                .ToList();
 
             // get related DataViews that used the pre-v8 OtherDataViewFilter selection format
             var otherDataViewFilterComponentEntityId = EntityTypeCache.Get( typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ) ).Id;

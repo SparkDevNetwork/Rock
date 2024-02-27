@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -242,9 +243,18 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the query.
         /// </summary>
+        /// <returns>A queryable that contains the entities returned by the filters.</returns>
+        public IQueryable<IEntity> GetQuery()
+        {
+            return GetQuery( new GetQueryableOptions() );
+        }
+
+        /// <summary>
+        /// Gets the query.
+        /// </summary>
         /// <param name="options">The data view get query arguments.</param>
         /// <returns>A queryable that contains the entities returned by the filters.</returns>
-        public IQueryable<IEntity> GetQueryable( GetQueryableOptions options )
+        public IQueryable<IEntity> GetQuery( GetQueryableOptions options )
         {
             options = options ?? new GetQueryableOptions();
 
@@ -262,7 +272,8 @@ namespace Rock.Web.Cache
                     throw new InvalidOperationException( $"Unknown entity type for DataView #{Id}: {Name}." );
                 }
 
-                var rockContext = options.DbContext ?? new RockContext();
+                var rockContext = options.DbContext
+                    ?? ( DisableUseOfReadOnlyContext ? new RockContext() : new RockContextReadOnly() );
 
                 var entityIdQry = rockContext.Set<DataViewPersistedValue>()
                     .Where( pv => pv.DataViewId == Id )
@@ -279,6 +290,30 @@ namespace Rock.Web.Cache
             {
                 return DataViewQueryBuilder.Instance.GetDataViewQuery( this, options );
             }
+        }
+
+        /// <summary>
+        /// Gets the expression that is used by the data view to filter results.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance used to query the database.</param>
+        /// <param name="paramExpression">The parameter expression that will be used to identify the entity when building the expression.</param>
+        /// <returns>An expression that can be used to filter a queryable.</returns>
+        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression )
+        {
+            return this.GetExpression( serviceInstance, paramExpression, null );
+        }
+
+        /// <summary>
+        /// Gets the expression that is used by the data view to filter results.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance used to query the database.</param>
+        /// <param name="paramExpression">The parameter expression that will be used to identify the entity when building the expression.</param>
+        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
+        /// <returns>An expression that can be used to filter a queryable.</returns>
+        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides )
+        {
+            return DataViewQueryBuilder.Instance
+                .GetDataViewExpression( this, serviceInstance, paramExpression, dataViewFilterOverrides );
         }
 
         /// <summary>
