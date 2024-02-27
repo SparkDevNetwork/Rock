@@ -259,6 +259,7 @@
     <Compile Include="Modules\Reporting\DataFilter\NumericDataFilterFactoryBase.cs" />
     <Compile Include="Modules\Reporting\DataFilter\Person\LocationDataFilterTests.cs" />
     <Compile Include="Modules\Web\Controls\AddressControlTests.cs" />
+    <Compile Include="Modules\Web\Utilities\SystemConfigurationTests.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
     <Compile Include="TestData\Core\SecurityDataManager.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Organization.cs" />

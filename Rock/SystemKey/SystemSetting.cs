@@ -30,6 +30,13 @@ namespace Rock.SystemKey
         public const string ROCK_INSTANCE_ID = "RockInstanceId";
 
         /// <summary>
+        /// The organization timezone setting, identified by Windows standard format timezone name.
+        /// This identifier format corresponds to the <see cref="TimeZoneInfo.Id"/> property and the
+        /// SQL Server table [sys].[time_zone_info].[name] column.
+        /// </summary>
+        public const string ORG_TIME_ZONE = "core_OrgTimeZone";
+
+        /// <summary>
         /// Holds the System Setting key for the sample data load date/time.
         /// </summary>
         public const string SAMPLEDATA_DATE = "com.rockrms.sampledata.datetime";

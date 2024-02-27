@@ -131,6 +131,10 @@ namespace Rock.WebStartup
                 ShowDebugTimingMessage( "Initialize RockContext" );
             }
 
+            LogStartupMessage( "Initializing Timezone" );
+            RockDateTimeHelper.SynchronizeTimeZoneConfiguration( RockDateTime.OrgTimeZoneInfo.Id );
+            ShowDebugTimingMessage( $"Initialize Timezone ({RockDateTime.OrgTimeZoneInfo.Id})" );
+
             RockInstanceConfig.SetDatabaseIsAvailable( true );
 
             // Initialize observability after the database.
@@ -149,7 +153,6 @@ namespace Rock.WebStartup
             LogStartupMessage( "Configuring Date Settings" );
             RockDateTime.FirstDayOfWeek = new AttributeService( new RockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
             InitializeRockGraduationDate();
-
             ShowDebugTimingMessage( "Initialize RockDateTime" );
 
             if ( runMigrationFileInfo.Exists )
