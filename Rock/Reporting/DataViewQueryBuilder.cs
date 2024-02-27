@@ -308,7 +308,7 @@ namespace Rock.Reporting
         /// or
         /// Unable to determine transform expression for TransformEntityTypeId: {TransformEntityTypeId}
         /// </exception>
-        private Expression GetDataViewExpression( IDataViewDefinition dataView, IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides )
+        public Expression GetDataViewExpression( IDataViewDefinition dataView, IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides )
         {
             var dataViewEntityTypeCache = EntityTypeCache.Get( dataView.EntityTypeId.Value );
 
