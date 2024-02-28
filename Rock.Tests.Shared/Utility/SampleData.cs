@@ -1147,7 +1147,7 @@ namespace Rock.Tests.Shared.Utility
                         GroupRoleId = roleId,
                     };
 
-                    rockContext.GroupMembers.Add( groupMember );
+                    memberService.Add( groupMember );
                 }
 
                 // Now create thee inverse relationship.
@@ -1187,7 +1187,7 @@ namespace Rock.Tests.Shared.Utility
 
             bool fabricateAttendance = true;
             GroupService groupService = new GroupService( rockContext );
-            var allFamilies = rockContext.Groups;
+            var attributeValueService = new AttributeValueService( rockContext );
 
             List<Group> allGroups = new List<Group>();
             var attendanceData = new Dictionary<Guid, List<Attendance>>();
@@ -1203,7 +1203,7 @@ namespace Rock.Tests.Shared.Utility
                 family.Guid = guid;
 
                 // add the family to the context's list of groups
-                allFamilies.Add( family );
+                groupService.Add( family );
 
                 // add the families address(es)
                 AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ), rockContext );
@@ -1241,7 +1241,7 @@ namespace Rock.Tests.Shared.Utility
                             attributeValue.AttributeId = newValue.AttributeId;
                             attributeValue.EntityId = gm.Person.Id;
                             attributeValue.Value = newValue.Value;
-                            rockContext.AttributeValues.Add( attributeValue );
+                            attributeValueService.Add( attributeValue );
                         }
                     }
                 }

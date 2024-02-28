@@ -516,8 +516,8 @@ FROM (
                                         ).Distinct()
                                         .ToArray(); // the result needs to be collected in the memory as it is being used in the following two queries
 
-                                    rockContextForMetricValues.MetricValuePartitions.RemoveRange( metricsToBeDeleted.Select( m => m.metricValuePartition ) );
-                                    rockContextForMetricValues.MetricValues.RemoveRange( metricsToBeDeleted.Select( m => m.metricValue ) );
+                                    rockContextForMetricValues.Set<MetricValuePartition>().RemoveRange( metricsToBeDeleted.Select( m => m.metricValuePartition ) );
+                                    rockContextForMetricValues.Set<MetricValue>().RemoveRange( metricsToBeDeleted.Select( m => m.metricValue ) );
                                 }
 
                                 metricValueService.AddRange( metricValuesToAdd );

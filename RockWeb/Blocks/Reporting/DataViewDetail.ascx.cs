@@ -1275,7 +1275,7 @@ $(document).ready(function() {
                     if ( ex is RockDataViewFilterExpressionException )
                     {
                         RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                        nbPreviewError.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( dataView );
+                        nbPreviewError.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) dataView );
                     }
                     else
                     {

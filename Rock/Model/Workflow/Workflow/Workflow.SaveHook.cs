@@ -42,7 +42,7 @@ namespace Rock.Model
                 {
                     if ( logEntries?.Any() == true )
                     {
-                        var workflowLogs = RockContext.WorkflowLogs;
+                        var workflowLogs = RockContext.Set<WorkflowLog>();
 
                         foreach ( var logEntry in logEntries )
                         {

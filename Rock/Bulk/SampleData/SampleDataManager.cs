@@ -1281,7 +1281,7 @@ namespace Rock.Utility
                         GroupTypeId = knownRelationshipGroup.GroupTypeId
                     };
 
-                    rockContext.GroupMembers.Add( groupMember );
+                    new GroupMemberService( rockContext ).Add( groupMember );
                 }
 
                 // Now create thee inverse relationship.
@@ -1322,7 +1322,7 @@ namespace Rock.Utility
             _personImageBinaryFileTypeSettings = settings.ToJson();
 
             GroupService groupService = new GroupService( rockContext );
-            var allFamilies = rockContext.Groups;
+            var attributeValueService = new AttributeValueService( rockContext );
 
             List<Group> allGroups = new List<Group>();
             var attendanceData = new Dictionary<Guid, List<Attendance>>();
@@ -1338,7 +1338,7 @@ namespace Rock.Utility
                 family.Guid = guid;
 
                 // add the family to the context's list of groups
-                allFamilies.Add( family );
+                groupService.Add( family );
 
                 // add the families address(es)
                 AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ), rockContext );
@@ -1387,7 +1387,7 @@ namespace Rock.Utility
                             attributeValue.Value = newValue.Value;
                             // PA: setting the dirty bit so that the Update Persisted Attribute Values job can populate the field related columns like ValueAsDateTime
                             attributeValue.IsPersistedValueDirty = true;
-                            rockContext.AttributeValues.Add( attributeValue );
+                            attributeValueService.Add( attributeValue );
                         }
                     }
                 }

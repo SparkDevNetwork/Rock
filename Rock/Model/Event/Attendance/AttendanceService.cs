@@ -2274,7 +2274,7 @@ namespace Rock.Model
                     a.LocationId,
                     a.ScheduleId
                 } )
-                .GroupJoin( rockContext.Attendances, gma => gma.PersonId, a => a.PersonAlias.PersonId,
+                .GroupJoin( rockContext.Set<Attendance>(), gma => gma.PersonId, a => a.PersonAlias.PersonId,
                     ( gma, a ) => new GroupMemberAssignmentInfo
                     {
                         GroupMemberId = gma.GroupMemberId,

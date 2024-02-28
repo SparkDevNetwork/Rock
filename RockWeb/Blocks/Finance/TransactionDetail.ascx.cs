@@ -499,7 +499,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( txn.RefundDetails != null )
                     {
-                        rockContext.FinancialTransactionRefunds.Remove( txn.RefundDetails );
+                        new FinancialTransactionRefundService( rockContext ).Delete( txn.RefundDetails );
                     }
                 }
 

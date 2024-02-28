@@ -615,7 +615,7 @@ namespace Rock.Jobs
                     var lastNameQry = personService.Queryable().Select( p => p.LastName ).Where( p => p != null );
                     var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
 
-                    var metaphones = personRockContext.Metaphones;
+                    var metaphones = personRockContext.Set<Metaphone>();
                     var existingNames = metaphones.Select( m => m.Name ).Distinct();
 
                     // Get the names that have not yet been processed
@@ -1112,7 +1112,7 @@ namespace Rock.Jobs
 
             var workflowService = new WorkflowService( workflowContext );
 
-            var workflowLogs = workflowContext.WorkflowLogs;
+            var workflowLogs = workflowContext.Set<WorkflowLog>();
 
             // Get the list of workflows that haven't been modified since X days
             // and have at least one workflow log (narrowing it down to ones with Logs improves performance of this cleanup)
