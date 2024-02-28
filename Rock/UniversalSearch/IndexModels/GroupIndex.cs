@@ -157,7 +157,7 @@ namespace Rock.UniversalSearch.IndexModels
                     && gm.IsArchived == false
                     && gm.GroupMemberStatus == GroupMemberStatus.Active );
 
-            var groupMemberCount = rockContext.GroupMembers.Count( gm => gm.GroupId == group.Id && gm.IsArchived == false && gm.GroupMemberStatus == GroupMemberStatus.Active );
+            var groupMemberCount = rockContext.Set<GroupMember>().Count( gm => gm.GroupId == group.Id && gm.IsArchived == false && gm.GroupMemberStatus == GroupMemberStatus.Active );
             if ( groupMemberCount > 10000 )
             {
                 RockLogger.LoggerFactory.CreateLogger<GroupIndex>()

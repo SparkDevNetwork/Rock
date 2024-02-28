@@ -268,7 +268,7 @@ namespace Rock.Model
                     rockContext = new RockContext();
                 }
 
-                var persistedValuesQuery = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
+                var persistedValuesQuery = rockContext.Set<DataViewPersistedValue>().Where( a => a.DataViewId == this.Id );
                 var ids = persistedValuesQuery.Select( v => v.EntityId );
                 MemberExpression propertyExpression = Expression.Property( paramExpression, "Id" );
                 if ( !( serviceInstance.Context is RockContext ) )

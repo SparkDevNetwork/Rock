@@ -77,7 +77,7 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
-                if ( !rockContext.AnalyticsSourceDates.AsQueryable().Any() )
+                if ( !rockContext.Set<AnalyticsSourceDate>().AsQueryable().Any() )
                 {
                     var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
                     var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
@@ -91,7 +91,7 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
-                if ( !rockContext.AnalyticsSourceZipCodes.AsQueryable().Any() )
+                if ( !rockContext.Set<AnalyticsSourceZipCode>().AsQueryable().Any() )
                 {
                     Rock.Model.AnalyticsSourceZipCode.GenerateAnalyticsSourceZipCodeData();
                 }

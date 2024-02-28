@@ -546,7 +546,7 @@ namespace RockWeb.Blocks.Finance
                         if ( ex is RockDataViewFilterExpressionException )
                         {
                             RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                            nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( dataView );
+                            nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) dataView );
                         }
                         else
                         {

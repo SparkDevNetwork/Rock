@@ -1359,7 +1359,7 @@ $(document).ready(function() {
         private IQueryable<int> GetPersonalizedEntityIdsQry( RockContext rockContext, PersonalizationType personalizationType, List<int> segmentIds )
         {
             var entityTypeId = EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id;
-            return ( rockContext ).PersonalizedEntities
+            return ( rockContext ).Set<PersonalizedEntity>()
                 .Where( pe => pe.PersonalizationType == personalizationType && pe.EntityTypeId == entityTypeId && segmentIds.Contains( pe.PersonalizationEntityId ) )
                 .Select( a => a.EntityId );
         }
@@ -1372,7 +1372,7 @@ $(document).ready(function() {
         private IQueryable<int> GetPersonalizedEntityIdsQry( RockContext rockContext, PersonalizationType personalizationType )
         {
             var entityTypeId = EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id;
-            return ( rockContext ).PersonalizedEntities
+            return ( rockContext ).Set<PersonalizedEntity>()
                 .Where( pe => pe.PersonalizationType == personalizationType && pe.EntityTypeId == entityTypeId )
                 .Select( a => a.EntityId );
         }

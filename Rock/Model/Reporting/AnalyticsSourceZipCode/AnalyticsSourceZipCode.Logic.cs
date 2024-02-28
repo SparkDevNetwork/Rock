@@ -96,7 +96,7 @@ namespace Rock.Model
                     // Get the current batch
                     var currentBatch = analyticsZipCodes.Skip( i * batchSize ).Take( batchSize ).ToList();
 
-                    rockContext.AnalyticsSourceZipCodes.AddRange( currentBatch );
+                    rockContext.Set<AnalyticsSourceZipCode>().AddRange( currentBatch );
                     rockContext.SaveChanges();
                 }
 
@@ -107,7 +107,7 @@ namespace Rock.Model
                 using ( var rockContext = new RockContext() )
                 {
                     // Since we are not saving the DbGeography details we'll just use EFBatchOperation to BulkInsert.
-                    EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceZipCodes ).InsertAll( analyticsZipCodes );
+                    EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourceZipCode>() ).InsertAll( analyticsZipCodes );
                 }
             }
         }

@@ -273,7 +273,7 @@ namespace Rock.Tests.Integration.Modules.Security
             };
 
             var rockContext = new RockContext();
-            rockContext.People.Add( person );
+            new PersonService( rockContext ).Add( person );
             rockContext.SaveChanges();
 
             return person;

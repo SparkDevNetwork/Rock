@@ -870,7 +870,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void BindLog()
         {
-            var logEntries = new RockContext().WorkflowLogs
+            var logEntries = new RockContext().Set<WorkflowLog>()
                 .Where( l => l.WorkflowId == Workflow.Id )
                 .OrderBy( l => l.Id ) // Do not sort by DateTime as many actions can occur in the same millisecond.
                 .ToList();

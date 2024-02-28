@@ -135,7 +135,7 @@ namespace Rock.Tests.Integration
 
         public static DateTime GetAnalyticsSourceMinDateForYear( RockContext rockContext, int year )
         {
-            if ( !rockContext.AnalyticsSourceDates.AsQueryable().Any() )
+            if ( !rockContext.Set<AnalyticsSourceDate>().AsQueryable().Any() )
             {
                 var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
                 var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
