@@ -206,9 +206,9 @@ namespace Rock.Jobs
 
                 // Prefer mobile number.
                 int mobileNumberValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-                if ( smsNumbers.Where( n => n.NumberTypeValueId == mobileNumberValueId ).Any() )
+                if ( smsNumbers.Any( n => n.NumberTypeValueId == mobileNumberValueId ) )
                 {
-                    smsNumber = smsNumbers.Where( n => n.NumberTypeValueId == mobileNumberValueId ).FirstOrDefault();
+                    smsNumber = smsNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobileNumberValueId );
                 }
 
                 var mergeFields = LavaHelper.GetCommonMergeFields( null );
