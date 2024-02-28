@@ -965,52 +965,40 @@ namespace Rock.Communication
             const string ListUnsubscribePostHeaderKey = "List-Unsubscribe-Post";
             var listUnsubscribeHeaderValues = new List<string>();
 
+            /*
+                2/27/2024 - JMH 
+
+                The order the List-Unsubscribe header values are added is important.
+                Per https://www.ietf.org/rfc/rfc2369.txt, page 2 states,
+                "The URLs have order of preference from left to right.
+                The client application should use the left most protocol that it supports,
+                or knows how to access by a separate application."
+                The HTTP value should be added first if possible, then the MAILTO value should be added.
+            
+                Reason: One-Click Unsubscribe not working as intended.
+                https://github.com/SparkDevNetwork/Rock/issues/5770
+             */
+            if ( mediumAttributes.TryGetValue( "UnsubscribeURL", out var unsubscribeUrl )
+                 && unsubscribeUrl.IsNotNullOrWhiteSpace())
+            {
+                // Add the UnsubscribeURL value to the List-Unsubscribe header if it is defined.
+                var httpValue = unsubscribeUrl.ResolveMergeFields( mergeFields, recipientEmail.CurrentPerson, recipientEmail.EnabledLavaCommands );
+                if ( httpValue.IsNotNullOrWhiteSpace() )
+                {
+                    listUnsubscribeHeaderValues.Add( $"<{httpValue}>" );
+                }
+            }
+            
             var unsubscribeEmail = mediumAttributes.GetValueOrNull( "RequestUnsubscribeEmail" );
             if ( unsubscribeEmail.IsNullOrWhiteSpace() )
             {
                 // Default to the organization email if the RequestUnsubscribeEmail attribute value is missing or white space.
                 unsubscribeEmail = globalAttributes.GetValue( "OrganizationEmail" );
             }
+            
             if ( unsubscribeEmail.IsNotNullOrWhiteSpace() )
             {
                 listUnsubscribeHeaderValues.Add( $"<mailto:{unsubscribeEmail}>" );
-            }
-
-            var isOneClickUnsubscribeEnabled = mediumAttributes.GetValueOrNull( "EnableOneClickUnsubscribe" ).AsBoolean();
-            if ( isOneClickUnsubscribeEnabled )
-            {
-                // If Enable One-Click Unsubscribe is true, then the URL should be the People API Unsubscribe endpoint.
-                var personActionIdentifier = communicationRecipient.PersonAlias.Person.GetPersonActionIdentifier( "Unsubscribe" );
-                var rootUrl = globalAttributes.GetValue( "PublicApplicationRoot" ).RemoveTrailingForwardslash();
-                var queryParams = new List<string>();
-
-                if ( communication?.ListGroupId.HasValue == true )
-                {
-                    queryParams.Add( $"communicationListIdKey={communication.ListGroup?.IdKey ?? communication.ListGroupId.ToString()}" );
-                }
-
-                if ( communication != null )
-                {
-                    queryParams.Add( $"communicationIdKey={communication.IdKey}" );
-                }
-
-                var queryString = string.Empty;
-                if ( queryParams.Any() )
-                {
-                    queryString = $"?{string.Join( "&", queryParams )}";
-                }
-
-                listUnsubscribeHeaderValues.Add( $"<{rootUrl}/api/People/OneClickUnsubscribe/{personActionIdentifier}{queryString}>" );
-            }
-            else if ( mediumAttributes.TryGetValue( "UnsubscribeURL", out var unsubscribeUrl )
-                      && unsubscribeUrl.IsNotNullOrWhiteSpace() )
-            {
-                // If Enable One-Click Unsubscribe is false, then use the UnsubscribeURL value.
-                var httpValue = unsubscribeUrl.ResolveMergeFields( mergeFields, recipientEmail.CurrentPerson, recipientEmail.EnabledLavaCommands );
-                if ( httpValue.IsNotNullOrWhiteSpace() )
-                {
-                    listUnsubscribeHeaderValues.Add( $"<{httpValue}>" );
-                }
             }
 
             if ( listUnsubscribeHeaderValues.Any() )
@@ -1018,7 +1006,7 @@ namespace Rock.Communication
                 recipientEmail.EmailHeaders[ListUnsubscribeHeaderKey] = string.Join( ", ", listUnsubscribeHeaderValues );
 
                 // Only add the post header if the List-Unsubscribe header is added.
-                if ( isOneClickUnsubscribeEnabled )
+                if ( mediumAttributes.GetValueOrNull( "EnableOneClickUnsubscribe" ).AsBoolean() )
                 {
                     recipientEmail.EmailHeaders[ListUnsubscribePostHeaderKey] = "List-Unsubscribe=One-Click";
                 }
