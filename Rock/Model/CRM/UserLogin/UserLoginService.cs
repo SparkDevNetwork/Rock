@@ -159,6 +159,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Checks to see if the given username is valid according to the UsernameRegex (if defined).
+        /// </summary>
+        /// <param name="username">A username to verify.</param>
+        /// <returns>A <see cref="System.Boolean"/> value that indicates if the password is valid. <c>true</c> if valid; otherwise <c>false</c>.</returns>
+        public static bool IsUsernameValid( string username )
+        {
+            var globalAttributes = GlobalAttributesCache.Get();
+            string usernameRegex = globalAttributes.GetValue( "core.ValidUsernameRegularExpression" );
+
+            if ( string.IsNullOrEmpty( usernameRegex ) )
+            {
+                return true;
+            }
+            else
+            {
+                var regex = new Regex( usernameRegex );
+                return regex.IsMatch( username );
+            }
+        }
+
+        /// <summary>
         /// Checks to see if the given password is valid according to the PasswordRegex (if defined).
         /// </summary>
         /// <param name="password">A password to verify.</param>
@@ -225,20 +246,40 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a user friendly description of the username rules.
+        /// </summary>
+        /// <returns></returns>
+        public static string FriendlyUsernameRules()
+        {
+            var globalAttributes = GlobalAttributesCache.Get();
+            string validUsernameCaption = globalAttributes.GetValue( "core.ValidUsernameCaption" );
+
+            if ( string.IsNullOrEmpty( validUsernameCaption ) )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return validUsernameCaption;
+            }
+        }
+
+        /// <summary>
         /// Returns a user friendly description of the password rules.
         /// </summary>
         /// <returns>A user friendly description of the password rules.</returns>
         public static string FriendlyPasswordRules()
         {
             var globalAttributes = GlobalAttributesCache.Get();
-            string passwordRegex = globalAttributes.GetValue( "PasswordRegexFriendlyDescription" );
-            if ( string.IsNullOrEmpty( passwordRegex ) )
+            string validPasswordCaption = globalAttributes.GetValue( "PasswordRegexFriendlyDescription" );
+
+            if ( string.IsNullOrEmpty( validPasswordCaption ) )
             {
                 return string.Empty;
             }
             else
             {
-                return passwordRegex;
+                return validPasswordCaption;
             }
         }
 
