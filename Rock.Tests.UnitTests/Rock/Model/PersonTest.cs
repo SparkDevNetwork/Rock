@@ -21,11 +21,20 @@ namespace Rock.Tests.UnitTests.Rock.Model
         public void ShouldUpdateAgeOnBirthYearChange()
         {
             Person person = new Person();
-            person.SetBirthDate( RockDateTime.Now );
+            var now = RockDateTime.Now;
+
+            // Changing the BirthYear directly ends up creating an invalid
+            // date on leap days. So adjust for that.
+            if ( now.Month == 2 && now.Day == 29 )
+            {
+                now = now.AddDays( -1 );
+            }
+
+            person.SetBirthDate( now );
 
             var expectedAge = 25;
 
-            person.BirthYear = RockDateTime.Now.AddYears( -expectedAge ).Year;
+            person.BirthYear = now.AddYears( -expectedAge ).Year;
 
             Assert.AreEqual( expectedAge, person.Age );
         }
