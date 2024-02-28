@@ -312,10 +312,13 @@ namespace Rock.Blocks
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the HTML markup needed to fully initialize this block. This
+        /// method can be overridden to provide content for a fully static
+        /// block. Fully static blocks do not reload automatically when the
+        /// block settings have been modified.
         /// </summary>
-        /// <returns></returns>
-        public string GetControlMarkup()
+        /// <returns>An HTML string.</returns>
+        public virtual string GetControlMarkup()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
             var rootElementStyle = "";
@@ -339,9 +342,10 @@ namespace Rock.Blocks
             }
 
             var config = GetConfigBag( rootElementId );
+            var initialContent = GetInitialHtmlContent() ?? string.Empty;
 
             return
-$@"<div id=""{rootElementId}"" class=""obsidian-block-loading"" style=""{rootElementStyle.Trim()}""></div>
+$@"<div id=""{rootElementId}"" class=""obsidian-block-loading"" style=""{rootElementStyle.Trim()}"">{initialContent}</div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
@@ -349,6 +353,19 @@ Obsidian.onReady(() => {{
     }});
 }});
 </script>";
+        }
+
+        /// <summary>
+        /// Gets the initial HTML content to use when rendering an Obsidian
+        /// block. This can be overridden to create a psuedo-static block. This
+        /// content will be included in the HTML page for SEO indexing as well
+        /// as initial page rendering. The Obsidian code can then choose to
+        /// continue using this content or replace it once it loads.
+        /// </summary>
+        /// <returns>A string of HTML content.</returns>
+        protected virtual string GetInitialHtmlContent()
+        {
+            return string.Empty;
         }
 
         /// <summary>
