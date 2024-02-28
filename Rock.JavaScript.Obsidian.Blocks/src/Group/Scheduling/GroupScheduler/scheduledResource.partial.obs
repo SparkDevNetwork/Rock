@@ -2,21 +2,13 @@
 <template>
     <li v-if="resource" :class="resourceCssClass">
         <img :src="imgSrc" class="avatar" draggable="false">
-        <span class="resource-name"
-              ref="resourceNameElement"
+        <span ref="resourceNameElement"
+              class="resource-name"
               data-toggle="tooltip"
-              :data-original-title="declinedReasonTooltip">
+              :data-original-title="resourceTooltip">
             {{ personName }}
-            <i v-if="conflictTooltip"
-               ref="conflictElement"
-               class="fa fa-exclamation-triangle"
-               data-toggle="tooltip"
-               :data-original-title="conflictTooltip"></i>
-            <i v-if="preferenceTooltip"
-               ref="preferenceElement"
-               class="fa fa-minus-circle"
-               data-toggle="tooltip"
-               :data-original-title="preferenceTooltip"></i>
+            <i v-if="conflictTooltip" class="fa fa-exclamation-triangle"></i>
+            <i v-if="preferenceTooltip" class="fa fa-minus-circle"></i>
         </span>
         <span class="resource-role">{{ resource?.GroupRoleName }}</span>
 
@@ -141,8 +133,6 @@
     const personName = ref<string>(props.resource?.PersonName ?? "");
 
     const resourceNameElement = ref<HTMLElement | null>(null);
-    const conflictElement = ref<HTMLElement | null>(null);
-    const preferenceElement = ref<HTMLElement | null>(null);
 
     // #endregion
 
@@ -173,7 +163,10 @@
     });
 
     const declinedReasonTooltip = computed((): string | null | undefined => {
-        return props.resource.DeclinedReason;
+        const reason = props.resource?.DeclinedReason;
+        return reason
+            ? wrapTooltipSection(`<div class='font-weight-semibold'>Declined Reason</div><div>${reason}</div>`)
+            : "";
     });
 
     const preferenceList = computed((): ISchedulerResourceAssignment[] => {
@@ -194,7 +187,9 @@
             });
         }
 
-        return tooltip;
+        return tooltip
+            ? wrapTooltipSection(tooltip)
+            : "";
     });
 
     const schedulingConflictList = computed((): ISchedulerResourceAssignment[] => {
@@ -206,23 +201,32 @@
     const conflictTooltip = computed((): string => {
         let tooltip = "";
 
-        if (props.resource?.HasBlackoutConflict) {
-            tooltip += "<div class='conflict-type'>Cannot be scheduled due to a blackout.</div>";
-        }
-
-        if (props.resource?.HasGroupRequirementsConflict) {
-            tooltip += "<div class='conflict-type'>Does not meet the requirements for this group.</div>";
-        }
-
         if (schedulingConflictList.value?.length) {
-            tooltip += "<div class='conflict-type font-weight-semibold'>Scheduling Conflicts:</div>";
             schedulingConflictList.value.forEach((conflict: ISchedulerResourceAssignment) => {
                 const locationName = conflict.LocationName ? ` - ${conflict.LocationName}` : "";
                 tooltip += `<div>${conflict.ScheduleName}${locationName}</div>`;
             });
         }
 
-        return tooltip;
+        if (props.resource?.HasBlackoutConflict) {
+            tooltip += "<div>Cannot be scheduled due to a blackout.</div>";
+        }
+
+        if (props.resource?.HasGroupRequirementsConflict) {
+            tooltip += "<div>Does not meet the requirements for this group.</div>";
+        }
+
+        if (tooltip) {
+            tooltip = `<div class='font-weight-semibold'>Scheduling Conflicts</div>${tooltip}`;
+        }
+
+        return tooltip
+            ? wrapTooltipSection(tooltip)
+            : "";
+    });
+
+    const resourceTooltip = computed((): string => {
+        return `${declinedReasonTooltip.value}${preferenceTooltip.value}${conflictTooltip.value}`;
     });
 
     // #endregion
@@ -254,19 +258,20 @@
     }
 
     /**
-     * Configures the conflict & preference tooltips.
+     * Wraps a tooltip section with a div to make it easier to target for styling.
+     *
+     * @param tooltipSection The tooltip section to wrap.
      */
-    function configureTooltips(): void {
+    function wrapTooltipSection(tooltipSection: string): string {
+        return `<div class="tooltip-section">${tooltipSection}</div>`;
+    }
+
+    /**
+     * Configures the tooltip.
+     */
+    function configureTooltip(): void {
         if (resourceNameElement.value) {
-            tooltip(resourceNameElement.value);
-        }
-
-        if (conflictElement.value) {
-            tooltip(conflictElement.value, { html: true });
-        }
-
-        if (preferenceElement.value) {
-            tooltip(preferenceElement.value, { html: true });
+            tooltip(resourceNameElement.value, { html: true });
         }
     }
 
@@ -326,18 +331,9 @@
 
     watch([
         resourceNameElement,
-        conflictElement,
-        preferenceElement
+        resourceTooltip
     ], () => {
-        configureTooltips();
-    });
-
-    watch([
-        declinedReasonTooltip,
-        conflictTooltip,
-        preferenceTooltip
-    ], () => {
-        configureTooltips();
+        configureTooltip();
     });
 
     watch(isUpdatingPreference, () => {
