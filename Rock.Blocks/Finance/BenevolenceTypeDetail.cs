@@ -529,6 +529,7 @@ namespace Rock.Blocks.Finance
                 var trigger = workflowBag.Trigger.ConvertToEnum<BenevolenceWorkflowTriggerType>();
                 var workflowTypeId = workflowBag.WorkflowType.GetEntityId<WorkflowType>( rockContext );
                 var workflowQualifier = $"|{DefinedValueCache.GetId( workflowBag.PrimaryQualifier.AsGuid() )}|{DefinedValueCache.GetId( workflowBag.SecondaryQualifier.AsGuid() )}|";
+                var benevolenceWorkflowService = new BenevolenceWorkflowService( rockContext );
 
                 if ( !id.HasValue )
                 {
@@ -542,13 +543,13 @@ namespace Rock.Blocks.Finance
 
                 if ( id.HasValue )
                 {
-                    findWorkFlow = rockContext.BenevolenceWorkflows?.FirstOrDefault( w => w.BenevolenceTypeId == id.Value
+                    findWorkFlow = benevolenceWorkflowService.Queryable().FirstOrDefault( w => w.BenevolenceTypeId == id.Value
                         && w.TriggerType == trigger
                         && w.WorkflowTypeId == workflowTypeId );
                 }
                 else if (guid.HasValue)
                 {
-                    findWorkFlow = rockContext.BenevolenceWorkflows?.FirstOrDefault( w => w.BenevolenceType.Guid == guid.Value
+                    findWorkFlow = benevolenceWorkflowService.Queryable().FirstOrDefault( w => w.BenevolenceType.Guid == guid.Value
                         && w.TriggerType == trigger
                         && w.WorkflowTypeId == workflowTypeId );
                 }

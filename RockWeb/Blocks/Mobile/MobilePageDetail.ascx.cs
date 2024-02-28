@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Mobile
                 int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
                 int siteId = PageParameter( PageParameterKeys.SiteId ).AsInteger();
 
-                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
 
                 // Load page picker
                 if ( siteId != 0 )
