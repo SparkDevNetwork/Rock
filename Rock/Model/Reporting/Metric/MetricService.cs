@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Rock.Chart;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -577,7 +578,7 @@ FROM (
         /// <param name="metricValueType">Type of the metric value.</param>
         /// <param name="partitionValues">
         /// A collection of identifiers that specify the metric partition values to be included.
-        /// If not specified, values from all parititions will be included.
+        /// If not specified, values from all partitions will be included.
         /// </param>
         /// <returns></returns>
         public IQueryable<MetricValue> GetMetricValuesQuery( List<int> metricIds, MetricValueType? metricValueType = null, DateTime? startDate = null, DateTime? endDate = null, List<EntityIdentifierByTypeAndId> partitionValues = null )
@@ -603,7 +604,7 @@ FROM (
                 qry = qry.Where( a => a.MetricValueDateTime < endDate.Value );
             }
 
-            // If partition filters are specified, ensure that the MetricValue has matches the entity instance and is for the same Entity Type as the partition.
+            // If partition filters are specified, ensure that the MetricValue matches the entity instance and is for the same Entity Type as the partition.
             if ( partitionValues != null )
             {
                 partitionValues = partitionValues.Where( pv => pv.EntityTypeId != 0 && pv.EntityId != 0 ).ToList();
@@ -617,7 +618,7 @@ FROM (
         }
 
         /// <summary>
-        /// Gets the summary.
+        /// Gets a set of values for the specified Metrics, and summarizes the values for all of the specified partitions.
         /// </summary>
         /// <param name="metricIds">The metric identifier list.</param>
         /// <param name="startDate">The start date.</param>
@@ -625,7 +626,7 @@ FROM (
         /// <param name="metricValueType">Type of the metric value.</param>
         /// <param name="partitionValues">
         /// A collection of identifiers that specify the metric partition values to be included.
-        /// If not specified, values from all parititions will be included.
+        /// If not specified, values from all partitions will be included.
         /// </param>
         /// <returns></returns>
         public List<MetricValueSummary> GetMetricValueSummaries( List<int> metricIds, MetricValueType? metricValueType = null, DateTime? startDate = null, DateTime? endDate = null, List<EntityIdentifierByTypeAndId> partitionValues = null )
@@ -787,7 +788,7 @@ FROM (
         }
 
         /// <summary>
-        /// Identifies an entity value that identifies a metric parition.
+        /// Identifies an entity value that identifies a metric partition.
         /// </summary>
         public class EntityIdentifierByTypeAndId
         {

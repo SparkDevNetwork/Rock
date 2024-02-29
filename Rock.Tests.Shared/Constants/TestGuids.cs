@@ -161,6 +161,9 @@ namespace Rock.Tests.Shared
         {
 
             public const string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
+            public const string ScheduleSat1800Guid = "33FF69E9-059B-4702-B1E5-4D499CB7B07A";
+            public const string ScheduleSun0900Guid = "FF6FB240-0C32-4542-BE40-159C522F7E51";
+            public const string ScheduleSun1030Guid = "4628D917-EC9C-4269-B39C-5BCBEF3658E7";
             public const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
         }
 

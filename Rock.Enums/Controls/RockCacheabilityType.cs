@@ -15,34 +15,35 @@
 // </copyright>
 //
 
-using System;
-using Rock.Attribute;
+using System.ComponentModel;
 
-namespace Rock.Web.UI.Controls
+namespace Rock.Enums.Controls
 {
     /// <summary>
-    /// Represents a chart that provides a graphical representation of Rock data.
+    /// Type representing the cache strategy for this item.
     /// </summary>
-    [RockInternal( "1.14" )]
-    public interface IRockChart
+    public enum RockCacheabilityType
     {
-        #region Events
+        /// <summary>
+        /// Represents the public Cache-Control header.
+        /// </summary>
+        Public = 0,
 
         /// <summary>
-        /// Occurs when the chart is clicked.
+        /// Represents the private Cache-Control header.
         /// </summary>
-        event EventHandler<ChartClickArgs> ChartClick;
-
-        #endregion
+        Private = 1,
 
         /// <summary>
-        /// Gets or sets a flag indicating if the chart is visible.
+        /// Represents the no-cache Cache-Control header.
         /// </summary>
-        bool Visible { get; set; }
+        [Description( "No-Cache" )]
+        NoCache = 2,
 
         /// <summary>
-        /// Gets or sets a flag indicating if the ratio of height to width is maintained when the chart is resized.
+        /// Represents the no-store Cache-Control header.
         /// </summary>
-        bool MaintainAspectRatio { get; set; }
+        [Description( "No-Store" )]
+        NoStore = 3
     }
 }

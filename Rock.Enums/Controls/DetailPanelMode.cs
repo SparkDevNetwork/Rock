@@ -15,34 +15,26 @@
 // </copyright>
 //
 
-using System;
-using Rock.Attribute;
-
-namespace Rock.Web.UI.Controls
+namespace Rock.Enums.Controls
 {
     /// <summary>
-    /// Represents a chart that provides a graphical representation of Rock data.
+    /// The current mode the detail panel is displayed in.
     /// </summary>
-    [RockInternal( "1.14" )]
-    public interface IRockChart
+    public enum DetailPanelMode
     {
-        #region Events
+        /// <summary>
+        /// The panel is in view mode to show the current entity.
+        /// </summary>
+        View = 0,
 
         /// <summary>
-        /// Occurs when the chart is clicked.
+        /// The panel is in edit mode to edit existing entity.
         /// </summary>
-        event EventHandler<ChartClickArgs> ChartClick;
-
-        #endregion
+        Edit = 1,
 
         /// <summary>
-        /// Gets or sets a flag indicating if the chart is visible.
+        /// The panel is in add mode to add a new entity.
         /// </summary>
-        bool Visible { get; set; }
-
-        /// <summary>
-        /// Gets or sets a flag indicating if the ratio of height to width is maintained when the chart is resized.
-        /// </summary>
-        bool MaintainAspectRatio { get; set; }
+        Add = 2
     }
 }

@@ -604,6 +604,8 @@ namespace Rock.Communication
             templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
             templateRockEmailMessage.ThemeRoot = emailMessage.ThemeRoot;
 
+            templateRockEmailMessage.FromPersonId = emailMessage.FromPersonId;
+
             var fromAddress = GetFromAddress( emailMessage, mergeFields, globalAttributes );
             var fromName = GetFromName( emailMessage, mergeFields, globalAttributes );
 
@@ -745,6 +747,7 @@ namespace Rock.Communication
             recipientEmail.ReplyToEmail = GetRecipientReplyToAddress( emailMessage, mergeFields, checkResult );
 
             // From
+            recipientEmail.FromPersonId = emailMessage.FromPersonId;
             if ( checkResult.IsUnsafeDomain && checkResult.SafeFromAddress != null )
             {
                 recipientEmail.FromName = checkResult.SafeFromAddress.DisplayName;
@@ -854,6 +857,7 @@ namespace Rock.Communication
             recipientEmail.ReplyToEmail = GetRecipientReplyToAddress( emailMessage, mergeFields, checkResult );
 
             // From
+            recipientEmail.FromPersonId = emailMessage.FromPersonId;
             if ( checkResult.IsUnsafeDomain && checkResult.SafeFromAddress != null )
             {
                 recipientEmail.FromName = checkResult.SafeFromAddress.DisplayName;
@@ -1189,6 +1193,7 @@ namespace Rock.Communication
                     recipientEmailMessage.Subject,
                     recipientEmailMessage.Message );
 
+                transaction.FromPersonId = recipientEmailMessage.FromPersonId;
                 transaction.SystemCommunicationId = recipientEmailMessage.SystemCommunicationId;
 
                 transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();

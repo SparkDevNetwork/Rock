@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Activity", "The activity that should be activated", true, fieldTypeClassNames: new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
     [WorkflowTextOrAttribute( "Attribute Key to Match", "Attribute Key to Match", "The workflow attribute key to match against in the target workflow.", true, key: "WorkflowAttributeKey" )]
     [WorkflowTextOrAttribute( "Attribute Value to Match", "Attribute Value to Match", "The workflow attribute value to match against in the target workflow.", true, key: "WorkflowAttributeValue" )]
-    [Rock.SystemGuid.EntityTypeGuid( "2F192ADD-3222-4BD9-8E2F-CEF338B97EBD")]
+    [Rock.SystemGuid.EntityTypeGuid( "2F192ADD-3222-4BD9-8E2F-CEF338B97EBD" )]
     public class ActivateOtherActivityOnMatch : ActionComponent
     {
         /// <summary>
@@ -64,7 +64,7 @@ namespace Rock.Workflow.Action
 
             var attributeKey = GetAttributeValue( action, "WorkflowAttributeKey", true );
             var attributeValue = GetAttributeValue( action, "WorkflowAttributeValue", true );
-            if ( string.IsNullOrWhiteSpace( attributeKey) || string.IsNullOrWhiteSpace(attributeValue) )
+            if ( string.IsNullOrWhiteSpace( attributeKey ) || string.IsNullOrWhiteSpace( attributeValue ) )
             {
                 action.AddLogEntry( "Invalid Workflow Property", true );
                 return false;
@@ -79,27 +79,30 @@ namespace Rock.Workflow.Action
 
             var entityType = EntityTypeCache.Get( typeof( Rock.Model.Workflow ) );
 
-            var workflowIds = new AttributeValueService( rockContext )
+            // Use new context so only changes made to the activity by this action are persisted
+            using ( var newRockContext = new RockContext() )
+            {
+                var workflowIds = new AttributeValueService( newRockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Where( a => a.Attribute.Key == attributeKey && a.Value == attributeValue && a.Attribute.EntityTypeId == entityType.Id )
-                .Select(a => a.EntityId);
+                .Select( a => a.EntityId );
 
-            var workflows = new WorkflowService( rockContext )
-                .Queryable()
-                //.AsNoTracking()
-                .Where( w => w.WorkflowType.ActivityTypes.Any( a => a.Guid == activityType.Guid ) && workflowIds.Contains(w.Id) )
-                .ToList();
+                var workflows = new WorkflowService( newRockContext )
+                    .Queryable()
+                    .Where( w => w.WorkflowType.ActivityTypes.Any( a => a.Guid == activityType.Guid ) && workflowIds.Contains( w.Id ) )
+                    .ToList();
 
-            foreach (var workflow in workflows )
-            {
-                WorkflowActivity.Activate( activityType, workflow );
-                action.AddLogEntry( string.Format( "Activated new '{0}' activity in {1} {2}", activityType.ToString(), workflow.TypeName, workflow.WorkflowId ) );
+                foreach ( var workflow in workflows )
+                {
+                    WorkflowActivity.Activate( activityType, workflow, newRockContext );
+                    action.AddLogEntry( string.Format( "Activated new '{0}' activity in {1} {2}", activityType.ToString(), workflow.TypeName, workflow.WorkflowId ) );
+                }
+
+                newRockContext.SaveChanges();
             }
-            
 
             return true;
         }
-
     }
 }

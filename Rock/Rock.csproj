@@ -807,6 +807,7 @@
     <Compile Include="Chart\ChartJs\IChartJsCategorySeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsTimeSeriesDataPoint.cs" />
     <Compile Include="Chart\ChartDataFactory.cs" />
+    <Compile Include="Chart\MetricChartDataSourceBuilder.cs" />
     <Compile Include="CheckIn\CheckInGroupLocationSchedule.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
