@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.CheckIn
 
                     if ( _autoCheckin )
                     {
-                        var selectedOptions = person.GetOptions( true, true );
+                        var selectedOptions = person.GetOptions( true, false );
 
                         foreach ( var option in selectedOptions )
                         {
