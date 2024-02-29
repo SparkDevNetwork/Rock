@@ -1008,6 +1008,12 @@
     <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
     <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
     <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemEnumPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemSearchPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemTreePickerFieldType.cs" />
+    <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
@@ -2232,6 +2238,8 @@
     <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumberPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumbersPicker.cs" />
     <Compile Include="Web\UI\Controls\ColorSelector.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\UniversalItemSearchPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\UniversalItemTreePicker.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
     <Compile Include="Web\UI\Controls\TaskActivityProgressReporter.cs" />

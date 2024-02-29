@@ -28,6 +28,7 @@
     import { FieldTypeEditorUpdateAttributeConfigurationResultBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationResultBag";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
+    import { IFieldType } from "@Obsidian/Types/fieldType";
 
     const props = defineProps({
         modelValue: {
@@ -67,6 +68,22 @@
 
     /** The current values selected in the configuration properties. */
     const configurationValues = ref<Record<string, string>>(props.modelValue?.configurationValues ?? {});
+    const editConfigurationValues = ref<Record<string, string>>({});
+
+    const fieldType = computed((): IFieldType | null => {
+        if (!fieldTypeValue.value) {
+            return null;
+        }
+
+        const option = fieldTypeOptions.value
+            .find(o => areEqual(o.value, fieldTypeValue.value) || areEqual(o.category, fieldTypeValue.value));
+
+        if (!option || (!option.value && !option.category)) {
+            return null;
+        }
+
+        return getFieldType(option.category || option.value || "");
+    });
 
     /** True if the default value component should be shown. */
     const hasDefaultValue = computed((): boolean => {
@@ -76,10 +93,8 @@
             return false;
         }
 
-        const fieldType = getFieldType(fieldTypeValue.value);
-
         // Field type has final say if a default value should be shown.
-        return fieldType?.hasDefaultComponent() ?? false;
+        return fieldType.value?.hasDefaultComponent(configurationValues.value) ?? false;
     });
 
     /** True if the field types options are ready for display. */
@@ -99,9 +114,8 @@
 
     /** The UI component that will handle the configuration of the field type. */
     const configurationComponent = computed((): Component | null => {
-        const fieldType = getFieldType(fieldTypeValue.value);
-        if (fieldType) {
-            return fieldType.getConfigurationComponent();
+        if (fieldType.value) {
+            return fieldType.value.getConfigurationComponent();
         }
         return null;
     });
@@ -113,16 +127,24 @@
 
     /** The name of the currently selected field type. */
     const fieldTypeName = computed((): string => {
-        const matches = fieldTypeOptions.value.filter(v => areEqual(v.value, fieldTypeValue.value));
+        if (!fieldTypeValue.value) {
+            return "";
+        }
 
-        return matches.length >= 1 ? matches[0].text ?? "" : "";
+        const option = fieldTypeOptions.value
+            .find(o => areEqual(o.value, fieldTypeValue.value) || areEqual(o.category, fieldTypeValue.value));
+
+            return option?.text ?? "";
     });
 
     const defaultValueAttribute = computed((): PublicAttributeBag => {
+        const option = fieldTypeOptions.value
+            .find(o => areEqual(o.value, fieldTypeValue.value) || areEqual(o.category, fieldTypeValue.value));
+
         return {
-            fieldTypeGuid: fieldTypeValue.value,
+            fieldTypeGuid: option?.category || fieldTypeValue.value,
             attributeGuid: newGuid(),
-            configurationValues: configurationValues.value,
+            configurationValues: editConfigurationValues.value,
             name: "Default Value",
             key: "DefaultValue",
             description: "",
@@ -196,13 +218,14 @@
             .then(result => {
                 resetToDefaults();
 
-                if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationValues) {
+                if (result.isSuccess && result.data && result.data.configurationProperties && result.data.adminConfigurationValues && result.data.editConfigurationValues) {
                     fieldErrorMessage.value = "";
                     isConfigurationReady.value = true;
 
                     isInternalUpdate = true;
                     configurationProperties.value = result.data.configurationProperties;
-                    configurationValues.value = result.data.configurationValues;
+                    configurationValues.value = result.data.adminConfigurationValues;
+                    editConfigurationValues.value = result.data.editConfigurationValues;
                     defaultValue.value = result.data.defaultValue ?? "";
                     isInternalUpdate = false;
 

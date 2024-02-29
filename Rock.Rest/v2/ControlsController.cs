@@ -19,10 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
+
 using Rock.Attribute;
 using Rock.Badge;
 using Rock.ClientService.Core.Category;
@@ -31,6 +33,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Extension;
+using Rock.Field;
 using Rock.Field.Types;
 using Rock.Financial;
 using Rock.Lava;
@@ -2352,7 +2355,8 @@ namespace Rock.Rest.v2
                 .Select( f => new ListItemBag
                 {
                     Text = f.Name,
-                    Value = f.Guid.ToString()
+                    Value = f.Guid.ToString(),
+                    Category = f.Field?.GetType().GetCustomAttribute<UniversalFieldTypeGuidAttribute>()?.Guid.ToString()
                 } )
                 .ToList();
 
@@ -2393,12 +2397,16 @@ namespace Rock.Rest.v2
             var configurationProperties = fieldType.GetPublicEditConfigurationProperties( configurationValues );
 
             // Get the public configuration options from the internal options (values).
-            var publicConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
+            var publicAdminConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
+
+            // Get the public configuration options from the internal options (values).
+            var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );
 
             return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
             {
                 ConfigurationProperties = configurationProperties,
-                ConfigurationValues = publicConfigurationValues,
+                AdminConfigurationValues = publicAdminConfigurationValues,
+                EditConfigurationValues = publicEditConfigurationValues,
                 DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
         }

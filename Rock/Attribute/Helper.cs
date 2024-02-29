@@ -1373,7 +1373,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 newAttribute.Order = attributeService.Queryable().Max( a => a.Order ) + 1;
             }
 
-            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeGuid ?? Guid.Empty );
+            var fieldTypeCache = FieldTypeCache.Get( attribute.RealFieldTypeGuid ?? attribute.FieldTypeGuid ?? Guid.Empty );
 
             // For now, if they try to make changes to an attribute that is using
             // an unknown field type we just can't do it. Even if they only change

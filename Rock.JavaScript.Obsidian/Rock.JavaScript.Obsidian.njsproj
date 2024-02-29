@@ -508,6 +508,7 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\rockCacheabilityType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\slidingDateRangeType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\timeUnitType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\universalItemValuePickerDisplayStyle.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\addressInvalidReason.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\auditType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\benchmarkRepititionMode.ts" />
@@ -1089,6 +1090,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheabilityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\universalItemSearchPickerItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />
@@ -1234,6 +1236,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepTypePickerGetStepTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorGetConfigurationOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\universalItemSearchPickerOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\universalItemTreePickerOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowActionTypePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowPickerGetWorkflowsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowPickerGetWorkflowTypeForWorkflowOptionsBag.d.ts" />

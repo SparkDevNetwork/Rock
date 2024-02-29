@@ -203,7 +203,7 @@
     const postHtml = ref(props.modelValue?.postHtml ?? "");
     const categories = ref([...(props.modelValue?.categories ?? [])]);
     const fieldTypeValue = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
-        fieldTypeGuid: props.modelValue?.fieldTypeGuid ?? "",
+        fieldTypeGuid: props.modelValue?.realFieldTypeGuid ?? props.modelValue?.fieldTypeGuid ?? "",
         configurationValues: { ...(props.modelValue?.configurationValues ?? {}) },
         defaultValue: props.modelValue?.defaultValue ?? ""
     });

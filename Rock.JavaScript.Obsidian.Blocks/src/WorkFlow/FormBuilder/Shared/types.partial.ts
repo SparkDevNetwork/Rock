@@ -147,10 +147,15 @@ export type FormField = {
     guid: Guid;
 
     /**
-     * The unique identifier of the field type used to render the edit control
-     * of this field.
+     * The unique identifier of the field type used to identify this field.
      */
     fieldTypeGuid: Guid;
+
+    /**
+     * The unique identifier of the field type used to render the edit control
+     * of this field if it is a universal type.
+     */
+    universalFieldTypeGuid?: Guid | null;
 
     /** The display name of this field. */
     name: string;
@@ -184,6 +189,9 @@ export type FormField = {
 
     /** The configuration values that have been set for this field. */
     configurationValues?: Record<string, string> | null;
+
+    /** The configuration values that have been set for this field when in edit mode. */
+    editConfigurationValues?: Record<string, string> | null;
 
     /** The rule that controls when this field is visible. */
     visibilityRule?: FieldFilterGroupBag | null;
