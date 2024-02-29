@@ -410,6 +410,15 @@ registerFieldType(FieldTypeGuids.Time, new TimeFieldType());
 import { TimeZoneFieldType } from "./timeZoneField.partial";
 registerFieldType(FieldTypeGuids.TimeZone, new TimeZoneFieldType());
 
+import { UniversalItemPickerFieldType } from "./universalItemPickerField.partial";
+registerFieldType("b69b5a61-6fcd-4e3b-bb45-5f6802514953", new UniversalItemPickerFieldType());
+
+import { UniversalItemSearchPickerFieldType } from "./universalItemSearchPickerField.partial";
+registerFieldType("c5b32713-fb46-41c0-8bbc-9bd4142f841a", new UniversalItemSearchPickerFieldType());
+
+import { UniversalItemTreePickerFieldType } from "./universalItemTreePickerField.partial";
+registerFieldType("c7485f3f-0c10-4db6-9574-c10b195617e4", new UniversalItemTreePickerFieldType());
+
 import { UrlLinkFieldType } from "./urlLinkField.partial";
 registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
 

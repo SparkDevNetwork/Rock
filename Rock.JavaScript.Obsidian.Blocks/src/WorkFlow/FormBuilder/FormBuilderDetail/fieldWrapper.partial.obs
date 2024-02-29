@@ -13,10 +13,10 @@
     function getAttributeFromField(field: FormField): PublicAttributeBag {
         return {
             attributeGuid: newGuid(),
-            fieldTypeGuid: field.fieldTypeGuid,
+            fieldTypeGuid: field.universalFieldTypeGuid ?? field.fieldTypeGuid,
             name: !(field.isHideLabel ?? false) ? field.name : "",
             key: field.key,
-            configurationValues: field.configurationValues,
+            configurationValues: field.editConfigurationValues,
             isRequired: field.isRequired ?? false,
             description: field.description ?? "",
             order: 0,

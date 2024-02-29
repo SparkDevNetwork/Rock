@@ -108,12 +108,12 @@
         //const _ignored = props.attributeValue.value;
 
         return props.isCondensed
-            ? field.value?.getCondensedFormattedComponent()
-            : field.value?.getFormattedComponent();
+            ? field.value?.getCondensedFormattedComponent(configurationValues.value)
+            : field.value?.getFormattedComponent(configurationValues.value);
     });
 
     /** The edit component to use to display the value. */
-    const editComponent = computed(() => field.value?.getEditComponent());
+    const editComponent = computed(() => field.value?.getEditComponent(configurationValues.value));
 
     /** The value to display or edit. */
     const value = computed({
