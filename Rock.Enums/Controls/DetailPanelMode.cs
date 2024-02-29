@@ -15,38 +15,26 @@
 // </copyright>
 //
 
-using Rock.Enums.Controls;
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Controls
+namespace Rock.Enums.Controls
 {
     /// <summary>
-    /// Represents the Cache-Control settings used inside Rock.
+    /// The current mode the detail panel is displayed in.
     /// </summary>
-    public class RockCacheabilityBag
+    public enum DetailPanelMode
     {
         /// <summary>
-        /// Gets or sets the type of the rock cacheability type.
+        /// The panel is in view mode to show the current entity.
         /// </summary>
-        /// <value>
-        /// The type of the rock cacheability.
-        /// </value>
-        public RockCacheabilityType RockCacheabilityType { get; set; }
+        View = 0,
 
         /// <summary>
-        /// Gets or sets the maximum age.
+        /// The panel is in edit mode to edit existing entity.
         /// </summary>
-        /// <value>
-        /// The maximum age.
-        /// </value>
-        public TimeIntervalBag MaxAge { get; set; }
+        Edit = 1,
 
         /// <summary>
-        /// Gets or sets the shared maximum age.
+        /// The panel is in add mode to add a new entity.
         /// </summary>
-        /// <value>
-        /// The shared maximum age.
-        /// </value>
-        public TimeIntervalBag SharedMaxAge { get; set; }
+        Add = 2
     }
 }

@@ -15,38 +15,35 @@
 // </copyright>
 //
 
-using Rock.Enums.Controls;
-using Rock.ViewModels.Utility;
+using System.ComponentModel;
 
-namespace Rock.ViewModels.Controls
+namespace Rock.Enums.Controls
 {
     /// <summary>
-    /// Represents the Cache-Control settings used inside Rock.
+    /// Type representing the cache strategy for this item.
     /// </summary>
-    public class RockCacheabilityBag
+    public enum RockCacheabilityType
     {
         /// <summary>
-        /// Gets or sets the type of the rock cacheability type.
+        /// Represents the public Cache-Control header.
         /// </summary>
-        /// <value>
-        /// The type of the rock cacheability.
-        /// </value>
-        public RockCacheabilityType RockCacheabilityType { get; set; }
+        Public = 0,
 
         /// <summary>
-        /// Gets or sets the maximum age.
+        /// Represents the private Cache-Control header.
         /// </summary>
-        /// <value>
-        /// The maximum age.
-        /// </value>
-        public TimeIntervalBag MaxAge { get; set; }
+        Private = 1,
 
         /// <summary>
-        /// Gets or sets the shared maximum age.
+        /// Represents the no-cache Cache-Control header.
         /// </summary>
-        /// <value>
-        /// The shared maximum age.
-        /// </value>
-        public TimeIntervalBag SharedMaxAge { get; set; }
+        [Description( "No-Cache" )]
+        NoCache = 2,
+
+        /// <summary>
+        /// Represents the no-store Cache-Control header.
+        /// </summary>
+        [Description( "No-Store" )]
+        NoStore = 3
     }
 }

@@ -21,15 +21,35 @@
 // </copyright>
 //
 
-import { TimeIntervalBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/timeIntervalBag";
+/**
+ * Provides a general mode to the number of repititions to run during
+ * a benchmark.
+ */
+export const BenchmarkRepititionMode = {
+    /** A normal run. This takes 30-60 seconds. */
+    Normal: 0,
 
-export type RockCacheabilityBag = {
-    /** Gets or sets the maximum age. */
-    maxAge?: TimeIntervalBag | null;
+    /** A fast run, less accurate. This takes 15-30 seconds. */
+    Fast: 1,
 
-    /** Gets or sets the type of the rock cacheability type. */
-    rockCacheabilityType: number;
+    /** An extended run, slightly more accurate. This takes 60-90 seconds. */
+    Extended: 2
+} as const;
 
-    /** Gets or sets the shared maximum age. */
-    sharedMaxAge?: TimeIntervalBag | null;
+/**
+ * Provides a general mode to the number of repititions to run during
+ * a benchmark.
+ */
+export const BenchmarkRepititionModeDescription: Record<number, string> = {
+    0: "Normal",
+
+    1: "Fast",
+
+    2: "Extended"
 };
+
+/**
+ * Provides a general mode to the number of repititions to run during
+ * a benchmark.
+ */
+export type BenchmarkRepititionMode = typeof BenchmarkRepititionMode[keyof typeof BenchmarkRepititionMode];

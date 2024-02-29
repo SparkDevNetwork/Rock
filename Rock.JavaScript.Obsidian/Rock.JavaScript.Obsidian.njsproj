@@ -510,6 +510,7 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\timeUnitType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\addressInvalidReason.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\auditType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\benchmarkRepititionMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\cameraBarcodeConfiguration.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\changeType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\colorDepth.ts" />

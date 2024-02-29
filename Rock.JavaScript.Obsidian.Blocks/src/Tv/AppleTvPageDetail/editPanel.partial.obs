@@ -34,7 +34,7 @@
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
     import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
-    import { RockCacheabilityBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/rockCacheabilityBag";
+    import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
 
     const props = defineProps({
         modelValue: {
