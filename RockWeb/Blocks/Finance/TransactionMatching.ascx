@@ -498,8 +498,7 @@
                     });
                 }
                 else {
-                    // do the Postback (which will save the changes)
-                    window.location = successLocation;
+                    // Do the Postback wired up via the button's OnClick handler (which will save the changes).
                 }
             }
         </script>
