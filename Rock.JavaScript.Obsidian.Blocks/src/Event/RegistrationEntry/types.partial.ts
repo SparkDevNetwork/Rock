@@ -112,7 +112,6 @@ export type CurrencyOptions = {
 };
 
 export type CurrencyParts = {
-    isNegative: boolean;
     units: number;
     precision: number;
 };
@@ -149,13 +148,9 @@ export class Currency {
     readonly _currencyOptions: CurrencyOptions;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     readonly _currencyParts: CurrencyParts;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    readonly _isZero: boolean;
 
-    // TODO JMH Remove __createdFrom once the constructor issue is resolved.
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    readonly __createdFrom: number | CurrencyParts;
-
+    _isZero: boolean | null = null;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _toString: string | null = null;
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -164,6 +159,8 @@ export class Currency {
     _minorUnits: string | null = null;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _unitsString: string | null = null;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    _isNegative: boolean | null = null;
 
     // #endregion Fields
 
@@ -189,7 +186,7 @@ export class Currency {
 
     /** Returns `true` if this currency is negative; otherwise, `false` is returned. */
     get isNegative(): boolean {
-        return this._currencyParts.isNegative;
+        return (this._isNegative ?? (this._isNegative = this.units < 0));
     }
 
     /** Gets the precision (the number of minor unit digits after the decimal). */
@@ -209,7 +206,7 @@ export class Currency {
 
     /** Returns `true` if this currency is equal to 0; otherwise, `false`. */
     get isZero(): boolean {
-        return this._isZero;
+        return (this._isZero ?? (this._isZero = this._currencyParts.units === 0));
     }
 
     /** Gets the format string. */
@@ -240,26 +237,12 @@ export class Currency {
         // Set the currency options as readonly and const so they cannot be modified once set.
         this._currencyOptions = createReadonlyCurrencyOptions(options);
 
-        // TODO JMH Remove this debug tracking code.
-        // Set the origin from which this currency is created.
-        this.__createdFrom = currency;
-
-        if (typeof currency === "number") {
-            // Set whether or not this currency is equal to zero.
-            this._isZero = currency === 0;
-        }
-        else {
-            // Set whether or not this currency is equal to zero.
-            this._isZero = currency.units === 0;
-        }
-
         // Get the currency parts from the number.
-        const { isNegative, units, precision } = Currency.getCurrencyParts(currency, this._currencyOptions.precision);
+        const { units, precision } = Currency.getCurrencyParts(currency ?? 0, this._currencyOptions.precision);
 
         // Set the currency parts as readonly and const so they cannot be modified once set.
         this._currencyParts = {
-            isNegative: isNegative && !this.isZero,
-            units: Math.abs(units),
+            units: units,
             precision
         } as const;
     }
@@ -294,57 +277,14 @@ export class Currency {
             return $return(this);
         }
 
-        const thisUnits = this._currencyParts.units;
-        const { isNegative: otherIsNegative, units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
+        const { units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
 
-        if (this.isNegative === otherIsNegative) {
-            // Add the currencies if they have the same sign (+/-).
-            // n + m
-
-            // Return the new Currency object.
-            const units = thisUnits + otherUnits;
-
-            return $return(new Currency(
-                {
-                    isNegative: this.isNegative,
-                    units: Math.abs(units),
-                    precision: this.precision
-                },
-                this._currencyOptions
-            ));
-        }
-        else {
-            // Adding currencies with a different sign (+/-) is the
-            // same as subtracting one from the other.
-
-            if (thisUnits === otherUnits) {
-                // n + -n = 0 (additive inverse)
-                return $return(Currency.createZeroCurrency(this._currencyOptions));
+        return $return(new Currency(
+            {
+                precision: this.precision,
+                units: this.units + otherUnits
             }
-
-            if (!otherIsNegative) {
-                // The other number is negative.
-                // n + -m = n - m
-                const { isNegative, units, precision } = Currency.getCurrencyParts(thisUnits - otherUnits, this.precision);
-                return new Currency(
-                    {
-                        isNegative,
-                        units: Math.abs(units),
-                        precision
-                    },
-                    this._currencyOptions);
-            }
-            else {
-                // This number is negative.
-                // -n + m = -1 * (n - m)
-                const { isNegative, units, precision } = Currency.getCurrencyParts(thisUnits - otherUnits, this.precision);
-                return new Currency({
-                    isNegative: !isNegative, // Flip the sign of the result in this case.
-                    units: Math.abs(units),
-                    precision
-                }, this._currencyOptions);
-            }
-        }
+        ));
     }
 
     /**
@@ -362,8 +302,7 @@ export class Currency {
 
         return $return(new Currency(
             {
-                isNegative: !this.isNegative,
-                units: Math.abs(this._currencyParts.units),
+                units: -1 * this._currencyParts.units,
                 precision: this.precision
             },
             this._currencyOptions
@@ -396,26 +335,25 @@ export class Currency {
             return $return(this, Currency.createZeroCurrency(this._currencyOptions));
         }
 
-        // Let divide by zero cause an error for now.
-        const quotientUnits = ~~(this._currencyParts.units / divisor);
-        const remainderUnits = this._currencyParts.units - (quotientUnits * divisor);
-
         const isNegative = this.isNegative ? divisor >= 0 : divisor < 0;
+        const truncateUnits = isNegative ? Math.ceil : Math.floor;
+
+        // Let divide by zero cause an error for now.
+        const quotientUnits = truncateUnits(this._currencyParts.units / divisor);
+        const remainderUnits = this._currencyParts.units - (quotientUnits * divisor);
 
         const quotient = new Currency(
             {
-                isNegative,
                 precision: this.precision,
-                units: Math.abs(quotientUnits)
+                units: quotientUnits
             },
             this._currencyOptions
         );
 
         const remainder = new Currency(
             {
-                isNegative,
                 precision: this.precision,
-                units: Math.abs(remainderUnits)
+                units: remainderUnits
             },
             this._currencyOptions
         );
@@ -447,68 +385,15 @@ export class Currency {
             return $return(this);
         }
 
-        const thisUnits = this._currencyParts.units;
-        const { isNegative: otherIsNegative, units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
+        const { units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
 
-        if (this.isNegative !== otherIsNegative) {
-            // The currencies have different signs.
-            if (otherIsNegative) {
-                // n - (-m) = n + m
-                const units = thisUnits + otherUnits;
-                return $return(new Currency(
-                    {
-                        isNegative: false,
-                        units: Math.abs(units),
-                        precision: this.precision
-                    },
-                    this._currencyOptions
-                ));
-            }
-            else {
-                // -n - m = -1 * (n + m)
-                const units = thisUnits + otherUnits;
-                return $return(new Currency(
-                    {
-                        isNegative: true,
-                        units: Math.abs(units),
-                        precision: this.precision
-                    },
-                    this._currencyOptions
-                ));
-            }
-        }
-        else {
-            // The currencies have the same sign.
-            if (thisUnits === otherUnits) {
-                // n - n = 0 (zero identity when both positive)
-                // -n - (-n) = -n + n = 0 (zero identity when both negative)
-                return $return(Currency.createZeroCurrency(this._currencyOptions));
-            }
-            else if (this.isNegative) {
-                // -n - (-m) = -n + m = -1 * (n - m)
-                const units = thisUnits - otherUnits;
-                const isNegative = units < 0;
-                return $return(new Currency({
-                        isNegative: !isNegative, // Flip the sign in this case.
-                        units: Math.abs(units),
-                        precision: this.precision
-                    },
-                    this._currencyOptions
-                ));
-            }
-            else {
-                // n - m
-                const units = thisUnits - otherUnits;
-                const isNegative = units < 0;
-                return $return(new Currency({
-                        isNegative,
-                        units: Math.abs(units),
-                        precision: this.precision
-                    },
-                    this._currencyOptions
-                ));
-            }
-        }
+        return $return(new Currency(
+            {
+                units: this.units - otherUnits,
+                precision: this.precision
+            },
+            this._currencyOptions
+        ));
     }
 
     /**
@@ -534,7 +419,7 @@ export class Currency {
      */
     format(formatString: string = CurrencyFormatString.default): string {
         const $return = ((formatString: string) => (result: string): string => {
-            console.debug(`"${this.isNegative ? "-" : ""}${this.units}".format("${formatString}") => "${result}"`);
+            console.debug(`"${this.units}".format("${formatString}") => "${result}"`);
             return result;
         })(formatString);
 
@@ -545,6 +430,11 @@ export class Currency {
 
         // Create the group strategy.
         function formatMajorUnits(number: string, groups: MajorUnitGroup[]): string {
+            // Remove the leading negative sign if present.
+            if (number.startsWith("-")) {
+                number = number.substring(1);
+            }
+
             if (groups.length === 0) {
                 // No need to format the number if there are no groups.
                 return number;
@@ -668,10 +558,9 @@ export class Currency {
             return $return(this.isZero && isZero);
         }
 
-        const currencyParts = Currency.getCurrencyParts(currency, this.precision);
+        const { units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
 
-        return $return(currencyParts.isNegative === this.isNegative
-            && currencyParts.units === this._currencyParts.units);
+        return $return(this.units === otherUnits);
     }
 
     /**
@@ -692,10 +581,9 @@ export class Currency {
             return $return(!(this.isZero && isZero));
         }
 
-        const currencyParts = Currency.getCurrencyParts(currency, this.precision);
+        const { units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
 
-        return $return(currencyParts.isNegative !== this.isNegative
-            || currencyParts.units !== this._currencyParts.units);
+        return $return(this.units !== otherUnits);
     }
 
     /**
@@ -715,18 +603,9 @@ export class Currency {
             return $return(false);
         }
 
-        const currencyParts = Currency.getCurrencyParts(currency, this.precision);
+        const { units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
 
-        if (this.isNegative && !currencyParts.isNegative) {
-            // -n < m? Always. A negative number is always less than a positive number.
-            return $return(true);
-        }
-        else if (!this.isNegative && currencyParts.isNegative) {
-            // n < -m? Never. A positive number is never less than a negative number.
-            return $return(false);
-        }
-
-        return this._currencyParts.units < currencyParts.units;
+        return this.units < otherUnits;
     }
 
     /** Gets the absolute value of this currency. */
@@ -742,7 +621,6 @@ export class Currency {
         else {
             return $return(new Currency(
                 {
-                    isNegative: false,
                     precision: this.precision,
                     units: Math.abs(this.units)
                 },
@@ -803,7 +681,15 @@ export class Currency {
     // #region Private Static Methods
 
     private static isCurrencyZero(currency: Currency | number): boolean {
-        return (typeof currency === "number" && currency === 0) || (typeof currency !== "number" && currency.isZero);
+        if (typeof currency === "number" && currency === 0) {
+            return true;
+        }
+
+        if (typeof currency !== "number" && currency.isZero) {
+            return true;
+        }
+
+        return false;
     }
 
     private static negate(currency: Currency | number, options?: Partial<CurrencyOptions>): Currency {
@@ -832,16 +718,15 @@ export class Currency {
             // Ensure the precision is the same as the supplied value using truncation.
             const precisionDiff = targetPrecision - currency.precision;
             if (precisionDiff !== 0) {
+                const adjustedUnits = currency.units * (Math.pow(10, precisionDiff));
                 return $return({
-                    isNegative: currency.isNegative,
-                    units: Math.abs(~~(currency.units * (Math.pow(10, precisionDiff)))),
+                    units: currency.units < 0 ? Math.ceil(adjustedUnits) : Math.floor(adjustedUnits),
                     precision: targetPrecision,
                 });
             }
             else {
                 return $return({
-                    isNegative: currency.isNegative,
-                    units: Math.abs(currency.units),
+                    units: currency.units,
                     precision: targetPrecision
                 });
             }
@@ -852,7 +737,12 @@ export class Currency {
         // Therefore, it is safe to split number.toString() by "." to get the whole and fractional parts of a number,
         // assuming the number is not NaN, Infinity, NegativeInfinity, or scientific notation.
         if (!Number.isFinite(currency)) {
-            throw "The currency must be a finite number.";
+            debugger;
+            console.error(`${currency} must be a finite number`);
+            return $return({
+                units: Number.MAX_SAFE_INTEGER,
+                precision: targetPrecision
+            });
         }
 
         let currencyAsString = currency.toString();
@@ -867,14 +757,19 @@ export class Currency {
 
         const isNegative: boolean = parts[0]?.startsWith("-") ?? false;
         const majorUnits: string = parts[0]?.substring(isNegative ? 1 : 0) ?? "";
-        let minorUnits: string = parts[1]?.substring(0, targetPrecision) ?? "";
+        let minorUnits: string = parts[1]?.substring(0, targetPrecision + 1) ?? "";
+        if (minorUnits.length === targetPrecision + 1) {
+            // Round up.
+            if (minorUnits[targetPrecision] >= "5") {
+                minorUnits = (+minorUnits.slice(0, targetPrecision) + 1).toString();
+            }
+        }
         if (minorUnits.length < targetPrecision) {
             minorUnits = minorUnits + "0".repeat(targetPrecision - minorUnits.length);
         }
         const units: number = +(`${majorUnits}${minorUnits}`);
         return $return({
-            isNegative,
-            units: Math.abs(units),
+            units: units,
             precision: targetPrecision
         });
     }
