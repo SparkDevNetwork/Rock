@@ -175,6 +175,16 @@ namespace Rock.Communication.SmsActions
         Category = "Response",
         Key = AttributeKeys.MissingAmountResponse )]
 
+    [CodeEditorField( "Transaction Failure Response",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        Description = "The response that will be sent if the transaction fails. <span class='tip tip-lava'></span> Use {{ Lava | Debug }} to see all available fields.",
+        IsRequired = true,
+        DefaultValue = "Your transaction could not be processed. Please text GIVE & amount (example: GIVE $250) to try again, or text SETUP if you need to change your payment details.",
+        Order = 15,
+        Category = "Response",
+        Key = AttributeKeys.TransactionFailureResponse )]
+
     #endregion Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "EFB22EDF-49E5-46C9-B204-AD99876E44D6" )]
@@ -206,6 +216,7 @@ namespace Rock.Communication.SmsActions
             public const string RefundSuccessResponse = "RefundSuccessResponse";
             public const string RefundFailureResponse = "RefundFailureResponse";
             public const string MissingAmountResponse = "MissingAmountResponse";
+            public const string TransactionFailureResponse = "TransactionFailureResponse";
         }
 
         /// <summary>
@@ -452,7 +463,7 @@ namespace Rock.Communication.SmsActions
             // If the args are not valid, send the setup response.
             if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) )
             {
-                return GetResolvedSmsResponse( AttributeKeys.HelpResponse, context );
+                return GetResolvedSmsResponse( AttributeKeys.SetupResponse, context );
             }
 
             // If charge seems like a duplicate or repeat, tell the sender.
@@ -464,9 +475,10 @@ namespace Rock.Communication.SmsActions
             // Charge the payment.
             var transaction = automatedPaymentProcessor.ProcessCharge( out errorMessage );
 
+            // If the transaction did not process (possibly a gateway error), send the "transaction failure" response.
             if ( transaction == null || !string.IsNullOrEmpty( errorMessage ) )
             {
-                return GetResolvedSmsResponse( AttributeKeys.HelpResponse, context );
+                return GetResolvedSmsResponse( AttributeKeys.TransactionFailureResponse, context );
             }
 
             // Tag the transaction's summary with info from this action.
