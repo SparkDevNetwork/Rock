@@ -105,10 +105,11 @@ export type RegistrationEntryState = {
 };
 
 export type CurrencyOptions = {
-    precision: number,
-    symbol: string,
-    code: string,
-    formatString: string
+    precision: number;
+    symbol: string;
+    code: string;
+    formatString: string;
+    isLoggingEnabled: boolean;
 };
 
 export type CurrencyParts = {
@@ -123,6 +124,7 @@ export function createReadonlyCurrencyOptions(options?: Partial<CurrencyOptions>
             symbol: options?.symbol ?? defaultCurrencyOptions.symbol,
             code: options?.code ?? defaultCurrencyOptions.code,
             formatString: options?.formatString ?? defaultCurrencyOptions.formatString,
+            isLoggingEnabled: options?.isLoggingEnabled ?? defaultCurrencyOptions.isLoggingEnabled,
         }
     } as const;
 }
@@ -138,7 +140,8 @@ const defaultCurrencyOptions: CurrencyOptions = {
     precision: 2,
     symbol: "$",
     code: "USD",
-    formatString: CurrencyFormatString.default
+    formatString: CurrencyFormatString.default,
+    isLoggingEnabled: false,
 } as const;
 
 export class Currency {
@@ -174,6 +177,9 @@ export class Currency {
         if (this._unitsString === null) {
             // 0 =>
             let parts = this.units.toString();
+            if (parts.startsWith("-")) {
+                parts = parts.substring(1);
+            }
             if (parts.length < (this.precision + 1)) {
                 parts = "0".repeat(this.precision + 1 - parts.length) + parts;
             }
@@ -262,7 +268,7 @@ export class Currency {
      */
     add(currency: Currency | number): Currency {
         const $return = ((result: Currency): Currency => {
-            console.debug(`${this} + ${currency} = ${result}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`${this} + ${currency} = ${result}`);
             return result;
         }).bind(this);
 
@@ -296,7 +302,7 @@ export class Currency {
      */
     negate(): Currency {
         const $return = ((result: Currency): Currency => {
-            console.debug(`-${this} = ${result}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`-${this} = ${result}`);
             return result;
         }).bind(this);
 
@@ -319,7 +325,7 @@ export class Currency {
      */
     divide(divisor: number): { quotient: Currency, remainder: Currency } {
         const $return = ((quotientResult: Currency, remainderResult: Currency): { quotient: Currency, remainder: Currency } => {
-            console.debug(`${this} / ${divisor} = ${quotientResult} r${remainderResult}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`${this} / ${divisor} = ${quotientResult} r${remainderResult}`);
             return {
                 quotient: quotientResult,
                 remainder: remainderResult
@@ -372,7 +378,7 @@ export class Currency {
      */
     subtract(currency: number | Currency): Currency {
         const $return = ((result: Currency): Currency => {
-            console.debug(`${this} - ${currency} = ${result}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`${this} - ${currency} = ${result}`);
             return result;
         }).bind(this);
 
@@ -419,7 +425,7 @@ export class Currency {
      */
     format(formatString: string = CurrencyFormatString.default): string {
         const $return = ((formatString: string) => (result: string): string => {
-            console.debug(`"${this.units}".format("${formatString}") => "${result}"`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`"${this.units}".format("${formatString}") => "${result}"`);
             return result;
         })(formatString);
 
@@ -442,10 +448,10 @@ export class Currency {
 
             const groupsCopy: MajorUnitGroup[] = [...groups];
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const repeatGroup: MajorUnitGroup = groupsCopy.pop()!;
+            const repeatGroup: MajorUnitGroup = groupsCopy.shift()!;
 
             function getNextGroup(): MajorUnitGroup {
-                return groupsCopy.pop() ?? repeatGroup;
+                return groupsCopy.shift() ?? repeatGroup;
             }
 
             let currentGroup: MajorUnitGroup = getNextGroup();
@@ -548,7 +554,7 @@ export class Currency {
      */
     isEqualTo(currency: Currency | number): boolean {
         const $return = ((result: boolean): boolean => {
-            console.debug(`${this} == ${currency} = ${result}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`${this} == ${currency} = ${result}`);
             return result;
         }).bind(this);
 
@@ -571,7 +577,7 @@ export class Currency {
      */
     isNotEqualTo(currency: Currency | number): boolean {
         const $return = ((result: boolean): boolean => {
-            console.debug(`${this} != ${currency} = ${result}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`${this} != ${currency} = ${result}`);
             return result;
         }).bind(this);
 
@@ -594,7 +600,7 @@ export class Currency {
      */
     isLessThan(currency: Currency | number): boolean {
         const $return = ((result: boolean): boolean => {
-            console.debug(`${this} < ${currency} = ${result}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`${this} < ${currency} = ${result}`);
             return result;
         }).bind(this);
 
@@ -611,7 +617,7 @@ export class Currency {
     /** Gets the absolute value of this currency. */
     abs(): Currency {
         const $return = (result: Currency): Currency => {
-            console.debug(`|${this}| => ${result}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`|${this}| => ${result}`);
             return result;
         };
 
@@ -634,7 +640,7 @@ export class Currency {
      */
     mod(divisor: number): Currency {
         const $return = ((result: Currency): Currency => {
-            console.debug(`${this} % ${divisor} = ${result}`);
+            this._currencyOptions.isLoggingEnabled && console.debug(`${this} % ${divisor} = ${result}`);
             return result;
         }).bind(this);
 
@@ -709,26 +715,21 @@ export class Currency {
     }
 
     private static getCurrencyParts(currency: number | CurrencyParts, targetPrecision: number): CurrencyParts {
-        const $return = ((currency, targetPrecision) => (result: CurrencyParts): CurrencyParts => {
-            console.debug(`getCurrencyParts(${JSON.stringify(currency)}, ${targetPrecision}) => ${JSON.stringify(result)}`);
-            return result;
-        })(currency, targetPrecision);
-
         if (typeof currency !== "number") {
             // Ensure the precision is the same as the supplied value using truncation.
             const precisionDiff = targetPrecision - currency.precision;
             if (precisionDiff !== 0) {
                 const adjustedUnits = currency.units * (Math.pow(10, precisionDiff));
-                return $return({
+                return {
                     units: currency.units < 0 ? Math.ceil(adjustedUnits) : Math.floor(adjustedUnits),
                     precision: targetPrecision,
-                });
+                };
             }
             else {
-                return $return({
+                return {
                     units: currency.units,
                     precision: targetPrecision
-                });
+                };
             }
         }
 
@@ -737,12 +738,11 @@ export class Currency {
         // Therefore, it is safe to split number.toString() by "." to get the whole and fractional parts of a number,
         // assuming the number is not NaN, Infinity, NegativeInfinity, or scientific notation.
         if (!Number.isFinite(currency)) {
-            debugger;
             console.error(`${currency} must be a finite number`);
-            return $return({
+            return {
                 units: Number.MAX_SAFE_INTEGER,
                 precision: targetPrecision
-            });
+            };
         }
 
         let currencyAsString = currency.toString();
@@ -768,10 +768,10 @@ export class Currency {
             minorUnits = minorUnits + "0".repeat(targetPrecision - minorUnits.length);
         }
         const units: number = +(`${majorUnits}${minorUnits}`);
-        return $return({
+        return {
             units: units,
             precision: targetPrecision
-        });
+        };
     }
 
     /** Converts scientific e-notication numbers to a decimal string. */
@@ -815,7 +815,6 @@ export class Currency {
                 : signlessCoefficientWithoutDot.replace(new RegExp(`^(.{${moveDotCount}})(.)`), `$1.$2`));
 
         if (+decimalNumberString === 0 && signlessCoefficientWithoutDotIntString === "0") {
-            // TODO JMH Do I need this? Return "0" (without a sign) if the final number is zero.
             return "0";
         }
 
