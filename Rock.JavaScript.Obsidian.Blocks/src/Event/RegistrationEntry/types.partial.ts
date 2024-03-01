@@ -113,8 +113,8 @@ export type CurrencyOptions = {
 
 export type CurrencyParts = {
     isNegative: boolean;
-    majorUnits: string;
-    minorUnits: string;
+    units: string;
+    precision: number;
 };
 
 export function createReadonlyCurrencyOptions(options?: Partial<CurrencyOptions>): CurrencyOptions {
@@ -143,6 +143,7 @@ const defaultCurrencyOptions: CurrencyOptions = {
 } as const;
 
 export class Currency {
+    // Omitting the TS `private` accessibility modifier so intellisense works as expected. Ideally, these should be marked `private`.
     // #region Fields
     // eslint-disable-next-line @typescript-eslint/naming-convention
     readonly _currencyOptions: CurrencyOptions;
@@ -157,24 +158,22 @@ export class Currency {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     _toString: string | null = null;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    _majorUnits: string | null = null;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    _minorUnits: string | null = null;
 
     // #endregion Fields
 
     // #region Properties
 
+    get units(): string {
+        return this._currencyParts.units;
+    }
+
     /** Returns `true` if this currency is negative; otherwise, `false` is returned. */
     get isNegative(): boolean {
         return this._currencyParts.isNegative;
-    }
-
-    /** Gets the major units (the number of units before the decimal). */
-    get majorUnits(): string {
-        return this._currencyParts.majorUnits;
-    }
-
-    /** Gets the minor units (the number of units after the decimal). */
-    get minorUnits(): string {
-        return this._currencyParts.minorUnits;
     }
 
     /** Gets the precision (the number of minor unit digits after the decimal). */
@@ -202,6 +201,16 @@ export class Currency {
         return this._currencyOptions.formatString;
     }
 
+    /** Gets the minor units. */
+    get minorUnits(): string {
+        return (this._minorUnits ?? (this._minorUnits = this.units.slice(this.units.length - this.precision)));
+    }
+
+    /** Gets the major units. */
+    get majorUnits(): string {
+        return (this._majorUnits ?? (this._majorUnits = this.units.slice(0, this.units.length - this.precision)));
+    }
+
     // #endregion Properties
 
     // #region Constructors
@@ -219,32 +228,25 @@ export class Currency {
         // Set the origin from which this currency is created.
         this.__createdFrom = currency;
 
-        if (typeof currency === "number") {
-            // Get the currency parts from the number.
-            const { isNegative, majorUnits, minorUnits } = Currency.getCurrencyParts(currency);
+        // Get the currency parts from the number.
+        const { isNegative, units, precision } = Currency.getCurrencyParts(currency, this._currencyOptions.precision);
 
-            // Set the currency parts as readonly and const so they cannot be modified once set.
-            this._currencyParts = {
-                isNegative,
-                majorUnits,
-                // Enforce the precision here.
-                minorUnits: Currency.appendPaddedZeroesOrTruncateEnd(minorUnits, this.precision)
-            } as const;
+        // Set the currency parts as readonly and const so they cannot be modified once set.
+        this._currencyParts = {
+            isNegative,
+            units,
+            precision
+        } as const;
+
+        if (typeof currency === "number") {
 
             // Set whether or not this currency is equal to zero.
             this._isZero = currency === 0;
         }
         else {
-            // Set the currency parts as readonly and const so they cannot be modified once set.
-            this._currencyParts = {
-                isNegative: currency.isNegative,
-                majorUnits: currency.majorUnits,
-                minorUnits: Currency.appendPaddedZeroesOrTruncateEnd(currency.minorUnits, this.precision)
-            } as const;
-
             // Set whether or not this currency is equal to zero.
             const zeroRegex = /^0*$/;
-            this._isZero = zeroRegex.test(currency.majorUnits) && zeroRegex.test(currency.minorUnits);
+            this._isZero = zeroRegex.test(currency.units);
         }
     }
 
@@ -262,9 +264,9 @@ export class Currency {
      * new Currency(2.61).add(new Currency(3.999)); // returns new Currency(6.60)
      */
     add(currency: Currency | number): Currency {
-        const $return = ((currency: Currency): Currency => {
-            console.debug(`${this} + ${currency} = ${currency}`);
-            return currency;
+        const $return = ((result: Currency): Currency => {
+            console.debug(`${this} + ${currency} = ${result}`);
+            return result;
         }).bind(this);
 
         if (this.isZero) {
@@ -278,76 +280,55 @@ export class Currency {
             return $return(this);
         }
 
-        const currencyParts = Currency.getCurrencyParts(currency);
-        const { isNegative, majorUnits } = currencyParts;
-        let { minorUnits } = currencyParts;
+        const { isNegative: otherIsNegative, units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
 
-        // Ensure the minor units match this Currency's decimal precision.
-        minorUnits = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits, this.precision);
-
-        if (this.isNegative === isNegative) {
-            // TODO JMH Concat the major and minor units, then do the addition. (no need to add major and minor separately)
+        if (this.isNegative === otherIsNegative) {
             // Add the currencies if they have the same sign (+/-).
-            let newMajorUnits = Currency.addMajorUnits(this.majorUnits, majorUnits);
-            const { majorUnits: extraMajorUnits, minorUnits: newMinorUnits } = Currency.addMinorUnits(this.minorUnits, minorUnits);
-            if (extraMajorUnits) {
-                newMajorUnits = Currency.addMajorUnits(newMajorUnits, extraMajorUnits);
-            }
+            // n + m
 
             // Return the new Currency object.
-            return new Currency(
+            const units = Currency.addUnits(this.units, otherUnits);
+
+            return $return(new Currency(
                 {
-                    isNegative: this._currencyParts.isNegative,
-                    majorUnits: newMajorUnits,
-                    minorUnits: newMinorUnits,
+                    isNegative: this.isNegative,
+                    units,
+                    precision: this.precision
                 },
                 this._currencyOptions
-            );
+            ));
         }
         else {
             // Adding currencies with a different sign (+/-) is the
             // same as subtracting one from the other.
 
-            if (this.majorUnits === majorUnits && this.minorUnits === minorUnits) {
-                // Adding n and -n is zero (additive inverse).
+            if (this.units === otherUnits) {
+                // n + -n = 0 (additive inverse)
                 return $return(Currency.createZeroCurrency(this._currencyOptions));
             }
 
-            let majorUnitsResult: { isNegative: boolean; majorUnits: string; };
-            let minorUnitsResult: { isNegative: boolean; minorUnits: string; };
-
-            // TODO JMH Subtraction should apply to concatenated units. (no need to do two subtractions)
-            if (!this.isNegative) {
-                // Subtract the numbers.
-                majorUnitsResult = Currency.subtractMajorUnits(this.majorUnits, majorUnits);
-                minorUnitsResult = Currency.subtractMinorUnits(this.minorUnits, minorUnits);
+            if (!otherIsNegative) {
+                // The other number is negative.
+                // n + -m = n - m
+                const { isNegative, units } = Currency.substractUnits(this.units, otherUnits);
+                return new Currency(
+                    {
+                        isNegative,
+                        units,
+                        precision: this.precision
+                    },
+                    this._currencyOptions);
             }
             else {
-                majorUnitsResult = Currency.subtractMajorUnits(majorUnits, this.majorUnits);
-                minorUnitsResult = Currency.subtractMinorUnits(minorUnits, this.minorUnits);
+                // This number is negative.
+                // -n + m = -1 * (n - m)
+                const { isNegative, units } = Currency.substractUnits(this.units, otherUnits);
+                return new Currency({
+                    isNegative: !isNegative, // Flip the sign of the result in this case.
+                    units,
+                    precision: this.precision
+                }, this._currencyOptions);
             }
-
-            const { isNegative: isNegativeMajorUnits } = majorUnitsResult;
-            let { majorUnits: newMajorUnits } = majorUnitsResult;
-            const { isNegative: isNegativeMinorUnits } = minorUnitsResult;
-            let { minorUnits: newMinorUnits } = minorUnitsResult;
-
-            if (newMajorUnits !== "0".repeat(newMajorUnits.length) && isNegativeMajorUnits !== isNegativeMinorUnits) {
-                // Major units need to be reduced by 1.
-                const { majorUnits: adjustedWholeDigits } = Currency.subtractMajorUnits(newMajorUnits, Currency.prependPaddedZeroesOrTruncateStart("1", newMajorUnits.length));
-                newMajorUnits = adjustedWholeDigits;
-                // Minor units need to be inversed; e.g., if minor units were "999", then it needs to be "1000" - "0999" = "001".
-                const { minorUnits: adjustedFractionalDigits } = Currency.subtractMinorUnits(Currency.appendPaddedZeroesOrTruncateEnd("1", newMinorUnits.length + 1), Currency.prependPaddedZeroesOrTruncateStart(newMinorUnits, newMinorUnits.length + 1));
-                newMinorUnits = adjustedFractionalDigits;
-            }
-
-            return $return(new Currency({
-                    isNegative: isNegativeMajorUnits || isNegativeMinorUnits,
-                    majorUnits: newMajorUnits,
-                    minorUnits: newMinorUnits,
-                },
-                this._currencyOptions
-            ));
         }
     }
 
@@ -359,16 +340,16 @@ export class Currency {
      * new Currency(2.61).negate(); // returns new Currency(-2.61)
      */
     negate(): Currency {
-        const $return = ((currency: Currency): Currency => {
-            console.debug(`-${this} = ${currency}`);
-            return currency;
+        const $return = ((result: Currency): Currency => {
+            console.debug(`-${this} = ${result}`);
+            return result;
         }).bind(this);
 
         return $return(new Currency(
             {
                 isNegative: !this.isNegative,
-                majorUnits: this.majorUnits,
-                minorUnits: this.minorUnits
+                units: this.units,
+                precision: this.precision
             },
             this._currencyOptions
         ));
@@ -383,11 +364,11 @@ export class Currency {
      * new Currency(3.50).divide(3); // returns { quotient: new Currency(1.16), remainder: new Currency(0.02) }
      */
     divide(divisor: number): { quotient: Currency, remainder: Currency } {
-        const $return = ((quotient: Currency, remainder: Currency): { quotient: Currency, remainder: Currency } => {
-            console.debug(`${this} / ${divisor} = ${quotient} r${remainder}`);
+        const $return = ((quotientResult: Currency, remainderResult: Currency): { quotient: Currency, remainder: Currency } => {
+            console.debug(`${this} / ${divisor} = ${quotientResult} r${remainderResult}`);
             return {
-                quotient,
-                remainder
+                quotient: quotientResult,
+                remainder: remainderResult
             };
         }).bind(this);
 
@@ -400,11 +381,9 @@ export class Currency {
             return $return(this, Currency.createZeroCurrency(this._currencyOptions));
         }
 
-        // TODO JMH This should be a private field of this class and arithmetic operations should be performed on it.
-        // Temporarily join the major and minor bits together. The decimal will be added at the end.
-        const currencyParts = Currency.getCurrencyParts(divisor);
+        const divisorParts = Currency.getCurrencyParts(divisor, this.precision);
 
-        const dividend = `${this.majorUnits}${this.minorUnits}${"0".repeat(currencyParts.minorUnits.length)}`;
+        const dividend = this.units;
 
         let dividendIndex: number = -1;
         let dividendPart: string = "";
@@ -428,12 +407,12 @@ export class Currency {
         }
 
         // The result is negative if only the dividend or the divisor is negative, but not both.
-        const isNegative = this.isNegative ? !currencyParts.isNegative : currencyParts.isNegative;
+        const isNegative = this.isNegative ? !divisorParts.isNegative : divisorParts.isNegative;
         const quotient: Currency = new Currency(
             {
                 isNegative,
-                majorUnits: quotientParts.slice(0, quotientParts.length - this.precision).join(""),
-                minorUnits: quotientParts.slice(quotientParts.length - this.precision).join("")
+                units: quotientParts.join(""),
+                precision: this.precision
             },
             this._currencyOptions
         );
@@ -441,13 +420,14 @@ export class Currency {
         // The leftover dividend is the remainder.
         // Prepend zeroes to convert the remainder to a major and minor amount without the decimal point.
         if (dividendPart.length < (this.precision + 1)) {
+            // TODO JMH These prepend/append methods should take into account that they are working with the major + minor units.
             dividendPart = Currency.prependPaddedZeroesOrTruncateStart(dividendPart, this.precision + 1);
         }
         const remainder: Currency = new Currency(
             {
                 isNegative,
-                majorUnits: dividendPart.slice(0, dividendPart.length - this.precision) || "0",
-                minorUnits: dividendPart.slice(dividendPart.length - this.precision) || "0"
+                units: dividendPart,
+                precision: this.precision
             },
             this._currencyOptions
         );
@@ -465,9 +445,9 @@ export class Currency {
      * new Currency(2.61).subtract(new Currency(3.999)); // returns new Currency(-1.38)
      */
     subtract(currency: number | Currency): Currency {
-        const $return = ((currency: Currency): Currency => {
-            console.debug(`${this} - ${currency} = ${currency}`);
-            return currency;
+        const $return = ((result: Currency): Currency => {
+            console.debug(`${this} - ${currency} = ${result}`);
+            return result;
         }).bind(this);
 
         if (this.isZero) {
@@ -479,51 +459,64 @@ export class Currency {
             return $return(this);
         }
 
-        const currencyParts = Currency.getCurrencyParts(currency);
-        const { isNegative, majorUnits } = currencyParts;
-        let { minorUnits } = currencyParts;
+        const { isNegative: otherIsNegative, units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
 
-        // Ensure the minor units of the number matches this Currency's decimal precision.
-        minorUnits = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits, this.precision);
-
-        if (this.isNegative !== isNegative) {
-            // Subtracting one currency from another with a different sign (+/-),
-            // is the same as adding them together and keeping the sign from the first currency.
-            // n - (-m) = n + m
-            let newMajorUnits = Currency.addMajorUnits(this.majorUnits, majorUnits);
-            const { majorUnits: extraMajorUnits, minorUnits: newMinorUnits } = Currency.addMinorUnits(this.minorUnits, minorUnits);
-            if (extraMajorUnits) {
-                newMajorUnits = Currency.addMajorUnits(newMajorUnits, extraMajorUnits);
+        if (this.isNegative !== otherIsNegative) {
+            // The currencies have different signs.
+            if (otherIsNegative) {
+                // n - (-m) = n + m
+                const units = Currency.addUnits(this.units, otherUnits);
+                return $return(new Currency(
+                    {
+                        isNegative: false,
+                        units,
+                        precision: this.precision
+                    },
+                    this._currencyOptions
+                ));
             }
-
-            return $return(new Currency({
-                    isNegative: this.isNegative, // The result always has the same sign this currency.
-                    majorUnits: newMajorUnits,
-                    minorUnits: newMinorUnits,
-                },
-                this._currencyOptions
-            ));
+            else {
+                // -n - m = -1 * (n + m)
+                const units = Currency.addUnits(this.units, otherUnits);
+                return $return(new Currency(
+                    {
+                        isNegative: true,
+                        units,
+                        precision: this.precision
+                    },
+                    this._currencyOptions
+                ));
+            }
         }
         else {
-            // The currrencies have the same sign (+/-).
-
-            if (this.majorUnits === majorUnits && this.minorUnits === minorUnits) {
-                // n - n = 0 (zero identity)
+            // The currencies have the same sign.
+            if (this.units === otherUnits) {
+                // n - n = 0 (zero identity when both positive)
+                // -n - (-n) = -n + n = 0 (zero identity when both negative)
                 return $return(Currency.createZeroCurrency(this._currencyOptions));
             }
-
-            // Subtract the currencies.
-            // TODO JMH This should be a private readonly field.
-            const combinedUnits1 = Currency.joinUnits(this.majorUnits, this.minorUnits);
-            const combinedUnits2 = Currency.prependPaddedZeroesOrTruncateStart(`${majorUnits}${minorUnits}`, combinedUnits1.length);
-            const { units, isNegative } = Currency.substractUnits(combinedUnits1, combinedUnits2);
-            const { majorUnits: newMajorUnits, minorUnits: newMinorUnits } = Currency.splitUnits(units, this.precision);
-
-            return $return(new Currency({
-                majorUnits: newMajorUnits.join(""),
-                minorUnits: newMinorUnits.join(""),
-                isNegative: this.isNegative ? !isNegative : isNegative
-            }, this._currencyOptions));
+            else if (this.isNegative) {
+                // -n - (-m) = -n + m = -1 * (n - m)
+                const { isNegative, units } = Currency.substractUnits(this.units, otherUnits);
+                return $return(new Currency({
+                        isNegative: !isNegative, // Flip the sign in this case.
+                        units,
+                        precision: this.precision
+                    },
+                    this._currencyOptions
+                ));
+            }
+            else {
+                // n - m
+                const { isNegative, units } = Currency.substractUnits(this.units, otherUnits);
+                return $return(new Currency({
+                        isNegative,
+                        units,
+                        precision: this.precision
+                    },
+                    this._currencyOptions
+                ));
+            }
         }
     }
 
@@ -549,44 +542,15 @@ export class Currency {
      * new Currency(12.50).format("-!#,###.% @"); // default format with currency code "$12.50 USD"
      */
     format(formatString: string = CurrencyFormatString.default): string {
+        const $return = ((formatString: string) => (result: string): string => {
+            //console.debug(`"${this.isNegative ? "-" : ""}${this.units}".format("${formatString}") => "${result}"`);
+            return result;
+        })(formatString);
+
         type MajorUnitGroup = {
             count: number;
             separator: string;
         };
-
-        function getGroupSeparator(units: string, startFromIndex: number): { group: MajorUnitGroup | null, nextIndex: number } {
-            let groupSeparatorStart: number = -1;
-            let groupSeparatorEnd: number = -1;
-
-            for (let i = startFromIndex; i < units.length; i++) {
-                if (units[i] !== "#") {
-                    if (groupSeparatorStart === -1) {
-                        groupSeparatorStart = i;
-                        groupSeparatorEnd = i + 1;
-                    }
-                }
-                else {
-                    if (groupSeparatorStart !== -1) {
-                        if (groupSeparatorEnd === -1) {
-                            groupSeparatorEnd = i;
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                }
-            }
-
-            const count = groupSeparatorEnd - groupSeparatorStart;
-
-            return {
-                group: count === 0 ? null : {
-                    count: count,
-                    separator: units.substring(groupSeparatorStart, groupSeparatorEnd)
-                },
-                nextIndex: groupSeparatorEnd,
-            };
-        }
 
         // Create the group strategy.
         function formatMajorUnits(number: string, groups: MajorUnitGroup[]): string {
@@ -611,7 +575,7 @@ export class Currency {
             for (let i = number.length - 1; i >= 0; i--) {
                 currentGroupCount++;
 
-                if (currentGroupCount === currentGroup.count) {
+                if (currentGroupCount === currentGroup.count && i !== 0) {
                     groupedNumber = currentGroup.separator + number[i] + groupedNumber;
                     currentGroup = getNextGroup();
                     currentGroupCount = 0;
@@ -624,11 +588,14 @@ export class Currency {
             return groupedNumber;
         }
 
+        const minorUnitsPlaceholder = "MINOR_UNITS" as const;
+        const majorUnitsPlaceholder = "MAJOR_UNITS" as const;
+
         // Get the minor units format section.
         const minorUnitsStart = formatString.indexOf("%");
         const minorUnitsEnd = formatString.lastIndexOf("%");
         if (minorUnitsStart !== -1 && minorUnitsEnd !== -1) {
-            formatString = formatString.slice(0, minorUnitsStart) + "MINOR_UNITS" + formatString.slice(minorUnitsEnd + 1);
+            formatString = formatString.slice(0, minorUnitsStart) + minorUnitsPlaceholder + formatString.slice(minorUnitsEnd + 1);
         }
 
         // Get the major units format section.
@@ -636,48 +603,60 @@ export class Currency {
         const majorUnitsEnd = formatString.lastIndexOf("#");
         const groups: { count: number, separator: string }[] = [];
         if (majorUnitsStart !== -1 && majorUnitsEnd !== -1) {
-            const majorUnitsFormatSection = formatString.substring(majorUnitsStart, majorUnitsEnd + 1);
-            formatString = formatString.slice(0, majorUnitsStart) + "MAJOR_UNITS" + formatString.slice(majorUnitsEnd + 1);
+            // Strip out the major units format section.
+            const majorUnitsFormatSection = formatString.substring(majorUnitsStart, majorUnitsEnd + 1).replace(/^#*/, "");
+            formatString = formatString.slice(0, majorUnitsStart) + majorUnitsPlaceholder + formatString.slice(majorUnitsEnd + 1);
 
-            // Figure out the group strategy.
-            // Starting from the group separator, get the number of characters per group.
-            // The first group is the one that will repeat.
-            let { group, nextIndex } = getGroupSeparator(majorUnitsFormatSection, 0);
-            while (group !== null) {
-                groups.unshift(group);
-                { group, nextIndex } = getGroupSeparator(majorUnitsFormatSection, nextIndex);
+            // Find the groups working from right to left.
+            // #
+            // ###
+            // #,###
+            // #,#
+            // #,##,###
+            // # , ## , ###
+            // #,###, ###
+            // The leftmost group (at index 0) is the one that will repeat.
+            // The leftmost "#" characters will be ignored.
+            let currentGroup: MajorUnitGroup = {
+                count: 0,
+                separator: ""
+            };
+            for (let i = majorUnitsFormatSection.length - 1; i >= 0; i--) {
+                if (majorUnitsFormatSection[i] === "#") {
+                    if (currentGroup.separator === "") {
+                        // Still haven't found the separator character for this group,
+                        // so increase the group count and move on.
+                        currentGroup.count++;
+                    }
+                    else {
+                        // "#" was encountered after recording the separator character,
+                        // which means we're on the next group,
+                        // so save the last one and start fresh.
+                        groups.unshift(currentGroup);
+                        currentGroup = {
+                            count: 1, // This should start at 1 since we already found one "#" for the next group.
+                            separator: ""
+                        };
+                    }
+                }
+                else {
+                    currentGroup.separator = majorUnitsFormatSection[i] + currentGroup.separator;
+                }
             }
-            // TODO JMH REmove this.
-            // if (groupSeparatorEnd !== -1) {
-            //     let currentGroupCount: number = 0;
-            //     let nextGroupSeparator: string = groupSeparator;
 
-            //     for (let i = groupSeparatorStart + 1; i < majorUnitsFormatSection.length; i++) {
-            //         if (majorUnitsFormatSection[i] === "#") {
-            //             currentGroupCount++;
-            //         }
-            //         else {
-            //             groups.unshift({ count: currentGroupCount, separator: nextGroupSeparator });
-
-            //             // Reset the group count and separator.
-            //             nextGroupSeparator = majorUnitsFormatSection[i];
-            //             currentGroupCount = 0;
-            //         }
-            //     }
-
-            //     // Add the group.
-            //     if (currentGroupCount > 0) {
-            //         groups.unshift({ count: currentGroupCount, separator: nextGroupSeparator });
-            //     }
-            // }
+            if (currentGroup.separator) {
+                // If the last group has a separator defined then add it.
+                // This could happen if the format string section was ",###".
+                groups.unshift(currentGroup);
+            }
         }
 
-        return formatString
+        return $return(formatString
             .replace("-", this.isNegative ? "-" : "")
             .replace("!", this.symbol)
-            .replace("MAJOR_UNITS", formatMajorUnits(this.majorUnits, groups))
-            .replace("MINOR_UNITS", this.minorUnits)
-            .replace("@", this.code);
+            .replace(majorUnitsPlaceholder, formatMajorUnits(this.majorUnits, groups))
+            .replace(minorUnitsPlaceholder, this.minorUnits)
+            .replace("@", this.code));
     }
 
     /**
@@ -698,11 +677,10 @@ export class Currency {
             return $return(this.isZero && isZero);
         }
 
-        const currencyParts = Currency.getCurrencyParts(currency);
+        const currencyParts = Currency.getCurrencyParts(currency, this.precision);
 
         return $return(currencyParts.isNegative === this.isNegative
-            && currencyParts.majorUnits === this.majorUnits
-            && currencyParts.minorUnits === this.minorUnits);
+            && currencyParts.units === this.units);
     }
 
     /**
@@ -723,11 +701,10 @@ export class Currency {
             return $return(!(this.isZero && isZero));
         }
 
-        const currencyParts = Currency.getCurrencyParts(currency);
+        const currencyParts = Currency.getCurrencyParts(currency, this.precision);
 
         return $return(currencyParts.isNegative !== this.isNegative
-            || currencyParts.majorUnits !== this.majorUnits
-            || currencyParts.minorUnits !== this.minorUnits);
+            || currencyParts.units !== this.units);
     }
 
     /**
@@ -747,7 +724,7 @@ export class Currency {
             return $return(false);
         }
 
-        const currencyParts = Currency.getCurrencyParts(currency);
+        const currencyParts = Currency.getCurrencyParts(currency, this.precision);
 
         if (this.isNegative && !currencyParts.isNegative) {
             // -n < m? Always. A negative number is always less than a positive number.
@@ -758,53 +735,41 @@ export class Currency {
             return $return(false);
         }
 
-        const majorUnitsLengthDiff = this.majorUnits.length - currencyParts.majorUnits.length;
-        if (majorUnitsLengthDiff < 0) {
-            // Return true if the length of this currency's major units is smaller than the other major units' length.
+        const unitsLengthDiff = this.units.length - currencyParts.units.length;
+        if (unitsLengthDiff < 0) {
+            // Return true if the length of this currency's units is smaller than the other units' length.
             return $return(true);
         }
-        else if (majorUnitsLengthDiff > 0) {
-            // Return false if the length of this currency's major units is larger than the other major units' length.
+        else if (unitsLengthDiff > 0) {
+            // Return false if the length of this currency's units is larger than the other units' length.
             return $return(false);
         }
         else {
-            // The major units have the same string length.
+            // The units have the same string length.
             // Compare them by value.
+            return this.units.localeCompare(currencyParts.units) < 0;
+        }
+    }
 
-            const comparison = this.majorUnits.localeCompare(currencyParts.majorUnits);
-            if (comparison < 0) {
-                // Return true if the major units are smaller than the other major units.
-                return $return(true);
-            }
-            else if (comparison > 0) {
-                // Return false if the major units are larger than the other major units.
-                return $return(false);
-            }
-            else {
-                // TODO JMH This comparison should be done on the combined units.
-                // The major units are the same.
-                // Compare the minor units.
-                // The lengths cannot be used to short-circuit the comparison of minor units
-                // so zero-pad accordingly.
-                // e.g.,
-                // .1 < .1001? yes and .1 has shorter length
-                // .3 < .1001? no and .3 has shorter length
+    /** Gets the absolute value of this currency. */
+    abs(): Currency {
+        const $return = (result: Currency): Currency => {
+            console.debug(`|${this}| => ${result}`);
+            return result;
+        };
 
-                const minorUnitsLengthDiff = this.minorUnits.length - currencyParts.minorUnits.length;
-                if (minorUnitsLengthDiff < 0) {
-                    // Zero-pad this currency's minor units.
-                    return Currency.appendPaddedZeroesOrTruncateEnd(this.minorUnits, currencyParts.minorUnits.length).localeCompare(currencyParts.minorUnits) < 0;
-                }
-                else if (minorUnitsLengthDiff > 0) {
-                    // Zero-pad the other currency's minor units.
-                    return $return(this.minorUnits.localeCompare(Currency.appendPaddedZeroesOrTruncateEnd(currencyParts.minorUnits, this.minorUnits.length)) < 0);
-                }
-                else {
-                    // The minor units have the same string length.
-                    // Compare them without padding.
-                    return $return(this.minorUnits.localeCompare(currencyParts.minorUnits) < 0);
-                }
-            }
+        if (!this.isNegative) {
+            return $return(this);
+        }
+        else {
+            return $return(new Currency(
+                {
+                    isNegative: false,
+                    precision: this.precision,
+                    units: this.units
+                },
+                this._currencyOptions
+            ));
         }
     }
 
@@ -812,9 +777,9 @@ export class Currency {
      * Returns the remainder after dividing this currency by a number.
      */
     mod(divisor: number): Currency {
-        const $return = ((currency: Currency): Currency => {
-            console.debug(`${this} % ${divisor} = ${currency}`);
-            return currency;
+        const $return = ((result: Currency): Currency => {
+            console.debug(`${this} % ${divisor} = ${result}`);
+            return result;
         }).bind(this);
 
         if (this.isZero) {
@@ -827,13 +792,13 @@ export class Currency {
             return $return(this);
         }
 
-        if (this.isLessThan(divisor)) {
+        if (this.abs().isLessThan(divisor)) {
             if (!this.isLessThan(0)) {
-                // n % m = n, where 0 <= n < m
+                // n % m = n, where |n| < m and n > 0
                 return $return(this);
             }
             else {
-                // n % m = n + m, where n < 0 < m
+                // n % m = n + m, where |n| < m and n < 0
                 return $return(this.add(divisor));
             }
         }
@@ -859,17 +824,6 @@ export class Currency {
 
     // #region Private Static Methods
 
-    private static splitUnits(units: string[] | string, precision: number): { majorUnits: string[], minorUnits: string[] } {
-        if (typeof units === "string") {
-            units = units.split("");
-        }
-
-        return {
-            majorUnits: units.slice(0, units.length - precision),
-            minorUnits: units.slice(precision)
-        };
-    }
-
     private static isCurrencyZero(currency: Currency | number): boolean {
         return (typeof currency === "number" && currency === 0) || (typeof currency !== "number" && currency.isZero);
     }
@@ -890,37 +844,7 @@ export class Currency {
         return new Currency(0, options);
     }
 
-    private static subtractMajorUnits(majorUnits1: string, majorUnits2: string): { isNegative: boolean; majorUnits: string; } {
-        // Zero-pad the units so they are the same size.
-        if (majorUnits1.length > majorUnits2.length) {
-            majorUnits2 = Currency.prependPaddedZeroesOrTruncateStart(majorUnits2, majorUnits1.length);
-        }
-        else if (majorUnits1.length < majorUnits2.length) {
-            majorUnits1 = Currency.prependPaddedZeroesOrTruncateStart(majorUnits1, majorUnits2.length);
-        }
-
-        const { isNegative, units } = Currency.substractUnits(majorUnits1, majorUnits2);
-        return { isNegative, majorUnits: units.join("") };
-    }
-
-    private static subtractMinorUnits(minorUnits1: string, minorUnits2: string): { isNegative: boolean; minorUnits: string; } {
-        // Zero-pad the units so they are the same size.
-        if (minorUnits1.length > minorUnits2.length) {
-            minorUnits2 = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits2, minorUnits1.length);
-        }
-        else if (minorUnits1.length < minorUnits2.length) {
-            minorUnits1 = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits1, minorUnits2.length);
-        }
-
-        const { units, isNegative } = Currency.substractUnits(minorUnits1, minorUnits2);
-        return { isNegative, minorUnits: units.join("") };
-    }
-
-    // TODO JMH This should go away once we have a concatenated readonly field per currency.
-    private static joinUnits(majorUnits: string, minorUnits: string): string {
-        return `${majorUnits}${minorUnits}`;
-    }
-
+    /** This is intended when the minor portion of the units is already the correct precision. */
     private static prependPaddedZeroesOrTruncateStart(units: string, length: number): string {
         if (units.length === length) {
             return units;
@@ -935,6 +859,7 @@ export class Currency {
         }
     }
 
+    /** This is intended for fixing the precision of the minor units. */
     private static appendPaddedZeroesOrTruncateEnd(units: string, length: number): string {
         if (units.length === length) {
             return units;
@@ -949,13 +874,39 @@ export class Currency {
         }
     }
 
-    private static getCurrencyParts(currency: number | Currency): { isNegative: boolean, majorUnits: string, minorUnits: string } {
+    private static getIntegerUnits(majorUnits: string, minorUnits: string, targetPrecision: number): string {
+        const $return = (value: string): string => {
+            //console.debug(`getIntegerUnits("${majorUnits}", "${minorUnits}", ${precision}) => "${value}"`);
+            return value;
+        };
+        // Trim leading zeroes...
+        majorUnits = majorUnits.replace(/^0+/, "");
+        // ...and ensure majorUnits is not an empty string.
+        if (majorUnits === "") {
+            majorUnits = "0";
+        }
+        // TODO JMH Should we round? I think we should round.
+        return $return(`${majorUnits}${Currency.appendPaddedZeroesOrTruncateEnd(minorUnits, targetPrecision)}`);
+    }
+
+    private static getCurrencyParts(currency: number | Currency | CurrencyParts, targetPrecision: number): CurrencyParts {
         if (typeof currency !== "number") {
-            return {
-                isNegative: currency.isNegative,
-                minorUnits: currency.minorUnits,
-                majorUnits: currency.majorUnits
-            };
+            // Ensure the precision is the same as the supplied value using truncation.
+            const precisionDiff = targetPrecision - currency.precision;
+            if (precisionDiff !== 0) {
+                return {
+                    isNegative: currency.isNegative,
+                    units: Currency.appendPaddedZeroesOrTruncateEnd(currency.units, currency.units.length + precisionDiff),// "00", precision=2, currency.units="000", currency.precision = 2, precisionDiff=0
+                    precision: targetPrecision,
+                };
+            }
+            else {
+                return {
+                    isNegative: currency.isNegative,
+                    units: currency.units,
+                    precision: targetPrecision
+                };
+            }
         }
 
         // Per, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toString#description...
@@ -983,25 +934,12 @@ export class Currency {
         // Remove the sign.
         majorUnits = isNegative ? majorUnits.substring(1) : majorUnits;
 
+        const units = Currency.getIntegerUnits(majorUnits ?? "0", minorUnits ?? "0", targetPrecision);
         return {
             isNegative,
-            majorUnits: majorUnits ?? "0",
-            minorUnits: minorUnits ?? "0"
+            units,
+            precision: targetPrecision
         };
-    }
-
-    private static addMajorUnits(majorUnits1: string, majorUnits2: string): string {
-        // Zero-pad the units so they are the same size.
-        if (majorUnits1.length > majorUnits2.length) {
-            majorUnits2 = Currency.prependPaddedZeroesOrTruncateStart(majorUnits2, majorUnits1.length);
-        }
-        else if (majorUnits2.length > majorUnits1.length) {
-            majorUnits1 = Currency.prependPaddedZeroesOrTruncateStart(majorUnits1, majorUnits2.length);
-        }
-
-        // TODO JMH Do we need addUnits to return an array or can we return the string?
-        const { units } = Currency.addUnits(majorUnits1, majorUnits2);
-        return units.join("");
     }
 
     /**
@@ -1012,14 +950,17 @@ export class Currency {
      * The resulting subtraction array will have the same length as the input arguments,
      * and each element will be a single number character including leading and trailing zeroes.
      */
-    private static substractUnits(units1: string, units2: string): { units: string[]; isNegative: boolean; } {
-        if (units1.length !== units2.length) {
-            throw "The units must be the same size (the smaller string should have zeroes prepended or appended depending on whether they are major or minor units)";
+    private static substractUnits(units1: string, units2: string): { units: string; isNegative: boolean; } {
+        if (units1.length > units2.length) {
+            units2 = Currency.prependPaddedZeroesOrTruncateStart(units2, units1.length);
+        }
+        else if (units1.length < units2.length) {
+            units1 = Currency.prependPaddedZeroesOrTruncateStart(units1, units2.length);
         }
 
         if (units1 === units2) {
             // The units are the same value so return zeroes.
-            return { units: [..."0".repeat(units1.length)], isNegative: false };
+            return { units: "0".repeat(units1.length), isNegative: false };
         }
 
         let isNegative: boolean = false;
@@ -1097,15 +1038,18 @@ export class Currency {
         }
 
         return {
-            units,
+            units: units.join(""),
             isNegative
         };
     }
 
     // TODO JMH Do we ever use `isFirstElementCarriedOver`?
-    private static addUnits(units1: string, units2: string): { units: string[]; isFirstElementCarriedOver: boolean; } {
-        if (units1.length !== units2.length) {
-            throw "The numbers must be the same size";
+    private static addUnits(units1: string, units2: string): string {
+        if (units1.length > units2.length) {
+            units2 = Currency.prependPaddedZeroesOrTruncateStart(units2, units1.length);
+        }
+        else if (units1.length < units2.length) {
+            units1 = Currency.prependPaddedZeroesOrTruncateStart(units1, units2.length);
         }
 
         const units: string[] = [];
@@ -1129,44 +1073,13 @@ export class Currency {
                 else {
                     // This is the last number,
                     // so no need to carry again.
+                    // Just insert the sum into the front of the array.
                     units.unshift(...sumParts);
                 }
             }
         }
 
-        return {
-            units,
-            isFirstElementCarriedOver: isCarriedOver
-        };
-    }
-
-    private static addMinorUnits(minorUnits1: string, minorUnits2: string): { majorUnits: string; minorUnits: string; } {
-        // Zero-pad the units so they are the same size.
-        if (minorUnits1.length > minorUnits2.length) {
-            minorUnits2 = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits2, minorUnits1.length);
-        }
-        else if (minorUnits2.length > minorUnits1.length) {
-            minorUnits1 = Currency.appendPaddedZeroesOrTruncateEnd(minorUnits1, minorUnits2.length);
-        }
-
-        const { units: summedUnits, isFirstElementCarriedOver } = Currency.addUnits(minorUnits1, minorUnits2);
-
-        // If summing two minor units end in a carry,
-        // then the first element represents a single major unit.
-        // 0.999 + 0.990 = 1.989 => { units: [1,9,8,9], isFirstElementCarriedOver: true }
-        if (isFirstElementCarriedOver) {
-            // The first element represents major unit,
-            // while the remaining elements are the minor units.
-            const majorUnits = summedUnits[0];
-
-            // Remove the major units to be left with the minor units.
-            summedUnits.splice(0, 1);
-
-            return { majorUnits, minorUnits: summedUnits.join("") };
-        }
-        else {
-            return { majorUnits: "", minorUnits: summedUnits.join("") };
-        }
+        return units.join("");
     }
 
     /** Converts scientific e-notication numbers to a decimal string. */
