@@ -1,4 +1,4 @@
-﻿//4
+﻿//5
 // ^^^ This number above is the build number used by the T4 template responsible for generating this file. 
 // Do Not Remove!
 //
@@ -30,7 +30,7 @@ using System.Reflection;
 [assembly: AssemblyDescription( "Rock RMS Core Assembly. Rock RMS is a community supported open-source Church Management System that provides innovative features to churches of all sizes." )]
 [assembly: AssemblyCompany( "Spark Development Network" )]
 [assembly: AssemblyProduct( "Rock" )]
-[assembly: AssemblyCopyright( "Copyright © Spark Development Network 2011-2021" )]
+[assembly: AssemblyCopyright( "Copyright © Spark Development Network 2011-2024" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 [assembly: AssemblyConfiguration( "" )]
@@ -42,9 +42,9 @@ using System.Reflection;
 // The AssemblyVersion number should change only when we are
 // making a breaking change and need the runtime binding to fail if it does not
 // match the correct version exactly.
-[assembly: AssemblyVersion( "1.16.3.4" )]
+[assembly: AssemblyVersion( "1.16.3.5" )]
 
-[assembly: AssemblyFileVersion( "1.16.3.4" )]
+[assembly: AssemblyFileVersion( "1.16.3.5" )]
 
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
