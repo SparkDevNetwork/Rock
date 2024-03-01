@@ -1211,7 +1211,9 @@ namespace Rock.Model
                                 newValue = newValues[attributeCache.Key].Value ?? string.Empty;
                             }
 
-                            if ( !oldValue.Equals( newValue ) )
+                            // Since we're adding a new entity/group we don't want to include empty attribute values.
+                            // The oldValue could be an Attribute.DefaultValue while the newValue could be empty.
+                            if ( !oldValue.Equals( newValue ) && newValue.IsNotNullOrWhiteSpace() )
                             {
                                 Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue, rockContext );
                             }
