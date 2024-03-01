@@ -943,7 +943,7 @@ GO
         /// <param name="type"></param>
         private void WriteServiceFile( string rootFolder, Type type )
         {
-            string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
+            string dbContextFullName = Rock.Reflection.GetDbContextTypeForEntityType( type ).FullName;
             if ( dbContextFullName.StartsWith( "Rock.Data." ) )
             {
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
@@ -1427,7 +1427,7 @@ GO
 
             string pluralizedName = PluralizeTypeName( type );
             string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
-            string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
+            string dbContextFullName = Rock.Reflection.GetDbContextTypeForEntityType( type ).FullName;
 
             var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
             var rockObsolete = type.GetCustomAttribute<RockObsolete>();

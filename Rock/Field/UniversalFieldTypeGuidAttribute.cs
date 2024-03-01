@@ -15,23 +15,38 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Field
 {
+    /*
+     * 3/1/2024 - DSH
+     * 
+     * We intentionally do not inherit from RockGuidAttribute because that will
+     * trigger false positives for duplicate guids.
+     */
+
     /// <summary>
     /// Rock attribute to be used to specify the <see cref="Rock.Model.FieldType" />
     /// unique identifier that would be sent down to the client. This is used to allow
     /// subclasses to use a standard, common, UI for the field type.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Class, Inherited = true, AllowMultiple = false )]
-    internal class UniversalFieldTypeGuidAttribute : Rock.SystemGuid.RockGuidAttribute
+    internal class UniversalFieldTypeGuidAttribute : System.Attribute
     {
+        /// <summary>
+        /// Gets the unique identifier.
+        /// </summary>
+        /// <value>The unique identifier.</value>
+        public Guid Guid { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UniversalFieldTypeGuidAttribute"/> class.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         public UniversalFieldTypeGuidAttribute( string guid )
-            : base( guid )
         {
+            Guid = new Guid( guid );
         }
     }
 }
