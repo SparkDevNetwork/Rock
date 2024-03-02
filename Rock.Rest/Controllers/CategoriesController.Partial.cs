@@ -278,7 +278,7 @@ namespace Rock.Rest.Controllers
                             categoryItem.Id = categorizedItem.Id.ToString();
                             categoryItem.Name = categorizedItem.Name;
                             categoryItem.IsCategory = false;
-                            categoryItem.IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass;
+                            categoryItem.IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ).ToStringOrDefault( defaultIconCssClass );
                             categoryItem.IconSmallUrl = string.Empty;
 
                             if ( hasActiveFlag )
@@ -530,7 +530,7 @@ namespace Rock.Rest.Controllers
                                 Id = categorizedItem.Id.ToString(),
                                 Name = categorizedItem.Name,
                                 IsCategory = false,
-                                IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass,
+                                IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ).ToStringOrDefault( defaultIconCssClass ),
                                 IconSmallUrl = string.Empty
                             };
 
@@ -663,7 +663,7 @@ namespace Rock.Rest.Controllers
                             Id = childCategory.Id.ToString(),
                             Name = childCategory.Name,
                             IsCategory = true,
-                            IconCssClass = childCategory.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass,
+                            IconCssClass = childCategory.GetPropertyValue( "IconCssClass" ).ToStringOrDefault( defaultIconCssClass ),
                             IconSmallUrl = string.Empty
                         };
 
@@ -703,7 +703,7 @@ namespace Rock.Rest.Controllers
                                     Id = categorizedItem.Id.ToString(),
                                     Name = categorizedItem.Name,
                                     IsCategory = false,
-                                    IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass,
+                                    IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ).ToStringOrDefault( defaultIconCssClass ),
                                     IconSmallUrl = string.Empty
                                 };
 
