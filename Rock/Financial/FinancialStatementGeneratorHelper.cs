@@ -300,7 +300,7 @@ namespace Rock.Financial
             using ( var activity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement" ) )
             {
 
-                activity?.AddTag( "rock-activity-type", "generate-statement" );
+                activity?.AddTag( "rock.activity_type", "generate-statement" );
 
                 // START PREP
                 var prepActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Statement Prep" );

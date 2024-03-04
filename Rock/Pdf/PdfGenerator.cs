@@ -428,7 +428,7 @@ namespace Rock.Pdf
 
             using ( var activity = ObservabilityHelper.StartActivity( "PDF: Generate From HTML" ) )
             {
-                activity?.AddTag( "rock-pdf-htmlsize", html.Length.ToString() );
+                activity?.AddTag( "rock.pdf.htmlsize", html.Length.ToString() );
                
                 var pdfStreamTask = _puppeteerPage.PdfStreamAsync( pdfOptions );
 

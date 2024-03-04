@@ -379,7 +379,7 @@ namespace Rock.Model
                         .AsNoTracking()
                         .ToList();
 
-                    bulkInsertActivity?.AddTag( "rock-communication-recipients-to-add-count", newMemberInList.Count );
+                    bulkInsertActivity?.AddTag( "rock.communication.recipients_to_add_count", newMemberInList.Count );
 
                     var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
                     var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
@@ -528,8 +528,8 @@ namespace Rock.Model
             {
                 using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send > Prepare Recipient List" ) )
                 {
-                    activity?.AddTag( "rock-communication-id", communication.Id );
-                    activity?.AddTag( "rock-communication-name", communication.Name );
+                    activity?.AddTag( "rock.communication.id", communication.Id );
+                    activity?.AddTag( "rock.communication.name", communication.Name );
 
                     using ( var rockContext = new RockContext() )
                     {
@@ -592,8 +592,8 @@ namespace Rock.Model
             {
                 using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Send Async > Prepare Recipient List" ) )
                 {
-                    activity?.AddTag( "rock-communication-id", communication.Id );
-                    activity?.AddTag( "rock-communication-name", communication.Name );
+                    activity?.AddTag( "rock.communication.id", communication.Id );
+                    activity?.AddTag( "rock.communication.name", communication.Name );
 
                     using ( var rockContext = new RockContext() )
                     {
