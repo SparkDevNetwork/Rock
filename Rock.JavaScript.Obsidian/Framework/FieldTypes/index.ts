@@ -335,6 +335,9 @@ registerFieldType(FieldTypeGuids.Rating, new RatingFieldType());
 import { RegistrationTemplateField } from "./registrationTemplateField.partial";
 registerFieldType(FieldTypeGuids.RegistrationTemplate, new RegistrationTemplateField());
 
+import { RegistrationTemplatesField } from "./registrationTemplatesField.partial";
+registerFieldType(FieldTypeGuids.RegistrationTemplates, new RegistrationTemplatesField());
+
 import { RegistrationInstanceField } from "./registrationInstanceField.partial";
 registerFieldType(FieldTypeGuids.RegistrationInstance, new RegistrationInstanceField());
 

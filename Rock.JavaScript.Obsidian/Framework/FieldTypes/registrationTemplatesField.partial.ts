@@ -20,18 +20,18 @@ import { FieldTypeBase } from "./fieldType";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
-    return (await import("./registrationTemplateFieldComponents")).EditComponent;
+    return (await import("./registrationTemplatesFieldComponents")).EditComponent;
 });
 
 // Load the configuration component only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
-    return (await import("./registrationTemplateFieldComponents")).ConfigurationComponent;
+    return (await import("./registrationTemplatesFieldComponents")).ConfigurationComponent;
 });
 
 /**
- * The field type handler for the RegistrationTemplate field.
+ * The field type handler for the RegistrationTemplates field.
  */
-export class RegistrationTemplateField extends FieldTypeBase {
+export class RegistrationTemplatesField extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         return value ?? "";
     }
