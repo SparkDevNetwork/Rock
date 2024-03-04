@@ -232,6 +232,7 @@ namespace Rock.Communication.SmsActions
             public const string SetupLink = "SetupLink";
             public const string PersonToken = "PersonToken";
             public const string PersonActionIdentifier = "PersonActionIdentifier";
+            public const string TransactionError = "TransactionError";
         }
 
         #endregion Keys
@@ -478,6 +479,7 @@ namespace Rock.Communication.SmsActions
             // If the transaction did not process (possibly a gateway error), send the "transaction failure" response.
             if ( transaction == null || !string.IsNullOrEmpty( errorMessage ) )
             {
+                context.LavaMergeFields[LavaMergeFieldKeys.TransactionError] = errorMessage;
                 return GetResolvedSmsResponse( AttributeKeys.TransactionFailureResponse, context );
             }
 
@@ -898,7 +900,8 @@ namespace Rock.Communication.SmsActions
                     { LavaMergeFieldKeys.AccountName, string.Empty },
                     { LavaMergeFieldKeys.SetupLink, string.Empty },
                     { LavaMergeFieldKeys.PersonActionIdentifier, string.Empty },
-                    { LavaMergeFieldKeys.PersonToken, string.Empty }
+                    { LavaMergeFieldKeys.PersonToken, string.Empty },
+                    { LavaMergeFieldKeys.TransactionError, string.Empty }
                 };
             }
 

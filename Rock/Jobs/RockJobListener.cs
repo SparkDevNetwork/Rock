@@ -141,10 +141,10 @@ namespace Rock.Jobs
             if ( !( context.JobInstance is RockJob ) )
             {
                 var activity = ObservabilityHelper.StartActivity( $"JOB: {job.Class.Replace( "Rock.Jobs.", "" )} - {job.Name}" );
-                activity?.AddTag( "rock-otel-type", "rock-job" );
-                activity?.AddTag( "rock-job-id", job.Id );
-                activity?.AddTag( "rock-job-type", job.Class.Replace( "Rock.Jobs.", "" ) );
-                activity?.AddTag( "rock-job-description", job.Description );
+                activity?.AddTag( "rock.otel_type", "rock-job" );
+                activity?.AddTag( "rock.job.id", job.Id );
+                activity?.AddTag( "rock.job.type", job.Class.Replace( "Rock.Jobs.", "" ) );
+                activity?.AddTag( "rock.job.description", job.Description );
             }
         }
 
@@ -182,9 +182,9 @@ namespace Rock.Jobs
             // Complete the observability if this is a legacy job.
             if ( !( context.JobInstance is RockJob ) )
             {
-                Activity.Current?.AddTag( "rock-job-duration", context.JobRunTime.TotalSeconds );
-                Activity.Current?.AddTag( "rock-job-message", rockJobInstance?.Result ?? context.Result as string );
-                Activity.Current?.AddTag( "rock-job-result", jobException == null ? "Success" : "Failed" );
+                Activity.Current?.AddTag( "rock.job.duration", context.JobRunTime.TotalSeconds );
+                Activity.Current?.AddTag( "rock.job.message", rockJobInstance?.Result ?? context.Result as string );
+                Activity.Current?.AddTag( "rock.job.result", jobException == null ? "Success" : "Failed" );
                 Activity.Current?.Dispose();
             }
 
