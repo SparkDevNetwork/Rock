@@ -9,6 +9,7 @@
                           showBlankItem
                           formGroupClasses="mt-0"
                           :entityTypeGuids="entityTypeGuidsFilter"
+                          enhanceForLongLists
                           :rules="entityTypeRules" />
         <RockField v-if="fieldConfiguration" :attribute="fieldConfiguration" v-model="internalValue" isEditMode />
     </RockFormField>

@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Mobile
                 int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
                 int siteId = PageParameter( PageParameterKeys.SiteId ).AsInteger();
 
-                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
 
                 // Load page picker
                 if ( siteId != 0 )
@@ -799,6 +799,8 @@ namespace RockWeb.Blocks.Mobile
             pnlEditPage.Visible = true;
             pnlDetails.Visible = false;
             pnlBlocks.Visible = false;
+            // Hide Context Panel if a valid pageId is not provided, even if the block has required context entities.
+            phContextPanel.Visible = phContextPanel.Visible && pageId != 0;
 
             UpdateAdvancedSettingsVisibility();
         }

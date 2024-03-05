@@ -159,6 +159,16 @@ namespace Rock.ViewModels.Utility
         public Guid? FieldTypeGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the field type unique identifier as it is known by the
+        /// server. If this value is <c>null</c> then the value from the
+        /// FieldTypeGuid property should be used instead. This is only used
+        /// by special field types that use a shared client control but have
+        /// distinct server features.
+        /// </summary>
+        /// <value>The server field type unique identifier.</value>
+        public Guid? RealFieldTypeGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration values for the attribute.
         /// </summary>
         /// <value>The configuration values for the attribute.</value>

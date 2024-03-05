@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,10 +18,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Reporting;
 
 namespace Rock.Model
 {
@@ -41,7 +43,7 @@ namespace Rock.Model
     [Table( "DataViewFilter" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "507E646B-9943-4DD6-8FB7-8BA9F95E6BD0")]
-    public partial class DataViewFilter : Model<DataViewFilter>
+    public partial class DataViewFilter : Model<DataViewFilter>, IDataViewFilterDefinition
     {
         #region Entity Properties
 
@@ -152,6 +154,19 @@ namespace Rock.Model
             set { _filters = value; }
         }
         private ICollection<DataViewFilter> _filters;
+
+        #endregion
+
+        #region IDataViewFilterDefinition Implementation
+
+        /// <inheritdoc/>
+        ICollection<IDataViewFilterDefinition> IDataViewFilterDefinition.ChildFilters => ChildFilters.Cast<IDataViewFilterDefinition>().ToList();
+
+        /// <inheritdoc/>
+        System.Guid? IDataViewFilterDefinition.Guid => this.Guid;
+
+        /// <inheritdoc/>
+        IDataViewDefinition IDataViewFilterDefinition.DataView => this.DataView;
 
         #endregion
     }

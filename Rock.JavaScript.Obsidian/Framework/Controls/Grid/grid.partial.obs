@@ -7,7 +7,9 @@
                              :grid="gridState"
                              :gridActions="gridActions"
                              :visibleColumnCount="visibleColumnCount"
-                             :countMessage="countMessage" />
+                             :countMessage="countMessage"
+                             :isCountMessageVisible="isCountMessageVisible"
+                             :isSearchVisible="isSearchVisible" />
 
             <slot name="gridHeaderPrepend" />
 
@@ -788,7 +790,26 @@
         onSelectItem: {
             type: Function as PropType<((key: string) => void | Promise<void>)>,
             required: false
-        }
+        },
+
+        /**
+         * When `true`, the row count message will be displayed. When `false`,
+         * the row count message will be hidden.
+         */
+        isCountMessageVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        /**
+         * When `true`, the search box will be displayed. When `false`, the
+         * search box will be hidden.
+         */
+        isSearchVisible: {
+            type: Boolean,
+            default: true
+        },
+
     });
 
     const emit = defineEmits<{
@@ -1108,7 +1129,7 @@
                     handler: () => onCustomRoute(action.route ?? ""),
                     iconCssClass: action.iconCssClass,
                     title: action.name || "Custom Action",
-                    tooltip: action.description ?? undefined
+                    tooltip: action.description ?? undefined,
                 });
             }
         }

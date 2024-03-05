@@ -345,6 +345,8 @@
     <Compile Include="TestData\Crm\TestDataHelper.Crm.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Web.cs" />
     <Compile Include="TestData\Core\SampleDataHelper.cs" />
+    <Compile Include="TestData\Reporting\ReportingDataManager.cs" />
+    <Compile Include="TestData\Metrics\MetricsDataManager.cs" />
     <Compile Include="TestData\Reporting\TestDataHelper.Reporting.cs" />
     <Compile Include="Modules\Core\Model\AttendanceOccurrenceTests.cs" />
     <Compile Include="Modules\Core\Model\BenevolenceRequestTests.cs" />
@@ -357,6 +359,7 @@
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestData\Tests\SampleDataTests.cs" />
     <Compile Include="TestExtensionMethods.cs" />
     <Compile Include="Modules\Core\Logging\RockSerilogReaderTests.cs" />
     <Compile Include="Modules\Rest\ControllersTests\AttendanceControllerTests.cs" />
@@ -458,6 +461,9 @@
     <Analyzer Include="..\packages\AWSSDK.S3.3.3.21.1\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestData\SampleData\sampledata_1_14_1.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestData\test.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

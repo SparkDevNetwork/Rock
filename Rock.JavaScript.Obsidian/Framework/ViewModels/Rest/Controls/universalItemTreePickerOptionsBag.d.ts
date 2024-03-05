@@ -21,15 +21,29 @@
 // </copyright>
 //
 
-import { TimeIntervalBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/timeIntervalBag";
+/**
+ * The options sent when requesting the child items for a universal item
+ * tree field type.
+ */
+export type UniversalItemTreePickerOptionsBag = {
+    /**
+     * Gets or sets the general purpose context provided by the field
+     * type control.
+     */
+    context?: string | null;
 
-export type RockCacheabilityBag = {
-    /** Gets or sets the maximum age. */
-    maxAge?: TimeIntervalBag | null;
+    /**
+     * Gets or sets the values that need to be expanded to. This is used
+     * when opening the tree view with an already selected value. Each
+     * selected value is included in this property. When getting the list
+     * of root items, you should automatically expand your results until
+     * each of these values is reached.
+     */
+    expandToValues?: string[] | null;
 
-    /** Gets or sets the type of the rock cacheability type. */
-    rockCacheabilityType: number;
+    /** Gets or sets the parent value. */
+    parentValue?: string | null;
 
-    /** Gets or sets the shared maximum age. */
-    sharedMaxAge?: TimeIntervalBag | null;
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

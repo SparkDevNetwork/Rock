@@ -132,7 +132,9 @@ namespace Rock.Web.UI.Controls
                  * In some circumstances, such as when this control is used as a child control of the AttributeMatrixEditor, ViewState does not correctly
                  * reflect the picker mode if a postback is triggered by another editor control and the picker has not been previously accessed.
                  */
-                var currentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnumOrNull<LocationPickerMode>();
+                EnsureChildControls();
+
+                var currentPickerMode = _hfCurrentPickerMode?.Value.ConvertToEnumOrNull<LocationPickerMode>();
 
                 if ( !currentPickerMode.HasValue )
                 {

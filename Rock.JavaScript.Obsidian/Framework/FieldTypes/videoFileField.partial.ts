@@ -24,7 +24,8 @@ export const enum ConfigurationValueKey {
     FileName = "fileName",
     MimeType = "mimeType",
     FilePath = "filePath",
-    FileGuid = "fileGuid"
+    FileGuid = "fileGuid",
+    BinaryFileType = "binaryFileType"
 }
 
 // The edit component can be quite large, so load it only as needed.

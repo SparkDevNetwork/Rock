@@ -110,9 +110,11 @@
     <Compile Include="Communication\CommunicationList.cs" />
     <Compile Include="Communication\SmsPipelineList.cs" />
     <Compile Include="Communication\SystemCommunicationPreview.cs" />
+    <Compile Include="Communication\SystemCommunicationList.cs" />
     <Compile Include="Core\AssetStorageProviderList.cs" />
     <Compile Include="Core\AttributeList.cs" />
     <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
+    <Compile Include="Core\AttributeMatrixTemplateList.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
     <Compile Include="Core\BinaryFileList.cs" />
     <Compile Include="Core\BinaryFileTypeDetail.cs" />
@@ -123,6 +125,7 @@
     <Compile Include="Core\DefinedTypeDetail.cs" />
     <Compile Include="Core\DeviceDetail.cs" />
     <Compile Include="Core\DeviceList.cs" />
+    <Compile Include="Core\EventList.cs" />
     <Compile Include="Core\FollowingSuggestionTypeList.cs" />
     <Compile Include="Core\LocationList.cs" />
     <Compile Include="Core\Notes.cs" />
@@ -133,6 +136,7 @@
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
     <Compile Include="Core\SignalTypeList.cs" />
+    <Compile Include="Core\SignatureDocumentTemplateList.cs" />
     <Compile Include="Core\TagList.cs" />
     <Compile Include="Crm\AssessmentTypeList.cs" />
     <Compile Include="Crm\NamelessPersonList.cs" />
@@ -140,10 +144,13 @@
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
+    <Compile Include="Engagement\AchievementAttemptList.cs" />
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
     <Compile Include="Engagement\StepProgramList.cs" />
+    <Compile Include="CheckIn\AttendanceHistoryList.cs" />
     <Compile Include="Event\EventCalendarItemList.cs" />
+    <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
     <Compile Include="Finance\BusinessList.cs" />
     <Compile Include="Finance\FinancialAccountDetail.cs" />
@@ -159,10 +166,13 @@
     <Compile Include="CheckIn\Config\CheckinTypeDetail.cs" />
     <Compile Include="Finance\FinancialStatementTemplateList.cs" />
     <Compile Include="Group\GroupArchivedList.cs" />
+    <Compile Include="Group\Scheduling\GroupMemberScheduleTemplateList.cs" />
+    <Compile Include="Group\GroupRequirementTypeList.cs" />
     <Compile Include="Group\GroupTypeList.cs" />
     <Compile Include="Mobile\MobileLayoutDetail.cs" />
     <Compile Include="Group\GroupMemberScheduleTemplateDetail.cs" />
     <Compile Include="Group\GroupRequirementTypeDetail.cs" />
+    <Compile Include="Reporting\PersistedDataViewList.cs" />
     <Compile Include="Reporting\InteractionDetail.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
     <Compile Include="Reporting\MetricValueDetail.cs" />

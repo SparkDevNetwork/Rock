@@ -765,7 +765,16 @@ namespace RockWeb.Blocks.CheckIn
             if ( IsAttendanceEnabled && _attendanceSettingState != null )
             {
                 group = new GroupService( rockContext ).Get( _attendanceSettingState.GroupId );
-                groupLocation = new GroupLocationService( rockContext ).Get( _attendanceSettingState.GroupLocationId );
+                groupLocation = new GroupLocationService( rockContext ).GetInclude(
+                    _attendanceSettingState.GroupLocationId,
+                    gl => gl.Location
+                );
+
+                var campusId = group.CampusId;
+                if ( !campusId.HasValue )
+                {
+                    campusId = groupLocation.Location.CampusId;
+                }
 
                 for ( int i = 0; i < rcbAttendance.Items.Count; i++ )
                 {
@@ -774,7 +783,7 @@ namespace RockWeb.Blocks.CheckIn
 
                     if ( rcbAttendance.Items[i].Selected )
                     {
-                        var attendance = attendanceService.AddOrUpdate( attendancePerson.PrimaryAliasId.Value, _attendanceSettingState.AttendanceDate, group.Id, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.CampusId );
+                        var attendance = attendanceService.AddOrUpdate( attendancePerson.PrimaryAliasId.Value, _attendanceSettingState.AttendanceDate, group.Id, groupLocation.LocationId, _attendanceSettingState.ScheduleId, campusId );
                     }
                     else
                     {

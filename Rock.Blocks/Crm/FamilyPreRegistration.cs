@@ -1064,10 +1064,21 @@ namespace Rock.Blocks.Crm
                     var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                     if ( homeLocationType != null )
                     {
-                        // Find a location record for the address that was entered.
-                        Location location = null;
-                        if ( bag.Address.Street1.IsNotNullOrWhiteSpace() && bag.Address.City.IsNotNullOrWhiteSpace() )
+                        // Only save the location if it is valid according to the country's requirements.
+                        Location location = new Location()
                         {
+                            Street1 = bag.Address.Street1,
+                            Street2 = bag.Address.Street2,
+                            City = bag.Address.City,
+                            State = bag.Address.State,
+                            PostalCode = bag.Address.PostalCode,
+                            Country = bag.Address.Country,
+                        };
+                        var isValid = LocationService.ValidateLocationAddressRequirements( location, out string validationMessage );
+
+                        if ( isValid )
+                        {
+                            // Find a location record for the address that was entered.
                             location = new LocationService( rockContext ).Get(
                                 // TODO: The default country should be removed once Obsidian has full country support.
                                 bag.Address.Street1,

@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Rock.Rest.XML</DocumentationFile>
@@ -31,7 +31,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Rock.Rest.XML</DocumentationFile>
@@ -59,6 +59,9 @@
     </Reference>
     <Reference Include="Microsoft.Data.OData, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Data.OData.5.6.0\lib\net40\Microsoft.Data.OData.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
@@ -159,6 +162,7 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="App_Start\IWebHostEnvironment.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationSegmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessagesController.CodeGenerated.cs" />
@@ -194,7 +198,9 @@
     <Compile Include="Controllers\NotificationMessagesController.Partial.cs" />
     <Compile Include="Controllers\ReminderTypesController.Partial.cs" />
     <Compile Include="Controllers\RemindersController.Partial.cs" />
+    <Compile Include="Handler\RockDependencyControllerActivator.cs" />
     <Compile Include="Handler\RockHttpControllerSelector.cs" />
+    <Compile Include="Handler\ServiceScopeHandler.cs" />
     <Compile Include="HttpRequestMessageWrapper.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
     <Compile Include="v2\ControlsController.cs" />

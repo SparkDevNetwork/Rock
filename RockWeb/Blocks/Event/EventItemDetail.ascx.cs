@@ -946,8 +946,8 @@ namespace RockWeb.Blocks.Event
 
                         wpAttributes.Visible = true;
                         calendarAttributeHtmlGenericContainer.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
-                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, calendarAttributeHtmlGenericContainer, true, BlockValidationGroup );
                         phAttributes.Controls.Add( calendarAttributeHtmlGenericContainer );
+                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, calendarAttributeHtmlGenericContainer, true, BlockValidationGroup );
                     }
                 }
             }

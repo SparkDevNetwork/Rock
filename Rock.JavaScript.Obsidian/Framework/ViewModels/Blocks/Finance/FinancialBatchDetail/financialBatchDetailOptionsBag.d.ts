@@ -23,7 +23,7 @@
 
 import { FinancialBatchAccountTotalsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchAccountTotalsBag";
 import { FinancialBatchCurrencyTotalsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchCurrencyTotalsBag";
-import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 
 export type FinancialBatchDetailOptionsBag = {
     /** Gets or sets the accounts. */

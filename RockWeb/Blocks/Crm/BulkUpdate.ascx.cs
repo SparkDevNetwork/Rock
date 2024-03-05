@@ -316,6 +316,11 @@ namespace RockWeb.Blocks.Crm
                 $('#{2}').closest('.form-group').toggleClass('bulk-item-selected', enabled)
             }}
 
+            // Enhanced lists need special handling
+            var enhancedList = $(this).parent().find('.chosen-select');
+            if (enhancedList.length) {{
+                $(enhancedList).trigger('chosen:updated');
+            }}
         }});
 
         // Update the hidden field with the client id of each selected control, (if client id ends with '_hf' as in the case of multi-select attributes, strip the ending '_hf').
@@ -2248,7 +2253,7 @@ namespace RockWeb.Blocks.Crm
                 if ( this.UpdateGroupAction != GroupChangeActionSpecifier.None )
                 {
                     var group = new GroupService( rockContext ).Get( UpdateGroupId.Value );
-                    if ( group != null )
+                    if ( group != null && ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson ) ) )
                     {
                         var groupMemberService = new GroupMemberService( rockContext );
 

@@ -3332,8 +3332,8 @@ function onTaskCompleted( resultData )
                     }
                 }
 
-                activity?.AddTag( "rock-communication-id", communication.Id );
-                activity?.AddTag( "rock-communication-name", communication.Name );
+                activity?.AddTag( "rock.communication.id", communication.Id );
+                activity?.AddTag( "rock.communication.name", communication.Name );
 
                 hfCommunicationId.Value = communication.Id.ToString();
 
@@ -3707,8 +3707,8 @@ function onTaskCompleted( resultData )
 
                 // rockContext.SaveChanges() is called deep within the UpdateCommunicationRecipients() call above,
                 // so wait until we get back from that method to add the ID tag.
-                activity?.AddTag( "rock-communication-id", communication.Id );
-                activity?.AddTag( "rock-communication-name", communication.Name );
+                activity?.AddTag( "rock.communication.id", communication.Id );
+                activity?.AddTag( "rock.communication.name", communication.Name );
             }
         }
 
@@ -4016,10 +4016,10 @@ function onTaskCompleted( resultData )
                 {
                     if ( communication.Id > 0 )
                     {
-                        activity?.AddTag( "rock-communication-id", communication.Id );
+                        activity?.AddTag( "rock.communication.id", communication.Id );
                     }
 
-                    activity?.AddTag( "rock-communication-name", communication.Name );
+                    activity?.AddTag( "rock.communication.name", communication.Name );
 
                     // delete any attachments that are no longer included
                     foreach ( var attachment in communication.Attachments.Where( a => ( !emailBinaryFileIds.Contains( a.BinaryFileId ) && !smsBinaryFileIds.Contains( a.BinaryFileId ) ) ).ToList() )
@@ -4128,7 +4128,7 @@ function onTaskCompleted( resultData )
                     {
                         communicationPersonIdHash = new HashSet<int>( qryRecipients.Select( a => a.PersonAlias.PersonId ) );
 
-                        personIdHashActivity?.AddTag( "rock-communication-person-id-hash-count", communicationPersonIdHash.Count );
+                        personIdHashActivity?.AddTag( "rock.communication.person_id_hash_count", communicationPersonIdHash.Count );
                     }
                 }
                 else
@@ -4268,13 +4268,16 @@ function onTaskCompleted( resultData )
 
                 using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Get Recipient Person Id Persisted List (add new EntitySet)" ) )
                 {
-                    var entitySetId = service.AddEntitySet(
-                        "RecipientPersonEntitySet_Communication",
-                        Rock.Web.Cache.EntityTypeCache.Get<Rock.Model.Person>().Id,
-                        personIdList,
-                    20 );
+                    var args = new AddEntitySetActionOptions
+                    {
+                        Name = "RecipientPersonEntitySet_Communication",
+                        EntityTypeId = Rock.Web.Cache.EntityTypeCache.Get<Rock.Model.Person>().Id,
+                        EntityIdList = personIdList,
+                        ExpiryInMinutes = 20
+                    };
+                    var entitySetId = service.AddEntitySet( args );
 
-                    activity?.AddTag( "rock-communication-entity-set-id", entitySetId );
+                    activity?.AddTag( "rock.communication.entity_set_id", entitySetId );
 
                     var entityQuery = service.GetEntityQuery( entitySetId ).Select( x => x.Id );
 

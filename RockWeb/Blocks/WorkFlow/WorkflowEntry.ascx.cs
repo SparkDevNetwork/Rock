@@ -1750,7 +1750,7 @@ namespace RockWeb.Blocks.WorkFlow
                         CampusId = person.PrimaryCampusId
                     };
 
-                    newFamilyRockContext.Groups.Add( family );
+                    new GroupService( newFamilyRockContext ).Add( family );
 
                     var adultRoleId = familyGroupType.Roles.Find( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
                     var familyMember = new GroupMember

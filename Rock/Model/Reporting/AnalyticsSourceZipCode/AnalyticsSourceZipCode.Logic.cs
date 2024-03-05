@@ -39,6 +39,8 @@ namespace Rock.Model
     /// </summary>
     public partial class AnalyticsSourceZipCode
     {
+        private const string CensusDataPath = "App_Data\\Formatted_Census_Data.xlsx";
+
         /// <summary>
         /// Saves the analytics source zip code data.
         /// </summary>
@@ -94,7 +96,7 @@ namespace Rock.Model
                     // Get the current batch
                     var currentBatch = analyticsZipCodes.Skip( i * batchSize ).Take( batchSize ).ToList();
 
-                    rockContext.AnalyticsSourceZipCodes.AddRange( currentBatch );
+                    rockContext.Set<AnalyticsSourceZipCode>().AddRange( currentBatch );
                     rockContext.SaveChanges();
                 }
 
@@ -105,7 +107,7 @@ namespace Rock.Model
                 using ( var rockContext = new RockContext() )
                 {
                     // Since we are not saving the DbGeography details we'll just use EFBatchOperation to BulkInsert.
-                    EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceZipCodes ).InsertAll( analyticsZipCodes );
+                    EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourceZipCode>() ).InsertAll( analyticsZipCodes );
                 }
             }
         }
@@ -137,7 +139,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static List<AnalyticsSourceZipCode> GetZipCodeCensusData()
         {
-            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Content\\InternalSite\\Formatted_Census_Data.xlsx" );
+            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, CensusDataPath );
             var fileInfo = new FileInfo( path );
 
             using ( var excelPackage = new ExcelPackage( fileInfo ) )
@@ -181,6 +183,19 @@ namespace Rock.Model
                 } );
 
                 return data.OrderBy( z => z.ZipCode ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Deletes the census data file.
+        /// </summary>
+        public static void DeleteCensusDataFile()
+        {
+            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, CensusDataPath );
+
+            if ( File.Exists( path ) )
+            {
+                File.Delete( path );
             }
         }
 

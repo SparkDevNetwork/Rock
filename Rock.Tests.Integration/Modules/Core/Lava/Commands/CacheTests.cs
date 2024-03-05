@@ -22,6 +22,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Tests.Shared.Lava;
 using Rock.Web.Cache;
+using Rock.Lava.Fluid;
+using Rock.Tests.Shared;
+using Rock.Model;
+using Rock.Data;
+using System.Linq;
+using System;
+using System.Collections;
+using System.Data.Entity;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
@@ -31,6 +39,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
     [TestClass]
     public class CacheTests : LavaIntegrationTestBase
     {
+        #region Cache Block
+
         [TestMethod]
         public void CacheBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
@@ -298,7 +308,7 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // Clear the cache for the current engine.
-                RockCache.ClearAllCachedItems(); 
+                RockCache.ClearAllCachedItems();
 
                 // Render the template with value 1. The cache block output should be added to the cache.
                 mergeFields["i"] = "1";
@@ -332,5 +342,224 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
             } );
 
         }
+
+        #endregion
+
+        #region CreateEntitySet filter
+
+        [TestMethod]
+        public void CreateEntitySet_WithInvalidInput_RendersErrorMessage()
+        {
+            var inputTemplate = @"
+{% assign entitySet = null | CreateEntitySet %}
+{{ entitySet.Id }}
+";
+            var options = new LavaTestRenderOptions { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput };
+            var output = TestHelper.GetTemplateOutput( typeof( FluidEngine ), inputTemplate, options );
+
+            Assert.That.Contains( output, "CreateEntitySet failed." );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_WithInputAsEntityArray_ReturnsExpectedOutput()
+        {
+            var personList = GetTestPersonEntityList();
+            CreateEntitySet( personList );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_WithInputAsIntegerArray_ReturnsExpectedOutput()
+        {
+            var personIdArray = GetTestPersonEntityList().Select( p => p.Id ).ToList();
+            CreateEntitySet( personIdArray, "Person" );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_WithInputAsDelimitedString_ReturnsExpectedOutput()
+        {
+            var personIdList = GetTestPersonEntityList().Select( p => p.Id ).ToList().AsDelimited( "," );
+            CreateEntitySet( personIdList, "Person" );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_WithExpiryInMinutes_ReturnsCorrectlyConfiguredEntitySet()
+        {
+            var expectedExpiry = RockDateTime.Now.AddMinutes( 7 );
+            var entitySet = CreatePersonEntitySetWithOptions( 7, null, null, null );
+
+            Assert.That.AreProximate( expectedExpiry, entitySet.ExpireDateTime, new TimeSpan( 0, 1, 0 ) );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_WithDefinedPurpose_ReturnsCorrectlyConfiguredEntitySet()
+        {
+            var definedValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
+            var entitySet = CreatePersonEntitySetWithOptions( purposeId: definedValueId );
+
+            Assert.That.AreEqual( definedValueId, entitySet.EntitySetPurposeValueId.GetValueOrDefault() );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_WithNote_ReturnsCorrectlyConfiguredEntitySet()
+        {
+            var note = "Test note.";
+            var entitySet = CreatePersonEntitySetWithOptions( note: note );
+
+            Assert.That.AreEqual( note, entitySet.Note );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_WithParentSet_ReturnsCorrectlyConfiguredEntitySet()
+        {
+            var entitySetParent = CreatePersonEntitySetWithOptions();
+            var entitySetChild = CreatePersonEntitySetWithOptions( parentSetId: entitySetParent.Id );
+
+            Assert.That.AreEqual( entitySetParent.Id, entitySetChild.ParentEntitySetId );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_EntityTypeParameter_AllowsIdOrIdKeyOrGuidOrName()
+        {
+            var personEntityType = EntityTypeCache.Get( typeof( Rock.Model.Person ) );
+
+            // Specify EntityType as Id.
+            AssertCreateEntitySetForEntityTypeParameter( personEntityType.Id.ToString() );
+
+            // Specify EntityType as Guid.
+            AssertCreateEntitySetForEntityTypeParameter( personEntityType.Guid.ToString() );
+
+            // Specify EntityType as IdKey.
+            AssertCreateEntitySetForEntityTypeParameter( personEntityType.IdKey );
+
+            // Specify EntityType as Name.
+            AssertCreateEntitySetForEntityTypeParameter( personEntityType.FriendlyName );
+        }
+
+        [TestMethod]
+        public void CreateEntitySet_DocumentationExample1_ReturnsExpectedOutput()
+        {
+            var inputTemplate = @"
+{% person where:'LastName == ""Decker""' select:'Id' iterator:'personIds' limit:4 %}
+{% assign personIdList = personIds %}
+{% endperson %} 
+{% entitytype where:'FriendlyName == ""Person""' %}
+{% assign entityTypeId = entitytype.Id %}
+{% endentitytype %}
+{% assign entitySet = personIdList | CreateEntitySet:entityTypeId,5,'Person Merge Request','Test note.','' %}
+An Entity Set (Id={{ entitySet.Id }}) was created and {{ personIdList | Size }} people have been added.
+";
+
+            var expectedOutput = @"
+An Entity Set (Id=*) was created and 4 people have been added.
+";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "rockentity", Wildcards = new List<string>() { "*" } };
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, options );
+        }
+
+        private void AssertCreateEntitySetForEntityTypeParameter( string entityTypeParameter )
+        {
+            var inputTemplate = @"
+{% assign entitySet = '$personId' | CreateEntitySet:'$entityType' %}
+{{ entitySet.Id }}
+";
+            // Require an Id integer value as output.
+            var expectedOutput = "[0-9]*";
+
+            var person = TestHelper.GetTestPersonTedDecker();
+
+            inputTemplate = inputTemplate.Replace( "$personId", person.Id.ToString() )
+                .Replace( "$entityType", entityTypeParameter );
+
+            var options = new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.RegEx };
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, options );
+        }
+
+        private List<Person> GetTestPersonEntityList()
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            var personTedDecker = personService.GetByIdentifierOrThrow( TestGuids.TestPeople.TedDecker );
+            var personBillMarble = personService.GetByIdentifierOrThrow( TestGuids.TestPeople.BillMarble );
+            var personMaddie = personService.GetByIdentifierOrThrow( TestGuids.TestPeople.MaddieLowe );
+
+            var personList = new List<Person>
+            {
+                personTedDecker, personBillMarble, personMaddie
+            };
+
+            return personList;
+        }
+
+        private EntitySet CreateEntitySet( object input, string entityType = null, int? expiryInMinutes = null, int? purposeId = null, string note = null, int? parentSetId = null )
+        {
+            var inputTemplate = @"
+{% assign entitySet = $input | CreateEntitySet:$args %}
+{{ entitySet.Id }}
+";
+
+            var args = new List<string>
+            {
+                $"'{entityType}'",
+                expiryInMinutes.GetValueOrDefault(20).ToStringSafe(),
+                $"'{purposeId.ToStringSafe()}'",
+                $@"'{note}'",
+                parentSetId.ToStringSafe()
+            };
+
+            inputTemplate = inputTemplate.Replace( "$args", args.AsDelimited( "," ).TrimEnd( ',' ) );
+
+            var options = new LavaTestRenderOptions
+            {
+                EnabledCommands = "rockentity",
+                Wildcards = new List<string>() { "*" }
+            };
+
+            if ( input is IEnumerable )
+            {
+                options.MergeFields = new LavaDataDictionary
+                {
+                    { "Input", input }
+                };
+                inputTemplate = inputTemplate.Replace( "$input", "Input" );
+            }
+            else
+            {
+                inputTemplate = inputTemplate.Replace( "$input", $"'{input}'" );
+            }
+
+
+            var output = TestHelper.GetTemplateOutput( typeof( FluidEngine ), inputTemplate, options );
+
+            var entitySetId = output.ConvertToIntegerOrThrow();
+
+            // Get the entity set, including the items. 
+            var rockContext = new RockContext();
+            var entitySetService = new EntitySetService( rockContext );
+
+            var entitySet = entitySetService.Queryable()
+                .Include( s => s.Items )
+                .FirstOrDefault( s => s.Id == entitySetId );
+
+            return entitySet;
+        }
+
+        private EntitySet CreatePersonEntitySetWithOptions( int? expiryInMinutes = null, int? purposeId = null, string note = null, int? parentSetId = null )
+        {
+            var personList = GetTestPersonEntityList();
+            var personIdList = personList.Select( p => p.Id )
+                .ToList()
+                .AsDelimited( "," );
+
+            var entitySet = CreateEntitySet( personIdList, "Person", expiryInMinutes, purposeId, note, parentSetId );
+
+            // Verify the number of items in the set.
+            Assert.That.AreEqual( personList.Count(), entitySet.Items.Count );
+
+            return entitySet;
+        }
+
+        #endregion
     }
 }

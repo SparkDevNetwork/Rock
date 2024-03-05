@@ -25,7 +25,7 @@ namespace Rock.Chart
 {
     /// <summary>
     /// Provides base functionality for factories that build the data structures needed to render a chart with the Chart.js library.
-    /// These factories produce data that descirbes the presentation and functionality of a chart,
+    /// These factories produce data that describes the presentation and functionality of a chart,
     /// they do not produce the datapoints that are mapped by the chart.
     /// </summary>
     /// <remarks>
