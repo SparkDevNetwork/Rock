@@ -18,11 +18,19 @@ namespace Rock.Tests.Shared.TestFramework
     /// for unit tests. It will automatically build a new docker image if required
     /// before starting up the first time.
     /// </summary>
-    public class TestDatabaseContainer
+    public class TestDatabaseContainer : ITestDatabaseContainer
     {
         private static bool? _hasValidImage;
 
         private MsSqlContainer _databaseContainer;
+
+        public bool HasCurrentInstance
+        {
+            get
+            {
+                return _hasValidImage.GetValueOrDefault();
+            }
+        }
 
         /// <summary>
         /// Starts a database container for the current version of Rock. This
@@ -66,6 +74,8 @@ namespace Rock.Tests.Shared.TestFramework
         /// <returns>A task that indicates when the container has been removed.</returns>
         public async Task DisposeAsync()
         {
+            _hasValidImage = null;
+
             if ( _databaseContainer != null )
             {
                 RockCache.ClearAllCachedItems( false );
