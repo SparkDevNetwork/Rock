@@ -339,6 +339,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AttributeMatrixTemplateDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\Attributes\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileTypeDetail\" />
@@ -865,6 +866,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderList\assetStorageProviderListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AttributeMatrixTemplateDetail\attributeMatrixTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AttributeMatrixTemplateDetail\attributeMatrixTemplateDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Attributes\attributesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\binaryFileDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\BinaryFileList\binaryFileListOptionsBag.d.ts" />

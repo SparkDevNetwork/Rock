@@ -25,6 +25,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Core.Attributes;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -142,19 +144,25 @@ namespace Rock.Blocks.Core
         {
             var entityTypeGuid = GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull();
 
+            var box = new ListBlockBox<AttributesOptionsBag>();
             var builder = GetGridBuilder();
 
-            return new
+            box.IsAddEnabled = true;
+            box.IsDeleteEnabled = true;
+            box.ExpectedRowCount = null;
+            box.Options = new AttributesOptionsBag
             {
                 AttributeEntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>().Id,
                 EntityTypeGuid = entityTypeGuid,
                 EntityTypes = !entityTypeGuid.HasValue ? GetEntityTypes() : null,
                 //Attributes = entityTypeGuid.HasValue ? GetAttributeRows( entityTypeGuid ) : new List<GridRow>(),
-                HideColumns = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).SplitDelimitedValues(),
+                HideColumns = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).SplitDelimitedValues().ToList(),
                 EnableShowInGrid = GetAttributeValue( AttributeKey.EnableShowInGrid ).AsBoolean(),
                 AllowSettingOfValues = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean(),
-                GridDefinition = builder.BuildDefinition()
             };
+            box.GridDefinition = builder.BuildDefinition();
+
+            return box;
         }
 
         /// <summary>
@@ -199,181 +207,6 @@ namespace Rock.Blocks.Core
 
             return entityId;
         }
-
-        /// <summary>
-        /// Gets the attribute rows that will be sent to the client.
-        /// </summary>
-        /// <param name="entityTypeGuid">The entity type unique identifier</param>
-        /// <returns>A list of grid row data.</returns>
-        //private List<GridRow> GetAttributeRows( Guid? entityTypeGuid )
-        //{
-        //    using ( var rockContext = new RockContext() )
-        //    {
-        //        var data = GetAttributeQuery( rockContext, entityTypeGuid );
-
-        //        return data.Select( a => a.Id )
-        //            .ToList()
-        //            .Select( id => AttributeCache.Get( id ) )
-        //            .Select( a => GetAttributeRow( a, rockContext ) )
-        //            .ToList();
-        //    }
-        //}
-
-        /// <summary>
-        /// Gets a single data row to be displayed in the grid for the attribute.
-        /// </summary>
-        /// <param name="attribute">The attribute to be displayed.</param>
-        /// <param name="rockContext">The database context used for queries.</param>
-        /// <returns>A grid row object that represents this attribute on the grid.</returns>
-        private GridRow GetAttributeRow( AttributeCache attribute, RockContext rockContext )
-        {
-            return new GridRow
-            {
-                Guid = attribute.Guid,
-                Id = attribute.Id,
-                Name = attribute.Name,
-                Categories = attribute.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ),
-                IsActive = attribute.IsActive,
-                Qualifier = GetAttributeQualifier( attribute ),
-                Attribute = GetPublicAttribute( rockContext, attribute ),
-                Value = GetPublicAttributeValue( rockContext, attribute ),
-                IsDeleteEnabled = !attribute.IsSystem,
-                IsSecurityEnabled = false
-            };
-        }
-
-        /// <summary>
-        /// Gets the query for all attributes that will be presented in the list.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>A queryable that will enumerate to all the attributes.</returns>
-        //private IQueryable<Rock.Model.Attribute> GetAttributeQuery( RockContext rockContext, Guid? entityTypeGuid )
-        //{
-        //    IQueryable<Rock.Model.Attribute> query = null;
-        //    AttributeService attributeService = new AttributeService( rockContext );
-
-        //    if ( entityTypeGuid.HasValue )
-        //    {
-        //        if ( entityTypeGuid.Value == default )
-        //        {
-        //            // entity type not configured in block or in filter, so get Global Attributes
-        //            query = attributeService.GetByEntityTypeId( null, true );
-        //            query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" );
-        //        }
-        //        else if ( GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull().HasValue )
-        //        {
-        //            // entity type is configured in block, so get by the entityType and qualifiers specified in the block settings
-        //            var entityTypeCache = EntityTypeCache.Get( entityTypeGuid.Value );
-        //            var entityQualifierColumn = GetAttributeValue( AttributeKey.EntityQualifierColumn );
-        //            var entityQualifierValue = GetAttributeValue( AttributeKey.EntityQualifierValue );
-        //            query = attributeService.GetByEntityTypeQualifier( entityTypeCache.Id, entityQualifierColumn, entityQualifierValue, true );
-        //        }
-        //        else
-        //        {
-        //            // entity type is selected in the filter, so get all the attributes for that entityType. (There is no userfilter for qualifiers, so don't filter by those)
-        //            var entityTypeCache = EntityTypeCache.Get( entityTypeGuid.Value );
-        //            query = attributeService.GetByEntityTypeId( entityTypeCache.Id, true );
-        //        }
-        //    }
-
-        //    // if filtering by block setting of categories
-        //    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CategoryFilter ) ) )
-        //    {
-        //        try
-        //        {
-        //            var categoryGuids = GetAttributeValue( AttributeKey.CategoryFilter ).Split( ',' ).Select( Guid.Parse ).ToList();
-
-        //            query = query.Where( a => a.Categories.Any( c => categoryGuids.Contains( c.Guid ) ) );
-        //        }
-        //        catch { }
-        //    }
-
-        //    query = query.OrderBy( a => a.Order );
-
-        //    return query;
-        //}
-
-        /// DELETE ME???
-        private string GetAttributeQualifier( AttributeCache attribute )
-        {
-            if ( attribute.EntityTypeId.HasValue )
-            {
-                var entityTypeName = EntityTypeCache.Get( attribute.EntityTypeId.Value ).FriendlyName;
-
-                if ( !string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierColumn ) )
-                {
-                    return $"{entityTypeName} where [{attribute.EntityTypeQualifierColumn}] = '{attribute.EntityTypeQualifierValue}'";
-                }
-                else
-                {
-                    return entityTypeName;
-                }
-            }
-            else
-            {
-                return "Global Attribute";
-            }
-        }
-
-
-        /// DELETE ME??!
-        private PublicAttributeBag GetPublicAttribute( RockContext rockContext, AttributeCache attribute )
-        {
-            var entityId = GetEntityId();
-
-            if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() ?? false )
-            {
-                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
-
-                if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
-                {
-                    return PublicAttributeHelper.GetPublicAttributeForView( attribute, attributeValue.Value );
-                }
-                else
-                {
-                    return PublicAttributeHelper.GetPublicAttributeForView( attribute, attribute.DefaultValue );
-                }
-            }
-            else
-            {
-                return PublicAttributeHelper.GetPublicAttributeForView( attribute, attribute.DefaultValue );
-            }
-        }
-
-        /// DELETE ME!??!
-        private string GetPublicAttributeValue( RockContext rockContext, AttributeCache attribute )
-        {
-            var entityId = GetEntityId();
-
-            if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() ?? false )
-            {
-                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
-
-                if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
-                {
-                    return PublicAttributeHelper.GetPublicValueForView( attribute, attributeValue.Value );
-                }
-                else
-                {
-                    return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
-                }
-            }
-            else
-            {
-                return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
-            }
-        }
-
-
-
-
-
-
-
-
-
 
         /// <inheritdoc/>
         protected override IQueryable<Model.Attribute> GetListQueryable( RockContext rockContext )
@@ -444,6 +277,8 @@ namespace Rock.Blocks.Core
                 .AddTextField( "id", a => a.Id.ToString() )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "guid", a => a.Guid )
+                .AddField( "entityTypeGuid", a => EntityTypeCache.Get( a.EntityTypeId ?? 0 )?.Guid )
+                .AddTextField( "name", a => a.Name )
                 .AddField( "categories", a => a.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ) )
                 .AddField( "order", a => a.Order )
                 .AddField( "isActive", a => a.IsActive )
@@ -451,7 +286,7 @@ namespace Rock.Blocks.Core
                 .AddField( "attribute", a => GetPublicAttribute( rockContext, a ) )
                 .AddTextField( "value", a => GetPublicAttributeValue( rockContext, a ) )
                 .AddField( "isDeleteEnabled", a => !a.IsSystem )
-                .AddField( "isSecurityEnabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
 
             return builder;
         }
@@ -548,43 +383,24 @@ namespace Rock.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Gets a single data row to be displayed in the grid for the attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute to be displayed.</param>
+        /// <returns>A grid row object that represents this attribute on the grid.</returns>
+        private Dictionary<string, object> GetAttributeRow( Rock.Model.Attribute attribute )
+        {
+            var builder = GetGridBuilder();
+            var items = new List<Rock.Model.Attribute> { attribute };
 
+            var gridData = builder.Build( items );
 
-
-
-
-
-
-
-
-
+            return gridData.Rows[0];
+        }
 
         #endregion
 
         #region Block Actions
-
-        /// <summary>
-        /// Gets the attributes for the spefified entity type unique identifier.
-        /// </summary>
-        /// <param name="entityTypeGuid">The entity type unique identifier whose attributes will be retrieved.</param>
-        /// <returns>A response that includes the attributes to be displayed.</returns>
-        //[BlockAction]
-        //public BlockActionResult GetAttributes( Guid entityTypeGuid )
-        //{
-        //    var entityTypeSettingGuid = GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull();
-
-        //    if ( entityTypeSettingGuid.HasValue && entityTypeGuid != entityTypeSettingGuid )
-        //    {
-        //        return ActionBadRequest( "Cannot request attributes for entity type that does not match block settings." );
-        //    }
-
-        //    return ActionOk( GetAttributeRows( entityTypeGuid ) );
-        //}
-
-
-
-
-
 
         /// <summary>
         /// Gets the attribute value representation for editing purposes.
@@ -671,7 +487,7 @@ namespace Rock.Blocks.Core
                     rockContext.SaveChanges();
                 }
 
-                return ActionOk( GetAttributeRow( attribute, rockContext ) );
+                return ActionOk( GetAttributeRow( new AttributeService( rockContext ).Get( attribute.Id ) ) );
             }
         }
 
@@ -697,7 +513,8 @@ namespace Rock.Blocks.Core
                 {
                     Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
                     EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = attribute.EntityTypeQualifierValue
+                    EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
+                    EntityTypeGuid = attribute.EntityType.Guid
                 } );
             }
         }
@@ -763,7 +580,7 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest();
                 }
 
-                return ActionOk( GetAttributeRow( AttributeCache.Get( newAttr.Id ), rockContext ) );
+                return ActionOk( GetAttributeRow( newAttr ) );
             }
         }
 
@@ -802,6 +619,34 @@ namespace Rock.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Changes the ordered position of a single item.
+        /// </summary>
+        /// <param name="key">The identifier of the item that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderItem( string key, string beforeKey )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Get the queryable and make sure it is ordered correctly.
+                var qry = GetListQueryable( rockContext );
+                qry = GetOrderedListQueryable( qry, rockContext );
+
+                // Get the entities from the database.
+                var items = GetListItems( qry, rockContext );
+
+                if ( !items.ReorderEntity( key, beforeKey ) )
+                {
+                    return ActionBadRequest( "Invalid reorder attempt." );
+                }
+
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
         #endregion
     }
 
@@ -810,6 +655,8 @@ namespace Rock.Blocks.Core
         public string EntityTypeQualifierColumn { get; set; }
 
         public string EntityTypeQualifierValue { get; set; }
+
+        public Guid EntityTypeGuid { get; set; }
 
         public PublicEditableAttributeBag Attribute { get; set; }
     }

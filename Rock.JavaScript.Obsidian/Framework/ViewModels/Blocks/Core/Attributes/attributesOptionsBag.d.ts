@@ -21,8 +21,20 @@
 // </copyright>
 //
 
-/** The data that describes the contents of a grid. */
-export type GridDataBag = {
-    /** Gets or sets the row data to display in the grid. */
-    rows?: Record<string, unknown>[] | null;
+import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+/** The additional configuration options for the Content Channel Item List block. */
+export type AttributesOptionsBag = {
+    allowSettingOfValues: boolean;
+
+    attributeEntityTypeId: number;
+
+    enableShowInGrid: boolean;
+
+    entityTypeGuid?: Guid | null;
+
+    entityTypes?: ListItemBag[] | null;
+
+    hideColumns?: string[] | null;
 };

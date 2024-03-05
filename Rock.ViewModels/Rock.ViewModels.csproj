@@ -92,8 +92,10 @@
     <Compile Include="Blocks\Communication\SmsPipelineList\SmsPipelineListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\SystemCommunicationPreview\SystemCommunicationPreviewInitializationBox.cs" />
     <Compile Include="Blocks\Core\AssetStorageProviderList\AssetStorageProviderListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\AttributeList\AttributeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\Attributes\AttributesOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileList\BinaryFileListOptionsBag.cs" />

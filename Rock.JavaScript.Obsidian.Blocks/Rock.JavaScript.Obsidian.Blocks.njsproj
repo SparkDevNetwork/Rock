@@ -66,6 +66,7 @@
     <Content Include="src\Communication\smsPipelineList.obs" />
     <Content Include="src\Core\assetStorageProviderList.obs" />
     <Content Include="src\Cms\personalLinkList.obs" />
+    <Content Include="src\Core\attributeList.obs" />
     <Content Include="src\Core\attributeMatrixTemplateDetail.obs" />
     <Content Include="src\Core\AttributeMatrixTemplateDetail\editPanel.partial.obs" />
     <Content Include="src\Core\AttributeMatrixTemplateDetail\viewPanel.partial.obs" />
@@ -372,6 +373,7 @@
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\AssetStorageProviderList\" />
+    <Folder Include="src\Core\AttributeList\" />
     <Folder Include="src\Core\AttributeMatrixTemplateDetail\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\BinaryFileList\" />
@@ -553,6 +555,7 @@
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\AttributeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
