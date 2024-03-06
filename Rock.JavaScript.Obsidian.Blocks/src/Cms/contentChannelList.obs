@@ -229,7 +229,7 @@
             return "";
         }
         const dateValue = RockDateTime.parseISO(value);
-        return dateValue ? `${dateValue.toElapsedString()} Ago` : "";
+        return dateValue ? dateValue.toElapsedString() : "";
     }
 
     // #endregion
