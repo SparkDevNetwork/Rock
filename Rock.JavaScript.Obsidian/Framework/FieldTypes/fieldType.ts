@@ -61,7 +61,7 @@ export abstract class FieldTypeBase implements IFieldType {
         return value ?? "";
     }
 
-    public getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public getHtmlValue(value: string, configurationValues: Record<string, string>, _isEscaped?: boolean): string {
         return `${escapeHtml(this.getTextValue(value, configurationValues))}`;
     }
 
@@ -69,31 +69,37 @@ export abstract class FieldTypeBase implements IFieldType {
         return truncate(this.getTextValue(value, configurationValues), 100);
     }
 
-    public getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, _isEscaped?: boolean): string {
         return `${escapeHtml(this.getCondensedTextValue(value, configurationValues))}`;
     }
 
     public getFormattedComponent(_configurationValues: Record<string, string>): Component {
         return defineComponent({
             name: "FieldType.Formatted",
-            props: getFieldEditorProps(),
+            props: {...getFieldEditorProps(), isEscaped: Boolean },
             setup: (props) => {
                 return {
-                    content: computed(() => this.getHtmlValue(props.modelValue ?? "", props.configurationValues))
+                    content: computed(() => {
+                        return this.getHtmlValue(props.modelValue ?? "", props.configurationValues, props.isEscaped);
+                        // return props.isEscaped ? escapeHtml(html) : html;
+                    })
                 };
             },
 
-            template: `<div v-html="content"></div>`
+            template: `<div v-if="isEscaped" v-text="content"></div><div v-else v-html="content"></div>`
         });
     }
 
     public getCondensedFormattedComponent(_configurationValues: Record<string, string>): Component {
         return defineComponent({
             name: "FieldType.CondensedFormatted",
-            props: getFieldEditorProps(),
+            props: {...getFieldEditorProps(), isEscaped: Boolean },
             setup: (props) => {
                 return {
-                    content: computed(() => this.getCondensedHtmlValue(props.modelValue ?? "", props.configurationValues))
+                    content: computed(() => {
+                        return this.getCondensedHtmlValue(props.modelValue ?? "", props.configurationValues, props.isEscaped);
+                        // return props.isEscaped ? escapeHtml(html) : html;
+                    })
                 };
             },
 

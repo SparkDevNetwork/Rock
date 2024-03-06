@@ -33,7 +33,7 @@
     <Content Include="build\.eslintrc.js" />
     <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
-    <Content Include="rollup.config.js" />
+    <Content Include="rollup.config.cjs" />
     <Content Include="src\Bus\queueDetail.vue" />
     <Content Include="src\CheckIn\attendanceHistoryList.obs" />
     <Content Include="src\CheckIn\Config\checkinTypeDetail.obs" />
@@ -75,6 +75,7 @@
     <Content Include="src\Cms\mediaFolderList.obs" />
     <Content Include="src\Cms\personalLinkSectionList.obs" />
     <Content Include="src\Core\attributeMatrixTemplateList.obs" />
+    <Content Include="src\Core\attributes.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -386,6 +387,7 @@
     <Folder Include="src\Core\AssetStorageProviderList\" />
     <Folder Include="src\Core\AttributeMatrixTemplateDetail\" />
     <Folder Include="src\Core\AttributeMatrixTemplateList\" />
+    <Folder Include="src\Core\Attributes\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\BinaryFileList\" />
     <Folder Include="src\Core\BinaryFileTypeDetail\" />
@@ -577,7 +579,7 @@
     <TypeScriptCompile Include="src\Core\AssetStorageProviderList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AttributeMatrixTemplateList\types.partial.ts" />
-    <TypeScriptCompile Include="src\Core\attributes.ts" />
+    <TypeScriptCompile Include="src\Core\Attributes\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileTypeDetail\types.partial.ts" />

@@ -59,22 +59,31 @@ export class MatrixFieldType extends FieldTypeBase {
         }
     }
 
-    public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped:boolean = false): string {
         if (value === undefined || value === null || value === "") {
             return "";
         }
 
         try {
             const val = JSON.parse(value) as ListItemBag;
+
+            if (isEscaped) {
+                return escapeHtml(val.text ?? "");
+            }
+
             return val.text ?? "";
         }
         catch {
+            if (isEscaped) {
+                return escapeHtml(value);
+            }
+
             return value;
         }
     }
 
-    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string {
-        return this.getHtmlValue(value, configurationValues);
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped:boolean = false): string {
+        return this.getHtmlValue(value, configurationValues, isEscaped);
     }
 
     public override getEditComponent(): Component {
