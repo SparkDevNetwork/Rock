@@ -383,5 +383,10 @@ namespace Rock.SystemKey
         /// Whether the giving month should use Sunday date for the analytics calendar dimension.
         /// </summary>
         public const string ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE = "core_AnalyticsCalendarDimensionGivingMonthUseSundayDate";
+
+        /// <summary>
+        /// The URL to use when updating Rock's geolocation database.
+        /// </summary>
+        public const string GEOLOCATION_DATABASE_UPDATE_URL = "core_GeolocationDatabaseUpdateUrl";
     }
 }

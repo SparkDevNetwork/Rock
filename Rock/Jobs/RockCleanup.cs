@@ -295,6 +295,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
+            RunCleanupTask( "update geolocation database", () => UpdateGeolocationDatabase() );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -3116,7 +3118,7 @@ END
         /// </summary>
         /// <returns></returns>
         private int UpdateMissingPrimaryFamily()
-       {
+        {
             using ( var rockContext = new RockContext() )
             {
                 var personService = new PersonService( rockContext );
@@ -3162,6 +3164,15 @@ END
 
                 return persons.Count;
             }
+        }
+
+        /// <summary>
+        /// Updates Rock's geolocation database.
+        /// </summary>
+        /// <returns></returns>
+        private int UpdateGeolocationDatabase()
+        {
+            return 0;
         }
 
         /// <summary>
