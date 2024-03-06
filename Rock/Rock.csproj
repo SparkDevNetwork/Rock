@@ -807,6 +807,8 @@
     <Compile Include="CheckIn\v2\AbilityLevelOpportunity.cs" />
     <Compile Include="CheckIn\v2\AreaConfigurationData.cs" />
     <Compile Include="CheckIn\v2\AreaOpportunity.cs" />
+    <Compile Include="CheckIn\v2\AttendanceSessionRequest.cs" />
+    <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
     <Compile Include="CheckIn\v2\TemplateConfigurationData.cs" />
     <Compile Include="CheckIn\v2\CheckInDirector.cs" />
     <Compile Include="CheckIn\v2\Attendee.cs" />

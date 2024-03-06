@@ -173,59 +173,39 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="attendance">The source attendance record.</param>
         /// <param name="attendee">The attendee information for the attendance record.</param>
-        /// <param name="area">The check-in area.</param>
-        /// <param name="group">The check-in group.</param>
-        /// <param name="location">The check-in location.</param>
-        /// <param name="schedule">The check-in schedule.</param>
         /// <returns>A new instance of <see cref="AttendanceBag"/>.</returns>
-        public virtual AttendanceBag GetAttendanceBag( RecentAttendance attendance, Attendee attendee, GroupTypeCache area, GroupCache group, NamedLocationCache location, NamedScheduleCache schedule )
+        public virtual AttendanceBag GetAttendanceBag( RecentAttendance attendance, Attendee attendee )
         {
             var bag = new AttendanceBag
             {
-                Guid = attendance.AttendanceGuid,
-                PersonGuid = attendance.PersonGuid,
                 NickName = attendee.Person.NickName,
                 FirstName = attendee.Person.FirstName,
                 LastName = attendee.Person.LastName,
-                FullName = attendee.Person.FullName,
-                Status = attendance.Status
+                FullName = attendee.Person.FullName
             };
 
-            if ( area != null )
-            {
-                bag.Area = new CheckInItemBag
-                {
-                    Guid = area.Guid,
-                    Name = area.Name
-                };
-            }
+            UpdateAttendanceBag( bag, attendance );
 
-            if ( group != null )
-            {
-                bag.Group = new CheckInItemBag
-                {
-                    Guid = group.Guid,
-                    Name = group.Name
-                };
-            }
+            return bag;
+        }
 
-            if ( location != null )
+        /// <summary>
+        /// Gets the attendance bag that represents all of the provided details.
+        /// </summary>
+        /// <param name="attendance">The source attendance record.</param>
+        /// <param name="person">The Person information for the attendance record.</param>
+        /// <returns>A new instance of <see cref="AttendanceBag"/>.</returns>
+        public virtual AttendanceBag GetAttendanceBag( RecentAttendance attendance, Person person)
+        {
+            var bag = new AttendanceBag
             {
-                bag.Location = new CheckInItemBag
-                {
-                    Guid = location.Guid,
-                    Name = location.Name
-                };
-            }
+                NickName = person.NickName,
+                FirstName = person.FirstName,
+                LastName = person.LastName,
+                FullName = person.FullName
+            };
 
-            if ( schedule != null )
-            {
-                bag.Schedule = new CheckInItemBag
-                {
-                    Guid = schedule.Guid,
-                    Name = schedule.Name
-                };
-            }
+            UpdateAttendanceBag( bag, attendance );
 
             return bag;
         }
@@ -348,6 +328,78 @@ namespace Rock.CheckIn.v2
                 Guid = schedule.Guid,
                 Name = schedule.Name
             };
+        }
+
+        /// <summary>
+        /// Gets the achievement bag that will represent the achievement attempt.
+        /// </summary>
+        /// <param name="achievementAttempt">The achievement attempt.</param>
+        /// <returns>A new instance of <see cref="AchievementBag"/>.</returns>
+        public virtual AchievementBag GetAchievementBag( AchievementAttempt achievementAttempt )
+        {
+            return new AchievementBag
+            {
+                Guid = achievementAttempt.Guid,
+                Name = AchievementTypeCache.Get( achievementAttempt.AchievementTypeId )?.Name ?? "Unknown Achievement",
+                IsSuccess = achievementAttempt.IsSuccessful,
+                Progress = achievementAttempt.Progress,
+                StartDateTime = achievementAttempt.AchievementAttemptStartDateTime.ToRockDateTimeOffset(),
+                EndDateTime = achievementAttempt.AchievementAttemptEndDateTime?.ToRockDateTimeOffset()
+            };
+        }
+
+        /// <summary>
+        /// Updates the attendance bag with the details from the <see cref="RecentAttendance"/>
+        /// record.
+        /// </summary>
+        /// <param name="attendanceBag">The attendance bag to be updated.</param>
+        /// <param name="attendance">The recent attendance record.</param>
+        protected void UpdateAttendanceBag( AttendanceBag attendanceBag, RecentAttendance attendance )
+        {
+            attendanceBag.Guid = attendance.AttendanceGuid;
+            attendanceBag.PersonGuid = attendance.PersonGuid;
+            attendanceBag.Status = attendance.Status;
+
+            var area = GroupTypeCache.Get( attendance.GroupTypeGuid, Session.RockContext );
+            var group = GroupCache.Get( attendance.GroupGuid, Session.RockContext );
+            var location = NamedLocationCache.Get( attendance.LocationGuid, Session.RockContext );
+            var schedule = NamedScheduleCache.Get( attendance.ScheduleGuid, Session.RockContext );
+
+            if ( area != null )
+            {
+                attendanceBag.Area = new CheckInItemBag
+                {
+                    Guid = area.Guid,
+                    Name = area.Name
+                };
+            }
+
+            if ( group != null )
+            {
+                attendanceBag.Group = new CheckInItemBag
+                {
+                    Guid = group.Guid,
+                    Name = group.Name
+                };
+            }
+
+            if ( location != null )
+            {
+                attendanceBag.Location = new CheckInItemBag
+                {
+                    Guid = location.Guid,
+                    Name = location.Name
+                };
+            }
+
+            if ( schedule != null )
+            {
+                attendanceBag.Schedule = new CheckInItemBag
+                {
+                    Guid = schedule.Guid,
+                    Name = schedule.Name
+                };
+            }
         }
 
         #endregion

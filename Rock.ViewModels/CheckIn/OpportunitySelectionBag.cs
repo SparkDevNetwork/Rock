@@ -19,10 +19,16 @@ namespace Rock.ViewModels.CheckIn
 {
     /// <summary>
     /// A set of items that represent the current selections that should be
-    /// made for a person.
+    /// made for an attendee.
     /// </summary>
     public class OpportunitySelectionBag
     {
+        /// <summary>
+        /// Gets or sets the ability level.
+        /// </summary>
+        /// <value>The ability level.</value>
+        public CheckInItemBag AbilityLevel { get; set; }
+
         /// <summary>
         /// Gets or sets the area.
         /// </summary>

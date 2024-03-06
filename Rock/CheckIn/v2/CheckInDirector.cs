@@ -247,7 +247,7 @@ namespace Rock.CheckIn.v2
         /// <summary>
         /// Gets the current attendance for a set of locations.
         /// </summary>
-        /// <param name="startDateTime">Attendance records must start on or after this date and time.</param>
+        /// <param name="startDateTime">Attendance records must start on this date.</param>
         /// <param name="locationIds">The location identifiers to load attendance data for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
         /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
@@ -262,7 +262,6 @@ namespace Rock.CheckIn.v2
                     && a.Occurrence.GroupId.HasValue
                     && a.Occurrence.ScheduleId.HasValue
                     && a.PersonAliasId.HasValue
-                    && a.StartDateTime >= startDateTime
                     && a.DidAttend.HasValue
                     && a.DidAttend.Value == true
                     && !a.EndDateTime.HasValue );

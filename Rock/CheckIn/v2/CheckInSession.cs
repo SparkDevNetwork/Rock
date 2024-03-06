@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -73,25 +72,31 @@ namespace Rock.CheckIn.v2
         /// Gets the conversion provider to be used with this instance.
         /// </summary>
         /// <value>The conversion provider.</value>
-        protected virtual DefaultConversionProvider ConversionProvider { get; }
+        public virtual DefaultConversionProvider ConversionProvider { get; }
 
         /// <summary>
         /// Gets the opportunity filter provider to be used with this instance.
         /// </summary>
         /// <value>The opportunity filter provider.</value>
-        protected virtual DefaultOpportunityFilterProvider OpportunityFilterProvider { get; }
+        public virtual DefaultOpportunityFilterProvider OpportunityFilterProvider { get; }
 
         /// <summary>
         /// Gets the selection provider to be used with this instance.
         /// </summary>
         /// <value>The selection provider.</value>
-        protected virtual DefaultSelectionProvider SelectionProvider { get; }
+        public virtual DefaultSelectionProvider SelectionProvider { get; }
 
         /// <summary>
         /// Gets the search provider to be used with this instance.
         /// </summary>
         /// <value>The search provider.</value>
-        protected virtual DefaultSearchProvider SearchProvider { get; }
+        public virtual DefaultSearchProvider SearchProvider { get; }
+
+        /// <summary>
+        /// Gets the save provider to be used with this instance.
+        /// </summary>
+        /// <value>The save provider.</value>
+        public virtual DefaultSaveProvider SaveProvider { get; }
 
         #endregion
 
@@ -123,6 +128,7 @@ namespace Rock.CheckIn.v2
             OpportunityFilterProvider = new DefaultOpportunityFilterProvider( this );
             SelectionProvider = new DefaultSelectionProvider( this );
             SearchProvider = new DefaultSearchProvider( this );
+            SaveProvider = new DefaultSaveProvider( this );
         }
 
         #endregion
@@ -365,12 +371,10 @@ namespace Rock.CheckIn.v2
                     // will just do a simple loop.
                     foreach ( var attendance in activeAttendances )
                     {
-                        var area = GroupTypeCache.Get( attendance.GroupTypeGuid, RockContext );
-                        var group = GroupCache.Get( attendance.GroupGuid, RockContext );
                         var location = NamedLocationCache.Get( attendance.LocationGuid, RockContext );
                         var schedule = NamedScheduleCache.Get( attendance.ScheduleGuid, RockContext );
 
-                        if ( area == null || group == null || location == null || schedule == null )
+                        if ( location == null || schedule == null )
                         {
                             continue;
                         }
@@ -385,13 +389,9 @@ namespace Rock.CheckIn.v2
                             continue;
                         }
 
-                        checkedInAttendances.Add( ConversionProvider.GetAttendanceBag(
-                            attendance,
-                            attendee,
-                            area,
-                            group,
-                            location,
-                            schedule ) );
+                        var attendanceBag = ConversionProvider.GetAttendanceBag( attendance, attendee );
+
+                        checkedInAttendances.Add( attendanceBag );
                     }
                 }
 
@@ -428,6 +428,36 @@ namespace Rock.CheckIn.v2
                 activity?.AddTag( "rock.checkin.conversion_provider", ConversionProvider.GetType().FullName );
 
                 return ConversionProvider.GetOpportunityCollectionBag( opportunityCollection );
+            }
+        }
+
+        /// <summary>
+        /// Saves the attendance requests to the database by creating or updating
+        /// existing <see cref="Attendance"/> records.
+        /// </summary>
+        /// <param name="sessionRequest">The data that describes the check-in session.</param>
+        /// <param name="requests">The attendance request details.</param>
+        /// <param name="kiosk">The kiosk that is performing this check-in or <c>null</c>.</param>
+        /// <param name="clientIpAddress">The remote IP address of the device performing this check-in or <c>null</c>.</param>
+        /// <exception cref="System.ArgumentNullException"><paramref name="sessionRequest"/> is <c>null</c>.</exception>
+        /// <exception cref="System.ArgumentNullException"><paramref name="requests"/> is <c>null</c>.</exception>
+        public CheckInResultBag SaveAttendance( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<AttendanceRequestBag> requests, DeviceCache kiosk, string clientIpAddress )
+        {
+            if ( sessionRequest == null )
+            {
+                throw new ArgumentNullException( nameof( sessionRequest ) );
+            }
+
+            if ( requests == null )
+            {
+                throw new ArgumentNullException( nameof( requests ) );
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "Save Attendance" ) )
+            {
+                activity?.AddTag( "rock.checkin.save_provider", SaveProvider.GetType().FullName );
+
+                return SaveProvider.SaveAttendance( sessionRequest, requests, kiosk, clientIpAddress );
             }
         }
 

@@ -1,4 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
 <template>
     <Panel title="Configuration"
            :modelValue="true"

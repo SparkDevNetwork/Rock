@@ -252,6 +252,57 @@ namespace Rock.Rest.v2.Controllers
             }
         }
 
+        /// <summary>
+        /// Saves the attendance for the specified requests.
+        /// </summary>
+        /// <param name="options">The options that describe the request.</param>
+        /// <returns>The results from the save operation.</returns>
+        [HttpPost]
+        [Authenticate]
+        //[Secured]
+        [Route( "SaveAttendance" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SaveAttendanceResponseBag ) )]
+        [SystemGuid.RestActionGuid( "7ef059cb-99ba-4cf1-b7d5-3723eb320a99" )]
+        public IActionResult PostSaveAttendance( [FromBody] SaveAttendanceOptionsBag options )
+        {
+            var configuration = GroupTypeCache.Get( options.TemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            DeviceCache kiosk = null;
+
+            if ( configuration == null )
+            {
+                return BadRequest( "Configuration was not found." );
+            }
+
+            if ( options.KioskGuid.HasValue )
+            {
+                kiosk = DeviceCache.Get( options.KioskGuid.Value, _rockContext );
+
+                if ( kiosk == null )
+                {
+                    return BadRequest( "Kiosk was not found." );
+                }
+            }
+
+            try
+            {
+                var director = new CheckInDirector( _rockContext );
+                var session = director.CreateSession( configuration );
+                var sessionRequest = new AttendanceSessionRequest( options.Session );
+
+                var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RockRequestContext.ClientInformation.IpAddress );
+
+                return Ok( new SaveAttendanceResponseBag
+                {
+                    Messages = result.Messages,
+                    Attendances = result.Attendances
+                } );
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return BadRequest( ex.Message );
+            }
+        }
+
         #region Temporary Benchmark
 
         /// <summary>

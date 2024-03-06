@@ -385,6 +385,10 @@
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerBag.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailBox.cs" />
     <Compile Include="CheckIn\AbilityLevelOpportunityBag.cs" />
+    <Compile Include="CheckIn\AchievementBag.cs" />
+    <Compile Include="CheckIn\AttendanceRequestBag.cs" />
+    <Compile Include="CheckIn\AttendanceSessionRequestBag.cs" />
+    <Compile Include="CheckIn\CheckInResultBag.cs" />
     <Compile Include="CheckIn\ConfigurationAreaBag.cs" />
     <Compile Include="CheckIn\AreaOpportunityBag.cs" />
     <Compile Include="CheckIn\AttendanceBag.cs" />
@@ -396,6 +400,7 @@
     <Compile Include="CheckIn\OpportunityCollectionBag.cs" />
     <Compile Include="CheckIn\AttendeeBag.cs" />
     <Compile Include="CheckIn\FamilyBag.cs" />
+    <Compile Include="CheckIn\RecordedAttendanceBag.cs" />
     <Compile Include="CheckIn\ScheduleOpportunityBag.cs" />
     <Compile Include="CheckIn\OpportunitySelectionBag.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldBag.cs" />
@@ -411,6 +416,8 @@
     <Compile Include="Rest\CheckIn\FamilyMembersResponseBag.cs" />
     <Compile Include="Rest\CheckIn\AttendeeOpportunitiesResponseBag.cs" />
     <Compile Include="Rest\CheckIn\AttendeeOpportunitiesOptionsBag.cs" />
+    <Compile Include="Rest\CheckIn\SaveAttendanceOptionsBag.cs" />
+    <Compile Include="Rest\CheckIn\SaveAttendanceResponseBag.cs" />
     <Compile Include="Rest\CheckIn\SearchForFamiliesOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\SearchForFamiliesResponseBag.cs" />
     <Compile Include="Controls\UniversalItemSearchPickerItemBag.cs" />
