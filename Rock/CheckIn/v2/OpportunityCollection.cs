@@ -374,38 +374,12 @@ namespace Rock.CheckIn.v2
         /// </returns>
         private static Dictionary<Guid, HashSet<Guid>> GetCurrentCountsForLocations( IReadOnlyCollection<int> locationIds, DateTime now, RockContext rockContext )
         {
-            var attendanceService = new AttendanceService( rockContext );
-            var todayDate = now.Date;
-
             if ( locationIds.Count == 0 )
             {
                 return new Dictionary<Guid, HashSet<Guid>>();
             }
 
-            var attendancesQry = attendanceService.Queryable()
-                .Where( a =>
-                    a.Occurrence.OccurrenceDate == todayDate
-                    && a.Occurrence.LocationId.HasValue
-                    && a.Occurrence.GroupId.HasValue
-                    && a.Occurrence.ScheduleId.HasValue
-                    && a.PersonAliasId.HasValue
-                    && a.DidAttend.HasValue
-                    && a.DidAttend.Value
-                    && !a.EndDateTime.HasValue );
-
-            attendancesQry = CheckInDirector.WhereContains( attendancesQry, locationIds, a => a.Occurrence.LocationId.Value );
-
-            var attendances = attendancesQry
-                .Select( a => new
-                {
-                    LocationGuid = a.Occurrence.Location.Guid,
-                    ScheduleId = a.Occurrence.ScheduleId.Value,
-                    a.CampusId,
-                    a.StartDateTime,
-                    a.EndDateTime,
-                    PersonGuid = a.PersonAlias.Person.Guid
-                } )
-                .ToList();
+            var attendances = CheckInDirector.GetCurrentAttendance( now, locationIds, rockContext );
 
             // We now have all the attendance records for these locations that
             // have check-in today but not yet checked out. Now we need to
@@ -413,14 +387,14 @@ namespace Rock.CheckIn.v2
             // active.
 
             var activeAttendances = attendances
-                .GroupBy( a => new { a.ScheduleId, a.CampusId } )
+                .GroupBy( a => new { a.ScheduleGuid, a.CampusGuid } )
                 .SelectMany( grp =>
                 {
                     // The vast majority of attendance records for a single
                     // location should have the same schedule and campus.
-                    var scheduleCache = NamedScheduleCache.Get( grp.Key.ScheduleId, rockContext );
-                    var campusCache = grp.Key.CampusId.HasValue
-                        ? CampusCache.Get( grp.Key.CampusId.Value, rockContext )
+                    var scheduleCache = NamedScheduleCache.Get( grp.Key.ScheduleGuid, rockContext );
+                    var campusCache = grp.Key.CampusGuid.HasValue
+                        ? CampusCache.Get( grp.Key.CampusGuid.Value, rockContext )
                         : null;
 
                     return grp.Where( a => Attendance.CalculateIsCurrentlyCheckedIn( a.StartDateTime, a.EndDateTime, campusCache, scheduleCache ) );

@@ -201,6 +201,95 @@ namespace Rock.CheckIn.v2
             return new CheckInSession( this, templateConfiguration );
         }
 
+        /// <summary>
+        /// Gets the recent attendance for a set of people.
+        /// </summary>
+        /// <param name="cutoffDateTime">Attendance records must start on or after this date and time.</param>
+        /// <param name="personGuids">The person unique identifiers to query the database for.</param>
+        /// <param name="rockContext">The database context to execute the query on.</param>
+        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
+        internal static List<RecentAttendance> GetRecentAttendance( DateTime cutoffDateTime, IEnumerable<Guid> personGuids, RockContext rockContext )
+        {
+            var attendanceService = new AttendanceService( rockContext );
+
+            var personAttendanceQuery = attendanceService
+                .Queryable()
+                .Where( a => a.PersonAlias != null
+                    && a.Occurrence.Group != null
+                    && a.Occurrence.Schedule != null
+                    && a.StartDateTime >= cutoffDateTime
+                    && a.DidAttend.HasValue
+                    && a.DidAttend.Value == true );
+
+            // TODO: This should probably be changed to a raw SQL query for performance.
+            // Because the list of personGuids will be changing constantly it
+            // will still not be cached by EF.
+            personAttendanceQuery = WhereContains( personAttendanceQuery, personGuids, a => a.PersonAlias.Person.Guid );
+
+            return personAttendanceQuery
+                .Select( a => new RecentAttendance
+                {
+                    AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
+                    Status = a.CheckInStatus,
+                    StartDateTime = a.StartDateTime,
+                    EndDateTime = a.EndDateTime,
+                    PersonGuid = a.PersonAlias.Person.Guid,
+                    GroupTypeGuid = a.Occurrence.Group.GroupType.Guid,
+                    GroupGuid = a.Occurrence.Group.Guid,
+                    LocationGuid = a.Occurrence.Location.Guid,
+                    ScheduleGuid = a.Occurrence.Schedule.Guid,
+                    CampusGuid = a.CampusId.HasValue ? a.Campus.Guid : ( Guid? ) null
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the current attendance for a set of locations.
+        /// </summary>
+        /// <param name="startDateTime">Attendance records must start on or after this date and time.</param>
+        /// <param name="locationIds">The location identifiers to load attendance data for.</param>
+        /// <param name="rockContext">The database context to execute the query on.</param>
+        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
+        internal static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IEnumerable<int> locationIds, RockContext rockContext )
+        {
+            var attendanceService = new AttendanceService( rockContext );
+
+            var personAttendanceQuery = attendanceService.Queryable()
+                .Where( a =>
+                    a.Occurrence.OccurrenceDate == startDateTime.Date
+                    && a.Occurrence.LocationId.HasValue
+                    && a.Occurrence.GroupId.HasValue
+                    && a.Occurrence.ScheduleId.HasValue
+                    && a.PersonAliasId.HasValue
+                    && a.StartDateTime >= startDateTime
+                    && a.DidAttend.HasValue
+                    && a.DidAttend.Value == true
+                    && !a.EndDateTime.HasValue );
+
+            // TODO: This should probably be changed to a raw SQL query for performance.
+            // Because the list of locationGuids will be changing constantly it
+            // will still not be cached by EF.
+            personAttendanceQuery = WhereContains( personAttendanceQuery, locationIds, a => a.Occurrence.Location.Id );
+
+            return personAttendanceQuery
+                .Select( a => new RecentAttendance
+                {
+                    AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
+                    Status = a.CheckInStatus,
+                    StartDateTime = a.StartDateTime,
+                    EndDateTime = a.EndDateTime,
+                    PersonGuid = a.PersonAlias.Person.Guid,
+                    GroupTypeGuid = a.Occurrence.Group.GroupType.Guid,
+                    GroupGuid = a.Occurrence.Group.Guid,
+                    LocationGuid = a.Occurrence.Location.Guid,
+                    ScheduleGuid = a.Occurrence.Schedule.Guid,
+                    CampusGuid = a.CampusId.HasValue ? a.Campus.Guid : ( Guid? ) null
+                } )
+                .ToList();
+        }
+
         #endregion
 
         #region Protected Methods

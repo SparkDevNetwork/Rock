@@ -22,7 +22,6 @@ using System.Linq;
 
 using Rock.Enums.CheckIn;
 using Rock.Model;
-using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 

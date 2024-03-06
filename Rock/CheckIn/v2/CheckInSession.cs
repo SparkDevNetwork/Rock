@@ -292,7 +292,7 @@ namespace Rock.CheckIn.v2
                 activity?.AddTag( "rock.checkin.conversion_provider", ConversionProvider.GetType().FullName );
 
                 var preSelectCutoff = RockDateTime.Today.AddDays( Math.Min( -1, 0 - TemplateConfiguration.AutoSelectDaysBack ) );
-                var recentAttendance = GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Guid ) );
+                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Guid ), RockContext );
 
                 var attendees = ConversionProvider.GetAttendeeItems( people, baseOpportunities, recentAttendance );
 
@@ -429,51 +429,6 @@ namespace Rock.CheckIn.v2
 
                 return ConversionProvider.GetOpportunityCollectionBag( opportunityCollection );
             }
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Gets the recent attendance for a set of people.
-        /// </summary>
-        /// <param name="cutoffDateTime">Attendance records must start on or after this date and time.</param>
-        /// <param name="personGuids">The person unique identifiers to query the database for.</param>
-        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        private List<RecentAttendance> GetRecentAttendance( DateTime cutoffDateTime, IEnumerable<Guid> personGuids )
-        {
-            var attendanceService = new AttendanceService( RockContext );
-
-            var personAttendanceQuery = attendanceService
-                .Queryable().AsNoTracking()
-                .Where( a => a.PersonAlias != null
-                    && a.Occurrence.Group != null
-                    && a.Occurrence.Schedule != null
-                    && a.StartDateTime >= cutoffDateTime
-                    && a.DidAttend.HasValue
-                    && a.DidAttend.Value == true );
-
-            // TODO: This should probably be changed to a raw SQL query for performance.
-            // Because the list of personGuids will be changing constantly it
-            // will still not be cached by EF.
-            personAttendanceQuery = CheckInDirector.WhereContains( personAttendanceQuery, personGuids, aa => aa.PersonAlias.Person.Guid );
-
-            return personAttendanceQuery
-                .Select( a => new RecentAttendance
-                {
-                    AttendanceId = a.Id,
-                    AttendanceGuid = a.Guid,
-                    Status = a.CheckInStatus,
-                    StartDateTime = a.StartDateTime,
-                    EndDateTime = a.EndDateTime,
-                    PersonGuid = a.PersonAlias.Person.Guid,
-                    GroupTypeGuid = a.Occurrence.Group.GroupType.Guid,
-                    GroupGuid = a.Occurrence.Group.Guid,
-                    LocationGuid = a.Occurrence.Location.Guid,
-                    ScheduleGuid = a.Occurrence.Schedule.Guid
-                } )
-                .ToList();
         }
 
         #endregion

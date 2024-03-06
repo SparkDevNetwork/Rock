@@ -101,5 +101,11 @@ namespace Rock.CheckIn.v2
         /// The schedule unique identifier.
         /// </value>
         public Guid ScheduleGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus unique identifier.
+        /// </summary>
+        /// <value>The campus unique identifier.</value>
+        public Guid? CampusGuid { get; set; }
     }
 }
