@@ -93,7 +93,6 @@
     <Compile Include="Blocks\Communication\SystemCommunicationPreview\SystemCommunicationPreviewInitializationBox.cs" />
     <Compile Include="Blocks\Communication\SystemCommunicationList\SystemCommunicationListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AssetStorageProviderList\AssetStorageProviderListOptionsBag.cs" />
-    <Compile Include="Blocks\Core\AttributeList\AttributeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateDetail\AttributeMatrixTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\Attributes\AttributesOptionsBag.cs" />
