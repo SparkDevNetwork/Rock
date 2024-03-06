@@ -11,6 +11,8 @@
                  :isSelectable="isSelectable"
                  :isEven="(range.startIndex + index + 1) % 2 === 0"
                  monitorHeight
+                 :markInactiveRows="markInactiveRows"
+                 :class="getRowClass(row)"
                  @resize="onRowResize"
                  @click="onRowClick" />
 
@@ -69,6 +71,26 @@
         itemTerm: {
             type: String as PropType<string>,
             default: "item"
+        },
+
+        /**
+         * If set to true, each row with an `isActive` property set to false
+         * will be visually distinct
+         */
+        markInactiveRows: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * A CSS class that will be applied to each row. If you supply a string,
+         * will apply that directly. You can also use a function that takes the
+         * row object and returns a string, which allows you to apply different
+         * classes to different rows depending on the row data.
+         */
+        rowClass: {
+            type: [String, Function] as PropType<string | ((row: Record<string, unknown>) => string)>,
+            default: undefined
         }
     });
 
@@ -183,6 +205,21 @@
             estimatedHeight,
             uniqueIds: props.rows.map(r => props.grid.getRowKey(r)).filter(r => r !== undefined) as string[]
         }, range => onRangeChanged(range));
+    }
+
+    /**
+     * Determine the class to apply to each row
+     */
+    function getRowClass(row: Record<string, unknown>): string | undefined {
+        if (typeof props.rowClass == "string") {
+            return props.rowClass;
+        }
+
+        if (typeof props.rowClass == "function") {
+            return props.rowClass(row);
+        }
+
+        return undefined;
     }
 
     // #endregion

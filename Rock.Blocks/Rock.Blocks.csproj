@@ -112,7 +112,6 @@
     <Compile Include="Communication\SystemCommunicationPreview.cs" />
     <Compile Include="Communication\SystemCommunicationList.cs" />
     <Compile Include="Core\AssetStorageProviderList.cs" />
-    <Compile Include="Core\AttributeList.cs" />
     <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\AttributeMatrixTemplateList.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />

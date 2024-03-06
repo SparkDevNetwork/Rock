@@ -155,7 +155,6 @@ namespace Rock.Blocks.Core
                 AttributeEntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>().Id,
                 EntityTypeGuid = entityTypeGuid,
                 EntityTypes = !entityTypeGuid.HasValue ? GetEntityTypes() : null,
-                //Attributes = entityTypeGuid.HasValue ? GetAttributeRows( entityTypeGuid ) : new List<GridRow>(),
                 HideColumns = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).SplitDelimitedValues().ToList(),
                 EnableShowInGrid = GetAttributeValue( AttributeKey.EnableShowInGrid ).AsBoolean(),
                 AllowSettingOfValues = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean(),
@@ -258,6 +257,14 @@ namespace Rock.Blocks.Core
                 catch { }
             }
 
+            var activeFilter = GetBlockPersonPreferences().GetValue( PreferenceKey.FilterActive );
+
+            if ( activeFilter.IsNotNullOrWhiteSpace() )
+            {
+                var booleanActiveFilter = activeFilter.AsBoolean();
+                query = query.Where( a => a.IsActive == booleanActiveFilter );
+            }
+
             return query;
         }
 
@@ -277,6 +284,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "id", a => a.Id.ToString() )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "guid", a => a.Guid )
+                .AddField( "key", a => a.Key )
                 .AddField( "entityTypeGuid", a => EntityTypeCache.Get( a.EntityTypeId ?? 0 )?.Guid )
                 .AddTextField( "name", a => a.Name )
                 .AddField( "categories", a => a.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ) )
@@ -285,6 +293,7 @@ namespace Rock.Blocks.Core
                 .AddField( "qualifier", a => GetAttributeQualifier( a ) )
                 .AddField( "attribute", a => GetPublicAttribute( rockContext, a ) )
                 .AddTextField( "value", a => GetPublicAttributeValue( rockContext, a ) )
+                .AddTextField( "defaultValue", a => GetPublicAttributeDefaultValue( a ) )
                 .AddField( "isDeleteEnabled", a => !a.IsSystem )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
 
@@ -357,13 +366,13 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="rockContext">The rock database context.</param>
         /// <param name="attribute">The attribute whose value will be viewed.</param>
-        /// <returns>A <see cref="PublicAttributeValueViewModel"/> that represents the attribute value.</returns>
+        /// <returns>A string that represents the attribute value.</returns>
         private string GetPublicAttributeValue( RockContext rockContext, Model.Attribute attribute )
         {
             var entityId = GetEntityId();
             var attributeCache = AttributeCache.Get( attribute.Id );
 
-            if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() ?? false )
+            if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean() )
             {
                 AttributeValueService attributeValueService = new AttributeValueService( rockContext );
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
@@ -372,15 +381,23 @@ namespace Rock.Blocks.Core
                 {
                     return PublicAttributeHelper.GetPublicValueForView( attributeCache, attributeValue.Value );
                 }
-                else
-                {
-                    return PublicAttributeHelper.GetPublicValueForView( attributeCache, attribute.DefaultValue );
-                }
             }
-            else
-            {
-                return PublicAttributeHelper.GetPublicValueForView( attributeCache, attribute.DefaultValue );
-            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Gets the attribute's default value as a model that can be displayed on the
+        /// user's device. This handles special block settings that change what
+        /// value is available.
+        /// </summary>
+        /// <param name="attribute">The attribute whose value will be viewed.</param>
+        /// <returns>A string that represents the attribute's default value.</returns>
+        private string GetPublicAttributeDefaultValue( Model.Attribute attribute )
+        {
+            var attributeCache = AttributeCache.Get( attribute.Id );
+
+            return PublicAttributeHelper.GetPublicValueForView( attributeCache, attribute.DefaultValue );
         }
 
         /// <summary>

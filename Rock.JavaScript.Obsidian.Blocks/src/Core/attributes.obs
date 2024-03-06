@@ -8,6 +8,10 @@
           :entityTypeGuid="EntityType.Attribute"
           stickyHeader
           liveUpdates
+          markInactiveRows
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="showFilterModal = true"
           :onAddItem="config?.isAddEnabled ? onAddAttribute : undefined"
           :onSelectItem="config?.options?.allowSettingOfValues ? onEditAttributeValue : undefined">
 
@@ -35,7 +39,7 @@
 
         <Column v-if="!(config?.options?.hideColumns ?? []).includes('Value')" name="value" title="Value" field="value" :filter="textValueFilter" width="40%">
             <template #format="{ row }">
-                <RockField :modelValue="row.value" :attribute="row.attribute" :showLabel="false" isCondensed isEscaped />
+                <RockField :class="!row.value ? 'text-muted' : ''" :modelValue="row.value || row.defaultValue" :attribute="row.attribute" :showLabel="false" isCondensed isEscaped />
             </template>
         </Column>
 
@@ -67,7 +71,16 @@
             </div>
         </div>
 
-        <AttributeEditor v-model="editableAttribute" />
+        <AttributeEditor v-model="editableAttribute" :reservedKeyNames="usedKeyNames" :isShowInGridVisible="config?.options?.enableShowInGrid" />
+    </Modal>
+
+    <Modal v-model="showFilterModal" title="Filter Options" @save="applyFilters">
+        <DropDownList v-model="activeFilter" :items="activeFilterOptions" label="Active Status" />
+
+        <template #customButtons>
+            <RockButton type="button" btnType="default" @click="clearFilters">Clear Filters</RockButton>
+            <RockButton type="submit" btnType="primary">Apply Filters</RockButton>
+        </template>
     </Modal>
 </template>
 
@@ -78,6 +91,7 @@
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockField from "@Obsidian/Controls/rockField.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
@@ -90,32 +104,22 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PreferenceKey } from "./Attributes/types.partial";
-    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     type BlockConfiguration = {
         attributeEntityTypeId: number;
-
         entityTypeGuid?: Guid;
-
         entityTypes?: ListItemBag[];
-
         hideColumns: string[];
-
         enableShowInGrid: boolean;
-
         allowSettingOfValues: boolean;
-
-        attributes: GridRow[];
     };
 
     type EditAttribute = {
         entityTypeQualifierColumn?: string | null;
-
         entityTypeQualifierValue?: string | null;
-
         entityTypeGuid?: Guid | null;
-
         attribute: PublicEditableAttributeBag;
     };
 
@@ -123,6 +127,7 @@
         id: number;
         idKey: string;
         guid: Guid;
+        key: string;
         entityTypeGuid: Guid;
         name: string;
         categories: string;
@@ -131,39 +136,35 @@
         qualifier: string;
         attribute: PublicAttributeBag;
         value: string;
+        defaultValue: string;
         isDeleteEnabled: boolean;
         isSecurityEnabled: boolean;
     };
+
+    interface IAttributeGridDataBag extends GridDataBag {
+        /** Gets or sets the row data to display in the grid. */
+        rows?: GridRow[];
+    }
 
     const config = useConfigurationValues<ListBlockBox<BlockConfiguration>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
 
-    const entityTypeGuidFilter = ref(preferences.getValue(PreferenceKey.FilterEntityTypeGuid));
-    const categoriesFilter = ref(preferences.getValue(PreferenceKey.FilterCategories));
-    const activeFilter = ref(asBoolean(preferences.getValue(PreferenceKey.FilterActive)));
-
     /** True if the entity type picker should be visible on the page. */
     const showEntityTypePicker = computed(() => !config.options?.entityTypeGuid);
-
-    /** The currently selected entity type by the user. */
-    const entityTypeGuid = computed(() => config.options?.entityTypeGuid || entityTypeGuidFilter.value);
 
     /** The list of entity types to show in the entity type picker. */
     const entityTypeOptions = computed(() => config.options?.entityTypes ?? []);
 
-    /** True if we have a valid entity type selected or via configuration. */
-    const entityTypeSelectionIsValid = computed(() => !!config.options?.entityTypeGuid || entityTypeGuidFilter.value !== "");
-
     /** True if the entity type qualifier text boxes should be shown. */
     const showEntityTypeQualifier = computed(() => !config.options?.entityTypeGuid);
+
+    // #region Attribute Editing
 
     // Fields for editing an attribute
     const entityTypeGuidForEdit = ref("");
     const entityTypeQualifierColumn = ref("");
     const entityTypeQualifierValue = ref("");
-
-    // #region Attribute Editing
 
     /** The current attribute in an editable format. */
     const editableAttribute = ref<PublicEditableAttributeBag | null>(null);
@@ -180,13 +181,7 @@
         return "";
     });
 
-    let gridData: GridDataBag | undefined = entityTypeSelectionIsValid.value ? reactive({ rows: config.options?.attributes }) : undefined;
-    const gridDataSource = ref<Promise<GridDataBag>>(
-        entityTypeSelectionIsValid.value
-            ? Promise.resolve(gridData ?? { rows: [] })
-            : Promise.reject("Please select an entity to display attributes for.")
-    );
-
+    const usedKeyNames = ref<string[]>([]);
 
     /**
      * Start editing an attribute on the given row.
@@ -234,8 +229,11 @@
         const index = gridData.rows.findIndex(a => a.guid === result.data?.guid);
         const matchesCurrentEntityType = result.data.entityTypeGuid == entityTypeGuid.value;
 
+        const activeFilterVal = asBooleanOrNull(activeFilter.value);
+        const matchesCurrentActiveFilter = activeFilterVal === null || result.data.isActive == activeFilterVal;
+
         if (index !== -1) {
-            if (matchesCurrentEntityType) {
+            if (matchesCurrentEntityType && matchesCurrentActiveFilter) {
                 // Overwrite the version we have on the client
                 gridData.rows.splice(index, 1, result.data);
             }
@@ -388,24 +386,51 @@
 
     // #endregion
 
-    /**
-     * Called when the grid is requesting the row data be loaded.
-     */
-    async function loadGridData(): Promise<GridDataBag> {
-        if (!entityTypeGuid.value) {
-            gridData = undefined;
-            throw "Please select an entity to display attributes for.";
-        }
+    // #region Filters
 
-        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+    const entityTypeGuidFilter = ref(preferences.getValue(PreferenceKey.FilterEntityTypeGuid));
+    const categoriesFilter = ref(preferences.getValue(PreferenceKey.FilterCategories));
+    const activeFilter = ref(preferences.getValue(PreferenceKey.FilterActive));
 
-        if (!result.isSuccess || !result.data) {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
-        }
+    /** The currently selected entity type by the user. */
+    const entityTypeGuid = computed(() => config.options?.entityTypeGuid || entityTypeGuidFilter.value);
 
-        gridData = reactive(result.data);
+    /** True if we have a valid entity type selected or via configuration. */
+    const entityTypeSelectionIsValid = computed(() => !!config.options?.entityTypeGuid || entityTypeGuidFilter.value !== "");
 
-        return gridData;
+    /** Whether or not the modal for editing filters should be shown */
+    const showFilterModal = ref(false);
+
+    /** Possible options to choose from for the "Active" filter. */
+    const activeFilterOptions: ListItemBag[] = [
+        { value: "", text: "[All]" },
+        { value: "true", text: "Active" },
+        { value: "false", text: "Inactive" }
+    ];
+
+    const hasSettingsFilters = computed<boolean>(() => {
+        return !!activeFilter.value;
+    });
+
+    function applyFilters(): void {
+        showFilterModal.value = false;
+
+        saveFilterValues();
+    }
+
+    function clearFilters(): void {
+        showFilterModal.value = false;
+        activeFilter.value = "";
+
+        saveFilterValues();
+    }
+
+    async function saveFilterValues(): Promise<void> {
+        preferences.setValue(PreferenceKey.FilterActive, activeFilter.value);
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
     }
 
     watch(entityTypeGuidFilter, async () => {
@@ -415,11 +440,42 @@
         gridDataSource.value = loadGridData();
     });
 
-    onConfigurationValuesChanged(useReloadBlock());
+    // #endregion
 
-    watch(config, () => {
-        console.log("CONFIG CHANGED", config, config?.options?.allowSettingOfValues);
-    }, { immediate: true });
+    // #region Grid Data
+
+    let gridData: IAttributeGridDataBag | undefined = undefined;
+    const gridDataSource = ref<Promise<IAttributeGridDataBag>>(
+        entityTypeSelectionIsValid.value
+            ? Promise.resolve(gridData ?? { rows: [] })
+            : Promise.reject("Please select an entity to display attributes for.")
+    );
+
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<IAttributeGridDataBag> {
+        if (!entityTypeGuid.value) {
+            gridData = undefined;
+            throw "Please select an entity to display attributes for.";
+        }
+
+        const result = await invokeBlockAction<IAttributeGridDataBag>("GetGridData");
+
+        if (!result.isSuccess || !result.data) {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+
+        gridData = reactive(result.data);
+        usedKeyNames.value = (gridData?.rows ?? []).map(attr => attr.key);
+
+        return gridData;
+    }
+
+    // #endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
 
     gridDataSource.value = loadGridData();
 </script>
