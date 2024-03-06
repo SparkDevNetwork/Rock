@@ -106,6 +106,7 @@
     <Content Include="src\Core\noteWatchDetail.obs" />
     <Content Include="src\Core\NoteWatchDetail\editPanel.partial.obs" />
     <Content Include="src\Core\NoteWatchDetail\viewPanel.partial.obs" />
+    <Content Include="src\Core\restControllerList.obs" />
     <Content Include="src\Core\signalTypeList.obs" />
     <Content Include="src\Core\signatureDocumentTemplateList.obs" />
     <Content Include="src\Core\suggestionDetail.obs" />
@@ -400,6 +401,7 @@
     <Folder Include="src\Core\InteractionChannelDetail\" />
     <Folder Include="src\Core\LocationList\" />
     <Folder Include="src\Core\NoteWatchDetail\" />
+    <Folder Include="src\Core\RestControllerList\" />
     <Folder Include="src\Core\SignalTypeList\" />
     <Folder Include="src\Core\SignatureDocumentTemplateList\" />
     <Folder Include="src\Core\SuggestionDetail\" />

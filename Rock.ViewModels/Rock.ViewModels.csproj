@@ -115,6 +115,8 @@
     <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchBag.cs" />
     <Compile Include="Blocks\Core\NoteWatchDetail\NoteWatchDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteWatchList\NoteWatchListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\RestControllerList\RestControllerListBag.cs" />
+    <Compile Include="Blocks\Core\RestControllerList\RestControllerListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
