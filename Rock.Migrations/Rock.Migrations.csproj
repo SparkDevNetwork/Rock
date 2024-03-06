@@ -72,6 +72,10 @@
     <Compile Include="Migrations\202402151750399_CodeGenerated_20240215.designer.cs">
       <DependentUpon>202402151750399_CodeGenerated_20240215.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202403011745440_AddConnectionRequestToBackgroundCheck.cs" />
+    <Compile Include="Migrations\202403011745440_AddConnectionRequestToBackgroundCheck.designer.cs">
+      <DependentUpon>202403011745440_AddConnectionRequestToBackgroundCheck.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.designer.cs">
       <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
@@ -1971,6 +1975,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202402151750399_CodeGenerated_20240215.resx">
       <DependentUpon>202402151750399_CodeGenerated_20240215.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202403011745440_AddConnectionRequestToBackgroundCheck.resx">
+      <DependentUpon>202403011745440_AddConnectionRequestToBackgroundCheck.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.resx">
       <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
