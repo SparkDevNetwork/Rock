@@ -946,6 +946,8 @@ namespace RockWeb.Blocks.Event
 
                         wpAttributes.Visible = true;
                         calendarAttributeHtmlGenericContainer.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
+                        // Add calendarAttributeHtmlGenericContainer to the block's control tree before adding any attributes controls with it as the parent control.
+                        // This way it will be found by any attribute control trying to register a startup script with the page (e.g the grid in the AttributeMatrixEditor).
                         phAttributes.Controls.Add( calendarAttributeHtmlGenericContainer );
                         Rock.Attribute.Helper.AddEditControls( eventCalendarItem, calendarAttributeHtmlGenericContainer, true, BlockValidationGroup );
                     }
