@@ -2517,7 +2517,7 @@ namespace RockWeb.Blocks.Connection
                     CurrentActivity = c.Workflow.ActiveActivityNames,
                     Date = c.Workflow.ActivatedDateTime.Value.ToShortDateString(),
                     OrderByDate = c.Workflow.ActivatedDateTime.Value,
-                    Status = c.Workflow.Status == "Completed" ? "<span class='label label-success'>Complete</span>" : "<span class='label label-info'>Running</span>"
+                    Status = $"<span class='label label-{( c.Workflow.CompletedDateTime.HasValue ? "success" : "info" )}'>{( c.Workflow.Status == "Active" ? "Running" : c.Workflow.Status )}</span>"
                 } )
                 .OrderByDescending( c => c.OrderByDate )
                 .ToList();
