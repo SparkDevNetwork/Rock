@@ -27,16 +27,34 @@ namespace Rock.ViewModels.Blocks.Core.Attributes
     /// </summary>
     public class AttributesOptionsBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public List<string> HideColumns { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Guid? EntityTypeGuid { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public int AttributeEntityTypeId { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool EnableShowInGrid { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool AllowSettingOfValues { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> EntityTypes { get; set; }
     }
 }

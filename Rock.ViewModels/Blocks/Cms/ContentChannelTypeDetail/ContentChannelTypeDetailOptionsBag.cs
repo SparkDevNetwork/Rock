@@ -26,6 +26,9 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelTypeDetail
     /// </summary>
     public class ContentChannelTypeDetailOptionsBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> DateRangeTypes { get; set; }
     }
 }

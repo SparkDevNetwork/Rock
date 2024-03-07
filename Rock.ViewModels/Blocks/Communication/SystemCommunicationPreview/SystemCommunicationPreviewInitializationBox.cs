@@ -20,6 +20,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.SystemCommunicationPreview
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SystemCommunicationPreviewInitializationBox : EntityBagBase
     {
         /// <summary>

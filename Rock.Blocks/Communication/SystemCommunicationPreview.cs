@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -78,6 +78,7 @@ namespace Rock.Blocks.Communication
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "C28368CA-5218-4B59-8BD8-75BD78AA9BE9" )]
+    [Rock.SystemGuid.EntityTypeGuid( "D61A57A2-C067-435F-99F6-7B6BB9534058")]
     public class SystemCommunicationPreview : RockBlockType
     {
         #region Fields
