@@ -76,6 +76,14 @@
     <Compile Include="Migrations\202403011745440_AddConnectionRequestToBackgroundCheck.designer.cs">
       <DependentUpon>202403011745440_AddConnectionRequestToBackgroundCheck.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202403071824190_Rollup_20240307.cs" />
+    <Compile Include="Migrations\202403071824190_Rollup_20240307.Designer.cs">
+      <DependentUpon>202403071824190_Rollup_20240307.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202403071916505_CodeGenerated_20240307.cs" />
+    <Compile Include="Migrations\202403071916505_CodeGenerated_20240307.Designer.cs">
+      <DependentUpon>202403071916505_CodeGenerated_20240307.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.designer.cs">
       <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
@@ -1978,6 +1986,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202403011745440_AddConnectionRequestToBackgroundCheck.resx">
       <DependentUpon>202403011745440_AddConnectionRequestToBackgroundCheck.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202403071824190_Rollup_20240307.resx">
+      <DependentUpon>202403071824190_Rollup_20240307.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202403071916505_CodeGenerated_20240307.resx">
+      <DependentUpon>202403071916505_CodeGenerated_20240307.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.resx">
       <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
