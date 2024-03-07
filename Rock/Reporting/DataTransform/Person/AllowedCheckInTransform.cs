@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataTransform.Person
     [Description( "Transform result to list of people they are allowed to check-in" )]
     [Export( typeof( DataTransformComponent ) )]
     [ExportMetadata( "ComponentName", "Person Allowed Check-In Transformation" )]
+    [Rock.SystemGuid.EntityTypeGuid( "96967FE9-0C6F-4C6F-A259-BC2A450E3D6E")]
     public class AllowedCheckInTransform : DataTransformComponent<Rock.Model.Person>
     {
         private static class AttributeKey

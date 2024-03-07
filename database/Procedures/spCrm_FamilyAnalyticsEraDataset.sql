@@ -208,8 +208,8 @@ BEGIN
 	LEFT OUTER JOIN [AttributeValue] era ON era.[EntityId] = p.[Id]
 		AND era.[AttributeId] = @IsEraAttributeId
 	WHERE [RecordTypeValueId] = @PersonRecordTypeValueId -- person record type (not business)
-        AND gm.IsArchived = 0
-        AND g.IsArchived = 0
+    AND gm.IsArchived = 0
+    AND g.IsArchived = 0
 	DECLARE @TempIsEraFamilyMembers TABLE (
 		PersonId INT,
 		[IsEra] INT,
