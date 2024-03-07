@@ -163,7 +163,10 @@ namespace Rock.CheckIn
         {
             get
             {
-                return SelectedSchedules.FirstOrDefault( s => !s.Processed );
+                return SelectedSchedules
+                    .Where( s => !s.Processed )
+                    .OrderByOrderAndNextScheduledDateTime()
+                    .FirstOrDefault();
             }
         }
 
