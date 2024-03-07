@@ -1302,6 +1302,8 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionIntentsFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
+    <Compile Include="Reporting\DataTransform\Person\AllowedCheckInChildrenTransform.cs" />
+    <Compile Include="Reporting\DataTransform\Person\AllowedCheckInTransform.cs" />
     <Compile Include="Reporting\DataViewQueryBuilder.cs" />
     <Compile Include="Reporting\GetQueryableOptions.cs" />
     <Compile Include="Reporting\IDataViewDefinition.cs" />
