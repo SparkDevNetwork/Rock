@@ -3578,7 +3578,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 dataKeyField = this.PersonIdField;
             }
 
-            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>().FirstOrDefault( a => a.ColumnName == dataKeyField );
+            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>()
+                .FirstOrDefault( a => string.Equals( a.ColumnName, dataKeyField, StringComparison.OrdinalIgnoreCase ) );
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
             List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
