@@ -1219,6 +1219,11 @@ namespace RockWeb.Blocks.Communication
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
             rFilter.ClearFilterClick += rFilter_ClearFilterClick;
 
+            if ( CampusCache.All( true ).Count <= 1 )
+            {
+                cpCampuses.ForceVisible = false;
+            }
+
             // If this is a full page load, initialize the filter control and load the filter values.
             if ( !Page.IsPostBack )
             {
