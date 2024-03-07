@@ -198,14 +198,14 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Blocks
             var segment = personalizationService.Get( segmentGuid.AsGuid() );
             pap.PersonalizationEntityId = segment.Id;
 
-            var exists = rockContext.PersonAliasPersonalizations
+            var exists = rockContext.Set<PersonAliasPersonalization>()
                 .Any( x => x.PersonAliasId == person.PrimaryAliasId.Value
                  && x.PersonalizationEntityId == segment.Id
                  && x.PersonalizationType == PersonalizationType.Segment );
 
             if ( !exists )
             {
-                rockContext.PersonAliasPersonalizations.Add( pap );
+                rockContext.Set<PersonAliasPersonalization>().Add( pap );
             }
 
             return pap;

@@ -1,0 +1,139 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="achieverName"
+                         label="Achiever Name" />
+            </div>
+
+            <div class="col-md-4">
+                <DateRangePicker v-model="dateRange"
+                                 label="Start Date"
+                                 :disallowPastDateSelection="false" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="status"
+                              label="Status"
+                              :items="statusItems"
+                              showBlankItem />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <AchievementTypePicker v-if="showAchievementTypePicker"
+                                       v-model="achievementType"
+                                       label="Achievement Type"
+                                       showBlankItem
+                                       :multiple="false" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        showAchievementTypePicker: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const achieverName = ref(props.modelValue.achieverName ?? "");
+    const dateRange = ref<DateRangeParts | undefined>({
+        lowerValue: props.modelValue.startDateFrom,
+        upperValue: props.modelValue.startDateTo
+    });
+    const achievementType = ref(props.modelValue.achievementType);
+    const status = ref(props.modelValue.status ?? "");
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const statusItems = [
+        {
+            text: "Open",
+            value: "Open"
+        },
+        {
+            text: "Successful",
+            value: "Successful"
+        },
+        {
+            text: "Unsuccessful",
+            value: "Unsuccessful"
+        },
+    ] as ListItemBag[];
+
+    // #endregion
+
+    // #region Functions
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            startDateFrom: dateRange.value?.lowerValue,
+            startDateTo: dateRange.value?.upperValue,
+            status: status.value,
+            achievementType: achievementType.value,
+            achieverName: achieverName.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => {
+        achieverName.value = props.modelValue.achieverName ?? "";
+        dateRange.value = {
+            lowerValue: props.modelValue.startDateFrom,
+            upperValue: props.modelValue.startDateTo
+        };
+        status.value = props.modelValue.status ?? "";
+        achievementType.value = props.modelValue.achievementType;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

@@ -655,7 +655,7 @@ namespace Rock.Jobs
                     var lastNameQry = personService.Queryable().Select( p => p.LastName ).Where( p => p != null );
                     var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
 
-                    var metaphones = personRockContext.Metaphones;
+                    var metaphones = personRockContext.Set<Metaphone>();
                     var existingNames = metaphones.Select( m => m.Name ).Distinct();
 
                     // Get the names that have not yet been processed
@@ -1152,7 +1152,7 @@ namespace Rock.Jobs
 
             var workflowService = new WorkflowService( workflowContext );
 
-            var workflowLogs = workflowContext.WorkflowLogs;
+            var workflowLogs = workflowContext.Set<WorkflowLog>();
 
             // Get the list of workflows that haven't been modified since X days
             // and have at least one workflow log (narrowing it down to ones with Logs improves performance of this cleanup)
@@ -3170,8 +3170,16 @@ END
                 var personService = new PersonService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupService = new GroupService( rockContext );
-                var persons = personService.Queryable().Where( p => !p.PrimaryFamilyId.HasValue ).Select( p => new { p.Id, p.LastName } ).ToList();
+                var persons = personService.Queryable( new Rock.Model.PersonService.PersonQueryOptions()
+                {
+                    IncludeRestUsers = false
+                } )
+                    .Where( p => !p.PrimaryFamilyId.HasValue )
+                    .Select( p => new { p.Id, p.LastName, p.RecordTypeValueId } )
+                    .ToList();
+
                 var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                var businessRecord = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS );
 
                 foreach ( var person in persons )
                 {
@@ -3179,9 +3187,10 @@ END
 
                     if ( groupMember == null )
                     {
+                        var groupName = person.RecordTypeValueId == businessRecord.Id ? $"{person.LastName} Business" : $"{person.LastName} Family";
                         var group = new Group
                         {
-                            Name = person.LastName,
+                            Name = groupName.Trim(),
                             GroupTypeId = familyGroupType.Id
                         };
                         groupService.Add( group );

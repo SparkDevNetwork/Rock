@@ -245,6 +245,17 @@ namespace RockWeb.Blocks.Cms
             lbSave.OnClientClick = clearScript;
             lbCancel.OnClientClick = clearScript;
 
+            var interactionIntentDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
+            if ( interactionIntentDefinedType != null )
+            {
+                dvpContentChannelItemIntents.DefinedTypeId = interactionIntentDefinedType.Id;
+                dvpContentChannelItemIntents.Visible = true;
+            }
+            else
+            {
+                dvpContentChannelItemIntents.Visible = false;
+            }
+
             string script = string.Format( _jsScript, pnlStatus.ClientID, hfStatus.ClientID, hfIsDirty.ClientID, htmlContent.ClientID );
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
         }
@@ -411,6 +422,17 @@ namespace RockWeb.Blocks.Cms
                 {
                     contentItem.ExperienceLevel = rblExperienceLevel.SelectedValueAsEnumOrNull<ContentLibraryItemExperienceLevel>();
                     contentItem.ContentLibraryContentTopicId = ddlTopic.SelectedValueAsInt();
+                }
+
+                // Intent Settings
+                if ( dvpContentChannelItemIntents.Visible )
+                {
+                    var intentSettings = contentItem.GetAdditionalSettings<ContentChannelItemService.IntentSettings>();
+
+                    var selectedIntentValueIds = dvpContentChannelItemIntents.SelectedValuesAsInt;
+                    intentSettings.InteractionIntentValueIds = selectedIntentValueIds;
+
+                    contentItem.SetAdditionalSettings( intentSettings );
                 }
 
                 contentItem.LoadAttributes( rockContext );
@@ -1259,6 +1281,19 @@ namespace RockWeb.Blocks.Cms
                         }
 
                         ddlTopic.SelectedValue = contentItem.ContentLibraryContentTopicId.ToString();
+                    }
+                }
+
+                if ( dvpContentChannelItemIntents.Visible )
+                {
+                    var intentSettings = contentItem.GetAdditionalSettings<ContentChannelItemService.IntentSettings>();
+                    if ( intentSettings.InteractionIntentValueIds?.Any() == true )
+                    {
+                        dvpContentChannelItemIntents.SetValues( intentSettings.InteractionIntentValueIds );
+                    }
+                    else
+                    {
+                        dvpContentChannelItemIntents.ClearSelection();
                     }
                 }
             }

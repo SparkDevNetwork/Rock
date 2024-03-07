@@ -46,6 +46,15 @@ namespace Rock.Communication
         }
 
         /// <summary>
+        /// Gets or sets the from person identifier. Setting this will ensure we associate the correct
+        /// sender with the email, if there are multiple people with the same <see cref="FromEmail"/>.
+        /// </summary>
+        /// <value>
+        /// From person identifier.
+        /// </value>
+        public int? FromPersonId { get; set; }
+
+        /// <summary>
         /// Gets or sets from name.
         /// </summary>
         /// <value>

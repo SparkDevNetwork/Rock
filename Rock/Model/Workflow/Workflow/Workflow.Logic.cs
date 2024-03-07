@@ -195,10 +195,10 @@ namespace Rock.Model
 
             using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW {WorkflowTypeCache?.Name}" ) )
             {
-                diagnosticActivity?.AddTag( "rock-workflow-id", Id );
-                diagnosticActivity?.AddTag( "rock-workflow-name", Name );
-                diagnosticActivity?.AddTag( "rock-workflow-type-id", WorkflowTypeId );
-                diagnosticActivity?.AddTag( "rock-workflow-type-name", WorkflowTypeCache?.Name ?? string.Empty );
+                diagnosticActivity?.AddTag( "rock.workflow.id", Id );
+                diagnosticActivity?.AddTag( "rock.workflow.name", Name );
+                diagnosticActivity?.AddTag( "rock.workflow.type.id", WorkflowTypeId );
+                diagnosticActivity?.AddTag( "rock.workflow.type.name", WorkflowTypeCache?.Name ?? string.Empty );
 
                 DateTime processStartTime = RockDateTime.Now;
 

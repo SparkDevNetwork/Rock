@@ -331,6 +331,36 @@ namespace Rock.Blocks.Types.Mobile.Connection
         }
 
         /// <summary>
+        /// Gets a list of default connectors for the specified connection opportunity.
+        /// This list is comprised of the campus id and the default connector person id.
+        /// </summary>
+        /// <param name="opportunity"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private List<ListItemViewModel> GetDefaultConnectorsForOpportunity( ConnectionOpportunity opportunity, RockContext rockContext )
+        {
+            var defaultConnectors = new List<ListItemViewModel>();
+
+            var personService = new PersonService( rockContext );
+
+            foreach( var campus in CampusCache.All() )
+            {
+                var defaultConnector = opportunity.GetDefaultConnectorPersonId( campus.Id );
+
+                if ( defaultConnector.HasValue )
+                {
+                    defaultConnectors.Add( new ListItemViewModel
+                    {
+                        Text = campus.IdKey,
+                        Value = personService.Get( defaultConnector.Value ).IdKey
+                    } );
+                }
+            }
+
+            return defaultConnectors;
+        }
+
+        /// <summary>
         /// Gets all the attributes and values for the entity in a form
         /// suitable to use for editing.
         /// </summary>
@@ -706,6 +736,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 var placementGroups = GetPlacementGroups( connectionRequest, rockContext );
                 var attributes = GetPublicEditableAttributeValues( connectionRequest );
+                var defaultConnectors = GetDefaultConnectorsForOpportunity( opportunity, rockContext );
 
                 return ActionOk( new GetConnectionRequestDataResponseBag
                 {

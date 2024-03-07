@@ -640,7 +640,14 @@ namespace RockWeb.Blocks.Finance
                 var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
                 var financialTransactionService = new FinancialTransactionService( rockContext );
                 var qryTransactionsToMatch = financialTransactionService.Queryable()
-                    .Where( a => a.AuthorizedPersonAliasId == null && a.ProcessedByPersonAliasId == null );
+                    .Where( a =>
+                        a.AuthorizedPersonAliasId == null
+                        &&
+                        (
+                            a.ProcessedByPersonAliasId == null
+                            || a.ProcessedByPersonAliasId == CurrentPersonAliasId
+                        )
+                    );
 
                 if ( batchId != 0 )
                 {

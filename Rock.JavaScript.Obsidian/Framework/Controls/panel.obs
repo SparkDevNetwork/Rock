@@ -7,7 +7,7 @@
 
         <div :class="panelClass" ref="panelElement" v-bind="$attrs" :tabIndex="panelTabIndex" @keydown="onPanelKeyDown">
 
-            <div :class="panelHeadingClass" @click="onPanelHeadingClick">
+            <div v-if="hasTitle" :class="panelHeadingClass" @click="onPanelHeadingClick">
                 <h1 class="panel-title">
                     <slot v-if="$slots.title" name="title" />
                     <template v-else>
@@ -152,6 +152,15 @@
             default: false
         },
 
+        /**
+         * True if the panel has a Title and the Title area should be displayed
+         * false if no title is given and the area should not be displayed.
+         */
+        hasTitle: {
+            type: Boolean,
+            default: true
+        },
+
         /** True if the panel is collapsable and shows the collapse button. */
         hasCollapse: {
             type: Boolean as PropType<boolean>,
@@ -241,7 +250,6 @@
 
     /** The CSS class names to be applied to the full screen wrapper. */
     const fullScreenClass = computed((): string[] => {
-        console.log("fullScreenClass");
         return hasSidebar.value ? ["panel-with-sidebar"] : [];
     });
 

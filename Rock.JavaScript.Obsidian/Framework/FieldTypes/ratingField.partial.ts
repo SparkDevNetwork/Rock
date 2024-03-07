@@ -21,6 +21,7 @@ import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType"
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export const enum ConfigurationValueKey {
     MaxRating = "max"
@@ -46,7 +47,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Rating field.
  */
 export class RatingFieldType extends FieldTypeBase {
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         let ratingValue: RatingValue | null;
 
         try {
@@ -68,11 +69,15 @@ export class RatingFieldType extends FieldTypeBase {
             html += `<i class="fa fa-rating-unselected"></i>`;
         }
 
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
+
         return html;
     }
 
-    public override getCondensedHtmlValue(value: string, _configurationValues: Record<string, string>): string {
-        return this.getHtmlValue(value,_configurationValues);
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
+        return this.getHtmlValue(value,configurationValues, isEscaped);
     }
 
     public override getEditComponent(): Component {

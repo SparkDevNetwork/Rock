@@ -807,6 +807,7 @@
     <Compile Include="Chart\ChartJs\IChartJsCategorySeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsTimeSeriesDataPoint.cs" />
     <Compile Include="Chart\ChartDataFactory.cs" />
+    <Compile Include="Chart\MetricChartDataSourceBuilder.cs" />
     <Compile Include="CheckIn\CheckInGroupLocationSchedule.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
@@ -974,6 +975,7 @@
     <Compile Include="Core\NotificationMessageTypes\NoteMention.cs" />
     <Compile Include="Core\NotificationMessageTypes\SmsConversation.cs" />
     <Compile Include="Data\IHasAdditionalSettings.cs" />
+    <Compile Include="Data\IHasReadOnlyAdditionalSettings.cs" />
     <Compile Include="Data\IncludeForModelMapAttribute.cs" />
     <Compile Include="Data\EntityContextState.cs" />
     <Compile Include="Data\EntitySaveHook.cs" />
@@ -1014,6 +1016,12 @@
     <Compile Include="Field\Types\ReminderTypesFieldType.cs" />
     <Compile Include="Field\Types\SecondaryAuthsFieldType.cs" />
     <Compile Include="Field\Types\SystemPhoneNumberFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemEnumPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemSearchPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemTreePickerFieldType.cs" />
+    <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
@@ -1053,6 +1061,7 @@
     <Compile Include="Jobs\UpdateAnalyticsSourceZipCode.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Lava\Blocks\AdaptiveMessageBlock.cs" />
+    <Compile Include="Lava\Blocks\InteractionIntentWriteTag.cs" />
     <Compile Include="Lava\Blocks\ObserveBlock.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Identifiers.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Text.cs" />
@@ -1170,11 +1179,14 @@
     <Compile Include="Model\Reporting\AnalyticsSourceZipCode\AnalyticsSourceZipCode.Logic.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourceZipCode\ZipCodeBoundary.cs" />
     <Compile Include="Model\Group\Group\Options\CopyGroupOptions.cs" />
+    <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.SaveHook.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
     <Compile Include="Net\BrowserCookie.cs" />
+    <Compile Include="Net\IRockRequestContextAccessor.cs" />
     <Compile Include="Net\IRockResponseContext.cs" />
     <Compile Include="Net\NullRockResponseContext.cs" />
+    <Compile Include="Net\RockRequestContextAccessor.cs" />
     <Compile Include="Net\RockResponseContext.WebForms.cs" />
     <Compile Include="Observability\CategoryLogProcessor.cs" />
     <Compile Include="Observability\LogExporterWrapper.cs" />
@@ -1310,8 +1322,15 @@
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupFirstAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupTypeFirstAttendanceFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InteractionIntentsFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
+    <Compile Include="Reporting\DataTransform\Person\AllowedCheckInChildrenTransform.cs" />
+    <Compile Include="Reporting\DataTransform\Person\AllowedCheckInTransform.cs" />
+    <Compile Include="Reporting\DataViewQueryBuilder.cs" />
+    <Compile Include="Reporting\GetQueryableOptions.cs" />
+    <Compile Include="Reporting\IDataViewDefinition.cs" />
+    <Compile Include="Reporting\IDataViewFilterDefinition.cs" />
     <Compile Include="Security\Authentication\Credential\CredentialAuthenticationOptions.cs" />
     <Compile Include="Security\Authentication\ExternalRedirect\ExternalRedirectAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\ExternalRedirect\ExternalRedirectAuthenticationOptions.cs" />
@@ -2099,6 +2118,9 @@
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
     <Compile Include="Utility\NestedDictionaryConverter.cs" />
+    <Compile Include="Utility\Performance\BenchmarkResult.cs" />
+    <Compile Include="Utility\Performance\BenchmarkStatistics.cs" />
+    <Compile Include="Utility\Performance\MicroBench.cs" />
     <Compile Include="Utility\PersonPreferenceCollection.cs" />
     <Compile Include="Utility\PrayerRequestLastPrayedDetail.cs" />
     <Compile Include="Utility\PrayerRequestQueryOptions.cs" />
@@ -2162,6 +2184,7 @@
     <Compile Include="WebFarm\RockWebFarm.cs" />
     <Compile Include="Blocks\BreadCrumbResult.cs" />
     <Compile Include="Web\BreadCrumbLink.cs" />
+    <Compile Include="Web\Cache\AlternateIdListCache.cs" />
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
@@ -2171,6 +2194,8 @@
     <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
+    <Compile Include="Web\Cache\Entities\DataViewCache.cs" />
+    <Compile Include="Web\Cache\Entities\DataViewFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
@@ -2242,6 +2267,8 @@
     <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumberPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SystemPhoneNumbersPicker.cs" />
     <Compile Include="Web\UI\Controls\ColorSelector.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\UniversalItemSearchPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\UniversalItemTreePicker.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
     <Compile Include="Web\UI\Controls\TaskActivityProgressReporter.cs" />

@@ -667,7 +667,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ItemPicker_SelectItem( object sender, EventArgs e )
+        private void FilterControl_ItemChanged( object sender, EventArgs e )
         {
             // Hopefully an xhr happens here
         }
@@ -703,17 +703,21 @@ namespace RockWeb.Blocks.Reporting
                         }
 
                         // Enable ListControls postback and Event
-                        if ( control is ListControl && _reloadOnSelection != SelectionAction.Nothing )
+                        if ( control is ListControl listControl && _reloadOnSelection != SelectionAction.Nothing )
                         {
-                            var listControl = control as ListControl;
                             listControl.AutoPostBack = true;
                         }
 
                         // Enable ItemPicker postback event
-                        if ( control is ItemPicker && _reloadOnSelection != SelectionAction.Nothing )
+                        if ( control is ItemPicker itemPicker && _reloadOnSelection != SelectionAction.Nothing )
                         {
-                            var itemPicker = control as ItemPicker;
-                            itemPicker.SelectItem += ItemPicker_SelectItem;
+                            itemPicker.SelectItem += FilterControl_ItemChanged;
+                        }
+
+                        // Enable Toggle postback event
+                        if ( control is Toggle toggle && _reloadOnSelection != SelectionAction.Nothing )
+                        {
+                            toggle.CheckedChanged += FilterControl_ItemChanged;
                         }
                     }
                 }

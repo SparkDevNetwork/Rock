@@ -482,10 +482,10 @@ namespace Rock.Model
 
             using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW ACTION {ActionTypeCache.Name}" ) )
             {
-                diagnosticActivity?.AddTag( "rock-workflow-actiontype-id", ActionTypeId );
-                diagnosticActivity?.AddTag( "rock-workflow-actiontype-name", ActionTypeCache?.Name ?? string.Empty );
-                diagnosticActivity?.AddTag( "rock-workflow-actiontype-component-name", workflowAction.GetType().FullName );
-                diagnosticActivity?.AddTag( "rock-workflow-actiontype-iscore", workflowAction.GetType().FullName.StartsWith( "Rock." ) );
+                diagnosticActivity?.AddTag( "rock.workflow.actiontype.id", ActionTypeId );
+                diagnosticActivity?.AddTag( "rock.workflow.actiontype.name", ActionTypeCache?.Name ?? string.Empty );
+                diagnosticActivity?.AddTag( "rock.workflow.actiontype.component_name", workflowAction.GetType().FullName );
+                diagnosticActivity?.AddTag( "rock.workflow.actiontype.iscore", workflowAction.GetType().FullName.StartsWith( "Rock." ) );
 
                 if ( IsCriteriaValid )
                 {

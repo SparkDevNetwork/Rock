@@ -343,15 +343,20 @@ namespace Rock.Blocks
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the HTML markup needed to fully initialize this block. This
+        /// method can be overridden to provide content for a fully static
+        /// block. Fully static blocks do not reload automatically when the
+        /// block settings have been modified.
         /// </summary>
-        /// <returns></returns>
-        public string GetControlMarkup()
+        /// <returns>An HTML string.</returns>
+        public virtual string GetControlMarkup()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
             var rootElementStyle = "";
             var rootElementClasses = "obsidian-block-loading";
             var placeholderContent = GetPlaceholderContent( RockClientType.Web );
+            var initialContent = GetInitialHtmlContent() ?? string.Empty;
+            var config = GetConfigBag( rootElementId );
 
             if ( !IsBrowserSupported() )
             {
@@ -371,23 +376,21 @@ namespace Rock.Blocks
                 rootElementStyle += $" --initial-block-height: {initialHeight.Value}px";
             }
 
-            if ( placeholderContent.IsNotNullOrWhiteSpace() )
+            if ( initialContent.IsNullOrWhiteSpace() && placeholderContent.IsNotNullOrWhiteSpace() )
             {
                 rootElementClasses += " obsidian-block-has-placeholder";
             }
-
-            var config = GetConfigBag( rootElementId );
 
             var sb = new StringBuilder();
 
             sb.AppendLine( $"<div id=\"{rootElementId}\" class=\"{rootElementClasses}\" style=\"{rootElementStyle.Trim()}\">" );
 
-            if ( placeholderContent.IsNotNullOrWhiteSpace() )
+            if ( initialContent.IsNullOrWhiteSpace() && placeholderContent.IsNotNullOrWhiteSpace() )
             {
                 sb.AppendLine( $"    <div class=\"obsidian-block-placeholder\">{placeholderContent}</div>" );
             }
 
-            sb.AppendLine( $@"    <div class=""obsidian-block-wrapper""></div>
+            sb.AppendLine( $@"    <div class=""obsidian-block-wrapper"">{initialContent}</div>
 </div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
@@ -398,6 +401,19 @@ Obsidian.onReady(() => {{
 </script>" );
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets the initial HTML content to use when rendering an Obsidian
+        /// block. This can be overridden to create a psuedo-static block. This
+        /// content will be included in the HTML page for SEO indexing as well
+        /// as initial page rendering. The Obsidian code can then choose to
+        /// continue using this content or replace it once it loads.
+        /// </summary>
+        /// <returns>A string of HTML content.</returns>
+        protected virtual string GetInitialHtmlContent()
+        {
+            return string.Empty;
         }
 
         /// <summary>

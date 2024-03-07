@@ -9,7 +9,7 @@
         click: function () {
             context.invoke('editor.saveRange');
             var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/RockMergeField?mergeFields=" + encodeURIComponent(context.options.rockMergeFieldOptions.mergeFields);
-            iframeUrl += "&theme=" + context.options.rockTheme;
+            iframeUrl += "&editorTheme=" + context.options.rockTheme;
             iframeUrl += "&modalMode=1";
 
             Rock.controls.modal.show(context.layoutInfo.editor, iframeUrl);

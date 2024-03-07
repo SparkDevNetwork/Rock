@@ -282,7 +282,7 @@ namespace Rock.Tests.Integration.Modules.Core
                         if ( !personIds.Contains( person.Id ) )
                         {
                             // Attach the person record to rockContext so that navigation properties can be still lazy-loaded if needed (if the lava template needs it)
-                            rockContext.People.Attach( person );
+                            new PersonService( rockContext ).Attach( person );
                         }
 
                         person.AdditionalLavaFields = new Dictionary<string, object>();

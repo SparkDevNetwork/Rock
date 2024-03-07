@@ -164,6 +164,10 @@ namespace RockWeb.Blocks.Crm
             badge.EntityTypeQualifierColumn = rtbQualifierColumn.Text;
             badge.EntityTypeQualifierValue = rtbQualifierValue.Text;
             badge.EntityTypeId = etpEntityType.SelectedEntityTypeId;
+            if ( etpEntityType.SelectedEntityTypeId == default( int ) )
+            {
+                badge.EntityTypeId = null;
+            }
 
             if ( !string.IsNullOrWhiteSpace( compBadgeType.SelectedValue ) )
             {

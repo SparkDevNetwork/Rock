@@ -478,7 +478,7 @@ namespace RockWeb.Blocks.Streaks
                 }
             }
 
-            return _canView ?? false;
+            return _canView ?? true;
         }
         private bool? _canView = null;
 

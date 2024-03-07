@@ -203,6 +203,17 @@ namespace RockWeb.Blocks.Administration
                         phContext.Controls.Add( tbContext );
                     }
                 }
+
+                var interactionIntentDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
+                if ( interactionIntentDefinedType != null )
+                {
+                    dvpPageIntents.DefinedTypeId = interactionIntentDefinedType.Id;
+                    dvpPageIntents.Visible = true;
+                }
+                else
+                {
+                    dvpPageIntents.Visible = false;
+                }
             }
             else
             {
@@ -580,6 +591,19 @@ namespace RockWeb.Blocks.Administration
             ceHeaderContent.Text = page.HeaderContent;
             tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
 
+            if ( dvpPageIntents.Visible )
+            {
+                var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
+                if ( intentSettings.InteractionIntentValueIds?.Any() == true )
+                {
+                    dvpPageIntents.SetValues( intentSettings.InteractionIntentValueIds );
+                }
+                else
+                {
+                    dvpPageIntents.ClearSelection();
+                }
+            }
+
             // Add enctype attribute to page's <form> tag to allow file upload control to function
             Page.Form.Attributes.Add( "enctype", "multipart/form-data" );
         }
@@ -806,6 +830,17 @@ namespace RockWeb.Blocks.Administration
                         page.PageContexts.Add( pageContext );
                     }
                 }
+            }
+
+            // Intent Settings
+            if ( dvpPageIntents.Visible )
+            {
+                var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
+
+                var selectedIntentValueIds = dvpPageIntents.SelectedValuesAsInt;
+                intentSettings.InteractionIntentValueIds = selectedIntentValueIds;
+
+                page.SetAdditionalSettings( intentSettings );
             }
 
             // Page Attributes

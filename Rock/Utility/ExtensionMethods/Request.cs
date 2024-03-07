@@ -39,7 +39,11 @@ namespace Rock
         public static Uri UrlProxySafe( this HttpRequest request )
         {
             // Some proxies use X-Original-Host.
-            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"];
+            // JME 2/22/2024
+            // Added a custom header for forward hosts that is used by a language translation service called Weglot. Normally, we would not
+            // add custom headers into Rock, but many organizations in the community use this service. We did reach out to them to see if they
+            // would change to use the industry standard and were told no. Specifically the issue was when you use Weglot with Auth0. 
+            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"] ?? request.Headers["weglot-forwarded-host"];
 
             // If no proxy just return the request URL
             var isRequestForwardedFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;
@@ -83,7 +87,11 @@ namespace Rock
         public static Uri UrlProxySafe( this HttpRequestBase request )
         {
             // Some proxies use X-Original-Host.
-            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"];
+            // JME 2/22/2024
+            // Added a custom header for forward hosts that is used by a language translation service called Weglot. Normally, we would not
+            // add custom headers into Rock, but many organizations in the community use this service. We did reach out to them to see if they
+            // would change to use the industry standard and were told no. Specifically the issue was when you use Weglot with Auth0. 
+            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"] ?? request.Headers["weglot-forwarded-host"];
 
             // If no proxy just return the request URL
             var isRequestForwaredFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;
@@ -127,7 +135,11 @@ namespace Rock
         internal static Uri UrlProxySafe( this Net.IRequest request )
         {
             // Some proxies use X-Original-Host.
-            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"];
+            // JME 2/22/2024
+            // Added a custom header for forward hosts that is used by a language translation service called Weglot. Normally, we would not
+            // add custom headers into Rock, but many organizations in the community use this service. We did reach out to them to see if they
+            // would change to use the industry standard and were told no. Specifically the issue was when you use Weglot with Auth0. 
+            var forwardedHost = request.Headers["X-Forwarded-Host"] ?? request.Headers["X-Original-Host"] ?? request.Headers["weglot-forwarded-host"];
 
             // If no proxy just return the request URL
             var isRequestForwaredFromProxy = forwardedHost != null && request.Headers["X-Forwarded-Proto"] != null;

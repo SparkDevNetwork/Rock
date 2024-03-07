@@ -96,7 +96,7 @@ namespace Rock.Jobs
                 UpdateLastStatusMessage( "Reading Census data." );
                 var rockContext = new Rock.Data.RockContext();
                 var censusData = AnalyticsSourceZipCode.GetZipCodeCensusData();
-                var query = rockContext.AnalyticsSourceZipCodes.AsQueryable();
+                var query = rockContext.Set<AnalyticsSourceZipCode>().AsQueryable();
                 List<AnalyticsSourceZipCode.ZipCodeBoundary> boundaryData = null;
                 var batchSize = 100;
 
@@ -134,7 +134,7 @@ namespace Rock.Jobs
                             // Save the current batch.
                             var currentBatch = censusData.Skip( skipCount ).Take( batchSize ).ToList();
 
-                            rockContext.AnalyticsSourceZipCodes.AddRange( currentBatch );
+                            rockContext.Set<AnalyticsSourceZipCode>().AddRange( currentBatch );
                             rockContext.SaveChanges();
 
                             skipCount += batchSize;
@@ -152,7 +152,7 @@ namespace Rock.Jobs
                             rockContext.Configuration.ValidateOnSaveEnabled = false;
 
                             // Get and update the current batch
-                            var currentBatch = rockContext.AnalyticsSourceZipCodes.OrderBy( az => az.ZipCode ).Skip( i * batchSize ).Take( batchSize ).ToList();
+                            var currentBatch = rockContext.Set<AnalyticsSourceZipCode>().OrderBy( az => az.ZipCode ).Skip( i * batchSize ).Take( batchSize ).ToList();
 
                             foreach ( var analyticsZipCode in currentBatch )
                             {
@@ -174,7 +174,7 @@ namespace Rock.Jobs
                     }
 
                     failedAttempts = 0;
-                    UpdateLastStatusMessage( $"Saved ZipCode Data ({rockContext.AnalyticsSourceZipCodes.Count()}/{censusData.Count})." );
+                    UpdateLastStatusMessage( $"Saved ZipCode Data ({rockContext.Set<AnalyticsSourceZipCode>().Count()}/{censusData.Count})." );
                     SetAttributeValue( AttributeKey.FailedAttempts, failedAttempts.ToString() );
                     rockContext.Dispose();
                 }

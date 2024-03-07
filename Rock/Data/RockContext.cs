@@ -99,6 +99,8 @@ namespace Rock.Data
         /// <value>
         /// The AchievementAttempts.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AchievementAttempt> AchievementAttempts { get; set; }
 
         /// <summary>
@@ -107,6 +109,8 @@ namespace Rock.Data
         /// <value>
         /// The AchievementTypes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AchievementType> AchievementTypes { get; set; }
 
         /// <summary>
@@ -115,6 +119,8 @@ namespace Rock.Data
         /// <value>
         /// The streak type achievement type prerequisites.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AchievementTypePrerequisite> AchievementTypePrerequisites { get; set; }
 
         /// <summary>
@@ -123,6 +129,8 @@ namespace Rock.Data
         /// <value>
         /// The adaptive messages.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AdaptiveMessage> AdaptiveMessages { get; set; }
 
         /// <summary>
@@ -131,6 +139,8 @@ namespace Rock.Data
         /// <value>
         /// The adaptive message adaptations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AdaptiveMessageAdaptation> AdaptiveMessageAdaptations { get; set; }
 
         /// <summary>
@@ -139,6 +149,8 @@ namespace Rock.Data
         /// <value>
         /// The adaptive message adaptation segments.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AdaptiveMessageAdaptationSegment> AdaptiveMessageAdaptationSegments { get; set; }
 
         /// <summary>
@@ -147,6 +159,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim attendance locations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimAttendanceLocation> AnalyticsDimAttendanceLocations { get; set; }
 
         /// <summary>
@@ -155,6 +169,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics source dates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsSourceDate> AnalyticsSourceDates { get; set; }
 
         /// <summary>
@@ -163,6 +179,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim campuses.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimCampus> AnalyticsDimCampuses { get; set; }
 
         /// <summary>
@@ -171,6 +189,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim family currents.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimFamilyCurrent> AnalyticsDimFamilyCurrents { get; set; }
 
         /// <summary>
@@ -179,6 +199,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim family head of households.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimFamilyHeadOfHousehold> AnalyticsDimFamilyHeadOfHouseholds { get; set; }
 
         /// <summary>
@@ -187,6 +209,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim family historicals.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimFamilyHistorical> AnalyticsDimFamilyHistoricals { get; set; }
 
         /// <summary>
@@ -195,6 +219,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim financial accounts.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimFinancialAccount> AnalyticsDimFinancialAccounts { get; set; }
 
         /// <summary>
@@ -203,6 +229,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim financial batches.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimFinancialBatch> AnalyticsDimFinancialBatches { get; set; }
 
         /// <summary>
@@ -211,6 +239,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim person currents.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimPersonCurrent> AnalyticsDimPersonCurrents { get; set; }
 
         /// <summary>
@@ -219,6 +249,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics dim person historicals.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsDimPersonHistorical> AnalyticsDimPersonHistoricals { get; set; }
 
         /// <summary>
@@ -227,6 +259,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics fact attendances.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsFactAttendance> AnalyticsFactAttendances { get; set; }
 
         /// <summary>
@@ -235,6 +269,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics fact financial transactions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsFactFinancialTransaction> AnalyticsFactFinancialTransactions { get; set; }
 
         /// <summary>
@@ -243,6 +279,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics source financial transactions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsSourceFinancialTransaction> AnalyticsSourceFinancialTransactions { get; set; }
 
         /// <summary>
@@ -251,6 +289,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics source attendances.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsSourceAttendance> AnalyticsSourceAttendances { get; set; }
 
         /// <summary>
@@ -259,6 +299,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics source campuses.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsSourceCampus> AnalyticsSourceCampuses { get; set; }
 
         /// <summary>
@@ -267,6 +309,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics source family historicals.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsSourceFamilyHistorical> AnalyticsSourceFamilyHistoricals { get; set; }
 
         /// <summary>
@@ -275,6 +319,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics source person historicals.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
 
         /// <summary>
@@ -283,6 +329,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics source giving units.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsSourceGivingUnit> AnalyticsSourceGivingUnits { get; set; }
 
         /// <summary>
@@ -291,6 +339,8 @@ namespace Rock.Data
         /// <value>
         /// The asset storage providers.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AssetStorageProvider> AssetStorageProviders { get; set; }
 
         /// <summary>
@@ -299,6 +349,8 @@ namespace Rock.Data
         /// <value>
         /// The assessments
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Assessment> Assessments { get; set; }
 
         /// <summary>
@@ -307,6 +359,8 @@ namespace Rock.Data
         /// <value>
         /// The AssessmentTypes
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AssessmentType> AssessmentTypes { get; set; }
 
         /// <summary>
@@ -315,6 +369,8 @@ namespace Rock.Data
         /// <value>
         /// The attendances.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Attendance> Attendances { get; set; }
 
         /// <summary>
@@ -323,6 +379,8 @@ namespace Rock.Data
         /// <value>
         /// The attendance check in sessions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AttendanceCheckInSession> AttendanceCheckInSessions { get; set; }
 
         /// <summary>
@@ -331,6 +389,8 @@ namespace Rock.Data
         /// <value>
         /// The attendance codes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AttendanceCode> AttendanceCodes { get; set; }
 
         /// <summary>
@@ -339,6 +399,8 @@ namespace Rock.Data
         /// <value>
         /// The attendances data.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AttendanceData> AttendancesData { get; set; }
 
         /// <summary>
@@ -347,6 +409,8 @@ namespace Rock.Data
         /// <value>
         /// The attendance occurrences.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AttendanceOccurrence> AttendanceOccurrences { get; set; }
 
         /// <summary>
@@ -355,6 +419,8 @@ namespace Rock.Data
         /// <value>
         /// The attribute matrices.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.AttributeMatrix> AttributeMatrices { get; set; }
 
         /// <summary>
@@ -363,6 +429,8 @@ namespace Rock.Data
         /// <value>
         /// The attribute matrix items.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.AttributeMatrixItem> AttributeMatrixItems { get; set; }
 
         /// <summary>
@@ -371,12 +439,16 @@ namespace Rock.Data
         /// <value>
         /// The attribute matrix templates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.AttributeMatrixTemplate> AttributeMatrixTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the attribute referenced entities.
         /// </summary>
         /// <value>The attribute referenced entities.</value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.AttributeReferencedEntity> AttributeReferencedEntities { get; set; }
 
         /// <summary>
@@ -385,6 +457,8 @@ namespace Rock.Data
         /// <value>
         /// the Attributes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.Attribute> Attributes { get; set; }
 
         /// <summary>
@@ -393,6 +467,8 @@ namespace Rock.Data
         /// <value>
         /// the Attribute Qualifiers.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AttributeQualifier> AttributeQualifiers { get; set; }
 
         /// <summary>
@@ -401,6 +477,8 @@ namespace Rock.Data
         /// <value>
         /// the Attribute Values.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
@@ -409,12 +487,16 @@ namespace Rock.Data
         /// <value>
         /// The attribute value historicals.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AttributeValueHistorical> AttributeValueHistoricals { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the attribute value referenced entities.
         /// </summary>
         /// <value>The attribute value referenced entities.</value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.AttributeValueReferencedEntity> AttributeValueReferencedEntities { get; set; }
 
         /// <summary>
@@ -423,6 +505,8 @@ namespace Rock.Data
         /// <value>
         /// the Attribute Values.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Audit> Audits { get; set; }
 
         /// <summary>
@@ -431,6 +515,8 @@ namespace Rock.Data
         /// <value>
         /// The audit details.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AuditDetail> AuditDetails { get; set; }
 
         /// <summary>
@@ -439,6 +525,8 @@ namespace Rock.Data
         /// <value>
         /// The authentication audit log.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AuthAuditLog> AuthAuditLog { get; set; }
 
         /// <summary>
@@ -447,6 +535,8 @@ namespace Rock.Data
         /// <value>
         /// the Auth Clients.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AuthClient> AuthClients { get; set; }
 
         /// <summary>
@@ -455,6 +545,8 @@ namespace Rock.Data
         /// <value>
         /// The Auth Claim.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AuthClaim> AuthClaims { get; set; }
 
         /// <summary>
@@ -463,6 +555,8 @@ namespace Rock.Data
         /// <value>
         /// the Auths.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Auth> Auths { get; set; }
 
         /// <summary>
@@ -471,6 +565,8 @@ namespace Rock.Data
         /// <value>
         /// The Auth Scope.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AuthScope> AuthScopes { get; set; }
 
         /// <summary>
@@ -479,6 +575,8 @@ namespace Rock.Data
         /// <value>
         /// The background checks.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BackgroundCheck> BackgroundChecks { get; set; }
 
         /// <summary>
@@ -487,6 +585,8 @@ namespace Rock.Data
         /// <value>
         /// The Benevolence Requests.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BenevolenceRequest> BenevolenceRequests { get; set; }
 
         /// <summary>
@@ -495,6 +595,8 @@ namespace Rock.Data
         /// <value>
         /// The benevolence request documents.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BenevolenceRequestDocument> BenevolenceRequestDocuments { get; set; }
 
         /// <summary>
@@ -503,18 +605,24 @@ namespace Rock.Data
         /// <value>
         /// the Benevolence Results.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BenevolenceResult> BenevolenceResults { get; set; }
 
         /// <summary>
         /// Gets or sets the benevolence types.
         /// </summary>
         /// <value>The benevolence types.</value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BenevolenceType> BenevolenceTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the benevolence workflows.
         /// </summary>
         /// <value>The benevolence workflows.</value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BenevolenceWorkflow> BenevolenceWorkflows { get; set; }
 
         /// <summary>
@@ -523,6 +631,8 @@ namespace Rock.Data
         /// <value>
         /// The Files.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Model.BinaryFile> BinaryFiles { get; set; }
 
         /// <summary>
@@ -531,6 +641,8 @@ namespace Rock.Data
         /// <value>
         /// the Files data
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BinaryFileData> BinaryFilesData { get; set; }
 
         /// <summary>
@@ -539,6 +651,8 @@ namespace Rock.Data
         /// <value>
         /// the Binary File Types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BinaryFileType> BinaryFileTypes { get; set; }
 
         /// <summary>
@@ -547,6 +661,8 @@ namespace Rock.Data
         /// <value>
         /// the Blocks.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Block> Blocks { get; set; }
 
         /// <summary>
@@ -555,6 +671,8 @@ namespace Rock.Data
         /// <value>
         /// the Block Types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<BlockType> BlockTypes { get; set; }
 
         /// <summary>
@@ -563,6 +681,8 @@ namespace Rock.Data
         /// <value>
         /// the Campuses.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Campus> Campuses { get; set; }
 
         /// <summary>
@@ -571,12 +691,16 @@ namespace Rock.Data
         /// <value>
         /// The campus schedules.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<CampusSchedule> CampusSchedules { get; set; }
 
         /// <summary>
         /// Gets or sets the campus topics.
         /// </summary>
         /// <value>The campus topics.</value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<CampusTopic> CampusTopics { get; set; }
 
         /// <summary>
@@ -585,6 +709,8 @@ namespace Rock.Data
         /// <value>
         /// The categories.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Category> Categories { get; set; }
 
         /// <summary>
@@ -593,6 +719,8 @@ namespace Rock.Data
         /// <value>
         /// The communication attachments.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.CommunicationAttachment> CommunicationAttachments { get; set; }
 
         /// <summary>
@@ -601,6 +729,8 @@ namespace Rock.Data
         /// <value>
         /// The communications.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.Communication> Communications { get; set; }
 
         /// <summary>
@@ -609,6 +739,8 @@ namespace Rock.Data
         /// <value>
         /// The communication recipients.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
@@ -617,6 +749,8 @@ namespace Rock.Data
         /// <value>
         /// The communication response attachments.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<CommunicationResponseAttachment> CommunicationResponseAttachments { get; set; }
 
         /// <summary>
@@ -625,6 +759,8 @@ namespace Rock.Data
         /// <value>
         /// The communication responses.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<CommunicationResponse> CommunicationResponses { get; set; }
 
         /// <summary>
@@ -633,6 +769,8 @@ namespace Rock.Data
         /// <value>
         /// The communication template attachment.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.CommunicationTemplateAttachment> CommunicationTemplateAttachment { get; set; }
 
         /// <summary>
@@ -641,6 +779,8 @@ namespace Rock.Data
         /// <value>
         /// The communication templates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.CommunicationTemplate> CommunicationTemplates { get; set; }
 
         /// <summary>
@@ -649,6 +789,8 @@ namespace Rock.Data
         /// <value>
         /// The connection activity types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionActivityType> ConnectionActivityTypes { get; set; }
 
         /// <summary>
@@ -657,6 +799,8 @@ namespace Rock.Data
         /// <value>
         /// The connection opportunities.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionOpportunity> ConnectionOpportunities { get; set; }
 
         /// <summary>
@@ -665,6 +809,8 @@ namespace Rock.Data
         /// <value>
         /// The connection opportunity group configs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.ConnectionOpportunityGroupConfig> ConnectionOpportunityGroupConfigs { get; set; }
 
         /// <summary>
@@ -673,6 +819,8 @@ namespace Rock.Data
         /// <value>
         /// The connection opportunity campuses.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionOpportunityCampus> ConnectionOpportunityCampuses { get; set; }
 
         /// <summary>
@@ -681,6 +829,8 @@ namespace Rock.Data
         /// <value>
         /// The connection opportunity connector groups.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionOpportunityConnectorGroup> ConnectionOpportunityConnectorGroups { get; set; }
 
         /// <summary>
@@ -689,6 +839,8 @@ namespace Rock.Data
         /// <value>
         /// The connection opportunity groups.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionOpportunityGroup> ConnectionOpportunityGroups { get; set; }
 
         /// <summary>
@@ -697,6 +849,8 @@ namespace Rock.Data
         /// <value>
         /// The connection requests.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionRequest> ConnectionRequests { get; set; }
 
         /// <summary>
@@ -705,6 +859,8 @@ namespace Rock.Data
         /// <value>
         /// The connection request activities.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionRequestActivity> ConnectionRequestActivities { get; set; }
 
         /// <summary>
@@ -713,6 +869,8 @@ namespace Rock.Data
         /// <value>
         /// The connection request workflows.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionRequestWorkflow> ConnectionRequestWorkflows { get; set; }
 
         /// <summary>
@@ -721,6 +879,8 @@ namespace Rock.Data
         /// <value>
         /// The connection statuses.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionStatus> ConnectionStatuses { get; set; }
 
         /// <summary>
@@ -729,6 +889,8 @@ namespace Rock.Data
         /// <value>
         /// The connection automations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionStatusAutomation> ConnectionStatusAutomations { get; set; }
 
         /// <summary>
@@ -737,6 +899,8 @@ namespace Rock.Data
         /// <value>
         /// The connection types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionType> ConnectionTypes { get; set; }
 
         /// <summary>
@@ -745,6 +909,8 @@ namespace Rock.Data
         /// <value>
         /// The connection workflows.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ConnectionWorkflow> ConnectionWorkflows { get; set; }
 
         /// <summary>
@@ -753,6 +919,8 @@ namespace Rock.Data
         /// <value>
         /// The content channels.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentChannel> ContentChannels { get; set; }
 
         /// <summary>
@@ -761,6 +929,8 @@ namespace Rock.Data
         /// <value>
         /// The content channel items.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentChannelItem> ContentChannelItems { get; set; }
 
         /// <summary>
@@ -769,6 +939,8 @@ namespace Rock.Data
         /// <value>
         /// The content channel item associations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentChannelItemAssociation> ContentChannelItemAssociations { get; set; }
 
         /// <summary>
@@ -777,6 +949,8 @@ namespace Rock.Data
         /// <value>
         /// The content channel item slugs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentChannelItemSlug> ContentChannelItemSlugs { get; set; }
 
         /// <summary>
@@ -785,6 +959,8 @@ namespace Rock.Data
         /// <value>
         /// The content channel types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentChannelType> ContentChannelTypes { get; set; }
 
         /// <summary>
@@ -793,6 +969,8 @@ namespace Rock.Data
         /// <value>
         /// The ccontent collections.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentCollection> ContentCollections { get; set; }
 
         /// <summary>
@@ -801,6 +979,8 @@ namespace Rock.Data
         /// <value>
         /// The content collection sources.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentCollectionSource> ContentCollectionSources { get; set; }
 
         /// <summary>
@@ -809,6 +989,8 @@ namespace Rock.Data
         /// <value>
         /// The content topics.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentTopic> ContentTopics { get; set; }
 
         /// <summary>
@@ -817,6 +999,8 @@ namespace Rock.Data
         /// <value>
         /// The content topic domains.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ContentTopicDomain> ContentTopicDomains { get; set; }
 
         /// <summary>
@@ -825,6 +1009,8 @@ namespace Rock.Data
         /// <value>
         /// The data views.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<DataView> DataViews { get; set; }
 
         /// <summary>
@@ -833,6 +1019,8 @@ namespace Rock.Data
         /// <value>
         /// The data view filters.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<DataViewFilter> DataViewFilters { get; set; }
 
         /// <summary>
@@ -841,6 +1029,8 @@ namespace Rock.Data
         /// <value>
         /// The data view persisted values.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<DataViewPersistedValue> DataViewPersistedValues { get; set; }
 
         /// <summary>
@@ -849,6 +1039,8 @@ namespace Rock.Data
         /// <value>
         /// The document types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<DocumentType> DocumentTypes { get; set; }
 
         /// <summary>
@@ -857,6 +1049,8 @@ namespace Rock.Data
         /// <value>
         /// The documents.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Document> Documents { get; set; }
 
         /// <summary>
@@ -865,6 +1059,8 @@ namespace Rock.Data
         /// <value>
         /// the Defined Types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<DefinedType> DefinedTypes { get; set; }
 
         /// <summary>
@@ -873,6 +1069,8 @@ namespace Rock.Data
         /// <value>
         /// the Defined Values.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<DefinedValue> DefinedValues { get; set; }
 
         /// <summary>
@@ -881,6 +1079,8 @@ namespace Rock.Data
         /// <value>
         /// The devices.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Device> Devices { get; set; }
 
         /// <summary>
@@ -889,6 +1089,8 @@ namespace Rock.Data
         /// <value>
         /// The entity campus filters.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EntityCampusFilter> EntityCampusFilters { get; set; }
 
         /// <summary>
@@ -897,6 +1099,8 @@ namespace Rock.Data
         /// <value>
         /// The entity sets.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EntitySet> EntitySets { get; set; }
 
         /// <summary>
@@ -905,6 +1109,8 @@ namespace Rock.Data
         /// <value>
         /// The entity set items.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EntitySetItem> EntitySetItems { get; set; }
 
         /// <summary>
@@ -913,6 +1119,8 @@ namespace Rock.Data
         /// <value>
         /// The entity types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EntityType> EntityTypes { get; set; }
 
         /// <summary>
@@ -921,6 +1129,8 @@ namespace Rock.Data
         /// <value>
         /// The event calendars.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EventCalendar> EventCalendars { get; set; }
 
         /// <summary>
@@ -929,6 +1139,8 @@ namespace Rock.Data
         /// <value>
         /// The event calendar content channels.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EventCalendarContentChannel> EventCalendarContentChannels { get; set; }
 
         /// <summary>
@@ -937,6 +1149,8 @@ namespace Rock.Data
         /// <value>
         /// The event calendar items.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EventCalendarItem> EventCalendarItems { get; set; }
 
         /// <summary>
@@ -945,6 +1159,8 @@ namespace Rock.Data
         /// <value>
         /// The event items.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EventItem> EventItems { get; set; }
 
         /// <summary>
@@ -953,6 +1169,8 @@ namespace Rock.Data
         /// <value>
         /// The event item audiences.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EventItemAudience> EventItemAudiences { get; set; }
 
         /// <summary>
@@ -961,6 +1179,8 @@ namespace Rock.Data
         /// <value>
         /// The event item occurrences.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EventItemOccurrence> EventItemOccurrences { get; set; }
 
         /// <summary>
@@ -969,6 +1189,8 @@ namespace Rock.Data
         /// <value>
         /// The event item occurrence channel items.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EventItemOccurrenceChannelItem> EventItemOccurrenceChannelItems { get; set; }
 
         /// <summary>
@@ -977,6 +1199,8 @@ namespace Rock.Data
         /// <value>
         /// The event item occurrence group maps.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<EventItemOccurrenceGroupMap> EventItemOccurrenceGroupMaps { get; set; }
 
         /// <summary>
@@ -985,6 +1209,8 @@ namespace Rock.Data
         /// <value>
         /// the Exception Logs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ExceptionLog> ExceptionLogs { get; set; }
 
         /// <summary>
@@ -993,6 +1219,8 @@ namespace Rock.Data
         /// <value>
         /// the Field Types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FieldType> FieldTypes { get; set; }
 
         /// <summary>
@@ -1001,6 +1229,8 @@ namespace Rock.Data
         /// <value>
         /// The Financial Account.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 
         /// <summary>
@@ -1009,6 +1239,8 @@ namespace Rock.Data
         /// <value>
         /// The batches.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialBatch> FinancialBatches { get; set; }
 
         /// <summary>
@@ -1017,6 +1249,8 @@ namespace Rock.Data
         /// <value>
         /// The financial gateways.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialGateway> FinancialGateways { get; set; }
 
         /// <summary>
@@ -1025,6 +1259,8 @@ namespace Rock.Data
         /// <value>
         /// The financial payment details.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialPaymentDetail> FinancialPaymentDetails { get; set; }
 
         /// <summary>
@@ -1033,6 +1269,8 @@ namespace Rock.Data
         /// <value>
         /// The financial person bank account.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialPersonBankAccount> FinancialPersonBankAccounts { get; set; }
 
         /// <summary>
@@ -1041,6 +1279,8 @@ namespace Rock.Data
         /// <value>
         /// The financial person saved account.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialPersonSavedAccount> FinancialPersonSavedAccounts { get; set; }
 
         /// <summary>
@@ -1049,6 +1289,8 @@ namespace Rock.Data
         /// <value>
         /// The pledges.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialPledge> FinancialPledges { get; set; }
 
         /// <summary>
@@ -1057,6 +1299,8 @@ namespace Rock.Data
         /// <value>
         /// The financial scheduled transactions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialScheduledTransaction> FinancialScheduledTransactions { get; set; }
 
         /// <summary>
@@ -1065,6 +1309,8 @@ namespace Rock.Data
         /// <value>
         /// The financial scheduled transaction details.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialScheduledTransactionDetail> FinancialScheduledTransactionDetails { get; set; }
 
         /// <summary>
@@ -1073,6 +1319,8 @@ namespace Rock.Data
         /// <value>
         /// The financial statement templates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialStatementTemplate> FinancialStatementTemplates { get; set; }
 
         /// <summary>
@@ -1081,6 +1329,8 @@ namespace Rock.Data
         /// <value>
         /// The transactions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
 
         /// <summary>
@@ -1089,6 +1339,8 @@ namespace Rock.Data
         /// <value>
         /// The financial transaction alert.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialTransactionAlert> FinancialTransactionAlerts { get; set; }
 
         /// <summary>
@@ -1097,6 +1349,8 @@ namespace Rock.Data
         /// <value>
         /// The type of the financial transaction alert.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialTransactionAlertType> FinancialTransactionAlertTypes { get; set; }
 
         /// <summary>
@@ -1105,6 +1359,8 @@ namespace Rock.Data
         /// <value>
         /// The transaction details.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialTransactionDetail> FinancialTransactionDetails { get; set; }
 
         /// <summary>
@@ -1113,6 +1369,8 @@ namespace Rock.Data
         /// <value>
         /// The transaction details.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialTransactionImage> FinancialTransactionImages { get; set; }
 
         /// <summary>
@@ -1121,6 +1379,8 @@ namespace Rock.Data
         /// <value>
         /// The financial transaction refunds.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FinancialTransactionRefund> FinancialTransactionRefunds { get; set; }
 
         /// <summary>
@@ -1129,6 +1389,8 @@ namespace Rock.Data
         /// <value>
         /// The followings.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Following> Followings { get; set; }
 
         /// <summary>
@@ -1137,6 +1399,8 @@ namespace Rock.Data
         /// <value>
         /// The following event notifications.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FollowingEventNotification> FollowingEventNotifications { get; set; }
 
         /// <summary>
@@ -1145,6 +1409,8 @@ namespace Rock.Data
         /// <value>
         /// The following event subscriptions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FollowingEventSubscription> FollowingEventSubscriptions { get; set; }
 
         /// <summary>
@@ -1153,6 +1419,8 @@ namespace Rock.Data
         /// <value>
         /// The following event types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FollowingEventType> FollowingEventTypes { get; set; }
 
         /// <summary>
@@ -1161,6 +1429,8 @@ namespace Rock.Data
         /// <value>
         /// The following suggestions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FollowingSuggested> FollowingSuggesteds { get; set; }
 
         /// <summary>
@@ -1169,6 +1439,8 @@ namespace Rock.Data
         /// <value>
         /// The following suggestion types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<FollowingSuggestionType> FollowingSuggestionTypes { get; set; }
 
         /// <summary>
@@ -1177,6 +1449,8 @@ namespace Rock.Data
         /// <value>
         /// the Groups.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Group> Groups { get; set; }
 
         /// <summary>
@@ -1185,6 +1459,8 @@ namespace Rock.Data
         /// <value>
         /// The group demographic types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupDemographicType> GroupDemographicTypes { get; set; }
 
         /// <summary>
@@ -1193,6 +1469,8 @@ namespace Rock.Data
         /// <value>
         /// The group demographic values.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupDemographicValue> GroupDemographicValues { get; set; }
 
         /// <summary>
@@ -1201,6 +1479,8 @@ namespace Rock.Data
         /// <value>
         /// The group historicals.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupHistorical> GroupHistoricals { get; set; }
 
         /// <summary>
@@ -1209,6 +1489,8 @@ namespace Rock.Data
         /// <value>
         /// the Group Locations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupLocation> GroupLocations { get; set; }
 
         /// <summary>
@@ -1217,6 +1499,8 @@ namespace Rock.Data
         /// <value>
         /// The group location historicals.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupLocationHistorical> GroupLocationHistoricals { get; set; }
 
         /// <summary>
@@ -1235,6 +1519,8 @@ namespace Rock.Data
         /// <value>
         /// The group location schedule configs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; }
 
         /// <summary>
@@ -1243,6 +1529,8 @@ namespace Rock.Data
         /// <value>
         /// the Members.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupMember> GroupMembers { get; set; }
 
         /// <summary>
@@ -1251,6 +1539,8 @@ namespace Rock.Data
         /// <value>
         /// The group member assignments.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupMemberAssignment> GroupMemberAssignments { get; set; }
 
         /// <summary>
@@ -1259,6 +1549,8 @@ namespace Rock.Data
         /// <value>
         /// The group member historicals.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupMemberHistorical> GroupMemberHistoricals { get; set; }
 
         /// <summary>
@@ -1267,6 +1559,8 @@ namespace Rock.Data
         /// <value>
         /// The group member requirements.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupMemberRequirement> GroupMemberRequirements { get; set; }
 
         /// <summary>
@@ -1275,6 +1569,8 @@ namespace Rock.Data
         /// <value>
         /// The group member schedule templates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupMemberScheduleTemplate> GroupMemberScheduleTemplates { get; set; }
 
         /// <summary>
@@ -1283,6 +1579,8 @@ namespace Rock.Data
         /// <value>
         /// The group member workflow triggers.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers { get; set; }
 
         /// <summary>
@@ -1291,6 +1589,8 @@ namespace Rock.Data
         /// <value>
         /// The group requirements.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupRequirement> GroupRequirements { get; set; }
 
         /// <summary>
@@ -1299,6 +1599,8 @@ namespace Rock.Data
         /// <value>
         /// The group requirement types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupRequirementType> GroupRequirementTypes { get; set; }
 
         /// <summary>
@@ -1307,6 +1609,8 @@ namespace Rock.Data
         /// <value>
         /// The group schedule exclusions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupScheduleExclusion> GroupScheduleExclusions { get; set; }
 
         /// <summary>
@@ -1315,6 +1619,8 @@ namespace Rock.Data
         /// <value>
         /// The group syncs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupSync> GroupSyncs { get; set; }
 
         /// <summary>
@@ -1323,6 +1629,8 @@ namespace Rock.Data
         /// <value>
         /// The group type location types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.GroupTypeLocationType> GroupTypeLocationTypes { get; set; }
 
         /// <summary>
@@ -1331,6 +1639,8 @@ namespace Rock.Data
         /// <value>
         /// the Group Types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupType> GroupTypes { get; set; }
 
         /// <summary>
@@ -1339,6 +1649,8 @@ namespace Rock.Data
         /// <value>
         /// the Group Roles.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<GroupTypeRole> GroupTypeRoles { get; set; }
 
         /// <summary>
@@ -1347,6 +1659,8 @@ namespace Rock.Data
         /// <value>
         /// The histories.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<History> Histories { get; set; }
 
         /// <summary>
@@ -1355,6 +1669,8 @@ namespace Rock.Data
         /// <value>
         /// the Html Contents.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<HtmlContent> HtmlContents { get; set; }
 
         /// <summary>
@@ -1363,6 +1679,8 @@ namespace Rock.Data
         /// <value>
         /// The SMS actions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SmsAction> SmsActions { get; set; }
 
         /// <summary>
@@ -1371,6 +1689,8 @@ namespace Rock.Data
         /// <value>
         /// The SMS pipelines.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SmsPipeline> SmsPipelines { get; set; }
 
         /// <summary>
@@ -1379,6 +1699,8 @@ namespace Rock.Data
         /// <value>
         /// the Interactive Experiences.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractiveExperience> InteractiveExperiences { get; set; }
 
         /// <summary>
@@ -1387,6 +1709,8 @@ namespace Rock.Data
         /// <value>
         /// the Interactive Experience Actions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractiveExperienceAction> InteractiveExperienceActions { get; set; }
 
         /// <summary>
@@ -1395,6 +1719,8 @@ namespace Rock.Data
         /// <value>
         /// the Interactive Experience Answers.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractiveExperienceAnswer> InteractiveExperienceAnswers { get; set; }
 
         /// <summary>
@@ -1403,6 +1729,8 @@ namespace Rock.Data
         /// <value>
         /// the Interactive Experience Occurrences.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractiveExperienceOccurrence> InteractiveExperienceOccurrences { get; set; }
 
         /// <summary>
@@ -1411,6 +1739,8 @@ namespace Rock.Data
         /// <value>
         /// the Interactive Experience Schedules.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractiveExperienceSchedule> InteractiveExperienceSchedules { get; set; }
 
         /// <summary>
@@ -1419,6 +1749,8 @@ namespace Rock.Data
         /// <value>
         /// the Interactive Experience Campuses.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractiveExperienceScheduleCampus> InteractiveExperienceScheduleCampuses { get; set; }
 
         /// <summary>
@@ -1427,6 +1759,8 @@ namespace Rock.Data
         /// <value>
         /// the Interactions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Interaction> Interactions { get; set; }
 
         /// <summary>
@@ -1435,6 +1769,8 @@ namespace Rock.Data
         /// <value>
         /// the Interaction Components.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractionComponent> InteractionComponents { get; set; }
 
         /// <summary>
@@ -1443,6 +1779,8 @@ namespace Rock.Data
         /// <value>
         /// the Interaction Device Types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractionDeviceType> InteractionDeviceTypes { get; set; }
 
         /// <summary>
@@ -1451,6 +1789,8 @@ namespace Rock.Data
         /// <value>
         /// the Interaction Services.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractionChannel> InteractionServices { get; set; }
 
         /// <summary>
@@ -1459,6 +1799,8 @@ namespace Rock.Data
         /// <value>
         /// the Interaction Sessions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractionSession> InteractionSessions { get; set; }
 
         /// <summary>
@@ -1467,6 +1809,8 @@ namespace Rock.Data
         /// <value>
         /// the Interaction Sessions Locations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<InteractionSessionLocation> InteractionSessionLocations { get; set; }
 
         /// <summary>
@@ -1475,6 +1819,8 @@ namespace Rock.Data
         /// <value>
         /// The lava shortcodes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.LavaShortcode> LavaShortcodes { get; set; }
 
         /// <summary>
@@ -1483,6 +1829,8 @@ namespace Rock.Data
         /// <value>
         /// The layouts.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Layout> Layouts { get; set; }
 
         /// <summary>
@@ -1491,6 +1839,8 @@ namespace Rock.Data
         /// <value>
         /// the Location.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Location> Locations { get; set; }
 
         /// <summary>
@@ -1499,6 +1849,8 @@ namespace Rock.Data
         /// <value>
         /// The media accounts.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<MediaAccount> MediaAccounts { get; set; }
 
         /// <summary>
@@ -1507,6 +1859,8 @@ namespace Rock.Data
         /// <value>
         /// The media elements.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<MediaElement> MediaElements { get; set; }
 
         /// <summary>
@@ -1515,6 +1869,8 @@ namespace Rock.Data
         /// <value>
         /// The media folders.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<MediaFolder> MediaFolders { get; set; }
 
         /// <summary>
@@ -1523,6 +1879,8 @@ namespace Rock.Data
         /// <value>
         /// The merge templates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<MergeTemplate> MergeTemplates { get; set; }
 
         /// <summary>
@@ -1531,6 +1889,8 @@ namespace Rock.Data
         /// <value>
         /// The meta first name gender lookups.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.MetaFirstNameGenderLookup> MetaFirstNameGenderLookups { get; set; }
 
         /// <summary>
@@ -1539,6 +1899,8 @@ namespace Rock.Data
         /// <value>
         /// The meta last name lookups.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.MetaLastNameLookup> MetaLastNameLookups { get; set; }
 
         /// <summary>
@@ -1547,6 +1909,8 @@ namespace Rock.Data
         /// <value>
         /// The meta nick name lookups.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.MetaNickNameLookup> MetaNickNameLookups { get; set; }
 
         /// <summary>
@@ -1555,6 +1919,8 @@ namespace Rock.Data
         /// <value>
         /// The metaphones.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Metaphone> Metaphones { get; set; }
 
         /// <summary>
@@ -1563,6 +1929,8 @@ namespace Rock.Data
         /// <value>
         /// the Defined Types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Metric> Metrics { get; set; }
 
         /// <summary>
@@ -1571,6 +1939,8 @@ namespace Rock.Data
         /// <value>
         /// The metric partitions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<MetricPartition> MetricPartitions { get; set; }
 
         /// <summary>
@@ -1579,6 +1949,8 @@ namespace Rock.Data
         /// <value>
         /// The metric categories.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<MetricCategory> MetricCategories { get; set; }
 
         /// <summary>
@@ -1587,6 +1959,8 @@ namespace Rock.Data
         /// <value>
         /// the Defined Values.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<MetricValue> MetricValues { get; set; }
 
         /// <summary>
@@ -1595,6 +1969,8 @@ namespace Rock.Data
         /// <value>
         /// The metric value partitions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<MetricValuePartition> MetricValuePartitions { get; set; }
 
         /// <summary>
@@ -1603,6 +1979,8 @@ namespace Rock.Data
         /// <value>
         /// The ncoa historys.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<NcoaHistory> NcoaHistorys { get; set; }
 
         /// <summary>
@@ -1611,6 +1989,8 @@ namespace Rock.Data
         /// <value>
         /// The notes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Note> Notes { get; set; }
 
         /// <summary>
@@ -1619,6 +1999,8 @@ namespace Rock.Data
         /// <value>
         /// The note attachments.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<NoteAttachment> NoteAttachments { get; set; }
 
         /// <summary>
@@ -1627,6 +2009,8 @@ namespace Rock.Data
         /// <value>
         /// The note types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<NoteType> NoteTypes { get; set; }
 
         /// <summary>
@@ -1635,18 +2019,24 @@ namespace Rock.Data
         /// <value>
         /// The note watches.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<NoteWatch> NoteWatches { get; set; }
 
         /// <summary>
         /// Gets or sets the notification message types.
         /// </summary>
         /// <value>The notification message types.</value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<NotificationMessageType> NotificationMessageTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the notification messages.
         /// </summary>
         /// <value>The notification messages.</value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<NotificationMessage> NotificationMessages { get; set; }
 
         /// <summary>
@@ -1655,6 +2045,8 @@ namespace Rock.Data
         /// <value>
         /// The notifications.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Notification> Notifications { get; set; }
 
         /// <summary>
@@ -1663,6 +2055,8 @@ namespace Rock.Data
         /// <value>
         /// The notification recipients.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<NotificationRecipient> NotificationRecipients { get; set; }
 
         /// <summary>
@@ -1671,6 +2065,8 @@ namespace Rock.Data
         /// <value>
         /// the Pages.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Page> Pages { get; set; }
 
         /// <summary>
@@ -1679,6 +2075,8 @@ namespace Rock.Data
         /// <value>
         /// The page contexts.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PageContext> PageContexts { get; set; }
 
         /// <summary>
@@ -1687,6 +2085,8 @@ namespace Rock.Data
         /// <value>
         /// the Page Routes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PageRoute> PageRoutes { get; set; }
 
         /// <summary>
@@ -1695,6 +2095,8 @@ namespace Rock.Data
         /// <value>
         /// The persisted datasets.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersistedDataset> PersistedDatasets { get; set; }
 
         /// <summary>
@@ -1703,6 +2105,8 @@ namespace Rock.Data
         /// <value>
         /// the People.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Person> People { get; set; }
 
         /// <summary>
@@ -1711,6 +2115,8 @@ namespace Rock.Data
         /// <value>
         /// The personal devices.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.PersonalDevice> PersonalDevices { get; set; }
 
         /// <summary>
@@ -1719,6 +2125,8 @@ namespace Rock.Data
         /// <value>
         /// the Person aliases.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
@@ -1727,6 +2135,8 @@ namespace Rock.Data
         /// <value>
         /// The Person Preferences.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonPreference> PersonPreferences { get; set; }
 
         /// <summary>
@@ -1735,6 +2145,8 @@ namespace Rock.Data
         /// <value>
         /// The person badge types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Model.Badge> Badges { get; set; }
 
         /// <summary>
@@ -1743,6 +2155,8 @@ namespace Rock.Data
         /// <value>
         /// The person duplicates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonDuplicate> PersonDuplicates { get; set; }
 
         /// <summary>
@@ -1751,6 +2165,8 @@ namespace Rock.Data
         /// <value>
         /// The person previous names.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }
 
         /// <summary>
@@ -1759,6 +2175,8 @@ namespace Rock.Data
         /// <value>
         /// The person schedule exclusions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonScheduleExclusion> PersonScheduleExclusions { get; set; }
 
         /// <summary>
@@ -1767,6 +2185,8 @@ namespace Rock.Data
         /// <value>
         /// the Person Vieweds.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonSignal> PersonSignals { get; set; }
 
         /// <summary>
@@ -1775,6 +2195,8 @@ namespace Rock.Data
         /// <value>
         /// the Person Vieweds.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonViewed> PersonVieweds { get; set; }
 
         /// <summary>
@@ -1783,6 +2205,8 @@ namespace Rock.Data
         /// <value>
         /// The person search keys.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonSearchKey> PersonSearchKeys { get; set; }
 
         /// <summary>
@@ -1791,6 +2215,8 @@ namespace Rock.Data
         /// <value>
         /// The person tokens.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonToken> PersonTokens { get; set; }
 
         /// <summary>
@@ -1799,6 +2225,8 @@ namespace Rock.Data
         /// <value>
         /// the Phone Numbers.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PhoneNumber> PhoneNumbers { get; set; }
 
         /// <summary>
@@ -1807,6 +2235,8 @@ namespace Rock.Data
         /// <value>
         /// The phone verifications.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<IdentityVerification> IdentityVerifications { get; set; }
 
         /// <summary>
@@ -1815,6 +2245,8 @@ namespace Rock.Data
         /// <value>
         /// The phone verification codes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<IdentityVerificationCode> IdentityVerificationCodes { get; set; }
 
         /// <summary>
@@ -1823,6 +2255,8 @@ namespace Rock.Data
         /// <value>
         /// The personal links.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonalLink> PersonalLinks { get; set; }
 
         /// <summary>
@@ -1831,6 +2265,8 @@ namespace Rock.Data
         /// <value>
         /// The personal link sections.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonalLinkSection> PersonalLinkSections { get; set; }
 
         /// <summary>
@@ -1839,6 +2275,8 @@ namespace Rock.Data
         /// <value>
         /// The personal link section orders.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonalLinkSectionOrder> PersonalLinkSectionOrders { get; set; }
 
         /// <summary>
@@ -1847,6 +2285,8 @@ namespace Rock.Data
         /// <value>
         /// The plugin migrations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PluginMigration> PluginMigrations { get; set; }
 
         /// <summary>
@@ -1855,6 +2295,8 @@ namespace Rock.Data
         /// <value>
         /// The prayer requests.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PrayerRequest> PrayerRequests { get; set; }
 
         /// <summary>
@@ -1863,6 +2305,8 @@ namespace Rock.Data
         /// <value>
         /// The registrations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Registration> Registrations { get; set; }
 
         /// <summary>
@@ -1871,6 +2315,8 @@ namespace Rock.Data
         /// <value>
         /// The registration instances.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationInstance> RegistrationInstances { get; set; }
 
         /// <summary>
@@ -1879,6 +2325,8 @@ namespace Rock.Data
         /// <value>
         /// The registration registrants.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationRegistrant> RegistrationRegistrants { get; set; }
 
         /// <summary>
@@ -1887,6 +2335,8 @@ namespace Rock.Data
         /// <value>
         /// The registration registrant fees.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationRegistrantFee> RegistrationRegistrantFees { get; set; }
 
         /// <summary>
@@ -1895,6 +2345,8 @@ namespace Rock.Data
         /// <value>
         /// The registration sessions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationSession> RegistrationSessions { get; set; }
 
         /// <summary>
@@ -1903,6 +2355,8 @@ namespace Rock.Data
         /// <value>
         /// The registration templates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationTemplate> RegistrationTemplates { get; set; }
 
         /// <summary>
@@ -1911,6 +2365,8 @@ namespace Rock.Data
         /// <value>
         /// The registration template discounts.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationTemplateDiscount> RegistrationTemplateDiscounts { get; set; }
 
         /// <summary>
@@ -1919,6 +2375,8 @@ namespace Rock.Data
         /// <value>
         /// The registration template fees.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationTemplateFee> RegistrationTemplateFees { get; set; }
 
         /// <summary>
@@ -1927,6 +2385,8 @@ namespace Rock.Data
         /// <value>
         /// The registration template fee items.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationTemplateFeeItem> RegistrationTemplateFeeItems { get; set; }
 
         /// <summary>
@@ -1935,6 +2395,8 @@ namespace Rock.Data
         /// <value>
         /// The registration template forms.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationTemplateForm> RegistrationTemplateForms { get; set; }
 
         /// <summary>
@@ -1943,6 +2405,8 @@ namespace Rock.Data
         /// <value>
         /// The registration template form fields.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationTemplateFormField> RegistrationTemplateFormFields { get; set; }
 
         /// <summary>
@@ -1951,6 +2415,8 @@ namespace Rock.Data
         /// <value>
         /// The registration template placements.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RegistrationTemplatePlacement> RegistrationTemplatePlacements { get; set; }
 
         /// <summary>
@@ -1959,6 +2425,8 @@ namespace Rock.Data
         /// <value>
         /// The related entities.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RelatedEntity> RelatedEntities { get; set; }
 
         /// <summary>
@@ -1967,6 +2435,8 @@ namespace Rock.Data
         /// <value>
         /// The reminders.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Reminder> Reminders { get; set; }
 
         /// <summary>
@@ -1975,6 +2445,8 @@ namespace Rock.Data
         /// <value>
         /// The reminder types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ReminderType> ReminderTypes { get; set; }
 
         /// <summary>
@@ -1983,6 +2455,8 @@ namespace Rock.Data
         /// <value>
         /// The remote authentication sessions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RemoteAuthenticationSession> RemoteAuthenticationSessions { get; set; }
 
         /// <summary>
@@ -1991,6 +2465,8 @@ namespace Rock.Data
         /// <value>
         /// The reports.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Report> Reports { get; set; }
 
         /// <summary>
@@ -1999,6 +2475,8 @@ namespace Rock.Data
         /// <value>
         /// The report fields.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ReportField> ReportFields { get; set; }
 
         /// <summary>
@@ -2007,6 +2485,8 @@ namespace Rock.Data
         /// <value>
         /// The reports.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RestAction> RestActions { get; set; }
 
         /// <summary>
@@ -2015,6 +2495,8 @@ namespace Rock.Data
         /// <value>
         /// The reports.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RestController> RestControllers { get; set; }
 
         /// <summary>
@@ -2023,6 +2505,8 @@ namespace Rock.Data
         /// <value>
         /// The schedule category exclusions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.ScheduleCategoryExclusion> ScheduleCategoryExclusions { get; set; }
 
         /// <summary>
@@ -2031,6 +2515,8 @@ namespace Rock.Data
         /// <value>
         /// The schedules.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Schedule> Schedules { get; set; }
 
         /// <summary>
@@ -2039,6 +2525,8 @@ namespace Rock.Data
         /// <value>
         /// The service job histories.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ServiceJobHistory> ServiceJobHistories { get; set; }
 
         /// <summary>
@@ -2047,6 +2535,8 @@ namespace Rock.Data
         /// <value>
         /// the Jobs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ServiceJob> ServiceJobs { get; set; }
 
         /// <summary>
@@ -2055,6 +2545,8 @@ namespace Rock.Data
         /// <value>
         /// the Service Logs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<ServiceLog> ServiceLogs { get; set; }
 
         /// <summary>
@@ -2063,6 +2555,8 @@ namespace Rock.Data
         /// <value>
         /// The signature documents.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SignalType> SignalTypes { get; set; }
 
         /// <summary>
@@ -2071,6 +2565,8 @@ namespace Rock.Data
         /// <value>
         /// The signature documents.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SignatureDocument> SignatureDocuments { get; set; }
 
         /// <summary>
@@ -2079,6 +2575,8 @@ namespace Rock.Data
         /// <value>
         /// The signature document templates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SignatureDocumentTemplate> SignatureDocumentTemplates { get; set; }
 
         /// <summary>
@@ -2087,6 +2585,8 @@ namespace Rock.Data
         /// <value>
         /// the Sites.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Site> Sites { get; set; }
 
         /// <summary>
@@ -2095,6 +2595,8 @@ namespace Rock.Data
         /// <value>
         /// the Site Domains.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
@@ -2103,6 +2605,8 @@ namespace Rock.Data
         /// <value>
         /// The steps.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Step> Steps { get; set; }
 
         /// <summary>
@@ -2111,6 +2615,8 @@ namespace Rock.Data
         /// <value>
         /// The step programs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StepProgram> StepPrograms { get; set; }
 
         /// <summary>
@@ -2119,6 +2625,8 @@ namespace Rock.Data
         /// <value>
         /// The step program completions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StepProgramCompletion> StepProgramCompletions { get; set; }
 
         /// <summary>
@@ -2127,6 +2635,8 @@ namespace Rock.Data
         /// <value>
         /// The step statuses.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StepStatus> StepStatuses { get; set; }
 
         /// <summary>
@@ -2135,6 +2645,8 @@ namespace Rock.Data
         /// <value>
         /// The step types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StepType> StepTypes { get; set; }
 
         /// <summary>
@@ -2143,6 +2655,8 @@ namespace Rock.Data
         /// <value>
         /// The step type prerequisites.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StepTypePrerequisite> StepTypePrerequisites { get; set; }
 
         /// <summary>
@@ -2151,6 +2665,8 @@ namespace Rock.Data
         /// <value>
         /// The step workflows.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StepWorkflow> StepWorkflows { get; set; }
 
         /// <summary>
@@ -2159,6 +2675,8 @@ namespace Rock.Data
         /// <value>
         /// The step workflow triggers.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StepWorkflowTrigger> StepWorkflowTriggers { get; set; }
 
         /// <summary>
@@ -2167,6 +2685,8 @@ namespace Rock.Data
         /// <value>
         /// The site URL maps.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PageShortLink> PageShortLinks { get; set; }
 
         /// <summary>
@@ -2175,6 +2695,8 @@ namespace Rock.Data
         /// <value>
         /// The Streaks.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Streak> Streaks { get; set; }
 
         /// <summary>
@@ -2183,6 +2705,8 @@ namespace Rock.Data
         /// <value>
         /// The StreakTypes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StreakType> StreakTypes { get; set; }
 
         /// <summary>
@@ -2191,6 +2715,8 @@ namespace Rock.Data
         /// <value>
         /// The StreakTypeExclusions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<StreakTypeExclusion> StreakTypeExclusions { get; set; }
 
         /// <summary>
@@ -2209,6 +2735,8 @@ namespace Rock.Data
         /// <value>
         /// The system emails.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SystemCommunication> SystemCommunications { get; set; }
 
         /// <summary>
@@ -2217,6 +2745,8 @@ namespace Rock.Data
         /// <value>
         /// The system phone numbers.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SystemPhoneNumber> SystemPhoneNumbers { get; set; }
 
         /// <summary>
@@ -2225,6 +2755,8 @@ namespace Rock.Data
         /// <value>
         /// the Tags.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Tag> Tags { get; set; }
 
         /// <summary>
@@ -2233,6 +2765,8 @@ namespace Rock.Data
         /// <value>
         /// the Tagged Items.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<TaggedItem> TaggedItems { get; set; }
 
         /// <summary>
@@ -2241,6 +2775,8 @@ namespace Rock.Data
         /// <value>
         /// the Users.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<UserLogin> UserLogins { get; set; }
 
         /// <summary>
@@ -2249,6 +2785,8 @@ namespace Rock.Data
         /// <value>
         /// The web farm nodes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WebFarmNode> WebFarmNodes { get; set; }
 
         /// <summary>
@@ -2257,6 +2795,8 @@ namespace Rock.Data
         /// <value>
         /// The web farm node metrics.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WebFarmNodeMetric> WebFarmNodeMetrics { get; set; }
 
         /// <summary>
@@ -2265,6 +2805,8 @@ namespace Rock.Data
         /// <value>
         /// The web farm node logs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WebFarmNodeLog> WebFarmNodeLogs { get; set; }
 
         /// <summary>
@@ -2273,6 +2815,8 @@ namespace Rock.Data
         /// <value>
         /// The workflows.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Rock.Model.Workflow> Workflows { get; set; }
 
         /// <summary>
@@ -2281,6 +2825,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow actions.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowAction> WorkflowActions { get; set; }
 
         /// <summary>
@@ -2289,6 +2835,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow action forms.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowActionForm> WorkflowActionForms { get; set; }
 
         /// <summary>
@@ -2297,6 +2845,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow action form attributes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowActionFormAttribute> WorkflowActionFormAttributes { get; set; }
 
         /// <summary>
@@ -2305,6 +2855,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow action types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowActionType> WorkflowActionTypes { get; set; }
 
         /// <summary>
@@ -2313,6 +2865,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow activities.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowActivity> WorkflowActivities { get; set; }
 
         /// <summary>
@@ -2321,6 +2875,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow form builder templates.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowFormBuilderTemplate> WorkflowFormBuilderTemplates { get; set; }
 
         /// <summary>
@@ -2329,6 +2885,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow action form sections.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowActionFormSection> WorkflowActionFormSections { get; set; }
 
         /// <summary>
@@ -2337,6 +2895,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow activity types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowActivityType> WorkflowActivityTypes { get; set; }
 
         /// <summary>
@@ -2345,6 +2905,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow logs.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowLog> WorkflowLogs { get; set; }
 
         /// <summary>
@@ -2353,6 +2915,8 @@ namespace Rock.Data
         /// <value>
         /// The entity type workflow triggers.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowTrigger> WorkflowTriggers { get; set; }
 
         /// <summary>
@@ -2361,6 +2925,8 @@ namespace Rock.Data
         /// <value>
         /// The workflow types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<WorkflowType> WorkflowTypes { get; set; }
 
         /// <summary>
@@ -2369,6 +2935,8 @@ namespace Rock.Data
         /// <value>
         /// The person alias personalizations.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonAliasPersonalization> PersonAliasPersonalizations { get; set; }
 
         /// <summary>
@@ -2377,6 +2945,8 @@ namespace Rock.Data
         /// <value>
         /// The personalized entities.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonalizedEntity> PersonalizedEntities { get; set; }
 
         /// <summary>
@@ -2385,6 +2955,8 @@ namespace Rock.Data
         /// <value>
         /// The request filters.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<RequestFilter> RequestFilters { get; set; }
 
         /// <summary>
@@ -2393,6 +2965,8 @@ namespace Rock.Data
         /// <value>
         /// The segments.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<PersonalizationSegment> Segments { get; set; }
 
         /// <summary>
@@ -2401,6 +2975,8 @@ namespace Rock.Data
         /// <value>
         /// The snippets.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<Snippet> Snippets { get; set; }
 
         /// <summary>
@@ -2409,6 +2985,8 @@ namespace Rock.Data
         /// <value>
         /// The snippet types.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<SnippetType> SnippetTypes { get; set; }
 
         /// <summary>
@@ -2417,6 +2995,8 @@ namespace Rock.Data
         /// <value>
         /// The analytics source zip codes.
         /// </value>
+        [RockObsolete( "1.16.4" )]
+        [Obsolete( "Use service instance instead." )]
         public DbSet<AnalyticsSourceZipCode> AnalyticsSourceZipCodes { get; set; }
 
         #endregion

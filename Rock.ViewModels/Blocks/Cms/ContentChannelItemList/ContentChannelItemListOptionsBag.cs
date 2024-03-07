@@ -26,36 +26,84 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemList
     /// </summary>
     public class ContentChannelItemListOptionsBag
     {
+        /// <summary>
+        ///
+        /// </summary>
         public string ContentItemName { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public bool IncludeTime { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public bool IsManuallyOrdered { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public bool IsContentLibraryEnabled { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public ContentChannelDateType DateType { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public int ContentChannelId { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public Guid LibraryLicenseGuid { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public string LibraryLicenseName { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public bool ShowFilters { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public bool ShowReorderColumn { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public bool ShowPriorityColumn { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public bool ShowStartDateTimeColumn { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public bool ShowExpireDateTimeColumn { get; set; }
-
+        
+        /// <summary>
+        ///
+        /// </summary>
         public bool ShowStatusColumn { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public bool ShowSecurityColumn { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public bool ShowOccurrencesColumn { get; set; }
     }
 }

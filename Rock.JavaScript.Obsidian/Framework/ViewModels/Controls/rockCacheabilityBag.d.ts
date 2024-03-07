@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { RockCacheabilityType } from "@Obsidian/Enums/Controls/rockCacheabilityType";
 import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
 
 /** Represents the Cache-Control settings used inside Rock. */
@@ -29,7 +30,7 @@ export type RockCacheabilityBag = {
     maxAge?: TimeIntervalBag | null;
 
     /** Gets or sets the type of the rock cacheability type. */
-    rockCacheabilityType: number;
+    rockCacheabilityType: RockCacheabilityType;
 
     /** Gets or sets the shared maximum age. */
     sharedMaxAge?: TimeIntervalBag | null;

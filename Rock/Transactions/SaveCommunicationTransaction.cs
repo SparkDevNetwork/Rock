@@ -55,26 +55,31 @@ namespace Rock.Transactions
         public List<RockMessageRecipient> Recipients { get; set; }
 
         /// <summary>
-        /// Gets from PersonId of the person sending the email
+        /// Gets or sets the from person identifier. Setting this will ensure we associate the correct sender
+        /// with the communication, if there are multiple people with the same <see cref="FromAddress"/>.
+        /// <para>
+        /// If <see cref="FromName"/> or <see cref="FromAddress"/> are not set and a person matching this
+        /// identifier is found, those property values will be set from this matching person.
+        /// </para>
         /// </summary>
         /// <value>
-        /// From person identifier.
+        /// The from person identifier.
         /// </value>
-        public int? FromPersonId { get; private set; }
+        public int? FromPersonId { get; set; }
 
         /// <summary>
-        /// If <see cref="FromPersonId"/> is not specified, this is the name used for From address
+        /// Gets or sets the from name.
         /// </summary>
         /// <value>
-        /// From name.
+        /// The from name.
         /// </value>
         public string FromName { get; set; }
 
         /// <summary>
-        /// If <see cref="FromPersonId"/> is not specified, this is the email address used for From address
+        /// Gets or sets the from address.
         /// </summary>
         /// <value>
-        /// From address.
+        /// The from address.
         /// </value>
         public string FromAddress { get; set; }
 
@@ -239,24 +244,33 @@ namespace Rock.Transactions
             {
                 var personService = new PersonService( rockContext );
                 int? senderPersonAliasId = null;
-                if ( FromPersonId.HasValue )
+                if ( this.FromPersonId.HasValue )
                 {
-                    var sender = personService.GetNoTracking( FromPersonId.Value );
+                    var sender = personService.GetNoTracking( this.FromPersonId.Value );
                     senderPersonAliasId = sender?.PrimaryAliasId;
+
+                    if ( this.FromName.IsNullOrWhiteSpace() )
+                    {
+                        this.FromName = sender?.FullName;
+                    }
+
+                    if ( this.FromAddress.IsNullOrWhiteSpace() )
+                    {
+                        this.FromAddress = sender?.Email;
+                    }
                 }
                 else
                 {
-                    if ( FromAddress.IsNotNullOrWhiteSpace() )
+                    if ( this.FromAddress.IsNotNullOrWhiteSpace() )
                     {
                         var sender = personService
                             .Queryable().AsNoTracking()
-                            .Where( p => p.Email == FromAddress )
+                            .Where( p => p.Email == this.FromAddress )
                             .FirstOrDefault();
                         senderPersonAliasId = sender?.PrimaryAliasId;
                     }
                 }
 
-                Rock.Model.Communication communication;
                 if ( this.Recipients?.Any() != true && _recipientEmailAddresses != null )
                 {
                     this.Recipients = new List<RockMessageRecipient>();
@@ -281,13 +295,13 @@ namespace Rock.Transactions
                         SystemCommunicationId = this.SystemCommunicationId
                     };
 
-                    communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );
+                    var communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );
 
                     if ( communication != null  )
                     {
-                        if ( communication.Recipients.Count() == 1 && RecipientGuid.HasValue )
+                        if ( communication.Recipients.Count() == 1 && this.RecipientGuid.HasValue )
                         {
-                            communication.Recipients.First().Guid = RecipientGuid.Value;
+                            communication.Recipients.First().Guid = this.RecipientGuid.Value;
                         }
                     }
 
