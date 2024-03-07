@@ -66,6 +66,17 @@ namespace Rock.Blocks
         /// </summary>
         private ILogger _logger;
 
+        /// The serializer settings to use when encoding block configurationd ata.
+        /// </summary>
+        private static readonly Lazy<Newtonsoft.Json.JsonSerializerSettings> _serializerSettings = new Lazy<Newtonsoft.Json.JsonSerializerSettings>( () =>
+        {
+            var settings = Rock.JsonExtensions.CreateSerializerSettings( false, true, true );
+
+            settings.StringEscapeHandling = Newtonsoft.Json.StringEscapeHandling.EscapeHtml;
+
+            return settings;
+        } );
+
         #endregion
 
         #region Properties
@@ -381,6 +392,12 @@ namespace Rock.Blocks
                 rootElementClasses += " obsidian-block-has-placeholder";
             }
 
+            // If any text value contains "</script>" then it will be interpreted
+            // by the browser as the end of the main script tag, even if it is
+            // inside a JavaScript string. Use custom JSON serializer settings
+            // that have an option enabled to escape HTML characters in strings.
+            var configJson = Newtonsoft.Json.JsonConvert.SerializeObject( config, _serializerSettings.Value );
+
             var sb = new StringBuilder();
 
             sb.AppendLine( $"<div id=\"{rootElementId}\" class=\"{rootElementClasses}\" style=\"{rootElementStyle.Trim()}\">" );
@@ -395,7 +412,7 @@ namespace Rock.Blocks
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
-        module.initializeBlock({config.ToCamelCaseJson( false, true )});
+        module.initializeBlock({configJson});
     }});
 }});
 </script>" );
