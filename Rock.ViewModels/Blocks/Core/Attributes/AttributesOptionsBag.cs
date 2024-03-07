@@ -23,37 +23,32 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Core.Attributes
 {
     /// <summary>
-    /// The additional configuration options for the Content Channel Item List block.
+    /// The additional configuration options for the Attributes block.
     /// </summary>
     public class AttributesOptionsBag
     {
         /// <summary>
-        /// 
+        /// The names of the columns that should be hidden based on the configuration
         /// </summary>
         public List<string> HideColumns { get; set; }
 
         /// <summary>
-        /// 
+        /// Identifier for the EntityType that the attributes are for
         /// </summary>
         public Guid? EntityTypeGuid { get; set; }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public int AttributeEntityTypeId { get; set; }
-
-        /// <summary>
-        /// 
+        /// Whether or not to show the "Show In Grid" checkbox in the attribute editor
         /// </summary>
         public bool EnableShowInGrid { get; set; }
 
         /// <summary>
-        /// 
+        /// Whether or not to allow attribute values to be set
         /// </summary>
         public bool AllowSettingOfValues { get; set; }
 
         /// <summary>
-        /// 
+        /// The list of EntityTypes that can be chosen from
         /// </summary>
         public List<ListItemBag> EntityTypes { get; set; }
     }

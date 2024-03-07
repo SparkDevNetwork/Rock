@@ -211,11 +211,11 @@
      * Determine the class to apply to each row
      */
     function getRowClass(row: Record<string, unknown>): string | undefined {
-        if (typeof props.rowClass == "string") {
+        if (typeof props.rowClass === "string") {
             return props.rowClass;
         }
 
-        if (typeof props.rowClass == "function") {
+        if (typeof props.rowClass === "function") {
             return props.rowClass(row);
         }
 

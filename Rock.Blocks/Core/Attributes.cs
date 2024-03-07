@@ -152,7 +152,6 @@ namespace Rock.Blocks.Core
             box.ExpectedRowCount = null;
             box.Options = new AttributesOptionsBag
             {
-                AttributeEntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>().Id,
                 EntityTypeGuid = entityTypeGuid,
                 EntityTypes = !entityTypeGuid.HasValue ? GetEntityTypes() : null,
                 HideColumns = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).SplitDelimitedValues().ToList(),
