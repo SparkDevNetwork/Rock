@@ -265,7 +265,8 @@
             const box: SystemCommunicationPreviewInitializationBox = {
                 id: systemCommunicationId.value,
                 targetPersonId: targetPersonId.value,
-                publicationDate: publicationDate
+                publicationDate: publicationDate,
+                hasSendDate: false
             };
 
             const result = await invokeBlockAction<SystemCommunicationPreviewInitializationBox>("SetSystemCommunication", { box });
@@ -312,7 +313,8 @@
             const box: SystemCommunicationPreviewInitializationBox = {
                 id: systemCommunicationId.value,
                 email: testEmail.value,
-                targetPersonId: targetPersonId.value
+                targetPersonId: targetPersonId.value,
+                hasSendDate: false
             };
 
             const result = await invokeBlockAction("SendTestEmail", { box });
