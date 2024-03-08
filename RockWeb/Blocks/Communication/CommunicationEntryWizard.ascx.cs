@@ -415,6 +415,11 @@ namespace RockWeb.Blocks.Communication
                 // If one of the "Is Bulk" dependencies change, then show or hide the bulk option.
                 ShowHideIsBulkOption();
             }
+            var recipientPreferenceEntryDependencies = new List<string> { nameof( SelectedCommunicationType ) };
+            if ( recipientPreferenceEntryDependencies.Contains( e.PropertyName ) )
+            {
+                ShowHideRecipientPreferenceMessage();
+            }
         }
 
         private void RegisterTaskActivityScript()
@@ -1138,7 +1143,7 @@ function onTaskCompleted( resultData )
                         if ( recipientPerson.EmailPreference == EmailPreference.NoMassEmails )
                         {
                             alertClassEmail = "js-no-bulk-email";
-                            if ( swBulkCommunication.Checked )
+                            if ( swBulkCommunication.Checked || _isBulkCommunicationForced )
                             {
                                 // This is a bulk email and user does not want bulk emails
                                 alertClassEmail += " text-danger";
@@ -1214,7 +1219,7 @@ function onTaskCompleted( resultData )
                         if ( recipientPerson.EmailPreference == EmailPreference.NoMassEmails )
                         {
                             alertClassEmail = "js-no-bulk-email";
-                            if ( swBulkCommunication.Checked )
+                            if ( swBulkCommunication.Checked || _isBulkCommunicationForced )
                             {
                                 // This is a bulk email and user does not want bulk emails
                                 alertClassEmail += " text-danger";
@@ -1542,6 +1547,7 @@ function onTaskCompleted( resultData )
             pnlIndividualRecipientPanel.Visible = true;
             SetNavigationHistory( pnlIndividualRecipientPanel );
         }
+
         #endregion Recipient Selection
 
         #region Communication Delivery, Medium Selection
@@ -1721,6 +1727,24 @@ function onTaskCompleted( resultData )
         protected void lbScheduleSend_Click( object sender, EventArgs e )
         {
             mdScheduleSend.Show();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblCommunicationMedium control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblCommunicationMedium_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowHideRecipientPreferenceMessage();
+        }
+
+        /// <summary>
+        /// Shows or hides the recipient preference message.
+        /// </summary>
+        private void ShowHideRecipientPreferenceMessage()
+        {
+            spnRecipientPreferenceNotification.Visible = this.SelectedCommunicationType == CommunicationType.RecipientPreference;
         }
 
         #endregion Communication Delivery, Medium Selection
@@ -2599,12 +2623,22 @@ function onTaskCompleted( resultData )
         /// </summary>
         private void ShowHideIsBulkOption()
         {
-            if ( this.SelectedCommunicationType == CommunicationType.Email
+            /*
+                3/8/2024 - JMH
+
+                The bulk option should be hidden if the selected communication type
+                *includes* the email medium (CommunicationType.Email or CommunicationType.RecipientPreference)
+                and if the number of recipients exceeds the bulk email threshold.
+
+                Reason: Bulk Option Available When Threshold Exceeded
+                (see https://app.asana.com/0/1202677198689598/1206625292664073/f)
+             */
+            var isEmailCommunicationTypeSelected = this.SelectedCommunicationType == CommunicationType.Email
+                || this.SelectedCommunicationType == CommunicationType.RecipientPreference;
+            if ( isEmailCommunicationTypeSelected
                  && GetEmailMediumWithActiveTransport() is Rock.Communication.Medium.Email emailMediumComponent
                  && emailMediumComponent.IsBulkEmailThresholdExceeded( this.RecipientCount ) )
             {
-                // Override to unchecked when bulk communication is prevented.
-                swBulkCommunication.Checked = false;
                 swBulkCommunication.Visible = false;
 
                 // Force bulk communication since the recipient count has exceeded the threshold.
