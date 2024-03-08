@@ -121,6 +121,7 @@
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\ScheduleList\ScheduleListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignalTypeList\SignalTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
     <Compile Include="Blocks\Core\SignatureDocumentTemplateList\SignatureDocumentTemplateListOptionsBag.cs" />

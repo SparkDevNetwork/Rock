@@ -135,6 +135,7 @@
     <Compile Include="Core\NotificationMessageList.cs" />
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
+    <Compile Include="Core\ScheduleList.cs" />
     <Compile Include="Core\SignalTypeList.cs" />
     <Compile Include="Core\SignatureDocumentTemplateList.cs" />
     <Compile Include="Core\TagList.cs" />
