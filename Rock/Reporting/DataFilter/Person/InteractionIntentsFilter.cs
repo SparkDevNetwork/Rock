@@ -104,23 +104,13 @@ namespace Rock.Reporting.DataFilter.Person
 
         #region Properties
 
-        /// <summary>
-        /// Gets the entity type that the filter applies to.
-        /// </summary>
-        /// <value>
-        /// The namespace-qualified Type name of the entity that the filter applies to, or an empty string if the filter applies to all entities.
-        /// </value>
+        /// <inheritdoc/>
         public override string AppliesToEntityType
         {
             get { return "Rock.Model.Person"; }
         }
 
-        /// <summary>
-        /// Gets the name of the section in which the filter should be displayed in a browsable list.
-        /// </summary>
-        /// <value>
-        /// The section name.
-        /// </value>
+        /// <inheritdoc/>
         public override string Section
         {
             get { return "Additional Filters"; }
@@ -130,24 +120,13 @@ namespace Rock.Reporting.DataFilter.Person
 
         #region Public Methods
 
-        /// <summary>
-        /// Gets the user-friendly title used to identify the filter component.
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <returns>The name of the filter.</returns>
+        /// <inheritdoc/>
         public override string GetTitle( Type entityType )
         {
             return "Interaction Intents";
         }
 
-        /// <summary>
-        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
-        /// referencing this property.
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <returns>The client format script.</returns>
+        /// <inheritdoc/>
         public override string GetClientFormatSelection( Type entityType )
         {
             return @"
@@ -178,12 +157,7 @@ function() {
 ";
         }
 
-        /// <summary>
-        /// Provides a user-friendly description of the specified filter values.
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <param name="selection">A formatted string representing the filter settings.</param>
-        /// <returns>A string containing the user-friendly description of the settings.</returns>
+        /// <inheritdoc/>
         public override string FormatSelection( Type entityType, string selection )
         {
             var selectionConfig = SelectionConfig.Parse( selection );
@@ -230,13 +204,7 @@ function() {
             return resultSb.ToString();
         }
 
-        /// <summary>
-        /// Creates the model representation of the child controls used to display and edit the filter settings.
-        /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <param name="filterControl">The control that serves as the container for the filter controls.</param>
-        /// <returns>The array of new controls created to implement the filter.</returns>
+        /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
@@ -300,14 +268,7 @@ function() {
             return controls.ToArray();
         }
 
-        /// <summary>
-        /// Renders the child controls used to display and edit the filter settings for HTML presentation.
-        /// Implement this version of RenderControls if your DataFilterComponent works the same in all FilterModes
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <param name="filterControl">The control that serves as the container for the controls being rendered.</param>
-        /// <param name="writer">The writer being used to generate the HTML for the output page.</param>
-        /// <param name="controls">The model representation of the child controls for this component.</param>
+        /// <inheritdoc/>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             // Get references to the controls we created in CreateChildControls.
@@ -360,13 +321,7 @@ function() {
             writer.RenderEndTag(); // end second row
         }
 
-        /// <summary>
-        /// Gets the selection.
-        /// Implement this version of GetSelection if your DataFilterComponent works the same in all FilterModes
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <param name="controls">The collection of controls used to set the filter values.</param>
-        /// <returns>A formatted string representing the filter settings.</returns>
+        /// <inheritdoc/>
         public override string GetSelection( Type entityType, Control[] controls )
         {
             // Get references to the controls we created in CreateChildControls.
@@ -384,13 +339,7 @@ function() {
             return selectionConfig.ToJson();
         }
 
-        /// <summary>
-        /// Sets the selection.
-        /// Implement this version of SetSelection if your DataFilterComponent works the same in all FilterModes
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <param name="selection">A formatted string representing the filter settings.</param>
+        /// <inheritdoc/>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             var selectionConfig = SelectionConfig.Parse( selection );
@@ -407,14 +356,7 @@ function() {
             sdrpDateRange.DelimitedValues = selectionConfig.DelimitedDateRangeValues;
         }
 
-        /// <summary>
-        /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.
-        /// </summary>
-        /// <param name="entityType">The type of entity in the result set.</param>
-        /// <param name="serviceInstance">A service instance that can be queried to obtain the result set.</param>
-        /// <param name="parameterExpression">The input parameter that will be injected into the filter expression.</param>
-        /// <param name="selection">A formatted string representing the filter settings.</param>
-        /// <returns>A Linq Expression that can be used to filter an IQueryable.</returns>
+        /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
             var rockContext = ( RockContext ) serviceInstance.Context;
