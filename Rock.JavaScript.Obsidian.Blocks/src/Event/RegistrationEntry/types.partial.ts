@@ -169,6 +169,11 @@ export class Currency {
 
     // #region Properties
 
+    /** Use this sparingly as it can produce rounding errors, of which this Currency type was created to avoid. */
+    get toNumber(): number {
+        return this.units * Math.pow(10, -1 * this.precision);
+    }
+
     get units(): number {
         return this._currencyParts.units;
     }
@@ -612,6 +617,28 @@ export class Currency {
         const { units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
 
         return this.units < otherUnits;
+    }
+
+    /**
+     * Determines if this currency is greater than to another currency.
+     *
+     * @param currency The currency to which to compare.
+     * @returns `true` if this currency is greater than the provided currency; otherwise, `false` is returned.
+     */
+    isGreaterThan(currency: Currency | number): boolean {
+        const $return = ((result: boolean): boolean => {
+            this._currencyOptions.isLoggingEnabled && console.debug(`${this} < ${currency} = ${result}`);
+            return result;
+        }).bind(this);
+
+        if (this.isZero && Currency.isCurrencyZero(currency)) {
+            // 0 > 0 (false)
+            return $return(false);
+        }
+
+        const { units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
+
+        return this.units > otherUnits;
     }
 
     /** Gets the absolute value of this currency. */

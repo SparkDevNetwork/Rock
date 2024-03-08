@@ -5,15 +5,15 @@
            title="Configure Payment Plan"
            @save="onConfigurePaymentPlan"
            @closeModal="onUnconfigurePaymentPlan">
-        <div>moneyDesiredPerPaymentsRemainder {{ moneyDesiredPerPaymentsRemainder }}</div>
-        <div>moneyRemainingAmount {{ moneyRemainingAmount }}</div>
-        <div>moneyDesiredAmountToPayToday {{ moneyDesiredAmountToPayToday }}</div>
-        <div>moneyInProgressAmountToPayToday {{ moneyInProgressAmountToPayToday }}</div>
+        <!-- <div>moneyDesiredPerPaymentsRemainder {{ remainderAmountAfterPayments }}</div>
+        <div>moneyRemainingAmount {{ registrationRemainingAmount }}</div>
+        <div>moneyDesiredAmountToPayToday {{ amountToPayToday }}</div>
+        <div>moneyInProgressAmountToPayToday {{ calculatedAmountToPayToday }}</div> -->
         <template v-if="paymentDeadlineDate">
-            The total amount of {{ moneyTotalAmount }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
+            The total amount of {{ originalRegistrationAmount }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
         </template>
         <template v-else>
-            The total amount due is {{ moneyTotalAmount }}.
+            The total amount due is {{ originalRegistrationAmount }}.
         </template>
         <div class="row">
             <div class="col">
@@ -26,11 +26,11 @@
 
         <div :class="['row', !paymentFrequencyGuid ? 'invisible' : '']">
             <div class="col-sm-6">
-                <CurrencyBox v-model="internalDesiredAmountToPayToday"
+                <CurrencyBox v-model="amountToPayTodayAsNumber"
                              label="Amount To Pay Today"
-                             :rules="['required', validateAmountToPayTodayRule]">
+                             :rules="['required', validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining]">
                     <template #append>
-                        <small>A minimum of {{ moneyMinimumRemainingAmount }} is due today.</small>
+                        <small>A minimum of {{ calculatedMinimumAmountToPayToday }} is due today.</small>
                     </template>
                 </CurrencyBox>
             </div>
@@ -57,16 +57,14 @@
 
             <div class="col-sm-6">
                 <div>{{ selectedFrequencyText }} Payment Amount</div>
-                <div>{{ moneyAmountPerPayment }} x {{ numberOfPaymentsAsInteger }}</div>
+                <div>{{ calculatedAmountPerPayment }} x {{ numberOfPaymentsAsInteger }}</div>
             </div>
         </div>
     </Modal>
 </template>
 
-<style scoped></style>
-
 <script setup lang="ts">
-    import { PropType, nextTick, computed, ref, watch } from "vue";
+    import { PropType, computed, ref, watch, WatchStopHandle, nextTick } from "vue";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -102,9 +100,8 @@
 
     const paymentFrequencyGuid = ref<Guid>(registrationEntryState.paymentPlanFrequencyGuid ?? "");
     const numberOfPayments = ref<string>("2");
-    const internalDesiredAmountToPayToday = ref<number>(registrationEntryState.amountToPayToday);
-    const moneyInProgressAmountToPayToday = ref<Currency>(new Currency(registrationEntryState.amountToPayToday, currencyOptions));
-    const moneyAdded = ref<Currency>(new Currency(0, currencyOptions));
+    const amountToPayTodayAsNumber = ref<number>(registrationEntryState.amountToPayToday);
+    const amountToPayTodayAdjustment = ref<Currency>(new Currency(0, currencyOptions));
 
     //#endregion
 
@@ -116,45 +113,60 @@
         return registrationEntryState.viewModel.paymentPlanFrequencies?.find(l => l.value === paymentFrequencyGuid.value)?.text ?? "";
     });
 
+    const amountToPayToday = computed<Currency>(() => new Currency(amountToPayTodayAsNumber.value, currencyOptions));
+
     const actualAmountDueTodayMessage = computed<string>(() => {
         let suffix = "";
-        if (!moneyAdded.value.isZero) {
-            suffix = ` (${moneyAdded.value} will be added to evenly distribute remaining payments)`;
+        if (!amountToPayTodayAdjustment.value.isZero) {
+            suffix = ` (${amountToPayTodayAdjustment.value} will be added to evenly distribute remaining payments)`;
         }
-        return `${moneyInProgressAmountToPayToday.value}${suffix}`;
+        return `${amountToPayToday.value}${suffix}`;
     });
 
-    const moneyDesiredAmountToPayToday = computed<Currency>(() => new Currency(internalDesiredAmountToPayToday.value, currencyOptions));
+    // /**
+    //  * This is the amount to pay today.
+    //  * It is initially entered by the individual,
+    //  * but is automatically updated to
+    //  */
+    // const amountToPayToday = computed<Currency>(() => new Currency(internalDesiredAmountToPayToday.value, currencyOptions));
 
-    const moneyRemainingAmount = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions));
-    //2.50
-    const moneyDesiredPerPaymentsRemainder = computed<Currency>(() => {
-        if (numberOfPaymentsAsInteger.value === 0 || moneyRemainingAmount.value.isEqualTo(0)) {
-            return new Currency(0, currencyOptions);
-        }
+    /**
+     * This is the total amount remaining for the registration to be considered fully paid.
+     */
+    const registrationRemainingAmount = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions));
 
-        // excessCents = temporarilyRemoveDec(remaining - desiredOneTimePayment) mod numberPayments
-        // This is the smallest fractional unit that needs to be subtracted from the original number to be able to divide evenly by numberPayments.
-        // (numberPayments - excessCents) is the smallest fractional unit that needs to be added to the original number to be able to divide evenly by numberPayments.
-        return moneyRemainingAmount.value.subtract(moneyDesiredAmountToPayToday.value).mod(numberOfPaymentsAsInteger.value);
-    });
+    // /**
+    //  * $remainderAmountAfterPayments = ($registrationRemainingAmount - $amountToPayToday) % numberOfPayments
+    //  *
+    //  * This is the amount left over after the one-time $amountToPayToday
+    //  * AND after the recurring payments are applied.
+    //  *
+    //  * This amount needs to be included in the $amountToPayToday entered by the individual
+    //  * so that the $amountPerPayment can be a single recurring number.
+    //  */
+    // const remainderAmountAfterPayments = computed<Currency>(() => {
+    //     if (numberOfPaymentsAsInteger.value === 0 || registrationRemainingAmount.value.isEqualTo(0)) {
+    //         // Short-circuit calcs if the number of payments is 0
+    //         // or if the remaining registration amount is 0.
+    //         return new Currency(0, currencyOptions);
+    //     }
+
+    //     return registrationRemainingAmount.value.subtract(amountToPayToday.value).mod(numberOfPaymentsAsInteger.value);
+    // });
 
     /** Gets the minimum remaining amount to be paid today, before the recurring payments, in order to get evenly split recurring payments. */
-    const moneyMinimumRemainingAmount = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.minimumRemainingAmount, currencyOptions));
+    const calculatedMinimumAmountToPayToday = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.minimumRemainingAmount, currencyOptions));
 
-    /** Gets the total amount for the registration, including paid amounts. */
-    const moneyTotalAmount = computed<Currency>(() => {
-        console.debug("marker");
-        return new Currency(readonlyRegistrationCostSummary.value.paidAmount, currencyOptions).add(new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions));
-    });
+    // /** Gets the original amount for the registration, including paid amounts. */
+    const originalRegistrationAmount = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.paidAmount, currencyOptions).add(new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions)));
 
-    /** Gets the amount per recurring payment. */
-    const moneyAmountPerPayment = computed<Currency>(() => {
-        if (numberOfPaymentsAsInteger.value === 0) {
+    ///** Gets the amount per recurring payment. */
+    const calculatedAmountPerPayment = computed<Currency>(() => {
+        if (numberOfPaymentsAsInteger.value === 0 || registrationRemainingAmount.value.isZero) {
             return new Currency(0, currencyOptions);
         }
         else {
-            return new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions).subtract(moneyInProgressAmountToPayToday.value).divide(numberOfPaymentsAsInteger.value).quotient;
+            return new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions).subtract(amountToPayToday.value).divide(numberOfPaymentsAsInteger.value).quotient;
         }
     });
 
@@ -244,9 +256,18 @@
 
     //#region Functions
 
-    function validateAmountToPayTodayRule(value: unknown, params?: unknown[]): ValidationResult {
-        if (moneyInProgressAmountToPayToday.value.isLessThan(moneyMinimumRemainingAmount.value)) {
+    function validateAmountToPayTodayRule(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (amountToPayToday.value.isLessThan(calculatedMinimumAmountToPayToday.value)) {
             return "must be greater than or equal to the minimum amount";
+        }
+        else {
+            return true;
+        }
+    }
+
+    function validateAmountToPayTodayLessThanRemaining(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (registrationRemainingAmount.value.isLessThan(amountToPayToday.value)) {
+            return "must be less than the minimum amount";
         }
         else {
             return true;
@@ -260,9 +281,9 @@
     function onConfigurePaymentPlan(): void {
         // Set the values on the shared state.
         // TODO JMH How can we ensure the correct (non-rounding error) number is used here?
-        registrationEntryState.amountToPayToday = Number(moneyInProgressAmountToPayToday.value.toString());
+        registrationEntryState.amountToPayToday = Number(amountToPayToday.value.toString());
         registrationEntryState.paymentPlanFrequencyGuid = paymentFrequencyGuid.value;
-        registrationEntryState.paymentPlanAmountPerPayment = Number(moneyAmountPerPayment.value.toString());
+        registrationEntryState.paymentPlanAmountPerPayment = Number(calculatedAmountPerPayment.value.toString());
         registrationEntryState.paymentPlanNumberOfPayments = numberOfPaymentsAsInteger.value;
         registrationEntryState.paymentPlanFrequencyText = selectedFrequencyText.value;
 
@@ -287,28 +308,81 @@
 
     //#region Watchers
 
-    watch([moneyDesiredPerPaymentsRemainder, moneyDesiredAmountToPayToday], ([newCents, newAmountToPay]: [Currency, Currency], [oldCents, oldAmountToPay]: [Currency, Currency]) => {
-        if (newCents.isNotEqualTo(oldCents) || newAmountToPay.isNotEqualTo(oldAmountToPay)) {
-            // Whenever amountToPayToday is changed,
-            // TODO JMH Figure out how we update the remaining amount message with this crazy loop.
-            // check if it needs to be updated to another value
-            // so that the amount per payment is an even number.
-            if (moneyDesiredPerPaymentsRemainder.value.isNotEqualTo(0)) {
-                // The amountToPay needs to be updated. Do it after the next render so the value has time to update.
-                moneyInProgressAmountToPayToday.value = moneyDesiredAmountToPayToday.value.add(moneyDesiredPerPaymentsRemainder.value);
-                moneyAdded.value = moneyDesiredPerPaymentsRemainder.value;
+    // watch([remainderAmountAfterPayments, amountToPayToday], ([newCents, newAmountToPay]: [Currency, Currency], [oldCents, oldAmountToPay]: [Currency, Currency]) => {
+    //     if (newCents.isNotEqualTo(oldCents) || newAmountToPay.isNotEqualTo(oldAmountToPay)) {
+    //         // Whenever amountToPayToday is changed,
+    //         // check if it needs to be updated to another value
+    //         // so that the amount per payment is an even number.
+    //         let newAmountToPay: Currency | null;
+    //         if (remainderAmountAfterPayments.value.isNotEqualTo(0)) {
+    //             // The amountToPay needs to be updated. Do it after the next render so the value has time to update.
+    //             newAmountToPay = amountToPayToday.value.add(remainderAmountAfterPayments.value);
+
+    //             // Store the remaining amount for display.
+    //             // TODO JMH verify this is correct; especially after changing the value.
+    //             moneyAdded.value = remainderAmountAfterPayments.value;
+    //         }
+    //         else {
+    //             newAmountToPay = amountToPayToday.value;
+    //         }
+
+    //         // Make sure the new amount is not greater than the remaining amount.
+    //         if (newAmountToPay.isGreaterThan(registrationRemainingAmount.value)) {
+    //             newAmountToPay = registrationRemainingAmount.value;
+    //         }
+
+    //         calculatedAmountToPayToday.value = newAmountToPay;
+
+    //         if (calculatedAmountToPayToday.value.isNotEqualTo(internalDesiredAmountToPayToday.value)) {
+    //             // The "Amount To Pay Today" amount is different than the calculated amount,
+    //             // so update the "Amount To Pay Today" amount after the next render.
+    //             nextTick(() => {
+    //                 internalDesiredAmountToPayToday.value = calculatedAmountToPayToday.value.toNumber;
+    //             });
+    //         }
+    //     }
+    // });
+
+    function watchAmountToPayToday(): WatchStopHandle {
+        return watch(amountToPayToday, () => { // Watch the computed property as this function relies on the Currency value of the input.
+            debugger;
+            // Calc remainder and stuff.
+            const remainder = registrationRemainingAmount.value.subtract(amountToPayToday.value).mod(numberOfPaymentsAsInteger.value);
+            let newAmountToPayToday: Currency | null = null;
+
+            if (!remainder.isZero) { // There is a remainder.
+                amountToPayTodayAdjustment.value = remainder;
+
+                // Add the remainder to the amount to pay today bound to the currency box.
+                newAmountToPayToday = amountToPayToday.value.add(remainder);
             }
             else {
-                moneyInProgressAmountToPayToday.value = moneyDesiredAmountToPayToday.value;
+                amountToPayTodayAdjustment.value = new Currency(0, currencyOptions);
             }
 
-            if (moneyInProgressAmountToPayToday.value.isNotEqualTo(internalDesiredAmountToPayToday.value)) {
+            // Prevent the adjusted amount to be more than the registration remaining amount.
+            if (newAmountToPayToday?.isGreaterThan(registrationRemainingAmount.value)) {
+                newAmountToPayToday = registrationRemainingAmount.value;
+            }
+
+            // Finally, if there is a new amount to pay today, then update the field.
+            if (newAmountToPayToday) {
+                // Stop watching or updating the field will trigger another recalc.
+                stopAmountToPayTodayWatcher();
+
+                // Set the new amount to pay today.
+                amountToPayTodayAsNumber.value = newAmountToPayToday.toNumber;
+
+                // Watch again after the next render.
                 nextTick(() => {
-                    internalDesiredAmountToPayToday.value = +moneyInProgressAmountToPayToday.value.format("-#,###.%");
+                    stopAmountToPayTodayWatcher = watchAmountToPayToday();
                 });
             }
-        }
-    });
+
+        });
+    }
+
+    let stopAmountToPayTodayWatcher = watchAmountToPayToday();
 
     //#endregion
 </script>
