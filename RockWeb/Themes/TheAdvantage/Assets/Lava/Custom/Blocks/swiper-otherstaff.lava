@@ -1,0 +1,58 @@
+{% contentchannelitem where:'ContentChannelId == 91' iterator:'staff' prefetchattributes:'Role,Photo' %} {% endcontentchannelitem %}
+<div class="container">
+    <div class="pt-3 pt-md-4 text-md-left text-center">
+        <h2>MEET THE REST OF THE TEAM</h2>
+    </div>
+    <div class="py-0 py-md-4 mb-5">
+        <div class="d-sm-block d-none">
+            <div class="row swiper-pastors d-flex flex-wrap h-100">
+                {% for member in staff %}
+                    {% if member.PrimarySlug == PageParameter.PrimarySlug %} {% continue %} {% endif %}
+                    {% assign staffName = member.Title %}
+                    {% assign staffRole = member | Attribute:'Role' %}
+                    {% assign staffPhoto = member | Attribute:'Photo', 'RawValue' | ImageUrl %}
+                    {% assign memberUrl = '/theadvantage/team/' | Append:member.PrimarySlug %}
+
+                    <article class="col-sm-6 col-md-4">
+                        <div class="card border-0 position-relative mb-sm-3" >
+                            <div class="card-content d-flex flex-column">
+                                <img src="{{ staffPhoto }}" class="img-reponsive w-100" alt="{{ staffName }}" loading="lazy">
+                                <div>
+                                    <a href="{{ memberUrl }}" class="stretched-link"><h4 class="mb-2">{{ staffName }}</h4></a>
+                                    <span class="o-80">{{ staffRole }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-sm-none d-block mb-md-5 mb-0 pb-5">
+    {[ swiper spacebetween:'24' centeredslides:'true' centeredslidesbounds:'false' showpagination:'false' shownavigation:'true' slidesperview:'1.25' containerclass:'swiper-pastors' initialslide:'1' breakpoints:'768-3|24,1200-4|24' paginationcolor:'#f38a15' ]}
+        {% for member in staff %}
+            {% if member.PrimarySlug == PageParameter.PrimarySlug %} {% continue %} {% endif %}
+            {% assign staffName = member.Title %}
+            {% assign staffRole = member | Attribute:'Role' %}
+            {% assign staffPhoto = member | Attribute:'Photo', 'RawValue' | ImageUrl %}
+            {% assign memberUrl = './team/' | Append:member.PrimarySlug %}
+
+            [[ slide ]]
+                <div class="card border-0 position-relative" >
+                    <div class="card-content d-flex flex-column">
+                        <div class="position-relative">
+                            <img src="{{ staffPhoto }}" class="img-reponsive w-100" loading="lazy" alt="{{ staffName }}">
+                            <span class="learn-more position-absolute"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                        </div>
+                        <div>
+                            <a href="{{ memberUrl }}" class="stretched-link"><h4 class="mb-2">{{ staffName }}</h4></a>
+                            <span>{{ staffRole }}</span>
+                        </div>
+                    </div>
+                </div>
+            [[ endslide ]]
+        {% endfor %}
+    {[ endswiper ]}
+</div>

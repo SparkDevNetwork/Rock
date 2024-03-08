@@ -1,0 +1,37 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Blocks/web-form.lava' %} {% endcomment %}
+
+{% include '~~/Assets/Lava/Custom/PageTitleOverride.lava' %}
+
+{% stylesheet compile:'less' cacheduration:'3600' %}
+    header > .hero {
+        display: none;
+    }
+
+    body {
+        background: @brand-primary;
+    }
+
+    main.container {
+        background: url('~~/Assets/Images/advantage-header-accent.svg') no-repeat;
+        background-position: top right;
+        background-size: 60vw;
+        background-size: clamp(343px,50vw,767px);
+    }
+
+    .pt-heading {
+        @media(max-width:768px) {
+            padding-top: 6rem;
+        }
+    }
+
+    .webform .row:first-of-type {
+        @media(max-width:768px) {
+            background: #fff;
+        }
+    }
+{% endstylesheet %}
+
+
+<h1 class="hero-page-title display text-center text-white pt-heading" data-aos="fade-up" data-aos-delay="50">{{ CurrentPage.PageTitle }}</h1>
+
+<div data-aos="fade-up" data-aos-delay="100">

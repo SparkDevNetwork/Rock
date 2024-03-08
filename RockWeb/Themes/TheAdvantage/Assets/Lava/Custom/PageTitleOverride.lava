@@ -1,0 +1,7 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/PageTitleOverride.lava' %} {% endcomment %}
+
+{% assign pageTitleOverride = CurrentPage | Attribute:'PageTitleOverride' %}
+
+{% if pageTitleOverride and pageTitleOverride != '' %}
+    {{ pageTitleOverride | SetPageTitle }}
+{% endif %}

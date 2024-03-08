@@ -1,0 +1,11 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Blocks/Investments.lava' %} {% endcomment %}
+
+<div class="bg-payitforward bg-white text-center d-grid place-items-center px-0 w-100">
+    <div class="container py-0 my-0 py-md-5 my-md-5">
+        <div class="text-left text-md-center py-5 my-5 mx-auto px-3 px-md-0" style="max-width: 900px;">
+            <h2 class="h1 mt-0 mt-3">INVESTMENTS</h2>
+            <p>This ministry is currently funded by the generosity of LCBC Church, it’s partners, and others who contribute to this missional effort. Our only requirement for participation is that Advantage partners “pay it forward” by investing in other Pennsylvania church leaders.</p>
+        </div>
+    </div>
+</div>
+

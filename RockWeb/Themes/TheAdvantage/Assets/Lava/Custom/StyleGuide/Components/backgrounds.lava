@@ -1,0 +1,50 @@
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+{% capture blueAccentBackground %}
+    <div class="bg-chevron-blue" style="height: 400px;"></div>
+{% endcapture %}
+
+{% capture whiteAccentBackground %}
+    <div class="bg-chevrons-orange" style="height: 400px"></div>
+{% endcapture %}
+
+{% capture payItForwardBackground %}
+    <div class="bg-payitforward bg-white" style="height: 400px"></div>
+{% endcapture %}
+
+{% capture blueAccentBackgroundEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Blue Accent Advantage Background</blockquote>
+    {{ blueAccentBackground | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+{% capture whiteAccentBackgroundEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Orange Accent Advantage Background</blockquote>
+    {{ whiteAccentBackground | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture payItForwardBackgroundEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Orange Accent Advantage Background</blockquote>
+    {{ payItForwardBackground | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+<h3 class="sg-section-header">Blue Accent Advantage Background</h3>
+{{ blueAccentBackground }}
+{{ blueAccentBackgroundEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Orange Accent Advantage Background</h3>
+    {{ whiteAccentBackground }}
+    {{ whiteAccentBackgroundEscaped }}
+
+<hr class="my-5">
+
+<h3 class="sg-section-header">Pay it Forward Background</h3>
+    {{ payItForwardBackground }}
+    {{ payItForwardBackgroundEscaped }}

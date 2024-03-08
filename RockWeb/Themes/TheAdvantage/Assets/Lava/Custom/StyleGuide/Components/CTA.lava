@@ -1,0 +1,20 @@
+{% capture getStartedCTA %}
+  <div class="cta bg-advantage-dark position-relative text-white p-4">
+    <div class="d-block d-sm-block d-md-block d-lg-flex align-items-center text-center text-lg-left mx-auto mb-4 mb-md-4 mb-lg-2">
+      <h1>GET STARTED.</h1>
+      <p class="mb-0 pb-4 pt-2 py-lg-0 o-80">Interested in learning more about the benefits of The Advantage? We’d love to hear from you and learn more about your church. </p>
+      <a href="#" class="btn btn-primary">Start a Conversation</a>
+    </div>
+    <svg class="position-absolute top-0 right-0" xmlns="http://www.w3.org/2000/svg" width="146" height="146" fill="none"><g fill="#F79428" clip-path="url(#a)"><path d="M97.338 24.338h24.324v24.324L146 24.338V0h-24.338L97.338 24.338ZM97.338 73h24.324v24.338L146 73V48.662h-24.338L97.338 73ZM48.662 73H73v24.338L97.338 73V48.662H73L48.662 73ZM97.338 121.662h24.324V146L146 121.662V97.338h-24.338l-24.324 24.324Z"/><path d="M48.662 24.338H73v24.324l24.338-24.324V0H73L48.662 24.338Z"/><path d="M0 24.338h24.338v24.324l24.324-24.324V0H24.338L0 24.338Z"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h146v146H0z"/></clipPath></defs></svg>
+  </div>
+{% endcapture %}
+
+{% capture getStartedCTAEscaped %}
+  {{ codeOpen }}<blockquote class="mb-0">Get Started CTA</blockquote>
+  {{ getStartedCTA | Escape }}
+  {{ codeClose }}
+{% endcapture %}
+
+<h3 class="sg-section-header">Get Started CTA</h3>
+{{ getStartedCTA }}
+{{ getStartedCTAEscaped }}

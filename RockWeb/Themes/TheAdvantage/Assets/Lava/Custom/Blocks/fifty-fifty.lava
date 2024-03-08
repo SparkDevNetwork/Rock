@@ -1,0 +1,52 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Blocks/About-Us.lava' %} {% endcomment %}
+
+<div class="container">
+  <div class="row px-3 py-2 py-md-5 my-md-5">
+    <div class="col-md-offset-2 col-md-8 text-left text-md-center py-5">
+      <p>
+      About 5 years ago, <strong>LCBC Church, the largest church in the Northeast and one of the 15th largest churches</strong> in America, began to feel an increased burden to introduce more people to Jesus throughout our Commonwealth of 13 million people, with a goal to reach the over 8 million who currently don’t attend church.  
+      </p>
+    </div>
+  </div>
+</div>
+
+<article class="sbs-item d-md-flex flex-row-reverse d-block bg-advantage-orange">
+  <div class="flex-1">
+    <img src="~~/Assets/Images/about-image2.png" class="img-responsive w-100 h-100">
+  </div>
+  <div class="flex-1">
+    <div class="h-100 d-flex justify-content-center align-items-center p-4 py-sm-5 mx-auto" style="max-width: 650px;">
+        <p>LCBC began working with 12 like-minded pastors of some of the largest churches across PA <strong>to encourage one another, and to share best practices in order to get Jesus to the people.</strong></p>
+    </div>
+  </div>
+</article>
+<article class="sbs-item d-md-flex d-block" style="background:#008cd0;">
+  <div class="flex-1">
+    <img src="~~/Assets/Images/about-image1.png" class="img-responsive w-100 h-100">
+  </div>
+
+  <div class="flex-1">
+    <div class="h-100 d-flex justify-content-center align-items-center p-4 py-sm-5 mx-auto text-white" style="max-width: 650px;">
+        <div>
+            <p>Over a few short years, that number more than <strong>doubled to over 30 like-minded pastors.</strong></p>
+            <p>Then in November of 2022, after 32 years of serving as Sr. Pastor, and seeing God grow LCBC from 150 people and 1 location in Lancaster County, to over 22,000 people gathering weekly in 19 locations across the state, Pastor David Ashcraft stepped away from his Sr. Pastor role to focus his full attention on working with other pastors to get Jesus to the people across PA.</p>
+            <p>In 2023, the leadership of LCBC Church commissioned the forming of <strong>The Advantage</strong>, a leadership collaborative.</p>
+        </div>
+    </div>
+  </div>
+</article>
+
+{% include '~~/Assets/Lava/Custom/Blocks/cta-get-started.lava' %}
+
+{% stylesheet id:'about-us' cacheduration:'3600' compile:'less' import:'_variables.less' %}
+  .sbs-item img {
+      object-fit: cover;
+
+      @media @sm {
+          min-height: 400px;
+      }
+      @media @md {
+          min-height: 620px;
+      }
+  }
+{% endstylesheet %}

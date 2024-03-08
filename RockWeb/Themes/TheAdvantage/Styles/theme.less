@@ -1,0 +1,289 @@
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_print.less";
+
+@import "./Custom/footer.less";
+@import "./Custom/modals.less";
+@import "./Custom/swipers.less";
+@import "./Custom/backgrounds.less";
+@import "./Custom/navigation.less";
+@import "./Custom/hero.less";
+@import "./Custom/typography.less";
+@import "./Custom/buttons.less";
+@import "./Custom/lists.less";
+@import "./Custom/cta.less";
+@import "./Custom/controlgallery-overrides.less";
+
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overrides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+// Temporary Fix for Safari 13 Select Rendering Bug
+select {
+  text-rendering: auto;
+  -webkit-font-smoothing: none;
+}
+// End Temporary Fix
+
+main {
+  display: block;
+}
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+.navbar {
+  position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+  // using fontawesome nav toggle button instead of the BS default
+  .navbar-toggle {
+    padding: 6px 10px;
+    color: #fff;
+
+    i.fa-bars {
+      color: @navbar-inverse-toggle-icon-bar-bg;
+    }
+  }
+}
+
+a:hover i.fs {
+  text-decoration: none;
+}
+
+// 3. Theme Styling
+// -------------------------
+
+h1.pagetitle:empty { // hides the page title h1 tag if the page has the title hidden
+  display: none;
+}
+
+.page-icon {
+  display: none;
+}
+
+header {
+  .page-menu,
+  .login-status {
+    float: right;
+  }
+
+  .navbar {
+    background-color: @header-bg;
+    border: 0;
+  }
+}
+
+// homepage items
+#announcement-rotator {
+  margin: 0 -@grid-gutter-width/2 @spacing-lg-px;
+
+  .item {
+    img {
+      width: 100%;
+    }
+  }
+}
+
+.announcement-list {
+  .announcement {
+    max-width: 390px;
+    margin: 0 auto @spacing-lg-px;
+  }
+
+  .announcement-title {
+    margin: @spacing-sm-px 0;
+  }
+
+  img {
+    width: 100%;
+  }
+}
+
+.announcement-detail {
+  img {
+    width: 100%;
+  }
+}
+
+.nav-sub {
+  li {
+    border: 1px solid @gray-lighter;
+    border-radius: @border-radius-base;
+  }
+}
+
+#splash.error {
+  background-color: @gray-lighter;
+
+  #content {
+    padding: 20px;
+    margin-top: 20px;
+    background-color: @body-bg;
+    border-radius: @border-radius-base;
+  }
+}
+
+.not-found h2 {
+  font-size: 200px;
+  font-weight: @font-weight-bold;
+  line-height: 210px;
+  letter-spacing: -5px;
+
+  i {
+    position: relative;
+    top: -12px;
+    font-size: 210px;
+    color: #f03;
+  }
+}
+
+/* hide block panels */
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}
+
+
+.panel-heading {
+  a {
+    border-bottom: 1px dotted @link-color;
+    &:hover {
+      text-decoration: none;
+      border-bottom-style: solid;
+    }
+  }
+
+  .panel-success & {
+    a {
+      color: @panel-success-text;
+      border-color: @panel-success-text;
+    }
+  }
+
+  .panel-warning & {
+    a {
+      color: @panel-warning-text;
+      border-color: @panel-warning-text;
+    }
+  }
+}
+
+
+// 4. Responsive Overrides
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+  #announcement-rotator {
+    margin: @spacing-lg-px 0;
+  }
+}
+
+.workflow-entry-panel .btn {
+  width:100%;
+  @media @md {
+    width: max-content;
+  }
+}
+
+// TODO .webform no hyphen
+.webform .panel {
+    margin: 0rem 0rem 1rem;
+    padding: 1rem 1.5rem;
+
+    @media @sm {
+      margin: 0 1.5rem 1.5rem;
+      padding: 1rem 2rem 2rem 2rem;
+    }
+
+    @media @md {
+      margin: 0 0 3rem;
+      padding: 1rem 2em 2rem;
+    }
+
+    @media @lg {
+      margin: 0 3rem 3rem;
+      padding: 1rem 2em 2rem;
+    }
+}
+
+@import "_css-overrides.less";
+
+.hero-overlay:after { 
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  background: rgba(0,0,0,0.35);
+  z-index: -1;
+}
+
+.d-grid {
+  display: grid;
+}
+
+.place-items-center {
+  place-items: center;
+}
+
+.panel.panel-default {
+  box-shadow: none;
+}
+
+.theadvantage-joinus {
+    main.container {
+        background: url('../Assets/Images/header-accent-advantage.svg') no-repeat;
+        background-position: top right;
+        background-size: 60vw;
+        background-size: clamp(343px,50vw,767px);
+    }
+        
+    .pt-heading {
+        @media(max-width:768px) {
+            padding-top: 6rem;
+        }
+    }
+
+    .webform .row:first-of-type {
+        @media(max-width:768px) {
+            background: #fff;
+        }
+    }
+}

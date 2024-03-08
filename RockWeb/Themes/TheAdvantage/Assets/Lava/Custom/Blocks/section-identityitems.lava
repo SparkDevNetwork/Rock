@@ -1,0 +1,52 @@
+{% comment %} {% include '~~/Assets/Lava/Custom/Blocks/section-identityitems.lava' %} {% endcomment %}
+
+<div class="what-we-do-items py-2">
+    <div class="container">
+        <div class="my-0 py-5 py-md-4 my-md-5">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex flex-column align-items-center text-center mb-5 mb-md-0 px-3 px-md-0">
+                        <div class="featured-circle-icon rounded-circle bg-white p-2 d-flex justify-content-center align-items-center mb-3">
+                            <i class="fa fa-people-arrows"></i>
+                        </div>
+                        <h2 class="h5">Roundtables</h2>
+                        <p>In-person collaborative peer groups.</p>
+                        <a href="/theadvantage/join-us" class="btn btn-primary align-self-center">Learn more</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column align-items-center text-center mb-5 mb-md-0 px-3 px-md-0">
+                        <div class="featured-circle-icon rounded-circle bg-white p-2 d-flex justify-content-center align-items-center mb-3">
+                            <img src="~~/Assets/Images/all-access-logo.svg" width="50" height="50" alt="" loading="lazy">
+                        </div>
+                        <h2 class="h5">All Access</h2>
+                        <p>An annual one-day event diving deep into best practices in church ministry hosted by LCBC Church one of the Top 20 largest churches in America.</p>
+                        <a href="https://www.lcbcchurch.com/all-access-one-day" target="_blank" class="btn btn-primary align-self-center">Learn more</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column align-items-center text-center mb-0 px-3 px-md-0">
+                        <div class="featured-circle-icon rounded-circle bg-white p-2 d-flex justify-content-center align-items-center mb-3">
+                            <i class="fa fa-book-reader"></i>
+                        </div>
+                        <h2 class="h5">Leadership Development</h2>
+                        <p>Personalized coaching, check-in calls, and helpful resources.</p>
+                        <a href="/theadvantage/join-us" class="btn btn-primary align-self-center">Learn more</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% stylesheet id:'what-we-do-items' cacheduration:'3600' compile:'less' %}
+    .what-we-do-items {
+        background: #f3f5f8;
+
+        p {
+            max-width: 35ch;
+            text-wrap: balance;
+        }
+    }
+{% endstylesheet %}

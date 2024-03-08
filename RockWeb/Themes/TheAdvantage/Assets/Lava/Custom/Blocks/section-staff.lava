@@ -1,0 +1,64 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/Blocks/section-staff.lava' %}{% endcomment %}
+
+{% contentchannelitem where:'ContentChannelId == 91' iterator:'staff' prefetchattributes:'Role,Photo' %} {% endcontentchannelitem %}
+
+<div class="container">
+    <div class="px-3 px-md-0 py-5 my-0 my-md-5">
+        <div class="mb-3 mb-sm-5 mb-md-5" style="max-width: 650px;">
+             <h2 class="h1 mt-0 mt-3">WHO WE ARE</h2>
+             <p>Created by pastors for pastors, The Advantage was born out of the shared dream of reaching the entire state of Pennsylvania with the Good News of Jesus. The founding members of The Advantage desire to see thriving churches led by healthy, well-equipped pastors.</p>
+
+             <div class="align-items-center d-none d-sm-flex mb-sm-5" style="border-radius: 999px; background: #e7eff1; width: max-content; padding: 0.5rem 0.75rem; gap: 0.5rem;">
+                 <i class="fa fa-info-circle"></i>
+                 <em><small>Click each team member to learn more</small></em>
+             </div>
+        </div>
+
+        <div class="d-sm-block d-none">
+            <div class="row swiper-pastors d-flex flex-wrap h-100">
+                {% for member in staff %}
+                    {% assign staffName = member.Title %}
+                    {% assign staffRole = member | Attribute:'Role' %}
+                    {% assign staffPhoto = member | Attribute:'Photo', 'RawValue' | ImageUrl %}
+                    {% assign staffUrl = member.PrimarySlug | Prepend:'/theadvantage/team/' %}
+                    <article class="col-sm-6 col-md-3">
+                        <div class="card border-0 position-relative mb-sm-3" >
+                            <div class="card-content d-flex flex-column">
+                                <img src="{{ staffPhoto }}" class="img-reponsive w-100" alt="{{ staffName }}" loading="lazy">
+                                <div>
+                                    <a href="{{ staffUrl }}" class="stretched-link"><h4 class="mb-2">{{ staffName }}</h4></a>
+                                    <span class="o-80">{{ staffRole }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-sm-none d-block pb-5">
+    {[ swiper spacebetween:'24' centeredslides:'true' centeredslidesbounds:'false' showpagination:'false' shownavigation:'true' slidesperview:'1.25' containerclass:'swiper-pastors' initialslide:'1' breakpoints:'768-3|24,1200-4|24' paginationcolor:'#f38a15' ]}
+        {% for member in staff %}
+            {% assign staffName = member.Title %}
+            {% assign staffRole = member | Attribute:'Role' %}
+            {% assign staffPhoto = member | Attribute:'Photo', 'RawValue' | ImageUrl %}
+            {% assign staffUrl = member.PrimarySlug | Prepend:'./team/' %}
+            [[ slide ]]
+                <div class="card border-0 position-relative" >
+                    <div class="card-content d-flex flex-column">
+                        <div class="position-relative">
+                            <img src="{{ staffPhoto }}" class="img-reponsive w-100" loading="lazy" alt="{{ staffName }}">
+                            <span class="learn-more position-absolute"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                        </div>
+                        <div>
+                            <a href="{{ staffUrl }}" class="stretched-link"><h4 class="mb-2">{{ staffName }}</h4></a>
+                            <span>{{ staffRole }}</span>
+                        </div>
+                    </div>
+                </div>
+            [[ endslide ]]
+        {% endfor %}
+    {[ endswiper ]}
+</div>

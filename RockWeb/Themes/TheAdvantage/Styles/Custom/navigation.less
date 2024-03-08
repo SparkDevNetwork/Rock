@@ -1,0 +1,212 @@
+// navigation.less
+
+// ---------------------------------------
+
+// Table of Contents
+// 1. Main Nav (Desktop)
+// 2. Brand Logo (Non-homepage pages)
+// 3. Brand Logo (Homepage)
+// 4. Nav Menu (Desktop)
+// 5. Nav Menu (Mobile)
+// 6. Stacked Nav
+
+// ---------------------------------------
+
+// 1. Main Nav (Desktop)
+// --------------------------------
+
+.main-nav {
+  font-size: 21px;
+}
+
+.main-nav ul {
+  border-radius: 999px;
+  gap: 34px;
+}
+
+.pt-heading {
+  @media @sm {
+    padding-top: 6rem;
+  }
+
+  @media @md {
+    padding-top: 8rem;
+  }
+
+  @media @lg {
+    padding-top: 14rem;
+  }
+}
+
+// 2. Brand Logo (Non-homepage pages)
+// --------------------------------
+
+.brand-logo {
+  width: 179px;
+
+  @media @md {
+    width: 220px;
+  }
+
+  @media @lg {
+    width: 261px;
+  }
+}
+
+// 3. Brand Logo (Homepage)
+// --------------------------------
+
+.brand-logo.homepage {
+  width: 250px;
+
+  @media (orientation:landscape) and (min-height:850px) {
+    width: 350px;
+  }
+
+  @media (orientation:landscape) and (min-height:1080px) {
+    width: 450px;
+  }
+}
+
+.navbar-desktop {
+  background: #153456;
+  padding: 1.5rem 0;
+  margin: 0 !important;
+  float: unset !important;
+  border-radius: unset;
+  overflow: hidden;
+  border-bottom: 5px solid #022138;
+
+  @media @sm {
+    background: #fff;
+
+    border-radius: 999px;
+    padding: 0 1rem;
+    border: none;
+
+    a {
+      color: @brand-primary  !important;
+    }
+  }
+
+  & li {
+    @media @md {
+      display: inline-block;
+    }
+  }
+}
+
+// 4. Nav Menu (Desktop)
+// --------------------------------
+
+.navbar-desktop {
+  background: #153456;
+  padding: 1.5rem 0;
+  margin: 0 !important;
+  float: unset !important;
+  border-radius: unset;
+  overflow: hidden;
+  border-bottom: 5px solid #022138;
+
+  @media @sm {
+    background: #fff;
+
+    border-radius: 999px;
+    padding: 0 1rem;
+    border: none;
+
+    a {
+      color: @brand-primary  !important;
+    }
+  }
+
+  & li {
+    @media @md {
+      display: inline-block;
+    }
+  }
+}
+
+.nav-pills>li>a {
+  border-radius: 0px;
+}
+
+// 5. Nav Menu (Mobile)
+// --------------------------------
+
+.nav-drawer-wrapper {
+  box-shadow: -7px 0px 12px 5px rgba(0, 0, 0, 0.15);
+}
+
+.nav>li>a:hover,
+.nav>li>a:focus {
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.navbar-nav>li>a {
+  color: #153456;
+}
+
+.nav.navbar-nav li:first-child {
+  border-top: 1px solid #DCDCDC;
+}
+
+.nav.navbar-nav>li {
+  border-bottom: 1px solid #DCDCDC;
+}
+
+.navbar-collapse {
+  position: fixed !important;
+  height: 100vh;
+  z-index: 9;
+}
+
+.collapse {
+  width: 90%;
+}
+
+.collapse.in {
+  transition: all 200ms ease-in-out;
+  right: 0;
+}
+
+.collapsing {
+  -webkit-transition: none;
+  transition: all 150ms ease-in-out;
+}
+
+.navbar-collapse {
+  background: white;
+  top: 0;
+  right: -90%;
+}
+
+
+// 6. Stacked Nav
+// --------------------------------
+
+.nav.nav-stacked {
+  border: 1px solid #153456;
+  border-radius: 4px;
+
+  &>.nav-stacked-heading {
+    padding: 1rem;
+    background: #153456;
+    color: #fff;
+  }
+
+  &>.active {
+    background: #f9f9f9;
+  }
+}
+
+
+.navmenu {
+  .navbar-nav {
+    font-size: 24px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+}

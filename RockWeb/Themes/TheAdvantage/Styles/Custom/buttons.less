@@ -1,0 +1,121 @@
+// To avoid modifying Rock RMS btns
+.btn:not([id^="cms-"] .btn, .note-btn) {
+  padding: 12px 19px;
+}
+
+// Gives spacing between icons in buttons or any elements
+// when the right format is followed:
+// span followed by an icon, or the other way around
+i+span,
+span+i {
+  margin-left: 8px;
+}
+
+.btn.btn-default>span~i {
+  color: #015785;
+}
+
+.btn.btn-link,
+.text-link {
+  position: relative;
+  text-decoration: none !important;
+  background: transparent;
+  border: none;
+}
+
+.btn.btn-xs {
+  padding: 4px 8px !important;
+  font-size: 14px;
+}
+
+.btn-sm,
+.text-link-sm {
+  padding: 6px 12px !important;
+}
+
+.btn-lg,
+.text-link-lg {
+  padding: 16px 24px !important;
+  font-size: 20px;
+}
+
+// Link buttons and text links are always followed by a right arrow icon
+// To distinguish itself from regular links
+.btn.btn-link:after,
+.text-link:after {
+  content: '\f061';
+  font-family: 'FontAwesome';
+  position: relative;
+  margin-left: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.text-link-sm {
+  font-size: 16px;
+}
+
+.btn-default:hover {
+  background: #f7fafb;
+}
+
+
+.text-link-light,
+.btn-link.btn-light {
+  color: #fff;
+
+  &:hover {
+    color: #eee;
+  }
+}
+
+.btn.btn-danger:not(.btn-default) {
+  color: @brand-danger;
+}
+
+.btn.btn-danger:hover {
+  color: #fff !important;
+}
+
+// Modifies the sliders colors to follow brand guidelines
+:root {
+  --slider-progress-bg: @brand-primary;
+}
+
+// Button Hover Effect for only mouse pointers
+@media (pointer: fine) {
+  .btn:not(.btn-link) {
+    transition: all 200ms ease-in-out;
+    backface-visibility: hidden;
+  }
+
+  .btn.btn-primary:hover:not(.btn-link) {
+    background: #00A0EA;
+    border-color: #00A0EA;
+    transform: scale(1.02);
+    box-shadow: 4px 8px 16px rgba(0, 0, 0, .15);
+    transition: all 150ms ease-in-out;
+  }
+  
+  .btn.btn-default:hover:not(.btn-link) {
+    background: #f1f1f1;
+    border-color: #f1f1f1;
+    transform: scale(1.02);
+    box-shadow: 4px 8px 16px rgba(0, 0, 0, .15);
+    transition: all 150ms ease-in-out;
+  }
+
+  .btn.btn-primary:active:not(.btn-link) {
+    background: #055279;
+    transform: scale(1);
+    box-shadow: inset 4px 2px rgba(0, 0, 0, .15);
+    transition: all 100ms ease-in-out;
+  }
+  
+  .btn.btn-default:active:not(.btn-link) {
+    background: #eee;
+    transform: scale(1);
+    box-shadow: inset 4px 2px rgba(0, 0, 0, .15);
+    transition: all 100ms ease-in-out;
+  }
+}

@@ -1,0 +1,439 @@
+{% comment %}{% include '~~/Assets/Lava/Custom/WebStyleGuide.lava' %}{%endcomment%}
+{%- capture codeOpen -%}<figure><pre><code>{%- endcapture -%}
+{%- capture codeClose %}</code></pre></figure>{%- endcapture -%}
+
+
+{% comment %} ~ Swiper Section {% endcomment %}
+
+{% capture swiper %}
+<div class="px-5 overflow-hidden">
+    <div class="px-4">
+        {[ swiper spacebetween:'30' shownavigation:'true' showpagination:'false' slidesperview:'1' ]}
+            [[ slide ]]<img src="https://via.placeholder.com/800x450" class="img-responsive w-100">[[ endslide ]]
+            [[ slide ]]<img src="https://via.placeholder.com/800x450" class="img-responsive w-100">[[ endslide ]]
+        {[ endswiper ]}
+    </div>
+</div>
+
+{% endcapture %}
+
+{% capture swiperRaw %}
+{% raw %}<div class="px-5 overflow-hidden">
+    <div class="px-4">
+        {[ swiper spacebetween:'30' shownavigation:'true' showpagination:'false' slidesperview:'1.5' ]}
+            [[ slide ]]<img src="https://via.placeholder.com/800x450" class="img-responsive w-100">[[ endslide ]]
+            [[ slide ]]<img src="https://via.placeholder.com/800x450" class="img-responsive w-100">[[ endslide ]]
+        {[ endswiper ]}
+    </div>
+</div>{% endraw %}
+{% endcapture %}
+
+
+{% capture swiperEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Default Swiper</blockquote>
+    {{ swiper | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture swiperRawEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Default Swiper</blockquote>
+    {{ swiperRaw | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+{% comment %} ~ Swiper Section Two {% endcomment %}
+
+{% capture primarySwiper %}
+<div class="d-sm-block d-none">
+    <div class="row swiper-pastors d-flex flex-wrap h-100">
+        <article class="col-sm-6 col-md-3">
+            <div class="card border-0 position-relative" >
+                <div class="card-content d-flex flex-column">
+                    <img src="~~/Assets/Images/david-ashcraft.png" class="img-reponsive w-100">
+                    <div>
+                        <a href="#" class="stretched-link"><h4 class="mb-2">David Ashcraft</h4></a>
+                        <span>Pastor, Leadership Coach, and Author</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+        <article class="col-sm-6 col-md-3">
+            <div class="card border-0 position-relative" >
+                <div class="card-content d-flex flex-column">
+                    <img src="~~/Assets/Images/andy-martin.jpg" class="img-reponsive w-100">
+                    <div>
+                        <a href="#" class="stretched-link"><h4 class="mb-2">Andy Martin</h4></a>
+                        <span>Director of Networking Experiences</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+        <article class="col-sm-6 col-md-3">
+            <div class="card border-0 position-relative" >
+                <div class="card-content d-flex flex-column">
+                    <img src="~~/Assets/Images/mark-stuenzi.jpg" class="img-reponsive w-100">
+                    <div>
+                        <a href="#" class="stretched-link"><h4 class="mb-2">Mark Stuenzi</h4></a>
+                        <span>Director of Pastor Care, Resources, & Research</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+        <article class="col-sm-6 col-md-3">
+            <div class="card border-0 position-relative" >
+                <div class="card-content d-flex flex-column">
+                    <img src="~~/Assets/Images/pat-murdock.jpg" class="img-reponsive w-100">
+                    <div>
+                        <a href="#" class="stretched-link"><h4 class="mb-2">Pat Murdock</h4></a>
+                        <span>Executive Director</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>
+
+<div class="d-sm-none d-block mb-5 pb-5">
+    {[ swiper spacebetween:'24' centeredslides:'true' centeredslidesbounds:'false' showpagination:'true' shownavigation:'true' slidesperview:'1.25' containerclass:'swiper-pastors' initialslide:'1' breakpoints:'768-3|24,1200-4|24' paginationcolor:'#f38a15' ]}
+        [[ slide ]]
+            <div class="card border-0 position-relative" >
+                <div class="card-content d-flex flex-column">
+                    <div class="position-relative">
+                        <img src="~~/Assets/Images/david-ashcraft.png" class="img-reponsive w-100" loading="lazy">
+                        <span class="learn-more position-absolute bottom-0 left-0"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                    </div>
+                    <div>
+                        <a href="#" class="stretched-link"><h4 class="mb-2">David Ashcraft</h4></a>
+                        <span>Pastor, Leadership Coach, and Author</span>
+                    </div>
+                </div>
+            </div>
+        [[ endslide ]]
+        [[ slide ]]
+        <div class="card border-0 position-relative" >
+            <div class="card-content d-flex flex-column">
+                <div class="position-relative">
+                    <img src="~~/Assets/Images/andy-martin.jpg" class="img-reponsive w-100" loading="lazy">
+                    <span class="learn-more position-absolute bottom-0 left-0"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                </div>
+                <div>
+                    <a href="#" class="stretched-link"><h4 class="mb-2">Andy Martin</h4></a>
+                    <span>Director of Networking Experiences</span>
+                </div>
+            </div>
+        </div>
+        [[ endslide ]]
+        [[ slide ]]
+        <div class="card border-0 position-relative" >
+            <div class="card-content d-flex flex-column">
+                <div class="position-relative">
+                    <img src="~~/Assets/Images/mark-stuenzi.jpg" class="img-reponsive w-100" loading="lazy">
+                    <span class="learn-more position-absolute bottom-0 left-0"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                </div>
+                <div>
+                    <a href="#" class="stretched-link"><h4 class="mb-2">Mark Stuenzi</h4></a>
+                    <span>Director of Pastor Care, Resources, & Research</span>
+                </div>
+            </div>
+        </div>
+        [[ endslide ]]
+        [[ slide ]]
+        <div class="card border-0 position-relative" >
+            <div class="card-content d-flex flex-column">
+                <div class="position-relative">
+                    <img src="~~/Assets/Images/pat-murdock.jpg" class="img-reponsive w-100" loading="lazy">
+                    <span class="learn-more position-absolute bottom-0 left-0"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                </div>
+                <div>
+                    <a href="#" class="stretched-link"><h4 class="mb-2">Pat Murdock</h4></a>
+                    <span>Executive Director</span>
+                </div>
+            </div>
+        </div>
+        [[ endslide ]]
+    {[ endswiper ]}
+</div>
+{% endcapture %}
+
+{% capture primarySwiperRaw %}
+{% raw %}
+    <div class="d-sm-block d-none">
+        <div class="row swiper-pastors d-flex flex-wrap h-100">
+            <article class="col-sm-6 col-md-3">
+                <div class="card border-0 position-relative" >
+                    <div class="card-content d-flex flex-column">
+                        <img src="~~/Assets/Images/david-ashcraft.png" class="img-reponsive w-100" alt="David Ashcraft" loading="lazy">
+                        <div>
+                            <a href="#" class="stretched-link"><h4 class="mb-2">David Ashcraft</h4></a>
+                            <span>Pastor, Leadership Coach, and Author</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            <article class="col-sm-6 col-md-3">
+                <div class="card border-0 position-relative" >
+                    <div class="card-content d-flex flex-column">
+                        <img src="~~/Assets/Images/andy-martin.jpg" class="img-reponsive w-100" alt="Andy Martin" loading="lazy">
+                        <div>
+                            <a href="#" class="stretched-link"><h4 class="mb-2">Andy Martin</h4></a>
+                            <span>Director of Networking Experiences</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            <article class="col-sm-6 col-md-3">
+                <div class="card border-0 position-relative" >
+                    <div class="card-content d-flex flex-column">
+                        <img src="~~/Assets/Images/mark-stuenzi.jpg" class="img-reponsive w-100" alt="Mark Stuenzi" loading="lazy">
+                        <div>
+                            <a href="#" class="stretched-link"><h4 class="mb-2">Mark Stuenzi</h4></a>
+                            <span>Director of Pastor Care, Resources, & Research</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            <article class="col-sm-6 col-md-3">
+                <div class="card border-0 position-relative" >
+                    <div class="card-content d-flex flex-column">
+                        <img src="~~/Assets/Images/pat-murdock.jpg" class="img-reponsive w-100" alt="Pat Murdock" loading="lazy">
+                        <div>
+                            <a href="#" class="stretched-link"><h4 class="mb-2">Pat Murdock</h4></a>
+                            <span>Executive Director</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <div class="d-sm-none d-block mb-5 pb-5">
+        {[ swiper spacebetween:'24' centeredslides:'true' centeredslidesbounds:'false' showpagination:'true' shownavigation:'true' slidesperview:'1.25' containerclass:'swiper-pastors' initialslide:'1' breakpoints:'768-3|24,1200-4|24' paginationcolor:'#f38a15' ]}
+            [[ slide ]]
+                <div class="card border-0 position-relative" >
+                    <div class="card-content d-flex flex-column">
+                        <div class="position-relative">
+                            <img src="~~/Assets/Images/david-ashcraft.png" class="img-reponsive w-100" loading="lazy">
+                            <span class="learn-more position-absolute bottom-0 left-0"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                        </div>
+                        <div>
+                            <a href="#" class="stretched-link"><h4 class="mb-2">David Ashcraft</h4></a>
+                            <span>Pastor, Leadership Coach, and Author</span>
+                        </div>
+                    </div>
+                </div>
+            [[ endslide ]]
+            [[ slide ]]
+            <div class="card border-0 position-relative" >
+                <div class="card-content d-flex flex-column">
+                    <div class="position-relative">
+                        <img src="~~/Assets/Images/andy-martin.jpg" class="img-reponsive w-100" loading="lazy">
+                        <span class="learn-more position-absolute bottom-0 left-0"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                    </div>
+                    <div>
+                        <a href="#" class="stretched-link"><h4 class="mb-2">Andy Martin</h4></a>
+                        <span>Director of Networking Experiences</span>
+                    </div>
+                </div>
+            </div>
+            [[ endslide ]]
+            [[ slide ]]
+            <div class="card border-0 position-relative" >
+                <div class="card-content d-flex flex-column">
+                    <div class="position-relative">
+                        <img src="~~/Assets/Images/mark-stuenzi.jpg" class="img-reponsive w-100" loading="lazy">
+                        <span class="learn-more position-absolute bottom-0 left-0"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                    </div>
+                    <div>
+                        <a href="#" class="stretched-link"><h4 class="mb-2">Mark Stuenzi</h4></a>
+                        <span>Director of Pastor Care, Resources, & Research</span>
+                    </div>
+                </div>
+            </div>
+            [[ endslide ]]
+            [[ slide ]]
+            <div class="card border-0 position-relative" >
+                <div class="card-content d-flex flex-column">
+                    <div class="position-relative">
+                        <img src="~~/Assets/Images/pat-murdock.jpg" class="img-reponsive w-100" loading="lazy">
+                        <span class="learn-more position-absolute bottom-0 left-0"><span class="fa fa-info-circle"></span> Tap to learn more</span>
+                    </div>
+                    <div>
+                        <a href="#" class="stretched-link"><h4 class="mb-2">Pat Murdock</h4></a>
+                        <span>Executive Director</span>
+                    </div>
+                </div>
+            </div>
+            [[ endslide ]]
+        {[ endswiper ]}
+    </div>
+{% endraw %}
+
+{% endcapture %}
+
+
+{% capture primarySwiperEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Primary Swiper</blockquote>
+    {{ primarySwiper | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture primarySwiperRawEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Primary Swiper</blockquote>
+    {{ primarySwiperRaw | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture secondarySwiper %}
+<div class="overflow-hidden">
+    {[ swiper spacebetween:'24' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1.95' containerclass:'swiper-testimonial' initialslide:'1' breakpoints:'300-1.25|24,500-1.25|24,768-1.95|24']}
+        [[ slide ]]
+        <div class="m-md-0">
+            <div class="card border-0">
+                <img src="https://via.placeholder.com/800x450" class="img-responsive">
+                <div class="d-block d-md-flex pt-2 pt-md-5" style="gap:3rem;">
+                    <blockquote style="flex: 1;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec porta arcu. Nam placerat cursus urna.</blockquote>
+                    <div class="d-flex flex-column align-items-center text-center text-md-left align-items-md-start" style="min-width:max-content; align-items: flex-start;">
+                        <img src="https://via.placeholder.com/50x50" class="img-responsive">
+                        <h4>test</h4>
+                        <span>test title</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        [[ endslide ]]
+        [[ slide ]]
+        <div class="m-md-0">
+            <div class="card border-0">
+                <img src="https://via.placeholder.com/800x450" class="img-responsive">
+                <div class="d-block d-md-flex pt-2 pt-md-5" style="gap:3rem;">
+                    <blockquote style="flex: 1;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec porta arcu. Nam placerat cursus urna.</blockquote>
+                    <div class="d-flex flex-column align-items-center text-center text-md-left align-items-md-start" style="min-width:max-content; align-items: flex-start;">
+                        <img src="https://via.placeholder.com/50x50" class="img-responsive">
+                        <h4>test</h4>
+                        <span>test title</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        [[ endslide ]]
+        [[ slide ]]
+        <div class="m-md-0">
+            <div class="card border-0">
+                <img src="https://via.placeholder.com/800x450" class="img-responsive">
+                <div class="d-block d-md-flex pt-2 pt-md-5" style="gap:3rem;">
+                    <blockquote style="flex: 1;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec porta arcu. Nam placerat cursus urna.</blockquote>
+                    <div class="d-flex flex-column align-items-center text-center text-md-left align-items-md-start" style="min-width:max-content; align-items: flex-start;">
+                        <img src="https://via.placeholder.com/50x50" class="img-responsive">
+                        <h4>test</h4>
+                        <span>test title</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        [[ endslide ]]
+    {[ endswiper ]}
+</div>
+
+{% endcapture %}
+
+{% capture secondarySwiperRaw %}
+    {% raw %}
+        <div class="overflow-hidden">
+            {[ swiper spacebetween:'24' centeredslides:'true' showpagination:'true' shownavigation:'true' slidesperview:'1.95' containerclass:'swiper-testimonial' initialslide:'1' breakpoints:'500-1.25|24,768-1.95|24']}
+                [[ slide ]]
+                <div class="m-md-0">
+                    <div class="card border-0">
+                        <img src="https://via.placeholder.com/800x450" class="img-responsive w-100">
+                        <div class="d-flex flex-wrap pt-2 pt-md-5">
+                            <blockquote>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec porta arcu. Nam placerat cursus urna.</blockquote>
+                            <div class="d-flex flex-column align-items-center text-center text-md-left align-items-md-start">
+                                <img src="https://via.placeholder.com/50x50" class="img-responsive w-100">
+                                <h4>test</h4>
+                                <span>test title</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                [[ endslide ]]
+                [[ slide ]]
+                <div class="m-md-0">
+                    <div class="card border-0">
+                        <img src="https://via.placeholder.com/800x450" class="img-responsive w-100">
+                        <div class="d-flex flex-wrap pt-2 pt-md-5">
+                            <blockquote>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec porta arcu. Nam placerat cursus urna.</blockquote>
+                            <div class="d-flex flex-column align-items-center text-center text-md-left align-items-md-start">
+                                <img src="https://via.placeholder.com/50x50" class="img-responsive w-100">
+                                <h4>test</h4>
+                                <span>test title</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                [[ endslide ]]
+                [[ slide ]]
+                <div class="m-md-0">
+                    <div class="card border-0">
+                        <img src="https://via.placeholder.com/800x450" class="img-responsive w-100">
+                        <div class="d-flex flex-wrap pt-2 pt-md-5">
+                            <blockquote>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec porta arcu. Nam placerat cursus urna.</blockquote>
+                            <div class="d-flex flex-column align-items-center text-center text-md-left align-items-md-start">
+                                <img src="https://via.placeholder.com/50x50" class="img-responsive w-100">
+                                <h4>test</h4>
+                                <span>test title</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                [[ endslide ]]
+            {[ endswiper ]}
+        </div>
+    {% endraw %}
+{% endcapture %}
+
+{% capture secondarySwiperEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Secondary Swiper</blockquote>
+    {{ secondarySwiper | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+{% capture secondarySwiperRawEscaped %}
+    {{ codeOpen }}<blockquote class="mb-0">Secondary Swiper</blockquote>
+    {{ secondarySwiperRaw | Escape }}
+    {{ codeClose }}
+{% endcapture %}
+
+
+
+
+
+<h3 class="sg-section-header">Default Swiper</h3>
+{{ swiper }}
+
+<h5 class="mt-5 mb-0">Shortcode</h5>
+{{ swiperRawEscaped }}
+
+<h5 class="mt-5 mb-0">Lava</h5>
+{{ swiperEscaped }}
+
+<hr class="my-5">
+
+<h3  class="sg-section-header">Primary Swiper</h3>
+{{ primarySwiper }}
+
+<h5 class="mt-5 mb-0">Shortcode</h5>
+{{ primarySwiperRawEscaped }}
+
+<h5 class="mt-5 mb-0">Lava</h5>
+{{ primarySwiperEscaped }}
+
+<hr class="my-5">
+
+<h3  class="sg-section-header">Secondary Swiper</h3>
+{{ secondarySwiper }}
+
+<h5 class="mt-5 mb-0">Shortcode</h5>
+{{ secondarySwiperRawEscaped }}
+
+<h5 class="mt-5 mb-0">Lava</h5>
+{{ secondarySwiperEscaped }}
