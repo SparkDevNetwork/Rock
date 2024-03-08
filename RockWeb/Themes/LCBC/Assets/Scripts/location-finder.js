@@ -471,7 +471,7 @@ window.addEventListener('load', function () {
 // on resize, redraw map
 
 function getZipAndReorder (zipCode) {
-    var url = `https://maps.googleapis.com/maps/api/geocode/json?address=${zipCode}&key=${googleApiKey}`;
+    var url = `https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:${zipCode}|country:US&key=${googleApiKey}`; 
     fetch(url)
         .then(function (response) {
             return response.json();
