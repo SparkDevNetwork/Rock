@@ -1245,6 +1245,8 @@ Rock.settings.initialize({{
                         AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
                     }
 
+                    AddJesusHook();
+
                     // Flag indicating if user has rights to administer one or more of the blocks on page
                     bool canAdministrateBlockOnPage = false;
 
@@ -2756,6 +2758,25 @@ $.ajax({
                 // Log any error but still let the page load.
                 LogException( ex );
             }
+        }
+
+        private void AddJesusHook()
+        {
+            var versionInfoArray = VersionInfo.VersionInfo.GetRockProductVersionFullName().Split( ' ' );
+            var versionInfo = versionInfoArray.Last();
+
+            var sb = new StringBuilder();
+            sb.Append( $@"
+                <script>
+                    console.info(
+                        '%cCrafting Code For Christ | Col. 3:23-24',
+                        'background: #ee7625; border-radius:0.5em; padding:0.2em 0.5em; color: white; font-weight: bold');
+                    console.info(
+                        'Rock Version v{versionInfo}'
+                        );
+                 </script>
+            " );
+            AddScriptToHead( this.Page, sb.ToString(), false );
         }
 
         /// <summary>
