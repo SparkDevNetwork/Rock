@@ -1473,6 +1473,7 @@ namespace RockWeb.Blocks.Connection
             connectionRequest.SaveAttributeValues( rockContext );
 
             _connectionRequest = connectionRequest;
+            ConnectionRequestId = connectionRequest.Id;
 
             // Add an activity that the connector was assigned (or changed)
             if ( originalConnectorPersonAliasId != newConnectorPersonAliasId )
@@ -4964,11 +4965,13 @@ namespace RockWeb.Blocks.Connection
 
             var rockContext = new RockContext();
             var connectionRequestService = new ConnectionRequestService( rockContext );
+
             _connectionRequestViewModel = connectionRequestService.GetConnectionRequestViewModel(
                 CurrentPersonAliasId.Value,
                 ConnectionRequestId.Value,
                 new ConnectionRequestViewModelQueryArgs(),
                 GetConnectionRequestStatusIconsTemplate() );
+
             return _connectionRequestViewModel;
         }
 
