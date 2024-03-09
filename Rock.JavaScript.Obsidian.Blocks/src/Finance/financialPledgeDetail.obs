@@ -18,6 +18,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -58,11 +59,11 @@
     const errorMessage = ref("");
 
     const financialPledgeViewBag = ref(config.entity);
-    const financialPledgeEditBag = ref<FinancialPledgeBag>({} as FinancialPledgeBag);
+    const financialPledgeEditBag = ref<FinancialPledgeBag>(config.entity ?? {});
 
     const entityTypeGuid = EntityType.FinancialPledge;
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Add);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.

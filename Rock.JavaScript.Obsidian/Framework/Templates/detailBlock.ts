@@ -130,6 +130,14 @@ export default defineComponent({
             default: false
         },
 
+        /**
+         * If true then the individual will be able to switch to fullscreen mode.
+         */
+        isFullScreenVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
         /** The current display mode for the detail panel. */
         mode: {
             type: Number as PropType<DetailPanelMode>,
@@ -770,7 +778,7 @@ export default defineComponent({
     type="block"
     :title="panelTitle"
     :titleIconCssClass="panelTitleIconCssClass"
-    :hasFullscreen="true"
+    :hasFullscreen="isFullScreenVisible"
     :headerSecondaryActions="internalHeaderSecondaryActions">
 
     <template #headerActions>
