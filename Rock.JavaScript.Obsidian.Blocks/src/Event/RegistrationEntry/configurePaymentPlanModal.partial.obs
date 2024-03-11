@@ -5,10 +5,6 @@
            saveText="Select"
            title="Configure Payment Plan"
            @save="onConfigurePaymentPlan">
-        <!-- <div>moneyDesiredPerPaymentsRemainder {{ remainderAmountAfterPayments }}</div>
-        <div>moneyRemainingAmount {{ registrationRemainingAmount }}</div>
-        <div>moneyInProgressAmountToPayToday {{ calculatedAmountToPayToday }}</div> -->
-        <div>amountToPayToday {{ amountToPayToday }}</div>
         <template v-if="paymentDeadlineDate">
             The total amount of {{ originalRegistrationAmount }} is payable by {{ paymentDeadlineDate.toASPString("MMMM dd, yyyy") }}.
         </template>
@@ -78,7 +74,7 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { Guid } from "@Obsidian/Types";
 import { ValidationResult } from "@Obsidian/ValidationRules";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import { Currency, CurrencyOptions, createReadonlyCurrencyOptions } from "./types.partial";
+import { createCurrency, createZeroCurrency, Currency, CurrencyOptions, createReadonlyCurrencyOptions } from "./currency.partial";
 
 const props = defineProps({
     modelValue: {
@@ -96,7 +92,6 @@ const { readonlyRegistrationCostSummary } = use(RegistrationCostSummary);
 const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
     precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
     symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
-    isLoggingEnabled: true
 });
 
 //#region Values
@@ -104,7 +99,7 @@ const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
 const paymentFrequencyGuid = ref<Guid>(registrationEntryState.paymentPlanFrequencyGuid ?? "");
 const numberOfPayments = ref<string>("2");
 const amountToPayTodayAsNumber = ref<number>(registrationEntryState.amountToPayToday);
-const amountToPayTodayAdjustment = ref<Currency>(new Currency(0, currencyOptions));
+const amountToPayTodayAdjustment = ref<Currency>(createCurrency(0, currencyOptions));
 
 //#endregion
 
@@ -116,7 +111,7 @@ const selectedFrequencyText = computed<string>(() => {
     return registrationEntryState.viewModel.paymentPlanFrequencies?.find(l => l.value === paymentFrequencyGuid.value)?.text ?? "";
 });
 
-const amountToPayToday = computed<Currency>(() => new Currency(amountToPayTodayAsNumber.value, currencyOptions));
+const amountToPayToday = computed<Currency>(() => createCurrency(amountToPayTodayAsNumber.value, currencyOptions));
 
 const actualAmountDueTodayMessage = computed<string>(() => {
     let suffix = "";
@@ -129,21 +124,21 @@ const actualAmountDueTodayMessage = computed<string>(() => {
 /**
  * This is the total amount remaining for the registration to be considered fully paid.
  */
-const registrationRemainingAmount = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions));
+const registrationRemainingAmount = computed<Currency>(() => createCurrency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions));
 
 /** Gets the minimum remaining amount to be paid today, before the recurring payments, in order to get evenly split recurring payments. */
-const calculatedMinimumAmountToPayToday = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.minimumRemainingAmount, currencyOptions));
+const calculatedMinimumAmountToPayToday = computed<Currency>(() => createCurrency(readonlyRegistrationCostSummary.value.minimumRemainingAmount, currencyOptions));
 
 // /** Gets the original amount for the registration, including paid amounts. */
-const originalRegistrationAmount = computed<Currency>(() => new Currency(readonlyRegistrationCostSummary.value.paidAmount, currencyOptions).add(new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions)));
+const originalRegistrationAmount = computed<Currency>(() => createCurrency(readonlyRegistrationCostSummary.value.paidAmount, currencyOptions).add(createCurrency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions)));
 
 ///** Gets the amount per recurring payment. */
 const calculatedAmountPerPayment = computed<Currency>(() => {
     if (numberOfPaymentsAsInteger.value === 0 || registrationRemainingAmount.value.isZero) {
-        return new Currency(0, currencyOptions);
+        return createCurrency(0, currencyOptions);
     }
     else {
-        return new Currency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions).subtract(amountToPayToday.value).divide(numberOfPaymentsAsInteger.value).quotient;
+        return createCurrency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions).subtract(amountToPayToday.value).divide(numberOfPaymentsAsInteger.value).quotient;
     }
 });
 
@@ -317,7 +312,7 @@ function watchAmountToPayToday(): WatchStopHandle {
     return watch([amountToPayToday, numberOfPaymentsAsInteger], () => {
         const difference = registrationRemainingAmount.value.subtract(amountToPayToday.value);
         let remainder = difference.mod(numberOfPaymentsAsInteger.value);
-        let newAmountToPayToday: Currency = Currency.createZeroCurrency(currencyOptions);
+        let newAmountToPayToday: Currency = createZeroCurrency(currencyOptions);
 
         if (difference.isNegative && !remainder.isNegative) {
             // Negate the remainder if the entered amount was
@@ -335,7 +330,7 @@ function watchAmountToPayToday(): WatchStopHandle {
             // No remainder adjustment needed.
             newAmountToPayToday = amountToPayToday.value;
             // Update reactive state after next render.
-            nextTick(() => amountToPayTodayAdjustment.value = new Currency(0, currencyOptions));
+            nextTick(() => amountToPayTodayAdjustment.value = createCurrency(0, currencyOptions));
         }
 
         // Prevent the new "Amount To Pay Today" from being larger than the registration amount.
