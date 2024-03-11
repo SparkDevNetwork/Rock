@@ -21,24 +21,13 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
+import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
 
-/**
- * The response that will be returned by the list family members check-in
- * REST endpoint.
- */
-export type FamilyMembersResponseBag = {
-    /** Gets or sets the current attendance records that can be checked out. */
-    currentlyCheckedInAttendances?: AttendanceBag[] | null;
+/** The result of a check-in operation to save attendance data. */
+export type CheckInResultBag = {
+    /** Gets or sets the attendance records that were created or updated. */
+    attendances?: RecordedAttendanceBag[] | null;
 
-    /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
-
-    /**
-     * Gets or sets the people that can be potentially checked in for
-     * the family.
-     */
-    people?: AttendeeBag[] | null;
+    /** Gets or sets the messages for this check-in operation. */
+    messages?: string[] | null;
 };

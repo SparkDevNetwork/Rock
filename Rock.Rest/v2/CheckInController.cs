@@ -303,6 +303,45 @@ namespace Rock.Rest.v2.Controllers
             }
         }
 
+        /// <summary>
+        /// Confirms the pending attendance records for a session.
+        /// </summary>
+        /// <param name="options">The options that describe the request.</param>
+        /// <returns>The results from the confirm operation.</returns>
+        [HttpPost]
+        [Authenticate]
+        //[Secured]
+        [Route( "ConfirmAttendance" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfirmAttendanceResponseBag ) )]
+        [SystemGuid.RestActionGuid( "52070226-289b-442d-a8fe-a8323c0f922c" )]
+        public IActionResult PostConfirmAttendance( [FromBody] ConfirmAttendanceOptionsBag options )
+        {
+            var configuration = GroupTypeCache.Get( options.TemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
+
+            if ( configuration == null )
+            {
+                return BadRequest( "Configuration was not found." );
+            }
+
+            try
+            {
+                var director = new CheckInDirector( _rockContext );
+                var session = director.CreateSession( configuration );
+
+                var result = session.ConfirmAttendance( options.SessionGuid );
+
+                return Ok( new ConfirmAttendanceResponseBag
+                {
+                    Messages = result.Messages,
+                    Attendances = result.Attendances
+                } );
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return BadRequest( ex.Message );
+            }
+        }
+
         #region Temporary Benchmark
 
         /// <summary>

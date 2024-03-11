@@ -22,23 +22,26 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
+import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceRequestBag";
+import { AttendanceSessionRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceSessionRequestBag";
 
 /**
- * The response that will be returned by the list family members check-in
+ * The options that will be provided to the SaveAttendance check-in
  * REST endpoint.
  */
-export type FamilyMembersResponseBag = {
-    /** Gets or sets the current attendance records that can be checked out. */
-    currentlyCheckedInAttendances?: AttendanceBag[] | null;
+export type SaveAttendanceOptionsBag = {
+    /** Gets or sets the kiosk unique identifier. */
+    kioskGuid?: Guid | null;
 
-    /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+    /** Gets or sets the requests. */
+    requests?: AttendanceRequestBag[] | null;
 
     /**
-     * Gets or sets the people that can be potentially checked in for
-     * the family.
+     * Gets or sets the details about the check-in session that apply
+     * to all attendance requests.
      */
-    people?: AttendeeBag[] | null;
+    session?: AttendanceSessionRequestBag | null;
+
+    /** Gets or sets the check-in configuration template unique identifier. */
+    templateGuid?: Guid | null;
 };

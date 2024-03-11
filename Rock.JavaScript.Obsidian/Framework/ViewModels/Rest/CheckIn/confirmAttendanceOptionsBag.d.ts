@@ -22,23 +22,15 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
 
 /**
- * The response that will be returned by the list family members check-in
+ * The options that will be provided to the ConfirmAttendance check-in
  * REST endpoint.
  */
-export type FamilyMembersResponseBag = {
-    /** Gets or sets the current attendance records that can be checked out. */
-    currentlyCheckedInAttendances?: AttendanceBag[] | null;
+export type ConfirmAttendanceOptionsBag = {
+    /** Gets or sets the unique identifier of the session to be confirmed. */
+    sessionGuid?: Guid | null;
 
-    /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
-
-    /**
-     * Gets or sets the people that can be potentially checked in for
-     * the family.
-     */
-    people?: AttendeeBag[] | null;
+    /** Gets or sets the check-in configuration template unique identifier. */
+    templateGuid?: Guid | null;
 };

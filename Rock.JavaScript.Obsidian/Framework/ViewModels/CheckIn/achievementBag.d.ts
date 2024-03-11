@@ -22,23 +22,27 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
 
-/**
- * The response that will be returned by the list family members check-in
- * REST endpoint.
- */
-export type FamilyMembersResponseBag = {
-    /** Gets or sets the current attendance records that can be checked out. */
-    currentlyCheckedInAttendances?: AttendanceBag[] | null;
+/** Defines the details of an achievement for the check-in process. */
+export type AchievementBag = {
+    /** Gets or sets the end date time. */
+    endDateTime?: string | null;
 
-    /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+    /** Gets or sets the unique identifier. */
+    guid?: Guid | null;
+
+    /** Gets or sets a value indicating whether this achievement was successful. */
+    isSuccess: boolean;
+
+    /** Gets or sets the name of the achievement. */
+    name?: string | null;
 
     /**
-     * Gets or sets the people that can be potentially checked in for
-     * the family.
+     * Gets or sets the progress with 1.0 being fully achieved.
+     * This value may exceep 1.0 if over-achievement is allowed.
      */
-    people?: AttendeeBag[] | null;
+    progress: number;
+
+    /** Gets or sets the start date time. */
+    startDateTime?: string | null;
 };

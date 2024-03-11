@@ -412,6 +412,8 @@
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Rest\CheckIn\ConfigurationOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\ConfigurationResponseBag.cs" />
+    <Compile Include="Rest\CheckIn\ConfirmAttendanceOptionsBag.cs" />
+    <Compile Include="Rest\CheckIn\ConfirmAttendanceResponseBag.cs" />
     <Compile Include="Rest\CheckIn\FamilyMembersOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\FamilyMembersResponseBag.cs" />
     <Compile Include="Rest\CheckIn\AttendeeOpportunitiesResponseBag.cs" />

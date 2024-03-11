@@ -22,23 +22,22 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
+import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 
 /**
- * The response that will be returned by the list family members check-in
- * REST endpoint.
+ * Identifies a single attendance record that is being requested to be
+ * created with the specified options.
  */
-export type FamilyMembersResponseBag = {
-    /** Gets or sets the current attendance records that can be checked out. */
-    currentlyCheckedInAttendances?: AttendanceBag[] | null;
-
-    /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+export type AttendanceRequestBag = {
+    /**
+     * Gets or sets the unique identifier of the person to create an
+     * attendance record for.
+     */
+    personGuid?: Guid | null;
 
     /**
-     * Gets or sets the people that can be potentially checked in for
-     * the family.
+     * Gets or sets the selection that identify where the person should
+     * be checked in to. Only the Guid values are used.
      */
-    people?: AttendeeBag[] | null;
+    selection?: OpportunitySelectionBag | null;
 };

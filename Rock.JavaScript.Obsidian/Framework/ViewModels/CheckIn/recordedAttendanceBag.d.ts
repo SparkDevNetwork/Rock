@@ -21,24 +21,26 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
 import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
 
-/**
- * The response that will be returned by the list family members check-in
- * REST endpoint.
- */
-export type FamilyMembersResponseBag = {
-    /** Gets or sets the current attendance records that can be checked out. */
-    currentlyCheckedInAttendances?: AttendanceBag[] | null;
+/** Details about a newly recorded attendance record. */
+export type RecordedAttendanceBag = {
+    /** Gets or sets the attendance details. */
+    attendance?: AttendanceBag | null;
 
-    /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+    /** Gets or sets the in progress achievements. */
+    inProgressAchievements?: AchievementBag[] | null;
 
     /**
-     * Gets or sets the people that can be potentially checked in for
-     * the family.
+     * Gets or sets the achievements that were just completed by this
+     * new attendance record.
      */
-    people?: AttendeeBag[] | null;
+    justCompletedAchievements?: AchievementBag[] | null;
+
+    /**
+     * Gets or sets the achievements that were completed before the new
+     * attendance record was created.
+     */
+    previouslyCompletedAchievements?: AchievementBag[] | null;
 };

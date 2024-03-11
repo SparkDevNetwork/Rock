@@ -461,6 +461,21 @@ namespace Rock.CheckIn.v2
             }
         }
 
+        /// <summary>
+        /// Confirms the pending attendance records for the specified session.
+        /// </summary>
+        /// <param name="sessionGuid">The session's unique identifier.</param>
+        /// <returns>An instance of <see cref="CheckInResultBag"/> that contains the result of the operation.</returns>
+        public CheckInResultBag ConfirmAttendance( Guid sessionGuid )
+        {
+            using ( var activity = ObservabilityHelper.StartActivity( "Confirm Attendance" ) )
+            {
+                activity?.AddTag( "rock.checkin.save_provider", SaveProvider.GetType().FullName );
+
+                return SaveProvider.ConfirmAttendance( sessionGuid );
+            }
+        }
+
         #endregion
     }
 }

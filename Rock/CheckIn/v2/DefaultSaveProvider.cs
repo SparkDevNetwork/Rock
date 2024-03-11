@@ -76,6 +76,7 @@ namespace Rock.CheckIn.v2
         /// <param name="requests">The attendance request details.</param>
         /// <param name="kiosk">The kiosk that is performing this check-in or <c>null</c>.</param>
         /// <param name="clientIpAddress">The remote IP address of the device performing this check-in or <c>null</c>.</param>
+        /// <returns>An instance of <see cref="CheckInResultBag"/> that contains the result of the operation.</returns>
         public CheckInResultBag SaveAttendance( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<AttendanceRequestBag> requests, DeviceCache kiosk, string clientIpAddress )
         {
             var result = new CheckInResultBag
@@ -236,14 +237,106 @@ namespace Rock.CheckIn.v2
                 newOrUpdatedAttendances.Add( newAttendance );
             }
 
+            var people = preparedRequests.Select( a => a.Person ).ToList();
+
+            return SaveAttendanceRecords( sessionRequest.IsPending, newOrUpdatedAttendances, people, attributeEntitiesToSave );
+        }
+
+        /// <summary>
+        /// Confirms the pending attendance records for the specified session.
+        /// </summary>
+        /// <param name="sessionGuid">The session's unique identifier.</param>
+        /// <returns>An instance of <see cref="CheckInResultBag"/> that contains the result of the operation.</returns>
+        public CheckInResultBag ConfirmAttendance( Guid sessionGuid )
+        {
+            var attendanceService = new AttendanceService( Session.RockContext );
+            var attendanceItems = attendanceService.Queryable()
+                .Where( a => a.AttendanceCheckInSession.Guid == sessionGuid
+                    && a.CheckInStatus == Enums.Event.CheckInStatus.Pending
+                    && a.PersonAliasId.HasValue
+                    && a.Occurrence.GroupId.HasValue
+                    && a.Occurrence.LocationId.HasValue
+                    && a.Occurrence.ScheduleId.HasValue )
+                .Select( a => new
+                {
+                    Attendance = a,
+                    a.PersonAlias.Person,
+                    CampusGuid = ( Guid? ) a.Campus.Guid,
+                    AreaGuid = a.Occurrence.Group.GroupType.Guid,
+                    GroupGuid = a.Occurrence.Group.Guid,
+                    LocationGuid = a.Occurrence.Location.Guid,
+                    ScheduleGuid = a.Occurrence.Schedule.Guid
+                } )
+                .ToList();
+
+            if ( !attendanceItems.Any() )
+            {
+                return new CheckInResultBag
+                {
+                    Messages = new List<string>
+                    {
+                        "There were no pending attendance records to be confirmed."
+                    },
+                    Attendances = new List<RecordedAttendanceBag>()
+                };
+            }
+
+            var updatedAttendances = new List<RecentAttendance>();
+
+            foreach ( var item in attendanceItems )
+            {
+                // Because we used a .Select() above, the attendance entity is
+                // not attached to the context for tracking.
+                attendanceService.Attach( item.Attendance );
+
+                UpdatePresentStatus( item.Attendance );
+
+                var attendance = new RecentAttendance
+                {
+                    AttendanceGuid = item.Attendance.Guid,
+                    AttendanceId = item.Attendance.Id,
+                    CampusGuid = item.CampusGuid,
+                    EndDateTime = item.Attendance.EndDateTime,
+                    GroupGuid = item.GroupGuid,
+                    GroupTypeGuid = item.AreaGuid,
+                    LocationGuid = item.LocationGuid,
+                    PersonGuid = item.Person.Guid,
+                    ScheduleGuid = item.ScheduleGuid,
+                    StartDateTime = item.Attendance.StartDateTime,
+                    Status = item.Attendance.CheckInStatus
+                };
+
+                updatedAttendances.Add( attendance );
+            }
+
+            var people = attendanceItems.Select( a => a.Person ).ToList();
+
+            return SaveAttendanceRecords( false, updatedAttendances, people, null );
+        }
+
+        /// <summary>
+        /// Saves the attendance records attached to the session's RockContext
+        /// to the database. If this is not a pending save then also get the
+        /// achievement information.
+        /// </summary>
+        /// <param name="isPending"><c>true</c> if the attendance records are pending.</param>
+        /// <param name="attendances">A collection of <see cref="RecentAttendance"/> that represent the attendance records.</param>
+        /// <param name="people">The people associated with the attendance records.</param>
+        /// <param name="attributeEntitiesToSave">Any additional entities that need to have their attributes saved.</param>
+        /// <returns>An instance of <see cref="CheckInResultBag"/> that contains the result of the operation.</returns>
+        private CheckInResultBag SaveAttendanceRecords( bool isPending, IReadOnlyCollection<RecentAttendance> attendances, IReadOnlyCollection<Person> people, IReadOnlyCollection<IHasAttributes> attributeEntitiesToSave )
+        {
             List<AchievementAttemptService.AchievementAttemptWithPersonAlias> allAchievementAttempts = null;
             List<Guid> previousCompletedAchievementAttemptGuids = null;
 
-            using ( var activity = ObservabilityHelper.StartActivity( "Save To Database" ) )
+            using ( var activity = ObservabilityHelper.StartActivity( "Save Attendance Records" ) )
             {
+                var configuredAchievementTypeGuids = TemplateConfiguration.AchievementTypeGuids;
+                var attendanceRecordsPersonGuids = people.Select( p => p.Guid ).ToList();
+
                 Session.RockContext.WrapTransaction( () =>
                 {
-                    if ( sessionRequest.IsPending )
+                    if ( isPending )
                     {
                         Session.RockContext.SaveChanges();
                     }
@@ -251,34 +344,40 @@ namespace Rock.CheckIn.v2
                     {
                         // Get any achievements that were in-progress *prior* to adding
                         // these attendance records.
-                        var configuredAchievementTypeGuids = TemplateConfiguration.AchievementTypeGuids;
-                        var attendanceRecordsPersonGuids = preparedRequests
-                            .Select( a => a.Person.Guid )
-                            .ToList();
-
                         previousCompletedAchievementAttemptGuids = GetSuccessfullyCompletedAchievementAttemptGuids( attendanceRecordsPersonGuids, configuredAchievementTypeGuids );
 
                         // Save the changes, this will update the achievements
                         // before returning.
                         Session.RockContext.SaveChanges();
-
-                        // Get all the attempts that exist after saving.
-                        allAchievementAttempts = GetAchievementAttemptsWithPersonAlias( attendanceRecordsPersonGuids, configuredAchievementTypeGuids );
                     }
 
-                    foreach ( var entity in attributeEntitiesToSave )
+                    if ( attributeEntitiesToSave != null )
                     {
-                        entity.SaveAttributeValues( Session.RockContext );
+                        foreach ( var entity in attributeEntitiesToSave )
+                        {
+                            entity.SaveAttributeValues( Session.RockContext );
+                        }
                     }
                 } );
+
+                if ( !isPending )
+                {
+                    // Get all the attempts that exist after saving.
+                    allAchievementAttempts = GetAchievementAttemptsWithPersonAlias( attendanceRecordsPersonGuids, configuredAchievementTypeGuids );
+                }
             }
 
-            foreach ( var attendance in newOrUpdatedAttendances )
+            var result = new CheckInResultBag
             {
-                var person = preparedRequests
-                    .Where( r => r.Person.Guid == attendance.PersonGuid )
-                    .Select( r => r.Person )
-                    .FirstOrDefault();
+                Messages = new List<string>(),
+                Attendances = new List<RecordedAttendanceBag>()
+            };
+
+            foreach ( var attendance in attendances )
+            {
+                var person = people
+                    .Where( p => p.Guid == attendance.PersonGuid )
+                    .First();
 
                 var recordedAttendanceBag = new RecordedAttendanceBag
                 {
@@ -394,24 +493,7 @@ namespace Rock.CheckIn.v2
             }
             else
             {
-                /*
-                    7/16/2020 - JH
-                    If EnablePresence is true for this Check-in configuration, it will be the responsibility of the room
-                    attendants to mark a given Person as present, so do not set the 'Present..' property values below.
-                    Otherwise, set the values to match those of the Check-in values: the Person checking them in will
-                    have simultaneously marked them as present.
-
-                    Also, note that we sometimes reuse Attendance records (i.e. the Person was already checked into this
-                    schedule/group/location, might have already been checked out, and also might have been previously
-                    marked as present). In this case, the same 'Present..' rules apply, but we might need to go so far
-                    as to null-out the previously set 'Present..' property values, hence the conditional operators below.
-                */
-                attendance.PresentDateTime = TemplateConfiguration.IsPresenceEnabled ? ( DateTime? ) null : request.StartDateTime;
-                attendance.PresentByPersonAliasId = TemplateConfiguration.IsPresenceEnabled ? null : request.CheckedInByPersonAliasId;
-
-                attendance.CheckInStatus = TemplateConfiguration.IsPresenceEnabled
-                    ? Enums.Event.CheckInStatus.NotPresent
-                    : Enums.Event.CheckInStatus.Present;
+                UpdatePresentStatus( attendance );
             }
 
             return attendance;
@@ -580,6 +662,32 @@ namespace Rock.CheckIn.v2
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Updates the attendance record's present information.
+        /// </summary>
+        /// <param name="attendance">The attendance record.</param>
+        protected void UpdatePresentStatus( Attendance attendance)
+        {
+            /*
+                7/16/2020 - JH
+                If EnablePresence is true for this Check-in configuration, it will be the responsibility of the room
+                attendants to mark a given Person as present, so do not set the 'Present..' property values below.
+                Otherwise, set the values to match those of the Check-in values: the Person checking them in will
+                have simultaneously marked them as present.
+
+                Also, note that we sometimes reuse Attendance records (i.e. the Person was already checked into this
+                schedule/group/location, might have already been checked out, and also might have been previously
+                marked as present). In this case, the same 'Present..' rules apply, but we might need to go so far
+                as to null-out the previously set 'Present..' property values, hence the conditional operators below.
+            */
+            attendance.PresentDateTime = TemplateConfiguration.IsPresenceEnabled ? ( DateTime? ) null : attendance.StartDateTime;
+            attendance.PresentByPersonAliasId = TemplateConfiguration.IsPresenceEnabled ? null : attendance.CheckedInByPersonAliasId;
+
+            attendance.CheckInStatus = TemplateConfiguration.IsPresenceEnabled
+                ? Enums.Event.CheckInStatus.NotPresent
+                : Enums.Event.CheckInStatus.Present;
         }
 
         /// <summary>

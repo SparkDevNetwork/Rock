@@ -25,9 +25,12 @@ import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 
 /**
  * A set of items that represent the current selections that should be
- * made for a person.
+ * made for an attendee.
  */
 export type OpportunitySelectionBag = {
+    /** Gets or sets the ability level. */
+    abilityLevel?: CheckInItemBag | null;
+
     /** Gets or sets the area. */
     area?: CheckInItemBag | null;
 

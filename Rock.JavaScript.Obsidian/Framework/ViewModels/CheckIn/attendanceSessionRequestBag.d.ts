@@ -21,24 +21,39 @@
 // </copyright>
 //
 
+import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
 import { Guid } from "@Obsidian/Types";
-import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
 
 /**
- * The response that will be returned by the list family members check-in
- * REST endpoint.
+ * Identifies information about an attendance session that is being
+ * requested to be created.
  */
-export type FamilyMembersResponseBag = {
-    /** Gets or sets the current attendance records that can be checked out. */
-    currentlyCheckedInAttendances?: AttendanceBag[] | null;
-
-    /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+export type AttendanceSessionRequestBag = {
+    /**
+     * Gets or sets the unique identifier of the person performing the request
+     * to check-in the attendees.
+     */
+    checkedInByPersonGuid?: Guid | null;
 
     /**
-     * Gets or sets the people that can be potentially checked in for
-     * the family.
+     * Gets or sets the family unique identifier that was determined
+     * during the family search operation.
      */
-    people?: AttendeeBag[] | null;
+    familyGuid?: Guid | null;
+
+    /** Gets or sets the unique identifier of the check-in session. */
+    guid?: Guid | null;
+
+    /**
+     * Gets or sets a value indicating whether this session should create
+     * pending attendance records that will later be made permanent all
+     * at once.
+     */
+    isPending: boolean;
+
+    /** Gets or sets the mode used when searching for families. */
+    searchMode: FamilySearchMode;
+
+    /** Gets or sets the term used when searching for families. */
+    searchTerm?: string | null;
 };

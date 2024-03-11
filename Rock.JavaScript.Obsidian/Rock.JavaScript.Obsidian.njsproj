@@ -1074,10 +1074,14 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\workflowTriggerDetailBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\workflowTriggerDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\abilityLevelOpportunityBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\achievementBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\areaOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\attendanceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\attendanceRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\attendanceSessionRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\attendeeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\checkInItemBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\checkInResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\configurationAreaBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\configurationTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\familyBag.d.ts" />
@@ -1086,6 +1090,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\opportunityCollectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\opportunitySelectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\personBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\recordedAttendanceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\scheduleOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />
@@ -1156,8 +1161,12 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\attendeeOpportunitiesResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\configurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\configurationResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\confirmAttendanceOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\confirmAttendanceResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\familyMembersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\familyMembersResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\saveAttendanceOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\saveAttendanceResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\searchForFamiliesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\searchForFamiliesResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetChildrenOptionsBag.d.ts" />
