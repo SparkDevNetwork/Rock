@@ -19,6 +19,10 @@ import DropDownList from "./dropDownList";
 import RockFormField from "./rockFormField";
 import TextBox from "./textBox";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+import type { ValidationRule } from "@Obsidian/Types/validationRules";
+import { normalizeRules } from "@Obsidian/ValidationRules";
+import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 
 export type KeyValueItem = {
     key?: string | null;
@@ -59,7 +63,13 @@ export default defineComponent({
         displayValueFirst: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        allowHtml: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        ...standardRockFormFieldProps
     },
 
     emits: {
@@ -68,6 +78,8 @@ export default defineComponent({
 
     setup(props, { emit }) {
         const internalValues = ref(props.modelValue ?? []);
+
+        const fieldProps = useStandardRockFormFieldProps(props);
 
         /** The options to choose from in the drop down list */
         const options = computed((): ListItemBag[] => props.valueOptions ?? []);
@@ -98,7 +110,35 @@ export default defineComponent({
             internalValues.value.splice(index, 1);
         };
 
+        const augmentedRules = computed((): ValidationRule[] => {
+            const rules = normalizeRules(props.rules);
+
+            if (!props.allowHtml) {
+                rules.push(function (value: unknown) {
+                    const isArr = Array.isArray(value);
+                    if (isNullOrWhiteSpace(value) || (isArr && value.length === 0)) {
+                        return true;
+                    }
+
+                    if (isArr) {
+                        for (let i = 0; i < value.length; i++) {
+                            const {key:k, value:v} = value[i] as KeyValueItem;
+                            if (containsHtmlTag(String(k)) || containsHtmlTag(String(v))) {
+                                return "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
+                            }
+                        }
+                    }
+
+                    return true;
+                } as ValidationRule);
+            }
+
+            return rules;
+        });
+
         return {
+            augmentedRules,
+            fieldProps,
             internalValues,
             hasValues,
             options,
@@ -111,7 +151,9 @@ export default defineComponent({
 <RockFormField
     :modelValue="internalValues"
     formGroupClasses="key-value-list"
-    name="key-value-list">
+    name="key-value-list"
+    v-bind="field-props"
+    :rules="augmentedRules">
     <template #default="{uniqueId}">
         <div class="control-wrapper">
 <span :id="uniqueId" class="key-value-list">

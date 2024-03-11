@@ -18,6 +18,10 @@ import { computed } from "vue";
 import { defineComponent, PropType } from "vue";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import RockFormField from "./rockFormField";
+import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+import type { ValidationRule } from "@Obsidian/Types/validationRules";
+import { normalizeRules } from "@Obsidian/ValidationRules";
+
 
 export default defineComponent({
     name: "TextBox",
@@ -49,10 +53,6 @@ export default defineComponent({
             type: String as PropType<string>,
             default: ""
         },
-        formGroupClasses: {
-            type: String as PropType<string>,
-            default: ""
-        },
         rows: {
             type: Number as PropType<number>,
             default: 3
@@ -60,13 +60,20 @@ export default defineComponent({
         textMode: {
             type: String as PropType<string>,
             default: ""
-        }
+        },
+        allowHtml: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        ...standardRockFormFieldProps
     },
     emits: [
         "update:modelValue"
     ],
     setup(props, ctx) {
         const internalValue = useVModelPassthrough(props, "modelValue", ctx.emit);
+
+        const fieldProps = useStandardRockFormFieldProps(props);
 
         const isTextarea = computed((): boolean => {
             return props.textMode?.toLowerCase() === "multiline";
@@ -96,19 +103,33 @@ export default defineComponent({
             return isInputGroup.value ? "input-group" : "";
         });
 
+        const augmentedRules = computed((): ValidationRule[] => {
+            const rules = normalizeRules(props.rules);
+
+            if (!props.allowHtml) {
+                rules.push("nohtml");
+            }
+
+            return rules;
+        });
+
         return {
+            fieldProps,
             controlContainerClass,
             internalValue,
             isTextarea,
             charsRemaining,
-            countdownClass
+            countdownClass,
+            augmentedRules
         };
     },
     template: `
 <RockFormField
     v-model="internalValue"
     :formGroupClasses="'rock-text-box ' + formGroupClasses"
-    name="textbox">
+    name="textbox"
+    v-bind="fieldProps"
+    :rules="augmentedRules">
     <template #pre>
         <em v-if="showCountDown" class="pull-right badge" :class="countdownClass">
             {{charsRemaining}}

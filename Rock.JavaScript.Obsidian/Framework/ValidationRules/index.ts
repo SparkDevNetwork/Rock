@@ -380,3 +380,12 @@ defineRule("equalsfield", (value: unknown, params?: unknown[]) => {
     // Do not expose the value in case we are matching sensitive confirmation fields.
     return typeof error === "string" ? error : "must match value";
 });
+
+defineRule("nohtml", (value: unknown) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    return !/<\S/.test(String(value)) || "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
+});
