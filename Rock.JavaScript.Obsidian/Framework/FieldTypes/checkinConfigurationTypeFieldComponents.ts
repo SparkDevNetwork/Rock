@@ -151,6 +151,11 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
         watch([enhanceForLongLists, repeatColumns], () => {
+            if(repeatColumns.value === null) {
+                // The value of the repeatColumns field happens to be null when it is being updated by the individual in the remote device.
+                // Updating the configuration now might interfere with the update being made in the remote device.
+                return;
+            }
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");
             }
@@ -169,7 +174,7 @@ export const ConfigurationComponent = defineComponent({
     template: `
 <div>
     <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" text="Yes" help="When set, will render a searchable selection of options." />
-    <NumberBox v-model="repeatColumns" label="Number of Columns" help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space." />
+    <NumberBox v-if="!enhanceForLongLists" v-model="repeatColumns" label="Number of Columns" help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space." />
 </div>
 `
 });
