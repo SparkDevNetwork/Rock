@@ -26,6 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Tests.Integration.Crm.Personalization;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
@@ -37,178 +38,10 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Blocks
     [TestClass]
     public class PersonalizationTests : LavaIntegrationTestBase
     {
-        private const string SegmentAllMenGuid = "A8B006AF-1531-42B5-AD9A-570F97C8EFC1";
-        private const string SegmentSmallGroupGuid = "F189099D-B1B7-4067-BD28-D354110AAB1D";
-        private const string SegmentHasGivenGuid = "354C8281-C4B6-44E2-8BB3-4E5E58A656A5";
-        private const string SegmentTestInactiveGuid = "E5DBC839-1E16-4430-81A6-9EDEF9422B4F";
-
-        private const string FilterMobileDeviceGuid = "F4F31B2A-F525-4E52-8A6E-ECA1E1EBD75B";
-        private const string FilterQueryParameterInactiveGuid = "45AA8BAF-78F2-4220-93C7-0ADC7CB8CADD";
-        private const string FilterQueryParameter1Guid = "674BD50E-DA57-495F-B2EC-B16BC34BE2FA";
-        private const string FilterQueryParameter2Guid = "806079BE-768E-4707-9C86-47A73DB7A1C7";
-        private const string FilterDesktopDeviceGuid = "58DEE912-6EF2-43C8-BE89-452A830BB7EF";
-
         [TestInitialize]
         public void TestInitialize()
         {
-            var rockContext = new RockContext();
-
-            // Create Personalization Segments.
-            var personalizationService = new PersonalizationSegmentService( rockContext );
-
-            var segmentAllMen = personalizationService.Get( SegmentAllMenGuid.AsGuid() );
-            if ( segmentAllMen == null )
-            {
-                segmentAllMen = new PersonalizationSegment();
-                personalizationService.Add( segmentAllMen );
-            }
-
-            segmentAllMen.SegmentKey = "ALL_MEN";
-            segmentAllMen.Name = "All Men";
-            segmentAllMen.Guid = SegmentAllMenGuid.AsGuid();
-
-            var segmentSmallGroup = personalizationService.Get( SegmentSmallGroupGuid.AsGuid() );
-            if ( segmentSmallGroup == null )
-            {
-                segmentSmallGroup = new PersonalizationSegment();
-                personalizationService.Add( segmentSmallGroup );
-            }
-
-            segmentSmallGroup.SegmentKey = "IN_SMALL_GROUP";
-            segmentSmallGroup.Name = "Small Group";
-            segmentSmallGroup.Guid = SegmentSmallGroupGuid.AsGuid();
-            rockContext.SaveChanges();
-
-            var segmentHasGiven = personalizationService.Get( SegmentHasGivenGuid.AsGuid() );
-            if ( segmentHasGiven == null )
-            {
-                segmentHasGiven = new PersonalizationSegment();
-                personalizationService.Add( segmentHasGiven );
-            }
-
-            segmentHasGiven.SegmentKey = "HAS_GIVEN";
-            segmentHasGiven.Name = "Has Given";
-            segmentHasGiven.Guid = SegmentHasGivenGuid.AsGuid();
-            rockContext.SaveChanges();
-
-            var segmentTestInactive = personalizationService.Get( SegmentTestInactiveGuid.AsGuid() );
-            if ( segmentTestInactive == null )
-            {
-                segmentTestInactive = new PersonalizationSegment();
-                personalizationService.Add( segmentTestInactive );
-            }
-
-            segmentTestInactive.SegmentKey = "SEGMENT_INACTIVE";
-            segmentTestInactive.Name = "Inactive Segment";
-            segmentTestInactive.Guid = SegmentTestInactiveGuid.AsGuid();
-            segmentTestInactive.IsActive = false;
-            rockContext.SaveChanges();
-
-            // Add Ted Decker to segments: ALL_MEN, SMALL_GROUP, SEGMENT_INACTIVE
-            AddOrUpdatePersonalizationSegmentForPerson( rockContext, SegmentAllMenGuid, TestGuids.TestPeople.TedDecker );
-            AddOrUpdatePersonalizationSegmentForPerson( rockContext, SegmentSmallGroupGuid, TestGuids.TestPeople.TedDecker );
-            AddOrUpdatePersonalizationSegmentForPerson( rockContext, SegmentTestInactiveGuid, TestGuids.TestPeople.TedDecker );
-
-            // Add Bill Marble to segments: ALL_MEN
-            AddOrUpdatePersonalizationSegmentForPerson( rockContext, SegmentAllMenGuid, TestGuids.TestPeople.BillMarble );
-
-            rockContext.SaveChanges();
-
-            // Create Request Filters.
-            var filterService = new RequestFilterService( rockContext );
-
-            // Create Request Filter: Desktop Device.
-            var filterDesktop = filterService.Get( FilterDesktopDeviceGuid.AsGuid() );
-            if ( filterDesktop == null )
-            {
-                filterDesktop = new RequestFilter();
-                filterService.Add( filterDesktop );
-            }
-
-            filterDesktop.RequestFilterKey = "DESKTOP";
-            filterDesktop.Name = "Desktop Device";
-            filterDesktop.Guid = FilterDesktopDeviceGuid.AsGuid();
-
-            // Create Request Filter: Mobile Device.
-            var filterMobile = filterService.Get( FilterMobileDeviceGuid.AsGuid() );
-            if ( filterMobile == null )
-            {
-                filterMobile = new RequestFilter();
-                filterService.Add( filterMobile );
-            }
-
-            filterMobile.RequestFilterKey = "MOBILE";
-            filterMobile.Name = "Mobile Device";
-            filterMobile.Guid = FilterMobileDeviceGuid.AsGuid();
-
-            rockContext.SaveChanges();
-
-            // Create Request Filter: QueryStringParameter1.
-            AddOrUpdateRequestFilterForQueryString( rockContext, FilterQueryParameter1Guid, "QUERY_1", "parameter1", "true" );
-
-            // Create Request Filter: QueryStringParameter2.
-            AddOrUpdateRequestFilterForQueryString( rockContext, FilterQueryParameter2Guid, "QUERY_2", "parameter2", "true" );
-
-            // Create Request Filter: QueryStringParameter0, Inactive.
-            var inactiveFilter = AddOrUpdateRequestFilterForQueryString( rockContext, FilterQueryParameterInactiveGuid, "REQUEST_INACTIVE", "inactive", " true" );
-            inactiveFilter.IsActive = false;
-            rockContext.SaveChanges();
-        }
-
-        private RequestFilter AddOrUpdateRequestFilterForQueryString( RockContext rockContext, string guid, string filterKey, string parameterName, string parameterValue )
-        {
-            var filterService = new RequestFilterService( rockContext );
-
-            var newFilter = filterService.Get( guid.AsGuid() );
-            if ( newFilter == null )
-            {
-                newFilter = new RequestFilter();
-                filterService.Add( newFilter );
-            }
-
-            newFilter.RequestFilterKey = filterKey;
-            newFilter.Name = filterKey;
-            newFilter.Guid = guid.AsGuid();
-
-            var filterConfig = new Personalization.PersonalizationRequestFilterConfiguration();
-            filterConfig.QueryStringRequestFilterExpressionType = FilterExpressionType.Filter;
-            var queryStringFilter = new Personalization.QueryStringRequestFilter()
-            {
-                Key = parameterName,
-                ComparisonType = ComparisonType.EqualTo,
-                ComparisonValue = parameterValue,
-            };
-            filterConfig.QueryStringRequestFilters = new List<Personalization.QueryStringRequestFilter> { queryStringFilter };
-
-            newFilter.FilterConfiguration = filterConfig;
-
-            return newFilter;
-        }
-
-        private PersonAliasPersonalization AddOrUpdatePersonalizationSegmentForPerson( RockContext rockContext, string segmentGuid, string personGuid )
-        {
-            var pap = new PersonAliasPersonalization();
-            pap.PersonalizationType = PersonalizationType.Segment;
-
-            var personService = new PersonService( rockContext );
-            var person = personService.GetByGuids( new List<Guid> { personGuid.AsGuid() } ).FirstOrDefault();
-            pap.PersonAliasId = person.PrimaryAliasId.Value;
-
-            var personalizationService = new PersonalizationSegmentService( rockContext );
-            var segment = personalizationService.Get( segmentGuid.AsGuid() );
-            pap.PersonalizationEntityId = segment.Id;
-
-            var exists = rockContext.Set<PersonAliasPersonalization>()
-                .Any( x => x.PersonAliasId == person.PrimaryAliasId.Value
-                 && x.PersonalizationEntityId == segment.Id
-                 && x.PersonalizationType == PersonalizationType.Segment );
-
-            if ( !exists )
-            {
-                rockContext.Set<PersonAliasPersonalization>().Add( pap );
-            }
-
-            return pap;
+            PersonalizationDataManager.Instance.AddDataForTestPersonalization();
         }
 
         #region Personalize Block
@@ -677,7 +510,10 @@ No match!
 ";
             var expectedOutput = @"
 (Segment) ALL_MEN
+(Segment) ATTENDER
+(Segment) HAS_GIVEN
 (Segment) IN_SMALL_GROUP
+(Segment) MARRIED
 (Request Filter) QUERY_1
 (Request Filter) QUERY_2
 ";
@@ -720,7 +556,10 @@ No match!
             input = input.Replace( "<personGuid>", TestGuids.TestPeople.TedDecker );
             var expectedOutput = @"
 (Segment) ALL_MEN
+(Segment) ATTENDER
+(Segment) HAS_GIVEN
 (Segment) IN_SMALL_GROUP
+(Segment) MARRIED
 (Request Filter) QUERY_1
 (Request Filter) QUERY_2
 ";
@@ -742,7 +581,10 @@ No match!
             input = input.Replace( "<personGuid>", TestGuids.TestPeople.TedDecker );
             var expectedOutput = @"
 (Segment) ALL_MEN
+(Segment) ATTENDER
+(Segment) HAS_GIVEN
 (Segment) IN_SMALL_GROUP
+(Segment) MARRIED
 ";
 
             AssertOutputForPersonAndRequest( input,
@@ -761,7 +603,10 @@ No match!
             input = input.Replace( "<personGuid>", TestGuids.TestPeople.TedDecker );
             var expectedOutput = @"
 (Segment) ALL_MEN
+(Segment) ATTENDER
+(Segment) HAS_GIVEN
 (Segment) IN_SMALL_GROUP
+(Segment) MARRIED
 (Request Filter) QUERY_1
 (Request Filter) QUERY_2
 ";
@@ -783,7 +628,10 @@ No match!
 ";
             var expectedOutput = @"
 (Segment) ALL_MEN
+(Segment) ATTENDER
+(Segment) HAS_GIVEN
 (Segment) IN_SMALL_GROUP
+(Segment) MARRIED
 (Request Filter) QUERY_1
 (Request Filter) QUERY_2
 ";
@@ -945,14 +793,20 @@ Block 2.
 {% endfor %}
 ";
             var output = @"
-<p><strong>Before:</strong></p><br>
-Segment-ALL_MEN<p><strong>After:</strong></p><br>Segment-ALL_MEN<br>Segment-HAS_GIVEN<br>Segment-IN_SMALL_GROUP
+<p><strong>Before:</strong></p>
+<br>Segment-ALL_MEN
+<br>Segment-MARRIED
+<p><strong>After:</strong></p>
+<br>Segment-ALL_MEN
+<br>Segment-HAS_GIVEN
+<br>Segment-IN_SMALL_GROUP
+<br>Segment-MARRIED
 ";
             // This Lava filter has side-effects, so we need to reset the initial conditions before testing
             // each engine.
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // Establish the initial conditions by ensuring that Bill does not exist in the target segment.
+                // Establish the initial conditions by ensuring that Bill does not exist in the target segments.
                 RemoveSegmentForPerson( TestGuids.TestPeople.BillMarble, "IN_SMALL_GROUP" );
                 RemoveSegmentForPerson( TestGuids.TestPeople.BillMarble, "HAS_GIVEN" );
 
