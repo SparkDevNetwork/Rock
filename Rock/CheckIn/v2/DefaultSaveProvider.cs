@@ -665,43 +665,5 @@ namespace Rock.CheckIn.v2
         }
 
         #endregion
-
-    }
-
-    internal class PreparedAttendanceRequest
-    {
-        public AttendanceCheckInSession Session { get; set; }
-
-        public AttendanceCode AttendanceCode { get; set; }
-
-        public Person Person { get; set; }
-
-        public DefinedValueCache AbilityLevel { get; set; }
-
-        public GroupTypeCache Area { get; set; }
-
-        public GroupCache Group { get; set; }
-
-        public NamedLocationCache Location { get; set; }
-
-        public NamedScheduleCache Schedule { get; set; }
-
-        public bool IsPending { get; set; }
-
-        public DateTime StartDateTime { get; set; }
-
-        public Guid? FamilyGuid { get; set; }
-
-        public int? FamilyId { get; set; }
-
-        public DeviceCache Kiosk { get; set; }
-
-        public string ClientIpAddress { get; set; }
-
-        public int? CheckedInByPersonAliasId { get; set; }
-
-        public FamilySearchMode SearchMode { get; set; }
-
-        public string SearchTerm { get; set; }
     }
 }
