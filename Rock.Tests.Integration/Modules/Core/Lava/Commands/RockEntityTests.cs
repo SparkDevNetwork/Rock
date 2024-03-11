@@ -215,20 +215,23 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             var args = new TestDataHelper.Core.AddEntityAttributeArgs
             {
                 ForeignKey = "IntegrationTest",
-
-                EntityTypeIdentifier = SystemGuid.EntityType.DEFINED_VALUE,
-                Key = "Count",
-                FieldTypeIdentifier = SystemGuid.FieldType.INTEGER,
-                EntityTypeQualifierColumn = "DefinedTypeId"
+                ExistingItemStrategy= TestData.CreateExistingItemStrategySpecifier.Ignore,
+                Properties = new TestDataHelper.Core.EntityAttributeInfo
+                {
+                    EntityTypeIdentifier = SystemGuid.EntityType.DEFINED_VALUE,
+                    Key = "Count",
+                    FieldTypeIdentifier = SystemGuid.FieldType.INTEGER,
+                    EntityTypeQualifierColumn = "DefinedTypeId"
+                }
             };
 
             args.Guid = _Count1AttributeGuid.AsGuid();
-            args.EntityTypeQualifierValue = definedTypeTitle.Id.ToString();
+            args.Properties.EntityTypeQualifierValue = definedTypeTitle.Id.ToString();
 
             var attribute1 = TestDataHelper.Core.AddEntityAttribute( args, rockContext );
 
             args.Guid = _Count2AttributeGuid.AsGuid();
-            args.EntityTypeQualifierValue = definedTypeSuffix.Id.ToString();
+            args.Properties.EntityTypeQualifierValue = definedTypeSuffix.Id.ToString();
 
             var attribute2 = TestDataHelper.Core.AddEntityAttribute( args, rockContext );
 

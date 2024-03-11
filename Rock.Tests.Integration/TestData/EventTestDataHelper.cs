@@ -405,16 +405,36 @@ namespace Rock.Tests.Integration.Events
 
             var recurrence = GetICalDailyRecurrencePattern( args.EndDateTime, args.OccurrenceCount );
             var calendar = GetICalCalendar( calendarEvent, recurrence );
-            var schedule = CreateSchedule( calendar );
+
+            var scheduleService = new ScheduleService( rockContext );
+
+            Schedule schedule = null;
+            if ( args.Guid.HasValue )
+            {
+                schedule = scheduleService.Get( args.Guid.Value );
+                if ( schedule != null )
+                {
+                    if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Ignore )
+                    {
+                        return schedule;
+                    }
+                    if (args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Fail )
+                    {
+                        throw new Exception( "Schedule already exists." );
+                    }
+                }
+            }
+
+            if ( schedule == null )
+            {
+                schedule = CreateSchedule( calendar );
+            }
 
             if ( args.Guid != null )
             {
                 schedule.Guid = args.Guid.Value;
             }
 
-            rockContext = rockContext ?? new RockContext();
-
-            var scheduleService = new ScheduleService( rockContext );
             scheduleService.Add( schedule );
 
             rockContext.SaveChanges();

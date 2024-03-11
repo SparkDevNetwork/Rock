@@ -255,11 +255,12 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
 {% assign entityTypeId = '94FF79FE-4BB0-4F9E-AD74-14766433FC06' | GuidToId:'#InvalidEntityType#' %}
 ";
             var expectedOutput = @"
-LavaError: Invalid EntityType. [entityType=""#InvalidEntityType#""]
+Invalid Entity Type.
 ";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput,
-                template );
+            TestHelper.AssertTemplateOutput( new LavaTestOutputMatchRequirement( expectedOutput, LavaTestOutputMatchTypeSpecifier.Contains ),
+                template,
+                LavaTestRenderOptions.DefaultEngine.WithExceptionHandling(ExceptionHandlingStrategySpecifier.RenderDiagnosticOutput) );
         }
 
         private Dictionary<string, string> GetEntityTypeGuidToIdMap()

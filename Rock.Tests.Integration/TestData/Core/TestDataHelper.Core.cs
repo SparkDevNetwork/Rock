@@ -23,6 +23,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Tests.Shared;
 using System.Data.Entity;
+using Rock.Tests.Integration.TestData;
 
 namespace Rock.Tests.Integration
 {
@@ -35,7 +36,11 @@ namespace Rock.Tests.Integration
             /// <summary>
             /// Arguments for the AddEntityAttribute action.
             /// </summary>
-            public class AddEntityAttributeArgs
+            public class AddEntityAttributeArgs : CreateEntityActionArgsBase<EntityAttributeInfo>
+            {
+            }
+
+            public class EntityAttributeInfo
             {
                 public string ForeignKey { get; set; }
 
@@ -84,40 +89,61 @@ namespace Rock.Tests.Integration
 
                 foreach ( var attributeArgs in args )
                 {
-                    var fieldType = FieldTypeCache.Get( attributeArgs.FieldTypeIdentifier, allowIntegerIdentifier: true );
+                    var properties = attributeArgs.Properties;
+                    var fieldType = FieldTypeCache.Get( properties.FieldTypeIdentifier, allowIntegerIdentifier: true );
                     Assert.That.IsNotNull( fieldType, "Field Type is invalid." );
 
-                    var entityType = EntityTypeCache.Get( attributeArgs.EntityTypeIdentifier, allowIntegerIdentifier: true );
+                    var entityType = EntityTypeCache.Get( properties.EntityTypeIdentifier, allowIntegerIdentifier: true );
                     Assert.That.IsNotNull( entityType, "Entity Type is invalid." );
 
-                    var name = attributeArgs.Name;
+                    var name = properties.Name;
                     if ( string.IsNullOrWhiteSpace( name ) )
                     {
-                        name = attributeArgs.Key;
+                        name = properties.Key;
                     }
 
-                    var newAttribute = new Rock.Model.Attribute()
-                    {
-                        Key = attributeArgs.Key,
-                        Name = name,
-                        Guid = attributeArgs.Guid ?? Guid.NewGuid(),
-                        ForeignKey = attributeArgs.ForeignKey,
-                        EntityTypeId = entityType.Id,
-                        FieldTypeId = fieldType.Id,
-                        EntityTypeQualifierColumn = attributeArgs.EntityTypeQualifierColumn,
-                        EntityTypeQualifierValue = attributeArgs.EntityTypeQualifierValue
-                    };
+                    Rock.Model.Attribute newAttribute = null;
 
-                    if ( !string.IsNullOrWhiteSpace( attributeArgs.CategoryIdentifier ) )
+                    if ( attributeArgs.Guid.HasValue )
                     {
-                        var attributeCategory = attributeCategoryList.GetByIdentifier( attributeArgs.CategoryIdentifier );
+                        newAttribute = attributeService.Get( attributeArgs.Guid.Value );
+                        if ( newAttribute != null )
+                        {
+                            if ( attributeArgs.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Ignore )
+                            {
+                                continue;
+                            }
+                            else if ( attributeArgs.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Fail )
+                            {
+                                throw new Exception( "Attribute exists." );
+                            }
+                        }
+                    }
+
+                    if ( newAttribute == null )
+                    {
+                        newAttribute = new Rock.Model.Attribute();
+                    }
+
+                    newAttribute.Key = properties.Key;
+                    newAttribute.Name = name;
+                    newAttribute.Guid = attributeArgs.Guid ?? Guid.NewGuid();
+                    newAttribute.ForeignKey = attributeArgs.ForeignKey;
+                    newAttribute.EntityTypeId = entityType.Id;
+                    newAttribute.FieldTypeId = fieldType.Id;
+                    newAttribute.EntityTypeQualifierColumn = properties.EntityTypeQualifierColumn;
+                    newAttribute.EntityTypeQualifierValue = properties.EntityTypeQualifierValue;
+
+                    if ( !string.IsNullOrWhiteSpace( properties.CategoryIdentifier ) )
+                    {
+                        var attributeCategory = attributeCategoryList.GetByIdentifier( properties.CategoryIdentifier );
                         if ( attributeCategory == null )
                         {
-                            attributeCategory = attributeCategoryList.FirstOrDefault( a => a.Name.Equals( attributeArgs.CategoryIdentifier, StringComparison.OrdinalIgnoreCase ) );
+                            attributeCategory = attributeCategoryList.FirstOrDefault( a => a.Name.Equals( properties.CategoryIdentifier, StringComparison.OrdinalIgnoreCase ) );
                         }
                         if ( attributeCategory == null )
                         {
-                            throw new Exception( $"Invalid Category. [CategoryReference={ attributeArgs.CategoryIdentifier }]" );
+                            throw new Exception( $"Invalid Category. [CategoryReference={properties.CategoryIdentifier}]" );
                         }
 
                         newAttribute.Categories = new List<Category>();

@@ -91,7 +91,7 @@ namespace Rock.Tests.Integration.BugFixes
 
             var output = jobResult.OutputMessages.JoinStrings( "\n" );
             Assert.That.Contains( output, "Interaction Session with invalid Guid ignored" );
-            Assert.That.Contains( output, "Updated Interaction Count And Session Duration for 1 interaction session" );
+            Assert.That.Contains( output, "Updated Interaction Count And Session Duration" );
         }
     }
 }

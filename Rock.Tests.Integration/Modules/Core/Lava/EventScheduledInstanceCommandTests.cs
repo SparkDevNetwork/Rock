@@ -227,6 +227,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 
             var addScheduleArgs = new EventsDataManager.AddScheduleDailyRecurrenceActionArgs
             {
+                ExistingItemStrategy= TestData.CreateExistingItemStrategySpecifier.Ignore,
                 Guid = testScheduleGuid.AsGuid(),
                 StartDateTime = startDateTime,
                 EndDateTime = endDate,
@@ -234,6 +235,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
             };
             var createEventInfo = new CreateEventItemActionArgs
             {
+                ExistingItemStrategy = TestData.CreateExistingItemStrategySpecifier.Ignore,
                 Guid = NewEventGuid.AsGuid(),
                 Properties = new EventItemInfo
                 {
@@ -242,6 +244,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
             };
             var createOccurrenceInfo = new CreateEventItemOccurrenceActionArgs
             {
+                ExistingItemStrategy = TestData.CreateExistingItemStrategySpecifier.Ignore,
                 Properties = new EventItemOccurrenceInfo
                 {
                     EventIdentifier = NewEventGuid,
