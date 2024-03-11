@@ -170,7 +170,7 @@ export class Currency {
     // #region Properties
 
     /** Use this sparingly as it can produce rounding errors, of which this Currency type was created to avoid. */
-    get toNumber(): number {
+    get number(): number {
         return this.units * Math.pow(10, -1 * this.precision);
     }
 
@@ -311,6 +311,10 @@ export class Currency {
             return result;
         }).bind(this);
 
+        if (this.isZero) {
+            return $return(this);
+        }
+
         return $return(new Currency(
             {
                 units: -1 * this._currencyParts.units,
@@ -397,7 +401,7 @@ export class Currency {
         }
 
         const { units: otherUnits } = Currency.getCurrencyParts(currency, this.precision);
-
+        
         return $return(new Currency(
             {
                 units: this.units - otherUnits,
@@ -430,7 +434,7 @@ export class Currency {
      */
     format(formatString: string = CurrencyFormatString.default): string {
         const $return = ((formatString: string) => (result: string): string => {
-            this._currencyOptions.isLoggingEnabled && console.debug(`"${this.units}".format("${formatString}") => "${result}"`);
+            //this._currencyOptions.isLoggingEnabled && console.debug(`"${this.units}".format("${formatString}") => "${result}"`);
             return result;
         })(formatString);
 
@@ -681,14 +685,24 @@ export class Currency {
             return $return(this);
         }
 
-        if (this.abs().isLessThan(divisor)) {
+        // Some of the "shortcuts" below require that the divisor
+        // be treated as though it were units of a currency with the same precision.
+        const divisorAsCurrency = new Currency(
+            {
+                units: divisor,
+                precision: this.precision
+            },
+            this._currencyOptions
+        );
+
+        if (this.abs().isLessThan(divisorAsCurrency)) {
             if (!this.isLessThan(0)) {
                 // n % m = n, where |n| < m and n > 0
                 return $return(this);
             }
             else {
                 // n % m = n + m, where |n| < m and n < 0
-                return $return(this.add(divisor));
+                return $return(this.add(divisorAsCurrency));
             }
         }
 
@@ -737,7 +751,7 @@ export class Currency {
         }
     }
 
-    private static createZeroCurrency(options?: Partial<CurrencyOptions>): Currency {
+    static createZeroCurrency(options?: Partial<CurrencyOptions>): Currency {
         return new Currency(0, options);
     }
 
@@ -785,15 +799,22 @@ export class Currency {
         const isNegative: boolean = parts[0]?.startsWith("-") ?? false;
         const majorUnits: string = parts[0]?.substring(isNegative ? 1 : 0) ?? "";
         let minorUnits: string = parts[1]?.substring(0, targetPrecision + 1) ?? "";
+
         if (minorUnits.length === targetPrecision + 1) {
-            // Round up.
             if (minorUnits[targetPrecision] >= "5") {
+                // Round up.
                 minorUnits = (+minorUnits.slice(0, targetPrecision) + 1).toString();
             }
+            else {
+                // Truncate the extra precision.
+                minorUnits = minorUnits.slice(0, targetPrecision);
+            }
         }
+
         if (minorUnits.length < targetPrecision) {
             minorUnits = minorUnits + "0".repeat(targetPrecision - minorUnits.length);
         }
+
         const units: number = +(`${majorUnits}${minorUnits}`);
         return {
             units: units,

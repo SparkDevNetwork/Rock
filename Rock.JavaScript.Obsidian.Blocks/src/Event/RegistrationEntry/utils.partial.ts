@@ -139,10 +139,12 @@ export type TransactionFrequency = {
     /** Determines if this transaction frequency matches the definedValueGuid. */
     hasDefinedValueGuid(definedValueGuid: Guid): boolean;
 
-    /** Gets the number of transactions between the firstDate and secondDate. */
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number;
+    /** Gets the number of transactions between the first and second dates, inclusively. */
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number;
 
     getNextTransactionDate(): RockDateTime;
+
+    maxNumberOfPaymentsForOneYear: number;
 };
 
 const transactionFrequencyOneTime: TransactionFrequency = {
@@ -150,8 +152,13 @@ const transactionFrequencyOneTime: TransactionFrequency = {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyOneTime);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
-        if (firstDate.isEarlierThan(secondDate)) {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        // Add a day to the second date so this function only has to check
+        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
+        const dayAfterSecondDate = secondDateTime.addDays(1).date;
+        const firstDate = firstDateTime.date;
+
+        if (firstDate.isEarlierThan(dayAfterSecondDate)) {
             return 1;
         }
         else {
@@ -162,6 +169,10 @@ const transactionFrequencyOneTime: TransactionFrequency = {
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 1;
+    }
 };
 
 const transactionFrequencyWeekly: TransactionFrequency = {
@@ -169,24 +180,31 @@ const transactionFrequencyWeekly: TransactionFrequency = {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyWeekly);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
-        let date = firstDate;
-        let numberOfDays = 0;
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        // Add a day to the second date so this function only has to check
+        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
+        const dayAfterSecondDate = secondDateTime.addDays(1).date;
+        let date = firstDateTime.date;
 
-        while (date.isEarlierThan(secondDate)) {
-            numberOfDays++;
+        let numberOfTransactions = 0;
+
+        while (date.isEarlierThan(dayAfterSecondDate)) {
+            numberOfTransactions++;
 
             // Add 7 days.
             date = date.addDays(7);
-
         }
 
-        return numberOfDays;
+        return numberOfTransactions;
     },
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 52;
+    }
 };
 
 const transactionFrequencyBiWeekly: TransactionFrequency = {
@@ -194,23 +212,31 @@ const transactionFrequencyBiWeekly: TransactionFrequency = {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyBiweekly);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
-        let date = firstDate;
-        let numberOfDays = 0;
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        // Add a day to the second date so this function only has to check
+        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
+        const dayAfterSecondDate = secondDateTime.addDays(1).date;
+        let date = firstDateTime.date;
 
-        while (date.isEarlierThan(secondDate)) {
-            numberOfDays++;
+        let numberOfTransactions = 0;
+
+        while (date.isEarlierThan(dayAfterSecondDate)) {
+            numberOfTransactions++;
 
             // Add 14 days.
             date = date.addDays(14);
         }
 
-        return numberOfDays;
+        return numberOfTransactions;
     },
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 26;
+    }
 };
 
 // These must be strings.
@@ -218,36 +244,19 @@ type GetNextDayOption = "end-of-month";
 
 /**
  * Starting from the current date, finds the next day in the month matching one the specified days.
- * @param days Represents the days of the month; e.g., 1 is the 1st, 2 is the 2nd, etc.
+ * @param potentialDays Represents the days of the month; e.g., 1 is the 1st, 2 is the 2nd, etc.
  * @example
  * // Assume current date is 2-8-2024.
  * getNextDay(13, 15, 31); // 2-13-2024
  * getNextDay(1, 15); // 2-15-2024
  * getNextDay(1); // 3-1-2024
  * getNextDay(8); // 2-8-2024
+ * getNextDay("end-of-month"); // 2-29-2024
  */
-function getNextDay(...days: (number | GetNextDayOption)[]): RockDateTime | null {
-    let date = RockDateTime.now();
+function getNextDay(...potentialDays: (number | GetNextDayOption)[]): RockDateTime | null {
+    let date = RockDateTime.now().date;
 
-    // // Since there are a maximum of 31 days in a month,
-    // // stop processing after we've tried matching all days
-    // // between now and 31 days from now.
-    // let attempts = 0;
-    // while (attempts++ < 31) {
-    //     for (const day of days) {
-    //         if (date.day === day) {
-    //             return date;
-    //         }
-    //     }
-
-    //     // Try the next day.
-    //     date = date.addDays(1);
-    // }
-
-    // No matches were found.
-    //return null;
-
-    days = days
+    potentialDays = potentialDays
         // Remove invalid days.
         .filter(day => {
             if (typeof day === "number") {
@@ -282,43 +291,40 @@ function getNextDay(...days: (number | GetNextDayOption)[]): RockDateTime | null
             }
         });
 
-    // Try once per month for an entire year.
+    // Perform the search up to 12 times: once per month for an entire year.
     let attempt = 0;
     while (attempt++ <= 12) {
-        // Find the first day that either matches or is later than the current date.
-        for (let i = 0; i < days.length; i++) {
-            const day = days[i];
-            if (typeof day === "number") {
-                if (day === date.day) {
-                    // The current date was one of the provided days
-                    // so return it.
+        for (let i = 0; i < potentialDays.length; i++) {
+            const potentialDay = potentialDays[i];
+            if (typeof potentialDay === "number") {
+                if (potentialDay === date.day) {
+                    // The date matches the current potential day so return it.
                     return date;
                 }
-                else if (date.day < day) {
-                    // This is the first day that is later than the current date
-                    // so return it.
-                    // If date is 2-8-2024, and sortedDays[i] === 15
-                    // then add 15 minus 8 days to the date
-                    // to get a date of 2-15-2024.
-                    return date.addDays(day - date.day);
+                else if (date.day < potentialDay) {
+                    // The date is before the current potential day.
+                    // Since the potential days are in ascending order,
+                    // the potential day IS the next day that should be returned.
+                    // Bump the date forward to the next day and return it.
+                    return date.addDays(potentialDay - date.day);
                 }
             }
             // Check special options.
-            else if (day === "end-of-month") {
-                // All other days in the list were before the current date
-                // and the next allowed date is the end of the current month,
-                // so return the end of the current month.
-                // TODO JMH Does the date get modified by calling endOfMonth?
-                return date.endOfMonth();
+            else if (potentialDay === "end-of-month") {
+                // The date is after all the potential days
+                // and the next potential day that can be returned is the
+                // end of the current month.
+                // Bump the date forward to the end of the current month and return it.
+                return date.endOfMonth().date;
             }
         }
 
-        // If we get here, then all the provided dates are before the current date.
-        // Move to the start of the next month and try again.
-            date = date.addDays(1 - date.day).addMonths(1);
+        // If this code is reached, then all the potential days are before the current date.
+        // Move to the start of the next month and try searching again.
+        date = date.addDays(1 - date.day).addMonths(1);
     }
 
-    // This shouldn't happen but return null if we get here.
+    // If this code is reached, then it's likely that the arguments are invalid.
     return null;
 }
 
@@ -327,8 +333,13 @@ const transactionFrequencyTwiceAMonth: TransactionFrequency = {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyFirstAndFifteenth) || areEqual(definedValueGuid, DefinedValue.TransactionFrequencyTwicemonthly);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
-        let date = firstDate;
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        // For twice a month frequency, this will check how many 1st and 15th days are between the two dates.
+
+        // Add a day to the second date so this function only has to check
+        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
+        const dayAfterSecondDate = secondDateTime.addDays(1).date;
+        let date = firstDateTime.date;
 
         if (date.day > 15) {
             // Set the date to the 1st of the next month.
@@ -339,11 +350,11 @@ const transactionFrequencyTwiceAMonth: TransactionFrequency = {
             date = date.addDays(15 - date.day);
         }
 
-        let numberOfDays = 0;
+        let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(secondDate)) {
+        while (date.isEarlierThan(dayAfterSecondDate)) {
             if (date.day === 1 || date.day === 15) {
-                numberOfDays++;
+                numberOfTransactions++;
             }
 
             if (date.day < 15) {
@@ -356,12 +367,16 @@ const transactionFrequencyTwiceAMonth: TransactionFrequency = {
             }
         }
 
-        return numberOfDays;
+        return numberOfTransactions;
     },
 
     getNextTransactionDate(): RockDateTime {
         return getNextDay(1, 15) ?? RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 24;
+    }
 };
 
 const transactionFrequencyMonthly: TransactionFrequency = {
@@ -369,24 +384,37 @@ const transactionFrequencyMonthly: TransactionFrequency = {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyMonthly);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
-        let date = firstDate;
-        let numberOfDays = 0;
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        // Add a day to the second date so this function only has to check
+        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
+        const dayAfterSecondDate = secondDateTime.addDays(1).date;
+        let date = firstDateTime.date;
 
-        while (date.isEarlierThan(secondDate)) {
-            numberOfDays++;
+        // If the first date is the last day of the month
+        // then this function will increment by 1 months and
+        // automatically choose the last day of the month.
+        const getNextDate: (d: RockDateTime) => RockDateTime =
+            date.isEqualTo(firstDateTime.endOfMonth().date)
+            ? (d: RockDateTime) => d.addMonths(1).endOfMonth().date
+            : (d: RockDateTime) => d.addMonths(1);
 
-            // Ideally, we would keep adding 1 month, but this might not work if we start on the 31st of a month and the following month only has 30 days.
-            // TODO JMH test if RockDateTime can handle this.
-            date = date.addMonths(1);
+        let numberOfTransactions = 0;
+
+        while (date.isEarlierThan(dayAfterSecondDate)) {
+            numberOfTransactions++;
+            date = getNextDate(date);
         }
 
-        return numberOfDays;
+        return numberOfTransactions;
     },
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 12;
+    }
 };
 
 const transactionFrequencyQuarterly: TransactionFrequency = {
@@ -394,16 +422,25 @@ const transactionFrequencyQuarterly: TransactionFrequency = {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyQuarterly);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
-        let date = firstDate;
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        // Add a day to the second date so this function only has to check
+        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
+        const dayAfterSecondDate = secondDateTime.addDays(1).date;
+        let date = firstDateTime.date;
+
+        // If the first date is the last day of the month
+        // then this function will increment by 3 months and
+        // automatically choose the last day of the month.
+        const getNextDate: (d: RockDateTime) => RockDateTime =
+            date.isEqualTo(firstDateTime.endOfMonth().date)
+            ? (d: RockDateTime) => d.addMonths(3).endOfMonth().date
+            : (d: RockDateTime) => d.addMonths(3);
+
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(secondDate)) {
+        while (date.isEarlierThan(dayAfterSecondDate)) {
             numberOfTransactions++;
-
-            // Ideally, we would keep adding 3 months, but this might not work if we start on the 31st of a month and the third following month only has 30 days.
-            // TODO JMH test if RockDateTime can handle this.
-            date = date.addMonths(3);
+            date = getNextDate(date);
         }
 
         return numberOfTransactions;
@@ -412,6 +449,10 @@ const transactionFrequencyQuarterly: TransactionFrequency = {
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 4;
+    }
 };
 
 const transactionFrequencyTwiceAYear: TransactionFrequency = {
@@ -419,16 +460,25 @@ const transactionFrequencyTwiceAYear: TransactionFrequency = {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyTwiceyearly);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
-        let date = firstDate;
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        // Add a day to the second date so this function only has to check
+        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
+        const dayAfterSecondDate = secondDateTime.addDays(1).date;
+        let date = firstDateTime.date;
+
+        // If the first date is the last day of the month
+        // then this function will increment by 6 months and
+        // automatically choose the last day of the month.
+        const getNextDate: (d: RockDateTime) => RockDateTime =
+            date.isEqualTo(firstDateTime.endOfMonth().date)
+            ? (d: RockDateTime) => d.addMonths(6).endOfMonth().date
+            : (d: RockDateTime) => d.addMonths(6);
+
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(secondDate)) {
+        while (date.isEarlierThan(dayAfterSecondDate)) {
             numberOfTransactions++;
-
-            // Ideally, we would keep adding 6 months, but this might not work if we start on the 31st of a month and the sixth following month only has 30 days.
-            // TODO JMH test if RockDateTime can handle this.
-            date = date.addMonths(6);
+            date = getNextDate(date);
         }
 
         return numberOfTransactions;
@@ -437,6 +487,10 @@ const transactionFrequencyTwiceAYear: TransactionFrequency = {
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 2;
+    }
 };
 
 const transactionFrequencyYearly: TransactionFrequency = {
@@ -444,16 +498,23 @@ const transactionFrequencyYearly: TransactionFrequency = {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyYearly);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
-        let date = firstDate;
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        let date = firstDateTime.date;
+        const dayAfterSecondDate = secondDateTime.addDays(1).date;
+
+        // If the first date is the last day of the month
+        // then this function will increment by 1 year and
+        // automatically choose the last day of the month.
+        const getNextDate: (d: RockDateTime) => RockDateTime =
+            date.isEqualTo(firstDateTime.endOfMonth().date)
+            ? (d: RockDateTime) => d.addYears(1).endOfMonth().date
+            : (d: RockDateTime) => d.addYears(1);
+
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(secondDate)) {
+        while (date.isEarlierThan(dayAfterSecondDate)) {
             numberOfTransactions++;
-
-            // Ideally, we would keep adding 1 year, but this might not work if we start on the 29th of February in a leap year and the following year only has 28 days.
-            // TODO JMH test if RockDateTime can handle this.
-            date = date.addYears(1);
+            date = getNextDate(date);
         }
 
         return numberOfTransactions;
@@ -462,6 +523,10 @@ const transactionFrequencyYearly: TransactionFrequency = {
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 1;
+    }
 };
 
 const transactionFrequencies: TransactionFrequency[] = [
@@ -476,17 +541,21 @@ const transactionFrequencies: TransactionFrequency[] = [
 ];
 
 export const nullTransactionFrequency: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
+    hasDefinedValueGuid(_definedValueGuid: string): boolean {
         return false;
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDate: RockDateTime, secondDate: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(_firstDateTime: RockDateTime, _secondDateTime: RockDateTime): number {
         return 0;
     },
 
     getNextTransactionDate(): RockDateTime {
         return RockDateTime.now().date;
     },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 0;
+    }
 };
 
 export function getTransactionFrequency(definedValueGuid: Guid): TransactionFrequency | null {
