@@ -157,7 +157,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(startDate, props.modelValue.startDate ?? "");
         updateRefValue(endDate, props.modelValue.startDate ?? "");
-        updateRefValue(totalAmount, props.modelValue.totalAmount ?? 0);
+        updateRefValue(totalAmount, props.modelValue.totalAmount ?? null);
         updateRefValue(groupGuid, props.modelValue.group?.value ?? "");
         updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue ?? {});
         updateRefValue(personAlias, props.modelValue.personAlias ?? {});
