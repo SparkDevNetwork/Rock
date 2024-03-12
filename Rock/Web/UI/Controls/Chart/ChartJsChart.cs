@@ -357,28 +357,49 @@ namespace Rock.Web.UI.Controls
         {
             var rockLegendPosition = this.LegendPosition?.ToLower() ?? string.Empty;
 
-            if ( rockLegendPosition == "ne" )
+            if ( rockLegendPosition == "n" )
+            {
+                legendPosition = "top";
+                legendAlignment = "center";
+            }
+            else if ( rockLegendPosition == "ne" )
             {
                 legendPosition = "top";
                 legendAlignment = "end";
             }
-            else if ( rockLegendPosition.StartsWith( "nw" ) )
+            else if ( rockLegendPosition == "e" )
             {
-                legendPosition = "top";
+                legendPosition = "right";
+                legendAlignment = "end";
+            }
+            else if ( rockLegendPosition == "se" )
+            {
+                legendPosition = "bottom";
+                legendAlignment = "end";
+            }
+            else if ( rockLegendPosition == "s" )
+            {
+                legendPosition = "bottom";
+                legendAlignment = "center";
+            }
+            else if ( rockLegendPosition == "sw" )
+            {
+                legendPosition = "bottom";
                 legendAlignment = "start";
             }
-            else if ( rockLegendPosition.StartsWith( "se" ) )
+            else if ( rockLegendPosition ==  "w" )
             {
-                legendPosition = "bottom";
-                legendAlignment = "end";
+                legendPosition = "left";
+                legendAlignment = "start";
             }
-            else if ( rockLegendPosition.StartsWith( "sw" ) )
+            else if ( rockLegendPosition == "nw" )
             {
-                legendPosition = "bottom";
+                legendPosition = "top";
                 legendAlignment = "start";
             }
             else
             {
+                // Default to bottom-centre.
                 legendPosition = "bottom";
                 legendAlignment = "center";
             }
