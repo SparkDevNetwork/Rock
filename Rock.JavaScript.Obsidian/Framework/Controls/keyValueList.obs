@@ -2,7 +2,8 @@
 <template>
     <RockFormField :modelValue="internalValues"
                    formGroupClasses="key-value-list"
-                   name="key-value-list">
+                   name="key-value-list"
+                   watchDeep>
         <template #default="{ uniqueId }">
             <div class="control-wrapper">
                 <span :id="uniqueId">
