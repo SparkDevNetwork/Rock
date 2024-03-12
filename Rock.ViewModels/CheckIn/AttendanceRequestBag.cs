@@ -38,5 +38,12 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value>The selections.</value>
         public OpportunitySelectionBag Selection { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note to put on the attendance record. If an existing
+        /// attendance record is updated then this will replace the note value.
+        /// </summary>
+        /// <value>The note text.</value>
+        public string Note { get; set; }
     }
 }

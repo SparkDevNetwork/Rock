@@ -342,6 +342,7 @@ namespace Rock.CheckIn.v2
                 Guid = achievementAttempt.Guid,
                 Name = AchievementTypeCache.Get( achievementAttempt.AchievementTypeId )?.Name ?? "Unknown Achievement",
                 IsSuccess = achievementAttempt.IsSuccessful,
+                IsClosed = achievementAttempt.IsClosed,
                 Progress = achievementAttempt.Progress,
                 StartDateTime = achievementAttempt.AchievementAttemptStartDateTime.ToRockDateTimeOffset(),
                 EndDateTime = achievementAttempt.AchievementAttemptEndDateTime?.ToRockDateTimeOffset()

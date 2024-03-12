@@ -4,6 +4,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
 import { Ref, reactive, ref } from "vue";
 
+export const SimulatorNoteKey: string = "Simulated Attendance a3585260-fdaa-483e-bcc2-5bf9ab6bebc5";
+
 export type CheckInSimulatorOptionsBag = {
     configurations: ConfigurationTemplateBag[] | null;
 

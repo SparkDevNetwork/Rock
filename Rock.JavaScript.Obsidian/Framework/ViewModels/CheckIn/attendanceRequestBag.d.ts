@@ -30,6 +30,12 @@ import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunit
  */
 export type AttendanceRequestBag = {
     /**
+     * Gets or sets the note to put on the attendance record. If an existing
+     * attendance record is updated then this will replace the note value.
+     */
+    note?: string | null;
+
+    /**
      * Gets or sets the unique identifier of the person to create an
      * attendance record for.
      */

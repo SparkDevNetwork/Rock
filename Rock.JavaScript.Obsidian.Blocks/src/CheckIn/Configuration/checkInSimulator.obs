@@ -31,6 +31,19 @@
             <SelectAttendeePanel v-model:attendeeNumber="selectAttendeeNumber"
                                  :attendee="selectAttendeeData" />
         </StepPanel>
+
+        <StepPanel title="Save Attendance"
+                   :step="saveAttendanceStep"
+                   :isBenchmarkReady="isBenchmarkReady"
+                   @executeAction="executeAction($event, saveAttendanceStep)">
+            <SaveAttendancePanel v-model:abilityLevelNumber="saveAttendanceAbilityLevelNumber"
+                                 v-model:areaNumber="saveAttendanceAreaNumber"
+                                 v-model:groupNumber="saveAttendanceGroupNumber"
+                                 v-model:locationNumber="saveAttendanceLocationNumber"
+                                 v-model:scheduleNumber="saveAttendanceScheduleNumber"
+                                 v-model:isPending="saveAttendanceIsPending"
+                                 :attendance="saveAttendanceData" />
+        </StepPanel>
     </Panel>
 </template>
 
@@ -47,9 +60,11 @@
     import { FamilyMembersResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersResponseBag";
     import { AttendeeOpportunitiesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesOptionsBag";
     import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
+    import { SaveAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceOptionsBag";
+    import { SaveAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceResponseBag";
     import { computed, ref, watch } from "vue";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { CheckInSimulatorOptionsBag, CheckInStep, Configuration, executeStepAction } from "./CheckInSimulator/utils.partial";
+    import { CheckInSimulatorOptionsBag, CheckInStep, Configuration, SimulatorNoteKey, executeStepAction } from "./CheckInSimulator/utils.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { Guid } from "@Obsidian/Types";
     import ConfigurationPanel from "./CheckInSimulator/configurationPanel.partial.obs";
@@ -57,6 +72,10 @@
     import SelectAttendeePanel from "./CheckInSimulator/selectAttendeePanel.partial.obs";
     import FamilySearchPanel from "./CheckInSimulator/familySearchPanel.partial.obs";
     import SelectFamilyPanel from "./CheckInSimulator/selectFamilyPanel.partial.obs";
+    import SaveAttendancePanel from "./CheckInSimulator/saveAttendancePanel.partial.obs";
+    import { CheckInResultBag } from "@Obsidian/ViewModels/CheckIn/checkInResultBag";
+    import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<CheckInSimulatorOptionsBag>();
     const http = useHttp();
@@ -64,6 +83,7 @@
     // #region Values
 
     const configuration = ref<Configuration>({});
+    let sessionGuid: Guid = newGuid();
 
     // #endregion
 
@@ -127,7 +147,7 @@
             url.searchParams.delete("familyNumber");
         }
 
-        if (selectFamilyNumber.value !== 1) {
+        if (selectAttendeeNumber.value !== 1) {
             url.searchParams.set("attendeeNumber", selectAttendeeNumber.value.toString());
         }
         else {
@@ -224,6 +244,10 @@
         const response = await http.post<FamilyMembersResponseBag>("/api/v2/checkin/FamilyMembers", undefined, request);
 
         if (response.isSuccess && response.data) {
+            if (!selectFamilyData.value || selectFamilyData.value.familyGuid !== response.data.familyGuid) {
+                sessionGuid = newGuid();
+            }
+
             selectFamilyData.value = response.data;
         }
         else {
@@ -261,6 +285,108 @@
 
         if (response.isSuccess && response.data) {
             selectAttendeeData.value = response.data;
+        }
+        else {
+            selectFamilyData.value = undefined;
+            throw new Error(response.errorMessage ?? undefined);
+        }
+    }
+
+    // #endregion
+
+    // #region Save Attendance
+
+    const saveAttendanceStep = new CheckInStep(executeSaveAttendanceStep, selectAttendeeStep,
+        () => !!selectAttendeeData.value);
+    const saveAttendanceAbilityLevelNumber = ref(0);
+    const saveAttendanceAreaNumber = ref(1);
+    const saveAttendanceGroupNumber = ref(1);
+    const saveAttendanceLocationNumber = ref(1);
+    const saveAttendanceScheduleNumber = ref(1);
+    const saveAttendanceIsPending = ref(true);
+    const saveAttendanceData = ref<CheckInResultBag>();
+
+    /**
+     * Executes the save attendance process.
+     */
+    async function executeSaveAttendanceStep(): Promise<void> {
+        if (!selectFamilyData.value?.people || selectAttendeeNumber.value > selectFamilyData.value.people.length) {
+            throw new Error("Invalid attendee selected.");
+        }
+
+        if (!selectAttendeeData.value?.opportunities
+            || !selectAttendeeData.value.opportunities.abilityLevels
+            || !selectAttendeeData.value.opportunities.areas
+            || !selectAttendeeData.value.opportunities.groups
+            || !selectAttendeeData.value.opportunities.locations
+            || !selectAttendeeData.value.opportunities.schedules) {
+            throw new Error("Invalid attendee opportunities.");
+        }
+
+        if (saveAttendanceAbilityLevelNumber.value > selectAttendeeData.value.opportunities.abilityLevels.length) {
+            throw new Error("Invalid ability level selected.");
+        }
+
+        if (saveAttendanceAreaNumber.value > selectAttendeeData.value.opportunities.areas.length) {
+            throw new Error("Invalid area selected.");
+        }
+
+        if (saveAttendanceGroupNumber.value > selectAttendeeData.value.opportunities.groups.length) {
+            throw new Error("Invalid group selected.");
+        }
+
+        if (saveAttendanceLocationNumber.value > selectAttendeeData.value.opportunities.locations.length) {
+            throw new Error("Invalid location selected.");
+        }
+
+        if (saveAttendanceScheduleNumber.value > selectAttendeeData.value.opportunities.schedules.length) {
+            throw new Error("Invalid schedule selected.");
+        }
+
+        const selection: OpportunitySelectionBag = {
+            area: {
+                guid: selectAttendeeData.value.opportunities.areas[saveAttendanceAreaNumber.value - 1].guid
+            },
+            group: {
+                guid: selectAttendeeData.value.opportunities.groups[saveAttendanceGroupNumber.value - 1].guid
+            },
+            location: {
+                guid: selectAttendeeData.value.opportunities.locations[saveAttendanceLocationNumber.value - 1].guid
+            },
+            schedule: {
+                guid: selectAttendeeData.value.opportunities.schedules[saveAttendanceScheduleNumber.value - 1].guid
+            }
+        };
+
+        if (saveAttendanceAbilityLevelNumber.value > 0) {
+            selection.abilityLevel = {
+                guid: selectAttendeeData.value.opportunities.abilityLevels[saveAttendanceAbilityLevelNumber.value - 1].guid
+            };
+        }
+
+        const request: SaveAttendanceOptionsBag = {
+            templateGuid: configuration.value.templateGuid,
+            kioskGuid: configuration.value.kioskGuid,
+            session: {
+                guid: sessionGuid,
+                familyGuid: selectFamilyData.value.familyGuid,
+                isPending: saveAttendanceIsPending.value,
+                searchMode: <FamilySearchMode>toNumber(familySearchType.value),
+                searchTerm: familySearchTerm.value
+            },
+            requests: [
+                {
+                    personGuid: selectFamilyData.value.people[selectAttendeeNumber.value - 1].person?.guid ?? "",
+                    selection,
+                    note: SimulatorNoteKey
+                }
+            ]
+        };
+
+        const response = await http.post<SaveAttendanceResponseBag>("/api/v2/checkin/SaveAttendance", undefined, request);
+
+        if (response.isSuccess && response.data) {
+            saveAttendanceData.value = response.data;
         }
         else {
             selectFamilyData.value = undefined;

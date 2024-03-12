@@ -133,5 +133,12 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value>The search term used to find the family of this attendee.</value>
         public string SearchTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note to put on the attendance record. If an existing
+        /// attendance record is updated then this will replace the note value.
+        /// </summary>
+        /// <value>The note text.</value>
+        public string Note { get; set; }
     }
 }

@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -23,7 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Data;
-using Rock.Enums.CheckIn;
+using Rock.Model;
 using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -48,6 +47,8 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Rock.SystemGuid.BlockTypeGuid( "30002636-494b-4fdc-848c-a816f9291764" )]
     public class CheckInSimulator : RockBlockType
     {
+        public const string SimulatorNoteKey = "Simulated Attendance a3585260-fdaa-483e-bcc2-5bf9ab6bebc5";
+
         public override object GetObsidianBlockInitialization()
         {
             using ( var rockContext = new RockContext() )
@@ -70,6 +71,40 @@ namespace Rock.Blocks.CheckIn.Configuration
                 };
             }
         }
+
+        #region Block Actions
+
+        /// <summary>
+        /// Deletes the simulated attendance records for today.
+        /// </summary>
+        /// <returns>The result of the operation.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteSimulatedAttendance()
+        {
+            var today = RockDateTime.Now.Date;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceService = new AttendanceService( rockContext );
+
+                var attendances = attendanceService.Queryable()
+                    .Where( a => a.StartDateTime >= today && a.Note == SimulatorNoteKey )
+                    .ToList();
+
+                if ( !attendances.Any() )
+                {
+                    return ActionOk( "No attendance records found." );
+                }
+
+                attendanceService.DeleteRange( attendances );
+
+                rockContext.SaveChanges();
+
+                return ActionOk( $"Deleted {attendances.Count} attendance records." );
+            }
+        }
+
+        #endregion
 
         private class CheckInSimulatorOptionsBag
         {

@@ -154,7 +154,8 @@ namespace Rock.CheckIn.v2
                     Kiosk = kiosk,
                     ClientIpAddress = clientIpAddress,
                     CheckedInByPersonAliasId = checkedInByPersonAliasId,
-                    StartDateTime = now
+                    StartDateTime = now,
+                    Note = r.Note
                 } );
 
             // See if there are any invalid requests that we should bail out for.
@@ -486,6 +487,7 @@ namespace Rock.CheckIn.v2
             attendance.CheckedInByPersonAliasId = request.CheckedInByPersonAliasId;
             attendance.DeviceId = request.Kiosk?.Id;
             attendance.AttendanceCodeId = request.AttendanceCode.Id;
+            attendance.Note = request.Note;
 
             if ( request.IsPending )
             {

@@ -61,6 +61,14 @@
                            help="The maximum number of seconds to run during a benchmark." />
             </div>
         </div>
+
+        <div class="actions">
+            <RockButton btnType="default"
+                        autoDisable
+                        @click="deleteAttendance">
+                Delete Today's Simulated Attendance
+            </RockButton>
+        </div>
     </Panel>
 </template>
 
@@ -69,6 +77,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { CheckInSimulatorOptionsBag, Configuration } from "./utils.partial";
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
@@ -77,6 +86,7 @@
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         blockConfig: {
@@ -94,6 +104,7 @@
         (event: "update:config", value: Configuration): void;
     }>();
 
+    const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 
     const templateItems: ListItemBag[] = props.blockConfig.configurations?.map(c => ({
@@ -241,6 +252,20 @@
 
         if (window.location.href != url.href) {
             history.replaceState(undefined, "", url);
+        }
+    }
+
+    /**
+     * Calls the block action to delete today's simulated attendance data.
+     */
+    async function deleteAttendance(): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteSimulatedAttendance");
+
+        if (result.isSuccess && result.data) {
+            alert(result.data);
+        }
+        else {
+            alert(result.errorMessage || "Unknown error trying to delete attendance.");
         }
     }
 

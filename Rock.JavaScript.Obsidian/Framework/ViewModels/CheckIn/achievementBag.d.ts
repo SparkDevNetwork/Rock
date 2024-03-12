@@ -31,6 +31,12 @@ export type AchievementBag = {
     /** Gets or sets the unique identifier. */
     guid?: Guid | null;
 
+    /**
+     * Gets or sets a value indicating whether this achievement is closed.
+     * A closed achievement will not be updated further.
+     */
+    isClosed: boolean;
+
     /** Gets or sets a value indicating whether this achievement was successful. */
     isSuccess: boolean;
 
