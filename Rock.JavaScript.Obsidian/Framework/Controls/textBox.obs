@@ -1,6 +1,10 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-model="internalValue" :formGroupClasses="'rock-text-box ' + formGroupClasses" name="textbox">
+    <RockFormField v-model="internalValue"
+                   name="textbox"
+                   v-bind="fieldProps"
+                   :rules="augmentedRules"
+                   :formGroupClasses="'rock-text-box ' + formGroupClasses">
         <template #pre>
             <em v-if="showCountDown" class="pull-right badge" :class="countdownClass">
                 {{ charsRemaining }}
@@ -26,6 +30,9 @@
     import { PropType } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import RockFormField from "./rockFormField.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import type { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -67,7 +74,12 @@
         size: {
             type: String as PropType<"small" | "medium" | "large">,
             default: "medium"
-        }
+        },
+        allowHtml: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -77,6 +89,7 @@
     const slots = useSlots();
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const fieldProps = useStandardRockFormFieldProps(props);
 
     const isTextarea = computed((): boolean => {
         return props.textMode?.toLowerCase() === "multiline";
@@ -117,5 +130,15 @@
             "input-sm": props.size == "small",
             "input-lg": props.size == "large"
         };
+    });
+
+    const augmentedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (!props.allowHtml) {
+            rules.push("nohtml");
+        }
+
+        return rules;
     });
 </script>

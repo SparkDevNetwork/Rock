@@ -382,6 +382,8 @@ defineRule("equalsfield", (value: unknown, params?: unknown[]) => {
 });
 
 defineRule("nohtml", (value: unknown) => {
+    console.log("Validating", value);
+
     // Field is empty, should pass
     if (isNullOrWhiteSpace(value)) {
         return true;
