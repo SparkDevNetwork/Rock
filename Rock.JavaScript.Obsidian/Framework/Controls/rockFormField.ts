@@ -45,6 +45,11 @@ export default defineComponent({
             required: true
         },
 
+        watchDeep: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         ...standardRockFormFieldProps
     },
 
@@ -96,7 +101,8 @@ export default defineComponent({
                 formState?.setError(uniqueId, fieldLabel.value, "");
             }
         }, {
-            immediate: true
+            immediate: true,
+            deep: props.watchDeep
         });
 
         // If we are removed from the DOM completely, clear the error before we go.

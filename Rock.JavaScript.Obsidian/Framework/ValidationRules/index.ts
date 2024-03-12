@@ -19,7 +19,7 @@ import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import DateKey from "@Obsidian/Utility/dateKey";
 import { isEmail } from "@Obsidian/Utility/email";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 import { isUrl } from "@Obsidian/Utility/url";
 import { containsRequiredRule, defineRule, normalizeRules, parseRule, rulesPropType, validateValue } from "@Obsidian/Utility/validationRules";
 
@@ -387,5 +387,5 @@ defineRule("nohtml", (value: unknown) => {
         return true;
     }
 
-    return !/<\S/.test(String(value)) || "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
+    return !containsHtmlTag(String(value)) || "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
 });

@@ -152,8 +152,9 @@ export default defineComponent({
     :modelValue="internalValues"
     formGroupClasses="key-value-list"
     name="key-value-list"
-    v-bind="field-props"
-    :rules="augmentedRules">
+    v-bind="fieldProps"
+    :rules="augmentedRules"
+    watchDeep>
     <template #default="{uniqueId}">
         <div class="control-wrapper">
 <span :id="uniqueId" class="key-value-list">
