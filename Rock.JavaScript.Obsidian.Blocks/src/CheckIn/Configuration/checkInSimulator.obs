@@ -42,7 +42,14 @@
                                  v-model:locationNumber="saveAttendanceLocationNumber"
                                  v-model:scheduleNumber="saveAttendanceScheduleNumber"
                                  v-model:isPending="saveAttendanceIsPending"
-                                 :attendance="saveAttendanceData" />
+                                 :result="saveAttendanceData" />
+        </StepPanel>
+
+        <StepPanel title="Confirm Attendance"
+                   :step="confirmAttendanceStep"
+                   :isBenchmarkReady="isBenchmarkReady"
+                   @executeAction="executeAction($event, confirmAttendanceStep)">
+            <ConfirmAttendancePanel :result="confirmAttendanceData" />
         </StepPanel>
     </Panel>
 </template>
@@ -62,6 +69,8 @@
     import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
     import { SaveAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceOptionsBag";
     import { SaveAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceResponseBag";
+    import { ConfirmAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceOptionsBag";
+    import { ConfirmAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceResponseBag";
     import { computed, ref, watch } from "vue";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { CheckInSimulatorOptionsBag, CheckInStep, Configuration, SimulatorNoteKey, executeStepAction } from "./CheckInSimulator/utils.partial";
@@ -73,6 +82,7 @@
     import FamilySearchPanel from "./CheckInSimulator/familySearchPanel.partial.obs";
     import SelectFamilyPanel from "./CheckInSimulator/selectFamilyPanel.partial.obs";
     import SaveAttendancePanel from "./CheckInSimulator/saveAttendancePanel.partial.obs";
+    import ConfirmAttendancePanel from "./CheckInSimulator/confirmAttendancePanel.partial.obs";
     import { CheckInResultBag } from "@Obsidian/ViewModels/CheckIn/checkInResultBag";
     import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -389,7 +399,34 @@
             saveAttendanceData.value = response.data;
         }
         else {
-            selectFamilyData.value = undefined;
+            saveAttendanceData.value = undefined;
+            throw new Error(response.errorMessage ?? undefined);
+        }
+    }
+
+    // #endregion
+
+    // #region Confirm Attendance
+
+    const confirmAttendanceStep = new CheckInStep(executeConfirmAttendanceStep, saveAttendanceStep);
+    const confirmAttendanceData = ref<CheckInResultBag>();
+
+    /**
+     * Executes the save attendance process.
+     */
+    async function executeConfirmAttendanceStep(): Promise<void> {
+        const request: ConfirmAttendanceOptionsBag = {
+            templateGuid: configuration.value.templateGuid,
+            sessionGuid: sessionGuid
+        };
+
+        const response = await http.post<ConfirmAttendanceResponseBag>("/api/v2/checkin/ConfirmAttendance", undefined, request);
+
+        if (response.isSuccess && response.data) {
+            confirmAttendanceData.value = response.data;
+        }
+        else {
+            confirmAttendanceData.value = undefined;
             throw new Error(response.errorMessage ?? undefined);
         }
     }

@@ -46,58 +46,8 @@
             </div>
         </div>
 
-        <div v-if="attendance" class="col-md-8">
-            <div v-if="attendance.messages && attendance.messages.length > 0">
-                <div>Messages:</div>
-
-                <ul>
-                    <li v-for="msg in attendance.messages">{{ msg }}</li>
-                </ul>
-            </div>
-
-            <div v-if="attendance.attendances && attendance.attendances.length > 0">
-                <div>Attendance:</div>
-
-                <ul>
-                    <li v-for="item in attendance.attendances">
-                        {{ item.attendance?.fullName }}
-                        <ul>
-                            <li>Status: {{ getCheckInStatus(item.attendance?.status) }}</li>
-                            <li>Area: {{ item.attendance?.area?.name }}</li>
-                            <li>Group: {{ item.attendance?.group?.name }}</li>
-                            <li>Location: {{ item.attendance?.location?.name }}</li>
-                            <li>Schedule: {{ item.attendance?.schedule?.name }}</li>
-
-                            <li v-if="item.previouslyCompletedAchievements && item.previouslyCompletedAchievements.length > 0">
-                                Previously Completed Achievements
-
-                                <ul>
-                                    <AchievementListItem v-for="achievement in item.previouslyCompletedAchievements"
-                                                         :achievement="achievement" />
-                                </ul>
-                            </li>
-
-                            <li v-if="item.inProgressAchievements && item.inProgressAchievements.length > 0">
-                                In Progress Achievements
-
-                                <ul>
-                                    <AchievementListItem v-for="achievement in item.inProgressAchievements"
-                                                         :achievement="achievement" />
-                                </ul>
-                            </li>
-
-                            <li v-if="item.justCompletedAchievements && item.justCompletedAchievements.length > 0">
-                                Just Completed Achievements
-
-                                <ul>
-                                    <AchievementListItem v-for="achievement in item.justCompletedAchievements"
-                                                         :achievement="achievement" />
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
+        <div v-if="result" class="col-md-8">
+            <CheckInResultDetail :result="result" />
         </div>
     </div>
 </template>
@@ -106,10 +56,9 @@
     import { PropType } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-    import AchievementListItem from "./achievementListItem.partial.obs";
+    import CheckInResultDetail from "./checkInResultDetail.partial.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { CheckInResultBag } from "@Obsidian/ViewModels/CheckIn/checkInResultBag";
-    import { CheckInStatus, CheckInStatusDescription } from "@Obsidian/Enums/Event/checkInStatus";
 
     const props = defineProps({
         abilityLevelNumber: {
@@ -142,7 +91,7 @@
             required: true
         },
 
-        attendance: {
+        result: {
             type: Object as PropType<CheckInResultBag>,
             required: false
         }
@@ -163,16 +112,4 @@
     const locationNumber = useVModelPassthrough(props, "locationNumber", emit);
     const scheduleNumber = useVModelPassthrough(props, "scheduleNumber", emit);
     const isPending = useVModelPassthrough(props, "isPending", emit);
-
-    function getCheckInStatus(status?: CheckInStatus): string {
-        if (status === undefined) {
-            return "Unknown";
-        }
-
-        if (status in CheckInStatusDescription) {
-            return CheckInStatusDescription[status];
-        }
-
-        return "Unknown";
-    }
 </script>
