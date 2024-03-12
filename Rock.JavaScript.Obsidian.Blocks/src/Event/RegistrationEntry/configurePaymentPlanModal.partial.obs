@@ -41,13 +41,13 @@
             </div>
         </div>
 
-        <div :class="['row', !paymentFrequencyGuid ? 'invisible' : '']">
+        <div :class="['row', !paymentFrequencyGuid || calculatedAmountPerPayment.isInvalid ? 'invisible' : '']">
             <div class="col">
                 <RockLabel label="Plan Summary">Plan Summary</RockLabel>
             </div>
         </div>
 
-        <div :class="['row', !paymentFrequencyGuid ? 'invisible' : '']">
+        <div :class="['row', !paymentFrequencyGuid || calculatedAmountPerPayment.isInvalid ? 'invisible' : '']">
             <div class="col-sm-6">
                 <div>Amount Due Today</div>
                 <div>{{ actualAmountDueTodayMessage }}</div>
@@ -55,7 +55,7 @@
 
             <div class="col-sm-6" v-if="numberOfPaymentsItems.length">
                 <div>{{ selectedFrequencyText }} Payment Amount</div>
-                <div>{{ calculatedAmountPerPayment }} x {{ numberOfPaymentsAsInteger }}</div>
+                <div>{{ paymentAmountSummary }}</div>
             </div>
         </div>
     </Modal>
@@ -104,6 +104,15 @@ const amountToPayTodayAdjustment = ref<Currency>(createCurrency(0, currencyOptio
 //#endregion
 
 //#region Computed Values
+
+const paymentAmountSummary = computed<string>(() => {
+    if (calculatedAmountPerPayment.value.isInvalid) {
+        return "Number of Payments is required";
+    }
+    else {
+        return `${calculatedAmountPerPayment.value} x ${numberOfPaymentsAsInteger.value}`;
+    }
+});
 
 const internalIsShown = useVModelPassthrough(props, "modelValue", emit);
 

@@ -104,6 +104,9 @@ export type Currency = {
     /** Gets the currency options. */
     get currencyOptions(): CurrencyOptions;
 
+    /** Gets whether this currency is invalid. */
+    get isInvalid(): boolean;
+
     /**
      * Adds an amount to this Currency.
      *
@@ -701,9 +704,8 @@ function getCurrencyParts(currency: number | CurrencyParts, targetPrecision: num
     // assuming the number is not NaN, Infinity, NegativeInfinity, or scientific notation.
 
     if (!Number.isFinite(currency)) {
-        // Log an error so this issue can be addressed, and handle this gracefully (no exceptions) by returning the non-finite units as is.
-        console.error(`${currency} must be a finite number`);
-
+        // Handle invalid numbers gracefully (no exceptions) by returning the non-finite units as is.
+        // External code can utilize Currency.isInvalid to determine if the resulting Currency is invalid.
         return {
             units: currency,
             precision: targetPrecision
@@ -913,6 +915,10 @@ export function createCurrency(currency: number | CurrencyParts, options?: Parti
 
         get currencyOptions(): CurrencyOptions {
             return _currencyOptions;
+        },
+
+        get isInvalid(): boolean {
+            return !Number.isFinite(this.units);
         },
 
         add(currency: Currency | number): Currency {
