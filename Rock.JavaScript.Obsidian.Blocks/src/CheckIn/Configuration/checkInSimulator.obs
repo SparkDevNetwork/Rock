@@ -86,6 +86,7 @@
     import { CheckInResultBag } from "@Obsidian/ViewModels/CheckIn/checkInResultBag";
     import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<CheckInSimulatorOptionsBag>();
     const http = useHttp();
@@ -137,31 +138,73 @@
         const url = new URL(location.href);
 
         if (familySearchTerm.value) {
-            url.searchParams.set("familySearchTerm", familySearchTerm.value);
+            url.searchParams.set("fsTerm", familySearchTerm.value);
         }
         else {
-            url.searchParams.delete("familySearchTerm");
+            url.searchParams.delete("fsTerm");
         }
 
         if (familySearchType.value && familySearchType.value !== FamilySearchMode.PhoneNumber.toString()) {
-            url.searchParams.set("familySearchType", familySearchType.value);
+            url.searchParams.set("fsType", familySearchType.value);
         }
         else {
-            url.searchParams.delete("familySearchType");
+            url.searchParams.delete("fsType");
         }
 
         if (selectFamilyNumber.value !== 1) {
-            url.searchParams.set("familyNumber", selectFamilyNumber.value.toString());
+            url.searchParams.set("sfNumber", selectFamilyNumber.value.toString());
         }
         else {
-            url.searchParams.delete("familyNumber");
+            url.searchParams.delete("sfNumber");
         }
 
         if (selectAttendeeNumber.value !== 1) {
-            url.searchParams.set("attendeeNumber", selectAttendeeNumber.value.toString());
+            url.searchParams.set("saNumber", selectAttendeeNumber.value.toString());
         }
         else {
-            url.searchParams.delete("attendeeNumber");
+            url.searchParams.delete("saNumber");
+        }
+
+        if (!saveAttendanceIsPending.value) {
+            url.searchParams.set("saPending", "false");
+        }
+        else {
+            url.searchParams.delete("saPending");
+        }
+
+        if (saveAttendanceAbilityLevelNumber.value !== 0) {
+            url.searchParams.set("saAbilityLevel", saveAttendanceAbilityLevelNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saAbilityLevel");
+        }
+
+        if (saveAttendanceAreaNumber.value !== 1) {
+            url.searchParams.set("saArea", saveAttendanceAreaNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saArea");
+        }
+
+        if (saveAttendanceGroupNumber.value !== 1) {
+            url.searchParams.set("saGroup", saveAttendanceGroupNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saGroup");
+        }
+
+        if (saveAttendanceLocationNumber.value !== 1) {
+            url.searchParams.set("saLocation", saveAttendanceLocationNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saLocation");
+        }
+
+        if (saveAttendanceScheduleNumber.value !== 1) {
+            url.searchParams.set("saSchedule", saveAttendanceScheduleNumber.value.toString());
+        }
+        else {
+            url.searchParams.delete("saSchedule");
         }
 
         if (window.location.href != url.href) {
@@ -175,10 +218,16 @@
     function restoreState(): void {
         const originalUrl = new URL(location.href);
 
-        familySearchTerm.value = originalUrl.searchParams.get("familySearchTerm") ?? "";
-        familySearchType.value = originalUrl.searchParams.get("familySearchType") ?? "";
-        selectFamilyNumber.value = toNumberOrNull(originalUrl.searchParams.get("familyNumber")) ?? 1;
-        selectAttendeeNumber.value = toNumberOrNull(originalUrl.searchParams.get("attendeeNumber")) ?? 1;
+        familySearchTerm.value = originalUrl.searchParams.get("fsTerm") ?? "";
+        familySearchType.value = originalUrl.searchParams.get("fsType") ?? "";
+        selectFamilyNumber.value = toNumberOrNull(originalUrl.searchParams.get("sfNumber")) ?? 1;
+        selectAttendeeNumber.value = toNumberOrNull(originalUrl.searchParams.get("saNumber")) ?? 1;
+        saveAttendanceIsPending.value = asBooleanOrNull(originalUrl.searchParams.get("saPending")) ?? true;
+        saveAttendanceAbilityLevelNumber.value = toNumberOrNull(originalUrl.searchParams.get("saAbilityLevel")) ?? 0;
+        saveAttendanceAreaNumber.value = toNumberOrNull(originalUrl.searchParams.get("saArea")) ?? 1;
+        saveAttendanceGroupNumber.value = toNumberOrNull(originalUrl.searchParams.get("saGroup")) ?? 1;
+        saveAttendanceLocationNumber.value = toNumberOrNull(originalUrl.searchParams.get("saLocation")) ?? 1;
+        saveAttendanceScheduleNumber.value = toNumberOrNull(originalUrl.searchParams.get("saSchedule")) ?? 1;
     }
 
     /**
@@ -438,7 +487,13 @@
         familySearchTerm,
         familySearchType,
         selectFamilyNumber,
-        selectAttendeeNumber
+        selectAttendeeNumber,
+        saveAttendanceAbilityLevelNumber,
+        saveAttendanceAreaNumber,
+        saveAttendanceGroupNumber,
+        saveAttendanceLocationNumber,
+        saveAttendanceScheduleNumber,
+        saveAttendanceIsPending
     ];
 
     watch(urlUpdateWatchees, () => {

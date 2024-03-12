@@ -23,7 +23,7 @@
                 </ol>
             </div>
 
-            <div v-if="family.currentlyCheckedInAttendances">
+            <div v-if="family.currentlyCheckedInAttendances && family.currentlyCheckedInAttendances.length > 0">
                 <div>Already checked in:</div>
 
                 <ol>
