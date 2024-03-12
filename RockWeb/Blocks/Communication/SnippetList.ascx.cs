@@ -89,6 +89,7 @@ namespace RockWeb.Blocks.Communication
         {
             public const string OwnershipTypeFilter = "OwnershipType";
             public const string ActiveFilter = "ShowInactive";
+            public const string CategoryFilter = "Category";
         }
 
         #endregion User Preference Keys
@@ -129,6 +130,7 @@ namespace RockWeb.Blocks.Communication
 
             BlockUpdated += SnippetList_BlockUpdated;
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue; ;
         }
 
         /// <summary>
@@ -175,8 +177,41 @@ namespace RockWeb.Blocks.Communication
         {
             rFilter.SetFilterPreference( UserPreferenceKey.OwnershipTypeFilter, ddlTypeFilter.SelectedValue );
             rFilter.SetFilterPreference( UserPreferenceKey.ActiveFilter, ddlActiveFilter.SelectedValue );
+            var categoryId = cpCategory.SelectedValueAsInt();
+            rFilter.SetFilterPreference( UserPreferenceKey.CategoryFilter, categoryId.HasValue ? categoryId.Value.ToString() : string.Empty );
 
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the DisplayFilterValue event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+
+                case UserPreferenceKey.OwnershipTypeFilter:
+                    e.Name = "Ownership Type";
+                    break;
+                case UserPreferenceKey.ActiveFilter:
+                    e.Name = "Is Active";
+                    e.Value = e.Value == IsActiveFilterValueSpecifier.Active ? "True" : "False";
+                    break;
+
+                case UserPreferenceKey.CategoryFilter:
+                    var categoryId = e.Value.AsIntegerOrNull();
+                    if ( categoryId.HasValue )
+                    {
+                        e.Value = CategoryCache.Get( categoryId.Value )?.Name;
+                    }
+                    break;
+                default:
+                    e.Value = string.Empty;
+                    break;
+            }
         }
 
         /// <summary>
@@ -258,10 +293,10 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetBlockTitle()
         {
-            var snippetType = new SnippetTypeService( new RockContext() ).Get( GetAttributeValue( AttributeKey.SnippetType ).AsGuid() );
-            if ( snippetType != null )
+            var snippetTypeName = new SnippetTypeService( new RockContext() ).GetSelect( GetAttributeValue( AttributeKey.SnippetType ).AsGuid(), s => s.Name );
+            if ( snippetTypeName.IsNotNullOrWhiteSpace() )
             {
-                lTitle.Text = $"{snippetType.Name} Snippets";
+                lTitle.Text = $"{snippetTypeName} Snippets";
             }
         }
 
@@ -288,6 +323,7 @@ namespace RockWeb.Blocks.Communication
         {
             ddlActiveFilter.SetValue( rFilter.GetFilterPreference( UserPreferenceKey.ActiveFilter ) );
             ddlTypeFilter.SetValue( rFilter.GetFilterPreference( UserPreferenceKey.OwnershipTypeFilter ) );
+            cpCategory.SetValue( rFilter.GetFilterPreference( UserPreferenceKey.CategoryFilter ).AsIntegerOrNull() );
             ToggleTypeFilterVisibility();
         }
 
@@ -318,6 +354,7 @@ namespace RockWeb.Blocks.Communication
                 IsActive = s.IsActive,
                 Name = s.Name,
                 Personal = s.OwnerPersonAliasId.HasValue,
+                CategoryId = s.CategoryId,
             } );
 
             snippets = ApplyFiltersAndSorting( snippets );
@@ -354,6 +391,12 @@ namespace RockWeb.Blocks.Communication
                 case IsActiveFilterValueSpecifier.Inactive:
                     query = query.Where( s => !s.IsActive );
                     break;
+            }
+
+            var categoryId = rFilter.GetFilterPreference( UserPreferenceKey.CategoryFilter ).AsIntegerOrNull();
+            if ( categoryId.HasValue )
+            {
+                query = query.Where( s => s.CategoryId == categoryId );
             }
 
             var sortProperty = gSnippets.SortProperty;
@@ -441,6 +484,7 @@ namespace RockWeb.Blocks.Communication
             public string Description { get; set; }
             public bool Personal { get; set; }
             public bool IsActive { get; set; }
+            public int? CategoryId { get; set; }
         }
 
         #endregion

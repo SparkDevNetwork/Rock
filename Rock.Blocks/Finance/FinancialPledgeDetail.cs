@@ -214,7 +214,7 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Gets the person by berson action identifier.
+        /// Gets the person by person action identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
@@ -224,7 +224,7 @@ namespace Rock.Blocks.Finance
             var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
             var person = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "pledge" );
 
-            return person.ToListItemBag();
+            return person.PrimaryAlias.ToListItemBag();
         }
 
         /// <summary>
@@ -497,8 +497,6 @@ namespace Rock.Blocks.Finance
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new FinancialPledgeService( rockContext );
-
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;
