@@ -1,8 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValues"
+    <RockFormField
+                   :modelValue="internalValues"
                    formGroupClasses="key-value-list"
                    name="key-value-list"
+                   v-bind="fieldProps"
+                   :rules="augmentedRules"
                    watchDeep>
         <template #default="{ uniqueId }">
             <div class="control-wrapper">
@@ -10,26 +13,20 @@
                     <span class="key-value-rows">
                         <div v-for="(value, valueIndex) in internalValues" :class="rowClasses">
                             <template v-if="!displayValueFirst">
-                                <select v-if="hasKeys" v-model="value.key" :class="valueInputClasses">
-                                    <option v-for="option in keyOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
-                                </select>
-                                <input v-else v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
+                                <input v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
 
                                 <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
-                                    <option v-for="option in valueOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                    <option v-for="option in options" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
                                 </select>
                                 <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
                             </template>
                             <template v-else>
                                 <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
-                                    <option v-for="option in valueOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                    <option v-for="option in options" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
                                 </select>
                                 <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
 
-                                <select v-if="hasKeys" v-model="value.key" :class="valueInputClasses">
-                                    <option v-for="option in keyOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
-                                </select>
-                                <input v-else v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
+                                <input v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
                             </template>
 
                             <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
@@ -49,6 +46,10 @@
     import RockFormField from "./rockFormField.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import type { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
+    import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -58,12 +59,7 @@
 
         valueOptions: {
             type: Array as PropType<ListItemBag[]>,
-            default: []
-        },
-
-        keyOptions: {
-            type: Array as PropType<ListItemBag[]>,
-            default: []
+            required: false
         },
 
         keyPlaceholder: {
@@ -84,7 +80,13 @@
         fullWidth: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        allowHtml: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -92,9 +94,12 @@
     }>();
 
     const internalValues = ref(props.modelValue ?? []);
+    const fieldProps = useStandardRockFormFieldProps(props);
 
-    const hasKeys = computed((): boolean => props.keyOptions.length > 0);
-    const hasValues = computed((): boolean => props.valueOptions.length > 0);
+    /** The options to choose from in the drop down list */
+    const options = computed((): ListItemBag[] => props.valueOptions ?? []);
+
+    const hasValues = computed((): boolean => options.value.length > 0);
 
     const rowClasses = computed((): string => {
         let classes = "controls controls-row form-control-group";
@@ -137,21 +142,42 @@
     });
 
     function onAddClick(): void {
-        let defaultKey = "";
         let defaultValue = "";
 
-        if (hasKeys.value) {
-            defaultKey = props.keyOptions[0].value ?? "";
-        }
-
         if (hasValues.value) {
-            defaultValue = props.valueOptions[0].value ?? "";
+            defaultValue = options.value[0].value ?? "";
         }
 
-        internalValues.value.push({ key: defaultKey, value: defaultValue });
+        internalValues.value.push({ key: "", value: defaultValue });
     }
 
     function onRemoveClick(index: number): void {
         internalValues.value.splice(index, 1);
     }
+
+    const augmentedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (!props.allowHtml) {
+            rules.push(function (value: unknown) {
+                const isArr = Array.isArray(value);
+                if (isNullOrWhiteSpace(value) || (isArr && value.length === 0)) {
+                    return true;
+                }
+
+                if (isArr) {
+                    for (let i = 0; i < value.length; i++) {
+                        const { key: k, value: v } = value[i] as KeyValueItem;
+                        if (containsHtmlTag(String(k)) || containsHtmlTag(String(v))) {
+                            return "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
+                        }
+                    }
+                }
+
+                return true;
+            } as ValidationRule);
+        }
+
+        return rules;
+    });
 </script>

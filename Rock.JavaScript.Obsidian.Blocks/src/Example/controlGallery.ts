@@ -59,6 +59,7 @@ import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+import ListItems from "@Obsidian/Controls/listItems.obs";
 import ListBox from "@Obsidian/Controls/listBox.obs";
 import ListItems from "@Obsidian/Controls/listItems.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -7618,7 +7619,7 @@ const noteTextEditorGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection>
 
-    <NoteTextEditor v-model="value" :avatar="avatar" />
+    <NoteTextEditor v-model="value" :avatar="avatar" label="Leave a Note" />
 
     <template #settings>
     </template>
@@ -7961,6 +7962,7 @@ const controlGalleryComponents: Record<string, Component> = [
     inlineSwitchGallery,
     checkBoxListGallery,
     mediaSelectorGallery,
+    listItemsGallery,
     listBoxGallery,
     listItemsGallery,
     phoneNumberBoxGallery,

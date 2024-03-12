@@ -50,6 +50,11 @@
                 default: false
             },
 
+            watchDeep: {
+                type: Boolean,
+                default: false
+            },
+
             ...standardRockFormFieldProps
         },
 
