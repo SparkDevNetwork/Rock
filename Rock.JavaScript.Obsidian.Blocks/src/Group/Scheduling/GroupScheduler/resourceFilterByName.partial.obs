@@ -10,15 +10,15 @@
             </div>
         </template>
         <template #inputGroupAppend>
-            <div v-if="nameFilter" class="input-group-addon">
-                <i class="fa fa-times clickable" @click="onClearClick"></i>
+            <div :class="clearButtonCssClass" @click="onClearClick">
+                <i :class="clearIconCssClass"></i>
             </div>
         </template>
     </TextBox>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
@@ -44,6 +44,32 @@
 
     // #endregion Values
 
+    // #region Computed Values
+
+    const isDisabled = computed((): boolean => {
+        return props.disabled;
+    });
+
+    const hasFilter = computed((): boolean => {
+        return !!nameFilter.value;
+    });
+
+    const clearButtonCssClass = computed((): Record<string, boolean> => {
+        return {
+            "input-group-addon": true,
+            "clickable": !isDisabled.value && hasFilter.value
+        };
+    });
+
+    const clearIconCssClass = computed((): Record<string, boolean> => {
+        return {
+            "fa fa-times": true,
+            "text-muted": isDisabled.value || !hasFilter.value
+        };
+    });
+
+    // #endregion Computed Values
+
     // #region Event Handlers
 
     /**
@@ -51,6 +77,10 @@
      * the name filter text box.
      */
     function onClearClick(): void {
+        if (isDisabled.value) {
+            return;
+        }
+
         nameFilter.value = "";
     }
 
