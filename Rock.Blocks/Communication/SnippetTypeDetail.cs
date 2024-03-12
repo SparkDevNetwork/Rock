@@ -140,6 +140,7 @@ namespace Rock.Blocks.Communication
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity.CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
                 }
                 else
                 {

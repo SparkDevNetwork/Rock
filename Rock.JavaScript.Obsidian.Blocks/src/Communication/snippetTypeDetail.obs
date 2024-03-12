@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -16,7 +16,7 @@
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="!isSecurityVisible"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -117,6 +117,10 @@
 
     const options = computed((): SnippetTypeDetailOptionsBag => {
         return config.options ?? {};
+    });
+
+    const isSecurityVisible = computed((): boolean => {
+        return config.entity?.canAdministrate === true;
     });
 
     // #endregion

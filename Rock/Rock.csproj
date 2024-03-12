@@ -1117,6 +1117,7 @@
     <Compile Include="Model\Communication\SnippetType\SnippetType.cs" />
     <Compile Include="Model\Communication\Snippet\Snippet.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
+    <Compile Include="Model\Communication\Snippet\Snippet.Logic.cs" />
     <Compile Include="Model\Communication\Snippet\SnippetService.cs" />
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.cs" />
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.Logic.cs" />
