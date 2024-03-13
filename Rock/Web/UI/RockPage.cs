@@ -103,6 +103,11 @@ namespace Rock.Web.UI
         /// </summary>
         private static List<FileSystemWatcher> _obsidianFileWatchers = new List<FileSystemWatcher>();
 
+        /// <summary>
+        /// The currently running Rock version.
+        /// </summary>
+        private static string _rockVersion = "";
+
         #endregion
 
         #region Protected Variables
@@ -629,6 +634,7 @@ namespace Rock.Web.UI
         static RockPage()
         {
             InitializeObsidianFingerprint();
+            _rockVersion = "Rock v" + typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
         }
 
         #endregion
@@ -847,10 +853,9 @@ namespace Rock.Web.UI
 
             // Add a Rock version meta tag
             Page.Trace.Warn( "Adding Rock metatag" );
-            string version = typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
             HtmlMeta rockVersion = new HtmlMeta();
             rockVersion.Attributes.Add( "name", "generator" );
-            rockVersion.Attributes.Add( "content", string.Format( "Rock v{0}", version ) );
+            rockVersion.Attributes.Add( "content", _rockVersion );
             AddMetaTag( this.Page, rockVersion );
 
             if ( _showDebugTimings )
@@ -2760,23 +2765,19 @@ $.ajax({
             }
         }
 
+        /// <summary>
+        /// Adds the Crafting Code For Christ script.
+        /// </summary>
         private void AddJesusHook()
         {
-            var versionInfoArray = VersionInfo.VersionInfo.GetRockProductVersionFullName().Split( ' ' );
-            var versionInfo = versionInfoArray.Last();
-
-            var sb = new StringBuilder();
-            sb.Append( $@"
-                <script>
-                    console.info(
-                        '%cCrafting Code For Christ | Col. 3:23-24',
-                        'background: #ee7625; border-radius:0.5em; padding:0.2em 0.5em; color: white; font-weight: bold');
-                    console.info(
-                        'Rock Version v{versionInfo}'
-                        );
-                 </script>
-            " );
-            AddScriptToHead( this.Page, sb.ToString(), false );
+            var script = $@"
+    <script>
+      console.info(
+        '%cCrafting Code For Christ | Col. 3:23-24',
+        'background: #ee7625; border-radius:0.5em; padding:0.2em 0.5em; color: white; font-weight: bold');
+      console.info('{_rockVersion}');
+    </script>";
+            AddScriptToHead( this.Page, script, false );
         }
 
         /// <summary>
