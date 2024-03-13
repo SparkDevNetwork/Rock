@@ -45,7 +45,7 @@
 
         <hr style="margin-left: calc(var(--panel-body-padding, 0) * -1); margin-right: calc(var(--panel-body-padding, 0) * -1);" />
 
-        <div>
+        <div class="row">
             <div class="col-md-6">
                 <NumberBox label="Benchmark Iterations"
                            v-model="benchmarkIterations"
@@ -75,6 +75,7 @@
 <script setup lang="ts">
     import Panel from "@Obsidian/Controls/panel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -87,6 +88,7 @@
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const props = defineProps({
         blockConfig: {
@@ -181,8 +183,8 @@
             templateGuid.value = originalUrl.searchParams.get("template") ?? "";
             kioskGuid.value = originalUrl.searchParams.get("kiosk") ?? "";
 
-            benchmarkIterations.value = toNumberOrNull(originalUrl.searchParams.get("benchmarkIterations")) ?? undefined;
-            benchmarkDuration.value = toNumberOrNull(originalUrl.searchParams.get("benchmarkDuration")) ?? undefined;
+            benchmarkIterations.value = toNumberOrNull(originalUrl.searchParams.get("cfgBenchIter")) ?? undefined;
+            benchmarkDuration.value = toNumberOrNull(originalUrl.searchParams.get("cfgBenchDur")) ?? undefined;
 
             if (!templateGuid.value || !kioskGuid.value) {
                 return;
@@ -237,17 +239,17 @@
         }
 
         if (benchmarkIterations.value) {
-            url.searchParams.set("benchmarkIterations", benchmarkIterations.value.toString());
+            url.searchParams.set("cfgBenchIter", benchmarkIterations.value.toString());
         }
         else {
-            url.searchParams.delete("benchmarkIterations");
+            url.searchParams.delete("cfgBenchIter");
         }
 
         if (benchmarkDuration.value) {
-            url.searchParams.set("benchmarkDuration", benchmarkDuration.value.toString());
+            url.searchParams.set("cfgBenchDur", benchmarkDuration.value.toString());
         }
         else {
-            url.searchParams.delete("benchmarkDuration");
+            url.searchParams.delete("cfgBenchDur");
         }
 
         if (window.location.href != url.href) {
@@ -259,7 +261,7 @@
      * Calls the block action to delete today's simulated attendance data.
      */
     async function deleteAttendance(): Promise<void> {
-        const result = await invokeBlockAction<string>("DeleteSimulatedAttendance");
+        const result = await invokeBlockAction<string>("DeleteSimulatedAttendance", { batch: null });
 
         if (result.isSuccess && result.data) {
             alert(result.data);

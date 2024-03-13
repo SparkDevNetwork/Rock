@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -47,7 +48,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Rock.SystemGuid.BlockTypeGuid( "30002636-494b-4fdc-848c-a816f9291764" )]
     public class CheckInSimulator : RockBlockType
     {
-        public const string SimulatorNoteKey = "Simulated Attendance a3585260-fdaa-483e-bcc2-5bf9ab6bebc5";
+        public const string SimulatorNoteKey = "Simulated Attendance";
 
         public override object GetObsidianBlockInitialization()
         {
@@ -77,9 +78,10 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <summary>
         /// Deletes the simulated attendance records for today.
         /// </summary>
+        /// <param name="batch">The unique identifier of the values to delete.</param>
         /// <returns>The result of the operation.</returns>
         [BlockAction]
-        public BlockActionResult DeleteSimulatedAttendance()
+        public BlockActionResult DeleteSimulatedAttendance( Guid? batch )
         {
             var today = RockDateTime.Now.Date;
 
@@ -87,9 +89,23 @@ namespace Rock.Blocks.CheckIn.Configuration
             {
                 var attendanceService = new AttendanceService( rockContext );
 
-                var attendances = attendanceService.Queryable()
-                    .Where( a => a.StartDateTime >= today && a.Note == SimulatorNoteKey )
-                    .ToList();
+                var attendancesQry = attendanceService.Queryable()
+                    .Where( a => a.StartDateTime >= today );
+
+                // Either delete a single set of simulated attendance records
+                // or delete all of them.
+                if ( batch.HasValue )
+                {
+                    var noteKey = $"{SimulatorNoteKey} {batch}";
+
+                    attendancesQry = attendancesQry.Where( a => a.Note == noteKey );
+                }
+                else
+                {
+                    attendancesQry = attendancesQry.Where( a => a.Note.StartsWith( SimulatorNoteKey ) );
+                }
+
+                var attendances = attendancesQry.ToList();
 
                 if ( !attendances.Any() )
                 {

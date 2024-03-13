@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
     import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
     import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
@@ -73,7 +73,7 @@
     import { ConfirmAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceResponseBag";
     import { computed, ref, watch } from "vue";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { CheckInSimulatorOptionsBag, CheckInStep, Configuration, SimulatorNoteKey, executeStepAction } from "./CheckInSimulator/utils.partial";
+    import { CheckInSimulatorOptionsBag, CheckInStep, Configuration, SimulatorNoteKey, bencharkThisStepAction, benchmarkToHereAction, executeStepAction } from "./CheckInSimulator/utils.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { Guid } from "@Obsidian/Types";
     import ConfigurationPanel from "./CheckInSimulator/configurationPanel.partial.obs";
@@ -89,12 +89,15 @@
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<CheckInSimulatorOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 
     // #region Values
 
     const configuration = ref<Configuration>({});
     let sessionGuid: Guid = newGuid();
+    let isAttendanceClean: boolean = false;
+    let benchmarkNoteKey: Guid | null = null;
 
     // #endregion
 
@@ -237,10 +240,48 @@
      * @param step The step to execute the action on.
      */
     async function executeAction(action: string, step: CheckInStep): Promise<void> {
-        return executeStepAction(action,
+        const shouldDeleteAttendance = (action === benchmarkToHereAction.value || action === bencharkThisStepAction.value)
+            && (step === saveAttendanceStep || step === confirmAttendanceStep);
+
+        if (shouldDeleteAttendance) {
+            // If we are starting a new benchmark execution then generate
+            benchmarkNoteKey = newGuid();
+        }
+        else {
+            benchmarkNoteKey = null;
+        }
+
+        await executeStepAction(action,
             step,
             configuration.value.benchmarkIterations,
             configuration.value.benchmarkDuration);
+
+        if (shouldDeleteAttendance && benchmarkNoteKey) {
+            // Delete just the stuff we created.
+            await deleteBenchmarkAttendance(benchmarkNoteKey);
+
+            benchmarkNoteKey = null;
+        }
+    }
+
+    /**
+     * Deletes todays simulated attendance data for a benchmark run.
+     */
+    async function deleteBenchmarkAttendance(batch: Guid): Promise<void> {
+        if (isAttendanceClean && batch !== null) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("DeleteSimulatedAttendance", {
+            batch
+        });
+
+        if (result.isSuccess && result.data) {
+            isAttendanceClean = true;
+        }
+        else {
+            throw new Error(result.errorMessage || "Unknown error trying to delete attendance.");
+        }
     }
 
     // #endregion
@@ -293,6 +334,10 @@
             throw new Error("Invalid family selected.");
         }
 
+        if (benchmarkNoteKey !== null) {
+            await deleteBenchmarkAttendance(benchmarkNoteKey);
+        }
+
         const request: FamilyMembersOptionsBag = {
             configurationTemplateGuid: configuration.value.templateGuid,
             kioskGuid: configuration.value.kioskGuid,
@@ -330,6 +375,10 @@
     async function executeSelectAttendeeStep(): Promise<void> {
         if (!selectFamilyData.value?.people || selectAttendeeNumber.value > selectFamilyData.value.people.length) {
             throw new Error("Invalid attendee selected.");
+        }
+
+        if (benchmarkNoteKey !== null) {
+            await deleteBenchmarkAttendance(benchmarkNoteKey);
         }
 
         const request: AttendeeOpportunitiesOptionsBag = {
@@ -371,6 +420,10 @@
     async function executeSaveAttendanceStep(): Promise<void> {
         if (!selectFamilyData.value?.people || selectAttendeeNumber.value > selectFamilyData.value.people.length) {
             throw new Error("Invalid attendee selected.");
+        }
+
+        if (benchmarkNoteKey !== null) {
+            await deleteBenchmarkAttendance(benchmarkNoteKey);
         }
 
         if (!selectAttendeeData.value?.opportunities
@@ -437,7 +490,9 @@
                 {
                     personGuid: selectFamilyData.value.people[selectAttendeeNumber.value - 1].person?.guid ?? "",
                     selection,
-                    note: SimulatorNoteKey
+                    note: benchmarkNoteKey !== null
+                        ? `${SimulatorNoteKey} ${benchmarkNoteKey}`
+                        : SimulatorNoteKey
                 }
             ]
         };
@@ -446,6 +501,7 @@
 
         if (response.isSuccess && response.data) {
             saveAttendanceData.value = response.data;
+            isAttendanceClean = false;
         }
         else {
             saveAttendanceData.value = undefined;
