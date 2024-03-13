@@ -71,9 +71,10 @@
     import { SaveAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceResponseBag";
     import { ConfirmAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceOptionsBag";
     import { ConfirmAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceResponseBag";
+    import { CheckInSimulatorOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/checkInSimulatorOptionsBag";
     import { computed, ref, watch } from "vue";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { CheckInSimulatorOptionsBag, CheckInStep, Configuration, SimulatorNoteKey, bencharkThisStepAction, benchmarkToHereAction, executeStepAction } from "./CheckInSimulator/utils.partial";
+    import { CheckInStep, Configuration, SimulatorNoteKey, bencharkThisStepAction, benchmarkToHereAction, executeStepAction } from "./CheckInSimulator/utils.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { Guid } from "@Obsidian/Types";
     import ConfigurationPanel from "./CheckInSimulator/configurationPanel.partial.obs";

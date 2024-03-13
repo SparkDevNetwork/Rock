@@ -1,16 +1,9 @@
 import { Guid } from "@Obsidian/Types";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
 import { Ref, reactive, ref } from "vue";
 
 export const SimulatorNoteKey: string = "Simulated Attendance";
-
-export type CheckInSimulatorOptionsBag = {
-    configurations: ConfigurationTemplateBag[] | null;
-
-    kiosks: ListItemBag[] | null;
-};
 
 export type Configuration = {
     templateGuid?: Guid;

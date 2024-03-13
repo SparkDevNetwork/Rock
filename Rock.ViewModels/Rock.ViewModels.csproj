@@ -48,6 +48,7 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Blocks\BlockActionContextBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulatorOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />

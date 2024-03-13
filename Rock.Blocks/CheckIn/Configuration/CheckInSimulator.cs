@@ -16,7 +16,6 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -24,14 +23,15 @@ using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.CheckIn;
+using Rock.ViewModels.Blocks.CheckIn.Configuration;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.CheckIn.Configuration
 {
     /// <summary>
-    /// Designs a check-in label with a nice drag and drop experience.
+    /// Simulates the check-in process in a UI that can be used to quickly
+    /// test different configuration settings.
     /// </summary>
 
     [DisplayName( "Check-in Simulator" )]
@@ -48,8 +48,19 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Rock.SystemGuid.BlockTypeGuid( "30002636-494b-4fdc-848c-a816f9291764" )]
     public class CheckInSimulator : RockBlockType
     {
+        #region Constants
+
+        /// <summary>
+        /// The simulator note key prefix used to identify attendance records
+        /// that were created by the simulator so they can be deleted.
+        /// </summary>
         public const string SimulatorNoteKey = "Simulated Attendance";
 
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             using ( var rockContext = new RockContext() )
@@ -59,7 +70,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
                 return new CheckInSimulatorOptionsBag
                 {
-                    Configurations = director.GetConfigurationTemplateBags(),
+                    Templates = director.GetConfigurationTemplateBags(),
                     Kiosks = DeviceCache.All()
                         .Where( d => d.DeviceTypeValueId == kioskDeviceValueId )
                         .OrderBy( d => d.Name )
@@ -72,6 +83,8 @@ namespace Rock.Blocks.CheckIn.Configuration
                 };
             }
         }
+
+        #endregion
 
         #region Block Actions
 
@@ -121,12 +134,5 @@ namespace Rock.Blocks.CheckIn.Configuration
         }
 
         #endregion
-
-        private class CheckInSimulatorOptionsBag
-        {
-            public List<ConfigurationTemplateBag> Configurations { get; set; }
-
-            public List<ListItemBag> Kiosks { get; set; }
-        }
     }
 }

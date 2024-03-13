@@ -75,20 +75,19 @@
 <script setup lang="ts">
     import Panel from "@Obsidian/Controls/panel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { CheckInSimulatorOptionsBag, Configuration } from "./utils.partial";
+    import { Configuration } from "./utils.partial";
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
+    import { CheckInSimulatorOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/checkInSimulatorOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, ref, watch } from "vue";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const props = defineProps({
         blockConfig: {
@@ -109,7 +108,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 
-    const templateItems: ListItemBag[] = props.blockConfig.configurations?.map(c => ({
+    const templateItems: ListItemBag[] = props.blockConfig.templates?.map(c => ({
         value: c.guid,
         text: c.name
     })) ?? [];
