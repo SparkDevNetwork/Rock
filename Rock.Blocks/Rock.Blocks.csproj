@@ -100,6 +100,7 @@
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
+    <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
