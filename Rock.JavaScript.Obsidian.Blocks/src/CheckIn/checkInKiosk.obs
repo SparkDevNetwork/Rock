@@ -1,0 +1,127 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="check-in-page">
+        <PageHeader title="Rock Solid"
+                    :hasBack="true" />
+
+        <div class="page-body">
+            <div class="check-in-panel main">
+                <h1>Title</h1>
+                <div class="scrollable">
+                    <div style="height:100px; background-color:blue;"></div>
+                    <div style="height:100px; background-color:red;"></div>
+                </div>
+            </div>
+        </div>
+
+        <PageFooter kiosk="West Lobby"
+            template="Weekly Service Check-in" />
+    </div>
+</template>
+
+<style>
+/* TEMP: This makes it display nice in the full workspace layout. */
+.featured-content .check-in-page {
+    width: 100% !important;
+    height: calc(100vh - var(--top-header-height, 80px) - 36px) !important;
+    overflow-y: auto !important;
+}
+
+/* These are default styles to be moved to the theme or something. */
+.check-in-page {
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--tones-lightest);
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
+    padding: 8px 16px;
+
+    --panel-border-radius: 16px;
+    --button-border-radius: 4px;
+    --vertical-padding: 8px;
+    --horizontal-padding: 16px;
+    --item-spacing: 24px;
+    --tones-darkest: #425466;
+    --tones-dark: #77889a;
+    --tones-medium: #d8ddec;
+    --tones-lightest: #f5f7fc;
+}
+
+.check-in-page .check-in-panel {
+    background-color: #fff;
+    border-radius: var(--panel-border-radius) var(--panel-border-radius) var(--panel-border-radius) var(--panel-border-radius);
+    padding: var(--vertical-padding) var(--horizontal-padding);
+    display: flex;
+    overflow: hidden;
+}
+
+/* Styles for the page header. */
+.check-in-page .page-header {
+    border-radius: var(--panel-border-radius) var(--panel-border-radius) 0 0;
+    align-items: center;
+    flex-shrink: 0;
+    gap: var(--item-spacing);
+
+    /* Overrides from bootstrap. */
+    margin: 0;
+    border: 0;
+}
+
+.check-in-page .page-header .title {
+    flex-grow: 1;
+}
+
+.check-in-page .page-header .back-button {
+    background-color: transparent;
+    color: var(--tones-dark);
+    border-color: 1px solid var(--tones-medium);
+}
+
+.check-in-page .page-header .home-button {
+    background-color: var(--tones-lightest);
+    color: var(--tones-dark);
+    border: 0;
+}
+
+/* Styles for the page body. */
+.check-in-page .page-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.check-in-page .main {
+    flex-direction: column;
+}
+
+.check-in-page .scrollable {
+    overflow-y: auto;
+}
+
+/* Styles for the pager footer. */
+.check-in-page .page-footer {
+    border-radius: 0 0 var(--panel-border-radius) var(--panel-border-radius);
+    align-items: center;
+    flex-shrink: 0;
+    gap: var(--item-spacing);
+    color: var(--tones-dark);
+}
+
+.check-in-page .page-footer .actions {
+    flex-grow: 1;
+    display: flex;
+    justify-content: end;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .page-footer .configure-button {
+    color: var(--tones-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
+    import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
+</script>

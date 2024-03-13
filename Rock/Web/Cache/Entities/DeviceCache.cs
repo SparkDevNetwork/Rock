@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 using Rock.Data;
 using Rock.Model;
@@ -244,6 +246,67 @@ namespace Rock.Web.Cache
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Gets the device by IP address.
+        /// </summary>
+        /// <param name="ipAddress">The IP address to look for.</param>
+        /// <param name="deviceTypeValueId">The device type <see cref="DefinedValue"/> identifier of the device that you are searching for.</param>
+        /// <returns>
+        /// The <see cref="DeviceCache"/> that is associated with the provided IP address or <c>null</c> if no match.
+        /// </returns>
+        internal static DeviceCache GetByIPAddress( string ipAddress, int deviceTypeValueId )
+        {
+            return All()
+                .Where( d => d.DeviceTypeValueId == deviceTypeValueId
+                    && d.IPAddress?.Equals( ipAddress, StringComparison.OrdinalIgnoreCase ) == true )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the device by IP address. If a matching IP address is not found
+        /// then also perform a DNS lookup to determine the hostname and try
+        /// to find a match from that.
+        /// </summary>
+        /// <param name="ipAddress">The IP address to look for.</param>
+        /// <param name="deviceTypeValueId">The device type <see cref="DefinedValue"/> identifier of the device that you are searching for.</param>
+        /// <returns>
+        /// The <see cref="DeviceCache"/> that is associated with the provided IP address or <c>null</c> if no match.
+        /// </returns>
+        internal static async Task<DeviceCache> GetByIPAddressOrNameAsync( string ipAddress, int deviceTypeValueId )
+        {
+            var device = GetByIPAddress( ipAddress, deviceTypeValueId );
+
+            if ( device != null )
+            {
+                return device;
+            }
+
+            // Lookup kiosk by the DNS name of the IP address.
+            try
+            {
+                string hostName = ( await System.Net.Dns.GetHostEntryAsync( ipAddress ) ).HostName;
+
+                if ( hostName.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                // Find a matching device by name in either the IP Address/Hostname
+                // field or the device's name. Priority is given to matches on the
+                // IP Address field.
+                return All()
+                    .Where( d => d.DeviceTypeValueId == deviceTypeValueId
+                        && ( d.IPAddress?.Equals( hostName, StringComparison.OrdinalIgnoreCase ) == true
+                            || d.Name?.Equals( hostName, StringComparison.OrdinalIgnoreCase ) == true ) )
+                    .OrderByDescending( d => d.IPAddress.Equals( hostName, StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+            }
+            catch ( SocketException )
+            {
+                return null;
+            }
         }
 
         #endregion

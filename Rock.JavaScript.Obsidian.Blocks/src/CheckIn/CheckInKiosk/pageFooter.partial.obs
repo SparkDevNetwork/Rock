@@ -1,0 +1,46 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="check-in-panel page-footer">
+        <div class="kiosk-name">{{ props.kiosk }}</div>
+
+        <div class="template-name">{{ props.template }}</div>
+
+        <div class="actions">
+            <RockButton btnType="link"
+            class="configure-button"
+            @click="onConfigure">
+                <i class="fa fa-cog"></i>
+            </RockButton>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        /** The name of the kiosk. */
+        kiosk: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The name of the check-in template currently in use. */
+        template: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "configure"): void;
+    }>();
+
+    /**
+     * Event handler for when the configure button is pressed.
+     */
+    function onConfigure(): void {
+        emit("configure");
+    }
+</script>

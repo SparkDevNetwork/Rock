@@ -208,7 +208,7 @@ namespace Rock.CheckIn.v2
         /// <param name="personGuids">The person unique identifiers to query the database for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
         /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        internal static List<RecentAttendance> GetRecentAttendance( DateTime cutoffDateTime, IEnumerable<Guid> personGuids, RockContext rockContext )
+        public static List<RecentAttendance> GetRecentAttendance( DateTime cutoffDateTime, IEnumerable<Guid> personGuids, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
@@ -251,7 +251,7 @@ namespace Rock.CheckIn.v2
         /// <param name="locationIds">The location identifiers to load attendance data for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
         /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        internal static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IEnumerable<int> locationIds, RockContext rockContext )
+        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IEnumerable<int> locationIds, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
@@ -289,10 +289,6 @@ namespace Rock.CheckIn.v2
                 .ToList();
         }
 
-        #endregion
-
-        #region Protected Methods
-
         /// <summary>
         /// Gets the group type areas that are valid for the kiosk device. Only group
         /// types associated via group and location to the kiosk will be returned.
@@ -300,7 +296,7 @@ namespace Rock.CheckIn.v2
         /// <param name="kiosk">The kiosk device.</param>
         /// <returns>An enumeration of <see cref="GroupTypeCache" /> objects.</returns>
         /// <exception cref="System.ArgumentNullException"><paramref name="kiosk"/> is <c>null</c>.</exception>
-        protected virtual IEnumerable<GroupTypeCache> GetKioskAreas( DeviceCache kiosk )
+        public virtual ICollection<GroupTypeCache> GetKioskAreas( DeviceCache kiosk )
         {
             if ( kiosk == null )
             {
@@ -333,7 +329,7 @@ namespace Rock.CheckIn.v2
         /// <param name="rockContext">The rock context to use if database access is required.</param>
         /// <returns>An enumeration of <see cref="GroupTypeCache"/> objects.</returns>
         /// <exception cref="Exception">Check-in Template Purpose was not found in the database, please check your installation.</exception>
-        protected virtual IEnumerable<GroupTypeCache> GetConfigurationTemplates( RockContext rockContext )
+        public virtual IEnumerable<GroupTypeCache> GetConfigurationTemplates( RockContext rockContext )
         {
             var checkinTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
 
