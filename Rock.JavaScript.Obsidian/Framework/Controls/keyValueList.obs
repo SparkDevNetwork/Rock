@@ -4,7 +4,7 @@
                    :modelValue="internalValues"
                    name="key-value-list"
                    v-bind="fieldProps"
-                   formGroupClasses="key-value-list"
+                   :formGroupClasses="'key-value-list ' + formGroupClasses"
                    :rules="augmentedRules"
                    watchDeep>
         <template #default="{ uniqueId }">
