@@ -2,9 +2,9 @@
 <template>
     <RockFormField
                    :modelValue="internalValues"
-                   formGroupClasses="key-value-list"
                    name="key-value-list"
                    v-bind="fieldProps"
+                   :formGroupClasses="'key-value-list ' + formGroupClasses"
                    :rules="augmentedRules"
                    watchDeep>
         <template #default="{ uniqueId }">
