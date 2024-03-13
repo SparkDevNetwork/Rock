@@ -202,12 +202,11 @@ namespace Rock.Blocks.Finance
                 TotalAmount = entity.Id == 0 ? ( decimal? ) null : entity.TotalAmount
             };
 
-            if ( entity.StartDate.Date != DateTime.MinValue.Date )
+            if ( entity.Id != 0 )
             {
                 bag.StartDate = entity.StartDate;
+                bag.EndDate = entity.EndDate;
             }
-
-            bag.EndDate = entity.EndDate;
 
             return bag;
         }
