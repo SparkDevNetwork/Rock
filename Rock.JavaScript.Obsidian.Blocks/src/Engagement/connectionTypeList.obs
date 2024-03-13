@@ -48,15 +48,15 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn, numberValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { ConnectionTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeList/connectionTypeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./ConnectionTypeList/types.partial";
     import { computed, reactive, ref } from "vue";
+    import type { GridAction } from "@Obsidian/Types/Controls/grid";
 
-    const config = useConfigurationValues<ListBlockBox<ConnectionTypeListOptionsBag>>();
+    const config = useConfigurationValues<ListBlockBox<null>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
@@ -64,9 +64,9 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-        /**
-    * The custom actions supported by this grid.
-    */
+    /**
+* The custom actions supported by this grid.
+*/
     const customActions = computed((): GridAction[] => {
         return [
             {

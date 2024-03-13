@@ -63,10 +63,6 @@
             type: String as PropType<string>,
             default: ""
         },
-        formGroupClasses: {
-            type: String as PropType<string>,
-            default: ""
-        },
         rows: {
             type: Number as PropType<number>,
             default: 3
