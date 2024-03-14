@@ -67,39 +67,6 @@
                             </div>
                         </div>
 
-                        <div id="pnlEditGroupRequirements" runat="server" class="row">
-                            <div class="col-md-12">
-                                <Rock:RockControlWrapper ID="rcwGroupTypeGroupRequirements" runat="server" Label="Group Requirements for Group Type">
-                                    <asp:Literal ID="lGroupTypeGroupRequirements" runat="server" Text="(From ...)" />
-                                    <div class="grid">
-                                        <Rock:Grid ID="gGroupTypeGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Group Requirements for Group Type">
-                                            <Columns>
-                                                <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
-                                            </Columns>
-                                        </Rock:Grid>
-                                    </div>
-                                </Rock:RockControlWrapper>
-
-                                <Rock:RockControlWrapper ID="rcwGroupRequirements" runat="server" Label="Specific Group Requirements">
-                                    <div calss="grid">
-                                        <Rock:Grid ID="gGroupRequirements" runat="server" DataKeyNames="Guid" AllowPaging="false" DisplayType="Light" RowItemText="Group Requirement" ShowConfirmDeleteDialog="false" OnGridRebind="gGroupRequirements_GridRebind">
-                                            <Columns>
-                                                <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
-                                                <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
-                                                <Rock:RockBoundField DataField="AppliesToAgeClassification" HeaderText="Age Classification" />
-                                                <Rock:RockLiteralField ID="lAppliesToDataViewId" runat="server" ItemStyle-HorizontalAlign="Center" HeaderText="Data View" OnDataBound="lAppliesToDataViewId_OnDataBound" />
-                                                <Rock:BoolField DataField="MustMeetRequirementToAddMember" HeaderText="Required For New Members" />
-                                                <Rock:BoolField DataField="GroupRequirementType.CanExpire" HeaderText="Can Expire" />
-                                                <Rock:EnumField DataField="GroupRequirementType.RequirementCheckType" HeaderText="Type" />
-                                                <Rock:EditField OnClick="gGroupRequirements_Edit" />
-                                                <Rock:DeleteField OnClick="gGroupRequirements_Delete" />
-                                            </Columns>
-                                        </Rock:Grid>
-                                    </div>
-                                </Rock:RockControlWrapper>
-                            </div>
-                        </div>
-
                         <div id="pnlEditAttributes" runat="server" class="row">
                             <div class="col-md-12">
                                 <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" ShowCategoryLabel="false" />
@@ -112,22 +79,119 @@
                             </div>
                         </div>
 
-                        <div id="pnlReminderCommunication" runat="server" class="row js-reminder-controls" style="display: none;">
-                            <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlReminderCommunication" runat="server" Label="Reminder Communication Template" Help="The communication template to use when sending reminders." />
+                        <Rock:PanelWidget ID="wpCommunication" runat="server" Title="Communications">
+                            <div id="pnlReminderCommunication" runat="server" class="row js-reminder-controls" style="display: none;">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlReminderCommunication" runat="server" Label="Reminder Communication Template" Help="The communication template to use when sending reminders." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:NumberBox ID="nbReminderOffsetDays" runat="server" NumberType="Integer" Label="Number of Days Ahead to Send Reminders" Help="The number of days before the event to send reminders." />
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <Rock:NumberBox ID="nbReminderOffsetDays" runat="server" NumberType="Integer" Label="Number of Days Ahead to Send Reminders" Help="The number of days before the event to send reminders." />
-                            </div>
-                        </div>
 
-                        <div id="pnlReminderAddlDetails" runat="server" class="row js-reminder-controls" style="display: none;">
-                            <div class="col-md-12">
-                                <Rock:HtmlEditor ID="htmlReminderAddlDetails" runat="server" Label="Reminder Details" Height="90" Help="Optional additional project details that will be appended to the reminder communication." />
+                            <div id="pnlReminderAddlDetails" runat="server" class="row js-reminder-controls" style="display: none;">
+                                <div class="col-md-12">
+                                    <Rock:HtmlEditor ID="htmlReminderAddlDetails" runat="server" Label="Reminder Details" Height="90" Help="Optional additional project details that will be appended to the reminder communication." />
+                                </div>
                             </div>
-                        </div>
 
-                        <Rock:HtmlEditor ID="htmlConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
+                            <Rock:HtmlEditor ID="htmlConfirmationDetails" runat="server" Label="Confirmation Details" Height="90" Help="Optional additional project details that will be appended to the communication that is sent when registering." />
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpMemberAttributes" runat="server" Title="Member Attributes">
+                            <Rock:NotificationBox ID="nbMemberAttributes" runat="server" NotificationBoxType="Info">
+                                Member Attributes apply to all of the members of this project. Each member will have their own value for these attributes.
+                                <br />
+                                <br />
+                                The <strong>Sign-Up Register</strong> block will only show these attributes when the block is operating in "Anonymous" mode.
+                            </Rock:NotificationBox>
+                            <Rock:RockControlWrapper ID="rcwMemberAttributesInherited" runat="server" Label="Inherited Member Attributes">
+                                <div class="grid">
+                                    <Rock:Grid ID="gMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false" RowItemText="Inherited Member Attribute">
+                                        <Columns>
+                                            <Rock:RockBoundField DataField="Name" />
+                                            <Rock:RockBoundField DataField="Description" />
+                                            <Rock:RockTemplateField>
+                                                <ItemTemplate>(Inherited from <a href='<%# Eval("Url") %>' target='_blank' rel='noopener noreferrer'><%# Eval("GroupType") %></a>)</ItemTemplate>
+                                            </Rock:RockTemplateField>
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                            </Rock:RockControlWrapper>
+
+                            <Rock:RockControlWrapper ID="rcwMemberAttributes" runat="server" Label="Member Attributes">
+                                <div class="grid">
+                                    <Rock:Grid ID="gMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Attribute" ShowConfirmDeleteDialog="false">
+                                        <Columns>
+                                            <Rock:ReorderField />
+                                            <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                            <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                            <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                            <Rock:SecurityField TitleField="Name" />
+                                            <Rock:EditField OnClick="gMemberAttributes_Edit" />
+                                            <Rock:DeleteField OnClick="gMemberAttributes_Delete" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                            </Rock:RockControlWrapper>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpMemberOpportunityAttributes" runat="server" Title="Member Opportunity Attributes">
+                            <Rock:NotificationBox ID="nbMemberOpportunityAttributes" runat="server" NotificationBoxType="Info">
+                                Member Opportunity Attributes apply to all of the members in every opportunity of this project. Each member will have their own value for these attributes, for each opportunity.
+                                <br />
+                                <br />
+                                The <strong>Sign-Up Register</strong> block will only show these attributes when the block is operating in "Anonymous" mode.
+                            </Rock:NotificationBox>
+                            <div class="grid">
+                                <Rock:Grid ID="gMemberOpportunityAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Member Opportunity Attribute" ShowConfirmDeleteDialog="false">
+                                    <Columns>
+                                        <Rock:ReorderField />
+                                        <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                        <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                        <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                        <Rock:SecurityField TitleField="Name" />
+                                        <Rock:EditField OnClick="gMemberOpportunityAttributes_Edit" />
+                                        <Rock:DeleteField OnClick="gMemberOpportunityAttributes_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpGroupRequirements" runat="server" Title="Group Requirements">
+                            <div runat="server" class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockControlWrapper ID="rcwGroupTypeGroupRequirements" runat="server" Label="Group Requirements for Group Type">
+                                        <asp:Literal ID="lGroupTypeGroupRequirements" runat="server" Text="(From ...)" />
+                                        <div class="grid">
+                                            <Rock:Grid ID="gGroupTypeGroupRequirements" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Group Requirements for Group Type">
+                                                <Columns>
+                                                    <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
+                                                </Columns>
+                                            </Rock:Grid>
+                                        </div>
+                                    </Rock:RockControlWrapper>
+
+                                    <Rock:RockControlWrapper ID="rcwGroupRequirements" runat="server" Label="Specific Group Requirements">
+                                        <div calss="grid">
+                                            <Rock:Grid ID="gGroupRequirements" runat="server" DataKeyNames="Guid" AllowPaging="false" DisplayType="Light" RowItemText="Group Requirement" ShowConfirmDeleteDialog="false" OnGridRebind="gGroupRequirements_GridRebind">
+                                                <Columns>
+                                                    <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
+                                                    <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
+                                                    <Rock:RockBoundField DataField="AppliesToAgeClassification" HeaderText="Age Classification" />
+                                                    <Rock:RockLiteralField ID="lAppliesToDataViewId" runat="server" ItemStyle-HorizontalAlign="Center" HeaderText="Data View" OnDataBound="lAppliesToDataViewId_OnDataBound" />
+                                                    <Rock:BoolField DataField="MustMeetRequirementToAddMember" HeaderText="Required For New Members" />
+                                                    <Rock:BoolField DataField="GroupRequirementType.CanExpire" HeaderText="Can Expire" />
+                                                    <Rock:EnumField DataField="GroupRequirementType.RequirementCheckType" HeaderText="Type" />
+                                                    <Rock:EditField OnClick="gGroupRequirements_Edit" />
+                                                    <Rock:DeleteField OnClick="gGroupRequirements_Delete" />
+                                                </Columns>
+                                            </Rock:Grid>
+                                        </div>
+                                    </Rock:RockControlWrapper>
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
 
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -218,6 +282,20 @@
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <!-- Member Attribute Modal Dialog -->
+        <Rock:ModalDialog ID="mdMemberAttribute" runat="server" Title="Member Attribute" OnSaveClick="mdMemberAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="vg_MemberAttribute">
+            <Content>
+                <Rock:AttributeEditor ID="edtMemberAttribute" runat="server" ShowActions="false" ValidationGroup="vg_MemberAttribute" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <!-- Member Opportunity Attribute Modal Dialog -->
+        <Rock:ModalDialog ID="mdMemberOpportunityAttribute" runat="server" Title="Member Opportunity Attribute" OnSaveClick="mdMemberOpportunityAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="vg_MemberOpportunityAttribute">
+            <Content>
+                <Rock:AttributeEditor ID="edtMemberOpportunityAttribute" runat="server" ShowActions="false" ValidationGroup="vg_MemberOpportunityAttribute" />
+            </Content>
+        </Rock:ModalDialog>
 
         <!-- Group Requirements Modal Dialog -->
         <Rock:ModalDialog ID="mdGroupRequirement" runat="server" Title="Group Requirement" SaveButtonText="Ok" OnSaveClick="mdGroupRequirement_OkClick" OnCancelScript="clearActiveDialog();" ValidationGroup="vg_GroupRequirement">
