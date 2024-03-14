@@ -27,9 +27,6 @@ namespace Rock.Chart
     /// A factory that builds a data model for a pie chart that can be rendered by the Chart.js library.
     /// The pie chart shows a numerical proportion of the total represented by each category and value.
     /// </summary>
-    /// <remarks>
-    /// Compatible with ChartJS v2.8.0.
-    /// </remarks>
     public class ChartJsPieChartDataFactory : ChartJsDataFactory
     {
         /// <summary>
@@ -118,23 +115,12 @@ namespace Rock.Chart
 
         private string GetChartDataJsonInternal( dynamic chartData, ChartJsonArgs args )
         {
-            // Adjust the legend position to the left or right of the pie chart.
-            var legendPosition = args.LegendPosition;
-            if ( legendPosition == "nw" || legendPosition == "sw" )
-            {
-                legendPosition = "left";
-            }
-            else
-            {
-                legendPosition = "right";
-            }
-
             // Apply the argument settings.
             this.MaintainAspectRatio = args.MaintainAspectRatio;
             this.SizeToFitContainerWidth = args.SizeToFitContainerWidth;
 
             // Create the data structure for Chart.js parameter "options".
-            var optionsLegend = this.GetLegendConfigurationObject( legendPosition, args.LegendAlignment, args.DisplayLegend );
+            var optionsLegend = this.GetLegendConfigurationObject( args.LegendPosition, args.LegendAlignment, args.DisplayLegend );
             var tooltipsConfiguration = this.GetTooltipsConfigurationObject( args.ContainerControlId, args.YValueFormatString );
 
             // Set segment labels.
@@ -358,84 +344,77 @@ function (tooltipItem, data) {
             const string DateFormatStringMonthYear = "MMM yyyy";
             const string DateFormatStringDayMonthYear = "d";
 
-            //var quantizedDatasets = new List<ChartJsCategorySeriesDataset>();
+            var datapoints = dataset.DataPoints;
 
-            //foreach ( var dataset in datasets )
-            //{
-                var datapoints = dataset.DataPoints;
+            var datasetQuantized = new ChartJsCategorySeriesDataset();
 
-                var datasetQuantized = new ChartJsCategorySeriesDataset();
+            datasetQuantized.Name = dataset.Name;
+            datasetQuantized.BorderColor = dataset.BorderColor;
+            datasetQuantized.FillColor = dataset.FillColor;
 
-                datasetQuantized.Name = dataset.Name;
-                datasetQuantized.BorderColor = dataset.BorderColor;
-                datasetQuantized.FillColor = dataset.FillColor;
+            if ( timeScale == null )
+            {
+                // Get the sum of all datapoints.
+                var quantizedDataPoints = datapoints
+                    .Select( x => new ChartJsCategorySeriesDataPoint
+                    {
+                        Category = dataset.Name,
+                        Value = datapoints.Sum( y => y.Value ),
+                        SortKey = dataset.Name
+                    } )
+                    .ToList();
 
-                if ( timeScale == null )
-                {
-                    // Get the sum of all datapoints.
-                    var quantizedDataPoints = datapoints
-                        .Select( x => new ChartJsCategorySeriesDataPoint
-                        {
-                            Category = dataset.Name,
-                            Value = datapoints.Sum( y => y.Value ),
-                            SortKey = dataset.Name
-                        } )
-                        .ToList();
+                datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
+            }
+            else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+            {
+                var quantizedDataPoints = datapoints
+                    .GroupBy( x => new { Day = x.DateTime } )
+                    .Select( x => new ChartJsCategorySeriesDataPoint
+                    {
+                        Category = x.Key.Day.ToString( DateFormatStringDayMonthYear ),
+                        Value = x.Sum( y => y.Value ),
+                        SortKey = x.Key.Day.ToString( "yyyyMMdd" ),
+                    } )
+                    .OrderBy( x => x.SortKey )
+                    .ToList();
 
-                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
-                }
-                else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
-                {
-                    var quantizedDataPoints = datapoints
-                        .GroupBy( x => new { Day = x.DateTime } )
-                        .Select( x => new ChartJsCategorySeriesDataPoint
-                        {
-                            Category = x.Key.Day.ToString( DateFormatStringDayMonthYear ),
-                            Value = x.Sum( y => y.Value ),
-                            SortKey = x.Key.Day.ToString( "yyyyMMdd" ),
-                        } )
-                        .OrderBy( x => x.SortKey )
-                        .ToList();
+                datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
+            }
+            else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
+            {
+                var quantizedDataPoints = datapoints
+                    .GroupBy( x => new { Month = new DateTime( x.DateTime.Year, x.DateTime.Month, 1 ) } )
+                    .Select( x => new ChartJsCategorySeriesDataPoint
+                    {
+                        Category = x.Key.Month.ToString( DateFormatStringMonthYear ),
+                        Value = x.Sum( y => y.Value ),
+                        SortKey = x.Key.Month.ToString( "yyyyMM" ),
+                    } )
+                    .OrderBy( x => x.SortKey )
+                    .ToList();
 
-                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
-                }
-                else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
-                {
-                    var quantizedDataPoints = datapoints
-                        .GroupBy( x => new { Month = new DateTime( x.DateTime.Year, x.DateTime.Month, 1 ) } )
-                        .Select( x => new ChartJsCategorySeriesDataPoint
-                        {
-                            Category = x.Key.Month.ToString( DateFormatStringMonthYear ),
-                            Value = x.Sum( y => y.Value ),
-                            SortKey = x.Key.Month.ToString( "yyyyMM" ),
-                        } )
-                        .OrderBy( x => x.SortKey )
-                        .ToList();
+                datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
+            }
+            else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Year )
+            {
+                var quantizedDataPoints = datapoints
+                    .GroupBy( x => new { Year = new DateTime( x.DateTime.Year, 1, 1 ) } )
+                    .Select( x => new ChartJsCategorySeriesDataPoint
+                    {
+                        Category = x.Key.Year.ToString( "yyyy" ),
+                        Value = x.Sum( y => y.Value ),
+                        SortKey = x.Key.Year.ToString( "yyyy" ),
+                    } )
+                    .OrderBy( x => x.SortKey )
+                    .ToList();
 
-                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
-                }
-                else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Year )
-                {
-                    var quantizedDataPoints = datapoints
-                        .GroupBy( x => new { Year = new DateTime( x.DateTime.Year, 1, 1 ) } )
-                        .Select( x => new ChartJsCategorySeriesDataPoint
-                        {
-                            Category = x.Key.Year.ToString( "yyyy" ),
-                            Value = x.Sum( y => y.Value ),
-                            SortKey = x.Key.Year.ToString( "yyyy" ),
-                        } )
-                        .OrderBy( x => x.SortKey )
-                        .ToList();
-
-                    datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
-                }
-                else
-                {
-                    throw new NotImplementedException( "Timescale is not implemented" );
-                }
-
-                //quantizedDatasets.Add( datasetQuantized );
-            //}
+                datasetQuantized.DataPoints = quantizedDataPoints.Cast<IChartJsCategorySeriesDataPoint>().ToList();
+            }
+            else
+            {
+                throw new NotImplementedException( "Timescale is not implemented" );
+            }
 
             return datasetQuantized;
         }

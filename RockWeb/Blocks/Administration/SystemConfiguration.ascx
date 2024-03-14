@@ -82,6 +82,7 @@
                             <Rock:KeyValueList ID="kvlEndpointHeaders" runat="server" Label="Endpoint Headers" ValidationGroup="Observability" Help="List of HTTP headers to be added to the HTTP calls when sending telemetry." />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbObservabilityIncludeQueryStatements" runat="server" Label="Include Query Statements" ValidationGroup="Observability" Help="Enabling this option will include all SQL query statements in database activities. Otherwise they will only be included for targeted queries." />
                             <Rock:ValueList ID="vlTargetedQueries" runat="server" Label="Targeted Queries" ValidationGroup="Observability" Help="List of query hashes that will report more in depth metrics for." />
                         </div>
                     </div>

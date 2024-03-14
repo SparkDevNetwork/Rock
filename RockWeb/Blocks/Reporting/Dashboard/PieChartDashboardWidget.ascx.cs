@@ -86,10 +86,13 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             // Configure the chart appearance and layout.
             pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
             pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
+
             lDashboardTitle.Text = this.Title;
             lDashboardSubtitle.Text = this.Subtitle;
+
             metricChart.ShowTooltip = true;
-            metricChart.ShowLegend = false;
+            metricChart.ShowLegend = this.ShowLegend;
+            metricChart.LegendPosition = this.LegendPosition;
 
             nbMetricWarning.Visible = false;
 
