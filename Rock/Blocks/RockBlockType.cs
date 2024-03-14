@@ -66,6 +66,7 @@ namespace Rock.Blocks
         /// </summary>
         private ILogger _logger;
 
+        /// <summary>
         /// The serializer settings to use when encoding block configurationd ata.
         /// </summary>
         private static readonly Lazy<Newtonsoft.Json.JsonSerializerSettings> _serializerSettings = new Lazy<Newtonsoft.Json.JsonSerializerSettings>( () =>
