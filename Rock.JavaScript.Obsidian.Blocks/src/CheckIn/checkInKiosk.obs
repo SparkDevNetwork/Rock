@@ -2,20 +2,34 @@
 <template>
     <div class="check-in-page">
         <PageHeader title="Rock Solid"
-                    :hasBack="true" />
+                    :hasBack="true"
+                    @back="onBack" />
 
-        <div class="page-body">
-            <div class="check-in-panel main">
-                <h1>Title</h1>
-                <div class="scrollable">
-                    <div style="height:100px; background-color:blue;"></div>
-                    <div style="height:100px; background-color:red;"></div>
-                </div>
-            </div>
+        <div class="page-body scrollable-container">
+            <ContentTransition>
+                <Content v-if="primaryContent">
+                    <div class="check-in-panel">
+                        <h1>Title</h1>
+                        <div class="scrollable">
+                            <div style="height:100px; background-color:blue;"></div>
+                            <div style="height:100px; background-color:red;"></div>
+                        </div>
+                    </div>
+                </Content>
+
+                <Content v-if="!primaryContent">
+                    <MainPanel title="Check-in Options" subtitle="Select the options for your desired check-in experience">
+                        <div class="scrollable">
+                            <div style="height:100px; background-color:green;"></div>
+                            <div style="height:100px; background-color:purple;"></div>
+                        </div>
+                    </MainPanel>
+                </Content>
+            </ContentTransition>
         </div>
 
         <PageFooter kiosk="West Lobby"
-            template="Weekly Service Check-in" />
+                    template="Weekly Service Check-in" />
     </div>
 </template>
 
@@ -46,6 +60,11 @@
     --tones-dark: #77889a;
     --tones-medium: #d8ddec;
     --tones-lightest: #f5f7fc;
+
+    --font-size-h1: 24px;
+    --font-size-h2: 14px;
+    --font-size-body: 14px;
+    --font-size-small: 12px;
 }
 
 .check-in-page .check-in-panel {
@@ -53,13 +72,16 @@
     border-radius: var(--panel-border-radius) var(--panel-border-radius) var(--panel-border-radius) var(--panel-border-radius);
     padding: var(--vertical-padding) var(--horizontal-padding);
     display: flex;
-    overflow: hidden;
+    flex-direction: column;
 }
 
-/* Styles for the page header. */
+/*
+ * Styles for the page header.
+ */
 .check-in-page .page-header {
     border-radius: var(--panel-border-radius) var(--panel-border-radius) 0 0;
     align-items: center;
+    flex-direction: row;
     flex-shrink: 0;
     gap: var(--item-spacing);
 
@@ -84,26 +106,58 @@
     border: 0;
 }
 
-/* Styles for the page body. */
+/*
+ * Styles for the page body.
+ */
 .check-in-page .page-body {
     flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    position: relative;
 }
 
-.check-in-page .main {
+.check-in-page .page-body .body-transition-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.check-in-page .page-body .scrollable-container {
+    overflow: hidden;
+
+    /* When a scrollable is nested inside a flex, the entire tree must be flex. */
+    display: flex;
     flex-direction: column;
 }
 
 .check-in-page .scrollable {
-    overflow-y: auto;
+    overflow-y: auto !important;
 }
 
-/* Styles for the pager footer. */
+.check-in-page .main-panel {
+    padding: 24px 24px;
+    gap: 16px;
+}
+
+.check-in-page .main-panel .header h1 {
+    color: var(--tones-darkest);
+    font-size: var(--font-size-h1);
+    margin: 0 0 4px 0;
+    text-align: center;
+}
+
+.check-in-page .main-panel .header h2 {
+    color: var(--tones-dark);
+    font-size: var(--font-size-h2);
+    margin: 0 0 4px 0;
+    text-align: center;
+}
+
+/*
+ * Styles for the pager footer.
+ */
 .check-in-page .page-footer {
     border-radius: 0 0 var(--panel-border-radius) var(--panel-border-radius);
     align-items: center;
+    flex-direction: row;
     flex-shrink: 0;
     gap: var(--item-spacing);
     color: var(--tones-dark);
@@ -122,6 +176,16 @@
 </style>
 
 <script setup lang="ts">
+    import MainPanel from "./CheckInKiosk/mainPanel.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
+    import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
+    import Content from "./CheckInKiosk/content.partial.obs";
+    import { ref } from "vue";
+
+    const primaryContent = ref(true);
+
+    function onBack(): void {
+        primaryContent.value = !primaryContent.value;
+    }
 </script>

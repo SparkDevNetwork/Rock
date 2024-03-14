@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="check-in-panel main-panel scrollable-container">
+        <div v-if="title || subtitle" class="header">
+            <h1>{{ title }}</h1>
+            <h2>{{ subtitle }}</h2>
+        </div>
+        <div v-else class="header" v-html="parsedHeader"></div>
+
+        <div class="body scrollable-container">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import { markdown } from "./utils.partial";
+
+    const props = defineProps({
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        subtitle: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        template: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const parsedHeader = computed((): string => {
+        return markdown(props.template);
+    });
+</script>

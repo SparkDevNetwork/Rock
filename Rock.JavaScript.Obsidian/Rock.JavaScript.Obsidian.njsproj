@@ -301,6 +301,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Bus\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\QueueDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\" />
+    <Folder Include="Framework\ViewModels\Blocks\CheckIn\Configuration\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\" />
