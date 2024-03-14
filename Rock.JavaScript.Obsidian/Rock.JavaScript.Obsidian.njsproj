@@ -857,6 +857,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendeeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpDetail\signUpDetailInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\getAvailableCampusesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderCustomSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderCustomSettingsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderInitializationBox.d.ts" />
