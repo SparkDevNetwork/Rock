@@ -1264,6 +1264,7 @@ namespace Rock.Client.SystemGuid
         public const string CAPTCHA = "22F43337-7177-4064-9D4B-841EAD671678";
         public const string CATEGORIES = "775899FB-AC17-4C2C-B809-CF3A1D2AA4E1";
         public const string CATEGORY = "309460EF-0CC5-41C6-9161-B3837BA3D374";
+        public const string CHECK_IN_CONFIGURATION_TYPE = "7522975C-C224-489A-985D-B44580DFC5BD";
         public const string CHECK_LIST = "31532E03-CF25-4A9F-855C-BA16C4075679";
         public const string CODE_EDITOR = "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5";
         public const string COLOR = "D747E6AE-C383-4E22-8846-71518E3DD06F";

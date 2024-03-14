@@ -7618,7 +7618,7 @@ const noteTextEditorGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection>
 
-    <NoteTextEditor v-model="value" :avatar="avatar" />
+    <NoteTextEditor v-model="value" :avatar="avatar" label="Leave a Note" />
 
     <template #settings>
     </template>

@@ -139,6 +139,11 @@ namespace Rock.SystemGuid
         public const string CHECK_LIST = "31532E03-CF25-4A9F-855C-BA16C4075679";
 
         /// <summary>
+        /// Check-In Configuration Type
+        /// </summary>
+        public const string CHECK_IN_CONFIGURATION_TYPE = "7522975C-C224-489A-985D-B44580DFC5BD";
+
+        /// <summary>
         /// Code Editor field type
         /// </summary>
         public const string CODE_EDITOR = "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5";

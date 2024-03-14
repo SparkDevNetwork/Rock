@@ -2,26 +2,29 @@
 <template>
     <h4>{{ title }}</h4>
 
-    <div class="row">
+    <div class="row sign-up-anonymous-name">
         <div class="col-md-6">
             <TextBox v-model="firstName"
                      label="First Name"
                      rules="required"
+                     :validationTitle="`${title} First Name`"
                      :disabled="disabled" />
         </div>
         <div class="col-md-6">
             <TextBox v-model="lastName"
                      label="Last Name"
                      rules="required"
+                     :validationTitle="`${title} Last Name`"
                      :disabled="disabled" />
         </div>
     </div>
 
-    <div class="row">
+    <div class="row sign-up-anonymous-communication">
         <div class="col-md-6">
             <EmailBox v-model="email"
                       label="Email"
                       :rules="emailRules"
+                      :validationTitle="`${title} Email`"
                       :disabled="disabled" />
         </div>
         <div class="col-md-6">
@@ -29,11 +32,12 @@
                             v-model:countryCode="mobilePhoneCountryCode"
                             label="Mobile Phone"
                             :rules="mobilePhoneRules"
+                            :validationTitle="`${title} Mobile Phone`"
                             :disabled="disabled" />
         </div>
     </div>
 
-    <div class="row -mt-form-group">
+    <div class="row -mt-form-group sign-up-anonymous-allow-sms">
         <div class="col-md-6 col-md-offset-6">
             <CheckBox v-model="registrant.allowSms"
                       label=""
@@ -42,11 +46,31 @@
         </div>
     </div>
 
+    <div v-if="anyMemberAttributes" class="sign-up-anonymous-member-attributes">
+        <AttributeValuesContainer v-model="memberAttributeValues"
+                                  :isEditMode="true"
+                                  :attributes="memberAttributes"
+                                  :showCategoryLabel="false"
+                                  :numberOfColumns="2"
+                                  :disabled="disabled" />
+    </div>
+
+    <div v-if="anyMemberOpportunityAttributes" class="sign-up-anonymous-member-opportunity-attributes">
+        <AttributeValuesContainer v-model="memberOpportunityAttributeValues"
+                                  :isEditMode="true"
+                                  :attributes="memberOpportunityAttributes"
+                                  :showCategoryLabel="false"
+                                  :numberOfColumns="2"
+                                  :disabled="disabled" />
+    </div>
+
     <hr>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, inject, PropType, ref } from "vue";
+    import { MemberAttributes, MemberOpportunityAttributes } from "../types.partial";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
@@ -79,6 +103,13 @@
             default: false
         }
     });
+
+    // #region Values
+
+    const memberAttributes = inject(MemberAttributes, ref({}));
+    const memberOpportunityAttributes = inject(MemberOpportunityAttributes, ref({}));
+
+    // #endregion Values
 
     // #region Computed Values
 
@@ -134,6 +165,32 @@
 
     const mobilePhoneRules = computed((): string => {
         return props.requireMobilePhone ? "required" : "";
+    });
+
+    const anyMemberAttributes = computed((): boolean => {
+        return !!Object.keys(memberAttributes.value).length;
+    });
+
+    const anyMemberOpportunityAttributes = computed((): boolean => {
+        return !!Object.keys(memberOpportunityAttributes.value).length;
+    });
+
+    const memberAttributeValues = computed<Record<string, string>>({
+        get() {
+            return props.registrant.memberAttributeValues ?? {};
+        },
+        set(newValue: Record<string, string>) {
+            props.registrant.memberAttributeValues = newValue;
+        }
+    });
+
+    const memberOpportunityAttributeValues = computed<Record<string, string>>({
+        get() {
+            return props.registrant.memberOpportunityAttributeValues ?? {};
+        },
+        set(newValue: Record<string, string>) {
+            props.registrant.memberOpportunityAttributeValues = newValue;
+        }
     });
 
     // #endregion

@@ -99,6 +99,9 @@
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
+    <Compile Include="Engagement\ConnectionTypeList.cs" />
+    <Compile Include="Event\RegistrationInstanceActiveList.cs" />
+    <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
@@ -135,6 +138,7 @@
     <Compile Include="Core\NotificationMessageList.cs" />
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
+    <Compile Include="Core\ScheduleList.cs" />
     <Compile Include="Core\SignalTypeList.cs" />
     <Compile Include="Core\SignatureDocumentTemplateList.cs" />
     <Compile Include="Core\TagList.cs" />

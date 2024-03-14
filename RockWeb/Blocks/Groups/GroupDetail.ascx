@@ -212,7 +212,7 @@
 
                         <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes" CssClass="group-type-attribute-panel">
                             <Rock:NotificationBox ID="nbGroupMemberAttributes" runat="server" NotificationBoxType="Info"
-                                Text="Member Attributes apply to members in this group.  Each member will have their own value for these attributes" />
+                                Text="Member Attributes apply to members in this group. Each member will have their own value for these attributes." />
                             <Rock:RockControlWrapper ID="rcwGroupMemberAttributesInherited" runat="server" Label="Inherited Group Member Attributes">
                                 <div class="grid">
                                     <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Inherited Member Attribute">

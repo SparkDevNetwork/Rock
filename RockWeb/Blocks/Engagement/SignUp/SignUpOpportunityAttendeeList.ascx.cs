@@ -15,6 +15,19 @@
 // </copyright>
 //
 
+using Newtonsoft.Json;
+
+using Rock;
+using Rock.Attribute;
+using Rock.Constants;
+using Rock.Data;
+using Rock.Model;
+using Rock.Security;
+using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,16 +36,6 @@ using System.Linq;
 using System.Text;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
-using Rock;
-using Rock.Attribute;
-using Rock.Constants;
-using Rock.Data;
-using Rock.Model;
-using Rock.Security;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Engagement.SignUp
 {
@@ -78,6 +81,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
         private static class ViewStateKey
         {
             public const string GroupMemberIdByGroupMemberAssignmentIds = "GroupMemberIdByGroupMemberAssignmentIds";
+            public const string MemberAttributeIds = "MemberAttributeIds";
+            public const string MemberOpportunityAttributeIds = "MemberOpportunityAttributeIds";
         }
 
         private static class GridFilterKey
@@ -88,6 +93,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
             public const string Status = "Status";
             public const string Campus = "Campus";
             public const string Gender = "Gender";
+
+            public const string MemberAttribute = "MemberAttribute";
+            public const string MemberOpportunityAttribute = "MemberOpportunityAttribute";
         }
 
         private static class DataKeyName
@@ -178,6 +186,10 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
         public Dictionary<int, int> GroupMemberIdByGroupMemberAssignmentIds { get; set; }
 
+        public List<AttributeCache> MemberAttributes { get; set; }
+
+        public List<AttributeCache> MemberOpportunityAttributes { get; set; }
+
         #endregion
 
         #region Control Life-Cycle Events
@@ -198,6 +210,16 @@ namespace RockWeb.Blocks.Engagement.SignUp
             else
             {
                 this.GroupMemberIdByGroupMemberAssignmentIds = JsonConvert.DeserializeObject<Dictionary<int, int>>( json ) ?? new Dictionary<int, int>();
+            }
+
+            if ( ViewState[ViewStateKey.MemberAttributeIds] != null )
+            {
+                MemberAttributes = ( ViewState[ViewStateKey.MemberAttributeIds] as int[] ).Select( id => AttributeCache.Get( id ) ).ToList();
+            }
+
+            if ( ViewState[ViewStateKey.MemberOpportunityAttributeIds] != null )
+            {
+                MemberOpportunityAttributes = ( ViewState[ViewStateKey.MemberOpportunityAttributeIds] as int[] ).Select( id => AttributeCache.Get( id ) ).ToList();
             }
         }
 
@@ -278,7 +300,65 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             ViewState[ViewStateKey.GroupMemberIdByGroupMemberAssignmentIds] = JsonConvert.SerializeObject( this.GroupMemberIdByGroupMemberAssignmentIds, Formatting.None, jsonSetting );
 
+            ViewState[ViewStateKey.MemberAttributeIds] = MemberAttributes?.Select( a => a.Id ).ToArray();
+            ViewState[ViewStateKey.MemberOpportunityAttributeIds] = MemberOpportunityAttributes?.Select( a => a.Id ).ToArray();
+
             return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Gets the bread crumbs.
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <returns></returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            var groupId = PageParameter( PageParameterKey.GroupId ).ToIntSafe();
+            var locationId = PageParameter( PageParameterKey.LocationId ).ToIntSafe();
+            var scheduleId = PageParameter( PageParameterKey.ScheduleId ).ToIntSafe();
+
+            string opportunityName = null;
+
+            if ( groupId > 0 && locationId > 0 && scheduleId > 0 )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var groupLocation = new GroupLocationService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Include( gl => gl.Group )
+                        .Include( gl => gl.GroupLocationScheduleConfigs )
+                        .FirstOrDefault( gl => gl.GroupId == groupId && gl.LocationId == locationId );
+
+                    var config = groupLocation?.GroupLocationScheduleConfigs?.FirstOrDefault( c => c.ScheduleId == scheduleId );
+
+                    if ( config != null )
+                    {
+                        // Prefer the name provided at the opportunity level.
+                        opportunityName = config.ConfigurationName;
+
+                        if ( opportunityName.IsNullOrWhiteSpace() )
+                        {
+                            // Fall back to the name provided at the group/project level.
+                            opportunityName = groupLocation.Group.Name;
+                        }
+                    }
+                }
+            }
+
+            if ( opportunityName.IsNotNullOrWhiteSpace() )
+            {
+                var breadCrumbName = $"{opportunityName} Attendee List";
+                breadCrumbs.Add( new BreadCrumb( breadCrumbName, pageReference ) );
+            }
+            else
+            {
+                // Don't show a breadcrumb if we couldn't find an opportunity.
+            }
+
+            return breadCrumbs;
         }
 
         #endregion
@@ -292,7 +372,39 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="e">The e.</param>
         protected void gfAttendees_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            if ( e.Key == GridFilterKey.FirstName )
+            // A local function to try and get the filter value from an attribute.
+            bool TryGetAttributeFilterValue( List<AttributeCache> attributes, string gridFilterKeyPrefix )
+            {
+                if ( attributes?.Any() == true )
+                {
+                    var attribute = attributes.FirstOrDefault( a => $"{gridFilterKeyPrefix}-{a.Key}" == e.Key );
+                    if ( attribute != null )
+                    {
+                        try
+                        {
+                            var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
+                            e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
+                            return true;
+                        }
+                        catch
+                        {
+                            // Intentionally ignore.
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            if ( TryGetAttributeFilterValue( MemberAttributes, GridFilterKey.MemberAttribute ) )
+            {
+                return;
+            }
+            else if ( TryGetAttributeFilterValue( MemberOpportunityAttributes, GridFilterKey.MemberOpportunityAttribute ) )
+            {
+                return;
+            }
+            else if ( e.Key == GridFilterKey.FirstName )
             {
                 return;
             }
@@ -352,7 +464,46 @@ namespace RockWeb.Blocks.Engagement.SignUp
             gfAttendees.SetFilterPreference( GridFilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
             gfAttendees.SetFilterPreference( GridFilterKey.Gender, "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
 
+            ApplyAttributeFilters( MemberAttributes, GridFilterKey.MemberAttribute );
+            ApplyAttributeFilters( MemberOpportunityAttributes, GridFilterKey.MemberOpportunityAttribute );
+
             BindAttendeesGrid();
+        }
+
+        /// <summary>
+        /// Applies dynamic attribute filters.
+        /// </summary>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="gridFilterKeyPrefix">The grid filter key prefix for the attributes.</param>
+        private void ApplyAttributeFilters( List<AttributeCache> attributes, string gridFilterKeyPrefix )
+        {
+            if ( attributes?.Any() != true )
+            {
+                return;
+            }
+
+            foreach ( var attribute in attributes )
+            {
+                var filterPreferenceKey = $"{gridFilterKeyPrefix}-{attribute.Key}";
+
+                var filterControl = phAttributeFilters.FindControl( $"attributeFilter_{attribute.Id}" );
+                if ( filterControl == null )
+                {
+                    // No filter control, so clear out the person preference.
+                    gfAttendees.SetFilterPreference( filterPreferenceKey, attribute.Name, null );
+                    continue;
+                }
+
+                try
+                {
+                    var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                    gfAttendees.SetFilterPreference( filterPreferenceKey, attribute.Name, values.ToJson() );
+                }
+                catch
+                {
+                    // Intentionally ignore.
+                }
+            }
         }
 
         /// <summary>
@@ -734,24 +885,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
             gAttendees.Actions.ShowAdd = _canManageMembers;
             gAttendees.IsDeleteEnabled = _canManageMembers;
 
-            AddGridRowButtons();
-
             gfAttendees.PreferenceKeyPrefix = $"{_groupId}-{_locationId}-{_scheduleId}-";
             SetGridFilters( group );
-        }
-
-        /// <summary>
-        /// Adds the grid row buttons.
-        /// </summary>
-        private void AddGridRowButtons()
-        {
-            var personProfileLinkField = new PersonProfileLinkField();
-            personProfileLinkField.LinkedPageAttributeKey = AttributeKey.PersonProfilePage;
-            gAttendees.Columns.Add( personProfileLinkField );
-
-            _deleteField = new DeleteField();
-            _deleteField.Click += DeleteOrArchiveGroupMember_Click;
-            gAttendees.Columns.Add( _deleteField );
         }
 
         /// <summary>
@@ -1031,8 +1166,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
             var schedule = groupLocation.Schedules.First( s => s.Id == _scheduleId );
             var config = groupLocation.GroupLocationScheduleConfigs.First( c => c.GroupLocationId == groupLocation.Id && c.ScheduleId == _scheduleId );
 
-            var qry = new GroupMemberAssignmentService( rockContext )
-                .Queryable()
+            var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
+            var qry = groupMemberAssignmentService.Queryable()
                 .AsNoTracking()
                 .Include( gma => gma.GroupMember )
                 .Include( gma => gma.GroupMember.GroupRole )
@@ -1121,6 +1256,39 @@ namespace RockWeb.Blocks.Engagement.SignUp
             if ( genders.Any() )
             {
                 qry = qry.Where( gma => genders.Contains( gma.GroupMember.Person.Gender ) );
+            }
+
+            if ( MemberAttributes?.Any() == true )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMemberQry = groupMemberService.Queryable()
+                    .AsNoTracking()
+                    .Where( gm =>
+                        gm.GroupId == _groupId
+                    );
+
+                foreach ( var attribute in MemberAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( $"attributeFilter_{attribute.Id}" );
+                    if ( filterControl != null )
+                    {
+                        groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                    }
+                }
+
+                qry = qry.Where( gma => groupMemberQry.Contains( gma.GroupMember ) );
+            }
+
+            if ( MemberOpportunityAttributes?.Any() == true )
+            {
+                foreach ( var attribute in MemberOpportunityAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( $"attributeFilter_{attribute.Id}" );
+                    if ( filterControl != null )
+                    {
+                        qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, groupMemberAssignmentService, Rock.Reporting.FilterMode.SimpleFilter );
+                    }
+                }
             }
 
             // Take note of any group requirements (and any members not yet meeting them).
@@ -1228,11 +1396,47 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             var groupMemberAssignments = qry.ToList();
 
+            groupMemberAssignments.LoadAttributes();
+            groupMemberAssignments.Select( gma => gma.GroupMember ).LoadAttributes();
+
             this.GroupMemberIdByGroupMemberAssignmentIds = new Dictionary<int, int>();
 
             foreach ( var groupMemberAssignment in groupMemberAssignments )
             {
                 this.GroupMemberIdByGroupMemberAssignmentIds.Add( groupMemberAssignment.Id, groupMemberAssignment.GroupMemberId );
+
+                // Conflate the group member assignment's and group member's attributes (and values) collections
+                // into shared collections on the group member assignment instance so the grid can find them all
+                // for dynamic columns. Also, differentiate their keys with a prefix to prevent the possibility
+                // of key collisions between the two collections.
+                var attributes = new Dictionary<string, AttributeCache>();
+                var attributeValues = new Dictionary<string, AttributeValueCache>();
+                var keyPrefix = GridFilterKey.MemberAttribute;
+
+                foreach ( var attribute in groupMemberAssignment.GroupMember.Attributes )
+                {
+                    attributes.Add( $"{keyPrefix}-{attribute.Key}", attribute.Value );
+                }
+
+                foreach ( var attributeValue in groupMemberAssignment.GroupMember.AttributeValues )
+                {
+                    attributeValues.Add( $"{keyPrefix}-{attributeValue.Key}", attributeValue.Value );
+                }
+
+                keyPrefix = GridFilterKey.MemberOpportunityAttribute;
+
+                foreach ( var attribute in groupMemberAssignment.Attributes )
+                {
+                    attributes.Add( $"{keyPrefix}-{attribute.Key}", attribute.Value );
+                }
+
+                foreach ( var attributeValue in groupMemberAssignment.AttributeValues )
+                {
+                    attributeValues.Add( $"{keyPrefix}-{attributeValue.Key}", attributeValue.Value );
+                }
+
+                groupMemberAssignment.Attributes = attributes;
+                groupMemberAssignment.AttributeValues = attributeValues;
             }
 
             return new Opportunity
@@ -1348,6 +1552,190 @@ namespace RockWeb.Blocks.Engagement.SignUp
             {
                 cblGenderFilter.ClearSelection();
             }
+
+            BindAttributes();
+            AddDynamicControls();
+        }
+
+        /// <summary>
+        /// Binds the attributes.
+        /// </summary>
+        private void BindAttributes()
+        {
+            MemberAttributes = new List<AttributeCache>();
+            MemberOpportunityAttributes = new List<AttributeCache>();
+
+            if ( _groupId <= 0 )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+
+            foreach ( var attribute in ( new GroupMember { GroupId = _groupId } ).GetInheritedAttributes( rockContext )
+                .Where( a => a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList() )
+            {
+                if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    MemberAttributes.Add( attribute );
+                }
+            }
+
+            var entityTypeId = new GroupMember().TypeId;
+            var groupQualifier = _groupId.ToString();
+            var attributeService = new AttributeService( rockContext );
+
+            foreach ( var attribute in attributeService.GetByEntityTypeQualifier( entityTypeId, "GroupId", groupQualifier, true )
+                .Where( a => a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToAttributeCacheList() )
+            {
+                if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    MemberAttributes.Add( attribute );
+                }
+            }
+
+            entityTypeId = new GroupMemberAssignment().TypeId;
+
+            foreach ( var attribute in attributeService.GetByEntityTypeQualifier( entityTypeId, "GroupId", groupQualifier, true )
+                .Where( a => a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToAttributeCacheList() )
+            {
+                if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    MemberOpportunityAttributes.Add( attribute );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds dynamic grid filters and columns.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            // Clear the filter controls.
+            phAttributeFilters.Controls.Clear();
+
+            // Clear dynamic controls so we can re-add them.
+            RemoveAttributeAndButtonColumns();
+
+            AddAttributeFiltersAndColumns( MemberAttributes, GridFilterKey.MemberAttribute );
+            AddAttributeFiltersAndColumns( MemberOpportunityAttributes, GridFilterKey.MemberOpportunityAttribute );
+
+            AddRowButtonsToEnd();
+        }
+
+        /// <summary>
+        /// Removes dynamic attribute and button columns.
+        /// </summary>
+        private void RemoveAttributeAndButtonColumns()
+        {
+            // Remove delete button column.
+            DataControlField buttonColumn = gAttendees.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gAttendees.Columns.Remove( buttonColumn );
+            }
+
+            // Remove person profile link column.
+            buttonColumn = gAttendees.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gAttendees.Columns.Remove( buttonColumn );
+            }
+
+            // Remove attribute columns.
+            foreach ( var column in gAttendees.Columns.OfType<AttributeField>().ToList() )
+            {
+                gAttendees.Columns.Remove( column );
+            }
+        }
+
+        /// <summary>
+        /// Adds dynamic attribute filters and columns.
+        /// </summary>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="gridFilterKeyPrefix">The grid filter key prefix for the attributes.</param>
+        private void AddAttributeFiltersAndColumns( List<AttributeCache> attributes, string gridFilterKeyPrefix )
+        {
+            if ( attributes?.Any() != true )
+            {
+                return;
+            }
+
+            foreach ( var attribute in attributes )
+            {
+                var attributeKey = $"{gridFilterKeyPrefix}-{attribute.Key}";
+                var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, $"attributeFilter_{attribute.Id}", false, Rock.Reporting.FilterMode.SimpleFilter );
+                if ( control != null )
+                {
+                    if ( control is IRockControl rockControl )
+                    {
+                        rockControl.Label = attribute.Name;
+                        rockControl.Help = attribute.Description;
+                        phAttributeFilters.Controls.Add( control );
+                    }
+                    else
+                    {
+                        var wrapper = new RockControlWrapper();
+                        wrapper.ID = $"{control.ID}_wrapper";
+                        wrapper.Label = attribute.Name;
+                        wrapper.Help = attribute.Description;
+                        wrapper.Controls.Add( control );
+                        phAttributeFilters.Controls.Add( wrapper );
+                    }
+
+                    var savedValue = gfAttendees.GetFilterPreference( attributeKey );
+                    if ( savedValue.IsNotNullOrWhiteSpace() )
+                    {
+                        try
+                        {
+                            var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                            attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                        }
+                        catch
+                        {
+                            // Intentionally ignore.
+                        }
+                    }
+                }
+
+                var columnExists = gAttendees.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                if ( !columnExists )
+                {
+                    AttributeField boundField = new AttributeField
+                    {
+                        DataField = attributeKey,
+                        AttributeId = attribute.Id,
+                        HeaderText = attribute.Name
+                    };
+
+                    boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+
+                    gAttendees.Columns.Add( boundField );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the grid row buttons.
+        /// </summary>
+        private void AddRowButtonsToEnd()
+        {
+            var personProfileLinkField = new PersonProfileLinkField();
+            personProfileLinkField.LinkedPageAttributeKey = AttributeKey.PersonProfilePage;
+            gAttendees.Columns.Add( personProfileLinkField );
+
+            _deleteField = new DeleteField();
+            _deleteField.Click += DeleteOrArchiveGroupMember_Click;
+            gAttendees.Columns.Add( _deleteField );
         }
 
         /// <summary>

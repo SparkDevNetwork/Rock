@@ -67,6 +67,8 @@ export const FieldType = {
     Categories: "775899FB-AC17-4C2C-B809-CF3A1D2AA4E1",
     /** Category field type */
     Category: "309460EF-0CC5-41C6-9161-B3837BA3D374",
+    /** Check-In Configuration Type */
+    CheckInConfigurationType: "7522975C-C224-489A-985D-B44580DFC5BD",
     /** Check List field type */
     CheckList: "31532E03-CF25-4A9F-855C-BA16C4075679",
     /** Code Editor field type */

@@ -84,6 +84,14 @@
     <Compile Include="Migrations\202403071916505_CodeGenerated_20240307.Designer.cs">
       <DependentUpon>202403071916505_CodeGenerated_20240307.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202403140604035_AddSignUpAttributes.cs" />
+    <Compile Include="Migrations\202403140604035_AddSignUpAttributes.Designer.cs">
+      <DependentUpon>202403140604035_AddSignUpAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202403141934502_CodeGenerated_20240314.cs" />
+    <Compile Include="Migrations\202403141934502_CodeGenerated_20240314.Designer.cs">
+      <DependentUpon>202403141934502_CodeGenerated_20240314.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.designer.cs">
       <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
@@ -1992,6 +2000,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202403071916505_CodeGenerated_20240307.resx">
       <DependentUpon>202403071916505_CodeGenerated_20240307.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202403140604035_AddSignUpAttributes.resx">
+      <DependentUpon>202403140604035_AddSignUpAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202403141934502_CodeGenerated_20240314.resx">
+      <DependentUpon>202403141934502_CodeGenerated_20240314.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.resx">
       <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>

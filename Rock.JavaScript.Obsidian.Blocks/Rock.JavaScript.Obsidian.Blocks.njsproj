@@ -108,6 +108,7 @@
     <Content Include="src\Core\NoteWatchDetail\editPanel.partial.obs" />
     <Content Include="src\Core\NoteWatchDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\restControllerList.obs" />
+    <Content Include="src\Core\scheduleList.obs" />
     <Content Include="src\Core\signalTypeList.obs" />
     <Content Include="src\Core\signatureDocumentTemplateList.obs" />
     <Content Include="src\Core\suggestionDetail.obs" />
@@ -168,6 +169,7 @@
     <Content Include="src\Event\eventItemDetail.obs" />
     <Content Include="src\Event\EventItemDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventItemDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\registrationInstanceList.obs" />
     <Content Include="src\Finance\benevolenceTypeDetail.obs" />
     <Content Include="src\Finance\BenevolenceTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\BenevolenceTypeDetail\viewPanel.partial.obs" />
@@ -248,6 +250,7 @@
     <Content Include="src\Reporting\MergeTemplateDetail\viewPanel.partial.vue" />
     <Content Include="src\Security\RestKeyDetail\editPanel.partial.obs" />
     <Content Include="src\Security\RestKeyDetail\viewPanel.partial.obs" />
+    <Content Include="src\Tv\appleTvPageList.obs" />
     <Content Include="src\WebFarm\webFarmNodeDetail.vue" />
     <Content Include="src\WebFarm\WebFarmNodeDetail\editPanel.partial.vue" />
     <Content Include="src\WebFarm\WebFarmNodeDetail\viewPanel.partial.vue" />
@@ -404,6 +407,7 @@
     <Folder Include="src\Core\LocationList\" />
     <Folder Include="src\Core\NoteWatchDetail\" />
     <Folder Include="src\Core\RestControllerList\" />
+    <Folder Include="src\Core\ScheduleList\" />
     <Folder Include="src\Core\SignalTypeList\" />
     <Folder Include="src\Core\SignatureDocumentTemplateList\" />
     <Folder Include="src\Core\SuggestionDetail\" />
@@ -435,6 +439,7 @@
     <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventCalendarItemList\" />
     <Folder Include="src\Event\EventItemDetail\" />
+    <Folder Include="src\Event\RegistrationInstanceList\" />
     <Folder Include="src\Finance\BenevolenceTypeDetail\" />
     <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialAccountDetail\" />
@@ -488,6 +493,8 @@
     <Folder Include="src\Security\" />
     <Folder Include="src\Security\AccountEntry\" />
     <Folder Include="src\Security\Login\" />
+    <Folder Include="src\Tv\" />
+    <Folder Include="src\Tv\AppleTvPageList\" />
     <Folder Include="src\Utility\" />
     <Folder Include="src\Utility\SmsTestTransport\" />
     <Folder Include="src\WebFarm\" />
@@ -598,6 +605,7 @@
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\LocationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteWatchDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\ScheduleList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SignalTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SignatureDocumentTemplateList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
@@ -709,6 +717,7 @@
     <TypeScriptCompile Include="src\shims-vue.d.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="src\Tv\AppleTvPageList\types.partial.ts" />
     <TypeScriptCompile Include="src\Utility\starkDetail.ts" />
     <TypeScriptCompile Include="src\WebFarm\WebFarmNodeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\WebFarm\WebFarmSettings\types.partial.ts" />

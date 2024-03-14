@@ -362,6 +362,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SignalTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\" />
@@ -385,6 +386,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\ConnectionOpportunityList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\ConnectionTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpDetail\" />
@@ -408,6 +410,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\RegistrationInstanceActiveList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BenevolenceTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\" />
@@ -457,6 +460,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Tv\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvPageList\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmSettings\" />
@@ -929,6 +933,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleExclusionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleList\scheduleListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignalTypeList\signalTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateDetail\getPdfPreviewUrlRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentTemplateList\signatureDocumentTemplateListOptionsBag.d.ts" />
@@ -973,10 +978,12 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\achievementTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeDetail\achievementTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\ConnectionOpportunityList\connectionOpportunityListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\ConnectionTypeList\connectionTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendeeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpDetail\signUpDetailInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\getAvailableCampusesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderCustomSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderCustomSettingsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderInitializationBox.d.ts" />
@@ -1182,6 +1189,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\appleTvPageDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\rockCacheabilityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\timeIntervalBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageList\appleTvPageListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmMetricBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\webFarmNodeDetailOptionsBag.d.ts" />

@@ -148,6 +148,8 @@ namespace Rock.Blocks.Engagement.SignUp
             }
         }
 
+        public Person CurrentPerson => this.GetCurrentPerson();
+
         public DefinedValueCache MobilePhoneDefinedValueCache
         {
             get
@@ -197,6 +199,8 @@ namespace Rock.Blocks.Engagement.SignUp
             box.RequireEmail = registrationData.RequireEmail;
             box.RequireMobilePhone = registrationData.RequireMobilePhone;
             box.Registrants = registrationData.Registrants;
+            box.MemberAttributes = registrationData.MemberAttributes;
+            box.MemberOpportunityAttributes = registrationData.MemberOpportunityAttributes;
         }
 
         /// <summary>
@@ -284,6 +288,12 @@ namespace Rock.Blocks.Engagement.SignUp
                 }
             }
 
+            // Get any existing GroupMember records tied to this project, regardless of occurrence.
+            GetExistingProjectMembers( registrationData, shouldTrack );
+
+            // Get any existing registrations for this specific project occurrence.
+            GetExistingRegistrations( registrationData, shouldTrack );
+
             if ( mode == RegisterMode.Anonymous )
             {
                 // Try to pre-populate the registrant info for the current Person.
@@ -292,16 +302,11 @@ namespace Rock.Blocks.Engagement.SignUp
                     var person = this.RequestContext.CurrentPerson;
 
                     // Check if we have an existing project GroupMember record for this Group and Person combination.
-                    var existingProjectGroupMember = _groupMemberService
-                        .Queryable()
-                        .AsNoTracking()
-                        .FirstOrDefault( gm =>
-                            gm.GroupId == registrationData.Project.Id
-                            && gm.PersonId == person.Id
-                        );
+                    var existingProjectGroupMember = registrationData.ExistingProjectMembers
+                        .FirstOrDefault( pm => pm.GroupMember.Person.Id == person.Id )
+                        ?.GroupMember;
 
                     var registrant = CreateRegistrant( person, existingProjectGroupMember );
-                    registrant.PersonIdKey = null; // Clear this out, as registrants should always be considered anonymous in this mode.
                     registrant.WillAttend = true;
 
                     if ( registrationData.ProjectHasRequiredGroupRequirements )
@@ -323,6 +328,19 @@ namespace Rock.Blocks.Engagement.SignUp
                 {
                     // An error message will have been added.
                     return registrationData;
+                }
+            }
+
+            GetRegistrantAttributes( rockContext, registrationData );
+            GetRegistrantAttributeValues( rockContext, registrationData );
+
+            if ( mode == RegisterMode.Anonymous )
+            {
+                // Now that we've loaded any previously-saved attribute values, let's clear out each registrant's
+                // person ID key, as registrants should always be considered anonymous in this mode.
+                foreach ( var registrant in registrationData.Registrants )
+                {
+                    registrant.PersonIdKey = null;
                 }
             }
 
@@ -515,12 +533,6 @@ namespace Rock.Blocks.Engagement.SignUp
                 registrationData.ErrorMessage = $"{UnableToRegisterPrefix} as you don't belong to the specified {groupTerm}.";
                 return false;
             }
-
-            // Get any existing GroupMember records tied to this project, regardless of occurrence.
-            GetExistingProjectMembers( registrationData, shouldTrack );
-
-            // Get any existing registrations for this specific project occurrence.
-            GetExistingRegistrations( registrationData, shouldTrack );
 
             // Create a registrant entry for each GroupMember.
             foreach ( var groupMember in groupMembers )
@@ -720,6 +732,66 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
+        /// Gets the registrant member and member opportunity attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationData">the registration data.</param>
+        private void GetRegistrantAttributes( RockContext rockContext, RegistrationData registrationData )
+        {
+            // Load all member attributes for this project.
+            var groupMember = new GroupMember { GroupId = registrationData.Project.Id };
+            groupMember.LoadAttributes( rockContext );
+            registrationData.MemberAttributes = groupMember.GetPublicAttributesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+
+            // Load all member opportunity attributes for this project.
+            var groupMemberAssignment = new GroupMemberAssignment { GroupId = registrationData.Project.Id };
+            groupMemberAssignment.LoadAttributes( rockContext );
+            registrationData.MemberOpportunityAttributes = groupMemberAssignment.GetPublicAttributesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+        }
+
+        /// <summary>
+        /// Gets the registrant member and member opportunity attribute values.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationData">the registration data.</param>
+        private void GetRegistrantAttributeValues( RockContext rockContext, RegistrationData registrationData )
+        {
+            foreach ( var registrant in registrationData.Registrants )
+            {
+                var existingProjectGroupMember = registrationData.ExistingProjectMembers
+                        .FirstOrDefault( pm => pm.GroupMember.Person.IdKey == registrant.PersonIdKey )
+                        ?.GroupMember;
+
+                if ( existingProjectGroupMember == null )
+                {
+                    continue;
+                }
+
+                existingProjectGroupMember.LoadAttributes( rockContext );
+                registrant.MemberAttributeValues = existingProjectGroupMember.GetPublicAttributeValuesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+
+                var existingRegistration = registrationData.ExistingRegistrations
+                        .FirstOrDefault( gma => gma.GroupMember.Id == existingProjectGroupMember.Id );
+
+                if ( existingRegistration != null )
+                {
+                    existingRegistration.LoadAttributes( rockContext );
+                    registrant.MemberOpportunityAttributeValues = existingRegistration.GetPublicAttributeValuesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the attribute is public.
+        /// </summary>
+        /// <param name="attributeCache">The attribute to check.</param>
+        /// <returns>Whether the attribute is public.</returns>
+        private bool IsPublicAttribute( AttributeCache attributeCache )
+        {
+            return attributeCache.IsPublic;
+        }
+
+        /// <summary>
         /// Gets the communication preference items that should be presented for registrant to select.
         /// </summary>
         /// <returns>The communication preference items that should be presented for registrant to select.</returns>
@@ -793,6 +865,7 @@ namespace Rock.Blocks.Engagement.SignUp
             var registrantsToRegister = new List<SignUpRegistrantBag>();
             var registrantsToMessage = new List<SignUpRegistrantBag>();
 
+            var registrantAttributeValuesToSave = new List<RegistrantAttributeValuesToSave>();
             var communicationUpdates = new List<CommunicationUpdate>();
 
             var groupMemberAssignmentsToDelete = new List<GroupMemberAssignment>();
@@ -1054,6 +1127,14 @@ namespace Rock.Blocks.Engagement.SignUp
                         // This individual was previously registered, and is still registered.
                         // Add them to the `registered` collection so we can assure the registrar that they're still registered.
                         registered.Add( registrant );
+
+                        // Ensure any changes to attribute values are saved.
+                        registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
+                        {
+                            Registrant = registrant,
+                            GroupMember = existingProjectMember?.GroupMember,
+                            GroupMemberAssignment = existingRegistration
+                        } );
                     }
                     else
                     {
@@ -1183,6 +1264,14 @@ namespace Rock.Blocks.Engagement.SignUp
                         // Add them to the `registered` collection so we can assure the registrar that they're still registered.
                         registered.Add( registrant );
 
+                        // Ensure any changes to attribute values are saved.
+                        registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
+                        {
+                            Registrant = registrant,
+                            GroupMember = existingProjectMember?.GroupMember,
+                            GroupMemberAssignment = existingRegistration
+                        } );
+
                         if ( mode == RegisterMode.Family )
                         {
                             // The registrar might have changed their communication preference; make sure to keep this family member's preference in sync.
@@ -1285,7 +1374,9 @@ namespace Rock.Blocks.Engagement.SignUp
                 //     GroupMember entity.
                 //  2) The GroupMember record might already exist for a given registrant, as they might already be signed up for other occurrences
                 //     within this same project.
-                //  3) Supplement any `CommunicationUpdate` instances that have missing GroupMember or Person references.
+                //  3) Add the registrant along with their GroupMember and GroupMemberAssignment records to the `registrantAttributesToSave`
+                //     collection to ensure their attribute values are saved.
+                //  4) Supplement any `CommunicationUpdate` instances that have missing GroupMember or Person references.
 
                 var groupRoleId = registrationData.GroupType.DefaultGroupRoleId;
                 if ( !groupRoleId.HasValue )
@@ -1324,6 +1415,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     // Always create a new GroupMemberAssignment record.
                     var groupMemberAssignment = new GroupMemberAssignment
                     {
+                        GroupId = registrationData.Project.Id,
                         LocationId = registrationData.Location.Id,
                         ScheduleId = registrationData.Schedule.Id,
                     };
@@ -1398,6 +1490,13 @@ namespace Rock.Blocks.Engagement.SignUp
                     registered.Add( registrant );
                     workflowMembers.Add( projectGroupMember );
 
+                    registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
+                    {
+                        Registrant = registrant,
+                        GroupMember = projectGroupMember,
+                        GroupMemberAssignment = groupMemberAssignment
+                    } );
+
                     if ( registrantsToMessage.Contains( registrant ) )
                     {
                         communicationRecipients.Add( groupMemberAssignment );
@@ -1428,6 +1527,8 @@ namespace Rock.Blocks.Engagement.SignUp
                 {
                     // Initial save to release FK constraints tied to any referenced entities we'll be deleting.
                     rockContext.SaveChanges();
+
+                    SaveRegistrantAttributeValues( rockContext, registrationData, registrantAttributeValuesToSave );
 
                     if ( groupMembersToDelete.Any() )
                     {
@@ -1469,6 +1570,50 @@ namespace Rock.Blocks.Engagement.SignUp
                 UnsuccessfulRegistrantNames = unsuccessful.Select( r => r.FullName ).ToList(),
                 WarningMessage = warningMessage
             };
+        }
+
+        /// <summary>
+        /// Saves registrant attribute values.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationData">The registration data.</param>
+        /// <param name="registrantAttributeValuesToSave">The registrant attribute values to save.</param>
+        private void SaveRegistrantAttributeValues( RockContext rockContext, RegistrationData registrationData, List<RegistrantAttributeValuesToSave> registrantAttributeValuesToSave )
+        {
+            if ( registrationData.Mode != RegisterMode.Anonymous )
+            {
+                // Attributes are currently only supported in anonymous registration mode.
+                // Family and Group modes will need significant UI updates in order to collect
+                // attribute values per registrant. If we choose to support attributes within
+                // those modes in the future, this `if` block simply needs to be removed, as
+                // the remainder of this server-side file already supports attributes,
+                // regardless of mode.
+                return;
+            }
+
+            if ( registrationData.MemberAttributes?.Any() != true && registrationData.MemberOpportunityAttributes?.Any() != true )
+            {
+                return;
+            }
+
+            foreach ( var r in registrantAttributeValuesToSave )
+            {
+                var attributeValues = r.Registrant.MemberAttributeValues;
+                if ( r.GroupMember != null && attributeValues?.Any() == true )
+                {
+                    r.GroupMember.LoadAttributes( rockContext );
+                    r.GroupMember.SetPublicAttributeValues( attributeValues, CurrentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
+                    r.GroupMember.SaveAttributeValues( rockContext );
+                }
+
+                attributeValues = r.Registrant.MemberOpportunityAttributeValues;
+                if ( r.GroupMemberAssignment != null && attributeValues?.Any() == true )
+                {
+                    r.GroupMemberAssignment.LoadAttributes( rockContext );
+                    r.GroupMemberAssignment.SetPublicAttributeValues( attributeValues, CurrentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
+                    r.GroupMemberAssignment.SaveAttributeValues( rockContext );
+                }
+            }
         }
 
         /// <summary>
@@ -1678,6 +1823,16 @@ namespace Rock.Blocks.Engagement.SignUp
             public List<SignUpRegistrantBag> Registrants => _registrants;
 
             /// <summary>
+            /// Gets or sets the registrant member attributes.
+            /// </summary>
+            public Dictionary<string, PublicAttributeBag> MemberAttributes { get; set; }
+
+            /// <summary>
+            /// Gets or sets the registrant member opportunity attributes.
+            /// </summary>
+            public Dictionary<string, PublicAttributeBag> MemberOpportunityAttributes { get; set; }
+
+            /// <summary>
             /// Gets whether the specified Schedule has a future start date/time.
             /// </summary>
             public bool ScheduleHasFutureStartDateTime
@@ -1773,6 +1928,27 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
+        /// A runtime object to represent a registrant with attribute values that should be saved.
+        /// </summary>
+        private class RegistrantAttributeValuesToSave
+        {
+            /// <summary>
+            /// Gets or sets the <see cref="SignUpRegistrantBag"/> whose attributes should be saved.
+            /// </summary>
+            public SignUpRegistrantBag Registrant { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="Rock.Model.GroupMember"/> whose attributes should be saved.
+            /// </summary>
+            public GroupMember GroupMember { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="Rock.Model.GroupMemberAssignment"/> whose attributes should be saved.
+            /// </summary>
+            public GroupMemberAssignment GroupMemberAssignment { get; set; }
+        }
+
+        /// <summary>
         /// A runtime object to represent a communication update (communication preference, email, mobile phone number) that needs to take place
         /// for a given registrant.
         /// <para>
@@ -1787,7 +1963,7 @@ namespace Rock.Blocks.Engagement.SignUp
         private class CommunicationUpdate
         {
             /// <summary>
-            /// Gets or sets the <see cref="Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag"/> that requires a communication update.
+            /// Gets or sets the <see cref="SignUpRegistrantBag"/> that requires a communication update.
             /// </summary>
             public SignUpRegistrantBag Registrant { get; set; }
 

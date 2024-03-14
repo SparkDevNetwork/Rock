@@ -496,10 +496,10 @@ namespace RockWeb
                 if ( context != null )
                 {
                     var ex = context.Server.GetLastError();
+                    HttpException httpEx = ex as HttpException;
 
                     try
                     {
-                        HttpException httpEx = ex as HttpException;
                         if ( httpEx != null )
                         {
                             int statusCode = httpEx.GetHttpCode();
@@ -524,7 +524,13 @@ namespace RockWeb
                     }
                     catch
                     {
-                        // ignore exception
+                        // Check again, but don't access the context.
+                        if ( httpEx != null && httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
+                        httpEx.Message.Contains( "The remote host closed the connection." ) &&
+                        httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                        {
+                            return;
+                        }
                     }
 
                     while ( ex is HttpUnhandledException && ex.InnerException != null )

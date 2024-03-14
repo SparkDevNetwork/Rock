@@ -450,11 +450,12 @@ namespace Rock.Blocks.Group
                     // Between the group's GroupCapacity and DefaultGroupRole.MaxCount, grab the one we're closest to hitting, and how close we are to
                     // hitting it.
                     box.OpenSpots = Math.Min( openGroupSpots, openRoleSpots );
-                }
 
-                if ( box.OpenSpots <= 0 )
-                {
-                    box.ErrorMessage = "This group is at or exceeds capacity.";
+                    // If no spots are open, display a message that says so.
+                    if ( box.OpenSpots <= 0 )
+                    {
+                        box.ErrorMessage = "This group is at or exceeds capacity.";
+                    }
                 }
             }
         }

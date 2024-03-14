@@ -289,10 +289,10 @@ namespace Rock.Data.Interception
             {
                 var observabilityInfo = DbCommandObservabilityCache.Get( command.CommandText );
                 var rootActivity = ObservabilityHelper.GetRootActivity( activity );
+                var isTargeted = DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash );
 
                 activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
                 activity.AddTag( "db.system", "mssql" );
-                activity.AddTag( "db.query", command.CommandText.Truncate( ObservabilityHelper.MaximumAttributeLength, false ) );
                 activity.AddTag( "rock.otel_type", "rock-db" );
                 activity.AddTag( "rock.db.hash", observabilityInfo.CommandHash );
 
@@ -303,8 +303,13 @@ namespace Rock.Data.Interception
                     rootActivity.SetTag( "rock.db.query_count", queryCount + 1 );
                 }
 
+                if ( isTargeted || DbCommandObservabilityCache.IsQueryIncluded )
+                {
+                    activity.AddTag( "db.query", command.CommandText.Truncate( ObservabilityHelper.MaximumAttributeLength, false ) );
+                }
+
                 // Check if this query should get additional observability telemetry
-                if ( DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash ) )
+                if ( isTargeted )
                 {
                     // Append stack trace
                     var stackTrace = TrimInfrastructureFromStackTrace( new StackTrace( true ).ToString() );

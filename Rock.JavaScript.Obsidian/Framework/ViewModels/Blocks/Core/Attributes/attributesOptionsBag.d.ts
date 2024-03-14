@@ -24,17 +24,20 @@
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The additional configuration options for the Content Channel Item List block. */
+/** The additional configuration options for the Attributes block. */
 export type AttributesOptionsBag = {
+    /** Whether or not to allow attribute values to be set */
     allowSettingOfValues: boolean;
 
-    attributeEntityTypeId: number;
-
+    /** Whether or not to show the "Show In Grid" checkbox in the attribute editor */
     enableShowInGrid: boolean;
 
+    /** Identifier for the EntityType that the attributes are for */
     entityTypeGuid?: Guid | null;
 
+    /** The list of EntityTypes that can be chosen from */
     entityTypes?: ListItemBag[] | null;
 
+    /** The names of the columns that should be hidden based on the configuration */
     hideColumns?: string[] | null;
 };

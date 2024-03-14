@@ -153,7 +153,6 @@ namespace Rock.Blocks.Security
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        DefaultValue = "Log in with social account",
         Category = AttributeCategory.Captions,
         Order = 10 )]
 
