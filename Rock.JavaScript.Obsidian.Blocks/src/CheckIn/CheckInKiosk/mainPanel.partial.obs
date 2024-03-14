@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="check-in-panel main-panel scrollable-container">
+    <div class="check-in-panel scrollable-container">
         <div v-if="title || subtitle" class="header">
             <h1>{{ title }}</h1>
             <h2>{{ subtitle }}</h2>

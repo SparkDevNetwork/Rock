@@ -1,0 +1,77 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <MainPanel title="Check-in Options"
+               subtitle="Select the options for your desired check-in experience"
+               class="configuration-panel">
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList label="Campus"
+                              v-model="campusGuid"
+                              :items="campusItems"
+                              showBlankItem />
+            </div>
+
+            <div class="col-md-6">
+                <DropDownList label="Kiosk"
+                              v-model="kioskGuid" />
+            </div>
+        </div>
+
+        <div class="scrollable">
+            <div style="height:100px; background-color:green;"></div>
+            <div style="height:100px; background-color:purple;"></div>
+        </div>
+    </MainPanel>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref } from "vue";
+    import MainPanel from "./mainPanel.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        title: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const campusGuid = ref<Guid>("");
+    const kioskGuid = ref<Guid>("");
+    const campusItems = ref<ListItemBag[]>([
+        {
+            value: "test1",
+            text: "test1"
+        },
+        {
+            value: "test2",
+            text: "test2"
+        },
+        {
+            value: "test3",
+            text: "test3"
+        },
+        {
+            value: "test4",
+            text: "test4"
+        },
+        {
+            value: "test5",
+            text: "test5"
+        },
+        {
+            value: "test6",
+            text: "test6"
+        },
+        {
+            value: "test7",
+            text: "test7"
+        },
+        {
+            value: "test8",
+            text: "test8"
+        },
+    ]);
+</script>

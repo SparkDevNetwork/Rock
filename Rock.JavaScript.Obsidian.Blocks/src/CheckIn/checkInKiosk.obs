@@ -5,16 +5,10 @@
                     :hasBack="true"
                     @back="onBack" />
 
-        <div class="page-body scrollable-container">
+        <div class="page-body">
             <ContentTransition>
                 <Content v-if="primaryContent">
-                    <div class="check-in-panel">
-                        <h1>Title</h1>
-                        <div class="scrollable">
-                            <div style="height:100px; background-color:blue;"></div>
-                            <div style="height:100px; background-color:red;"></div>
-                        </div>
-                    </div>
+                    <InitialConfigurationScreen />
                 </Content>
 
                 <Content v-if="!primaryContent">
@@ -121,30 +115,34 @@
 }
 
 .check-in-page .page-body .scrollable-container {
-    overflow: hidden;
-
-    /* When a scrollable is nested inside a flex, the entire tree must be flex. */
+    /*
+     * When a scrollable is nested inside a flex, the entire tree must be flex.
+     * Additionally, the min-height is required to make the scroll trigger
+     * without having to put overflow: hidden on parent controls. Using overflow
+     * would cause other issues where shadows and such get cropped.
+     */
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 .check-in-page .scrollable {
     overflow-y: auto !important;
 }
 
-.check-in-page .main-panel {
+.check-in-page .page-body .check-in-panel {
     padding: 24px 24px;
     gap: 16px;
 }
 
-.check-in-page .main-panel .header h1 {
+.check-in-page .page-body .check-in-panel .header h1 {
     color: var(--tones-darkest);
     font-size: var(--font-size-h1);
     margin: 0 0 4px 0;
     text-align: center;
 }
 
-.check-in-page .main-panel .header h2 {
+.check-in-page .page-body .check-in-panel .header h2 {
     color: var(--tones-dark);
     font-size: var(--font-size-h2);
     margin: 0 0 4px 0;
@@ -179,6 +177,7 @@
     import MainPanel from "./CheckInKiosk/mainPanel.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
+    import InitialConfigurationScreen from "./CheckInKiosk/initialConfigurationScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import Content from "./CheckInKiosk/content.partial.obs";
     import { ref } from "vue";
