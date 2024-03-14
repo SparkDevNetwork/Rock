@@ -1088,7 +1088,6 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\monthYearValue.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\noteMentionItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\phoneNumberBoxWithSmsControlBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheabilityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\universalItemSearchPickerItemBag.d.ts" />
@@ -1253,7 +1252,6 @@
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicAttributeCategoryBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicComparisonValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicEditableAttributeBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Utility\timeInterval.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressLogBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressStatusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressUpdateBag.d.ts" />

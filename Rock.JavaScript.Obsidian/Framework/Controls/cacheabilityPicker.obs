@@ -15,22 +15,22 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { RockCacheabilityType } from "@Obsidian/Enums/Controls/rockCacheabilityType";
-    import { RockCacheability } from "@Obsidian/ViewModels/Controls/rockCacheability";
-    import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+    import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
+    import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
     import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<RockCacheability | null>,
+            type: Object as PropType<RockCacheabilityBag | null>,
             required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", _value: RockCacheability | null): void
+        (e: "update:modelValue", _value: RockCacheabilityBag | null): void
     }>();
 
-    function defaultValue(): RockCacheability {
+    function defaultValue(): RockCacheabilityBag {
         return {
             rockCacheabilityType: 0,
             maxAge: { unit: TimeIntervalUnit.Minutes, value: null },
@@ -38,14 +38,14 @@
         };
     }
 
-    function defaultTimeIntervalValue(): TimeInterval {
+    function defaultTimeIntervalValue(): TimeIntervalBag {
         return {
             unit: TimeIntervalUnit.Minutes,
             value: null
         };
     }
 
-    const internalValue = computed<RockCacheability>({
+    const internalValue = computed<RockCacheabilityBag>({
         get() {
             // Don't ever use null here because we want to ensure (sub)properties exist
             return props.modelValue ?? defaultValue();
@@ -75,7 +75,7 @@
         }
     });
 
-    const maxAge = computed<TimeInterval>({
+    const maxAge = computed<TimeIntervalBag>({
         get() {
             return internalValue.value.maxAge ?? defaultTimeIntervalValue();
         },
@@ -88,7 +88,7 @@
         }
     });
 
-    const sharedMaxAge = computed<TimeInterval>({
+    const sharedMaxAge = computed<TimeIntervalBag>({
         get() {
             return internalValue.value.sharedMaxAge ?? defaultTimeIntervalValue();
         },
