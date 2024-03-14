@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate == DateTime.MaxValue.Date )
             {
-                lPledgeDate.Text = string.Format( "{0} On-Ward", financialPledge.StartDate.ToShortDateString() );
+                lPledgeDate.Text = string.Format( "{0} Onward", financialPledge.StartDate.ToShortDateString() );
             }
             else
             {
