@@ -361,7 +361,7 @@ namespace Rock.Rest
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
             serviceCollection.AddScoped<RockContext>();
-            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new WebHostEnvironment
+            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new Rock.Utility.WebHostEnvironment
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
