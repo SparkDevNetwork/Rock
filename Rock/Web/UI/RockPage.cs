@@ -30,6 +30,9 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
@@ -89,11 +92,6 @@ namespace Rock.Web.UI
         private Stopwatch _onLoadStopwatch = null;
 
         /// <summary>
-        /// Contains the IRockBlockType wrapper objects that need to be initialized during OnLoad.
-        /// </summary>
-        private readonly List<RockBlockTypeWrapper> _blockTypeWrappers = new List<RockBlockTypeWrapper>();
-
-        /// <summary>
         /// The fingerprint to use with obsidian files.
         /// </summary>
         private static long _obsidianFingerprint = 0;
@@ -101,7 +99,17 @@ namespace Rock.Web.UI
         /// <summary>
         /// The obsidian file watchers.
         /// </summary>
-        private static List<FileSystemWatcher> _obsidianFileWatchers = new List<FileSystemWatcher>();
+        private static readonly List<FileSystemWatcher> _obsidianFileWatchers = new List<FileSystemWatcher>();
+
+        /// <summary>
+        /// The service provider to use during requests.
+        /// </summary>
+        private static readonly Lazy<IServiceProvider> _lazyServiceProvider = new Lazy<IServiceProvider>( CreateServiceProvider );
+
+        /// <summary>
+        /// The service scopes that should be disposed.
+        /// </summary>
+        private readonly List<IServiceScope> _pageServiceScopes = new List<IServiceScope>();
 
         /// <summary>
         /// The currently running Rock version.
@@ -1328,7 +1336,8 @@ Rock.settings.initialize({{
                                     }
                                     else if ( block.BlockType.EntityTypeId.HasValue )
                                     {
-                                        var blockEntity = Activator.CreateInstance( block.BlockType.EntityType.GetEntityType() );
+                                        var scope = CreateServiceScope();
+                                        var blockEntity = ActivatorUtilities.CreateInstance( scope.ServiceProvider, block.BlockType.EntityType.GetEntityType() );
 
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
@@ -1342,8 +1351,6 @@ Rock.settings.initialize({{
 
                                             wrapper.InitializeAsUserControl( this );
                                             wrapper.AppRelativeTemplateSourceDirectory = "~";
-
-                                            _blockTypeWrappers.Add( wrapper );
 
                                             control = wrapper;
                                             control.ClientIDMode = ClientIDMode.AutoID;
@@ -2407,6 +2414,19 @@ Obsidian.onReady(() => {{
             }
         }
 
+        /// <inheritdoc/>
+        protected override void OnUnload( EventArgs e )
+        {
+            // Dispose of all the service scopes that were created during this
+            // page's lifecycle.
+            foreach ( var scope in _pageServiceScopes )
+            {
+                scope.Dispose();
+            }
+
+            base.OnUnload( e );
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Page.SaveStateComplete" /> event after the page state has been saved to the persistence medium.
         /// </summary>
@@ -2581,6 +2601,45 @@ $.ajax({
 
             return viewModel;
         }
+
+        /// <summary>
+        /// Creates the service provider that will provides services for all
+        /// requests during the lifetime of this application.
+        /// </summary>
+        /// <returns>A new service provider.</returns>
+        private static IServiceProvider CreateServiceProvider()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
+            serviceCollection.AddScoped<RockContext>();
+            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
+            {
+                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
+            } );
+
+            return serviceCollection.BuildServiceProvider();
+        }
+
+        /// <summary>
+        /// Creates the service scope and initializes any required values.
+        /// </summary>
+        /// <returns>An new service scope.</returns>
+        private IServiceScope CreateServiceScope()
+        {
+            var scope = _lazyServiceProvider.Value.CreateScope();
+
+            _pageServiceScopes.Add( scope );
+
+            var accessor = scope.ServiceProvider.GetRequiredService<IRockRequestContextAccessor>();
+
+            if ( accessor is RockRequestContextAccessor internalAccessor )
+            {
+                internalAccessor.RockRequestContext = RequestContext;
+            }
+
+            return scope;
+        }
+
         #endregion
 
         #region Public Methods
