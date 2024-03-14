@@ -8,7 +8,7 @@
         <div class="page-body">
             <ContentTransition>
                 <Content v-if="primaryContent">
-                    <InitialConfigurationScreen />
+                    <InitialConfigurationScreen :blockConfiguration="blockConfiguration" />
                 </Content>
 
                 <Content v-if="!primaryContent">
@@ -28,15 +28,11 @@
 </template>
 
 <style>
-/* TEMP: This makes it display nice in the full workspace layout. */
-.featured-content .check-in-page {
-    width: 100% !important;
-    height: calc(100vh - var(--top-header-height, 80px) - 36px) !important;
-    overflow-y: auto !important;
-}
-
 /* These are default styles to be moved to the theme or something. */
 .check-in-page {
+    position: absolute;
+    left: 0;
+    top: 0;
     width: 100vw;
     height: 100vh;
     background-color: var(--tones-lightest);
@@ -49,16 +45,19 @@
     --button-border-radius: 4px;
     --vertical-padding: 8px;
     --horizontal-padding: 16px;
-    --item-spacing: 24px;
+    --item-spacing: 16px;
     --tones-darkest: #425466;
     --tones-dark: #77889a;
     --tones-medium: #d8ddec;
     --tones-lightest: #f5f7fc;
 
     --font-size-h1: 24px;
-    --font-size-h2: 14px;
+    --font-size-h2: 18px;
     --font-size-body: 14px;
     --font-size-small: 12px;
+    --font-size-btn-primary: 22px;
+    --font-size-btn-secondary: 14px;
+    --font-size-btn-small: 14px;
 }
 
 .check-in-page .check-in-panel {
@@ -67,6 +66,18 @@
     padding: var(--vertical-padding) var(--horizontal-padding);
     display: flex;
     flex-direction: column;
+}
+
+.check-in-page .btn-default {
+    background-color: var(--tones-lightest);
+    color: var(--tones-dark);
+    border: 0;
+}
+
+.check-in-page .vertical-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
 }
 
 /*
@@ -90,14 +101,7 @@
 
 .check-in-page .page-header .back-button {
     background-color: transparent;
-    color: var(--tones-dark);
-    border-color: 1px solid var(--tones-medium);
-}
-
-.check-in-page .page-header .home-button {
-    background-color: var(--tones-lightest);
-    color: var(--tones-dark);
-    border: 0;
+    border: 1px solid var(--tones-medium);
 }
 
 /*
@@ -135,18 +139,43 @@
     gap: 16px;
 }
 
-.check-in-page .page-body .check-in-panel .header h1 {
+.check-in-page h1 {
     color: var(--tones-darkest);
     font-size: var(--font-size-h1);
+    font-weight: 600;
     margin: 0 0 4px 0;
+}
+
+.check-in-page h2 {
+    color: var(--tones-dark);
+    font-size: var(--font-size-h2);
+    font-weight: 600;
+    margin: 0 0 4px 0;
+}
+
+.check-in-page .panel-header h1 {
     text-align: center;
 }
 
-.check-in-page .page-body .check-in-panel .header h2 {
-    color: var(--tones-dark);
-    font-size: var(--font-size-h2);
-    margin: 0 0 4px 0;
+.check-in-page .panel-header h2 {
+    font-size: var(--font-size-body);
+    font-weight: 400;
     text-align: center;
+}
+
+.check-in-page .btn-primary {
+    font-size: var(--font-size-btn-primary);
+    font-weight: 600;
+}
+
+.check-in-page .btn-default {
+    font-size: var(--font-size-btn-secondary);
+    font-weight: 400;
+}
+
+.check-in-page .btn-default.btn-sm {
+    font-size: var(--font-size-btn-small);
+    font-weight: 600;
 }
 
 /*
@@ -171,6 +200,36 @@
 .check-in-page .page-footer .configure-button {
     color: var(--tones-medium);
 }
+
+/*
+ * Configuration Panel.
+ */
+.check-in-page .saved-configuration-button {
+    display: flex;
+    gap: var(--item-spacing);
+    align-items: center;
+}
+
+.check-in-page .saved-configuration-button .subtitle {
+    font-size: var(--font-size-btn-secondary);
+    font-weight: 400;
+}
+
+.check-in-page .saved-configurations {
+    gap: var(--item-spacing);
+}
+
+.check-in-page .saved-configurations .header,
+.check-in-page .custom-configuration .header {
+    display: flex;
+    align-items: center;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .saved-configurations .header h2,
+.check-in-page .custom-configuration .header h2 {
+    flex-grow: 1;
+}
 </style>
 
 <script setup lang="ts">
@@ -181,7 +240,10 @@
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import Content from "./CheckInKiosk/content.partial.obs";
     import { ref } from "vue";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { CheckInKioskOptionsBag } from "./CheckInKiosk/utils.partial";
 
+    const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
     const primaryContent = ref(true);
 
     function onBack(): void {

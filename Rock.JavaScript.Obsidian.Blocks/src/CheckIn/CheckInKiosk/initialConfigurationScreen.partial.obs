@@ -13,13 +13,59 @@
 
             <div class="col-md-6">
                 <DropDownList label="Kiosk"
-                              v-model="kioskGuid" />
+                              v-model="kioskGuid"
+                              :items="kioskItems"
+                              showBlankItem />
             </div>
         </div>
 
-        <div class="scrollable">
-            <div style="height:100px; background-color:green;"></div>
-            <div style="height:100px; background-color:purple;"></div>
+        <div v-if="!useCustomConfiguration" class="saved-configurations scrollable-container">
+            <div class="header">
+                <h2>Saved Configurations</h2>
+
+                <RockButton btnType="default"
+                            btnSize="sm"
+                            class="use-custom-configuration-button"
+                            @click="onCustomConfiguration">
+                    Use Custom Configuration
+                </RockButton>
+            </div>
+
+            <div class="scrollable">
+                <div class="vertical-buttons">
+                    <RockButton v-for="cfg in savedConfigurations"
+                                btnType="primary"
+                                class="saved-configuration-button">
+                        <div class="title">{{ cfg.name }}</div>
+                        <div class="subtitle">{{ cfg.description }}</div>
+                    </RockButton>
+                </div>
+            </div>
+        </div>
+
+        <div v-else class="custom-configuration scrollable-container">
+            <div class="header">
+                <h2>Check-in Setup Options</h2>
+
+                <RockButton btnType="default"
+                            class="save-new-configuration-button"
+                            @click="onSaveNewConfiguration">
+                    Save New Configuration
+                </RockButton>
+
+                <RockButton btnType="default"
+                            class="use-custom-configuration-button"
+                            @click="onUseSavedConfiguration">
+                    Use Saved Configuration
+                </RockButton>
+            </div>
+
+            <div class="scrollable">
+                <DropDownList label="Theme"
+                              v-model="theme"
+                              :items="blockConfiguration.themes ?? []"
+                              showBlankItem />
+            </div>
         </div>
     </MainPanel>
 </template>
@@ -28,50 +74,93 @@
     import { PropType, computed, ref } from "vue";
     import MainPanel from "./mainPanel.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CheckInKioskOptionsBag, SavedConfigurationBag } from "./utils.partial";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
-        title: {
-            type: String as PropType<string>,
-            required: false
+        blockConfiguration: {
+            type: Object as PropType<CheckInKioskOptionsBag>,
+            required: true
         }
     });
 
     const campusGuid = ref<Guid>("");
     const kioskGuid = ref<Guid>("");
-    const campusItems = ref<ListItemBag[]>([
+    const theme = ref("");
+    const useCustomConfiguration = ref(false);
+
+    const savedConfigurations = ref<SavedConfigurationBag[]>([
         {
-            value: "test1",
-            text: "test1"
+            name: "Weekend Services",
+            description: "Used for checking in children for the weekend services."
         },
         {
-            value: "test2",
-            text: "test2"
+            name: "Mid-Week Services",
+            description: "Used for checking in children for the mid-week services."
         },
         {
-            value: "test3",
-            text: "test3"
-        },
-        {
-            value: "test4",
-            text: "test4"
-        },
-        {
-            value: "test5",
-            text: "test5"
-        },
-        {
-            value: "test6",
-            text: "test6"
-        },
-        {
-            value: "test7",
-            text: "test7"
-        },
-        {
-            value: "test8",
-            text: "test8"
-        },
+            name: "Volunteer Check-in",
+            description: "Used for volunteer check-in"
+        }
     ]);
+
+    // #region Computed Values
+
+    /** The list of campuses to show in the campus picker. */
+    const campusItems = computed((): ListItemBag[] => {
+        if (!props.blockConfiguration.campuses) {
+            return [];
+        }
+
+        return props.blockConfiguration
+            .campuses
+            .filter(c => c.guid !== emptyGuid)
+            .map(c => ({
+                value: c.guid,
+                text: c.name,
+            }));
+    });
+
+    /** The list of kiosks to show in the kiosk picker. */
+    const kioskItems = computed((): ListItemBag[] => {
+        const guid: Guid = campusGuid.value || emptyGuid;
+
+        if (!props.blockConfiguration.campuses) {
+            return [];
+        }
+
+        const campus = props.blockConfiguration.campuses
+            .find(c => c.guid === guid);
+
+        if (!campus?.kiosks) {
+            return [];
+        }
+
+        return campus.kiosks
+            .map(k => ({
+                value: k.guid,
+                text: k.name
+            }));
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function onCustomConfiguration(): void {
+        useCustomConfiguration.value = true;
+    }
+
+    function onUseSavedConfiguration(): void {
+        useCustomConfiguration.value = false;
+    }
+
+    function onSaveNewConfiguration(): void {
+        alert("no");
+    }
+
+    // #endregion
 </script>

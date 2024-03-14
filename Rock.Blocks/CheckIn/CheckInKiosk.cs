@@ -15,13 +15,20 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
+
+using Microsoft.AspNetCore.Hosting;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.CheckIn;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.CheckIn
@@ -60,6 +67,24 @@ namespace Rock.Blocks.CheckIn
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// The web host environment for this block.
+        /// </summary>
+        private readonly IWebHostEnvironment _environment;
+
+        #endregion
+
+        #region Constructors
+
+        public CheckInKiosk( IWebHostEnvironment environment )
+        {
+            _environment = environment;
+        }
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -71,8 +96,97 @@ namespace Rock.Blocks.CheckIn
 
                 return new
                 {
+                    Campuses = GetCampusesAndKiosks( rockContext ),
+                    Themes = GetThemes(),
+                    DefaultTheme = PageCache.Layout?.Site?.Theme
                 };
             }
+        }
+
+        /// <summary>
+        /// Gets the campuses and associated kiosks that can be selected during
+        /// manual configuration.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A collection of <see cref="CampusBag"/> objects.</returns>
+        private List<CampusBag> GetCampusesAndKiosks( RockContext rockContext )
+        {
+            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), rockContext )?.Id;
+
+            if ( !kioskDeviceTypeValueId.HasValue )
+            {
+                throw new Exception( "Device type Check-in Kiosk defined value not found." );
+            }
+
+            var campuses = CampusCache.All( rockContext )
+                .Where( c => c.IsActive == true )
+                .OrderBy( c => c.Order )
+                .ToList();
+
+            var kiosks = DeviceCache.All( rockContext )
+                .Where( k => k.IsActive && k.DeviceTypeValueId == kioskDeviceTypeValueId.Value )
+                .OrderBy( k => k.Name )
+                .Select( k => new
+                {
+                    Kiosk = k,
+                    CampusId = k.GetCampusId() ?? 0
+                } )
+                .GroupBy( k => k.CampusId )
+                .ToDictionary( k => k.Key, k => k.ToList() );
+
+            var campusBags = new List<CampusBag>();
+
+            if ( kiosks.ContainsKey( 0 ) )
+            {
+                campusBags.Add( new CampusBag
+                {
+                    Guid = Guid.Empty,
+                    Name = string.Empty,
+                    Kiosks = kiosks[0].Select( k => new CheckInItemBag
+                    {
+                        Guid = k.Kiosk.Guid,
+                        Name = k.Kiosk.Name
+                    } )
+                    .ToList()
+                } );
+            }
+
+            foreach ( var campus in campuses )
+            {
+                var campusKiosks = kiosks.GetValueOrNull( campus.Id );
+
+                campusBags.Add( new CampusBag
+                {
+                    Guid = campus.Guid,
+                    Name = campus.Name,
+                    Kiosks = campusKiosks?.Select( k => new CheckInItemBag
+                    {
+                        Guid = k.Kiosk.Guid,
+                        Name = k.Kiosk.Name
+                    } )
+                    .ToList() ?? new List<CheckInItemBag>()
+                } );
+            }
+
+            return campusBags;
+        }
+
+        /// <summary>
+        /// Gets all the themes that can be used for check-in.
+        /// </summary>
+        /// <returns>A collection of <see cref="ListItemBag"/> objects.</returns>
+        private List<ListItemBag> GetThemes()
+        {
+            var di = new DirectoryInfo( Path.Combine( _environment.WebRootPath, "Themes" ) );
+
+            return di.EnumerateDirectories()
+                .OrderBy( d => d.Name )
+                .Select( d => new ListItemBag
+                {
+                    Value = d.Name.ToLower(),
+                    Text = d.Name
+                } )
+                .ToList();
         }
 
         /// <summary>
@@ -130,9 +244,15 @@ namespace Rock.Blocks.CheckIn
             return config;
         }
 
-        private GroupTypeCache GetPrimaryTemplate( ICollection<GroupTypeCache> groupTypes )
+        /// <summary>
+        /// Gets the primary configuration template to use from the list
+        /// of areas.
+        /// </summary>
+        /// <param name="areas">The areas that will be used to determine the configuration template.</param>
+        /// <returns>An instance of <see cref="GroupTypeCache"/> or <c>null</c>.</returns>
+        private GroupTypeCache GetPrimaryTemplate( ICollection<GroupTypeCache> areas )
         {
-            foreach ( var groupType in groupTypes )
+            foreach ( var groupType in areas )
             {
                 var template = groupType.GetCheckInConfigurationType();
 
@@ -150,5 +270,10 @@ namespace Rock.Blocks.CheckIn
         #region Block Actions
 
         #endregion
+
+        private class CampusBag : CheckInItemBag
+        {
+            public List<CheckInItemBag> Kiosks { get; set; }
+        }
     }
 }

@@ -11,6 +11,7 @@
         </RockButton>
 
         <RockButton btnType="default"
+                    btnSize="sm"
                     class="home-button"
                     @click="onHome">
             Home
