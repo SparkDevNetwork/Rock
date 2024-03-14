@@ -409,6 +409,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\RegistrationInstanceActiveList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BenevolenceTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\" />
