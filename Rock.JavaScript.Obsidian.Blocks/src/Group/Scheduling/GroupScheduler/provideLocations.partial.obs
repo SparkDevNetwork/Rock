@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
     import { computed, inject, PropType, ref } from "vue";
-    import { ISchedulerResourceAttend, ReportAssignedResources } from "./types.partial";
+    import { AddAttendanceOccurrenceId, ISchedulerResourceAttend, ReportAssignedResources } from "./types.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -78,6 +78,7 @@
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { Guid } from "@Obsidian/Types";
     import { HttpUrlParams } from "@Obsidian/Types/Utility/http";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
@@ -86,6 +87,7 @@
     import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+    const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
     const baseApiUrl = "/api/Attendances";
 
@@ -126,6 +128,7 @@
 
     const isAssigningResources = ref(false);
 
+    const addAttendanceOccurrenceId = inject(AddAttendanceOccurrenceId);
     const reportAssignedResources = inject(ReportAssignedResources);
 
     // #endregion Values
@@ -250,13 +253,29 @@
                 return;
             }
 
-            const assignToAttendanceOccurrenceId = props.availableOccurrences
-                ?.find((o: GroupSchedulerOccurrenceBag) => o?.locationId === locationId)
-                ?.attendanceOccurrenceId;
-            if (!assignToAttendanceOccurrenceId) {
+            const occurrence = props.availableOccurrences?.find((o: GroupSchedulerOccurrenceBag) => o?.locationId === locationId);
+            if (!occurrence) {
                 // Unable to map the selected location back to the attendance occurrence; should never happen.
                 unsuccessfullyAssignedPersonIds.push(personId);
                 return;
+            }
+
+            let assignToAttendanceOccurrenceId = occurrence.attendanceOccurrenceId;
+            if (!assignToAttendanceOccurrenceId) {
+                // This attendance occurrence record might not exist yet; ensure it exists before attempting to schedule individuals.
+                const data = { bag: occurrence };
+                const getOrAddAttendanceOccurrenceResult = await invokeBlockAction<number | null | undefined>("GetOrAddAttendanceOccurrence", data);
+                if (!getOrAddAttendanceOccurrenceResult.isSuccess || !getOrAddAttendanceOccurrenceResult.data) {
+                    unsuccessfullyAssignedPersonIds.push(personId);
+                    return;
+                }
+
+                assignToAttendanceOccurrenceId = getOrAddAttendanceOccurrenceResult.data;
+
+                // Share the attendance occurrence identifier with all other group scheduler components.
+                if (addAttendanceOccurrenceId) {
+                    addAttendanceOccurrenceId(occurrence.guid!, assignToAttendanceOccurrenceId!);
+                }
             }
 
             // Unassign the person from the attendance occurrence without a location.
