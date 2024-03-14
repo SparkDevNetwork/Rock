@@ -775,6 +775,7 @@ namespace Rock.Web.UI
                 Activity.Current.AddTag( "rock.current_user", this.CurrentUser?.UserName );
                 Activity.Current.AddTag( "rock.current_person", this.CurrentPerson?.FullName );
                 Activity.Current.AddTag( "rock.current_visitor", this.CurrentVisitor?.AliasPersonGuid );
+                Activity.Current.AddTag( "rock.site.id", this.Site.Id );
                 Activity.Current.AddTag( "rock.page.id", this.PageId );
                 Activity.Current.AddTag( "rock.page.ispostback", this.IsPostBack );
             }
