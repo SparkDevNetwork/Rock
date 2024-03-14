@@ -119,6 +119,8 @@ BEGIN
         AND fg.[GroupTypeId] = @FamilyGroupTypeId
     WHERE a.[DidAttend] = 1
         AND a.StartDateTime >= @SundayExitAttendanceDurationLong
+        AND fgm.IsArchived = 0
+        AND fg.IsArchived = 0
     GROUP BY O.SundayDate
         ,StartDateTime
         ,fg.Id
@@ -206,6 +208,8 @@ BEGIN
 	LEFT OUTER JOIN [AttributeValue] era ON era.[EntityId] = p.[Id]
 		AND era.[AttributeId] = @IsEraAttributeId
 	WHERE [RecordTypeValueId] = @PersonRecordTypeValueId -- person record type (not business)
+    AND gm.IsArchived = 0
+    AND g.IsArchived = 0
 	DECLARE @TempIsEraFamilyMembers TABLE (
 		PersonId INT,
 		[IsEra] INT,

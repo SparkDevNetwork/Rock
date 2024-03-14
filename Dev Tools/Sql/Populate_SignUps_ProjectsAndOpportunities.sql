@@ -1392,7 +1392,8 @@ BEGIN -- region INSERT/DELETE records
                 BEGIN
                     INSERT INTO [GroupMemberAssignment]
                     (
-                        [GroupMemberId]
+                        [GroupId]
+                        , [GroupMemberId]
                         , [LocationId]
                         , [ScheduleId]
                         , [CreatedDateTime]
@@ -1403,7 +1404,8 @@ BEGIN -- region INSERT/DELETE records
                     )
                     VALUES
                     (
-                        @GroupMemberId
+                        @GroupId
+                        , @GroupMemberId
                         , @LocationId
                         , @ScheduleId
                         , @Now

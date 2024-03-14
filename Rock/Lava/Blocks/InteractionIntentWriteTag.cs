@@ -12,6 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// </copyright>
 //
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -43,11 +44,7 @@ namespace Rock.Lava.Blocks
 
         #endregion Parameter Keys
 
-        /// <summary>
-        /// Renders the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="result">The result.</param>
+        /// <inheritdoc/>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             // First, ensure that this command is allowed in the context.
@@ -109,7 +106,12 @@ namespace Rock.Lava.Blocks
             if ( !personAliasId.HasValue )
             {
                 var currentPerson = LavaHelper.GetCurrentPerson( context );
-                personAliasId = LavaHelper.GetPrimaryPersonAliasId( currentPerson );
+                personAliasId = currentPerson?.PrimaryAliasId;
+
+                if ( !personAliasId.HasValue && currentPerson != null )
+                {
+                    personAliasId = LavaHelper.GetPrimaryPersonAliasId( currentPerson );
+                }
             }
 
             // Write the interaction by way of a transaction.

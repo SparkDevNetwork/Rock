@@ -38,6 +38,11 @@
                 default: false
             },
 
+            watchDeep: {
+                type: Boolean,
+                default: false
+            },
+
             ...standardRockFormFieldProps
         },
 
@@ -89,7 +94,8 @@
                     formState?.setError(uniqueId, fieldLabel.value, "");
                 }
             }, {
-                immediate: true
+                immediate: true,
+                deep: props.watchDeep
             });
 
             // If we are removed from the DOM completely, clear the error before we go.

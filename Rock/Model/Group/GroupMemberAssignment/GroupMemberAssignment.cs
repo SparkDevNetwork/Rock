@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -30,9 +31,19 @@ namespace Rock.Model
     [Table( "GroupMemberAssignment" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "22BF14ED-E882-4BB0-9328-D12545BF5F61")]
-    public class GroupMemberAssignment : Model<GroupMemberAssignment>
+    public partial class GroupMemberAssignment : Model<GroupMemberAssignment>
     {
         #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Group"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int GroupId { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.GroupMember"/> identifier.

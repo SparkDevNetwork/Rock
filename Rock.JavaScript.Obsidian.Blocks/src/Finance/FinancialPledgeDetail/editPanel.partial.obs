@@ -31,7 +31,7 @@
                     <div class="col-md-6">
                         <AccountPicker label="Account"
                                        v-model="account"
-                                       rules="required"
+                                       :rules="rules"
                                        :enhanceForLongLists="true"
                                        :multiple="false"
                                        :disabled="!isEditable" />
@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -81,6 +81,7 @@
     import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeBag";
     import { FinancialPledgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -114,7 +115,7 @@
     const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
     const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
     const totalAmount = propertyRef(props.modelValue.totalAmount ?? null, "TotalAmount");
-    const pledgeFrequencyValue = propertyRef(props.modelValue.pledgeFrequencyValue ?? {}, "PledgeFrequencyValueId");
+    const pledgeFrequencyValue = propertyRef(props.modelValue.pledgeFrequencyValue ?? null, "PledgeFrequencyValueId");
     const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
     const selectGroupTypeGuid = ref(props.options.selectGroupTypeGuid ?? "");
     const groupType = ref(props.options.groupType ?? "Group");
@@ -129,13 +130,25 @@
 
     // #region Computed Values
 
+    const rules = computed((): ValidationRule[] => {
+        const rules = ["required", validateAccount];
+        return rules;
+    });
+
     // #endregion
 
     // #region Functions
 
-    // #endregion
+    function validateAccount(value: unknown): string | boolean {
 
-    // #region Event Handlers
+        const accounts = value as ListItemBag[];
+
+        if (!accounts || accounts.length == 0 || !accounts[0]) {
+            return "is required";
+        }
+
+        return true;
+    }
 
     // #endregion
 
@@ -156,17 +169,18 @@
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(startDate, props.modelValue.startDate ?? "");
-        updateRefValue(endDate, props.modelValue.startDate ?? "");
-        updateRefValue(totalAmount, props.modelValue.totalAmount ?? 0);
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
+        updateRefValue(totalAmount, props.modelValue.totalAmount ?? null);
         updateRefValue(groupGuid, props.modelValue.group?.value ?? "");
-        updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue ?? {});
-        updateRefValue(personAlias, props.modelValue.personAlias ?? {});
+        updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue ?? null);
+        updateRefValue(personAlias, props.modelValue.personAlias ?? undefined);
         updateRefValue(account, props.modelValue.account ?? {});
+        updateRefValue(selectedDateRange, startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
+    watch([attributeValues, selectedDateRange, ...propRefs], () => {
         const newValue: FinancialPledgeBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,

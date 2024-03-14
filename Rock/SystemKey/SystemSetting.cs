@@ -338,6 +338,13 @@ namespace Rock.SystemKey
         public const string OBSERVABILITY_TARGETED_QUERIES = "core_ObservabilityTargetedQueries";
 
         /// <summary>
+        /// Determines if all SQL query statements are included in database
+        /// activities. Query statements will always be included in targeted
+        /// queries.
+        /// </summary>
+        public const string OBSERVABILITY_INCLUDE_QUERY_STATEMENTS = "core_ObservabilityIncludeQueryStatements";
+
+        /// <summary>
         /// The maximum number of spans that can be created for a single trace
         /// in observability.
         /// </summary>

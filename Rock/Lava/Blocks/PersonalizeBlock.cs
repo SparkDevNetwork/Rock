@@ -241,7 +241,7 @@ namespace Rock.Lava.Blocks
                     }
                 }
 
-                var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForContext( context,
+                var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context,
                     System.Web.HttpContext.Current,
                     person );
 

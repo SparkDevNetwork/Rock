@@ -125,21 +125,10 @@ namespace RockWeb.Blocks.Groups
 
         private List<GroupMemberAssignmentStateObj> GroupMemberAssignmentsState { get; set; }
 
-        private int? LocationId
-        {
-            get
-            {
-                return hfLocationId.Value.AsIntegerOrNull();
-            }
-        }
-
-        private int? ScheduleId
-        {
-            get
-            {
-                return hfScheduleId.Value.AsIntegerOrNull();
-            }
-        }
+        private int? GroupId => hfGroupId.Value.AsIntegerOrNull();
+        private int? CampusId => hfCampusId.Value.AsIntegerOrNull();
+        private int? LocationId => hfLocationId.Value.AsIntegerOrNull();
+        private int? ScheduleId => hfScheduleId.Value.AsIntegerOrNull();
 
         private bool IsSignUpMode
         {
@@ -376,7 +365,7 @@ namespace RockWeb.Blocks.Groups
                         .FirstOrDefault( q => q.AllKeys.Contains( PageParameterKey.GroupId ) );
 
                     var groupIdParam = queryString?[PageParameterKey.GroupId].AsIntegerOrNull();
-                    if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
+                    if ( !this.IsSignUpMode && !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
                     {
                         // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
                         breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
@@ -765,38 +754,87 @@ namespace RockWeb.Blocks.Groups
 
             // Show the Group Member Attributes.
             groupMember.LoadAttributes();
-            avcAttributes.Visible = false;
-            avcAttributesReadOnly.Visible = false;
+            avcGroupMemberAttributes.Visible = false;
+            avcGroupMemberAttributesReadOnly.Visible = false;
 
-            List<string> editableAttributes;
-            List<string> viewableAttributes;
+            List<string> editableGroupMemberAttributes;
+            List<string> viewableGroupMemberAttributes;
 
             if ( group.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
             {
                 // If the Current User has Administrate permissions for the Group, show all Attributes.
-                editableAttributes = readOnly ? new List<string>()
+                editableGroupMemberAttributes = readOnly ? new List<string>()
                     : groupMember.Attributes.Select( a => a.Key ).ToList();
-                viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                viewableGroupMemberAttributes = groupMember.Attributes.Where( a => !editableGroupMemberAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
             }
             else
             {
-                editableAttributes = readOnly ? new List<string>()
+                editableGroupMemberAttributes = readOnly ? new List<string>()
                     : groupMember.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
-                viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                viewableGroupMemberAttributes = groupMember.Attributes.Where( a => !editableGroupMemberAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
             }
 
-            if ( editableAttributes.Any() )
+            if ( editableGroupMemberAttributes.Any() )
             {
-                avcAttributes.Visible = true;
-                avcAttributes.ExcludedAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
-                avcAttributes.AddEditControls( groupMember );
+                avcGroupMemberAttributes.Visible = true;
+                avcGroupMemberAttributes.ExcludedAttributes = groupMember.Attributes.Where( a => !editableGroupMemberAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                avcGroupMemberAttributes.AddEditControls( groupMember );
             }
 
-            if ( viewableAttributes.Any() )
+            if ( viewableGroupMemberAttributes.Any() )
             {
-                avcAttributesReadOnly.Visible = true;
-                avcAttributesReadOnly.ExcludedAttributes = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
-                avcAttributesReadOnly.AddDisplayControls( groupMember );
+                avcGroupMemberAttributesReadOnly.Visible = true;
+                avcGroupMemberAttributesReadOnly.ExcludedAttributes = groupMember.Attributes.Where( a => !viewableGroupMemberAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                avcGroupMemberAttributesReadOnly.AddDisplayControls( groupMember );
+            }
+
+            // Show the Group Member Assignment Attributes.
+            avcGroupMemberAssignmentAttributes.Visible = false;
+            avcGroupMemberAssignmentAttributesReadOnly.Visible = false;
+
+            if ( this.IsSignUpMode )
+            {
+                var groupMemberAssignment = new GroupMemberAssignmentService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .FirstOrDefault( gma =>
+                        gma.GroupMemberId == groupMemberId
+                        && gma.LocationId == this.LocationId.Value
+                        && gma.ScheduleId == this.ScheduleId.Value
+                    ) ?? new GroupMemberAssignment { GroupId = group.Id };
+
+                groupMemberAssignment.LoadAttributes();
+
+                List<string> editableGroupMemberAssignmentAttributes;
+                List<string> viewableGroupMemberAssignmentAttributes;
+
+                if ( group.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                {
+                    // If the Current User has Administrate permissions for the Group, show all Attributes.
+                    editableGroupMemberAssignmentAttributes = readOnly ? new List<string>()
+                        : groupMemberAssignment.Attributes.Select( a => a.Key ).ToList();
+                    viewableGroupMemberAssignmentAttributes = groupMemberAssignment.Attributes.Where( a => !editableGroupMemberAssignmentAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                }
+                else
+                {
+                    editableGroupMemberAssignmentAttributes = readOnly ? new List<string>()
+                        : groupMemberAssignment.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                    viewableGroupMemberAssignmentAttributes = groupMemberAssignment.Attributes.Where( a => !editableGroupMemberAssignmentAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                }
+
+                if ( editableGroupMemberAssignmentAttributes.Any() )
+                {
+                    avcGroupMemberAssignmentAttributes.Visible = true;
+                    avcGroupMemberAssignmentAttributes.ExcludedAttributes = groupMemberAssignment.Attributes.Where( a => !editableGroupMemberAssignmentAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                    avcGroupMemberAssignmentAttributes.AddEditControls( groupMemberAssignment );
+                }
+
+                if ( viewableGroupMemberAssignmentAttributes.Any() )
+                {
+                    avcGroupMemberAssignmentAttributesReadOnly.Visible = true;
+                    avcGroupMemberAssignmentAttributesReadOnly.ExcludedAttributes = groupMemberAssignment.Attributes.Where( a => !viewableGroupMemberAssignmentAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                    avcGroupMemberAssignmentAttributesReadOnly.AddDisplayControls( groupMemberAssignment );
+                }
             }
 
             if ( groupType.IsSchedulingEnabled )
@@ -1654,6 +1692,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                GroupMemberAssignment signUpGroupMemberAssignment = null;
                 if ( this.IsSignUpMode )
                 {
                     /*
@@ -1665,7 +1704,7 @@ namespace RockWeb.Blocks.Groups
                      * 
                      * Reason: Sign-Up Feature
                      */
-                    var groupMemberAssignment = groupMemberAssignmentService
+                    signUpGroupMemberAssignment = groupMemberAssignmentService
                         .Queryable()
                         .AsNoTracking()
                         .FirstOrDefault( gma =>
@@ -1675,24 +1714,25 @@ namespace RockWeb.Blocks.Groups
                             && gma.ScheduleId == ScheduleId.Value
                         );
 
-                    if ( groupMemberAssignment == null )
+                    if ( signUpGroupMemberAssignment == null )
                     {
-                        groupMemberAssignment = new GroupMemberAssignment
+                        signUpGroupMemberAssignment = new GroupMemberAssignment
                         {
+                            GroupId = group.Id,
                             LocationId = LocationId.Value,
                             ScheduleId = ScheduleId.Value
                         };
 
                         if ( groupMember.Id == 0 )
                         {
-                            groupMemberAssignment.GroupMember = groupMember;
+                            signUpGroupMemberAssignment.GroupMember = groupMember;
                         }
                         else
                         {
-                            groupMemberAssignment.GroupMemberId = groupMember.Id;
+                            signUpGroupMemberAssignment.GroupMemberId = groupMember.Id;
                         }
 
-                        groupMemberAssignmentService.Add( groupMemberAssignment );
+                        groupMemberAssignmentService.Add( signUpGroupMemberAssignment );
                     }
                 }
                 else if ( pnlScheduling.Visible )
@@ -1787,7 +1827,13 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 groupMember.LoadAttributes();
-                avcAttributes.GetEditValues( groupMember );
+                avcGroupMemberAttributes.GetEditValues( groupMember );
+
+                if ( signUpGroupMemberAssignment != null )
+                {
+                    signUpGroupMemberAssignment.LoadAttributes();
+                    avcGroupMemberAssignmentAttributes.GetEditValues( signUpGroupMemberAssignment );
+                }
 
                 if ( !Page.IsValid )
                 {
@@ -1815,6 +1861,11 @@ namespace RockWeb.Blocks.Groups
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
                     groupMember.CalculateRequirements( rockContext, true );
+
+                    if ( signUpGroupMemberAssignment != null )
+                    {
+                        signUpGroupMemberAssignment.SaveAttributeValues( rockContext );
+                    }
                 } );
             }
 
@@ -2058,6 +2109,43 @@ namespace RockWeb.Blocks.Groups
         protected void ppGroupMemberPerson_SelectPerson( object sender, EventArgs e )
         {
             CalculateRequirements();
+            TryLoadExistingSignUpGroupMember();
+        }
+
+        /// <summary>
+        /// Tries to load an existing sign-up group member if one exists for the group/person combination.
+        /// </summary>
+        protected void TryLoadExistingSignUpGroupMember()
+        {
+            if ( !this.IsSignUpMode )
+            {
+                return;
+            }
+
+            var personId = ppGroupMemberPerson.PersonId;
+
+            if ( !GroupId.HasValue || !personId.HasValue )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMember = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .Where( gm =>
+                        gm.GroupId == GroupId.Value
+                        && gm.PersonId == personId.Value
+                    )
+                    .FirstOrDefault();
+
+                if ( groupMember == null )
+                {
+                    return;
+                }
+
+                ShowDetail( groupMember.Id, GroupId, CampusId, LocationId, ScheduleId );
+            }
         }
 
         /// <summary>

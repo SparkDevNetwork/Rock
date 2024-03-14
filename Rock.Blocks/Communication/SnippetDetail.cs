@@ -35,7 +35,6 @@ namespace Rock.Blocks.Communication
     /// Displays the details of a particular snippet.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
-
     [DisplayName( "Snippet Detail" )]
     [Category( "Communication" )]
     [Description( "Displays the details of a particular snippet." )]
@@ -75,6 +74,15 @@ namespace Rock.Blocks.Communication
         }
 
         #endregion Keys
+
+        #region Fields
+
+        /// <summary>
+        /// Local cache of the snippet type, should be accessed via the <see cref="GetSnippetType(RockContext)"/> method.
+        /// </summary>
+        private SnippetType _snippetType;
+
+        #endregion
 
         #region Methods
 
@@ -150,18 +158,21 @@ namespace Rock.Blocks.Communication
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var snippetType = GetSnippetType( rockContext );
+            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || snippetType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
             if ( entity.Id != 0 )
             {
+                box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity.CanAdministrate = !entity.OwnerPersonAliasId.HasValue
+                        && ( entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) || snippetType?.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) == true );
                 }
                 else
                 {
@@ -170,6 +181,7 @@ namespace Rock.Blocks.Communication
             }
             else
             {
+                box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || snippetType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
@@ -209,7 +221,7 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets the bag for viewing the specied entity.
+        /// Gets the bag for viewing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
         /// <returns>A <see cref="SnippetBag"/> that represents the entity.</returns>
@@ -228,7 +240,7 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets the bag for editing the specied entity.
+        /// Gets the bag for editing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="SnippetBag"/> that represents the entity.</returns>
@@ -305,9 +317,13 @@ namespace Rock.Blocks.Communication
         /// <returns></returns>
         private SnippetType GetSnippetType( RockContext rockContext )
         {
-            var snippetTypeGuid = GetAttributeValue( AttributeKey.SnippetType ).AsGuid();
-            var snippetType = new SnippetTypeService( rockContext ).Get( snippetTypeGuid );
-            return snippetType;
+            if ( _snippetType == null )
+            {
+                var snippetTypeGuid = GetAttributeValue( AttributeKey.SnippetType ).AsGuid();
+                _snippetType = new SnippetTypeService( rockContext ).Get( snippetTypeGuid );
+            }
+
+            return _snippetType;
         }
 
         /// <summary>
@@ -402,7 +418,8 @@ namespace Rock.Blocks.Communication
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            var snippetType = GetSnippetType( rockContext );
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) == false )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Snippet.FriendlyTypeName}." );
                 return false;

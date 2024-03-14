@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? ConnectionRequestId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -114,6 +117,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( BackgroundCheck source )
         {
             this.Id = source.Id;
+            this.ConnectionRequestId = source.ConnectionRequestId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -144,6 +148,9 @@ namespace Rock.Client
     /// </summary>
     public partial class BackgroundCheck : BackgroundCheckEntity
     {
+        /// <summary />
+        public ConnectionRequest ConnectionRequest { get; set; }
+
         /// <summary />
         public EntityType ProcessorEntityType { get; set; }
 

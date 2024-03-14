@@ -19,7 +19,7 @@ import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import DateKey from "@Obsidian/Utility/dateKey";
 import { isEmail } from "@Obsidian/Utility/email";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 import { isUrl } from "@Obsidian/Utility/url";
 import { containsRequiredRule, defineRule, normalizeRules, parseRule, rulesPropType, validateValue } from "@Obsidian/Utility/validationRules";
 
@@ -379,4 +379,13 @@ defineRule("equalsfield", (value: unknown, params?: unknown[]) => {
 
     // Do not expose the value in case we are matching sensitive confirmation fields.
     return typeof error === "string" ? error : "must match value";
+});
+
+defineRule("nohtml", (value: unknown) => {
+    // Field is empty, should pass
+    if (isNullOrWhiteSpace(value)) {
+        return true;
+    }
+
+    return !containsHtmlTag(String(value)) || "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
 });

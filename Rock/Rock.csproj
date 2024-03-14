@@ -1043,6 +1043,7 @@
     <Compile Include="Field\Types\UniversalItemSearchPickerFieldType.cs" />
     <Compile Include="Field\Types\UniversalItemTreePickerFieldType.cs" />
     <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
+    <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
@@ -1146,6 +1147,7 @@
     <Compile Include="Model\Communication\SnippetType\SnippetType.cs" />
     <Compile Include="Model\Communication\Snippet\Snippet.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
+    <Compile Include="Model\Communication\Snippet\Snippet.Logic.cs" />
     <Compile Include="Model\Communication\Snippet\SnippetService.cs" />
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.cs" />
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.Logic.cs" />
@@ -1184,6 +1186,7 @@
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
     <Compile Include="Model\Group\GroupLocation\GroupLocation.Logic.cs" />
+    <Compile Include="Model\Group\GroupMemberAssignment\GroupMemberAssignment.SaveHook.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
     <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
@@ -1332,6 +1335,8 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionIntentsFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
+    <Compile Include="Reporting\DataTransform\Person\AllowedCheckInChildrenTransform.cs" />
+    <Compile Include="Reporting\DataTransform\Person\AllowedCheckInTransform.cs" />
     <Compile Include="Reporting\DataViewQueryBuilder.cs" />
     <Compile Include="Reporting\GetQueryableOptions.cs" />
     <Compile Include="Reporting\IDataViewDefinition.cs" />
@@ -1953,6 +1958,7 @@
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\IdHasher.cs" />
+    <Compile Include="Utility\IWebHostEnvironment.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />

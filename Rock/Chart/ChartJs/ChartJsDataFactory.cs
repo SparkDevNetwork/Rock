@@ -29,7 +29,7 @@ namespace Rock.Chart
     /// they do not produce the datapoints that are mapped by the chart.
     /// </summary>
     /// <remarks>
-    /// Compatible with ChartJS v2.8.0.
+    /// Compatible with ChartJS v2.9.3.
     /// </remarks>
     public abstract class ChartJsDataFactory
     {
@@ -427,9 +427,6 @@ function(tooltipModel) {
         /// <summary>
         /// Legend alignment: {start|center|end}
         /// </summary>
-        /// <remarks>
-        /// This setting has no effect in ChartJs v2.8.0
-        /// </remarks>
         [Obsolete( "Use the GetJsonArgs parameter instead." )]
         [RockObsolete("1.15")]
         public string LegendAlignment { get; set; } = "center";
@@ -528,13 +525,10 @@ function(tooltipModel) {
             /// <summary>
             /// Legend alignment: {start|center|end}
             /// </summary>
-            /// <remarks>
-            /// This setting has no effect in ChartJs v2.8.0
-            /// </remarks>
             public string LegendAlignment { get; set; } = "center";
 
             /// <summary>
-            /// Bezier curve tension of the line. Set to 0 to draw straightlines.
+            /// Bezier curve tension of the line. Set to 0 to draw straight lines.
             /// This option is ignored if monotone cubic interpolation is used.
             /// </summary>
             public decimal LineTension { get; set; } = 0m;

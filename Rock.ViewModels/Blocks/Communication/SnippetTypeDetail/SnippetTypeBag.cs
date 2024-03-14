@@ -50,5 +50,13 @@ namespace Rock.ViewModels.Blocks.Communication.SnippetTypeDetail
         /// Gets or sets the name.
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current user has the administrate permission.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the current user can administrate; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAdministrate { get; set; }
     }
 }

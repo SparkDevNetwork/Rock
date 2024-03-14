@@ -75,6 +75,7 @@
                                 <asp:ListItem Text="Female" Value="Female" />
                                 <asp:ListItem Text="Unknown" Value="Unknown" />
                             </Rock:RockCheckBoxList>
+                            <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
                         <Rock:Grid ID="gAttendees" runat="server" DataKeyNames="Id" DisplayType="Full" AllowSorting="true" CssClass="js-grid-members" RowItemText="Attendee" OnRowDataBound="gAttendees_RowDataBound" OnGridRebind="gAttendees_GridRebind" OnRowSelected="gAttendees_RowSelected" ExportSource="ColumnOutput">
                             <Columns>

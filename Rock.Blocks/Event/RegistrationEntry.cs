@@ -2474,15 +2474,17 @@ namespace Rock.Blocks.Event
             // Upsert fees if not on the waiting list
             if ( !isWaitlist )
             {
+                // Include `IsActive == false` fees and fee items here, as the registrant might have
+                // been registered at a time when currently-inactive fees were active. If the fees
+                // were active at the time of registration, they still apply to this registrant.
                 var feeModels = context.RegistrationSettings.Fees?
-                    .Where( f => f.IsActive )
                     .OrderBy( f => f.Order )
                     .ToList() ?? new List<RegistrationTemplateFee>();
 
                 foreach ( var feeModel in feeModels )
                 {
                     var totalFeeQuantity = 0;
-                    var feeItemModels = feeModel.FeeItems.Where( f => f.IsActive ).ToList();
+                    var feeItemModels = feeModel.FeeItems.ToList();
 
                     for ( var i = 0; i < feeItemModels.Count; i++ )
                     {
@@ -3983,11 +3985,19 @@ namespace Rock.Blocks.Event
                 }
 
                 // Add the fees
-                foreach ( var fee in registrationContext.RegistrationSettings.Fees.Where( f => f.IsActive ) )
+                foreach ( var fee in registrationContext.RegistrationSettings.Fees )
                 {
-                    foreach ( var feeItem in fee.FeeItems.Where( f => f.IsActive ) )
+                    foreach ( var feeItem in fee.FeeItems )
                     {
                         var registrantFee = registrant.Fees.FirstOrDefault( f => f.RegistrationTemplateFeeItemId == feeItem.Id );
+                        if ( registrantFee == null && ( !fee.IsActive || !feeItem.IsActive ) )
+                        {
+                            // If this fee or fee item is not currently active, only add it to this registrant info
+                            // if they already have a record of it. This means the fee or item was active when the
+                            // registrant was added, so it still applies to them.
+                            continue;
+                        }
+
                         var quantity = registrantFee?.Quantity ?? 0;
                         registrantInfo.FeeItemQuantities[feeItem.Guid] = quantity;
                     }
