@@ -16,6 +16,8 @@
 //
 using System;
 
+using dotless.Core.Stylizers;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -182,6 +184,11 @@ namespace Rock.SystemGuid
         /// Components field type
         /// </summary>
         public const string COMPONENTS = "039E2E97-3682-4B29-8748-7132287A2059";
+
+        /// <summary>
+        /// Conditional Scale Field Type
+        /// </summary>
+        public const string CONDITIONAL_SCALE = "E73B9F41-8325-4229-8EA5-75180066680C";
 
         /// <summary>
         /// Connection Activity Type field type
