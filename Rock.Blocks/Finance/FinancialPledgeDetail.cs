@@ -204,7 +204,7 @@ namespace Rock.Blocks.Finance
 
             if ( entity.Id != 0 )
             {
-                bag.StartDate = entity.StartDate;
+                bag.StartDate = entity.StartDate == DateTime.MinValue ? ( DateTime? ) null : entity.StartDate;
                 bag.EndDate = entity.EndDate;
             }
 
