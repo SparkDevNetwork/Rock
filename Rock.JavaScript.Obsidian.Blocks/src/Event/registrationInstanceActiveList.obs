@@ -20,11 +20,13 @@
         <DateColumn name="startDateTime"
                         title="Start Date Time"
                         field="startDateTime"
+                        :filter="dateValueFilter"
                         visiblePriority="xs" />
 
         <DateColumn name="endDateTime"
                         title="End Date Time"
                         field="endDateTime"
+                        :filter="dateValueFilter"
                         visiblePriority="xs" />
 
         <TextColumn name="details"
@@ -53,7 +55,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, NumberColumn, numberValueFilter, textValueFilter, SelectColumn, DateColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, NumberColumn, numberValueFilter, textValueFilter, dateValueFilter, SelectColumn, DateColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RegistrationInstanceActiveListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceActiveList/registrationInstanceActiveListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
