@@ -130,6 +130,7 @@
     <Compile Include="Blocks\Core\SignatureDocumentTemplateList\SignatureDocumentTemplateListOptionsBag.cs" />
     <Compile Include="Blocks\Core\TagList\TagListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\AssessmentTypeList\AssessmentTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\BadgeList\BadgeListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeDetailOptionsBag.cs" />
