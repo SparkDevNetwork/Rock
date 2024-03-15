@@ -21,7 +21,7 @@ namespace Rock.Model
 {
     public partial class Snippet
     {
-        #region MyRegion
+        #region Properties
 
         /// <summary>
         /// Gets the parent authority.
@@ -29,7 +29,6 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        [NotMapped]
         public override Security.ISecured ParentAuthority
         {
             get
