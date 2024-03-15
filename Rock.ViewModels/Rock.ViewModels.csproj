@@ -71,9 +71,13 @@
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\GetAvailableCampusesBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramBag.cs" />
+    <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
