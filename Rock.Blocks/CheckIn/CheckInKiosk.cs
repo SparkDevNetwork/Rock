@@ -78,6 +78,10 @@ namespace Rock.Blocks.CheckIn
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckInKiosk"/> class.
+        /// </summary>
+        /// <param name="environment">The environment.</param>
         public CheckInKiosk( IWebHostEnvironment environment )
         {
             _environment = environment;
@@ -93,12 +97,14 @@ namespace Rock.Blocks.CheckIn
             using ( var rockContext = new RockContext() )
             {
                 var config = GetConfigurationByIpOrName( rockContext );
+                var director = new CheckInDirector( rockContext );
 
                 return new
                 {
                     Campuses = GetCampusesAndKiosks( rockContext ),
-                    Themes = GetThemes(),
-                    DefaultTheme = PageCache.Layout?.Site?.Theme
+                    DefaultTheme = PageCache.Layout?.Site?.Theme,
+                    Templates = director.GetConfigurationTemplateBags(),
+                    Themes = GetThemes()
                 };
             }
         }
@@ -184,7 +190,7 @@ namespace Rock.Blocks.CheckIn
                 .Select( d => new ListItemBag
                 {
                     Value = d.Name.ToLower(),
-                    Text = d.Name
+                    Text = d.Name.SplitCase()
                 } )
                 .ToList();
         }

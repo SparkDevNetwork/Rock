@@ -73,7 +73,7 @@ namespace Rock.CheckIn.v2
         /// <returns>A colleciton of <see cref="ConfigurationTemplateBag"/> objects.</returns>
         public virtual List<ConfigurationTemplateBag> GetConfigurationTemplateBags()
         {
-            return GetConfigurationTemplates( RockContext )
+            return GetConfigurationTemplates()
                 .OrderBy( t => t.Name )
                 .Select( t => new ConfigurationTemplateBag
                 {
@@ -108,7 +108,7 @@ namespace Rock.CheckIn.v2
             }
             else
             {
-                templates = GetConfigurationTemplates( RockContext ).ToList();
+                templates = GetConfigurationTemplates().ToList();
             }
 
             if ( kiosk != null )
@@ -326,19 +326,18 @@ namespace Rock.CheckIn.v2
         /// <summary>
         /// Gets the configuration template group types that are defined in the system.
         /// </summary>
-        /// <param name="rockContext">The rock context to use if database access is required.</param>
         /// <returns>An enumeration of <see cref="GroupTypeCache"/> objects.</returns>
         /// <exception cref="Exception">Check-in Template Purpose was not found in the database, please check your installation.</exception>
-        public virtual IEnumerable<GroupTypeCache> GetConfigurationTemplates( RockContext rockContext )
+        public virtual IEnumerable<GroupTypeCache> GetConfigurationTemplates()
         {
-            var checkinTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
+            var checkinTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), RockContext )?.Id;
 
             if ( !checkinTemplateTypeId.HasValue )
             {
                 throw new Exception( "Check-in Template Purpose was not found in the database, please check your installation." );
             }
 
-            return GroupTypeCache.All( rockContext )
+            return GroupTypeCache.All( RockContext )
                 .Where( t => t.GroupTypePurposeValueId.HasValue && t.GroupTypePurposeValueId == checkinTemplateTypeId.Value );
         }
 

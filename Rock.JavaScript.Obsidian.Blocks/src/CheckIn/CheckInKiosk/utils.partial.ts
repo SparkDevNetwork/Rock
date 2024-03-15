@@ -18,6 +18,7 @@
 import { parse } from "@Obsidian/Libs/marked";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
 
 export type CampusBag = CheckInItemBag & {
     kiosks?: CheckInItemBag[] | null;
@@ -25,6 +26,10 @@ export type CampusBag = CheckInItemBag & {
 
 export type CheckInKioskOptionsBag = {
     campuses?: CampusBag[] | null;
+
+    defaultTheme?: string | null;
+
+    templates?: ConfigurationTemplateBag[] | null;
 
     themes?: ListItemBag[] | null;
 };
