@@ -24,6 +24,7 @@
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The workflow trigger details for the Step Program Detail workflow trigger grid. */
 export type StepProgramWorkflowTriggerBag = {
     /** Gets or sets the unique identifier. */
     guid?: Guid | null;

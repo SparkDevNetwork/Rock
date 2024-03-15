@@ -160,7 +160,7 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="rostepProgramIdckContext">The step program identifier.</param>
+        /// <param name="stepProgramId">The step program identifier.</param>
         /// <returns>The options that provide additional details to the block.</returns>
         private StepProgramDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext, int? stepProgramId )
         {
@@ -262,7 +262,8 @@ namespace Rock.Blocks.Engagement
                 Description = entity.Description,
                 IconCssClass = entity.IconCssClass,
                 IsActive = entity.IsActive,
-                Name = entity.Name
+                Name = entity.Name,
+                CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
             };
         }
 

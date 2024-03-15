@@ -27,7 +27,7 @@
             </div>
             <div v-html="kpi"></div>
             <div>
-                <NotificationBox v-if="notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
+                <NotificationBox v-if="notificationMessage && showChart" alertType="info">{{ notificationMessage }}</NotificationBox>
                 <div v-if="showChart" style="height: 350px;" class="col-md-12">
                     <Chart type="line" :data="chartData" :options="options" />
                 </div>
@@ -145,11 +145,11 @@
 
             if (result.data.chartData) {
                 chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData;
-                showChart.value = true;
+                showChart.value = result.data.showChart;
             }
             else {
                 notificationMessage.value = "There are no Steps matching the current filter.";
-                showChart.value = false;
+                showChart.value = result.data.showChart;
             }
         }
         else {

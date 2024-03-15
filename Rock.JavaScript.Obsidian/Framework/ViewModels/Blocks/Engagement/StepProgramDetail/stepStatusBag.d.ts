@@ -23,19 +23,23 @@
 
 import { Guid } from "@Obsidian/Types";
 
+/** The step status details for the Step Program Detail workflow trigger grid. */
 export type StepStatusBag = {
+    /** Gets or sets the unique identifier. */
     guid?: Guid | null;
 
-    /** The Id of the Step Status */
+    /** Gets or sets the Step Status identifier. */
     id: number;
 
-    /** Is Step Status Active */
+    /** Gets or sets a value indicating whether this status is active. */
     isActive: boolean;
 
+    /** Gets or sets a value indicating whether this status is complete. */
     isCompleteStatus: boolean;
 
-    /** The name of the Step Status */
+    /** Gets or sets the name. */
     name?: string | null;
 
+    /** Gets or sets the color of the status. */
     statusColor?: string | null;
 };

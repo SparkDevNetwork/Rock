@@ -59,7 +59,7 @@
                             @click="onStepFlowClick">
                     <i class="fas fa-project-diagram"></i> Step Flow
                 </RockButton>
-                <RockButton v-if="panelMode === DetailPanelMode.View"
+                <RockButton v-if="panelMode === DetailPanelMode.View && stepProgramViewBag?.canAdministrate"
                             :btnSize="BtnSize.Default"
                             :btnType="BtnType.Default"
                             @click="onSecurityClick">
@@ -213,7 +213,7 @@
     async function onDelete(): Promise<void> {
         errorMessage.value = "";
 
-        if (!await confirmDelete("Step Program")) {
+        if (!await confirmDelete("Step Program", "All associated Step Types and Step Participants will also be deleted!")) {
             return;
         }
 

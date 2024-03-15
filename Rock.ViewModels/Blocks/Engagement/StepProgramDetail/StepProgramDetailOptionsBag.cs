@@ -21,7 +21,7 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {
     /// <summary>
-    /// 
+    /// The additional configuration options for the Step Program Detail block.
     /// </summary>
     public class StepProgramDetailOptionsBag
     {
@@ -34,10 +34,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         public List<ListItemBag> ViewModes { get; set; }
 
         /// <summary>
-        /// Gets or sets the trigger tyoes.
+        /// Gets or sets the trigger types.
         /// </summary>
         /// <value>
-        /// The trigger tyoes.
+        /// The trigger types.
         /// </value>
         public List<ListItemBag> TriggerTypes { get; set; }
 
