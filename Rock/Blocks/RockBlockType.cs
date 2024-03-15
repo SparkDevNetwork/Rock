@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -137,16 +138,37 @@ namespace Rock.Blocks
 
         #region Methods
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the object that will be used to initialize the block by the client.
+        /// </summary>
+        /// <param name="clientType">The type of client that is requesting the configuration data.</param>
+        /// <returns>An object that will be JSON encoded and sent to the client.</returns>
+        [Obsolete( "Use GetBlockInitializationAsync instead." )]
+        [RockObsolete( "1.16.4" )]
         public virtual object GetBlockInitialization( RockClientType clientType )
         {
+            return null;
+        }
+
+        /// <inheritdoc/>
+        public virtual Task<object> GetBlockInitializationAsync( RockClientType clientType )
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var legacyInitialization = GetBlockInitialization( clientType );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            if ( legacyInitialization != null )
+            {
+                return Task.FromResult( legacyInitialization );
+            }
+
             if ( clientType == RockClientType.Web )
             {
-                return GetObsidianBlockInitialization();
+                return GetObsidianBlockInitializationAsync();
             }
             else if ( clientType == RockClientType.Mobile )
             {
-                return GetMobileConfigurationValues();
+                return GetMobileConfigurationValuesAsync();
             }
 
             return null;
@@ -164,6 +186,17 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Gets the property values that will be sent to the browser and available to the client side code as it initializes.
+        /// </summary>
+        /// <returns>
+        /// A collection of string/object pairs.
+        /// </returns>
+        public virtual Task<object> GetObsidianBlockInitializationAsync()
+        {
+            return Task.FromResult( GetObsidianBlockInitialization() );
+        }
+
+        /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
         /// </summary>
         /// <returns>
@@ -172,6 +205,17 @@ namespace Rock.Blocks
         public virtual object GetMobileConfigurationValues()
         {
             return null;
+        }
+
+        /// <summary>
+        /// Gets the property values that will be sent to the device in the application bundle.
+        /// </summary>
+        /// <returns>
+        /// A collection of string/object pairs.
+        /// </returns>
+        public virtual Task<object> GetMobileConfigurationValuesAsync()
+        {
+            return Task.FromResult( GetMobileConfigurationValues() );
         }
 
         /// <summary>
@@ -334,8 +378,25 @@ namespace Rock.Blocks
         /// block settings have been modified.
         /// </summary>
         /// <returns>An HTML string.</returns>
+        [Obsolete( "Use GetControlMarkupAsync instead." )]
+        [RockObsolete( "1.16.4" )]
         public virtual string GetControlMarkup()
         {
+            return null;
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<string> GetControlMarkupAsync()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            var legacyMarkup = GetControlMarkup();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            if ( legacyMarkup != null )
+            {
+                return legacyMarkup;
+            }
+
             var rootElementId = $"obsidian-{BlockCache.Guid}";
             var rootElementStyle = "";
 
@@ -357,7 +418,7 @@ namespace Rock.Blocks
                 rootElementStyle += $" --initial-block-height: {initialHeight.Value}px";
             }
 
-            var config = GetConfigBag( rootElementId );
+            var config = await GetConfigBagAsync( rootElementId );
             var initialContent = GetInitialHtmlContent() ?? string.Empty;
 
             // If any text value contains "</script>" then it will be interpreted
@@ -396,7 +457,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <param name="rootElementId">The identifier of the root element the block will be rendered in.</param>
         /// <returns>The configuration bag for this block instance.</returns>
-        private ObsidianBlockConfigBag GetConfigBag( string rootElementId )
+        private async Task<ObsidianBlockConfigBag> GetConfigBagAsync( string rootElementId )
         {
             List<BlockCustomActionBag> configActions = null;
 
@@ -420,7 +481,7 @@ Obsidian.onReady(() => {{
                 BlockFileUrl = ObsidianFileUrl,
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
-                ConfigurationValues = GetBlockInitialization( RockClientType.Web ),
+                ConfigurationValues = await GetBlockInitializationAsync( RockClientType.Web ),
                 CustomConfigurationActions = configActions,
                 Preferences = blockPreferences
             };
@@ -720,7 +781,7 @@ Obsidian.onReady(() => {{
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
 
-            return ActionOk( GetConfigBag( rootElementId ) );
+            return ActionOk( GetConfigBagAsync( rootElementId ) );
         }
 
         #endregion

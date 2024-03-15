@@ -110,9 +110,9 @@ namespace RockWeb.Blocks.Cms
         RockRequestContext IRockBlockType.RequestContext { get; set; }
 
         /// <inheritdoc/>
-        object IRockBlockType.GetBlockInitialization( RockClientType clientType )
+        System.Threading.Tasks.Task<object> IRockBlockType.GetBlockInitializationAsync( RockClientType clientType )
         {
-            return null;
+            return System.Threading.Tasks.Task.FromResult( ( object ) null );
         }
 
         #endregion IRockBlockType implementation
