@@ -108,6 +108,7 @@
     <Content Include="src\Core\NoteWatchDetail\editPanel.partial.obs" />
     <Content Include="src\Core\NoteWatchDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\restControllerList.obs" />
+    <Content Include="src\Core\scheduledJobHistoryList.obs" />
     <Content Include="src\Core\scheduleList.obs" />
     <Content Include="src\Core\signalTypeList.obs" />
     <Content Include="src\Core\signatureDocumentTemplateList.obs" />
@@ -407,6 +408,7 @@
     <Folder Include="src\Core\LocationList\" />
     <Folder Include="src\Core\NoteWatchDetail\" />
     <Folder Include="src\Core\RestControllerList\" />
+    <Folder Include="src\Core\ScheduledJobHistoryList\" />
     <Folder Include="src\Core\ScheduleList\" />
     <Folder Include="src\Core\SignalTypeList\" />
     <Folder Include="src\Core\SignatureDocumentTemplateList\" />
@@ -605,6 +607,7 @@
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\LocationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\NoteWatchDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\ScheduledJobHistoryList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\ScheduleList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SignalTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SignatureDocumentTemplateList\types.partial.ts" />

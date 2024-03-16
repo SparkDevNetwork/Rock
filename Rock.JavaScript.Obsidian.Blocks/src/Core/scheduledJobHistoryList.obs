@@ -1,0 +1,176 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="isNotificationVisible" :alertType="notificationType" v-html="notificationMessage"></NotificationBox>
+
+    <Grid v-else
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :itemTerm="itemTerm"
+          :entityTypeGuid="EntityType.ServiceJobHistory"
+          :showLaunchWorkflow="false"
+          stickyHeader
+          liveUpdates>
+
+        <DateTimeColumn name="startDateTime"
+                        title="Start DateTime"
+                        field="startDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
+
+        <DateTimeColumn name="stopDateTime"
+                        title="Stop DateTime"
+                        field="stopDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
+
+        <TextColumn name="runDuration"
+                    title="Run Duration"
+                    field="runDuration"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="status"
+                title="Status"
+                visiblePriority="xs"
+                :filter="textValueFilter"
+                :filterValue="getStatusRowFilterValue">
+            <template #format="{ row }">
+                <span :class='getStatusClass(row)'>{{ row.status === "Exception" ? "Failed" : row.status }}</span>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="statusMessage"
+                title="Status Message"
+                width="25%"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-html="row.statusMessage"></span>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, textValueFilter, dateValueFilter, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { ScheduledJobHistoryListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduledJobHistoryList/scheduledJobHistoryListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { computed, reactive, ref } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<ScheduledJobHistoryListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Determines whether or the user a notification message based on whether a valid id was passed
+     * or the scheduled job was found.
+     */
+    const isNotificationVisible = computed((): boolean => {
+        return !config.options?.isJobIdValid || !config.options?.serviceJobName;
+    });
+
+    /**
+     * Determines the notification message to display if a valid Id was not passed to the page or the scheduled job was not found.
+     */
+    const notificationMessage = computed((): string => {
+        if (!config.options?.isJobIdValid) {
+            return "<strong>Invalid Request</strong> An incorrect querystring parameter was used.  A valid ScheduledJobId is required.";
+        }
+        else if (!config.options?.serviceJobName) {
+            return "<strong>Warning</strong> Job history not found. Job may have been deleted.";
+        }
+        else {
+            return "";
+        }
+    });
+
+    /**
+     * Determines the alert type to use for the notification if a valid Id was not passed to the page or the scheduled job was not found.
+     */
+    const notificationType = computed((): string => {
+        return !config.options?.isJobIdValid ? "danger" : "warning";
+    });
+
+    /**
+     * Determines the item term for the grid.
+     */
+    const itemTerm = computed((): string => {
+        return config.options?.serviceJobName ? `Scheduled Job History for ${config.options.serviceJobName}` : "Scheduled Job History";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Determines the status column class based on the status value
+     * @param row The current row in the grid
+     * @returns
+     */
+    function getStatusClass(row: Record<string, unknown>): string {
+        const lastStatus = row["status"] as string || "";
+        switch (lastStatus) {
+            case "Success":
+                return "label label-success";
+            case "Running":
+                return "label label-info";
+            case "Exception":
+                return "label label-danger";
+            case "Warning":
+                return "label label-warning";
+            case "":
+                return "";
+            default:
+                return `label label-warning`;
+        }
+    }
+
+    /**
+    * Gets the filter value to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getStatusRowFilterValue(row: Record<string, unknown>): string {
+        return row.status as string ?? "";
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>
