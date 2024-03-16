@@ -361,6 +361,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\CategoryDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleCategoryExclusionList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduledJobHistoryList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleList\" />
@@ -931,6 +932,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CategoryDetail\customSettingsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\followingEventTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\FollowingEventTypeDetail\followingEventTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleCategoryExclusionList\scheduleCategoryExclusionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleCategoryExclusionList\scheduleCategoryExclusionListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleExclusionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelDetailOptionsBag.d.ts" />
