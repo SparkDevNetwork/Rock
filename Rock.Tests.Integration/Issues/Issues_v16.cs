@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
@@ -92,14 +93,6 @@ Property Filter: 1
              * which is not justified because the DotLiquid engine will be removed in v17.
              */
 
-            var engineOptions = new LavaEngineConfigurationOptions
-            {
-                InitializeDynamicShortcodes = false
-            };
-            var engine = LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
-
-            LavaIntegrationTestHelper.SetEngineInstance( engine );
-
             var template = @"
 <h3>Testing issue 5560</h3>
 
@@ -123,9 +116,15 @@ Did you see those comments ^^^
 <h3>Testing issue 5560</h3>
 Did you see those comments ^^^
 ";
-            var actualOutput = LavaService.RenderTemplate( template ).Text;
 
-            Assert.That.AreEqualIgnoreWhitespace( expectedOutput, actualOutput );
+            var options = new LavaTestRenderOptions
+            {
+                EnabledCommands = "RockEntity",
+                IgnoreWhiteSpace = true,
+                LavaEngineTypes = new List<System.Type> { typeof( FluidEngine ) }
+            };
+
+            _TestHelper.AssertTemplateOutput( expectedOutput, template, options );
         }
 
         /// <summary>
@@ -141,14 +140,6 @@ Did you see those comments ^^^
              * Resolution: This issue is caused because the Fluid Engine converts and stores the TimeSpan as a DateTime value.
              * This issue has been fixed by adding a specific Fluid value converter for the TimeSpan type.
              */
-
-            var engineOptions = new LavaEngineConfigurationOptions
-            {
-                InitializeDynamicShortcodes = false
-            };
-            var engine = LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
-
-            LavaIntegrationTestHelper.SetEngineInstance( engine );
 
             var template = @"
 <h3>Testing issue 5632</h3>
@@ -185,7 +176,8 @@ StartTimeOfDay (Formatted): 10:30 AM {System.DateTime.Now:%K}
             var options = new LavaTestRenderOptions
             {
                 EnabledCommands = "RockEntity",
-                IgnoreWhiteSpace = true
+                IgnoreWhiteSpace = true,
+                LavaEngineTypes = new List<System.Type> { typeof( FluidEngine ) }
             };
 
             _TestHelper.AssertTemplateOutput( expectedOutput, template, options );
