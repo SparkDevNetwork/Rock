@@ -400,6 +400,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakTypeExclusionDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\StreakTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventCalendarItemList\" />
@@ -1015,6 +1016,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeDetail\streakTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeExclusionDetail\streakTypeExclusionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeExclusionDetail\streakTypeExclusionDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\StreakTypeList\streakTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventCalendarBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\eventCalendarDetailOptionsBag.d.ts" />

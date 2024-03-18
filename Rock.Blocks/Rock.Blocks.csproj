@@ -154,6 +154,7 @@
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
     <Compile Include="Engagement\StepProgramList.cs" />
     <Compile Include="CheckIn\AttendanceHistoryList.cs" />
+    <Compile Include="Engagement\StreakTypeList.cs" />
     <Compile Include="Event\EventCalendarItemList.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
