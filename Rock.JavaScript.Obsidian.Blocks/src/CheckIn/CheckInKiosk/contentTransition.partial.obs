@@ -17,7 +17,7 @@
 <style>
 .check-in-content-enter-active,
 .check-in-content-leave-active {
-    transition: opacity 0.5s ease;
+    transition: opacity 0.2s ease;
 }
 
 .check-in-content-enter-from,
