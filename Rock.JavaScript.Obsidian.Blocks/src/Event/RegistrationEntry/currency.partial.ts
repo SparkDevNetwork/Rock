@@ -681,15 +681,18 @@ function mod(currency: Currency, divisor: number): Currency {
  * isCurrencyZero(createCurrency(1).subtract(1)); // true
  */
 function isCurrencyZero(currency: Currency | number): boolean {
-    if (typeof currency === "number" && currency === 0) {
+    if (currency === undefined || currency === null) {
         return true;
     }
-
-    if (typeof currency !== "number" && currency.isZero) {
-        return true;
+    else if (typeof currency === "number") {
+        return currency === 0;
     }
-
-    return false;
+    else if (typeof currency !== "number") {
+        return currency.isZero;
+    }
+    else {
+        return false;
+    }
 }
 
 /**
@@ -703,9 +706,19 @@ function isCurrencyZero(currency: Currency | number): boolean {
  * getCurrencyParts(21.234, 0); // { units: 21, precision: 0 }
  */
 function getCurrencyParts(currency: number | CurrencyParts, targetPrecision: number): CurrencyParts {
-    if (typeof currency !== "number") {
+    if (currency === undefined || currency === null) {
+        // TypeScript prevents currency from being null/undefined;
+        // however, it is still possible to pass in either of those values,
+        // in which case this will return 0.
+        return {
+            precision: targetPrecision,
+            units: 0
+        };
+    }
+    else if (typeof currency !== "number") {
         // Ensure the precision is the same as the supplied value using truncation.
         const precisionDiff = targetPrecision - currency.precision;
+
         if (precisionDiff !== 0) {
             const adjustedUnits = currency.units * (Math.pow(10, precisionDiff));
             return {

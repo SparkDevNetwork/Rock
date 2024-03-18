@@ -131,9 +131,9 @@ export const PersistSession: InjectionKey<(force?: boolean) => Promise<void>> = 
 
 /** An injection key to provide the cost summary for the entire registration. */
 export const RegistrationCostSummary: InjectionKey<{
-        readonlyRegistrationCostSummary: Ref<RegistrationCostSummaryInfo>;
-        updateRegistrationCostSummary: (newValue: Partial<RegistrationCostSummaryInfo>) => void;
-    }> = Symbol("registration-cost-summary");
+    readonlyRegistrationCostSummary: Ref<RegistrationCostSummaryInfo>;
+    updateRegistrationCostSummary: (newValue: Partial<RegistrationCostSummaryInfo>) => void;
+}> = Symbol("registration-cost-summary");
 
 export type TransactionFrequency = {
     /** Determines if this transaction frequency matches the definedValueGuid. */
@@ -395,8 +395,8 @@ const transactionFrequencyMonthly: TransactionFrequency = {
         // automatically choose the last day of the month.
         const getNextDate: (d: RockDateTime) => RockDateTime =
             date.isEqualTo(firstDateTime.endOfMonth().date)
-            ? (d: RockDateTime) => d.addMonths(1).endOfMonth().date
-            : (d: RockDateTime) => d.addMonths(1);
+                ? (d: RockDateTime) => d.addMonths(1).endOfMonth().date
+                : (d: RockDateTime) => d.addMonths(1);
 
         let numberOfTransactions = 0;
 
@@ -433,8 +433,8 @@ const transactionFrequencyQuarterly: TransactionFrequency = {
         // automatically choose the last day of the month.
         const getNextDate: (d: RockDateTime) => RockDateTime =
             date.isEqualTo(firstDateTime.endOfMonth().date)
-            ? (d: RockDateTime) => d.addMonths(3).endOfMonth().date
-            : (d: RockDateTime) => d.addMonths(3);
+                ? (d: RockDateTime) => d.addMonths(3).endOfMonth().date
+                : (d: RockDateTime) => d.addMonths(3);
 
         let numberOfTransactions = 0;
 
@@ -471,8 +471,8 @@ const transactionFrequencyTwiceAYear: TransactionFrequency = {
         // automatically choose the last day of the month.
         const getNextDate: (d: RockDateTime) => RockDateTime =
             date.isEqualTo(firstDateTime.endOfMonth().date)
-            ? (d: RockDateTime) => d.addMonths(6).endOfMonth().date
-            : (d: RockDateTime) => d.addMonths(6);
+                ? (d: RockDateTime) => d.addMonths(6).endOfMonth().date
+                : (d: RockDateTime) => d.addMonths(6);
 
         let numberOfTransactions = 0;
 
@@ -507,8 +507,8 @@ const transactionFrequencyYearly: TransactionFrequency = {
         // automatically choose the last day of the month.
         const getNextDate: (d: RockDateTime) => RockDateTime =
             date.isEqualTo(firstDateTime.endOfMonth().date)
-            ? (d: RockDateTime) => d.addYears(1).endOfMonth().date
-            : (d: RockDateTime) => d.addYears(1);
+                ? (d: RockDateTime) => d.addYears(1).endOfMonth().date
+                : (d: RockDateTime) => d.addYears(1);
 
         let numberOfTransactions = 0;
 
