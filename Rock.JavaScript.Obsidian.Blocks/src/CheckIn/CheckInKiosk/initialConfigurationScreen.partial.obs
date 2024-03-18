@@ -61,18 +61,41 @@
                     </RockButton>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <DropDownList label="Theme"
-                                      v-model="theme"
-                                      :items="blockConfiguration.themes ?? []"
-                                      showBlankItem />
+                <div class="scrollable-vertical" style="flex-grow: 1;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList label="Theme"
+                                          v-model="theme"
+                                          :items="blockConfiguration.themes ?? []"
+                                          showBlankItem
+                                          :popupContainerOverride="documentBody" />
 
-                        <DropDownList label="Check-in Configuration Template"
-                                      v-model="templateGuid"
-                                      :items="templateItems"
-                                      showBlankItem />
+                            <DropDownList label="Check-in Configuration Template"
+                                          v-model="templateGuid"
+                                          :items="templateItems"
+                                          showBlankItem
+                                          :popupContainerOverride="documentBody" />
+                        </div>
                     </div>
+
+                    <div class="row" v-if="templateGuid">
+                        <div class="col-md-6">
+                            <CheckBoxList label="Primary Areas"
+                                          v-model="primaryAreaGuids"
+                                          :items="primaryAreaItems"
+                                          horizontal
+                                          :repeatColumns="2" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <CheckBoxList label="Secondary Areas"
+                                          v-model="secondaryAreaGuids"
+                                          :items="secondaryAreaItems"
+                                          horizontal
+                                          :repeatColumns="2" />
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </ContentTransition>
@@ -80,8 +103,9 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import MainPanel from "./mainPanel.partial.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ContentTransition from "./contentTransition.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -89,6 +113,10 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { CheckInKioskOptionsBag, SavedConfigurationBag } from "./utils.partial";
     import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
+    import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
+    import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
 
     const props = defineProps({
         blockConfiguration: {
@@ -97,11 +125,18 @@
         }
     });
 
+    const http = useHttp();
+
     const campusGuid = ref<Guid>("");
     const kioskGuid = ref<Guid>("");
-    const templateGuid = ref<Guid>("");
     const theme = ref("");
+    const templateGuid = ref<Guid>("");
+    const areaItems = ref<ConfigurationAreaBag[]>([]);
+    const primaryAreaGuids = ref<Guid[]>([]);
+    const secondaryAreaGuids = ref<Guid[]>([]);
     const isUsingCustomConfiguration = ref(false);
+
+    const documentBody = document.body;
 
     const savedConfigurations = ref<SavedConfigurationBag[]>([
         {
@@ -157,6 +192,7 @@
             }));
     });
 
+    /** The list of configuration templates to show in the template picker. */
     const templateItems = computed((): ListItemBag[] => {
         if (!props.blockConfiguration.templates) {
             return [];
@@ -170,12 +206,28 @@
             }));
     });
 
+    /** True if the saved configurations panel is visible on screen. */
     const isSavedConfigurationsVisible = computed((): boolean => {
         return !!kioskGuid.value && !isUsingCustomConfiguration.value;
     });
 
+    /** True if the custom configuration panel is visible on screen. */
     const isCustomConfigurationVisible = computed((): boolean => {
         return !!kioskGuid.value && isUsingCustomConfiguration.value;
+    });
+
+    /** The primary area items that match the current selections. */
+    const primaryAreaItems = computed((): ListItemBag[] => {
+        return areaItems.value
+            .filter(a => (a.primaryTemplateGuids ?? []).includes(templateGuid.value ?? ""))
+            .map(a => ({ value: a.guid, text: a.name }));
+    });
+
+    /** The secondary area items that match the current selections. */
+    const secondaryAreaItems = computed((): ListItemBag[] => {
+        return areaItems.value
+            .filter(a => !(a.primaryTemplateGuids ?? []).includes(templateGuid.value ?? ""))
+            .map(a => ({ value: a.guid, text: a.name }));
     });
 
     // #endregion
@@ -194,5 +246,35 @@
         alert("Not Implemented");
     }
 
+    /**
+     * Gets the area items from the server and updates the selected values
+     * to only those which are still valid.
+     */
+    async function updateAreaItems(): Promise<void> {
+        if (!kioskGuid.value) {
+            primaryAreaGuids.value = [];
+            secondaryAreaGuids.value = [];
+
+            return;
+        }
+
+        const request: ConfigurationOptionsBag = {
+            kioskGuid: kioskGuid.value
+        };
+
+        const response = await http.post<ConfigurationResponseBag>("/api/v2/checkin/Configuration", undefined, request);
+
+        if (!response.isSuccess || !response.data || !response.data.areas) {
+            primaryAreaGuids.value = [];
+            secondaryAreaGuids.value = [];
+
+            return;
+        }
+
+        areaItems.value = response.data.areas;
+    }
+
     // #endregion
+
+    watch(kioskGuid, updateAreaItems);
 </script>

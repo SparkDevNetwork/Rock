@@ -29,16 +29,17 @@ using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 
-namespace Rock.Rest.v2.Controllers
-{
+
 #if WEBFORMS
-    using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
-    using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
-    using IActionResult = System.Web.Http.IHttpActionResult;
-    using RouteAttribute = System.Web.Http.RouteAttribute;
-    using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
+using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+using IActionResult = System.Web.Http.IHttpActionResult;
+using RouteAttribute = System.Web.Http.RouteAttribute;
+using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 #endif
 
+namespace Rock.Rest.v2.Controllers
+{
     /// <summary>
     /// Provides API interfaces for the Check-in system in Rock.
     /// </summary>
