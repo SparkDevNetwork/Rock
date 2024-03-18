@@ -114,7 +114,7 @@
             internalNumberOfPayments.value = value;
         }
     });
-    const amountToPayTodayAsNumber = ref<number>(registrationEntryState.amountToPayToday);
+    const amountToPayTodayAsNumber = ref<number>(readonlyRegistrationCostSummary.value.minimumRemainingAmount);
     const amountToPayTodayAdjustment = ref<Currency>(zeroCurrency);
 
     //#endregion
@@ -246,8 +246,25 @@
 
     /** Gets the items for the payment frequency drop-down control. */
     const paymentFrequencyItems = computed<ListItemBag[]>(() => {
-        // Create a copy of the array so it can be sorted.
-        const items = [...registrationEntryState.viewModel.paymentPlanFrequencies ?? []];
+        const deadlineDate = paymentDeadlineDate.value;
+        if (!deadlineDate) {
+            // Payment deadline date is required for payment plans.
+            return [];
+        }
+
+        // Only allow payment plan frequencies which allow for at least 2 payments.
+        const items = [...registrationEntryState.viewModel.paymentPlanFrequencies ?? []]
+            .filter(item => item.value)
+            .filter(item => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const frequency = getTransactionFrequency(item.value!) ?? nullTransactionFrequency;
+
+                let maxNumberOfPayments: number;
+                // Calculate the max number of payments based on the frequency and the deadline.
+                maxNumberOfPayments = frequency.getMaxNumberOfTransactionsBetweenDates(firstPaymentDate.value, deadlineDate);
+
+                return maxNumberOfPayments >= 2;
+            });
 
         // Sort the frequencies.
         const rank: Record<string, number> = {
@@ -260,6 +277,7 @@
             [DefinedValue.TransactionFrequencyTwiceyearly]: 7,
             [DefinedValue.TransactionFrequencyOneTime]: 8,
         };
+
         items.sort((a, b): number => {
             const aOrder = a.value ? rank[a.value] : -1;
             const bOrder = b.value ? rank[b.value] : -1;
