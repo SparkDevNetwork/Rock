@@ -5,20 +5,19 @@
                     :hasBack="true"
                     @back="onBack" />
 
-        <div class="page-body">
+        <div class="page-body scrollable-container">
             <ContentTransition>
-                <Content v-if="primaryContent">
-                    <InitialConfigurationScreen :blockConfiguration="blockConfiguration" />
-                </Content>
+                <InitialConfigurationScreen v-if="primaryContent"
+                                            :blockConfiguration="blockConfiguration" />
 
-                <Content v-if="!primaryContent">
-                    <MainPanel title="Check-in Options" subtitle="Select the options for your desired check-in experience">
-                        <div class="scrollable">
-                            <div style="height:100px; background-color:green;"></div>
-                            <div style="height:100px; background-color:purple;"></div>
-                        </div>
-                    </MainPanel>
-                </Content>
+                <MainPanel v-if="!primaryContent"
+                           title="Check-in Options"
+                           subtitle="Select the options for your desired check-in experience">
+                    <div class="scrollable">
+                        <div style="height:100px; background-color:green;"></div>
+                        <div style="height:100px; background-color:purple;"></div>
+                    </div>
+                </MainPanel>
             </ContentTransition>
         </div>
 
@@ -112,13 +111,7 @@
     position: relative;
 }
 
-.check-in-page .page-body .body-transition-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-.check-in-page .page-body .scrollable-container {
+.check-in-page .scrollable-container {
     /*
      * When a scrollable is nested inside a flex, the entire tree must be flex.
      * Additionally, the min-height is required to make the scroll trigger

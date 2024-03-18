@@ -1,6 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <transition
+    <NativeViewTransition v-if="hasNativeViewTransitions">
+        <slot />
+    </NativeViewTransition>
+
+    <transition v-else
+                mode="out-in"
                 enterActiveClass="check-in-content-enter-active"
                 leaveActiveClass="check-in-content-leave-active"
                 enterFromClass="check-in-content-enter-from"
@@ -22,5 +27,8 @@
 </style>
 
 <script setup lang="ts">
-    const _ignored = true;
+    import NativeViewTransition from "./nativeViewTransition.partial";
+
+    // @ts-expect-error startViewTransition is not standard yet.
+    const hasNativeViewTransitions = !!document.startViewTransition;
 </script>

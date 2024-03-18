@@ -19,60 +19,70 @@
             </div>
         </div>
 
-        <div v-if="!useCustomConfiguration" class="saved-configurations scrollable-container">
-            <div class="header">
-                <h2>Saved Configurations</h2>
+        <ContentTransition>
+            <div v-if="isSavedConfigurationsVisible" class="saved-configurations scrollable-container">
+                <div class="header">
+                    <h2>Saved Configurations</h2>
 
-                <RockButton btnType="default"
-                            btnSize="sm"
-                            class="use-custom-configuration-button"
-                            @click="onCustomConfiguration">
-                    Use Custom Configuration
-                </RockButton>
-            </div>
-
-            <div class="scrollable">
-                <div class="vertical-buttons">
-                    <RockButton v-for="cfg in savedConfigurations"
-                                btnType="primary"
-                                class="saved-configuration-button">
-                        <div class="title">{{ cfg.name }}</div>
-                        <div class="subtitle">{{ cfg.description }}</div>
+                    <RockButton btnType="default"
+                                btnSize="sm"
+                                class="use-custom-configuration-button"
+                                @click="onCustomConfiguration">
+                        Use Custom Configuration
                     </RockButton>
                 </div>
-            </div>
-        </div>
 
-        <div v-else class="custom-configuration scrollable-container">
-            <div class="header">
-                <h2>Check-in Setup Options</h2>
-
-                <RockButton btnType="default"
-                            class="save-new-configuration-button"
-                            @click="onSaveNewConfiguration">
-                    Save New Configuration
-                </RockButton>
-
-                <RockButton btnType="default"
-                            class="use-custom-configuration-button"
-                            @click="onUseSavedConfiguration">
-                    Use Saved Configuration
-                </RockButton>
+                <div class="scrollable" style="flex-grow: 1;">
+                    <div class="vertical-buttons">
+                        <RockButton v-for="cfg in savedConfigurations"
+                                    btnType="primary"
+                                    class="saved-configuration-button">
+                            <div class="title">{{ cfg.name }}</div>
+                            <div class="subtitle">{{ cfg.description }}</div>
+                        </RockButton>
+                    </div>
+                </div>
             </div>
 
-            <div class="scrollable">
-                <DropDownList label="Theme"
-                              v-model="theme"
-                              :items="blockConfiguration.themes ?? []"
-                              showBlankItem />
+            <div v-if="isCustomConfigurationVisible" class="custom-configuration scrollable-container">
+                <div class="header">
+                    <h2>Check-in Setup Options</h2>
+
+                    <RockButton btnType="default"
+                                class="save-new-configuration-button"
+                                @click="onSaveNewConfiguration">
+                        Save New Configuration
+                    </RockButton>
+
+                    <RockButton btnType="default"
+                                class="use-custom-configuration-button"
+                                @click="onUseSavedConfiguration">
+                        Use Saved Configuration
+                    </RockButton>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList label="Theme"
+                                      v-model="theme"
+                                      :items="blockConfiguration.themes ?? []"
+                                      showBlankItem />
+
+                        <DropDownList label="Check-in Configuration Template"
+                                      v-model="templateGuid"
+                                      :items="templateItems"
+                                      showBlankItem />
+                    </div>
+                </div>
             </div>
-        </div>
+        </ContentTransition>
     </MainPanel>
 </template>
 
 <script setup lang="ts">
     import { PropType, computed, ref } from "vue";
     import MainPanel from "./mainPanel.partial.obs";
+    import ContentTransition from "./contentTransition.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Guid } from "@Obsidian/Types";
@@ -89,8 +99,9 @@
 
     const campusGuid = ref<Guid>("");
     const kioskGuid = ref<Guid>("");
+    const templateGuid = ref<Guid>("");
     const theme = ref("");
-    const useCustomConfiguration = ref(false);
+    const isUsingCustomConfiguration = ref(false);
 
     const savedConfigurations = ref<SavedConfigurationBag[]>([
         {
@@ -146,20 +157,41 @@
             }));
     });
 
+    const templateItems = computed((): ListItemBag[] => {
+        if (!props.blockConfiguration.templates) {
+            return [];
+        }
+
+        return props.blockConfiguration
+            .templates
+            .map(t => ({
+                value: t.guid,
+                text: t.name
+            }));
+    });
+
+    const isSavedConfigurationsVisible = computed((): boolean => {
+        return !!kioskGuid.value && !isUsingCustomConfiguration.value;
+    });
+
+    const isCustomConfigurationVisible = computed((): boolean => {
+        return !!kioskGuid.value && isUsingCustomConfiguration.value;
+    });
+
     // #endregion
 
     // #region Functions
 
     function onCustomConfiguration(): void {
-        useCustomConfiguration.value = true;
+        isUsingCustomConfiguration.value = true;
     }
 
     function onUseSavedConfiguration(): void {
-        useCustomConfiguration.value = false;
+        isUsingCustomConfiguration.value = false;
     }
 
     function onSaveNewConfiguration(): void {
-        alert("no");
+        alert("Not Implemented");
     }
 
     // #endregion
