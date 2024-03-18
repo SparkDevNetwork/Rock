@@ -385,7 +385,9 @@ Guid - ContentChannelItem Guid";
             pnlSettings.Visible = true;
             ddlContentChannel.Items.Clear();
             ddlContentChannel.Items.Add( new ListItem() );
-            foreach ( var contentChannel in ContentChannelCache.All().OrderBy( a => a.Name ) )
+
+            // Get a list of content channels whose ChannelType has the ShowInChannelList enabled. 
+            foreach ( var contentChannel in ContentChannelCache.All().Where( c => c.ContentChannelType.ShowInChannelList ).OrderBy( a => a.Name ) )
             {
                 ddlContentChannel.Items.Add( new ListItem( contentChannel.Name, contentChannel.Guid.ToString() ) );
             }
@@ -571,6 +573,7 @@ Guid - ContentChannelItem Guid";
         {
             if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
             {
+                nbAlert.NotificationBoxType = NotificationBoxType.Warning;
                 nbAlert.Text = "404 - No Content. If you did not have Administrate permissions on this block, you would have gotten a real 404 page.";
             }
             else
