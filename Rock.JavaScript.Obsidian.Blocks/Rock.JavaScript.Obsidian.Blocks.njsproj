@@ -76,6 +76,7 @@
     <Content Include="src\Cms\personalLinkSectionList.obs" />
     <Content Include="src\Core\attributeMatrixTemplateList.obs" />
     <Content Include="src\Core\attributes.obs" />
+    <Content Include="src\Core\auditList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
