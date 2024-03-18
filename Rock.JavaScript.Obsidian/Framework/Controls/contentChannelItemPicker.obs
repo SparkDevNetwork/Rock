@@ -33,6 +33,7 @@
     import { ContentChannelItemPickerGetContentChannelItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetContentChannelItemsOptionsBag";
     import { ContentChannelItemPickerGetAllForContentChannelItemOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemOptionsBag";
     import { ContentChannelItemPickerGetAllForContentChannelItemResultsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemResultsBag";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -151,7 +152,7 @@
      */
     async function loadContentChannelItemOptionsFromValue(): Promise<void> {
         const options: ContentChannelItemPickerGetAllForContentChannelItemOptionsBag = {
-            contentChannelItemGuid: props.modelValue?.value,
+            contentChannelItemGuid: props.modelValue?.value ?? emptyGuid,
             excludeContentChannelItems: props.excludeContentChannelItems
         };
 

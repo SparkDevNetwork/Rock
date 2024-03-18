@@ -31,6 +31,7 @@
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { GroupAndRolePickerGetRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupAndRolePickerGetRolesOptionsBag";
     import { normalizeRules } from "@Obsidian/ValidationRules";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /** V-model for the role */
@@ -123,7 +124,7 @@
         }
 
         const options: GroupAndRolePickerGetRolesOptionsBag = {
-            groupTypeGuid: internalTypeValue.value?.value
+            groupTypeGuid: internalTypeValue.value?.value ?? emptyGuid
         };
 
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupAndRolePickerGetRoles", null, options);

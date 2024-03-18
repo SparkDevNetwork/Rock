@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+import { newGuid } from "@Obsidian/Utility/guid";
+
 // #region Types
 
 export type CurrencyOptions = {
@@ -245,7 +247,8 @@ function add(currency1: Currency, currency2: Currency | number): Currency {
         {
             precision: currency1.precision,
             units: currency1.units + otherUnits
-        }
+        },
+        currency1.currencyOptions
     );
 }
 
@@ -364,6 +367,7 @@ function subtract(currency1: Currency, currency2: number | Currency): Currency {
  *     - `"#,###"` will add a `","` for every thousandth like in `"1,234,567"`.
  * - `"%"` for the minor units (the number to the right of the decimal).
  * - `"@"` for the currency code ("USD", "CAD", etc.).
+ * - The string between the last `"#"` and the first `"%"` will be considered the decimal separator (including whitespace). It will be omitted if the currency has a precision of 0.
  *
  * @param formatString The format string. (defaults to `"-!#,###.%"`, see `CurrencyFormatString` for common formats)
  * @example
@@ -425,8 +429,10 @@ function format(currency: Currency, formatString: string = CurrencyFormatString.
         return groupedNumber;
     }
 
-    const minorUnitsPlaceholder = "MINOR_UNITS" as const;
-    const majorUnitsPlaceholder = "MAJOR_UNITS" as const;
+    const guid = newGuid().slice(0, 6); // Make the placeholders unique to avoid clashing with format strings that may contain placeholders.
+    const minorUnitsPlaceholder = `MINOR_UNITS${guid}` as const;
+    const majorUnitsPlaceholder = `MAJOR_UNITS${guid}` as const;
+    const decimalPlaceholder = `DECIMAL${guid}` as const;
 
     // Get the minor units format section.
     const minorUnitsStart = formatString.indexOf("%");
@@ -488,10 +494,27 @@ function format(currency: Currency, formatString: string = CurrencyFormatString.
         }
     }
 
+    // Get the decimal separator section.
+    const majorUnitsPlaceholderStart = formatString.indexOf(majorUnitsPlaceholder);
+    const majorUnitsPlaceholderEnd = majorUnitsPlaceholderStart === -1 ? -1 : majorUnitsPlaceholderStart + majorUnitsPlaceholder.length - 1;
+    const minorUnitsPlaceholderStart = formatString.indexOf(minorUnitsPlaceholder);
+    const decimalSeparatorStart = (majorUnitsPlaceholderEnd !== -1 && minorUnitsPlaceholderStart !== -1 && majorUnitsPlaceholderEnd + 1 < minorUnitsPlaceholderStart)
+        ? majorUnitsPlaceholderEnd + 1
+        : -1;
+    const decimalSeparatorEnd = (decimalSeparatorStart !== -1)
+        ? minorUnitsPlaceholderStart - 1
+        : -1;
+    const hasDecimalSeparator = decimalSeparatorStart !== -1 && decimalSeparatorEnd !== -1;
+    const decimalSeparator = hasDecimalSeparator ? formatString.slice(decimalSeparatorStart, decimalSeparatorEnd + 1) : "";
+    if (hasDecimalSeparator) {
+        formatString = formatString.slice(0, decimalSeparatorStart) + decimalPlaceholder + formatString.slice(decimalSeparatorEnd + 1);
+    }
+
     return formatString
         .replace("-", currency.isNegative ? "-" : "")
         .replace("!", currency.symbol)
         .replace(majorUnitsPlaceholder, formatMajorUnits(currency.unsignedMajorUnitsString, groups))
+        .replace(decimalPlaceholder, currency.precision > 0 ? decimalSeparator : "")
         .replace(minorUnitsPlaceholder, currency.unsignedMinorUnitsString)
         .replace("@", currency.code);
 }
@@ -723,13 +746,20 @@ function getCurrencyParts(currency: number | CurrencyParts, targetPrecision: num
     const parts = currencyAsString.split(".");
 
     const isNegative: boolean = parts[0]?.startsWith("-") ?? false;
-    const majorUnits: string = parts[0]?.substring(isNegative ? 1 : 0) ?? "";
+    let majorUnits: string = parts[0]?.substring(isNegative ? 1 : 0) ?? "";
     let minorUnits: string = parts[1]?.substring(0, targetPrecision + 1) ?? "";
 
     if (minorUnits.length === targetPrecision + 1) {
         if (minorUnits[targetPrecision] >= "5") {
-            // Round up.
-            minorUnits = (+minorUnits.slice(0, targetPrecision) + 1).toString();
+            if (targetPrecision === 0) {
+                // Round the major units up.
+                majorUnits = (+majorUnits + 1).toString();
+                minorUnits = "";
+            }
+            else {
+                // Round the minor units up.
+                minorUnits = (+minorUnits.slice(0, targetPrecision) + 1).toString();
+            }
         }
         else {
             // Truncate the extra precision that was added for rounding.
@@ -811,10 +841,10 @@ export function createReadonlyCurrencyOptions(options?: Partial<CurrencyOptions>
     } as const;
 }
 
-export function createZeroCurrency(options?: Partial<CurrencyOptions>): Currency {
+export function createZeroCurrency(options: CurrencyOptions): Currency {
     return createCurrency(0, options);
 }
-export function createCurrency(currency: number | CurrencyParts, options?: Partial<CurrencyOptions>): Currency {
+export function createCurrency(currency: number | CurrencyParts, options: CurrencyOptions): Currency {
     // #region Fields
 
     // eslint-disable-next-line @typescript-eslint/naming-convention

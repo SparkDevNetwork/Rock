@@ -202,8 +202,8 @@
 
         const bag: SaveSignUpRequestBag = {
             selectedPersonGuid: selectedPersonGuid.value,
-            selectedGroupGuid: selectedGroup?.value?.guid,
-            selectedScheduleGuid: signUpOccurrence.value?.scheduleGuid,
+            selectedGroupGuid: selectedGroup?.value?.guid ?? emptyGuid,
+            selectedScheduleGuid: signUpOccurrence.value?.scheduleGuid ?? emptyGuid,
             selectedLocationGuid: selectedLocationGuid.value,
             occurrenceDateTime: signUpOccurrence.value?.occurrenceDateTime,
             isSigningUp: isChecked.value

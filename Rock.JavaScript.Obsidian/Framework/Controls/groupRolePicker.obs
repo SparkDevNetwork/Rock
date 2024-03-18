@@ -27,6 +27,7 @@
     import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleResultsBag";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -153,7 +154,7 @@
      */
     async function loadRoleOptionsFromValue(): Promise<void> {
         const options: GroupRolePickerGetAllForGroupRoleOptionsBag = {
-            groupRoleGuid: props.modelValue?.value,
+            groupRoleGuid: props.modelValue?.value ?? emptyGuid,
             excludeGroupRoles: props.excludeGroupRoles
         };
 

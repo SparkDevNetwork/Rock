@@ -1,4 +1,5 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
 <template>
     <div>
         <NotificationBox v-if="notFound" alertType="warning">
@@ -51,6 +52,7 @@
         </template>
     </div>
 </template>
+
 <script setup lang="ts">
     import { computed, onMounted, provide, readonly, ref, watch } from "vue";
     import RegistrationEntryIntro from "./RegistrationEntry/intro.partial.obs";
@@ -150,7 +152,8 @@
         paymentPlanAmountPerPayment: null,
         paymentPlanFrequencyGuid: null,
         paymentPlanFrequencyText: null,
-        paymentPlanNumberOfPayments: null
+        paymentPlanNumberOfPayments: null,
+        paymentPlanStartDate: null,
     });
     const registrationCostSummary = ref<RegistrationCostSummaryInfo>({
         paidAmount: 0,
@@ -378,16 +381,19 @@
         const {
             paymentPlanAmountPerPayment,
             paymentPlanFrequencyGuid,
-            paymentPlanNumberOfPayments
+            paymentPlanNumberOfPayments,
+            paymentPlanStartDate,
         } = registrationEntryState.value;
         let paymentPlan: RegistrationEntryPaymentPlanBag | null = null;
         if (paymentPlanAmountPerPayment
             && paymentPlanFrequencyGuid
-            && paymentPlanNumberOfPayments) {
+            && paymentPlanNumberOfPayments
+            && paymentPlanStartDate) {
             paymentPlan = {
                 amountToPayPerPayment: paymentPlanAmountPerPayment,
                 numberOfPayments: paymentPlanNumberOfPayments,
-                transactionFrequencyGuid: paymentPlanFrequencyGuid
+                transactionFrequencyGuid: paymentPlanFrequencyGuid,
+                startDate: paymentPlanStartDate.dateTime,
             };
         }
         return {
@@ -400,7 +406,7 @@
             registrants: registrationEntryState.value.registrants,
             amountToPayNow: registrationEntryState.value.amountToPayToday,
             registrationGuid: config.session?.registrationGuid || null,
-            paymentPlan
+            paymentPlan,
         };
     }
 

@@ -179,6 +179,7 @@
 
         // If there is a cost, then the gateway will need to be used to pay
         if (registrationEntryState.amountToPayToday) {
+            debugger;
             if (showGateway.value) {
                 // Otherwise, this is a traditional gateway
                 gatewayErrorMessage.value = "";

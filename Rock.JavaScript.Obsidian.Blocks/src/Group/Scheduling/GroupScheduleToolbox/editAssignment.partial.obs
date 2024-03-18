@@ -41,6 +41,7 @@
     import { SaveAssignmentResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveAssignmentResponseBag";
     import { SchedulePreferenceAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/schedulePreferenceAssignmentBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -163,8 +164,8 @@
         blockActionErrorMessage.value = "";
 
         const bag: SaveAssignmentRequestBag = {
-            selectedPersonGuid: props.optionsRequest?.selectedPersonGuid,
-            selectedGroupGuid: props.optionsRequest?.selectedGroupGuid,
+            selectedPersonGuid: props.optionsRequest?.selectedPersonGuid ?? emptyGuid,
+            selectedGroupGuid: props.optionsRequest?.selectedGroupGuid ?? emptyGuid,
             editAssignmentGuid: editAssignmentGuid.value,
             selectedScheduleGuid: selectedScheduleGuid.value,
             selectedLocationGuid: selectedLocationGuid.value

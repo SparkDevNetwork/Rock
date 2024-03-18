@@ -15,12 +15,14 @@
 // </copyright>
 //
 
-import { ChildRequestBag, PersonRequestBag, PropertiesOfType } from "./types.partial";
+import { ChildRequestBag, PersonRequestBag } from "./types.partial";
 import { CommunicationPreference, CommunicationPreferenceDescription } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
 import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { getDay, getMonth, getYear } from "@Obsidian/Utility/dateKey";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { PropertiesOfType } from "@Obsidian/Utility/typeUtils";
 import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -37,6 +39,7 @@ export function convertPersonToPersonRequest(person: FamilyPreRegistrationPerson
         ...person,
 
         // Overwrite required fields.
+        guid: person?.guid ?? emptyGuid,
         attributeValues: person?.attributeValues || defaults.attributeValues,
         communicationPreference: person?.communicationPreference ?? defaults.communicationPreference,
         email: person?.email || defaults.email,
@@ -70,6 +73,7 @@ export function convertPersonToChildRequest(person: FamilyPreRegistrationPersonB
  */
 export function createPersonRequest(): PersonRequestBag {
     return {
+        guid: emptyGuid,
         attributeValues: {},
         communicationPreference: CommunicationPreference.None,
         email: "",
@@ -80,7 +84,7 @@ export function createPersonRequest(): PersonRequestBag {
         lastName: "",
         mobilePhone: "",
         mobilePhoneCountryCode: "",
-        isMessagingEnabled: false
+        isMessagingEnabled: false,
     };
 }
 
@@ -113,7 +117,7 @@ export function createPersonViewModel(person: Ref<PersonRequestBag>): PersonRequ
                 return person.value.gender.toString();
             },
             set(newValue: string) {
-                person.value.gender = Number(newValue);
+                person.value.gender = Number(newValue) as Gender;
             }
         }),
         gradeListItemBag: createListItemBagWrapper(person, "gradeDefinedValueGuid"),
@@ -129,6 +133,7 @@ export function createPersonViewModel(person: Ref<PersonRequestBag>): PersonRequ
  */
 export function createChildRequest(): ChildRequestBag {
     return {
+        guid: emptyGuid,
         attributeValues: {},
         communicationPreference: CommunicationPreference.None,
         email: "",
@@ -140,7 +145,7 @@ export function createChildRequest(): ChildRequestBag {
         lastName: "",
         mobilePhone: "",
         mobilePhoneCountryCode: "",
-        isMessagingEnabled: false
+        isMessagingEnabled: false,
     };
 }
 

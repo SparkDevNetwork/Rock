@@ -285,7 +285,7 @@
         }
 
         const options: PagePickerGetPageRoutesOptionsBag = {
-            pageGuid: (internalPageValue.value as ListItemBag).value
+            pageGuid: (internalPageValue.value as ListItemBag).value ?? emptyGuid
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/PagePickerGetPageRoutes", undefined, options);
 

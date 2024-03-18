@@ -125,7 +125,9 @@ namespace Rock.WebStartup
             LogStartupMessage( "Initializing RockContext" );
             using ( var rockContext = new RockContext() )
             {
-                new AttributeService( rockContext ).Get( 0 );
+                // TODO JMH Use an "exists" query instead of a get.
+                //new AttributeService( rockContext ).Get( 0 );
+                new AttributeService( rockContext ).AsNoFilter().Any();
                 ShowDebugTimingMessage( "Initialize RockContext" );
             }
 

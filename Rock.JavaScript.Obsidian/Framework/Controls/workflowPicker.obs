@@ -32,6 +32,7 @@
     import { WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowPickerGetWorkflowTypeForWorkflowOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { deepEqual } from "@Obsidian/Utility/util";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -103,7 +104,7 @@
 
     async function getChannelFromComponent(): Promise<void> {
         const options: WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag = {
-            workflowGuid: props.modelValue?.value,
+            workflowGuid: props.modelValue?.value ?? emptyGuid,
             securityGrantToken: securityGrantToken.value
         };
 

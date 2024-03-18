@@ -31,6 +31,9 @@ export type RegistrationEntryPaymentPlanBag = {
     /** Gets or sets the number of payments. */
     numberOfPayments: number;
 
+    /** Gets or sets the start date of the recurring payments. */
+    startDate?: string | null;
+
     /** Gets or sets the transaction frequency unique identifier. */
     transactionFrequencyGuid: Guid;
 };

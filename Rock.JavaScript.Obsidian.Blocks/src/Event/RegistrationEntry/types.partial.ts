@@ -25,6 +25,7 @@ import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/R
 import { RegistrationEntryFormFieldBag as GeneratedRegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 import { TypeBuilder } from "@Obsidian/Utility/typeUtils";
 import { RegistrationEntryFormBag as GeneratedRegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
+import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
 export const enum Step {
     Intro = "intro",
@@ -102,4 +103,5 @@ export type RegistrationEntryState = {
     paymentPlanAmountPerPayment: number | null;
     paymentPlanNumberOfPayments: number | null;
     paymentPlanFrequencyText: string | null;
+    paymentPlanStartDate: RockDateTime | null;
 };

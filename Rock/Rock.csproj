@@ -16,6 +16,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
+    <UseSharedCompilation>true</UseSharedCompilation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -4588,11 +4589,13 @@ if "$(ConfigurationName)" == "Debug" (
  if Exist "$(ProjectDir)..\.githooks\" (
   if Exist "$(ProjectDir)..\.git\hooks\" (
    xcopy "$(ProjectDir)..\.githooks\*" "$(ProjectDir)..\.git\hooks\" /S /Y
+   echo "Done copying"
   )
  )
 )
 
 REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
+echo "Deleting build artifacts"
 if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
 if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
 if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
@@ -4613,10 +4616,12 @@ if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll" del "$(ProjectDir
 if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll"
 if Exist "$(ProjectDir)..\RockWeb\Bin\VroomJs.dll" del "$(ProjectDir)..\RockWeb\Bin\VroomJs.dll"
 if Exist "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll" del "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll"
-if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
+if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll"
+echo "Deleted build artifacts"
+echo "JMH Pre build event done"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>
+    <PostBuildEvent>echo "JMH Post build event done"
     </PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

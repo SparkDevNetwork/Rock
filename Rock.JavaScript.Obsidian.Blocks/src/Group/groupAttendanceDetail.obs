@@ -1,4 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
 <template>
     <NotificationBox v-if="config.isAuthorizedGroupNotFoundError" alertType="danger">
         <strong>Sorry</strong>
@@ -263,7 +264,7 @@
     import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { debounce } from "@Obsidian/Utility/util";
 
@@ -373,7 +374,7 @@
         }
 
         const bag: GroupAttendanceDetailAddPersonRequestBag = {
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
             personAliasGuid: personAliasGuid
         };
 
@@ -417,7 +418,7 @@
      */
     async function onAttendanceChanged(attendance: GroupAttendanceDetailAttendanceBag): Promise<void> {
         await autoMarkAttendance({
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
             personAliasId: attendance.personAliasId,
             didAttend: attendance.didAttend
         });
@@ -449,7 +450,7 @@
     async function onAttendanceOccurrenceTypeChanged(newAttendanceOccurrenceType: Guid): Promise<void> {
         attendanceOccurrenceTypeGuid.value = newAttendanceOccurrenceType;
         await autoUpdateAttendanceOccurrenceType({
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
             attendanceOccurrenceTypeGuid: newAttendanceOccurrenceType
         });
     }
@@ -499,7 +500,7 @@
                     }
 
                     await autoUpdateDidNotOccur({
-                        attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+                        attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
                         didNotOccur: newDidNotOccur
                     });
                 }
@@ -508,7 +509,7 @@
         else {
             didNotOccur.value = newDidNotOccur;
             autoUpdateDidNotOccur({
-                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
                 didNotOccur: newDidNotOccur
             }).then(() => {/* do nothing */ });
         }
@@ -781,7 +782,10 @@
                 // Otherwise, if another device already created the occurrence,
                 // then only attendances with a true/false didAttend value
                 // will be updated, while those with null didAttend values will be ignored.
-                updatedAttendances: attendances.value,
+                updatedAttendances: attendances.value.map(attendance => ({
+                    ...attendance,
+                    attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
+                })),
             });
         }
         else if (attendances.value.some(a => (a.didAttend ?? null) === null)) {
@@ -793,7 +797,10 @@
                 scheduleGuid: scheduleGuid.value,
 
                 // Pass the attendance that changed and any new people (didAttend is null).
-                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || ((attendance.didAttend ?? null) === null))
+                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || ((attendance.didAttend ?? null) === null)).map(attendance => ({
+                    ...attendance,
+                    attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
+                }))
             });
         }
         else {
@@ -909,7 +916,7 @@
      */
     async function updateNotes(): Promise<void> {
         const bag: GroupAttendanceDetailUpdateNotesRequestBag = {
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
             notes: notes.value
         };
 

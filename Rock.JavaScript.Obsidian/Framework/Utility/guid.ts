@@ -46,7 +46,7 @@ export function normalize (a: Guid | null | undefined): Guid | null {
 /**
  * Checks if the given string is a valid Guid. To be considered valid it must
  * be a bare guid with hyphens. Bare means not enclosed in '{' and '}'.
- * 
+ *
  * @param guid The Guid to be checked.
  * @returns True if the guid is valid, otherwise false.
  */
@@ -56,7 +56,7 @@ export function isValidGuid(guid: Guid | string): boolean {
 
 /**
  * Converts the string value to a Guid.
- * 
+ *
  * @param value The value to be converted.
  * @returns A Guid value or null is the string could not be parsed as a Guid.
  */

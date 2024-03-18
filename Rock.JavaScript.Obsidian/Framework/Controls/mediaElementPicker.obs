@@ -1,4 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
 <template>
     <RockFormField v-bind="formFieldProps" :modelValue="internalMediaElement" name="media-element-picker">
         <BaseAsyncPicker v-if="!hideAccountPicker" v-model="internalMediaAccount" v-bind="standardProps" label="Account" :multiple="false" :items="mediaAccountItems" showBlankItem />
@@ -10,6 +11,7 @@
             </template>
         </BaseAsyncPicker>
         <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
+
             <template #inputGroupAppend v-if="!hideRefreshButtons">
                 <span class="input-group-addon">
                     <RockButton isSquare @click.prevent="fetchMediaElements"><i class="fa fa-refresh"></i></RockButton>
@@ -33,6 +35,7 @@
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockButton from "./rockButton.obs";
     import RockFormField from "./rockFormField.obs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         ...standardRockFormFieldProps,
@@ -137,7 +140,7 @@
     /** Load media folders for the selected account from server and returns them */
     async function loadMediaFolders(): Promise<ListItemBag[]> {
         const options: MediaElementPickerGetMediaFoldersOptionsBag = {
-            mediaAccountGuid: internalMediaAccount.value?.value ?? null
+            mediaAccountGuid: internalMediaAccount.value?.value ?? emptyGuid
         };
 
         return loadItems("MediaElementPickerGetMediaFolders", options);
@@ -146,7 +149,7 @@
     /** Load media elements for the selected folder from server and returns them */
     async function loadMediaElements(): Promise<ListItemBag[]> {
         const options: MediaElementPickerGetMediaElementsOptionsBag = {
-            mediaFolderGuid: internalMediaFolder.value?.value ?? null
+            mediaFolderGuid: internalMediaFolder.value?.value ?? emptyGuid
         };
 
         return loadItems("MediaElementPickerGetMediaElements", options);

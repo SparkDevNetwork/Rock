@@ -1,4 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
 <template>
     <div class="taglist">
         <v-style>
@@ -95,7 +96,7 @@
     import Tag from "./Internal/tag.obs";
     import type { SelectHandler } from "ant-design-vue/lib/vc-select/Select.d";
     import type { SelectOption } from "@Obsidian/Types/Controls/autocomplete.d";
-    import { newGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /** The unique identifier of the entity type described by entityKey. */
@@ -184,7 +185,7 @@
      */
     async function getTagByName(name: string): Promise<EntityTagListTagBag | null> {
         const data: EntityTagListGetAvailableTagsOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid ?? emptyGuid,
             entityKey: props.entityKey,
             entityQualifierColumn: props.entityQualifierColumn,
             entityQualifierValue: props.entityQualifierValue,
@@ -222,7 +223,7 @@
      */
     async function createPersonalTag(name: string): Promise<EntityTagListTagBag | null> {
         const data: EntityTagListCreatePersonalTagOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid ?? emptyGuid,
             categoryGuid: props.categoryGuid,
             entityQualifierColumn: props.entityQualifierColumn,
             entityQualifierValue: props.entityQualifierValue,
@@ -248,7 +249,7 @@
      */
     async function addTag(tagKey: string): Promise<void> {
         const data: EntityTagListAddEntityTagOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid ?? emptyGuid,
             entityKey: props.entityKey,
             tagKey: tagKey,
             securityGrantToken: securityToken.value
@@ -282,7 +283,7 @@
         }
 
         const data: EntityTagListRemoveEntityTagOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid ?? emptyGuid,
             entityKey: props.entityKey,
             tagKey: tagKey,
             securityGrantToken: securityToken.value
@@ -385,7 +386,7 @@
     function createClientTag(tagName: string, tagId: string | null = null): EntityTagListTagBag {
         const newTag: EntityTagListTagBag = {
             name: tagName,
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid ?? emptyGuid,
             isPersonal: true,
             idKey: tagId || newGuid()
         };
@@ -399,7 +400,7 @@
     async function saveTagValues(): Promise<void> {
         const data: EntityTagListSaveTagValuesOptionsBag = {
             tags: currentTags.value,
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid ?? emptyGuid,
             entityKey: props.entityKey,
             categoryGuid: props.categoryGuid,
             entityQualifierColumn: props.entityQualifierColumn,
@@ -464,7 +465,7 @@
         lastSearchCallTime = currentRequestTime;
 
         const data: EntityTagListGetAvailableTagsOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid ?? emptyGuid,
             entityKey: props.entityKey,
             entityQualifierColumn: props.entityQualifierColumn,
             entityQualifierValue: props.entityQualifierValue,

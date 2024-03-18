@@ -3253,7 +3253,7 @@ namespace Rock.Blocks.Event
                 // Payment plan
                 IsPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed,
                 PaymentDeadlineDate = context.RegistrationSettings.PaymentDeadlineDate,
-                PaymentPlanFrequencies = GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds ),
+                PaymentPlanFrequencies = GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ),
 
                 // Currency Code
                 CurrencyInfo = new CurrencyInfoBag
@@ -3285,15 +3285,19 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="paymentPlanFrequencyValueIds">The payment plan frequency value ids.</param>
         /// <returns></returns>
-        private List<ListItemBag> GetPaymentPlanFrequencyListItemBags( List<int> paymentPlanFrequencyValueIds )
+        private List<ListItemBag> GetPaymentPlanFrequencyListItemBags( List<int> paymentPlanFrequencyValueIds, RockContext rockContext )
         {
             var frequencies = new Dictionary<int, ListItemBag>();
 
             foreach (var paymentPlanFrequencyId in paymentPlanFrequencyValueIds )
             {
-                if ( !frequencies.ContainsKey( paymentPlanFrequencyId ) && DefinedValueCache.TryGet( paymentPlanFrequencyId, out var frequency ) )
+                if ( !frequencies.ContainsKey( paymentPlanFrequencyId ) )
                 {
-                    frequencies.Add( paymentPlanFrequencyId, frequency.ToListItemBag() );
+                    var frequency = DefinedValueCache.Get( paymentPlanFrequencyId, rockContext );
+                    if ( frequency != null )
+                    {
+                        frequencies.Add( paymentPlanFrequencyId, frequency.ToListItemBag() );
+                    }
                 }
             }
 
@@ -3516,6 +3520,7 @@ namespace Rock.Blocks.Event
 
                 // Reuse the paymentInfo used for the one-time payment,
                 // but update the amount to the recurring payment amount.
+                var originalPaymentInfoAmount = paymentInfo.Amount;
                 paymentInfo.Amount = args.PaymentPlan.AmountToPayPerPayment;
 
                 var financialScheduledTransaction = gateway.AddScheduledPayment( financialGateway, paymentSchedule, paymentInfo, out errorMessage );
@@ -3528,8 +3533,11 @@ namespace Rock.Blocks.Event
                     // TODO JMH An error occurred while scheduling the recurring payment, but the one-time payment may have gone through.
                     // I'm thinking the front-end should be updated to have a zero dollar one-time amount, with the same payment plan info,
                     // so the user can resubmit.
-                    return null;
+                    
                 }
+
+                // Restore the original paymentInfo amount.
+                paymentInfo.Amount = originalPaymentInfoAmount;
             }
 
             return transactionGuid;

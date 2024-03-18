@@ -32,6 +32,7 @@
     const cardNumber = ref("");
 
     const submit = async (): Promise<void> => {
+        debugger;
         // Simulate an AJAX call delay
         await new Promise(resolve => setTimeout(resolve, 500));
 

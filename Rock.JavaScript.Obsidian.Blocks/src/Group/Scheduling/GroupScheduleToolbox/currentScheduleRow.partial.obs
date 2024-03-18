@@ -122,6 +122,7 @@
         ToolboxScheduleRowConfirmationStatusDescription
     } from "@Obsidian/Enums/Blocks/Group/Scheduling/toolboxScheduleRowConfirmationStatus";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -248,7 +249,7 @@
         errorMessage.value = "";
 
         const bag: PerformScheduleRowActionRequestBag = {
-            selectedPersonGuid: selectedPersonGuid?.value,
+            selectedPersonGuid: selectedPersonGuid?.value ?? emptyGuid,
             entityGuid: props.row.entityGuid,
             actionType
         };
