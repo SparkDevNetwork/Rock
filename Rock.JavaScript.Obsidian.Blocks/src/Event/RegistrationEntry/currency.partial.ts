@@ -771,7 +771,7 @@ function getCurrencyParts(currency: number | CurrencyParts, targetPrecision: num
         minorUnits = minorUnits + "0".repeat(targetPrecision - minorUnits.length);
     }
 
-    const units: number = +(`${majorUnits}${minorUnits}`);
+    const units: number = +(`${isNegative ? "-" : ""}${majorUnits}${minorUnits}`);
     return {
         units: units,
         precision: targetPrecision

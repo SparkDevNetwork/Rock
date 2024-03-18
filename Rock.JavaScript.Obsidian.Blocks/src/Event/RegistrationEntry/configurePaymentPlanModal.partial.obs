@@ -26,7 +26,8 @@
             <div class="col-sm-6">
                 <CurrencyBox v-model="amountToPayTodayAsNumber"
                              label="Amount To Pay Today"
-                             :rules="['required', validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining]">
+                             :rules="['required', validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining]"
+                             @blur="coerceAmountToPayToday">
 
                     <template #append>
                         <small>A minimum of {{ calculatedMinimumAmountToPayToday }} is due today.</small>
@@ -58,7 +59,7 @@
                 </div>
             </div>
 
-            <div class="col-sm-6" v-if="numberOfPaymentsItems.length">
+            <div class="col-sm-6" v-if="numberOfPaymentsItems.length && calculatedAmountPerPayment.isGreaterThan(0)">
                 <div>{{ selectedFrequencyText }} Payment Amount</div>
                 <div>{{ paymentAmountMessage }}</div>
             </div>
@@ -67,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, watch, WatchStopHandle, nextTick } from "vue";
+    import { PropType, computed, ref, watch, nextTick } from "vue";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -81,6 +82,7 @@
     import { ValidationResult } from "@Obsidian/ValidationRules";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { createCurrency, createZeroCurrency, Currency, CurrencyOptions, createReadonlyCurrencyOptions } from "./currency.partial";
+    import { debounce } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         modelValue: {
@@ -163,7 +165,10 @@
 
     ///** Gets the amount per recurring payment. */
     const calculatedAmountPerPayment = computed<Currency>(() => {
-        if (numberOfPaymentsAsInteger.value === 0 || registrationRemainingAmount.value.isZero) {
+        if (numberOfPaymentsAsInteger.value <= 0
+            || registrationRemainingAmount.value.isZero
+            || registrationRemainingAmount.value.isNegative
+            || amountToPayToday.value.isNegative) {
             return zeroCurrency;
         }
         else {
@@ -303,6 +308,92 @@
         }
     }
 
+    const coercedAmountToPayToday = ref<Currency | null>(null);
+    const coercedNumberOfPayments = ref<number | null>(null);
+    const coercedPaymentFrequencyGuid = ref<Guid | null>(null);
+    const isTyping = ref<boolean>(false);
+
+    /**
+     * Recalculates the amount to add to it to make the planned payments an even amount.
+     *
+     * If the registration amount is 3.00,
+     * and the individual enters 0.99 in "Amount To Pay Today",
+     * and the individual selects 2 planned payments,
+     * then this method will add 0.01 to the "Amount To Pay Today" bringing it to 1.00,
+     * so that the amount per payment is an even 1.00.
+     *
+     * 0.99 [original "Amount To Pay Today"]
+     * + 0.01 [amount added to "Amount To Pay Today"]
+     * + (1.00 [amount per payment] * 2 [number of payments])
+     * = 3.00 [registration amount]
+     */
+    function coerceAmountToPayToday(): void {
+        function storeLastCoercion(amountToPay?: Currency): void {
+            if (typeof amountToPay === "undefined") {
+                amountToPay = createCurrency(amountToPayTodayAsNumber.value, currencyOptions);
+            }
+            coercedAmountToPayToday.value = amountToPay;
+            coercedNumberOfPayments.value = numberOfPaymentsAsInteger.value;
+            coercedPaymentFrequencyGuid.value = paymentFrequencyGuid.value;
+        }
+        function coerce(newAmount: Currency, adjustment: Currency): void {
+            // Keep track of the last coerced data so this function does not coerce more than once.
+            storeLastCoercion(newAmount);
+
+            nextTick(() => {
+                amountToPayTodayAsNumber.value = newAmount.number;
+                amountToPayTodayAdjustment.value = adjustment;
+                isTyping.value = false;
+            });
+        }
+        function noCoercionNeeded(): void {
+            storeLastCoercion();
+            nextTick(() => {
+                amountToPayTodayAdjustment.value = zeroCurrency;
+            });
+        }
+
+        if (coercedAmountToPayToday.value
+            && coercedAmountToPayToday.value.isEqualTo(amountToPayTodayAsNumber.value)
+            && coercedNumberOfPayments.value === numberOfPaymentsAsInteger.value
+            && coercedPaymentFrequencyGuid.value === paymentFrequencyGuid.value) {
+            // Skip if the amount to pay today has already been coerced for the amount of payments.
+            // This prevents infinite loops and issues where the adjustment can get cleared out.
+            noCoercionNeeded();
+        }
+        else if (registrationRemainingAmount.value.isLessThan(amountToPayTodayAsNumber.value)) {
+            // The individual entered more than the amount needed for the registration,
+            // so set it to the registration amount.
+            coerce(registrationRemainingAmount.value, zeroCurrency);
+        }
+        else if (amountToPayTodayAsNumber.value < 0) {
+            // The individual entered a negative number,
+            // so set it to zero.
+            coerce(zeroCurrency, zeroCurrency);
+        }
+        else {
+            // The individual entered an amount between 0 and the registration amount,
+            // so check if the remaining balance can be evenly divided by the number of payments.
+            const amountToBeDividedForPaymentPlan = registrationRemainingAmount.value.subtract(amountToPayTodayAsNumber.value);
+            const { remainder: adjustment } = amountToBeDividedForPaymentPlan.divide(numberOfPaymentsAsInteger.value);
+
+            if (adjustment.isZero) {
+                // The individual entered an amount that can be evenly divided by the number of payments,
+                // so no coercion is needed.
+                noCoercionNeeded();
+            }
+            else {
+                // The individual entered an amount that cannot be evenly divided by the number of payments,
+                // so adjust the amount to pay today so that it can be divided evenly.
+                coerce(adjustment.add(amountToPayTodayAsNumber.value), adjustment);
+            }
+        }
+
+        nextTick(() => isTyping.value = false);
+    }
+
+    const debouncedCoerceAmountToPayToday = debounce(coerceAmountToPayToday, 500);
+
     //#endregion
 
     //#region Event Handlers
@@ -324,6 +415,13 @@
 
     //#region Watchers
 
+    // watch(amountToPayTodayAsNumber, () => {
+    //     isTyping.value = true;
+    //     debouncedCoerceAmountToPayToday();
+    // });
+
+    watch(numberOfPaymentsAsInteger, coerceAmountToPayToday);
+
     /**
      * Watches the "Amount To Pay Today" field and calculates the amount to add to it to make the planned payments an even amount.
      *
@@ -338,63 +436,11 @@
      * + (1.00 [amount per payment] * 2 [number of payments])
      * = 3.00 [registration amount]
      */
-    function watchAmountToPayToday(): WatchStopHandle {
-        return watch([amountToPayToday, numberOfPaymentsAsInteger], () => {
-            const difference = registrationRemainingAmount.value.subtract(amountToPayToday.value);
-            let remainder = difference.mod(numberOfPaymentsAsInteger.value);
-            let newAmountToPayToday: Currency = zeroCurrency;
+    // function watchAmountToPayToday(): WatchStopHandle {
+    //     return watch([amountToPayToday, numberOfPaymentsAsInteger], doThing);
+    // }
 
-            if (difference.isNegative && !remainder.isNegative) {
-                // Negate the remainder if the entered amount was
-                // larger than the registration amount.
-                remainder = remainder.negate();
-            }
-
-            if (!remainder.isZero) {
-                // Add the remainder to the "Amount To Pay Today".
-                newAmountToPayToday = amountToPayToday.value.add(remainder);
-
-                if (remainder.isNegative) {
-                    // If the remainder is negative then the individual entered an amount larger than the remaining registration amount.
-                    // newAmountToPayToday has already been updated to be the "pay in full" amount above,
-                    // so the remainder should just be cleared out at this point.
-                    remainder = zeroCurrency;
-                }
-
-                // Update reactive state after next render.
-                nextTick(() => amountToPayTodayAdjustment.value = remainder);
-            }
-            else {
-                // No remainder adjustment needed.
-                newAmountToPayToday = amountToPayToday.value;
-                // Update reactive state after next render.
-                nextTick(() => amountToPayTodayAdjustment.value = zeroCurrency);
-            }
-
-            // Prevent the new "Amount To Pay Today" from being larger than the registration amount.
-            if (newAmountToPayToday.isGreaterThan(registrationRemainingAmount.value)) {
-                newAmountToPayToday = registrationRemainingAmount.value;
-            }
-
-            // Finally, update the "Amount To Pay Today" if necessary.
-            if (newAmountToPayToday.isNotEqualTo(amountToPayToday.value)) {
-                // Stop watching or updating the field will trigger another recalc.
-                stopAmountToPayTodayWatcher();
-
-                // Set the new amount to pay today after the next render.
-                nextTick(() => {
-                    amountToPayTodayAsNumber.value = newAmountToPayToday.number;
-
-                    // Watch again after the next render.
-                    nextTick(() => {
-                        stopAmountToPayTodayWatcher = watchAmountToPayToday();
-                    });
-                });
-            }
-        });
-    }
-
-    let stopAmountToPayTodayWatcher = watchAmountToPayToday();
+    // let stopAmountToPayTodayWatcher = watchAmountToPayToday();
 
     //#endregion
 </script>
