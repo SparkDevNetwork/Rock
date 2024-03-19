@@ -1,4 +1,4 @@
-import { Comment, ComponentOptions, SetupContext, VNode, getCurrentInstance, getTransitionRawChildren } from "vue";
+import { Comment, ComponentInternalInstance, ComponentOptions, SetupContext, VNode, getCurrentInstance, getTransitionRawChildren } from "vue";
 
 /**
  * Checks if the two nodes are considered the same node.
@@ -34,6 +34,12 @@ function getFirstValidChild(nodes?: VNode[]): VNode | undefined {
     return nodes.length > 0 ? nodes[0] : undefined;
 }
 
+/** Current animation state, 0 = idle, 1 = pending, 2 = animating. */
+let animationState: 0 | 1 | 2 = 0;
+
+/** Components that need to be force updated once the animation starts. */
+const pendingInstances: ComponentInternalInstance[] = [];
+
 /**
  * Handles native view transition API transitions.
  */
@@ -42,13 +48,11 @@ const NativeViewTransition: ComponentOptions = {
 
     props: {},
 
-    setup(props: Record<string, unknown>, { slots }: SetupContext) {
+    setup(_props: Record<string, unknown>, { slots }: SetupContext) {
         const instance = getCurrentInstance();
-        let isAnimating = false;
 
         return () => {
             const children = slots.default && getTransitionRawChildren(slots.default(), true);
-
             const child = getFirstValidChild(children);
 
             if (child) {
@@ -56,14 +60,13 @@ const NativeViewTransition: ComponentOptions = {
                 // same type then just display the child. For example, on initial
                 // render.
                 if (!instance?.subTree || isSameVNode(instance.subTree, child)) {
-                    console.log("subtree", instance?.subTree);
                     return child;
                 }
             }
             else {
                 // If we don't have a new child and the old child didn't
                 // exist or was a comment, then we don't need to animate.
-                if (instance?.subTree && instance.subTree.type === Comment) {
+                if (!instance?.subTree || instance.subTree.type === Comment) {
                     return child;
                 }
             }
@@ -74,21 +77,43 @@ const NativeViewTransition: ComponentOptions = {
                 return child;
             }
 
-            // If we are currently in an animation, just set the child.
-            if (isAnimating) {
+            if (animationState === 2) {
+                // If we are currently in an animation, just set the child.
                 return child;
             }
+            else if (animationState === 1) {
+                // If we are waiting for the animation to start then make us
+                // pending and return the current content.
 
-            // Start a new animation.
-            isAnimating = true;
+                if (instance) {
+                    pendingInstances.push(instance);
+                }
 
-            // @ts-expect-error startViewTransition is not standard yet.
-            document.startViewTransition(async () => {
-                instance?.update();
-                isAnimating = false;
-            });
+                return instance?.subTree;
+            }
+            else {
+                // Note that we are starting to animate.
+                animationState = 1;
 
-            return instance?.subTree;
+                // @ts-expect-error startViewTransition is not standard yet.
+                document.startViewTransition(async () => {
+                    // Note that we are ready to accept new content.
+                    animationState = 2;
+
+                    // Force new content to be placed in DOM.
+                    instance?.update();
+                    for (const inst of pendingInstances) {
+                        inst.update();
+                    }
+
+                    pendingInstances.splice(0, pendingInstances.length);
+
+                    // Note that we are no longer in an animation.
+                    animationState = 0;
+                });
+
+                return instance?.subTree;
+            }
         };
     }
 };
