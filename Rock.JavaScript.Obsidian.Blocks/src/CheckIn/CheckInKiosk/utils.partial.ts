@@ -40,6 +40,24 @@ export type SavedConfigurationBag = {
     description?: string | null;
 };
 
+export type KioskConfigurationBag = {
+    kiosk?: CheckInItemBag | null;
+
+    template?: CheckInItemBag | null;
+
+    theme?: ListItemBag | null;
+
+    areas?: CheckInItemBag[] | null;
+};
+
+export enum Screen {
+    Configuration = 0,
+
+    Welcome = 1,
+
+    Search = 2
+}
+
 export function markdown(content: string | undefined | null): string {
     if (!content) {
         return "";

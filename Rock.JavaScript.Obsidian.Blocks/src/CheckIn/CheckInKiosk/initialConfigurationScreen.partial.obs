@@ -1,105 +1,115 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <MainPanel title="Check-in Options"
-               subtitle="Select the options for your desired check-in experience"
-               class="configuration-panel">
-        <div class="row">
-            <div class="col-md-6">
-                <DropDownList label="Campus"
-                              v-model="campusGuid"
-                              :items="campusItems"
-                              showBlankItem />
-            </div>
-
-            <div class="col-md-6">
-                <DropDownList label="Kiosk"
-                              v-model="kioskGuid"
-                              :items="kioskItems"
-                              showBlankItem />
-            </div>
-        </div>
-
-        <ContentTransition>
-            <div v-if="isSavedConfigurationsVisible" class="saved-configurations scrollable-container">
-                <div class="header">
-                    <h2>Saved Configurations</h2>
-
-                    <RockButton btnType="default"
-                                btnSize="sm"
-                                class="use-custom-configuration-button"
-                                @click="onCustomConfiguration">
-                        Use Custom Configuration
-                    </RockButton>
+    <div class="configuration-screen scrollable-container">
+        <MainPanel title="Check-in Options"
+                   subtitle="Select the options for your desired check-in experience">
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList label="Campus"
+                                  v-model="campusGuid"
+                                  :items="campusItems"
+                                  showBlankItem />
                 </div>
 
-                <div class="scrollable" style="flex-grow: 1;">
-                    <div class="vertical-buttons">
-                        <RockButton v-for="cfg in savedConfigurations"
-                                    btnType="primary"
-                                    class="saved-configuration-button">
-                            <div class="title">{{ cfg.name }}</div>
-                            <div class="subtitle">{{ cfg.description }}</div>
+                <div class="col-md-6">
+                    <DropDownList label="Kiosk"
+                                  v-model="kioskGuid"
+                                  :items="kioskItems"
+                                  showBlankItem />
+                </div>
+            </div>
+
+            <ContentTransition>
+                <div v-if="isSavedConfigurationsVisible" class="saved-configurations scrollable-container">
+                    <div class="header">
+                        <h2>Saved Configurations</h2>
+
+                        <RockButton btnType="default"
+                                    btnSize="sm"
+                                    class="use-custom-configuration-button"
+                                    @click="onCustomConfiguration">
+                            Use Custom Configuration
                         </RockButton>
                     </div>
-                </div>
-            </div>
 
-            <div v-if="isCustomConfigurationVisible" class="custom-configuration scrollable-container">
-                <div class="header">
-                    <h2>Check-in Setup Options</h2>
-
-                    <RockButton btnType="default"
-                                class="save-new-configuration-button"
-                                @click="onSaveNewConfiguration">
-                        Save New Configuration
-                    </RockButton>
-
-                    <RockButton btnType="default"
-                                class="use-custom-configuration-button"
-                                @click="onUseSavedConfiguration">
-                        Use Saved Configuration
-                    </RockButton>
-                </div>
-
-                <div class="scrollable-vertical" style="flex-grow: 1;">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <DropDownList label="Theme"
-                                          v-model="theme"
-                                          :items="blockConfiguration.themes ?? []"
-                                          showBlankItem
-                                          :popupContainerOverride="documentBody" />
-
-                            <DropDownList label="Check-in Configuration Template"
-                                          v-model="templateGuid"
-                                          :items="templateItems"
-                                          showBlankItem
-                                          :popupContainerOverride="documentBody" />
+                    <div class="scrollable" style="flex-grow: 1;">
+                        <div class="vertical-buttons">
+                            <RockButton v-for="cfg in savedConfigurations"
+                                        btnType="primary"
+                                        class="saved-configuration-button">
+                                <div class="title">{{ cfg.name }}</div>
+                                <div class="subtitle">{{ cfg.description }}</div>
+                            </RockButton>
                         </div>
                     </div>
+                </div>
 
-                    <div class="row" v-if="templateGuid">
-                        <div class="col-md-6">
-                            <CheckBoxList label="Primary Areas"
-                                          v-model="primaryAreaGuids"
-                                          :items="primaryAreaItems"
-                                          horizontal
-                                          :repeatColumns="2" />
-                        </div>
+                <div v-if="isCustomConfigurationVisible" class="custom-configuration scrollable-container">
+                    <div class="header">
+                        <h2>Check-in Setup Options</h2>
 
-                        <div class="col-md-6">
-                            <CheckBoxList label="Secondary Areas"
-                                          v-model="secondaryAreaGuids"
-                                          :items="secondaryAreaItems"
-                                          horizontal
-                                          :repeatColumns="2" />
-                        </div>
+                        <RockButton btnType="default"
+                                    class="save-new-configuration-button"
+                                    @click="onSaveNewConfiguration">
+                            Save New Configuration
+                        </RockButton>
+
+                        <RockButton btnType="default"
+                                    class="use-custom-configuration-button"
+                                    @click="onUseSavedConfiguration">
+                            Use Saved Configuration
+                        </RockButton>
                     </div>
 
+                    <div class="scrollable-vertical" style="flex-grow: 1;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <DropDownList label="Theme"
+                                              v-model="theme"
+                                              :items="blockConfiguration.themes ?? []"
+                                              showBlankItem
+                                              :popupContainerOverride="documentBody" />
+
+                                <DropDownList label="Check-in Configuration Template"
+                                              v-model="templateGuid"
+                                              :items="templateItems"
+                                              showBlankItem
+                                              :popupContainerOverride="documentBody" />
+                            </div>
+                        </div>
+
+                        <div class="row" v-if="templateGuid">
+                            <div class="col-md-6">
+                                <CheckBoxList label="Primary Areas"
+                                              v-model="primaryAreaGuids"
+                                              :items="primaryAreaItems"
+                                              horizontal
+                                              :repeatColumns="2" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <CheckBoxList label="Secondary Areas"
+                                              v-model="secondaryAreaGuids"
+                                              :items="secondaryAreaItems"
+                                              horizontal
+                                              :repeatColumns="2" />
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+            </ContentTransition>
+        </MainPanel>
+
+        <ContentTransition>
+            <div v-if="isCustomConfigurationVisible" key="next"
+                 class="actions">
+                <RockButton btnType="primary"
+                            :disabled="!isCustomConfigurationValid"
+                            @click="onNextClick">Next</RockButton>
             </div>
         </ContentTransition>
-    </MainPanel>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -111,8 +121,8 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CheckInKioskOptionsBag, SavedConfigurationBag } from "./utils.partial";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { CheckInKioskOptionsBag, KioskConfigurationBag, SavedConfigurationBag } from "./utils.partial";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
@@ -124,6 +134,10 @@
             required: true
         }
     });
+
+    const emit = defineEmits<{
+        (event: "configured", value: KioskConfigurationBag): void;
+    }>();
 
     const http = useHttp();
 
@@ -230,6 +244,14 @@
             .map(a => ({ value: a.guid, text: a.name }));
     });
 
+    /** True if the custom configuration options are valid and we can proceed. */
+    const isCustomConfigurationValid = computed((): boolean => {
+        return !!kioskGuid.value
+            && !!theme.value
+            && !!templateGuid.value
+            && primaryAreaGuids.value.length > 0;
+    });
+
     // #endregion
 
     // #region Functions
@@ -244,6 +266,23 @@
 
     function onSaveNewConfiguration(): void {
         alert("Not Implemented");
+    }
+
+    function onNextClick(): void {
+        const configuration: KioskConfigurationBag = {};
+
+        const kiosk = kioskItems.value.find(a => areEqual(a.value, kioskGuid.value));
+
+        if (!kiosk) {
+
+        }
+
+        emit("configured", {
+            kiosk: null,
+            theme: null,
+            template: null,
+            areas: null
+        });
     }
 
     /**

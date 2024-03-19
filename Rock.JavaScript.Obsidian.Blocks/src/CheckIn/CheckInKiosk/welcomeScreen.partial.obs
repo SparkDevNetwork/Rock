@@ -1,0 +1,33 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="welcome-screen">
+        <div class="promotion">
+        </div>
+
+        <div class="start-button">
+            <RockButton btnType="primary"
+                        @click="onStartClick">
+                Start
+            </RockButton>
+        </div>
+
+        <div class="scan-barcode-button">
+            <RockButton btnType="default">
+                <div class="title"><i class="fa fa-qrcode"></i></div>
+                <div class="subtitle">Scan A Barcode</div>
+            </RockButton>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    const emit = defineEmits<{
+        (event: "start"): void;
+    }>();
+
+    function onStartClick(): void {
+        emit("start");
+    }
+</script>
