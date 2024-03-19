@@ -655,7 +655,7 @@ export class RockDateTime {
             return `1 Month ${direction}`;
         }
 
-        if (totalMonths < 12) {
+        if (totalMonths <= 18) {
             return `${Math.round(totalMonths)} Months ${direction}`;
         }
 

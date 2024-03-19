@@ -146,7 +146,7 @@ describe("formatAspDate Suite", () => {
     });
 
     it("Elapsed Years less than one past the date produces singular noun", () => {
-        assert.strictEqual(RockDateTime.now().addYears(-1).toElapsedString(), "1 Year Ago");
+        assert.strictEqual(RockDateTime.now().addYears(-1).addMonths(-7).toElapsedString(), "1 Year Ago");
     });
 
     it("Elapsed Years greater than one past the date produces plural noun", () => {
@@ -158,7 +158,7 @@ describe("formatAspDate Suite", () => {
     });
 
     it("Elapsed Years less than one from the date produces singular noun", () => {
-        assert.strictEqual(RockDateTime.now().addYears(1).toElapsedString(), "1 Year From Now");
+        assert.strictEqual(RockDateTime.now().addYears(1).addMonths(7).toElapsedString(), "1 Year From Now");
     });
 
     it("Elapsed Years greater than from the date produces plural noun", () => {
