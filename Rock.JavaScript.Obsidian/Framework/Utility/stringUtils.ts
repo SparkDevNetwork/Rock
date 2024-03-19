@@ -279,7 +279,7 @@ export function defaultControlCompareValue(value: string, itemValue: string): bo
  * @returns true if it contains HTML, otherwise false
  */
 export function containsHtmlTag(value: string): boolean {
-    return /<\S/.test(value);
+    return /<[/0-9a-zA-Z]/.test(value);
 }
 
 export default {
