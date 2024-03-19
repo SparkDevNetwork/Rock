@@ -1,4 +1,4 @@
-import { Comment, ComponentInternalInstance, ComponentOptions, SetupContext, VNode, getCurrentInstance, getTransitionRawChildren } from "vue";
+import { ComponentInternalInstance, ComponentOptions, SetupContext, VNode, getCurrentInstance, getTransitionRawChildren } from "vue";
 
 /**
  * Checks if the two nodes are considered the same node.
@@ -13,25 +13,33 @@ function isSameVNode(n1: VNode, n2: VNode): boolean {
 }
 
 /**
- * Gets the first valid child from the list of nodes. If no valid children
- * exist then the first child is returned.
+ * Determines if the two arrays represent the same child vnodes.
  *
- * @param nodes The nodes to iterate over.
+ * @param n1 The first array of child vnodes.
+ * @param n2 The second array of child vnodes.
  *
- * @returns The first node that is not a comment, or the first node if they were all comments.
+ * @returns true if the two arrays have the same children; otherwise false.
  */
-function getFirstValidChild(nodes?: VNode[]): VNode | undefined {
-    if (!nodes) {
-        return undefined;
+function areChildrenSame(n1: VNode[] | undefined | null, n2: VNode[] | undefined | null): boolean {
+    if (!n1) {
+        return !n2;
     }
 
-    for (const node of nodes) {
-        if (node.type !== Comment) {
-            return node;
+    if (!n2) {
+        return !n1;
+    }
+
+    if (n1.length !== n2.length) {
+        return false;
+    }
+
+    for (let i = 0; i < n1.length; i++) {
+        if (!isSameVNode(n1[i], n2[i])) {
+            return false;
         }
     }
 
-    return nodes.length > 0 ? nodes[0] : undefined;
+    return true;
 }
 
 /** Current animation state, 0 = idle, 1 = pending, 2 = animating. */
@@ -53,33 +61,22 @@ const NativeViewTransition: ComponentOptions = {
 
         return () => {
             const children = slots.default && getTransitionRawChildren(slots.default(), true);
-            const child = getFirstValidChild(children);
+            // const oldHasNonComment = hasNonComment(instance?.subTree.children as VNode[]);
+            // const newHasNonComment = hasNonComment(children);
 
-            if (child) {
-                // If we don't currently have a child or the two vnodes are the
-                // same type then just display the child. For example, on initial
-                // render.
-                if (!instance?.subTree || isSameVNode(instance.subTree, child)) {
-                    return child;
-                }
-            }
-            else {
-                // If we don't have a new child and the old child didn't
-                // exist or was a comment, then we don't need to animate.
-                if (!instance?.subTree || instance.subTree.type === Comment) {
-                    return child;
-                }
+            if (areChildrenSame(children, instance?.subTree?.children as VNode[])) {
+                return children;
             }
 
             // If we don't support transitions then just return the child.
             // @ts-expect-error startViewTransition is not standard yet.
             if (!document.startViewTransition) {
-                return child;
+                return children;
             }
 
             if (animationState === 2) {
                 // If we are currently in an animation, just set the child.
-                return child;
+                return children;
             }
             else if (animationState === 1) {
                 // If we are waiting for the animation to start then make us
