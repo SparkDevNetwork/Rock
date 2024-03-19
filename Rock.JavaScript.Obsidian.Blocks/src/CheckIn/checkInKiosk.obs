@@ -9,15 +9,17 @@
         <section class="page-body">
             <ContentTransition>
                 <InitialConfigurationScreen v-if="currentScreen === Screen.Configuration"
-                                            :blockConfiguration="blockConfiguration" />
+                                            :blockConfiguration="blockConfiguration"
+                                            @updateActions="onUpdateActions($event, Screen.Configuration)"
+                                            @configured="onConfigured" />
 
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome">
                 </WelcomeScreen>
             </ContentTransition>
         </section>
 
-        <PageFooter kiosk="West Lobby"
-                    template="Weekly Service Check-in" />
+        <PageFooter title="West Lobby &#xb7 Weekly Service Check-in"
+                    :actions="currentScreenActions" />
     </div>
 </template>
 
@@ -273,7 +275,8 @@
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref } from "vue";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
-    import { CheckInKioskOptionsBag, Screen } from "./CheckInKiosk/utils.partial";
+    import { CheckInKioskOptionsBag, KioskConfigurationBag, Screen } from "./CheckInKiosk/utils.partial";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
 
@@ -283,6 +286,18 @@
         return currentScreen.value === Screen.Configuration
             || currentScreen.value === Screen.Welcome;
     });
+
+    const currentScreenActions = ref<PanelAction[]>([]);
+
+    function onConfigured(value: KioskConfigurationBag): void {
+        console.log("configured", value);
+    }
+
+    function onUpdateActions(actions: PanelAction[], source: Screen): void {
+        if (currentScreen.value === source) {
+            currentScreenActions.value = actions;
+        }
+    }
 
     function onBack(): void {
         //primaryContent.value = !primaryContent.value;
