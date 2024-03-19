@@ -6,7 +6,6 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PageShortLink"
@@ -76,13 +75,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /**
-     * The entity name to display in the block panel.
-     */
-    const panelName = computed((): string => {
-        return "Shortened Link";
-    });
 
     /**
      * The identifier key value for this entity.

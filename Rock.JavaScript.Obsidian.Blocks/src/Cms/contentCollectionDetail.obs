@@ -6,7 +6,6 @@
 
     <div v-if="!blockError">
         <DetailBlock v-model:mode="panelMode"
-                     :name="panelName"
                      :labels="blockLabels"
                      :entityKey="entityKey"
                      :entityTypeGuid="EntityType.ContentCollection"
@@ -197,13 +196,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /**
-     * The entity name to display in the block panel.
-     */
-    const panelName = computed((): string => {
-        return contentCollectionViewBag.value?.name ?? "";
-    });
 
     /**
      * The identifier key value for this entity.

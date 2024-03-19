@@ -6,7 +6,6 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.MediaFolder"
@@ -85,7 +84,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return mediaFolderViewBag.value?.name ?? "Add Media Folder";
+        return `${mediaFolderViewBag.value?.mediaAccount?.text} Folders`?? "MediaFolder";
     });
 
     /**

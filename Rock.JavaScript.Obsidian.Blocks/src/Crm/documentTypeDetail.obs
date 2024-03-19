@@ -6,12 +6,10 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Document Type"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -90,7 +88,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return documentTypeViewBag.value?.name ?? "";
+        return documentTypeViewBag.value?.name ?? "DocumentType";
     });
 
     /**

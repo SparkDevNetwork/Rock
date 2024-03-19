@@ -6,11 +6,9 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
-                 :title="panelName"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Following Suggestion Type"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isFollowVisible="false"
@@ -88,7 +86,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return suggestionDetailEditBag.value?.name ?? "Add Following Suggestion Type";
+        return suggestionDetailEditBag.value?.name ?? "FollowingSuggestionType";
     });
 
     /**

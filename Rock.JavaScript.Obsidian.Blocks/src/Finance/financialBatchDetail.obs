@@ -6,11 +6,10 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Financial Batch"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :footerSecondaryActions="footerActions"
@@ -96,7 +95,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return financialBatchViewBag.value?.name ?? "";
+        return financialBatchViewBag.value?.name ?? "FinancialBatch";
     });
 
     /**

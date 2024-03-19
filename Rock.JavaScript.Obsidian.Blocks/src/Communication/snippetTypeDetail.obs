@@ -6,7 +6,6 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -79,13 +78,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /**
-     * The entity name to display in the block panel.
-     */
-    const panelName = computed((): string => {
-        return snippetTypeViewBag.value?.name ?? "";
-    });
 
     const entityTypeName = computed((): string => {
         return snippetTypeViewBag.value?.name ?? "New Snippet Type";

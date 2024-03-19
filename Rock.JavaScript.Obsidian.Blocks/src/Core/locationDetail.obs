@@ -6,11 +6,10 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.Location"
-                 entityTypeName="Location"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -88,7 +87,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return locationViewBag.value?.name ?? "";
+        return locationViewBag.value?.name ?? "Location";
     });
 
     /**

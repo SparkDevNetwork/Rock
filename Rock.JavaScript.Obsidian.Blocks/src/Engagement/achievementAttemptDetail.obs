@@ -6,7 +6,6 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :headerActions="headerActions"
                  :entityKey="entityKey"
@@ -88,7 +87,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return achievementAttemptViewBag.value?.achievementType ? `${achievementAttemptViewBag.value?.achievementType?.text} Attempt` : "Achievement Attempt";
+        return achievementAttemptViewBag.value?.achievementType ? `${achievementAttemptViewBag.value?.achievementType?.text} Attempt` : "AchievementAttempt";
     });
 
     /**

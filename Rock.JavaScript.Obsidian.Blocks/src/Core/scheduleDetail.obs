@@ -6,11 +6,10 @@
 
     <DetailBlock v-if="!blockError && config.entity"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Schedule"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isDeleteable"
@@ -97,7 +96,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return scheduleViewBag.value?.name ?? "";
+        return "Schedule";
     });
 
     /**

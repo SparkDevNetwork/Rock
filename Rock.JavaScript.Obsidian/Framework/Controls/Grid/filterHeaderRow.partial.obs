@@ -2,7 +2,7 @@
 <template>
     <div class="grid-title-heading">
         <div class="grid-title">
-            {{ props.grid.itemTerm }} List
+            {{ props.title || `${props.grid.itemTerm} List` }}
         </div>
 
         <div class="grid-badges mr-3">
@@ -85,6 +85,12 @@
             type: Boolean,
             default: true
         },
+
+        /** The title to display in the header. */
+        title: {
+            type: String as PropType<string>,
+            required: false
+        }
     });
 
     const emit = defineEmits<{

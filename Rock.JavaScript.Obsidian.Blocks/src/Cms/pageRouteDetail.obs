@@ -6,8 +6,6 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PageRoute"
@@ -76,13 +74,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /**
-     * The entity name to display in the block panel.
-     */
-    const panelName = computed((): string => {
-        return pageRouteViewBag.value?.idKey ? "Edit Page Route" : "Add Page Route";
-    });
 
     /**
      * The identifier key value for this entity.

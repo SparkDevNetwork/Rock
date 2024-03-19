@@ -6,11 +6,10 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="{{ EntityName }}"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -80,7 +79,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return {% if UseName == true %}{{ EntityName | CamelCase }}ViewBag.value?.name ?? "";{% else %}"TODO: Fill Me In";{% endif %}
+        return {% if UseName == true %}{{ EntityName | CamelCase }}ViewBag.value?.name ?? "{{ EntityName }}";{% else %}"TODO: Fill Me In. Ex: return [EntityName]ViewBag.value?.name ?? '[EntityName];'";{% endif %}
     });
 
     /**

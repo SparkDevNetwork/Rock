@@ -6,7 +6,6 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -61,7 +60,7 @@
 
     const entityTypeGuid = EntityType.FollowingEventType;
 
-    const panelMode = ref<DetailPanelMode>(config.isEditable ? DetailPanelMode.Edit : DetailPanelMode.View);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.

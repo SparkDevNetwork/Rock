@@ -6,12 +6,10 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Badge"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -77,10 +75,6 @@
         "name"
     ];
 
-    const qualifiedAttributeProperties = [
-        "badgeComponentEntityType",
-    ];
-
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(badgeEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
@@ -91,7 +85,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return badgeViewBag.value?.name ?? "";
+        return badgeViewBag.value?.name ?? "Badge";
     });
 
     /**

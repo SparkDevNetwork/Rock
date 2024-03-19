@@ -6,7 +6,6 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.AssetStorageProvider"
@@ -61,7 +60,7 @@
     // Open the edit bag populated with the Asset Storage Entities if available. Else initialize the bag with no values.
     const assetStorageProviderEditBag = ref(config.entity ?? ({} as AssetStorageProviderBag));
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -79,13 +78,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /**
-     * The entity name to display in the block panel.
-     */
-    const panelName = computed((): string => {
-        return assetStorageProviderViewBag.value?.name ?? "";
-    });
 
     /**
      * The identifier key value for this entity.

@@ -6,6 +6,7 @@
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
                              :gridActions="gridActions"
+                             :title="title"
                              :visibleColumnCount="visibleColumnCount"
                              :countMessage="countMessage"
                              :isCountMessageVisible="isCountMessageVisible"
@@ -535,6 +536,15 @@
          * require this to function.
          */
         keyField: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * The title to display at the top of the grid. If not specified then
+         * the default title will be displayed.
+         */
+        title: {
             type: String as PropType<string>,
             required: false
         },

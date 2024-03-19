@@ -6,8 +6,6 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PersistedDataset"
@@ -87,13 +85,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /**
-     * The entity name to display in the block panel.
-     */
-    const panelName = computed((): string => {
-        return persistedDatasetViewBag.value?.idKey ? "Edit Persisted Dataset" : "Add Persisted Dataset";
-    });
 
     /**
      * The identifier key value for this entity.

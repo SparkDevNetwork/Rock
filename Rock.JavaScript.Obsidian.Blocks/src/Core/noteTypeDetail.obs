@@ -6,12 +6,10 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.NoteType"
-                 entityTypeName="NoteType"
+                 :entityTypeName="panelName"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="noteTypeViewBag?.isSystem !== true"
@@ -93,13 +91,12 @@
     /**
      * The entity name to display in the block panel.
      */
-    const panelName = computed((): string => {
-        if (panelMode.value === DetailPanelMode.View) {
-            return noteTypeViewBag.value?.name ?? "";
+     const panelName = computed((): string => {
+        if(DetailPanelMode.View){
+            return noteTypeViewBag.value?.name ?? "NoteType";
         }
-        else {
-            return panelMode.value === DetailPanelMode.Add ? "Add Note Type" : "Edit Note Type";
-        }
+
+        return "NoteType";
     });
 
     /**

@@ -6,11 +6,10 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Prayer Request"
+                 :entityTypeName="panelName"
                  :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -115,7 +114,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return `${prayerRequestViewBag.value?.fullName ?? ""} Prayer Request`;
+        return `${prayerRequestViewBag.value?.fullName ?? ""} PrayerRequest`;
     });
 
     /**

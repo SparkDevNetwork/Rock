@@ -6,10 +6,8 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
-                 entityTypeName="Queue"
+                 :entityTypeName="panelName"
                  entityTypeGuid=""
                  :entityKey="entityKey"
                  :isAuditHidden="true"
@@ -74,7 +72,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return config.entity?.name ?? "Queue Detail";
+        return config.entity?.name ?? "Queue";
     });
 
     /**
