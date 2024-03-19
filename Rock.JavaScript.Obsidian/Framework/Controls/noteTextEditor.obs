@@ -272,7 +272,6 @@
         if (!props.allowHtml) {
             rules.push("nohtml");
         }
-        console.log("Augment", rules);
 
         return rules;
     });
