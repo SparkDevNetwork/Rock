@@ -6,7 +6,7 @@
                     :hideNavigation="hideNavigation"
                     @back="onBack" />
 
-        <div class="page-body scrollable-container">
+        <section class="page-body">
             <ContentTransition>
                 <InitialConfigurationScreen v-if="currentScreen === Screen.Configuration"
                                             :blockConfiguration="blockConfiguration" />
@@ -14,7 +14,7 @@
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome">
                 </WelcomeScreen>
             </ContentTransition>
-        </div>
+        </section>
 
         <PageFooter kiosk="West Lobby"
                     template="Weekly Service Check-in" />
@@ -105,23 +105,7 @@
  */
 .check-in-page .page-body {
     flex-grow: 1;
-    position: relative;
-}
-
-.check-in-page .scrollable-container {
-    /*
-     * When a scrollable is nested inside a flex, the entire tree must be flex.
-     * Additionally, the min-height is required to make the scroll trigger
-     * without having to put overflow: hidden on parent controls. Using overflow
-     * would cause other issues where shadows and such get cropped.
-     */
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.check-in-page .scrollable {
-    overflow-y: auto !important;
+    overflow: auto;
 }
 
 .check-in-page .page-body .check-in-panel {
@@ -195,7 +179,6 @@
  * Configuration Screen.
  */
 .check-in-page .configuration-screen {
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
@@ -212,6 +195,8 @@
 }
 
 .check-in-page .configuration-screen .saved-configurations {
+    display: flex;
+    flex-direction: column;
     gap: var(--item-spacing);
 }
 

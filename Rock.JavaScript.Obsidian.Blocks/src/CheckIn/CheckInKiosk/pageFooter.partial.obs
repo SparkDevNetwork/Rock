@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="check-in-panel page-footer">
+    <footer class="check-in-panel page-footer">
         <div class="kiosk-name">{{ props.kiosk }}</div>
 
         <div class="template-name">{{ props.template }}</div>
@@ -12,7 +12,7 @@
                 <i class="fa fa-cog"></i>
             </RockButton>
         </div>
-    </div>
+    </footer>
 </template>
 
 <script setup lang="ts">

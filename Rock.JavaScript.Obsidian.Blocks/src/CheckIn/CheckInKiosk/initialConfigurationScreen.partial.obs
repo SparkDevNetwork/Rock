@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="configuration-screen scrollable-container">
+    <div class="configuration-screen">
         <MainPanel title="Check-in Options"
                    subtitle="Select the options for your desired check-in experience">
             <div class="row">
@@ -20,7 +20,7 @@
             </div>
 
             <ContentTransition>
-                <div v-if="isSavedConfigurationsVisible" class="saved-configurations scrollable-container">
+                <div v-if="isSavedConfigurationsVisible" class="saved-configurations">
                     <div class="header">
                         <h2>Saved Configurations</h2>
 
@@ -32,19 +32,17 @@
                         </RockButton>
                     </div>
 
-                    <div class="scrollable" style="flex-grow: 1;">
-                        <div class="vertical-buttons">
-                            <RockButton v-for="cfg in savedConfigurations"
-                                        btnType="primary"
-                                        class="saved-configuration-button">
-                                <div class="title">{{ cfg.name }}</div>
-                                <div class="subtitle">{{ cfg.description }}</div>
-                            </RockButton>
-                        </div>
+                    <div class="vertical-buttons">
+                        <RockButton v-for="cfg in savedConfigurations"
+                                    btnType="primary"
+                                    class="saved-configuration-button">
+                            <div class="title">{{ cfg.name }}</div>
+                            <div class="subtitle">{{ cfg.description }}</div>
+                        </RockButton>
                     </div>
                 </div>
 
-                <div v-if="isCustomConfigurationVisible" class="custom-configuration scrollable-container">
+                <div v-if="isCustomConfigurationVisible" class="custom-configuration">
                     <div class="header">
                         <h2>Check-in Setup Options</h2>
 
@@ -61,41 +59,38 @@
                         </RockButton>
                     </div>
 
-                    <div class="scrollable-vertical" style="flex-grow: 1;">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <DropDownList label="Theme"
-                                              v-model="theme"
-                                              :items="blockConfiguration.themes ?? []"
-                                              showBlankItem
-                                              :popupContainerOverride="documentBody" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList label="Theme"
+                                          v-model="theme"
+                                          :items="blockConfiguration.themes ?? []"
+                                          showBlankItem
+                                          :popupContainerOverride="documentBody" />
 
-                                <DropDownList label="Check-in Configuration Template"
-                                              v-model="templateGuid"
-                                              :items="templateItems"
-                                              showBlankItem
-                                              :popupContainerOverride="documentBody" />
-                            </div>
+                            <DropDownList label="Check-in Configuration Template"
+                                          v-model="templateGuid"
+                                          :items="templateItems"
+                                          showBlankItem
+                                          :popupContainerOverride="documentBody" />
+                        </div>
+                    </div>
+
+                    <div class="row" v-if="templateGuid">
+                        <div class="col-md-6">
+                            <CheckBoxList label="Primary Areas"
+                                          v-model="primaryAreaGuids"
+                                          :items="primaryAreaItems"
+                                          horizontal
+                                          :repeatColumns="2" />
                         </div>
 
-                        <div class="row" v-if="templateGuid">
-                            <div class="col-md-6">
-                                <CheckBoxList label="Primary Areas"
-                                              v-model="primaryAreaGuids"
-                                              :items="primaryAreaItems"
-                                              horizontal
-                                              :repeatColumns="2" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <CheckBoxList label="Secondary Areas"
-                                              v-model="secondaryAreaGuids"
-                                              :items="secondaryAreaItems"
-                                              horizontal
-                                              :repeatColumns="2" />
-                            </div>
+                        <div class="col-md-6">
+                            <CheckBoxList label="Secondary Areas"
+                                          v-model="secondaryAreaGuids"
+                                          :items="secondaryAreaItems"
+                                          horizontal
+                                          :repeatColumns="2" />
                         </div>
-
                     </div>
                 </div>
             </ContentTransition>

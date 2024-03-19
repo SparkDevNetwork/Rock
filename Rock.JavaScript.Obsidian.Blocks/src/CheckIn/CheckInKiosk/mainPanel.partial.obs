@@ -1,13 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="check-in-panel scrollable-container">
+    <div class="check-in-panel">
         <div v-if="title || subtitle" class="panel-header">
             <h1>{{ title }}</h1>
             <h2>{{ subtitle }}</h2>
         </div>
         <div v-else class="panel-header" v-html="parsedHeader"></div>
 
-        <div class="body scrollable-container">
+        <div class="body">
             <slot />
         </div>
     </div>

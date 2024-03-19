@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="check-in-panel page-header">
+    <header class="check-in-panel page-header">
         <div class="title">{{ props.title }}</div>
 
         <RockButton v-if="!hideNavigation"
@@ -18,7 +18,7 @@
                     @click="onHome">
             Home
         </RockButton>
-    </div>
+    </header>
 </template>
 
 <script setup lang="ts">
