@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <LocationItemPicker v-if="selectedOption == '0'" v-model="itemValue" v-model:showPopup="popupStatus">
-        <template #pickerContentSuperHeader>
-            <RadioButtonList v-model="selectedOption" :items="options" horizontal />
+    <LocationItemPicker v-if="numericSelectedMode === LocationPickerMode.Named" v-model="itemValue" v-model:showPopup="popupStatus">
+        <template #pickerContentSuperHeader v-if="options.length > 1">
+            <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
             <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
@@ -14,9 +14,9 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </LocationItemPicker>
-    <LocationAddressPicker v-if="selectedOption == '1'" v-model="addressValue" v-model:showPopup="popupStatus">
-        <template #pickerContentSuperHeader>
-            <RadioButtonList v-model="selectedOption" :items="options" horizontal />
+    <LocationAddressPicker v-if="numericSelectedMode === LocationPickerMode.Address" v-model="addressValue" v-model:showPopup="popupStatus">
+        <template #pickerContentSuperHeader v-if="options.length > 1">
+            <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
             <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
@@ -28,9 +28,9 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </LocationAddressPicker>
-    <GeoPicker v-if="selectedOption == '2'" v-model="pointValue" drawingMode="Point" v-model:showPopup="popupStatus">
-        <template #pickerContentSuperHeader>
-            <RadioButtonList v-model="selectedOption" :items="options" horizontal />
+    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Point" v-model="pointValue" drawingMode="Point" v-model:showPopup="popupStatus">
+        <template #pickerContentSuperHeader v-if="options.length > 1">
+            <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
             <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
@@ -42,9 +42,9 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </GeoPicker>
-    <GeoPicker v-if="selectedOption == '3'" v-model="fenceValue" drawingMode="Polygon" v-model:showPopup="popupStatus">
-        <template #pickerContentSuperHeader>
-            <RadioButtonList v-model="selectedOption" :items="options" horizontal />
+    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Polygon" v-model="fenceValue" drawingMode="Polygon" v-model:showPopup="popupStatus">
+        <template #pickerContentSuperHeader v-if="options.length > 1">
+            <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
             <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
@@ -67,31 +67,71 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 
-    defineProps({
+    const enum LocationPickerMode {
+        Address = 1,
+        Named = 2,
+        Point = 4,
+        Polygon = 8,
+        All = Address | Named | Point | Polygon
+    }
+
+    const props = defineProps({
         modelValue: {
             type: Object as PropType<AddressControlBag | ListItemBag | string>
+        },
+
+        currentPickerMode: {
+            type: Number as PropType<LocationPickerMode>,
+            default: 2
+        },
+
+        allowedPickerModes: {
+            type: Number as PropType<LocationPickerMode>,
+            default: 15
         }
     });
 
     const emit = defineEmits<{
         (_e: "update:modelValue", value: AddressControlBag | ListItemBag | string): void
+        (_e: "update:currentPickerMode", value: LocationPickerMode): void
     }>();
 
-    const selectedOption = ref<"0" | "1" | "2" | "3">("0");
+    const selectedMode = ref<"1" | "2" | "4" | "8">(props.currentPickerMode.toString() as "1" | "2" | "4" | "8");
+    const numericSelectedMode = computed(() => Number(selectedMode.value));
 
-    const options = [{
-        text: "Location",
-        value: "0"
-    }, {
-        text: "Address",
-        value: "1"
-    }, {
-        text: "Point",
-        value: "2"
-    }, {
-        text: "Geo-fence",
-        value: "3"
-    }];
+    const options = computed(() => {
+        const optionList: ListItemBag[] = [];
+
+        if (props.allowedPickerModes & LocationPickerMode.Named) {
+            optionList.push({
+                text: "Location",
+                value: "2"
+            });
+        }
+
+        if (props.allowedPickerModes & LocationPickerMode.Address) {
+            optionList.push({
+                text: "Address",
+                value: "1"
+            });
+        }
+
+        if (props.allowedPickerModes & LocationPickerMode.Point) {
+            optionList.push({
+                text: "Point",
+                value: "4"
+            });
+        }
+
+        if (props.allowedPickerModes & LocationPickerMode.Polygon) {
+            optionList.push({
+                text: "Geo-fence",
+                value: "8"
+            });
+        }
+
+        return optionList;
+    });
 
     const itemValue = ref<ListItemBag>({});
     const addressValue = ref<AddressControlBag>({});
@@ -101,16 +141,16 @@
     const popupStatus = ref<boolean>(false);
 
     const internalValue = computed(() => {
-        if (selectedOption.value == "0") {
-            return itemValue.value;
-        }
-        if (selectedOption.value == "1") {
+        if (numericSelectedMode.value === LocationPickerMode.Address) {
             return addressValue.value;
         }
-        if (selectedOption.value == "2") {
+        if (numericSelectedMode.value === LocationPickerMode.Named) {
+            return itemValue.value;
+        }
+        if (numericSelectedMode.value === LocationPickerMode.Point) {
             return pointValue.value;
         }
-        if (selectedOption.value == "3") {
+        if (numericSelectedMode.value === LocationPickerMode.Polygon) {
             return fenceValue.value;
         }
 
@@ -118,4 +158,18 @@
     });
 
     watch(internalValue, () => emit("update:modelValue", internalValue.value));
+
+    watch(numericSelectedMode, () => emit("update:currentPickerMode", numericSelectedMode.value));
+
+    watch(() => props.currentPickerMode, () => {
+        selectedMode.value = props.currentPickerMode.toString() as "1" | "2" | "4" | "8";
+    });
+
+    watch(() => props.allowedPickerModes, () => {
+        if (!(props.allowedPickerModes & numericSelectedMode.value)) {
+            selectedMode.value = options.value[0].value as "1" | "2" | "4" | "8";
+        }
+    }, { immediate: true });
+
+    watch(numericSelectedMode, () => emit("update:currentPickerMode", numericSelectedMode.value));
 </script>
