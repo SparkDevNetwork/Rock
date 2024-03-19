@@ -15,6 +15,7 @@
                             :key="action.title"
                             :btnType="action.type"
                             :class="getActionClass(action)"
+                            :disabled="action.disabled"
                             @click="onActionClick(action, $event)">
                     {{ action.title }}
                 </RockButton>
