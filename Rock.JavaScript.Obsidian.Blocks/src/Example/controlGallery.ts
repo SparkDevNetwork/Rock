@@ -261,6 +261,7 @@ import SecurityButtonGallery from "./ControlGallery/securityButtonGallery.partia
 import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partial.obs";
 import JsonFieldsBuilderGallery from "./ControlGallery/jsonFieldsBuilderGallery.partial.obs";
 import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
+import TextBoxGallery from "./ControlGallery/textBoxGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -1286,36 +1287,6 @@ const datePartsPickerGallery = defineComponent({
     <template #settings>
         <Toggle label="Show Year" v-model="showYear" />
         <p class="mt-4 mb-4">The <a href="#BirthdayPickerGallery">Birthday Picker</a> simply wraps this control and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a textbox */
-const textBoxGallery = defineComponent({
-    name: "TextBoxGallery",
-    components: {
-        GalleryAndResult,
-        TextBox
-    },
-    data() {
-        return {
-            text: "Some two-way bound text",
-            importCode: getControlImportPath("textBox"),
-            exampleCode: `<TextBox label="Text 1" v-model="text" :maxLength="50" showCountDown />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="text"
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <TextBox label="Text 1" v-model="text" :maxLength="50" showCountDown />
-    <TextBox label="Text 2" v-model="text" />
-    <TextBox label="Memo" v-model="text" textMode="MultiLine" :rows="10" :maxLength="100" showCountDown />
-
-    <template #settings>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
@@ -7948,7 +7919,6 @@ const controlGalleryComponents: Record<string, Component> = [
     attributeValuesContainerGallery,
     badgeListGallery,
     fieldFilterEditorGallery,
-    textBoxGallery,
     datePickerGallery,
     dateRangePickerGallery,
     dateTimePickerGallery,
@@ -8121,7 +8091,7 @@ const controlGalleryComponents: Record<string, Component> = [
     MarkdownEditorGallery,
     JsonFieldsBuilderGallery,
     HtmlEditorGallery,
-]
+    TextBoxGallery,]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
         a.name = upperCaseFirstCharacter((a.__name ?? a.name).replace(/\.partial$/, ""));

@@ -1,0 +1,207 @@
+<template>
+    <GalleryAndResult :value="text"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <TextBox v-model="text"
+                 :label="label"
+                 :maxLength="maxLength ? maxLength : undefined"
+                 :showCountDown="showCountDown"
+                 :textMode="isMultiline ? 'multiline' : ''"
+                 :rows="rows ? rows : undefined"
+                 :size="size" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <TextBox v-model="label" label="Label" />
+                </div>
+                <div class="col-md-3">
+                    <NumberUpDown v-model.number="maxLength" label="Max Length" :min="0" :max="524288" help="If you set this to zero here, it will use the default value." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="showCountDown" label="Show Countdown" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="isMultiline" label="Multi-Line" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList v-model="size" label="Size" :items="sizeOptions" :showBlankItem="false" />
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-md-3">
+                    <NumberUpDown v-if="isMultiline" v-model="rows" label="Rows" :min="0" :max="20" help="If you set this to zero here, it will use the default value. Only applicable when in multi-line mode." />
+                </div>
+            </div>
+
+            <h4>TextBox Props</h4>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>modelValue</code></td>
+                        <td>String</td>
+                        <td><em>Required</em></td>
+                        <td>The <code>v-model</code> for providing/receiving the input value.</td>
+                    </tr>
+                    <tr>
+                        <td><code>type</code></td>
+                        <td>String</td>
+                        <td>"text"</td>
+                        <td>The standard HTML input type. </td>
+                    </tr>
+                    <tr>
+                        <td><code>maxLength</code></td>
+                        <td>Number</td>
+                        <td>542288</td>
+                        <td>The maximum number of characters that are allowed to be entered.</td>
+                    </tr>
+                    <tr>
+                        <td><code>showCountDown</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether or not to show a number indicating how many characters you have left until you hit <code>maxLength</code> characters.</td>
+                    </tr>
+                    <tr>
+                        <td><code>disableAutocomplete</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether or not to tell the browser not to automatically fill in this input.</td>
+                    </tr>
+                    <tr>
+                        <td><code>placeholder</code></td>
+                        <td>String</td>
+                        <td>null</td>
+                        <td>A placeholder value to display inside the input.</td>
+                    </tr>
+                    <tr>
+                        <td><code>inputClasses</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>CSS classes that will get applied directly to the input.</td>
+                    </tr>
+                    <tr>
+                        <td><code>rows</code></td>
+                        <td>Number</td>
+                        <td>3</td>
+                        <td>If you are in multi-line text mode, this controls how many rows of text are visible in the input.</td>
+                    </tr>
+                    <tr>
+                        <td><code>textMode</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>If you set this to <code>"multiline"</code>, it will use a <code>textarea</code> element instead of an <code>input</code> element.</td>
+                    </tr>
+                    <tr>
+                        <td><code>size</code></td>
+                        <td><code>"small" | "medium" | "large"</code></td>
+                        <td>"medium"</td>
+                        <td>"small" or "large" values will add a class to the input to make it and its text smaller/larger respectively.</td>
+                    </tr>
+                    <tr>
+                        <td><code>allowHtml</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>If false, a validation rule will be added to throw a validation error if there is any HTML in the value.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Inherited RockFormField Props</h4>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>label</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>Adds a label for the form field.</td>
+                    </tr>
+                    <tr>
+                        <td><code>help</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>Adds a little help icon next to the label. When hovered, the value of this prop will appear in the tooltip.</td>
+                    </tr>
+                    <tr>
+                        <td><code>rules</code></td>
+                        <td><code>ValidationRule | ValidationRule[]</code></td>
+                        <td>""</td>
+                        <td>A list of validation rules used to validate the value of this input. See <a href="https://app.gitbook.com/o/-LZeM2HF8FOmeOnEE-hg/s/qEX8FxRZdIq9SLZ3KNxi/form-validation" target="_blank">Form Validation</a>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>formGroupClasses</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>CSS classes that will be applied to the element wrapping the input.</td>
+                    </tr>
+                    <tr>
+                        <td><code>validationTitle</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>If provided and there is a validation error, the error will be labeled with this text. By default, it will be labeled with the <code>label</code> prop instead.</td>
+                    </tr>
+                    <tr>
+                        <td><code>isRequiredIndicatorHidden</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>By default, if the "required" rule is applied, a red dot indicator appears next to the label. If set to true that indicator will be hidden.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const text = ref("Some two-way bound text");
+    const label = ref("Enter Some Text");
+    const maxLength = ref<number>(0);
+    const showCountDown = ref(false);
+    const isMultiline = ref(false);
+    const rows = ref<number>(0);
+    const size = ref<"small" | "medium" | "large">("medium");
+
+    const sizeOptions = [
+        { text: "Default", value: "medium" },
+        { text: "Small", value: "small" },
+        { text: "Large", value: "large" }
+    ];
+
+    const importCode = getSfcControlImportPath("textBox");
+    const exampleCode = computed(() => {
+        const modelProp = ` v-model="text"`;
+        const labelProp = ` label="${label.value}"`;
+        const maxLengthProp = maxLength.value > 0 ? ` maxLength="${maxLength.value}"` : "";
+        const showCountDownProp = showCountDown.value ? ` showCountDown` : "";
+        const isMultilineProp = isMultiline.value ? ` textMode="multiline"` : "";
+        const rowsProp = rows.value > 0 && isMultiline.value ? ` rows="${rows.value}"` : "";
+        const sizeProp = size.value !== "medium" ? ` size="${size.value}"` : "";
+
+        return `<TextBox${modelProp}${labelProp}${maxLengthProp}${showCountDownProp}${isMultilineProp}${rowsProp}${sizeProp} />`;
+    });
+</script>
