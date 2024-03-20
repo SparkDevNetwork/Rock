@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Threading.Tasks;
+
 using Rock.Attribute;
 
 namespace Rock.Blocks
@@ -39,6 +41,6 @@ namespace Rock.Blocks
         /// The returned text will be injected into the HTML page.
         /// </summary>
         /// <returns>A string that contains HTML markup.</returns>
-        string GetControlMarkup();
+        Task<string> GetControlMarkupAsync();
     }
 }
