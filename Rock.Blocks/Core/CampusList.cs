@@ -152,7 +152,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            var entityService = new CampusService( rockContext );
+            var entityService = new CampusService( RockContext );
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
@@ -177,7 +177,7 @@ namespace Rock.Blocks.Core
             }
 
             entityService.Delete( entity );
-            rockContext.SaveChanges();
+            RockContext.SaveChanges();
 
             return ActionOk();
         }
@@ -192,18 +192,18 @@ namespace Rock.Blocks.Core
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
             // Get the queryable and make sure it is ordered correctly.
-            var qry = GetListQueryable( rockContext );
-            qry = GetOrderedListQueryable( qry, rockContext );
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
 
             // Get the entities from the database.
-            var items = GetListItems( qry, rockContext );
+            var items = GetListItems( qry, RockContext );
 
             if ( !items.ReorderEntity( key, beforeKey ) )
             {
                 return ActionBadRequest( "Invalid reorder attempt." );
             }
 
-            rockContext.SaveChanges();
+            RockContext.SaveChanges();
 
             return ActionOk();
         }
