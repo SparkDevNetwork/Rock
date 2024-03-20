@@ -217,25 +217,25 @@
             <ModalAlert v-model="isSendNowModalVisible"
                         :type="sendNowModalAlertType">
 
-                <div v-if="sendNowResponse?.errors?.length">
+                <div v-if="anySendErrors">
                     One or more errors occurred when sending confirmations:
                     <ul>
-                        <li v-for="error in sendNowResponse.errors">
+                        <li v-for="error in sendNowResponse!.errors">
                             {{ error }}
                         </li>
                     </ul>
                 </div>
 
-                <div v-if="sendNowResponse?.warnings?.length">
+                <div v-if="anySendWarnings">
                     One or more warnings occurred when sending confirmations:
                     <ul>
-                        <li v-for="warning in sendNowResponse.warnings">
+                        <li v-for="warning in sendNowResponse!.warnings">
                             {{ warning }}
                         </li>
                     </ul>
                 </div>
 
-                <div v-html="sendNowOutcomeMessage"></div>
+                <div v-if="sendNowOutcomeMessage" v-html="sendNowOutcomeMessage"></div>
 
             </ModalAlert>
         </Panel>
@@ -466,23 +466,27 @@
         return navigationUrls.value?.[NavigationUrlKey.RosterPage] ?? null;
     });
 
-    const toSendCount = computed((): number => {
-        return sendNowResponse.value?.communicationsToSendCount ?? 0;
-    });
-
     const sentCount = computed((): number => {
         return sendNowResponse.value?.communicationsSentCount ?? 0;
     });
 
-    const failedToSendCount = computed((): number => {
-        return toSendCount.value - sentCount.value;
+    const anySendErrors = computed((): boolean => {
+        return !!sendNowResponse.value?.errors?.length;
+    });
+
+    const anySendWarnings = computed((): boolean => {
+        return !!sendNowResponse.value?.warnings?.length;
+    });
+
+    const anyCommunicationsToSend = computed((): boolean => {
+        return !!sendNowResponse.value?.anyCommunicationsToSend;
     });
 
     const sendNowModalAlertType = computed((): ModalAlertType => {
-        if (sendNowResponse.value?.errors?.length) {
+        if (anySendErrors.value) {
             return ModalAlertType.Alert;
         }
-        else if (sendNowResponse.value?.warnings?.length || failedToSendCount.value > 0) {
+        else if (anySendWarnings.value) {
             return ModalAlertType.Warning;
         }
 
@@ -490,25 +494,16 @@
     });
 
     const sendNowOutcomeMessage = computed((): string => {
-        const messageParts: string[] = [];
-
-        if (toSendCount.value === 0) {
-            messageParts.push("Everybody has already been sent a confirmation. No additional confirmations sent.");
-        }
-        else {
-            if (sentCount.value > 0) {
-                messageParts.push(`Successfully sent ${sentCount.value} ${pluralize("confirmation", sentCount.value)}.`);
-            }
-
-            if (failedToSendCount.value > 0) {
-                messageParts.push(`Failed to send ${failedToSendCount.value} ${pluralize("confirmation", failedToSendCount.value)}.`);
-            }
-        }
-
         let message = "";
-        messageParts.forEach((messagePart: string) => message += `<p>${messagePart}</p>`);
 
-        return message || "<p>Unknown error while trying to send confirmations.</p>";
+        if (sentCount.value > 0) {
+            message = `<p>Successfully sent ${sentCount.value} ${pluralize("confirmation", sentCount.value)}.</p>`;
+        }
+        else if (!anySendErrors.value && !anySendWarnings.value && !anyCommunicationsToSend.value) {
+            message = "<p>Everybody has already been sent a confirmation. No additional confirmations sent.</p>";
+        }
+
+        return message;
     });
 
     const isBusy = computed((): boolean => {

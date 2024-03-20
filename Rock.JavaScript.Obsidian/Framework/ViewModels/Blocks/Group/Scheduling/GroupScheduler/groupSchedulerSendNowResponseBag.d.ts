@@ -23,11 +23,11 @@
 
 /** The outcome of a request to send confirmation communications to scheduled individuals. */
 export type GroupSchedulerSendNowResponseBag = {
+    /** Gets or sets whether there are any communications to send. */
+    anyCommunicationsToSend: boolean;
+
     /** Gets or sets the count of communications sent. */
     communicationsSentCount: number;
-
-    /** Gets or sets the count of communications to send. */
-    communicationsToSendCount: number;
 
     /** Gets or sets the errors encountered while attempting to send communications. */
     errors?: string[] | null;
