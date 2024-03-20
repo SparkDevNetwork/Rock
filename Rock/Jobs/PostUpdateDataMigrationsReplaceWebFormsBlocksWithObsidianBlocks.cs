@@ -186,7 +186,7 @@ namespace Rock.Jobs
 
             // Register the attributes of the new block type in the database if not already registered.
             var newBlockTypes = BlockTypeGuidReplacementPairs.Values.Select( g => BlockTypeCache.Get( g ) ).ToList();
-            newBlockTypes.ForEach( b => b.MarkInstancePropertiesVerified( false ) ); // mark as unverified to ensure attributes are compiled.
+            newBlockTypes.ForEach( b => b.MarkInstancePropertiesVerified( false ) ); // mark as block type as unverified to ensure the block type attributes are registered.
             BlockTypeService.VerifyBlockTypeInstanceProperties( newBlockTypes.Select( b => b.Id ).ToArray() );
 
             foreach ( var blockTypeGuidPair in BlockTypeGuidReplacementPairs )
