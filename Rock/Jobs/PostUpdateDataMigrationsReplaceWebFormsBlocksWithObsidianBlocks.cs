@@ -22,9 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-using AngleSharp.Common;
-using AngleSharp.Text;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -106,7 +103,7 @@ namespace Rock.Jobs
             {
                 return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
-                    .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().SplitCommas().ToHashSet() );
+                    .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().Split( ',' ).ToHashSet() );
             }
         }
 
@@ -250,7 +247,7 @@ namespace Rock.Jobs
             var oldBlockTypeAttributeKeys = AttributeCache.GetByEntityTypeQualifier( blockEntityTypeId, "BlockTypeId", oldBlockTypeId.ToString(), false )
                 .Select( a => a.Key )
                 .ToHashSet( StringComparer.OrdinalIgnoreCase );
-            oldBlockTypeAttributeKeys.RemoveAll( BlockAttributeKeysToIgnore.GetOrDefault( oldBlockTypeGuid, new HashSet<string>() ) );
+            oldBlockTypeAttributeKeys.RemoveAll( BlockAttributeKeysToIgnore.GetValueOrDefault( oldBlockTypeGuid, new HashSet<string>() ) );
             var newBlockTypeAttributeKeys = AttributeCache.GetByEntityTypeQualifier( blockEntityTypeId, "BlockTypeId", newBlockTypeId.ToString(), false )
                 .Select( a => a.Key )
                 .ToHashSet( StringComparer.OrdinalIgnoreCase );
