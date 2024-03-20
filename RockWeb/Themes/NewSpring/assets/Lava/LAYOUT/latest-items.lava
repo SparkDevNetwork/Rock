@@ -1,0 +1,70 @@
+{% if Items and Items != empty %}
+
+{% comment %}
+    This loops through the items from the dataset and strips out anything that is future-dated or expired.
+{% endcomment %}
+{%- capture displayItemsString -%}
+    {%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
+    [{%- for item in Items -%}
+        {%- assign status = item.Status %}
+        {%- assign publishDateTime = item.PublishDateTime | Date:'yyyyMMddHHmmss' -%}
+        {%- assign expireDateTime = item.ExpireDateTime | Date:'yyyyMMddHHmmss' -%}
+        {%- if status == 2 and publishDateTime <= now and expireDateTime == null or status == 2 and publishDateTime <= now and expireDateTime > now  -%}
+            {{ item | ToJSON }},
+        {%- endif -%}
+    {%- endfor -%}]
+{%- endcapture -%}
+
+{% comment %}
+    This reassigns the results of the above filtered loop to the "Items" object that is used by the card list below.
+{% endcomment %}
+{% assign Items = displayItemsString | ReplaceLast:',', '' | StripNewlines | FromJSON %}
+
+
+{% assign channelItemsName = Items | First | Property:'ChannelName' | Split:' - ' | Index:1 %}
+{% assign channelUrl = Items | First | Property:'ChannelUrl' %}
+<section class="clearfix push-bottom xs-push-half-bottom">
+<div class="row soft-half-top soft-bottom xs-text-center">
+    <div class="col-xs-12 col-sm-6 col-md-6">
+        <h2 class="flush xs-push-half-ends">Latest {{ channelItemsName }}</h2>
+    </div><div class="col-xs-12 col-sm-6 col-md-6 text-right xs-text-center">
+        <a href="{{ channelUrl }}" class="btn btn-primary xs-push-half-bottom">More {{ channelItemsName }}</a>
+    </div>
+</div>
+<div class="row">
+    {% for item in Items limit:3 %}<div class="col-xs-12 col-sm-6 col-md-4">
+        {% assign guid = item.Guid %}
+        {% assign id = item.Id %}
+        {% assign dataset = item.Dataset %}
+        {% assign title = item.Title | Replace:"'","’" %}
+        {% assign titlesize = 'h4' %}
+        {% assign summary = item.Summary %}
+        {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | HtmlDecode | StripHtml | Replace:"'","’" }}{% else %}{{ item.Content | HtmlDecode | StripHtml | Truncate:140,'...' | Replace:"'","’" }}{% endif %}</p>{% endcapture %}
+        {% assign type = channelItemsName | Singularize %}
+        {%- capture communicators -%}{[ communicators dataset:'{{ item.Dataset }}' cciid:'{{ item.Id }}'  ]}{%- endcapture -%}
+        {% assign actualdate = item.ActualDate %}
+        {% capture subtitle %}{% if actualdate and actualdate != empty %}{[ formatDate date:'{{ actualdate }}']}{% else %}{[ formatDate date:'{{ item.PublishDateTime }}' ]}{% endif %}{% if communicators and communicators != empty %} &middot; {{ communicators }}{% endif %}{% endcapture %}
+        {% assign video = item.Video %}
+        {% assign imageurl = item.ImageLandscape %}
+        {% capture linkurl %}{{ item.Permalink }}{% endcapture %}
+        {% assign linktext = channelItemsName | Singularize | Prepend:' ' | Prepend:item.ChannelVerb %}
+
+        {% assign parentChannelId = item.ParentChannelId | AsInteger %}
+        {% assign parent = item.Parents | Where:'ChannelId', parentChannelId | First %}
+        {% if parent and parent != empty %}
+            {% assign parentItem = parent.Dataset | PersistedDataset | Where:'Id', parent.Id | First %}
+            {% if parentItem and parentItem != empty %}
+                {% assign collectiontext = parentItem.Title %}
+                {% assign collectionurl = parentItem.Permalink %}
+            {% endif %}
+        {% else %}
+            {% assign collectiontext = '' %}
+            {% assign collectionurl = '' %}
+        {% endif %}
+
+        {[ card guid:'{{ guid }}' id:'{{ id }}' cciid:'{{ id }}' dataset:'{{ dataset }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+    </div>{% endfor %}
+</div></section>
+
+{% endif %}

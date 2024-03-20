@@ -540,7 +540,6 @@ namespace Rock.Tests.Shared.Lava
 
             return result.Text;
         }
-
         /// <summary>
         /// Process the specified input template and return the result.
         /// </summary>

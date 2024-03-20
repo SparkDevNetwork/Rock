@@ -1,0 +1,28 @@
+<section data-column=""
+    class="h-screen w-screen px-2 flex items-center justify-center overflow-hidden"
+    style="background-color: #645ca0">
+    <div class="w-full text-center">
+        <!-- prettier-ignore -->
+        <video class="position-absolute h-full w-full top-0 left-0 object-cover"
+            style="height: 120%; opacity: .5;" autoplay playsinline muted loop
+            preload>
+            <source
+                src="/Themes/NewSpring/gauntlet/Gauntlet2023_Hero_v1Site.mp4">
+
+        </video>
+        <div id="hero-content"
+            class="bring-forward text-bible-page page-constrained soft-sides mx-auto">
+
+            <img src="/Themes/NewSpring/gauntlet/logo-desktop.svg"
+                alt="Gauntlet 2023 Logo"
+                class="mb-3 mt-5 hidden block-desktop px-5">
+            <img src="/Themes/NewSpring/gauntlet/logo-mobile.svg"
+                alt="Gauntlet 2023 Logo" class="mb-3 hidden-desktop px-3">
+
+            <div class="text-constrained mx-auto">
+                <p class="mb-0"><a href="#signup" data-scroll
+                        class="btn btn-primary">Get Early Access</a></p>
+            </div>
+        </div>
+    </div>
+</section>

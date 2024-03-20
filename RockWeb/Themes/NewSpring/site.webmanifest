@@ -1,0 +1,33 @@
+{
+  "display": "standalone",
+  "short_name": "NewSpring",
+  "name": "NewSpring Church",
+  "background_color": "#1c1c1c",
+  "theme_color": "#6bac43",
+  "icons": [
+    {
+      "src": "/Themes/NewSpring/Assets/Splash/manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Themes/NewSpring/Assets/Splash/manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/Themes/NewSpring/Assets/Splash/manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Themes/NewSpring/Assets/Splash/manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

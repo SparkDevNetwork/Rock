@@ -202,7 +202,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Implement this method to provide a Liquid framework-specific instance of a new render context. 
+        /// Implement this method to provide a Liquid framework-specific instance of a new render context.
         /// </summary>
         /// <returns></returns>
         protected abstract ILavaRenderContext OnCreateRenderContext();

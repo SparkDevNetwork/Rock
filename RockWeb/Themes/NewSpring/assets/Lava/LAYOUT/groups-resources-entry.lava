@@ -1,0 +1,14 @@
+{% assign resourceId = 'Global' | PageParameter:'ResourceId' %}
+{% assign resourceUrl = 'Global' | PageParameter:'ResourceUrl' %}
+
+{% contentchannelitem where:'Id == {{ resourceId }}' iterator:'items' %}
+  {% assign item = items | First %}
+{% endcontentchannelitem %}
+
+{% if item and item != empty and resourceUrl != empty %}
+
+  {% interactioncontentchannelitemwrite contentchannelitemid:'{{ resourceId }}' operation:'View' summary:'Viewed {{ item.Title }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' %}
+
+  {{ resourceUrl | PageRedirect }}
+
+{% endif %}

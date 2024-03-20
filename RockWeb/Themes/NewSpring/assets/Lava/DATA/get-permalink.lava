@@ -1,0 +1,64 @@
+//- Determine if this item's channel has a primary parent channel
+{%- capture permalink -%}
+    {%- assign cciid = cciid | AsInteger -%}
+    {%- sql -%}
+        SELECT pcc.[Id]
+        FROM Attribute a
+        JOIN AttributeValue av ON a.[Id] = av.[AttributeId]
+        JOIN ContentChannel cc ON av.[EntityId] = cc.[Id]
+        JOIN ContentChannelItem cci ON cci.[ContentChannelId] = cc.[Id]
+        JOIN ContentChannel pcc ON av.[Value] = convert(nvarchar(50), pcc.[Guid])
+        WHERE a.[Key] = 'PrimaryParentChannel'
+        AND a.[EntityTypeId] = 209
+        AND cci.[Id] = {{ cciid | ToJSON }}
+    {%- endsql -%}
+    {%- assign pccid = results | First | Property:'Id' -%}
+    {%- if pccid and pccid != empty -%}
+        //- Item has a primary parent channel
+        {%- sql -%}
+            SELECT
+                cc.ChannelUrl + '/' as 'channelurl',
+                pccis.Slug + '/' + ccis.Slug 'slug'
+            FROM ContentChannelItem cci
+            JOIN ContentChannel cc
+            ON cci.ContentChannelId = cc.Id
+            JOIN ContentChannelItemSlug ccis
+            ON cci.Id = ccis.ContentChannelItemId
+            JOIN ContentChannelItemAssociation ccia
+            ON ccia.ChildContentChannelItemId = cci.Id
+            JOIN ContentChannelItem pcci
+            ON ccia.ContentChannelItemId = pcci.Id
+            JOIN ContentChannelItemSlug pccis
+            ON pccis.ContentChannelItemId = pcci.Id
+            WHERE cci.Id = {{ cciid }}
+            AND pcci.ContentChannelId = {{ pccid | ToJSON }}
+        {%- endsql -%}
+        {%- for result in results -%}
+            {%- if urlprefix and urlprefix != empty -%}
+                {{ urlprefix }}{{ result.slug }}
+            {%- else -%}
+                {{ result.channelurl }}{{ result.slug }}
+            {%- endif -%}
+        {%- endfor -%}
+    {%- else -%}
+        //- Item has no primary parent channel
+        {%- sql -%}
+            SELECT
+                cc.ChannelUrl + '/' as 'channelurl',
+                ccis.Slug 'slug'
+            FROM ContentChannelItem cci
+            JOIN ContentChannel cc
+            ON cci.ContentChannelId = cc.Id
+            JOIN ContentChannelItemSlug ccis
+            ON cci.Id = ccis.ContentChannelItemId
+            WHERE cci.Id = {{ cciid | ToJSON }}
+        {%- endsql -%}
+        {%- for result in results -%}
+            {%- if urlprefix and urlprefix != empty -%}
+                {{ urlprefix }}{{ result.slug }}
+            {%- else -%}
+                {{ result.channelurl }}{{ result.slug }}
+            {%- endif -%}
+        {%- endfor -%}
+    {%- endif -%}
+{%- endcapture -%}{{ permalink | Trim }}

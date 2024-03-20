@@ -1,0 +1,49 @@
+// Layout
+
+html { 
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	background-color: @gray-dark;
+}
+
+body { 
+	background-color: @gray-dark;
+}
+
+.split {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 50%;
+
+	&.split-left {
+		left: 0;
+	}
+
+	&.split-right {
+		right: 0;
+	}
+
+	@media (max-width: @screen-sm-max) {
+		position: relative;
+		top: auto;
+		right: auto;
+		bottom: auto;
+		left: auto;
+		width: 100%;
+    	display: block;
+    	border-bottom: 1px solid rgba(0,0,0,.1);
+
+		&:before{
+	        content: "";
+	        display: block;
+	        padding-top: 100%;
+	    }
+	}
+
+	@media (max-width: @screen-sm-min) {
+		&:before {
+			padding-top: 100%;
+		}
+	}
+}

@@ -1,0 +1,313 @@
+{% comment %}
+    Redirect if item is expired
+{% endcomment %}
+{% assign itemId = Item.Id | AsInteger %}
+{% assign CurrentPersonCanEdit = itemId | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
+{% assign now = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign publishDateTime = Item.PublishDateTime | Date:'yyyyMMddHHmm' %}
+{% assign expireDateTime = Item.ExpireDateTime | Date:'yyyyMMddHHmm' %}
+
+{% if Item == null %}
+    {% if CurrentPersonCanEdit %}
+        <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+    {% else %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+{% endif %}
+
+{% if Item.ChannelId == 17 %}
+    {% if expireDateTime and expireDateTime != empty and expireDateTime <= now %}
+        {% if CurrentPersonCanEdit %}
+            <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+        {% else %}
+            {{ '/page-not-found' | PageRedirect }}
+        {% endif %}
+    {% endif %}
+{% else %}
+    {% if publishDateTime > now or expireDateTime and expireDateTime != empty and expireDateTime <= now %}
+        {% if CurrentPersonCanEdit %}
+            <p class="alert alert-danger">If you could not edit you would be redirected to <a href="/page-not-found">/page-not-found</a> as this entry is not active.</p>
+        {% else %}
+            {{ '/page-not-found' | PageRedirect }}
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+{% if Item and Item != empty and Item != null %}
+
+    {% comment %}
+        Write content channel item interaction
+    {% endcomment %}
+    {% assign currentUrl = 'Global'| Page:'Url' %}
+    {% assign siteId = 'Global' | Page:'SiteId' %}
+    {% assign source = 'Global'| PageParameter:'utm_source' %}
+    {% assign medium = 'Global'| PageParameter:'utm_medium' %}
+    {% assign campaign = 'Global'| PageParameter:'utm_campaign' %}
+    {% interactionwrite channeltypemediumvalueid:'906' channelentityid:'{{ Item.ChannelId }}' channelname:'{{ Item.ChannelName }}' componententitytypeid:'209' componententityid:'{{ Item.Id }}' componentname:'{{ Item.Title }}' operation:'View' summary:'Viewed "{{ Item.Title }}"' channelcustom1:'{{ siteId }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' source:'{{ source }}' medium:'{{ medium }}' campaign:'{{ campaign }}' %}{{ currentUrl }}{% endinteractionwrite %}
+
+    {% comment %}
+        Set item properties
+    {% endcomment %}
+    {% capture date %}{[ formatDate date:'{{ Item.PublishDateTime }}' ]}{% endcapture %}
+    {% capture tags %}{[ tags dataset:'{{ Item.Dataset }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}
+    {% assign tags = tags | Trim %}
+    {% capture communicators %}{[ communicators dataset:'{{ Item.Dataset }}' cciid:'{{ Item.Id }}' ]}{% endcapture %}
+    {% capture scripturereferences %}{% for scripture in Item.Scriptures %}{{ scripture.Book }} {{ scripture.Reference }}{% unless forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
+    {% assign scripturereferences = scripturereferences | Trim %}
+    {% assign itemsManuallyOrdered = Item.ItemsOrderedManually %}
+
+    {% comment %}
+        Set parent properties
+    {% endcomment %}
+    {% if Item.Parents != null %}
+        {% assign parentChannelId = Item.ParentChannelId | AsInteger %}
+        {% assign parentItem = Item.Parents | Where:'ChannelId', parentChannelId | First %}
+        {% assign parentItem = parentItem.Dataset | PersistedDataset | Where:'Id',parentItem.Id | First %}
+        {% assign itemsManuallyOrdered = parentItem.ChildItemsOrderedManually %}
+        {% assign parentImage = parentItem.ImageLandscape %}
+        {% capture parentPermalink %}{[ getPermalink cciid:'{{ parentItem.Id }}' ]}{% endcapture %}
+
+        {% if showfuturecontent == 'true' %}
+            {% assign totalChildren = parentItem.Children | Size %}
+        {% else %}
+            {% assign now = 'Now' | Date:'yyyyMMddTHHmmss' %}
+            {% capture publishedItems -%}[
+                {%- for child in parentItem.Children -%}
+                    {% assign publishedComparable = child.PublishDateTime | Date:'yyyyMMddTHHmmss' %}
+                    {%- if publishedComparable <= now -%}
+                        {{ child | ToJSON | Append:',' }}
+                    {%- endif -%}
+                {%- endfor -%}
+            ]{%- endcapture %}
+            {% assign publishedItemsObject = publishedItems | FromJSON %}
+            {% assign totalChildren = publishedItemsObject | Size %}
+        {% endif %}
+
+        {% comment %}
+            Write parent interaction
+        {% endcomment %}
+        {% interactionwrite channeltypemediumvalueid:'906' channelentityid:'{{ parentItem.ChannelId }}' channelname:'{{ parentItem.ChannelName }}' componententitytypeid:'209' componententityid:'{{ parentItem.Id }}' componentname:'{{ parentItem.Title }}' operation:'View' summary:'Viewed "{{ parentItem.Title }}"' channelcustom1:'{{ siteId }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' source:'{{ source }}' medium:'{{ medium }}' campaign:'{{ campaign }}' %}{{ currentUrl }}{% endinteractionwrite %}
+
+    {% endif %}
+
+    {% comment %}
+        Set page/browser titles
+    {% endcomment %}
+    {% assign pagePath = 'Global' | Page:'Path' %}
+    {% assign orgName = 'Global' | Attribute:'OrganizationName' %}
+    {% capture browserTitle %}{{ Item.Title }}{% if parentTitle and parentTitle != empty %} | {{ parentTitle }}{% endif %} | {{ Item.ContentType | Pluralize }} | {% if pagePath contains '/fuse/' %}Fuse | {% endif %}{{ orgName }}{% endcapture %}
+
+    {{ browserTitle | SetPageTitle:'BrowserTitle' }}
+    {{ Item.ContentType | SetPageTitle:'PageTitle' }}
+
+    {% comment %}
+        Set page background color from parent property
+    {% endcomment %}
+    {% assign parentBackgroundColor = parentItem.BackgroundColor %}
+    {% if parentBackgroundColor != empty %}
+        <style>
+            .brand-bg {
+                background-color: {{ parentBackgroundColor }};
+            }
+        </style>
+    {% endif %}
+
+
+    {% comment %}
+        Calculate prev/next entry links
+    {% endcomment %}
+    {% if itemsManuallyOrdered == 'true' %}
+        {% assign currentSlug = 'Global' | PageParameter:'Slug' %}
+        {% assign itemIndex = parentItem.Children | Where:'Slug', currentSlug | Select:'Index' | First | Plus:1 %}
+        {% assign prevIndex = itemIndex | Minus:2 %}
+        {% assign nextIndex = itemIndex %}
+
+        {% if itemIndex and itemIndex != empty %}
+            {% assign label = itemIndex | Prepend:'Session '%}
+        {% endif %}
+    {% endif %}
+
+    {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+    {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
+
+        <div class="md-text-constrained md-mx-auto panel overflow-hidden">
+            <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom hard-bottom">
+
+                {% if label and label != empty %}
+                    <p><small class="label bg-gray-light sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
+                {% endif %}
+
+                <h1 class="h2 xs-h3 push-half-bottom xs-push-half-bottom">{{ Item.Title }}</h1>
+
+                {% if parentItem and parentItem != empty %}
+                    <small class="display-inline-block sans-serif stronger letter-spacing-condensed push-bottom">From {% if parentPermalink != empty %}<a href="{{ parentPermalink }}">{% endif %}{{ parentItem.Title }}{% if parentPermalink != empty %}</a>{% endif %}</small>
+                {% endif %}
+
+                {% if Item.Subtitle != empty %}
+                    <p class="lead text-gray-light"><i>{{ Item.Subtitle }}</i></p>
+                {% endif %}
+
+                {% if communicators and communicators != '' %}
+                    <p class="stronger">{{ communicators }}</p>
+                {% endif %}
+
+                {% if Item.ImageLandscape and Item.ImageLandscape != empty %}
+                    <div class="ratio-landscape background-cover push-bottom rounded" style="background-image:url('{{ Item.ImageLandscape }}');"></div>
+                {% endif %}
+
+                {%  if scripturereferences and scripturereferences != empty %}
+                    <div class="text-center soft-ends">
+                        <h2 class="h3 flush">Read</h2>
+                        <p class="lead">{{ scripturereferences }}</p>
+                    </div>
+                {% endif %}
+
+                {% if Item.Video != empty %}
+                    <p id="video" class="text-center">
+                        {[ wistiaButton id:'{{ Item.Video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'{{ Item.Id }}' entitytypeid:'' entityid:'' ]}
+                    </p>
+                {% endif %}
+
+                {{ Item.Content | HtmlDecode }}
+
+                <div class="push-bottom">
+                    <div class="row row-condensed">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <a href="#" data-toggle="modal" data-target="#share-modal" class="btn btn-block btn-default text-gray-dark text-decoration-none xs-push-half-bottom" data-share=""><i class="fas fa-fw fa-share"></i> Share</a>
+                        </div>
+                    </div>
+                </div>
+
+                {% if subscribeLinkUrl and subscribeLinkUrl != empty %}
+                    <div class="well soft-ends text-center push-bottom">
+                        <h3>{{ subscribeHeading }}</h3>
+                        <p>{{ subscribeText }}</p>
+                        <a href="{{ subscribeLinkUrl }}" class="btn btn-default shadowed text-gray-dark text-decoration-none" target="_blank"><i class="fas fa-fw fa-bell"></i> {{ subscribeLinkText }}</a>
+                    </div>
+                {% endif %}
+
+                {%- comment -%}
+                    Entry navigation
+                {%- endcomment -%}
+                {% if itemsManuallyOrdered == 'true' %}
+                    <div class="row flush-sides push-bottom xs-push-half-bottom">
+                        <div class="col-xs-4 col-sm-4 col-md-4 hard">
+                            {% if itemIndex and itemIndex != 0 %}<a href="{{ parentItem.Children | Index:prevIndex | Property:'Slug' }}" class="btn xs-btn-sm btn-primary xs-push-half-bottom"><i class="fas fa-angle-left"></i> Prev</a>{% endif %}
+                        </div><div class="col-xs-4 col-sm-4 col-md-4 text-center hard">
+                            <p class="text-gray-light flush"><i>{{ itemIndex }} of {{ totalChildren }}</i></p>
+                        </div><div class="col-xs-4 col-sm-4 col-md-4 text-right hard">
+                            {% if itemIndex and itemIndex != totalChildren %}<a href="{{ parentItem.Children | Index:nextIndex | Property:'Slug' }}" class="btn xs-btn-sm btn-primary xs-push-half-bottom">Next <i class="fas fa-angle-right"></i></a>{% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% comment %}
+                    Define data for social sharing modal
+                {% endcomment %}
+                {% assign itemToken = 'cci' | Append:Item.ChannelId | Append:Item.Id %}
+                {% assign shareurl = 'Global' | Page:'Url' | CreateShortLink:itemToken, 18, true, 7 %}
+                {% assign shareimageurl = Item.ImageLandscape %}
+                {% assign shareauthor = 'newspring' %}
+                {% assign sharetitle = Item.Title %}
+                {%- capture sharesummary -%}
+                    {% if Item.Summary and Item.Summary != empty %}
+                        {{ Item.Summary | StripHtml | HtmlDecode | Truncate:150,'...' }}
+                    {% else %}
+                        {{ Item.Content | StripHtml | HtmlDecode | Truncate:150,'...' }}
+                    {% endif %}
+                {%- endcapture -%}
+                {% assign sharehashtag = '' %}
+
+                {[ modalShare ]}
+
+                {% comment %}
+                    Display date/tags if they should be visible
+                {% endcomment %}
+                {% if Item.IsDateVisible == 'Yes' %}
+                    {% if tags and tags != empty %}
+                        <div class="row push-bottom xs-push-half-bottom">
+                            <div class="col-md-6 col-sm-6 col-xs-12 xs-text-center">
+                                {{ tags }}
+                            </div><div class="col-md-6 col-sm-6 col-xs-12 text-right xs-text-center">
+                                <p class="flush"><small><b>{{ date }}</b></small></p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="row push-bottom xs-push-half-bottom">
+                            <div class="col-md-12 col-sm-12 col-xs-12 text-center xs-text-center">
+                                <p class="flush"><small><b>{{ date }}</b></small></p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% if tags and tags != empty and tags != '' %}
+                        <div class="row push-bottom xs-push-half-bottom">
+                            <div class="col-xs-12 text-center">
+                                {{ tags }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+            </div>
+        </div>
+
+    {[ endscripturize ]}
+
+    {% comment %}
+        Setup structured data JSON
+    {% endcomment %}
+    <!-- Content Structured Data -->
+    {% capture tagsData %}{% for tag in Item.Tags %}{{ tag.Name }}{% unless forloop.last %},{% endunless %}{% endfor %}{% endcapture %}
+    <script type="application/ld+json">
+    {
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "{{ 'Global' | Attribute:'OrganizationName' }}",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://newspring.cc/GetImage.ashx?id=661329"
+        }
+    },
+    "author": {
+        "@type": "{% if communicators and communicators != empty and communicators != '' %}Person{% else %}Organization{% endif %}",
+        "name": "{% if communicators and communicators != empty and communicators != '' %}{{ communicators | Trim }}{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %}"
+    },
+    {% if tagsData and tagsData != empty %}
+        "keywords": "{{ tagsData }}",
+    {% endif %}
+    "headline": "{{ Item.Title | Escape }}",
+    {% if Item.Summary and Item.Summary != empty %}
+        "description": "{{ Item.Summary | HtmlDecode | StripHtml | Escape }}",
+    {% endif %}
+    "articleBody": "{{ Item.Content | HtmlDecode | StripHtml | Escape }}",
+    {% if Item.Subtitle and Item.Subtitle != empty %}
+        "alternativeHeadline": "{{ Item.Subtitle }}",
+    {% endif %}
+
+    "datePublished": "{{ Item.PublishDateTime }}",
+    "dateModified": "{{ Item.ModifiedDateTime }}",
+    {% if Item.ExpireDateTime %}
+    "expires": "{{ Item.ExpireDateTime }}",
+    {% endif %}
+
+    {% if Item.ImageLandscape and Item.ImageLandscape != empty %}
+        "image": "{{ Item.ImageLandscape }}",
+    {% endif %}
+    "mainEntityOfPage": "{{ 'Global' | Page:'Url' }}",
+    "name": "{{ Item.Title | Escape }}"
+    }
+    </script>
+
+    {% comment %}
+        Define data to be used for meta tags
+    {% endcomment %}
+    {% capture title %}{% if Item.MetaTitle and Item.MetaTitle != empty %}{{ Item.MetaTitle }}{% else %}{{ Item.Title }}{% endif %}{% endcapture %}
+
+    {% capture description %}{% if Item.MetaDescription and Item.MetaDescription != empty %}{{ Item.MetaDescription }}{% elseif Item.Summary and Item.Summary != empty %}{{ Item.Summary | HtmlDecode | StripHtml | StripNewlines }}{% else %}{{ Item.Content | HtmlDecode | StripHtml | StripNewlines | Truncate:240,'...' }}{% endif %}{% endcapture %}
+
+    {[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ title | Replace:"'","’" | Replace:"New Spring","NewSpring" }}' description:'{{ description | Replace:"'","’" }}' image:'{{ Item.ImageLandscape }}' article_published_time:'{{ Item.PublishDateTime | Date:'yyyy-MM-dd' }}' video:'{% if Item.Video and Item.Video != empty %}https://fast.wistia.net/embed/iframe/{{ Item.Video }}?videoFoam=true{% endif %}' article_author:'{{ communicators | Trim }}' ]}
+
+{% endif %}

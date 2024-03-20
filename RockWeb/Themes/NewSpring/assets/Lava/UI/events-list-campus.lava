@@ -1,0 +1,9 @@
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' %}
+
+<section class="bg-gray-dark soft-double-ends soft-sides xs-soft-half-sides push-bottom xs-push-half-bottom rounded shadowed">
+  <h2 class="text-center text-white push-top xs-flush-top">Upcoming Events</h2>
+
+  {[ eventsList limit:'{{ limit }}' ]}
+
+  <p class="text-center push-half-top flush-bottom"><a href="/events?campus={{ campusSlug }}" class="btn btn-primary">See All Events</a></p>
+</section>

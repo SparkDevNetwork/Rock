@@ -1,0 +1,127 @@
+{% assign status = 'Global' | PageParameter:'status' %}
+
+<!-- Location Select Values -->
+{% assign dateKey = 'Now' | Date:'yyyyMMdd' %}
+//- {% assign dateKey = '20240107' | Date:'yyyyMMdd' %}
+{% assign campusGuid = Context.Campus.Guid %}
+{% assign scheduleId = Context.Schedule.Id %}
+{% assign locationId = 'Global' | PageParameter:'LocationId' %}
+
+//- Get Attendance Occurrences
+{% sql datekey:'{{ dateKey }}' campusguid:'{{ campusGuid }}' scheduleid:'{{ scheduleId }}' %}
+SELECT
+    l.[Id]
+    ,   l.[Name]
+    ,   ao.[Id] AS [OccurrenceId]
+    ,   (
+        SELECT COUNT(*)
+        FROM [Attendance] a
+        LEFT JOIN [AttributeValue] av2 ON av2.[EntityId] = a.[Id] AND av2.[AttributeId] = 157200
+        WHERE a.[OccurrenceId] = ao.[Id]
+        AND a.[DidAttend] = 1
+        AND a.[EndDateTime] IS NULL -- Not Checked Out
+        AND (
+            av2.[Value] IS NULL
+            OR av2.[Value] = ''
+        )
+    ) AS [NotMarkedSafe]
+    ,   (
+        SELECT COUNT(*)
+        FROM [Attendance] a
+        LEFT JOIN [AttributeValue] av2 ON av2.[EntityId] = a.[Id] AND av2.[AttributeId] = 157200
+        WHERE a.[OccurrenceId] = ao.[Id]
+        AND a.[DidAttend] = 1
+        AND a.[EndDateTime] IS NULL -- Not Checked Out
+        AND av2.[Value] IS NOT NULL
+    ) AS [MarkedSafe]
+    ,   (
+        SELECT COUNT(*)
+        FROM [Attendance] a
+        WHERE a.[OccurrenceId] = ao.[Id]
+        AND a.[DidAttend] = 1
+        AND a.[EndDateTime] IS NOT NULL
+    ) AS [CheckedOut]
+FROM [AttendanceOccurrence] ao
+JOIN [Location] l ON ao.[LocationId] = l.[Id]
+JOIN [Group] g ON ao.[GroupId] = g.[Id]
+JOIN [Campus] c ON g.[CampusId] = c.[Id]
+WHERE ao.[OccurrenceDateKey] = @datekey
+AND g.[GroupTypeId] IN (
+    85 -- Nursery Attendee
+    ,   87 -- Preschool Attendee
+    ,   81 -- Elementary Attendee
+    ,   90 -- Special Needs Attendee
+)
+AND ao.[ScheduleId] = @scheduleid
+AND c.[Guid] = @campusguid
+ORDER BY CASE
+    WHEN g.[GroupTypeId] = 85 THEN 1
+    WHEN g.[GroupTypeId] = 87 THEN 2
+    WHEN g.[GroupTypeId] = 81 THEN 3
+    WHEN g.[GroupTypeId] = 90 THEN 4
+END
+, g.[Name]
+{% endsql %}
+
+{% assign currentLocation = results | Where:'Id',locationId | First %}
+<div class="d-flex flex-column flex-md-row gap-2 mt-3">
+    <div class="bg-primary text-medium shadow rounded-lg">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+        <select name="" id="" class="select-unstyled flex-grow-1 px-3 py-2" data-filter="location">
+            <option value="" disabled>Select a Location</option>
+            {% for result in results %}
+            <option value="{{ result.Id }}" {% if result.Id == locationId %}selected{% endif %}>{{ result.Name }}</option>
+            {% endfor %}
+        </select>
+        <i class="fas fa-caret-down mr-3"></i>
+        </div>
+    </div>
+
+    <div class="bg-primary text-medium shadow rounded-lg">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+        <select name="" id="" class="select-unstyled flex-grow-1 px-3 py-2" data-filter="status">
+            <option value="" {% if status == empty %}selected {% endif %}>Not Marked Safe ({{ currentLocation.NotMarkedSafe }})</option>
+            <option value="marked" {% if status == 'marked' %}selected{% endif %}>Marked Safe ({{ currentLocation.MarkedSafe }})</option>
+            <option value="checkedOut" {% if status == 'checkedOut' %}selected{% endif %}>Checked Out ({{ currentLocation.CheckedOut }})</option>
+        </select>
+        <i class="fas fa-caret-down mr-3"></i>
+        </div>
+    </div>
+</div>
+  <style>
+    .select-unstyled {
+      -webkit-appearance: none;
+      background-color: transparent;
+      border: 0;
+      outline: 0;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+        const currentUrl = window.location.href.split('?')[0].replace('#','');
+        const urlParams = new URLSearchParams(window.location.search);
+        const baseUrl = window.location.href.split('/evacuation/')[0] + '/evacuation/';
+        const filterElementLocation = document.querySelector("[data-filter='location']");
+        const filterElementStatus = document.querySelector("[data-filter='status']");
+
+        filterElementLocation.addEventListener('change', function() {
+            window.location.href = baseUrl + filterElementLocation.value;
+        });
+
+        filterElementStatus.addEventListener('change', function() {
+            let newUrl = currentUrl;
+
+            if(filterElementStatus.value) {
+                urlParams.set("status", filterElementStatus.value);
+                newUrl = currentUrl + '?' + urlParams.toString();
+            } else {
+                urlParams.delete("status");
+            }
+
+            window.location.href = newUrl;
+         });
+
+
+    }, false);
+</script>

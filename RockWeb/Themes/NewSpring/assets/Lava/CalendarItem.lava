@@ -1,0 +1,185 @@
+{% assign event = 'events' | PersistedDataset | Where:'Id',EventItemOccurrence.Id | First %}
+{% assign fallbackImage = 'Global' | Attribute:'EventsImageLandscape','Url' %}
+{% assign eventImage = event.ImageLandscape | Default:fallbackImage %}
+{% assign campusId = EventItemOccurrence.Campus.Id | AsInteger %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Id',campusId | First %}
+
+{% if Event.Summary != '' %}
+  {{ Event.Summary | AddMetaTagToHead:'name','description' }}
+{% endif %}
+
+{{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
+{{ Event.Name | AddMetaTagToHead:'property','twitter:title' }}
+{{ Event.Description | AddMetaTagToHead:'property','twitter:description' }}
+
+{{ Event.Name | AddMetaTagToHead:'property','og:title' }}
+{{ Event.Description | AddMetaTagToHead:'property','og:description' }}
+
+{% if eventImage %}
+  {{ eventImage | AddMetaTagToHead:'property','og:image' }}
+  {{ eventImage | AddMetaTagToHead:'property','twitter:image' }}
+{% endif %}
+
+{% assign eventName = Event | Attribute:'PublicEventName' | Default:Event.Name %}
+
+<div class="container-fluid" data-column="none">
+
+  <div class="row flush-sides">
+    <div class="col-md-8 col-xs-12 margin-b-md">
+      {% if Event.Description and Event.Description != empty %}
+        <div class="bg-white soft xs-soft-half hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
+          {{ Event.Description }}
+        </div>
+      {% endif %}
+
+    </div><div class="col-md-4 col-xs-12">
+
+      <div class="bg-white soft xs-soft-half hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
+
+        {% assign note = EventItemOccurrence.Note | StripHtml | StripNewlines | Trim %}
+        {% if note and note != '' %}
+          <h4 class="push-half-bottom">Additional Information</h4>
+          {{ EventItemOccurrence.Note }}
+        {% endif %}
+
+        {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
+        {% assign datesCount = scheduledDates | Size %}
+        <h4 class="push-half-bottom">Date{% if datesCount > 1 %}s{% endif %} & Time{% if datesCount > 1 %}s{% endif %}</h4>
+        <ul class="list-unstyled">
+        {% for scheduledDate in scheduledDates limit:5 %}
+          {% assign datetime = scheduledDate | Date:'HHmm' %}
+          <li>{[ formatDate date:scheduledDate ]}{% if datetime != '0000' %} at <span class="text-lowercase">{{ scheduledDate | Date:'h:mmtt' | Replace:':00','' }}</span>{% endif %}</li>
+        {% endfor %}
+        </ul>
+
+        <h4 class="push-half-bottom">Location</h4>
+        <p>
+          {% if event.Campus.Name and event.Campus.Name != empty %}<a href="/locations/{{ event.Campus.Name | Downcase | Replace:' ','-' }}">{% endif %}
+            {{ event.Campus.Name | Prepend:'NewSpring ' | Default:'All Campuses' }}
+          {% if event.Campus.Name and event.Campus.Name != empty %}</a>{% endif %}
+        </p>
+        {% if EventItemOccurrence.Location != '' %}
+          <p>{{ EventItemOccurrence.Location }}</p>
+        {% endif %}
+
+        {% if EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+          {% assign phone = EventItemOccurrence.ContactPhone | Trim %}
+          {% assign email = EventItemOccurrence.ContactEmail | Trim %}
+        {% elseif campus.PhoneNumber != '' or campus.Email != '' %}
+          {% assign phone = campus.PhoneNumber | Trim %}
+          {% assign email = campus.Email | Trim %}
+        {% endif %}
+
+        {% if phone != '' or email != '' %}
+          <h4 class="push-half-bottom">Contact</h4>
+
+          <p>
+            {% if EventItemOccurrence.ContactPersonAliasId != null %}
+            <b>{{ EventItemOccurrence.ContactPersonAlias.Person.FullName }}</b><br />
+            {% endif %}
+
+            {% if email != '' %}
+            <a href="mailto:{{ email }}">{{ email }}</a> <br />
+            {% endif %}
+
+            {% if phone != '' %}
+              <a href="tel:+1{{ phone | Remove:'-' }}">{{ phone | Prepend:'(' | ReplaceFirst:'-',') ' }}</a>
+            {% endif %}
+          </p>
+        {% endif %}
+
+        {% assign eventItemOccurrenceLinkages = EventItemOccurrence.Linkages %}
+        {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
+        {% if eventItemOccurrenceLinkagesCount > 0 %}
+          {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
+              {% if eventItemOccurrenceLinkage.RegistrationInstance != null and eventItemOccurrenceLinkage.RegistrationInstance.IsActive == true %}
+
+                {% if headingDisplayed != true %}
+                  <h4 class="push-half-bottom">Registration</h4>
+                {% endif %}
+                {% assign headingDisplayed = true %}
+
+                {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
+                {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
+                {% assign showRegistration = true %}
+                {% assign registrationMessage = '' %}
+
+                {% if daysTillStartDate and daysTillStartDate > 0 %}
+                    {% assign showRegistration = false %}
+                    {% if eventItemOccurrenceLinkagesCount == 1 %}
+                      {% capture registrationMessage %}<p>Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                    {% else %}
+                      {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                    {% endif %}
+                {% endif %}
+
+                {% if daysTillEndDate and daysTillEndDate < 0 %}
+                    {% assign showRegistration = false %}
+                    {% if eventItemOccurrenceLinkagesCount == 1 %}
+                      {% capture registrationMessage %}<p>Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                    {% else %}
+                      {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                    {% endif %}
+                {% endif %}
+
+                {% if showRegistration == true %}
+                    {% assign statusLabel = RegistrationStatusLabels[eventItemOccurrenceLinkage.RegistrationInstanceId] %}
+                    {% if eventItemOccurrenceLinkagesCount == 1 %}
+                      {% assign registrationButtonText = statusLabel %}
+                    {% else %}
+                      {% assign registrationButtonText = statusLabel | Append:' for ' | Append:eventItemOccurrenceLinkage.PublicName %}
+                    {% endif %}
+
+                    {% if statusLabel == 'Full' %}
+                        {% if eventItemOccurrenceLinkagesCount == 1 %}
+                          {% assign registrationButtonText = 'Registration Full' %}
+                        {% else %}
+                          {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Append:' (Registration Full) ' %}
+                        {% endif %}
+                        <div class='label label-default text-center margin-t-md' style='display: block; padding: 8px;'>{{ registrationButtonText }}</div>
+                    {% else %}
+                        {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
+                            <p><a href='{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{eventItemOccurrenceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a></p>
+                        {% else %}
+                            <p><a href="{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-block margin-t-md">{{ registrationButtonText }}</a></p>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                  <p>{{ registrationMessage }}</p>
+                {% endif %}
+              {% endif %}
+          {% endfor %}
+        {% endif %}
+
+
+        <h4 class="push-half-bottom">Share This</h4>
+        <script>function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
+        <script>function ics_click(e) { e.preventDefault(); text = `{{ EventItemOccurrence.Schedule.iCalendarContent }}`.replace('END:VEVENT', 'SUMMARY: {{ eventName }}\r\nLOCATION: {{ EventItemOccurrence.Location }}\r\nEND:VEVENT'); var element = document.createElement('a'); element.setAttribute('href', 'data:text/calendar;charset=utf-8,' + encodeURIComponent(text)); element.setAttribute('download', '{{ eventName }}.ics'); element.style.display = 'none'; document.body.appendChild(element); element.click(); document.body.removeChild(element); }</script>
+        <ul class="socialsharing">
+          <li>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" title="" data-original-title="Share via Facebook">
+              <i class="fab fa-lg fa-fw fa-facebook text-facebook"></i>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" title="" data-original-title="Share via Twitter">
+              <i class="fab fa-lg fa-fw fa-twitter text-twitter"></i>
+            </a>
+          </li>
+          <li>
+            <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' | EscapeDataString }}" title="Share via Email" data-original-title="Share via Email">
+              <i class="fas fa-lg fa-fw fa-envelope text-gray"></i>
+            </a>
+          </li>
+          <li>
+            <a href="" onclick="return ics_click(event);" title="Download Event" data-original-title="Download Event">
+              <i class="fas fa-lg fa-fw fa-calendar text-danger"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+</div>

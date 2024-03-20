@@ -1,0 +1,129 @@
+{% assign pagePath = 'Global' | Page:'Path' %}
+{% assign lastSegment = 'Global' | Page:'Path' | Split:'/' | Last %}
+{% assign staffTeams = 'staff_teams' | PersistedDataset %}
+
+{% if lastSegment == 'staff' %}
+    {% assign group = staffTeams | Where:'Id',2069928 | First %}
+    {% assign groupName = 'Lead Pastors' %}
+    {% assign members = group.Members %}
+{% elseif lastSegment == 'teaching-team' %}
+    {% assign group = staffTeams | Where:'Id',2070138 | First %}
+    {% assign groupName = 'Teaching Team' %}
+    {% assign members = group.Members %}
+{% elseif lastSegment == 'support-center' %}
+    {% assign group = staffTeams | Where:'Id',1936475 | First %}
+    {% assign groupName = 'Support Center Directors' %}
+    {% assign members = group.Members | Where:'Role','Director' %}
+    {% assign childGroups = group.ChildGroups | Where:'IsPublic',true | OrderBy:'Name' %}
+    {% assign dropdownlinkpath = '/staff/support-center' %}
+{% elseif lastSegment == 'campus' %}
+    {% assign group = staffTeams | Where:'Id',2084074 | First %}
+    {% assign groupName = 'Campus Pastors' %}
+    {% assign members = group.Members | Where:'Role','Campus Pastor' %}
+    {% assign childGroups = group.ChildGroups | Where:'IsPublic',true | OrderBy:'Name' %}
+    {% assign dropdownlinkpath = '/staff/campus' %}
+{% elseif pagePath contains 'support' %}
+    {% assign groupName = lastSegment | Replace:'-',' ' | Capitalize %}
+    {% assign groupName = groupName | Replace:'And','and' | Replace:'Kidspring','KidSpring' | Replace:'Newspring','NewSpring' %}
+    {% assign groupId = staffTeams | Where:'Id',1936475 | First | Property:'ChildGroups' | Where:'Name',groupName | First | Property:'Id' %}
+    {% if groupId == '' %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+    {% assign group = staffTeams | Where:'Id',groupId | First %}
+    {% assign groupName = groupName | Append:' Team' %}
+    {% assign members = group.Members %}
+    {% assign childGroups = staffTeams | Where:'Id',1936475 | First | Property:'ChildGroups' | Where:'IsPublic',true | OrderBy:'Name' %}
+{% elseif pagePath contains 'campus' %}
+    {% assign groupName = lastSegment | Append:' Team' | Replace:'-',' ' | Capitalize %}
+    {% assign groupId = staffTeams | Where:'Id',2084074 | First | Property:'ChildGroups' | Where:'Name',groupName | First | Property:'Id' %}
+    {% if groupId == '' %}
+        {{ '/page-not-found' | PageRedirect }}
+    {% endif %}
+    {% assign group = staffTeams | Where:'Id',groupId | First %}
+    {% assign members = group.Members %}
+    {% assign childGroups = staffTeams | Where:'Id',2084074 | First | Property:'ChildGroups' | Where:'IsPublic',true | OrderBy:'Name' %}
+{% endif %}
+
+
+
+{% comment %}
+    Filter out people who aren't supposed to be shown
+{% endcomment %}
+{% assign members = members | Where:'ShowOnWebsite','Yes' | OrderBy:'Role,LastName,NickName' %}
+
+<section class="soft hard-bottom xs-soft-half-sides clearfix bg-gray-lighter">
+<div class="bg-white soft hard-bottom xs-soft-sides xs-hard-bottom push-bottom xs-push-half-bottom rounded-lg xs-text-center clearfix">
+
+    <div class="row flush-sides push-bottom push-half-top text-left sm-text-center xs-text-center">
+        <div class="col-xs-12 col-sm-12 col-md-6">
+            <h2 class="flush sm-push-half-bottom xs-push-half-bottom">{{ groupName }}</h2>
+        </div><div class="col-xs-12 col-sm-12 col-md-6">
+
+            {% if childGroups and childGroups != empty %}
+                <div class="pull-right sm-pull-none xs-pull-none">
+                    {[ dropdown defaulttext:'{{ dropdowndefaulttext }}' ]}
+                        {% for group in childGroups %}
+                            [[ item linktext:'{{ group.Name | Replace:" Team","" }}' linkurl:'{{ dropdownlinkpath | Append:'/' }}{{ group.Name | Replace:" Team","" | Replace:" ","-" | Downcase }}' ]][[ enditem ]]
+                        {% endfor %}
+                    {[ enddropdown ]}
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% comment %}
+        Show on Lead Pastors/Teaching Team pages only
+    {% endcomment %}
+    {% if lastSegment == 'staff' or lastSegment == 'teaching-team' %}
+        {% capture leadPastors %}[
+            {% for member in members %}
+                {% if member.Title contains 'Assistant' or member.Title contains 'Coordinator' %}
+                {% else %}
+                    {{ member | ToJSON }},
+                {% endif %}
+            {% endfor %}
+        ]{% endcapture %}
+
+        {% capture members %}[
+            {% for member in members %}
+                {% if member.Title contains 'Assistant' or member.Title contains 'Coordinator' %}
+                    {{ member | ToJSON }},
+                {% endif %}
+            {% endfor %}
+        ]{% endcapture %}
+
+        {% assign leadPastors = leadPastors | ReplaceLast:',','' | FromJSON %}
+        {% assign members = members | ReplaceLast:',','' | FromJSON %}
+
+        <div class="row flush-sides push-bottom">
+            {% for item in leadPastors %}<div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 push-bottom">
+
+                {% assign person = item.PersonId | PersonById %}
+
+                {[ user imageurl:'{{ person | Attribute:"StaffImage","Url" }}' title:'{{ person.NickName }}<br>{{ person.LastName }}' subtitle:'{{ person | Attribute:'StaffTitle' }}' linkurl:'https://newspring.cc/workflows/712?StaffMember={{ person | Property:'PrimaryAlias' | Property:'Guid' }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
+
+            </div>{% endfor %}
+            <div class="col-md-12">
+                <h2>{{ groupName | Singularize | Append:' Assistants' }}</h2>
+            </div>
+        </div>
+    {% endif %}
+
+
+    {% assign memberIds = members | Select:'PersonId' | Uniq %}
+
+    {% comment %}
+        Loop through group members
+    {% endcomment %}
+    <div class="row flush-sides">
+        {% for id in memberIds %}<div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 push-bottom">
+
+            {% assign person = id | PersonById %}
+
+            {[ user imageurl:'{{ person | Attribute:"StaffImage","Url" | Split:"?" | First }}' title:'{{ person.NickName }}<br>{{ person.LastName }}' subtitle:'{{ person | Attribute:'StaffTitle' }}' linkurl:'https://newspring.cc/workflows/712?StaffMember={{ person | Property:'PrimaryAlias' | Property:'Guid' }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
+
+        </div>{% endfor %}
+    </div>
+</div>
+</section>

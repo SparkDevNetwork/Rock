@@ -1,0 +1,11 @@
+{% assign useNewStyles = CurrentPage | Attribute:'UseNewStyles' %}
+
+{% if useNewStyles == 'Yes' %}
+    <a id="live-bar" href="{{ url }}" class="d-block bg-primary text-decoration-none text-center overflow-hidden w-100 p-2">
+        <small class="font-sans font-bold text-white mb-0">{{ text }}</small>
+    </a>
+{% else %}
+    <a id="live-bar" href="{{ url }}" class="display-block soft-half bg-primary text-decoration-none text-center overflow-hidden">
+        <small class="sans-serif stronger letter-spacing-condensed text-white pulse-opacity flush">{{ text }}</small>
+    </a>
+{% endif %}

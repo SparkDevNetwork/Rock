@@ -1,0 +1,71 @@
+<style>
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
+
+    table tr td {
+        padding: 8px 12px;
+    }
+
+    table tr th {
+        padding: 12px;
+    }
+</style>
+
+<div class="panel panel-default list clearfix">
+    <div class="panel-body hard">
+        <div class="table-responsive">
+        <table class="table table-striped table-bordered flush">
+          <tr>
+            <th width="30%">Title</th>
+            <th>Description</th>
+            <th width="12%">Action</th>
+          </tr>
+            {% for childPage in Page.Pages %}
+              <tr>
+                <td>
+                    <a href="/page/{{ childPage.Id }}" {% if childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif %}>
+                        {% if childPage.IconCssClass != ' %}
+                            <i class="{{ childPage.IconCssClass }} fa-lg fa-fw"></i>
+                        {% endif %}
+                        <strong>{{ childPage.Title }}</strong>
+                    </a>
+                </td>
+                <td>
+                  {{ childPage.Description }}
+                </td>
+                <td>
+                  <a href="/page/{{ childPage.Id }}" class="btn btn-primary btn-block btn-sm">View Report</a>
+                </td>
+              </tr>
+            {% endfor %}
+
+            {% for page in IncludePageList %}
+                {% assign path = 'Global' | Page:'Path' %}
+                {% assign parts =  page | PropertyToKeyValue %}
+                {% if parts.Value contains '#' %}
+                    {% capture value %}{% assign valueparts = parts.Value | Split:'#' %}#{{ valueparts[1] }}{% endcapture %}
+                {% else %}
+                    {% assign value = parts.Value %}
+                {% endif %}
+              <tr>
+                <td>
+                    <a href="{{ value }}" {% if page.DisplayDescription != 'true' %} title="{{ page.Description }}"{% endif %}>
+                        {% if page.IconCssClass != ' %}
+                            <i class="{{ page.IconCssClass }} fa-lg fa-fw"></i>
+                        {% endif %}
+                        <strong>{{ parts.Key }}</strong>
+                    </a>
+                </td>
+                <td>
+                </td>
+                <td>
+                  <a href="{{ value }}" class="btn btn-primary btn-block btn-sm">View Report</a>
+                </td>
+              </tr>
+            {% endfor %}
+
+        </table>
+        </div>
+    </div>
+</div>
