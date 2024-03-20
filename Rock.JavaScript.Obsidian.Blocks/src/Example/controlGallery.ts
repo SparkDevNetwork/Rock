@@ -6564,25 +6564,62 @@ const locationPickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
-        LocationPicker
+        LocationPicker,
+        CheckBoxList
     },
     setup() {
+        const options = [{
+            text: "Location",
+            value: "2"
+        }, {
+            text: "Address",
+            value: "1"
+        }, {
+            text: "Point",
+            value: "4"
+        }, {
+            text: "Geo-fence",
+            value: "8"
+        }];
+
+        const selectedOptions = ref([]);
+
+        const selectedAsNumber = computed(() => {
+            if (selectedOptions.value.length === 0) {
+                return undefined;
+            }
+
+            return selectedOptions.value.reduce((total, option) => {
+                return total + parseInt(option, 10);
+            }, 0);
+        });
+
         return {
             value: ref(null),
+            currentPickerMode: ref(2),
+            options,
+            selectedOptions,
+            selectedAsNumber,
             importCode: getSfcControlImportPath("locationPicker"),
-            exampleCode: `<LocationPicker label="Location" v-model="value" :multiple="false" />`
+            exampleCode: `<LocationPicker label="Location" v-model="value" />`
         };
     },
     template: `
 <GalleryAndResult
-    :value="value"
+    :value="{value, currentPickerMode}"
     :importCode="importCode"
     :exampleCode="exampleCode"
+    hasMultipleValues
     enableReflection >
 
-    <LocationPicker label="Location" v-model="value" :multiple="multiple" />
+    <LocationPicker label="Location" v-model="value" v-model:currentPickerMode="currentPickerMode" :allowedPickerModes="selectedAsNumber" />
 
     <template #settings>
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBoxList v-model="selectedOptions" :items="options" label="Allowed Modes" horizontal />
+            </div>
+        </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`

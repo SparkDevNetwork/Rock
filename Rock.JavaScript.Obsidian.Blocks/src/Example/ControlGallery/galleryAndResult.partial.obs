@@ -29,7 +29,7 @@
         </div>
     </div>
     <div v-if="$slots.settings" class="mb-5">
-        <h4 class="mt-0">Settings</h4>
+        <h4 class="mt-0">Demo Settings</h4>
         <slot name="settings" />
     </div>
     <div v-if="importCode || exampleCode || $slots.usage || $slots.usageNotes" class="mb-5">
@@ -43,6 +43,11 @@
             <slot name="syntaxNotes" />
             <CodeSample v-if="exampleCode" :code="exampleCode" language="html" />
         </slot>
+    </div>
+
+    <div v-if="$slots.props" class="mb-5">
+        <h4 class="mt-0 mb-3">Props</h4>
+        <slot name="props" />
     </div>
 
     <div v-if="$slots.header">
@@ -108,71 +113,71 @@
 </style>
 
 <script setup lang="ts">
-import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-import Switch from "@Obsidian/Controls/switch.obs";
-import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-import CodeSample from "./codeSample.partial.obs";
-import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
-import { computed, getCurrentInstance, PropType, ref } from "vue";
-import { convertComponentName } from "./utils.partial";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import CodeSample from "./codeSample.partial.obs";
+    import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
+    import { computed, getCurrentInstance, PropType, ref } from "vue";
+    import { convertComponentName } from "./utils.partial";
 
-const props = defineProps({
-    // The value passed into/controlled by the component, if any
-    value: {
-        required: false
-    },
-    // If true, the provided value is a map of multiple values
-    hasMultipleValues: {
-        type: Boolean as PropType<boolean>,
-        default: false
-    },
-    // Show another copy of the component so you can see that the value is reflected across them
-    enableReflection: {
-        type: Boolean as PropType<boolean>,
-        default: false
-    },
-    // Code snippet showing how to import the component
-    importCode: {
-        type: String as PropType<string>
-    },
-    // Code snippet of the component being used
-    exampleCode: {
-        type: String as PropType<string>
-    },
-    // Describe what this component is/does
-    description: {
-        type: String as PropType<string>,
-        default: ""
-    },
-    /** Display the value raw and unformatted inside the PRE element. */
-    displayAsRaw: {
-        type: Boolean as PropType<boolean>,
-        default: false
-    }
-});
+    const props = defineProps({
+        // The value passed into/controlled by the component, if any
+        value: {
+            required: false
+        },
+        // If true, the provided value is a map of multiple values
+        hasMultipleValues: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        // Show another copy of the component so you can see that the value is reflected across them
+        enableReflection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        // Code snippet showing how to import the component
+        importCode: {
+            type: String as PropType<string>
+        },
+        // Code snippet of the component being used
+        exampleCode: {
+            type: String as PropType<string>
+        },
+        // Describe what this component is/does
+        description: {
+            type: String as PropType<string>,
+            default: ""
+        },
+        /** Display the value raw and unformatted inside the PRE element. */
+        displayAsRaw: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
 
-// Calculate a header based on the name of the component, adding spaces and stripping out the "Gallery" suffix
-const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);
+    // Calculate a header based on the name of the component, adding spaces and stripping out the "Gallery" suffix
+    const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);
 
-const formattedValue = computed(() => {
-    if (props.displayAsRaw) {
-        return props.value;
-    }
-    else if (!props.hasMultipleValues) {
-        return JSON.stringify(props.value, null, 4);
-    }
-    else {
-        // Convert each property's value to a JSON string.
-        return ObjectUtils.fromEntries(
-            Object.entries(props.value as Record<string, unknown>).map(([key, val]) => {
-                return [
-                    key,
-                    JSON.stringify(val, null, 4)
-                ];
-            })
-        );
-    }
-});
+    const formattedValue = computed(() => {
+        if (props.displayAsRaw) {
+            return props.value;
+        }
+        else if (!props.hasMultipleValues) {
+            return JSON.stringify(props.value, null, 4);
+        }
+        else {
+            // Convert each property's value to a JSON string.
+            return ObjectUtils.fromEntries(
+                Object.entries(props.value as Record<string, unknown>).map(([key, val]) => {
+                    return [
+                        key,
+                        JSON.stringify(val, null, 4)
+                    ];
+                })
+            );
+        }
+    });
 
-const showReflection = ref(false);
+    const showReflection = ref(false);
 </script>

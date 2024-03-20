@@ -1,7 +1,8 @@
 <template>
     <GalleryAndResult :value="text"
                       :importCode="importCode"
-                      :exampleCode="exampleCode">
+                      :exampleCode="exampleCode"
+                      enableReflection>
 
         <TextBox v-model="text"
                  :label="label"
@@ -35,8 +36,10 @@
                     <NumberUpDown v-if="isMultiline" v-model="rows" label="Rows" :min="0" :max="20" help="If you set this to zero here, it will use the default value. Only applicable when in multi-line mode." />
                 </div>
             </div>
+        </template>
 
-            <h4>TextBox Props</h4>
+        <template #props>
+            <h5>TextBox Props</h5>
             <table class="table table-striped mb-4">
                 <thead>
                     <tr>
@@ -116,7 +119,7 @@
                 </tbody>
             </table>
 
-            <h4>Inherited RockFormField Props</h4>
+            <h5>Standard RockFormField Props</h5>
             <table class="table table-striped mb-4">
                 <thead>
                     <tr>
