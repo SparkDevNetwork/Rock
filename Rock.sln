@@ -108,13 +108,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.DotLiquid", "Rock
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.Fluid", "Rock.Lava.Fluid\Rock.Lava.Fluid.csproj", "{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian", "Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj", "{A4FB4B9B-3564-4C25-938C-4350A9515B24}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rock.JavaScript.Obsidian", "Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.esproj", "{A4FB4B9B-3564-4C25-938C-4350A9515B24}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{7A0E1B93-44CB-4EB4-BF4D-433253A29D52}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Enums", "Rock.Enums\Rock.Enums.csproj", "{61DECE2B-0434-435E-8D65-49A4FDF98365}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian.Blocks", "Rock.JavaScript.Obsidian.Blocks\Rock.JavaScript.Obsidian.Blocks.njsproj", "{11ACFF28-4199-450B-8A43-F59ADEF63A99}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rock.JavaScript.Obsidian.Blocks", "Rock.JavaScript.Obsidian.Blocks\Rock.JavaScript.Obsidian.Blocks.esproj", "{11ACFF28-4199-450B-8A43-F59ADEF63A99}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A4FB4B9B-3564-4C25-938C-4350A9515B24} = {A4FB4B9B-3564-4C25-938C-4350A9515B24}
 	EndProjectSection
@@ -125,7 +125,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Integration.Perf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.AI.OpenAI", "Rock.AI.OpenAI\Rock.AI.OpenAI.csproj", "{BAB8BF5E-6457-4668-ADF1-B917100BA7CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.UnitTests.Performance", "Rock.Tests.UnitTests.Performance\Rock.Tests.UnitTests.Performance.csproj", "{027005F4-531F-4618-9953-AF8C931EA178}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Tests.UnitTests.Performance", "Rock.Tests.UnitTests.Performance\Rock.Tests.UnitTests.Performance.csproj", "{027005F4-531F-4618-9953-AF8C931EA178}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

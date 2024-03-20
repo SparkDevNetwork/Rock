@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.5.89-alpha">
+  <PropertyGroup>
+    <BuildCommand>npm run build-fast</BuildCommand>
+    <CleanCommand>npm run clean</CleanCommand>
+  </PropertyGroup>
+</Project>
