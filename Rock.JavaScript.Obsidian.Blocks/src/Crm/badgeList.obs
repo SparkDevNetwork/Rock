@@ -8,10 +8,18 @@
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
-          @selectItem="onSelectItem">
-        <SelectColumn />
+          @selectItem="onSelectItem"
+          class="mb-4">
 
         <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <TextColumn name="badgeName" title="Name" field="badgeName" :filter="textValueFilter" width="15%" />
+
+        <TextColumn name="badgeType" title="Type" field="badgeType" :filter="pickExistingValueFilter" width="5%" />
+
+        <TextColumn name="badgeComponent" title="Component" field="badgeComponent" :filter="pickExistingValueFilter" width="15%" />
+
+        <TextColumn name="badgeDescription" title="Description" field="badgeDescription" :filter="textValueFilter" width="35%" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -24,7 +32,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, DeleteColumn, ReorderColumn, SecurityColumn, TextColumn, textValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { BadgeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/BadgeList/badgeListOptionsBag";
@@ -49,7 +57,6 @@
      */
     async function loadGridData(): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
-
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
             return gridData;
@@ -125,5 +132,5 @@
 
     // #endregion
 
-    gridDataSource.value = await loadGridData();
+    gridDataSource.value = loadGridData();
 </script>
