@@ -200,7 +200,6 @@ namespace RockWeb
 
                 ExceptionLogService.AlwaysLogToFile = false;
 
-                // TODO JMH Ignore cache warmup for local development.
                 Task.Run( () => WarmupCache() );
 
                 // Perform any Rock startups

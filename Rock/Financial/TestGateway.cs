@@ -384,27 +384,28 @@ namespace Rock.Financial
         /// <returns></returns>
         public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
-            errorMessage = string.Empty;
-
             if ( ValidateCard( financialGateway, paymentInfo, out errorMessage ) )
             {
-                var scheduledTransaction = new FinancialScheduledTransaction();
-                scheduledTransaction.IsActive = true;
-                scheduledTransaction.StartDate = schedule.StartDate;
-                scheduledTransaction.NextPaymentDate = schedule.StartDate;
-                scheduledTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-                scheduledTransaction.GatewayScheduleId = "Subscription_" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-                scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
-                scheduledTransaction.Status = FinancialScheduledTransactionStatus.Active;
-                scheduledTransaction.StatusMessage = "active";
-
-                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail()
+                var scheduledTransaction = new FinancialScheduledTransaction
                 {
-                    ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
-                    ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
-                    CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
-                    AccountNumberMasked = "************6789",
-                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( "************6789" )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
+                    IsActive = true,
+                    StartDate = schedule.StartDate,
+                    NextPaymentDate = schedule.StartDate,
+                    TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" ),
+                    GatewayScheduleId = "Subscription_" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" ),
+                    LastStatusUpdateDateTime = RockDateTime.Now,
+                    Status = FinancialScheduledTransactionStatus.Active,
+                    StatusMessage = "active",
+                    NumberOfPayments = schedule.NumberOfPayments,
+
+                    FinancialPaymentDetail = new FinancialPaymentDetail()
+                    {
+                        ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
+                        ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
+                        CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
+                        AccountNumberMasked = "************6789",
+                        CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( "************6789" )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
+                    }
                 };
 
                 return scheduledTransaction;
@@ -689,7 +690,7 @@ namespace Rock.Financial
         /// <param name="referencePaymentInfo">The reference payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
-        {
+        {// TODO JMH Is this is needed in Obsidian land to update the payment info for the Obsidian Test Gateway? Also, do we need the year and CVV fields?
             TestGatewayPaymentControl testGatewayPaymentControl = hostedPaymentInfoControl as TestGatewayPaymentControl;
             referencePaymentInfo.ReferenceNumber = testGatewayPaymentControl.PaymentInfoToken;
             referencePaymentInfo.PaymentExpirationDate = testGatewayPaymentControl.PaymentExpirationDate;

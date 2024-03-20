@@ -145,7 +145,6 @@ namespace Rock.UniversalSearch.IndexModels
 
             var rockContext = new Rock.Data.RockContext();
             rockContext.Configuration.AutoDetectChangesEnabled = false;
-            
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMembers = groupMemberService
                 .Queryable()

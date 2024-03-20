@@ -117,6 +117,7 @@
     const isLoading = ref<boolean>(false);
     const lineItems = ref<RegistrationEntryCostSummaryBag[]>([]);
     const isConfigurePaymentPlanModalShown = ref<boolean>(false);
+    // TODO JMH This should be set to false if 2 or more payments CANNOT be made for the available frequencies.
     const isPaymentPlanConfigured = ref<boolean>(!!registrationEntryState.paymentPlanNumberOfPayments && !!registrationEntryState.paymentPlanAmountPerPayment);
     watch([() => registrationEntryState.paymentPlanFrequencyGuid, () => registrationEntryState.paymentPlanAmountPerPayment, () => registrationEntryState.paymentPlanNumberOfPayments], () => {
         isPaymentPlanConfigured.value = !!registrationEntryState?.paymentPlanNumberOfPayments && !!registrationEntryState.paymentPlanAmountPerPayment;

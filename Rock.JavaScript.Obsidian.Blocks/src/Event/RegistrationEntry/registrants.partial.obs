@@ -42,7 +42,6 @@
             return;
         }
 
-        // TODO JMH Does this cause an error if the lastFormIndex is set to negative 1?
         const lastFormIndex = (registrationEntryState.viewModel.registrantForms?.length ?? 0) - 1;
         registrationEntryState.currentRegistrantIndex--;
         registrationEntryState.currentRegistrantFormIndex = lastFormIndex;

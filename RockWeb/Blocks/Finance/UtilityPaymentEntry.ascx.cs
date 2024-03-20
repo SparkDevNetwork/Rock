@@ -1795,7 +1795,7 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnProcessTransactionFromConfirmationPage_Click( object sender, EventArgs e )
         {
-            if ( ProcessTransaction( out string errorMessage ) )
+            if ( ProcessTransaction( out string errorMessage ) ) // TODO JMH - 1: Payment starts here. // 👉 Ignore stuff to right (it's likely incorrect): however, the payment info is already populated from HandlePaymentInfoNextButton() which leverages the gateway that gets the info from the gateway-specific control.
             {
                 if ( this.PartialPostbacksAllowed )
                 {
@@ -3214,7 +3214,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 // If this is not a saved account, the Gateway may alter the data in paymentInfo (e.g., to use a separate billing address, if the gateway's hosted payment control permits this).
                 var financialGatewayComponent = this.FinancialGatewayComponent;
-                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage ); // TODO JMH Is something like this needed to get a "scheduled payment" to work in the test gateway? How do we do that without a WebForms control?
             }
 
             return paymentInfo;
@@ -3318,13 +3318,13 @@ mission. We are so grateful for your commitment.</p>
 
                 Person BusinessOrPerson = GetPersonOrBusiness( person );
 
-                var paymentInfo = GetTxnPaymentInfo( BusinessOrPerson, out errorMessage );
+                var paymentInfo = GetTxnPaymentInfo( BusinessOrPerson, out errorMessage ); // TODO JMH - 2: Create the payment information for the scheduled payment. (The paymentInfo.Amount is set here. For RegistrationEntry payment plans, the amount should be set to the payment plan amount.)
                 if ( paymentInfo == null )
                 {
                     return false;
                 }
 
-                PaymentSchedule schedule = GetSchedule();
+                PaymentSchedule schedule = GetSchedule(); // TODO JMH - 3: Create the schedule information for the scheduled payment.
                 FinancialPaymentDetail paymentDetail = null;
                 if ( schedule != null )
                 {
@@ -3338,7 +3338,7 @@ mission. We are so grateful for your commitment.</p>
                         return true;
                     }
 
-                    var scheduledTransaction = gateway.AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage );
+                    var scheduledTransaction = gateway.AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage ); // TODO JMH - 4: Add the real scheduled payment using the 3rd party system. The minimum schedule and payment information has already been set based on the values from the WebForms controls.
                     if ( scheduledTransaction == null )
                     {
                         return false;
@@ -3347,7 +3347,7 @@ mission. We are so grateful for your commitment.</p>
                     // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate scheduled transactions impossible
                     scheduledTransaction.Guid = transactionGuid;
 
-                    SaveScheduledTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
+                    SaveScheduledTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );// TODO JMH - 5: Add the final touches and save the scheduled transaction in Rock now that it has been saved in the 3rd party system.
                     paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
                 }
                 else
@@ -3457,9 +3457,7 @@ mission. We are so grateful for your commitment.</p>
                 }
             }
 
-            var transactionEntity = this.GetTransactionEntity();
-
-            PopulateTransactionDetails( scheduledTransaction.ScheduledTransactionDetails );
+            PopulateTransactionDetails( scheduledTransaction.ScheduledTransactionDetails ); // TODO JMH - 5.1: Set the individual transaction amounts for the scheduled transaction.
 
             scheduledTransaction.Summary = paymentInfo.Comment1;
 
@@ -3594,7 +3592,7 @@ mission. We are so grateful for your commitment.</p>
 
             TransactionCode = transaction.TransactionCode;
         }
-
+        // TODO JMH THIS THIS WE NEED THIS IN RegistrationEntry to populate our transaction details.
         /// <summary>
         /// Populates the transaction details for a FinancialTransaction or ScheduledFinancialTransaction
         /// </summary>
@@ -3603,7 +3601,7 @@ mission. We are so grateful for your commitment.</p>
         private void PopulateTransactionDetails<T>( ICollection<T> transactionDetails ) where T : ITransactionDetail, new()
         {
             var transactionEntity = this.GetTransactionEntity();
-            var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount != 0 ).ToArray();
+            var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount != 0 ).ToArray(); // TODO JMH - 5.1.1: RegistrationEntry payment plans only have a single amount to set as an ITransactionDetail. Do we need a detail per registration fee? If so, how do we know how much of each individual fee makes up the payment plan amount (amount per payment)?
 
             var totalSelectedAmounts = selectedAccountAmounts.Sum( a => a.Amount.Value );
 
@@ -3611,7 +3609,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 var transactionDetail = new T();
 
-                transactionDetail.AccountId = selectedAccountAmount.AccountId;
+                transactionDetail.AccountId = selectedAccountAmount.AccountId; // TODO JMH - 5.1.2: Where does this account ID come from in Obsidian RegistrationEntry AND is it important for the payment plan?
                 transactionDetail.Amount = selectedAccountAmount.Amount.Value;
 
                 if ( transactionEntity != null )

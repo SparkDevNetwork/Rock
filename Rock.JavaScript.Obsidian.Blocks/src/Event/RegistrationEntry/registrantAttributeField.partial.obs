@@ -120,7 +120,6 @@
     });
 
     watch(value, () => {
-        // TODO JMH Should we be manipulating props directly???
         props.fieldValues[props.field.guid] = value.value;
     });
 

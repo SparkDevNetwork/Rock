@@ -393,7 +393,7 @@
                 amountToPayPerPayment: paymentPlanAmountPerPayment,
                 numberOfPayments: paymentPlanNumberOfPayments,
                 transactionFrequencyGuid: paymentPlanFrequencyGuid,
-                startDate: paymentPlanStartDate.dateTime,
+                startDate: paymentPlanStartDate.toISOString(),
             };
         }
         return {
@@ -490,7 +490,6 @@
             registrationEntryState.value.currentStep = Step.RegistrationEndForm;
         }
         else {
-            // TODO JMH Will -1 cause an issue if registrantForms is null?
             const lastFormIndex = (registrationEntryState.value.viewModel.registrantForms?.length ?? 0) - 1;
 
             registrationEntryState.value.currentRegistrantFormIndex = lastFormIndex;
