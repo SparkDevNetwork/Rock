@@ -1332,6 +1332,11 @@ Rock.settings.initialize({{
                                         var scope = CreateServiceScope();
                                         var blockEntity = ActivatorUtilities.CreateInstance( scope.ServiceProvider, block.BlockType.EntityType.GetEntityType() );
 
+                                        if ( blockEntity is RockBlockType rockBlockType )
+                                        {
+                                            rockBlockType.RockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
+                                        }
+
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
                                             rockBlockEntity.RequestContext = RequestContext;

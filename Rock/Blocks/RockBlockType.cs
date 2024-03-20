@@ -114,6 +114,16 @@ namespace Rock.Blocks
         /// </value>
         public IRockResponseContext ResponseContext => RequestContext.Response;
 
+        /// <summary>
+        /// Gets the database context to use for this block instance. It can
+        /// be used for both reading and writing data, though it should be up
+        /// to the subclass implementation to decide when to call SaveChanges().
+        /// </summary>
+        /// <value>
+        /// The database context to use for this block instance.
+        /// </value>
+        public RockContext RockContext { get; internal set; }
+
         /// <inheritdoc/>
         [Obsolete( "Use RequiredMobileVersion instead." )]
         [RockObsolete( "1.16" )]
