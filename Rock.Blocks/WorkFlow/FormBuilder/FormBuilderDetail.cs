@@ -85,44 +85,41 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            var workflowTypeId = RequestContext.GetPageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+
+            // Build the basic view model information required to edit a
+            // form.
+            var viewModel = new FormBuilderDetailViewModel
             {
-                var workflowTypeId = RequestContext.GetPageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+                SubmissionsPageUrl = this.GetLinkedPageUrl( AttributeKey.SubmissionsPage, RequestContext.GetPageParameters() ),
+                AnalyticsPageUrl = this.GetLinkedPageUrl( AttributeKey.AnalyticsPage, RequestContext.GetPageParameters() ),
+                Sources = GetOptionSources( RockContext )
+            };
 
-                // Build the basic view model information required to edit a
-                // form.
-                var viewModel = new FormBuilderDetailViewModel
+            // If we have a workflow type specified in the query string then
+            // load the information from it to populate the form.
+            if ( workflowTypeId.HasValue )
+            {
+                var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
+                var workflowType = new WorkflowTypeService( RockContext ).Get( workflowTypeId.Value );
+
+                if ( workflowType != null && workflowType.IsFormBuilder && workflowType.Category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    SubmissionsPageUrl = this.GetLinkedPageUrl( AttributeKey.SubmissionsPage, RequestContext.GetPageParameters() ),
-                    AnalyticsPageUrl = this.GetLinkedPageUrl( AttributeKey.AnalyticsPage, RequestContext.GetPageParameters() ),
-                    Sources = GetOptionSources( rockContext )
-                };
+                    var actionForm = workflowType.ActivityTypes
+                        .SelectMany( a => a.ActionTypes )
+                        .Where( a => a.EntityTypeId == formBuilderEntityTypeId )
+                        .FirstOrDefault();
 
-                // If we have a workflow type specified in the query string then
-                // load the information from it to populate the form.
-                if ( workflowTypeId.HasValue )
-                {
-                    var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
-                    var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
-
-                    if ( workflowType != null && workflowType.IsFormBuilder && workflowType.Category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    if ( actionForm != null && actionForm.WorkflowForm != null )
                     {
-                        var actionForm = workflowType.ActivityTypes
-                            .SelectMany( a => a.ActionTypes )
-                            .Where( a => a.EntityTypeId == formBuilderEntityTypeId )
-                            .FirstOrDefault();
-
-                        if ( actionForm != null && actionForm.WorkflowForm != null )
-                        {
-                            viewModel.FormGuid = workflowType.Guid;
-                            viewModel.Form = GetFormSettingsViewModel( actionForm.WorkflowForm, workflowType, rockContext );
-                            viewModel.OtherAttributes = GetOtherAttributes( workflowType.Id, rockContext );
-                        }
+                        viewModel.FormGuid = workflowType.Guid;
+                        viewModel.Form = GetFormSettingsViewModel( actionForm.WorkflowForm, workflowType, RockContext );
+                        viewModel.OtherAttributes = GetOtherAttributes( workflowType.Id, RockContext );
                     }
                 }
-
-                return viewModel;
             }
+
+            return viewModel;
         }
 
         /// <summary>
@@ -712,33 +709,30 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 return ActionBadRequest( "Invalid parameters provided." );
             }
 
-            using ( var rockContext = new RockContext() )
+            var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
+            var workflowType = new WorkflowTypeService( RockContext ).Get( formGuid );
+
+            if ( workflowType == null || !workflowType.IsFormBuilder )
             {
-                var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
-                var workflowType = new WorkflowTypeService( rockContext ).Get( formGuid );
-
-                if ( workflowType == null || !workflowType.IsFormBuilder )
-                {
-                    return ActionBadRequest( "Specified workflow type is not a form builder." );
-                }
-
-                // Find the action type that represents the form.
-                var actionForm = workflowType.ActivityTypes
-                    .SelectMany( a => a.ActionTypes )
-                    .Where( a => a.EntityTypeId == formBuilderEntityTypeId )
-                    .FirstOrDefault();
-
-                if ( actionForm == null || actionForm.WorkflowForm == null )
-                {
-                    return ActionBadRequest( "Specified workflow is not properly configured for use in form builder." );
-                }
-
-                UpdateWorkflowType( formSettings, actionForm.WorkflowForm, workflowType, rockContext );
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( "Specified workflow type is not a form builder." );
             }
+
+            // Find the action type that represents the form.
+            var actionForm = workflowType.ActivityTypes
+                .SelectMany( a => a.ActionTypes )
+                .Where( a => a.EntityTypeId == formBuilderEntityTypeId )
+                .FirstOrDefault();
+
+            if ( actionForm == null || actionForm.WorkflowForm == null )
+            {
+                return ActionBadRequest( "Specified workflow is not properly configured for use in form builder." );
+            }
+
+            UpdateWorkflowType( formSettings, actionForm.WorkflowForm, workflowType, RockContext );
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>

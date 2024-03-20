@@ -150,6 +150,11 @@
      * Gets all the data needed to fill in the pickers when we're given a value to start
      */
     async function loadRoleOptionsFromValue(): Promise<void> {
+        if (!props.modelValue?.value) {
+            loadedRoleItems.value = [];
+            return;
+        }
+
         const options: GroupRolePickerGetAllForGroupRoleOptionsBag = {
             groupRoleGuid: props.modelValue?.value,
             excludeGroupRoles: props.excludeGroupRoles
