@@ -230,11 +230,5 @@ registerFieldType(FieldTypeGuids.UrlLink, new UrlLinkFieldType());
 import { ValueListFieldType } from "./valueListField.partial";
 registerFieldType(FieldTypeGuids.ValueList, new ValueListFieldType());
 
-import { VideoUrlFieldType } from "./videoUrlField.partial";
-registerFieldType(FieldTypeGuids.VideoUrl, new VideoUrlFieldType());
-
-import { VideoFileFieldType } from "./videoFileField.partial";
-registerFieldType(FieldTypeGuids.VideoFile, new VideoFileFieldType());
-
 import { WorkflowTypeFieldType } from "./workflowTypeField.partial";
 registerFieldType(FieldTypeGuids.WorkflowType, new WorkflowTypeFieldType());
