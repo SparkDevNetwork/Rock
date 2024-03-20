@@ -3528,11 +3528,11 @@ END" );
         /// </summary>
         /// <param name="newBlockAttributeGuid"></param>
         /// <param name="attributeQualifierKey"></param>
-        /// <param name="AttributeQualifierValue"></param>
+        /// <param name="attributeQualifierValue"></param>
         /// <param name="guid"></param>
-        internal void AddAttributeQualifierForSQL( string newBlockAttributeGuid, string attributeQualifierKey, string AttributeQualifierValue, string guid )
+        internal void AddAttributeQualifierForSQL( string newBlockAttributeGuid, string attributeQualifierKey, string attributeQualifierValue, string guid )
         {
-            AttributeQualifierValue = AttributeQualifierValue?.Replace( "'", "''" ) ?? "";
+            attributeQualifierValue = attributeQualifierValue?.Replace( "'", "''" ) ?? "";
             string sql = $@"
                 DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{newBlockAttributeGuid}')
 
@@ -3542,16 +3542,16 @@ END" );
 	                DECLARE @guid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [AttributeQualifier] WHERE AttributeId = @AttributeId AND [Key] = '{attributeQualifierKey}')
 	                IF @guid IS NOT NULL
 	                BEGIN
-		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{AttributeQualifierValue}' WHERE [Guid] = @guid
+		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{attributeQualifierValue}' WHERE [Guid] = @guid
 	                END
 	                ELSE BEGIN
 		                INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
-		                VALUES(1, @AttributeId, '{attributeQualifierKey}', '{AttributeQualifierValue}', '{guid}')
+		                VALUES(1, @AttributeId, '{attributeQualifierKey}', '{attributeQualifierValue}', '{guid}')
 	                END
                 END
                 ELSE
                 BEGIN
-                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{attributeQualifierKey}', [Value] = '{AttributeQualifierValue}' WHERE [Guid] = '{guid}'
+                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{attributeQualifierKey}', [Value] = '{attributeQualifierValue}' WHERE [Guid] = '{guid}'
                 END";
 
             Migration.Sql( sql );
