@@ -1939,7 +1939,7 @@ namespace Rock.Blocks.Crm
             {
                 var currentPerson = this.GetCurrentPerson();
 
-                box.CampusGuid = GetInitialCampusGuid( rockContext, currentPerson, box.CampusTypesFilter, box.CampusStatusesFilter );
+                box.CampusGuid = GetInitialCampusGuid();
 
                 var childRelationshipTypes = GetChildRelationshipTypes();
 
@@ -2001,46 +2001,33 @@ namespace Rock.Blocks.Crm
             return box;
         }
 
-        private Guid? GetInitialCampusGuid( RockContext rockContext, Person currentPerson, List<Guid> campusTypesFilter, List<Guid> campusStatusesFilter )
+        /// <summary>
+        /// Tries to get the initial campus Guid from a page parameter, falling back to
+        /// the default campus block setting if the page parameter is missing or invalid.
+        /// </summary>
+        /// <returns>The initial campus Guid.</returns>
+        private Guid? GetInitialCampusGuid()
         {
-            if ( this.IsCampusHidden )
+            var campusGuid = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
+            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+            CampusCache initialCampus = null;
+
+            if ( campusGuid.HasValue )
             {
-                // No initial campus if the block setting hides the field.
-                return null;
+                initialCampus = CampusCache.Get( campusGuid.Value );
+            }
+            else if ( campusId.HasValue )
+            {
+                initialCampus = CampusCache.Get( campusId.Value );
             }
 
-            var client = new CampusClientService( rockContext, currentPerson );
-            var campuses = client.GetCampusesAsListItems( new CampusOptions
+            if ( initialCampus == null && this.DefaultCampusGuid != Guid.Empty )
             {
-                LimitCampusStatuses = campusStatusesFilter,
-                LimitCampusTypes = campusTypesFilter,
-                IncludeInactive = false                
-            } );
-
-            if ( campuses.Any() )
-            {
-                Guid? defaultCampusGuid = this.DefaultCampusGuid;
-
-                if ( defaultCampusGuid == Guid.Empty )
-                {
-                    defaultCampusGuid = null;
-                }
-
-                if ( campuses.Count == 1 )
-                {
-                    // If there is only one filtered campus, then return the default campus OR the single campus if default is missing.
-                    return defaultCampusGuid ?? campuses.First().Value.AsGuidOrNull();
-                }
-                else
-                {
-                    // If there is more than one filtered campus, then return the default campus.
-                    return defaultCampusGuid;
-                }
+                initialCampus = CampusCache.Get( this.DefaultCampusGuid );
             }
-            else
-            {
-                return null;
-            }
+
+            return initialCampus?.Guid;
         }
 
         /// <summary>
