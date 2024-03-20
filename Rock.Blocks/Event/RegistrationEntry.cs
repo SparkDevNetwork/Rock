@@ -3795,7 +3795,10 @@ namespace Rock.Blocks.Event
             {
                 var rockContext = new RockContext();
                 var registration = new RegistrationService( rockContext )
-                    .Queryable( "RegistrationInstance.RegistrationTemplate,PaymentPlanFinancialScheduledTransaction.Transactions" )
+                    .Queryable()
+                    .Include( r => r.RegistrationInstance.RegistrationTemplate )
+                    .Include( r => r.PaymentPlanFinancialScheduledTransaction.TransactionFrequencyValue )
+                    .Include( r => r.PaymentPlanFinancialScheduledTransaction.ScheduledTransactionDetails ) // Needed to get the TotalAmount run-time value.
                     .FirstOrDefault( r => r.Id == registrationId );
 
                 if ( registration != null &&
