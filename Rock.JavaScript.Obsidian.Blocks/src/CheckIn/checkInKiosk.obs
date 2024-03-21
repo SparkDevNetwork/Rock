@@ -2,8 +2,8 @@
 <template>
     <div class="check-in-page">
         <PageHeader title="Rock Solid"
-                    :hasBack="true"
-                    :hideNavigation="hideNavigation"
+                    :hasBack="hasBackButton"
+                    :hideNavigation="!hasNavigation"
                     @back="onBack"
                     @home="onHome" />
 
@@ -19,6 +19,7 @@
                 </WelcomeScreen>
 
                 <SearchScreen v-if="currentScreen === Screen.Search"
+                              :configuration="configuration"
                               @updateActions="onUpdateActions($event, Screen.Search)" />
             </ContentTransition>
         </section>
@@ -290,7 +291,7 @@
     gap: var(--item-spacing);
 }
 
-.check-in-page .search-screen input.phone {
+.check-in-page .search-screen input.search-term {
     height: 64px;
     font-size: 36px;
     width: 0;
@@ -314,6 +315,7 @@
 
 .check-in-page .search-screen .search-button {
     height: 56px;
+    min-width: 400px;
 }
 </style>
 
@@ -328,14 +330,24 @@
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { CheckInKioskOptionsBag, KioskConfigurationBag, Screen } from "./CheckInKiosk/utils.partial";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { AbilityLevelDeterminationMode } from "@Obsidian/Enums/CheckIn/abilityLevelDeterminationMode";
+    import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { PhoneSearchMode } from "@Obsidian/Enums/CheckIn/phoneSearchMode";
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
 
-    const currentScreen = ref(Screen.Configuration);
+    const configuration = ref<KioskConfigurationBag>({});
+    const currentScreen = ref(Screen.Welcome);
 
-    const hideNavigation = computed((): boolean => {
-        return currentScreen.value === Screen.Configuration
-            || currentScreen.value === Screen.Welcome;
+    const hasNavigation = computed((): boolean => {
+        return currentScreen.value !== Screen.Configuration
+            && currentScreen.value !== Screen.Welcome;
+    });
+
+    const hasBackButton = computed((): boolean => {
+        return currentScreen.value !== Screen.Configuration
+            && currentScreen.value !== Screen.Welcome;
     });
 
     const currentScreenActions = ref<PanelAction[]>([]);
@@ -346,7 +358,8 @@
     }
 
     function onConfigured(value: KioskConfigurationBag): void {
-        console.log("configured", value);
+        console.log(JSON.stringify(value));
+        configuration.value = value;
         navigateToScreen(Screen.Welcome);
     }
 
@@ -366,5 +379,40 @@
 
     function onBack(): void {
         //primaryContent.value = !primaryContent.value;
+    }
+
+    if (currentScreen.value !== Screen.Configuration) {
+        configuration.value = {
+            "kiosk": { "guid": "61111232-01d7-427d-9c1f-d45cf4d3f7cb", "name": "Check-in Kiosk - 001 - Standard" },
+            "theme": { "value": "checkinaero", "text": "Checkin Aero", "category": null, "disabled": null },
+            "template": {
+                "guid": "fedd389a-616f-4a53-906c-63d8255631c5",
+                "name": "Kidside Check-in Area",
+                "iconCssClass": "fa fa-child",
+                "abilityLevelDetermination": AbilityLevelDeterminationMode.Ask,
+                "kioskCheckInType": KioskCheckInMode.Family,
+                "familySearchType": FamilySearchMode.PhoneNumber,
+                "isLocationCountDisplayed": true,
+                "isOverrideAvailable": true,
+                "isPhotoHidden": false,
+                "isSupervisorEnabled": true,
+                "maximumPhoneNumberLength": 10,
+                "minimumPhoneNumberLength": 7,
+                "phoneSearchType": PhoneSearchMode.EndsWith
+            },
+            "areas": [
+                { "guid": "cadb2d12-7836-44bc-8eea-3c6ab22fd5e8", "name": "Nursery/Preschool Area" },
+                { "guid": "e3c8f7d6-5ceb-43bb-802f-66c3e734049e", "name": "Elementary Area" },
+                { "guid": "9a88743b-f336-4404-b877-2a623689195d", "name": "High School Area" },
+                { "guid": "f14c9b15-714d-4fb3-be4c-455fe3c51e45", "name": "Nursery Check-in" },
+                { "guid": "006db777-63ac-470d-841d-9f8d6965a4c9", "name": "Early Childhood (2's & 3's) Check-in" },
+                { "guid": "ce5e1f44-9a0c-41bb-989c-f3d484d83741", "name": "PreK & K Check-in" },
+                { "guid": "0fc59ce2-3c3f-48f8-b62a-c511b22b0e96", "name": "1st & 2nd Grade Check-in" },
+                { "guid": "d79ee369-fe22-4983-9a4b-d37e75c3738a", "name": "3rd-5th Grade Check-in" },
+                { "guid": "ffec7809-eb18-4b18-a855-8ce6b78754f2", "name": "Special Needs Check-In" },
+                { "guid": "a937b5f4-bebf-4765-a669-0d10b52e9979", "name": "Early Childhood (Toddlers) Check-In" },
+                { "guid": "a1f0abef-9708-41cc-95a6-e880ca7d7422", "name": "Early Childhood (4's) Check-in" }
+            ]
+        };
     }
 </script>

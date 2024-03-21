@@ -43,7 +43,7 @@ export type SavedConfigurationBag = {
 export type KioskConfigurationBag = {
     kiosk?: CheckInItemBag | null;
 
-    template?: CheckInItemBag | null;
+    template?: ConfigurationTemplateBag | null;
 
     theme?: ListItemBag | null;
 

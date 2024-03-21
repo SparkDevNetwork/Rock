@@ -95,16 +95,16 @@ namespace Rock.Blocks.CheckIn
         /// <inheritdoc/>
         public override async Task<object> GetObsidianBlockInitializationAsync()
         {
-                var config = await GetConfigurationByIpOrNameAsync();
-                var director = new CheckInDirector( RockContext );
+            var config = await GetConfigurationByIpOrNameAsync();
+            var director = new CheckInDirector( RockContext );
 
-                return new
-                {
-                    Campuses = GetCampusesAndKiosks(),
-                    DefaultTheme = PageCache.Layout?.Site?.Theme,
-                    Templates = director.GetConfigurationTemplateBags(),
-                    Themes = GetThemes()
-                };
+            return new
+            {
+                Campuses = GetCampusesAndKiosks(),
+                DefaultTheme = PageCache.Layout?.Site?.Theme,
+                Templates = director.GetConfigurationTemplateBags(),
+                Themes = GetThemes()
+            };
         }
 
         /// <summary>

@@ -75,11 +75,27 @@ namespace Rock.CheckIn.v2
         {
             return GetConfigurationTemplates()
                 .OrderBy( t => t.Name )
+                .Select( t => new
+                {
+                    GroupType = t,
+                    Configuration = t.GetCheckInConfiguration( RockContext )
+                } )
+                .Where( t => t.Configuration != null )
                 .Select( t => new ConfigurationTemplateBag
                 {
-                    Guid = t.Guid,
-                    Name = t.Name,
-                    IconCssClass = t.IconCssClass
+                    Guid = t.GroupType.Guid,
+                    Name = t.GroupType.Name,
+                    IconCssClass = t.GroupType.IconCssClass,
+                    AbilityLevelDetermination = t.Configuration.AbilityLevelDetermination,
+                    KioskCheckInType = t.Configuration.KioskCheckInType,
+                    FamilySearchType = t.Configuration.FamilySearchType,
+                    IsLocationCountDisplayed = t.Configuration.IsLocationCountDisplayed,
+                    IsOverrideAvailable = t.Configuration.IsOverrideAvailable,
+                    IsPhotoHidden = t.Configuration.IsPhotoHidden,
+                    IsSupervisorEnabled = t.Configuration.IsSupervisorEnabled,
+                    MaximumPhoneNumberLength = t.Configuration.MaximumPhoneNumberLength,
+                    MinimumPhoneNumberLength = t.Configuration.MinimumPhoneNumberLength,
+                    PhoneSearchType = t.Configuration.PhoneSearchType
                 } )
                 .ToList();
         }

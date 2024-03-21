@@ -1,12 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="search-screen">
-        <MainPanel title="Search By Phone"
-                   subtitle="Please enter at least 4 digits of your phone number to search">
+    <div ref="screenElement" class="search-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle">
 
-            <TextBox v-model="searchTerm" class="phone" />
+            <TextBox v-model="searchTerm"
+                     class="search-term"
+                     @keypress.enter="onSearchClick" />
 
-            <div class="number-pad">
+            <div v-if="hasNumberPad" class="number-pad">
                 <RockButton class="key-1" @click="onKeyClick">1</RockButton>
                 <RockButton class="key-2" @click="onKeyClick">2</RockButton>
                 <RockButton class="key-3" @click="onKeyClick">3</RockButton>
@@ -21,8 +23,10 @@
                 <RockButton class="key-clear" @click="onKeyClick">Clear</RockButton>
             </div>
 
-            <RockButton class="search-button"
+            <RockButton ref="searchButtonElement"
+                        class="search-button"
                         btnType="primary"
+                        :disabled="isSearchDisabled"
                         @click="onSearchClick">
                 Search
             </RockButton>
@@ -34,13 +38,103 @@
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { ref } from "vue";
+    import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import { KioskConfigurationBag } from "./utils.partial";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
+    import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { alert } from "@Obsidian/Utility/dialogs";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        }
+    });
 
     const emit = defineEmits<{
     }>();
 
-    const searchTerm = ref("");
+    // #region Values
 
+    const http = useHttp();
+    const screenElement = ref<HTMLElement>();
+
+    const title = ref("");
+    const subtitle = ref("");
+    const searchTerm = ref("");
+    const isSearching = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Determines if we have a number pad on this screen. */
+    const hasNumberPad = computed((): boolean => {
+        return props.configuration.template?.familySearchType !== FamilySearchMode.Name;
+    });
+
+    /** Determines if the search button is currently disabled. */
+    const isSearchDisabled = computed((): boolean => {
+        const template = props.configuration.template;
+
+        if (!template || searchTerm.value.length === 0 || isSearching.value) {
+            return true;
+        }
+
+        // Check if the search term has any alpha characters.
+        const isAlpha = /[^0-9()+ -]/.test(searchTerm.value);
+        const numberOnly = searchTerm.value.replace(/[^0-9]/g, "");
+
+        // If we are searching for phone number only and they entered any
+        // non-numeric characters then disable.
+        if (template.familySearchType === FamilySearchMode.PhoneNumber && isAlpha) {
+            return true;
+        }
+
+        // If we do not have any alpha characters then validate the phone
+        // number length requirements.
+        if (!isAlpha) {
+            if (template.minimumPhoneNumberLength && numberOnly.length < template.minimumPhoneNumberLength) {
+                return true;
+            }
+
+            if (template.maximumPhoneNumberLength && numberOnly.length > template.maximumPhoneNumberLength) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Updates the text values displayed on the screen.
+     */
+    function updateText(): void {
+        if (props.configuration.template?.familySearchType === FamilySearchMode.Name) {
+            title.value = "Search By Name";
+            subtitle.value = "Please enter part of a name.";
+        }
+        else if (props.configuration.template?.familySearchType === FamilySearchMode.NameAndPhone) {
+            title.value = "Search By Phone Or Name";
+            subtitle.value = `Enter at least ${props.configuration.template.minimumPhoneNumberLength} digits of a phone number or part of a name.`;
+        }
+        else {
+            title.value = "Search By Phone";
+            subtitle.value = `Please enter at least ${props.configuration.template?.minimumPhoneNumberLength} digits of your phone number to search.`;
+        }
+    }
+
+    /**
+     * Handles the key click event for the number pad buttons.
+     *
+     * @param event The event associated with the key click event.
+     */
     function onKeyClick(event: Event): void {
         if (!(event.target instanceof HTMLElement)) {
             return;
@@ -84,9 +178,80 @@
         else if (event.target.classList.contains("key-clear")) {
             searchTerm.value = "";
         }
+
+        event.target.blur();
     }
 
-    function onSearchClick(): void {
-        console.log("search");
+    /**
+     * Handles the key press event for the document. This allows a keyboard
+     * to type without focus on the text input.
+     *
+     * @param event The event associated with the key press event.
+     */
+    function onDocumentKeyPress(event: KeyboardEvent): void {
+        if (event.target instanceof HTMLInputElement) {
+            return;
+        }
+
+        if (event.key.length === 1) {
+            searchTerm.value += event.key;
+        }
+
+        if (event.key === "Enter") {
+            onSearchClick();
+        }
     }
+
+    /**
+     * Handles the click even for the search button. This starts a search for
+     * the term by calling the API endpoint.
+     */
+    async function onSearchClick(): Promise<void> {
+        isSearching.value = true;
+
+        let searchValue = searchTerm.value;
+        const isAlpha = /[^0-9()+ -]/.test(searchValue);
+
+        // If this looks like a phone number then strip out the extra characters.
+        if (!isAlpha) {
+            searchValue = searchValue.replace(/[^0-9]/g, "");
+        }
+
+        const request: SearchForFamiliesOptionsBag = {
+            configurationTemplateGuid: props.configuration.template?.guid,
+            kioskGuid: props.configuration.kiosk?.guid,
+            prioritizeKioskCampus: false,
+            searchTerm: searchValue,
+            searchType: props.configuration.template?.familySearchType ?? FamilySearchMode.NameAndPhone
+        };
+
+        const response = await http.post<SearchForFamiliesResponseBag>("/api/v2/checkin/SearchForFamilies", undefined, request);
+
+        if (response.isSuccess && response.data?.families) {
+            console.log(response.data.families);
+        }
+        else {
+            await alert(response.errorMessage ?? "Unexpected error encountered, please try again or ask for assistance.");
+        }
+
+        isSearching.value = false;
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        if (props.configuration.template?.familySearchType === FamilySearchMode.Name) {
+            (screenElement.value?.querySelector("input.search-term") as HTMLElement)?.focus();
+        }
+
+        document.addEventListener("keypress", onDocumentKeyPress);
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener("keypress", onDocumentKeyPress);
+    });
+
+    watch(() => props.configuration, updateText);
+
+    updateText();
 </script>
