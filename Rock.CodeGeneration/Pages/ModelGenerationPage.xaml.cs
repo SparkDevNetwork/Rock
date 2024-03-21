@@ -41,6 +41,14 @@ namespace Rock.CodeGeneration.Pages
 
         private readonly XmlDocReader _xmlDoc = SupportTools.GetXmlDocReader();
 
+        /// <summary>
+        /// A dictionary containing models which inherit from other models.
+        /// These require some special handling since they'll (in some cases)
+        /// need to be remapped from the Type.Name to the BaseType.Name.
+        /// This dictionary is initialized with <see cref="InitializeInterface"/>.
+        /// </summary>
+        private Dictionary<string, string> ModelsInheritingFromOtherModels = new Dictionary<string, string>();
+
         #endregion
 
         #region Properties
@@ -288,6 +296,19 @@ namespace Rock.CodeGeneration.Pages
                 {
                     if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) || type.GetCustomAttribute( typeof( TableAttribute ) ) != null )
                     {
+                        // If this type inherits from a model which already inherits Model<T> base
+                        // We will want to remap some type names to the inherited BaseType.Name.
+                        var baseTypeOfBase = type.BaseType.BaseType;
+                        var inheritsFromOtherBaseModel =
+                            baseTypeOfBase != null &&
+                            baseTypeOfBase.IsGenericType &&
+                            baseTypeOfBase.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
+
+                        if ( inheritsFromOtherBaseModel )
+                        {
+                            ModelsInheritingFromOtherModels.AddOrReplace( type.Name, type.BaseType.Name );
+                        }
+
                         _modelItems.Add( new CheckedItem<Type> { IsChecked = false, Name = type.FullName, Item = type } );
                     }
                 }
@@ -929,10 +950,10 @@ GO
         /// </summary>
         public const string {entityTypeConstName} = ""{guidString.ToUpper()}"";";
 
-            var updatedFileLines = fileLines.Where( a => a != "}" && a != "    }");
+            var updatedFileLines = fileLines.Where( a => a != "}" && a != "    }" );
             updatedFileLines = updatedFileLines.Append( newEntityTypeGuidCode );
-            updatedFileLines = updatedFileLines.Append( "    }");
-            updatedFileLines = updatedFileLines.Append( "}");
+            updatedFileLines = updatedFileLines.Append( "    }" );
+            updatedFileLines = updatedFileLines.Append( "}" );
             File.WriteAllLines( entityTypeSystemGuidFileName.FullName, updatedFileLines.ToArray() );
         }
 
@@ -950,6 +971,11 @@ GO
             }
 
             var properties = GetEntityProperties( type, false, true, true );
+
+            // If the model inherits from another Model then also inherit from that service.
+            var baseTypeOfBase = type.BaseType.BaseType;
+            var inheritsFromOtherBaseModel = baseTypeOfBase.IsGenericType && baseTypeOfBase.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
+            var serviceClassInheritance = inheritsFromOtherBaseModel ? $"{type.BaseType.Name}Service" : $"Service<{type.Name}>";
 
             var sb = new StringBuilder();
             sb.AppendLine( "//------------------------------------------------------------------------------" );
@@ -986,7 +1012,7 @@ GO
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// {0} Service class" + Environment.NewLine, type.Name );
             sb.AppendLine( "    /// </summary>" );
-            sb.AppendFormat( "    public partial class {0}Service : Service<{0}>" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "    public partial class {0}Service : {1}" + Environment.NewLine, type.Name, serviceClassInheritance );
             sb.AppendLine( "    {" );
 
             sb.AppendLine( "        /// <summary>" );
@@ -1044,8 +1070,8 @@ GO
             target.ForeignId = null;
             target.ForeignGuid = null;", type.Name );
 
-            // Only include these properties if the type is a model
-            if ( type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> ) )
+            // Only include these properties if the type is a model and doesn't inherit from another model
+            if ( type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> ) && !inheritsFromOtherBaseModel )
             {
                 sb.AppendFormat( @"
             target.CreatedByPersonAliasId = null;
@@ -1069,7 +1095,21 @@ GO
         {{
 ", type.Name );
 
-            foreach ( var property in properties )
+            // If this class inherits from an another model then exclude the inherited properties
+            // and instead call specifically to that base class to copy those properties.
+            var propertiesToExclude = inheritsFromOtherBaseModel ? GetEntityProperties( type.BaseType, false, true, false ) : new Dictionary<string, PropertyInfo>();
+            var propertiesToInclude = properties.Where( kv => !propertiesToExclude.Keys.Contains( kv.Key ) );
+
+            // If inheriting from another model copy properties from that base class first.
+            if ( inheritsFromOtherBaseModel )
+            {
+                var baseTypeName = type.BaseType.Name;
+                sb.AppendLine();
+                sb.AppendLine( $"            // Copy properties that belong to the base type - {type.BaseType}." );
+                sb.AppendLine( $"            (({baseTypeName})target).CopyPropertiesFrom( source );" );
+            }
+
+            foreach ( var property in propertiesToInclude )
             {
                 PropertyInfo propertyInfo = property.Value;
                 var obsolete = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
@@ -1228,7 +1268,6 @@ GO
         /// <returns></returns>
         private string GetCanDeleteCode( string serviceFolder, Type type )
         {
-
             SqlConnection sqlconn = CodeGenHelpers.GetSqlConnection( new DirectoryInfo( serviceFolder ).Parent.FullName );
             if ( sqlconn == null )
             {
@@ -1305,6 +1344,18 @@ GO
             errorMessage = string.Empty;
 ", type.Name );
 
+            // If we inherit from another Model<> generic then call it's base first in the CanDelete method.
+            var inheritedModelGenericTypeName = ModelsInheritingFromOtherModels.GetValueOrNull( type.Name );
+            if ( inheritedModelGenericTypeName != null )
+            {
+                var camelCaseBaseTypeName = inheritedModelGenericTypeName.Substring( 0, 1 ).ToLower() + inheritedModelGenericTypeName.Substring( 1 );
+                canDeleteBegin += $@"
+            // Call to {inheritedModelGenericTypeName}Service.CanDelete before checking related entities specific to this model.
+            base.CanDelete( item, out var {camelCaseBaseTypeName}ErrorMessage);
+            errorMessage += {camelCaseBaseTypeName}ErrorMessage;
+";
+            }
+
             string canDeleteMiddle = string.Empty;
 
             foreach ( var item in parentTableColumnNameList )
@@ -1337,6 +1388,11 @@ GO
                 string relationShipText;
                 string pluralizeCode;
 
+                // If this table/type inherits from a different model then we'll want to call the non-generic service
+                // in our checks for existing items.
+                var parentTableBaseTypeName = ModelsInheritingFromOtherModels.GetValueOrNull( parentTable );
+                var serviceTypeToCall = parentTableBaseTypeName ?? parentTable;
+
                 if ( columnName.StartsWith( "Parent" + type.Name ) )
                 {
                     relationShipText = "contains one or more child";
@@ -1360,14 +1416,20 @@ GO
             #pragma warning disable 612, 618 // {parentTableType.Name} is obsolete, but we still need this code generated";
                 }
 
-                canDeleteMiddle +=
-        $@"
-            if ( new Service<{parentTable}>( Context ).Queryable().Any( a => a.{columnName} == item.Id ) )
+                // If this reference inherits from a different generic Model then we can't init a new
+                // generic service because that service inherits from the base type model.
+                // Instead we'll depend on the base.CanDelete.
+                if ( parentTableBaseTypeName == null )
+                {
+                    canDeleteMiddle +=
+            $@"
+            if ( new Service<{serviceTypeToCall}>( Context ).Queryable().Any( a => a.{columnName} == item.Id ) )
             {{
                 errorMessage = string.Format( ""This {{0}} {relationShipText} {{1}}."", {type.Name}.FriendlyTypeName, {parentTable}.FriendlyTypeName{pluralizeCode} );
                 return false;
             }}
 ";
+                }
 
                 if ( obsolete != null && obsolete.IsError == false )
                 {
@@ -1445,7 +1507,7 @@ GO
                 restControllerGuid = _restControllerGuidLookupFromDatabase.GetValueOrNull( fullClassName );
             }
 
-            if ( restControllerGuid == null)
+            if ( restControllerGuid == null )
             {
                 restControllerGuid = Guid.NewGuid();
             }
@@ -1496,11 +1558,11 @@ GO
                 sb.AppendLine( $"    [System.Obsolete( \"{obsolete.Message}\" )]" );
             }
 
-            sb.AppendLine( $"    [RestControllerGuid( \"{ restControllerGuid.ToString().ToUpper()}\" )]" );
+            sb.AppendLine( $"    [RestControllerGuid( \"{restControllerGuid.ToString().ToUpper()}\" )]" );
             sb.AppendLine( $"    public partial class {pluralizedName}Controller : Rock.Rest.ApiController<{type.Namespace}.{type.Name}>" );
             sb.AppendLine( "    {" );
             sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( $"        /// Initializes a new instance of the <see cref=\"{ pluralizedName}Controller\"/> class." );
+            sb.AppendLine( $"        /// Initializes a new instance of the <see cref=\"{pluralizedName}Controller\"/> class." );
             sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( $"        public {pluralizedName}Controller() : base( new {type.Namespace}.{type.Name}Service( new {dbContextFullName}() ) ) {{ }} " );
             sb.AppendLine( "    }" );
@@ -1759,7 +1821,7 @@ GO
             var enumGroups = rockAssembly.GetTypes().Where( a => a.IsEnum )
                 .Union( enumAssembly.GetTypes().Where( a => a.IsEnum ) )
                 .Where( e => e.Namespace == "Rock.Model"
-                    || e.Namespace?.StartsWith( "Rock.Enums.") == true
+                    || e.Namespace?.StartsWith( "Rock.Enums." ) == true
                     || e.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
                 .OrderBy( a => a.Name )
                 .ToList()
@@ -2084,7 +2146,7 @@ GO
                     if ( autoPropertyValue is string )
                     {
                         var escapedDefaultValue = ( autoPropertyValue as string ).Replace( "\"", "\"\"" );
-                        defaultValueCode = $"@\"{ escapedDefaultValue}\"";
+                        defaultValueCode = $"@\"{escapedDefaultValue}\"";
                     }
                     else if ( autoPropertyValue is bool )
                     {
