@@ -13,7 +13,7 @@
                 </div>
             </div>
         </template>
-        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" />
     </div>
     <div v-else>
         <component :is="editComponent"
@@ -62,6 +62,10 @@
         dataEntryMode: {
             type: String as PropType<DataEntryMode>,
             default: undefined
+        },
+        isEscaped: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

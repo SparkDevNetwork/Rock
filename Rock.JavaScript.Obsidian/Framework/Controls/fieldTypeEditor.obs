@@ -134,7 +134,7 @@
         const option = fieldTypeOptions.value
             .find(o => areEqual(o.value, fieldTypeValue.value) || areEqual(o.category, fieldTypeValue.value));
 
-            return option?.text ?? "";
+        return option?.text ?? "";
     });
 
     const defaultValueAttribute = computed((): PublicAttributeBag => {
