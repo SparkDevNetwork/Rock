@@ -9,7 +9,7 @@
 
         <section class="page-body">
             <ContentTransition>
-                <InitialConfigurationScreen v-if="currentScreen === Screen.Configuration"
+                <ConfigurationScreen v-if="currentScreen === Screen.Configuration"
                                             :blockConfiguration="blockConfiguration"
                                             @updateActions="onUpdateActions($event, Screen.Configuration)"
                                             @configured="onConfigured" />
@@ -320,7 +320,7 @@
 </style>
 
 <script setup lang="ts">
-    import InitialConfigurationScreen from "./CheckInKiosk/initialConfigurationScreen.partial.obs";
+    import ConfigurationScreen from "./CheckInKiosk/configurationScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
@@ -338,7 +338,7 @@
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
 
     const configuration = ref<KioskConfigurationBag>({});
-    const currentScreen = ref(Screen.Welcome);
+    const currentScreen = ref(Screen.Configuration);
 
     const hasNavigation = computed((): boolean => {
         return currentScreen.value !== Screen.Configuration
