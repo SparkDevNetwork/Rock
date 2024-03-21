@@ -4,7 +4,7 @@
         {{ blockErrorMessage }}
     </NotificationBox>
 
-    <div class="new-group-scheduler">
+    <div class="group-scheduler-v2">
         <Panel v-if="!blockErrorMessage"
                type="block"
                title="Group Scheduler"
