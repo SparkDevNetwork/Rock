@@ -17,6 +17,9 @@
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome"
                                @start="onWelcomeStart">
                 </WelcomeScreen>
+
+                <SearchScreen v-if="currentScreen === Screen.Search"
+                              @updateActions="onUpdateActions($event, Screen.Search)" />
             </ContentTransition>
         </section>
 
@@ -270,12 +273,55 @@
 .check-in-page .welcome-screen .scan-barcode-button .btn .title {
     font-size: 64px;
 }
+
+/*
+ * Search Screen.
+ */
+.check-in-page .search-screen {
+    display: flex;
+    min-height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.check-in-page .search-screen .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .search-screen input.phone {
+    height: 64px;
+    font-size: 36px;
+    width: 0;
+    min-width: 100%;
+}
+
+.check-in-page .search-screen .number-pad {
+    display: grid;
+    margin: auto;
+    grid-template-columns: 130px 130px 130px;
+    grid-template-rows: 56px 56px 56px 56px;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .search-screen .number-pad .btn {
+    color: var(--tones-darkest);
+    background-color: var(--tones-light);
+    font-size: var(--font-size-btn-primary);
+    font-weight: 600;
+}
+
+.check-in-page .search-screen .search-button {
+    height: 56px;
+}
 </style>
 
 <script setup lang="ts">
     import InitialConfigurationScreen from "./CheckInKiosk/initialConfigurationScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
+    import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref } from "vue";
