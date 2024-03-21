@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Hosting;
 
@@ -92,44 +93,40 @@ namespace Rock.Blocks.CheckIn
         #region Methods
 
         /// <inheritdoc/>
-        public override object GetObsidianBlockInitialization()
+        public override async Task<object> GetObsidianBlockInitializationAsync()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var config = GetConfigurationByIpOrName( rockContext );
-                var director = new CheckInDirector( rockContext );
+                var config = await GetConfigurationByIpOrNameAsync();
+                var director = new CheckInDirector( RockContext );
 
                 return new
                 {
-                    Campuses = GetCampusesAndKiosks( rockContext ),
+                    Campuses = GetCampusesAndKiosks(),
                     DefaultTheme = PageCache.Layout?.Site?.Theme,
                     Templates = director.GetConfigurationTemplateBags(),
                     Themes = GetThemes()
                 };
-            }
         }
 
         /// <summary>
         /// Gets the campuses and associated kiosks that can be selected during
         /// manual configuration.
         /// </summary>
-        /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <returns>A collection of <see cref="CampusBag"/> objects.</returns>
-        private List<CampusBag> GetCampusesAndKiosks( RockContext rockContext )
+        private List<CampusBag> GetCampusesAndKiosks()
         {
-            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), rockContext )?.Id;
+            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), RockContext )?.Id;
 
             if ( !kioskDeviceTypeValueId.HasValue )
             {
                 throw new Exception( "Device type Check-in Kiosk defined value not found." );
             }
 
-            var campuses = CampusCache.All( rockContext )
+            var campuses = CampusCache.All( RockContext )
                 .Where( c => c.IsActive == true )
                 .OrderBy( c => c.Order )
                 .ToList();
 
-            var kiosks = DeviceCache.All( rockContext )
+            var kiosks = DeviceCache.All( RockContext )
                 .Where( k => k.IsActive && k.DeviceTypeValueId == kioskDeviceTypeValueId.Value )
                 .OrderBy( k => k.Name )
                 .Select( k => new
@@ -201,19 +198,18 @@ namespace Rock.Blocks.CheckIn
         /// be found from IP Address.
         /// </summary>
         /// <returns>An instance of <see cref="DeviceCache"/> or <c>null</c>.</returns>
-        private DeviceCache GetKioskFromIpOrName()
+        private Task<DeviceCache> GetKioskFromIpOrNameAsync()
         {
-            var checkInDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            var checkInDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), RockContext ).Id;
             var enableNameLookup = GetAttributeValue( AttributeKey.EnableKioskMatchByName ).AsBoolean();
 
             if ( enableNameLookup )
             {
-                // TODO: GetByIPAddressOrNameAsync
-                return DeviceCache.GetByIPAddress( RequestContext.ClientInformation.IpAddress, checkInDeviceTypeId );
+                return DeviceCache.GetByIPAddressOrNameAsync( RequestContext.ClientInformation.IpAddress, checkInDeviceTypeId, RockContext );
             }
             else
             {
-                return DeviceCache.GetByIPAddress( RequestContext.ClientInformation.IpAddress, checkInDeviceTypeId );
+                return Task.FromResult( DeviceCache.GetByIPAddress( RequestContext.ClientInformation.IpAddress, checkInDeviceTypeId, RockContext ) );
             }
         }
 
@@ -222,16 +218,16 @@ namespace Rock.Blocks.CheckIn
         /// </summary>
         /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <returns>The configuration object or <c>null</c> if it could not be determined.</returns>
-        private object GetConfigurationByIpOrName( RockContext rockContext )
+        private async Task<object> GetConfigurationByIpOrNameAsync()
         {
-            var kiosk = GetKioskFromIpOrName();
+            var kiosk = await GetKioskFromIpOrNameAsync();
 
             if ( kiosk == null )
             {
                 return null;
             }
 
-            var director = new CheckInDirector( rockContext );
+            var director = new CheckInDirector( RockContext );
             var areas = director.GetKioskAreas( kiosk );
             var template = GetPrimaryTemplate( areas );
 

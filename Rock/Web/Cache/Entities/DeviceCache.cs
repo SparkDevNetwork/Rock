@@ -253,12 +253,27 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="ipAddress">The IP address to look for.</param>
         /// <param name="deviceTypeValueId">The device type <see cref="DefinedValue"/> identifier of the device that you are searching for.</param>
+        /// <param name="rockContext">The database context to use if items are not in cache.</param>
         /// <returns>
         /// The <see cref="DeviceCache"/> that is associated with the provided IP address or <c>null</c> if no match.
         /// </returns>
-        internal static DeviceCache GetByIPAddress( string ipAddress, int deviceTypeValueId )
+        internal static DeviceCache GetByIPAddress( string ipAddress, int deviceTypeValueId, RockContext rockContext = null )
         {
-            return All()
+            List<DeviceCache> allDevices;
+
+            if ( rockContext != null )
+            {
+                allDevices = All( rockContext );
+            }
+            else
+            {
+                using ( var newRockContext = new RockContext() )
+                {
+                    allDevices = All( rockContext );
+                }
+            }
+
+            return allDevices
                 .Where( d => d.DeviceTypeValueId == deviceTypeValueId
                     && d.IPAddress?.Equals( ipAddress, StringComparison.OrdinalIgnoreCase ) == true )
                 .FirstOrDefault();
@@ -271,10 +286,11 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="ipAddress">The IP address to look for.</param>
         /// <param name="deviceTypeValueId">The device type <see cref="DefinedValue"/> identifier of the device that you are searching for.</param>
+        /// <param name="rockContext">The database context to use if items are not in cache.</param>
         /// <returns>
         /// The <see cref="DeviceCache"/> that is associated with the provided IP address or <c>null</c> if no match.
         /// </returns>
-        internal static async Task<DeviceCache> GetByIPAddressOrNameAsync( string ipAddress, int deviceTypeValueId )
+        internal static async Task<DeviceCache> GetByIPAddressOrNameAsync( string ipAddress, int deviceTypeValueId, RockContext rockContext = null )
         {
             var device = GetByIPAddress( ipAddress, deviceTypeValueId );
 
@@ -287,16 +303,29 @@ namespace Rock.Web.Cache
             try
             {
                 string hostName = ( await System.Net.Dns.GetHostEntryAsync( ipAddress ) ).HostName;
+                List<DeviceCache> allDevices;
 
                 if ( hostName.IsNullOrWhiteSpace() )
                 {
                     return null;
                 }
 
+                if ( rockContext != null )
+                {
+                    allDevices = All( rockContext );
+                }
+                else
+                {
+                    using ( var newRockContext = new RockContext() )
+                    {
+                        allDevices = All( rockContext );
+                    }
+                }
+
                 // Find a matching device by name in either the IP Address/Hostname
                 // field or the device's name. Priority is given to matches on the
                 // IP Address field.
-                return All()
+                return allDevices
                     .Where( d => d.DeviceTypeValueId == deviceTypeValueId
                         && ( d.IPAddress?.Equals( hostName, StringComparison.OrdinalIgnoreCase ) == true
                             || d.Name?.Equals( hostName, StringComparison.OrdinalIgnoreCase ) == true ) )
