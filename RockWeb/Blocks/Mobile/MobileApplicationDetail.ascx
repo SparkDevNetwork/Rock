@@ -202,7 +202,12 @@
 
                                 <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" Style="display: none">
                                     <div class="row">
+                                        <div class="col-md-4">
+                                            <Rock:RockCheckBox ID="cbEnableLegacyStyles" runat="server" Label="Enable Legacy Styles" Help="Enabling this will include a plethora of CSS that was intentionally removed in v16.4. If your mobile shell is V6+ you should not check this. Used for migration compatibily only." />
+                                        </div>
+                                    </div>
 
+                                    <div class="row">
                                         <div class="col-md-4">
                                             <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Help="The default font size."></Rock:NumberBox>
                                         </div>

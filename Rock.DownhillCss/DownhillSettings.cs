@@ -286,12 +286,12 @@ namespace Rock.DownhillCss
         /// <summary>
         /// Whether or not to supply the Tailwind CSS.
         /// </summary>
-        public bool SupplyTailwindCss { get; set; } = false;
+        public bool SupplyTailwindCss { get; set; } = true;
 
         /// <summary>
         /// Whether or not legacy colors are supported.
         /// </summary>
-        public bool SupportLegacyColors { get; set; } = true;
+        public bool EnableLegacyStyles { get; set; } = true;
     }
 
     /// <summary>
@@ -348,11 +348,7 @@ namespace Rock.DownhillCss
         /// <summary>
         /// Calculates the line height based on the size and leading.
         /// </summary>
-        public double LineHeight
-        {
-            // Round to 2 digits
-            get => GetLineHeight();
-        }
+        public double LineHeight => GetLineHeight();
 
         /// <summary>
         /// Calculates the line height based on the size and leading.

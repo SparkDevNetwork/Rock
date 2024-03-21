@@ -131,6 +131,11 @@ namespace Rock.DownhillCss
                 if ( Platform == DownhillPlatform.Mobile )
                 {
                     _cssBuilder.Append( baseStylesMobile );
+
+                    if( Settings.EnableLegacyStyles )
+                    {
+                        _cssBuilder.Append( legacyStylesMobile );
+                    }
                 }
                 else
                 {
@@ -184,6 +189,17 @@ namespace Rock.DownhillCss
                     cssStyles = ReplaceCssVariable( cssStyles, key, value );
                 }
 
+                if ( Settings.SupplyTailwindCss )
+                {
+                    foreach ( var color in ColorPalette.ColorMaps )
+                    {
+                        foreach ( var saturatedColor in color.ColorSaturations )
+                        {
+                            ReplaceCssVariable( cssStyles, $"?color-{color.Color.ToLower()}-{saturatedColor.Intensity}", saturatedColor.ColorValue.ToLower() );
+                        }
+                    }
+                }
+
                 return cssStyles;
             }
 
@@ -196,6 +212,11 @@ namespace Rock.DownhillCss
             /// <returns></returns>
             private string ReplaceCssVariable( string cssStyles, string name, string value )
             {
+                if( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( value ) )
+                {
+                    return cssStyles;
+                }
+                
                 if ( !name.StartsWith( "?" ) )
                 {
                     name = $"?{name}";
@@ -214,7 +235,7 @@ namespace Rock.DownhillCss
             /// <returns></returns>
             private string ParseLegacyCss( string cssStyles )
             {
-                if ( Settings.SupportLegacyColors )
+                if ( Settings.EnableLegacyStyles )
                 {
                     // Text and heading colors
                     cssStyles = cssStyles.Replace( "?color-text", Settings.TextColor );
@@ -593,13 +614,7 @@ namespace Rock.DownhillCss
 
             #region Platform Base Styles
 
-            private static string baseStylesMobile = @"/*
-Resets
------------------------------------------------------------
-*/
-
-/* Fixes frame backgrounds from being black while in dark mode */
-
+            private static string baseStylesMobile = @"/* Fixes frame backgrounds from being black while in dark mode */
 ^editor {
     background-color: transparent;
 }
@@ -637,599 +652,11 @@ icon {
     color: ?color-interface-medium;
 }
 
-/*
-    Utility Classes
-    -----------------------------------------------------------
-*/
-
-.list-item {
-    padding-bottom: 12;
-}
-
-.h1 {
-    color: ?color-heading;
-    font-style: bold;
-    font-size: 34;
-    margin-bottom: 0;
-    line-height: 1;
-}
-
-.h2 {
-    color: ?color-heading;
-    font-style: bold;
-    font-size: 28;
-    line-height: 1;
-}
-
-.h3 {
-    color: ?color-heading;
-    font-style: bold;
-    font-size: 22;
-    line-height: 1.05;
-}
-
-.h4 {
-    color: ?color-heading;
-    font-style: bold;
-    font-size: 16;
-    line-height: 1.1;
-}
-
-.h5, .h6 {
-    color: ?color-heading;
-    font-style: bold;
-    font-size: 13;
-    line-height: 1.25;
-}
-
-.link{
+.link {
     color: ?color-primary-strong;
-}
-
-/* Class for styling code that matches Gitbook */
-.code {
-    background-color: #183055;
-    color: #e6ecf1;
-    padding: 16;
-    font-size: 12;
-}
-
-/* Text Weights */
-.font-weight-bold {
-    font-style: bold;
-}
-
-.font-italic {
-    font-style: italic;
-}
-
-/* Visibility Classes */
-.visible {
-    visibility: visible;
-}
-
-.invisible {
-    visibility: hidden;
-}
-
-.collapse {
-    visibility: collapse;
-}
-
-/* Text Named Sizes */
-.text {
-    font-size: ?font-size-default;
-    color: ?color-interface-medium;
-}
-
-.text-xs {
-    font-size: micro;
-}
-
-.text-sm {
-    font-size: small;
-}
-
-.text-md {
-    font-size: medium;
-}
-
-.text-lg {
-    font-size: large;
-}
-
-.text-title {
-    font-size: title;
-    color: ?color-interface-medium;
-}
-
-.text-subtitle {
-    font-size: subtitle;
-}
-
-.text-caption {
-    font-size: caption;
-}
-
-.text-body {
-    font-size: body;
-}
-
-.title {
-    font-style: bold;
-    font-size: ?font-size-default;
-    line-height: 1;
-}
-
-/* Body Styles */
-.paragraph {
-    font-size: ?font-size-default;
-    color: ?color-text;
-    line-height: 1.15;
-    margin-bottom: 24;
-}
-
-.paragraph-sm {
-    font-size: small;
-    color: ?color-interface-medium;
-    line-height: 1.25;
-    margin-bottom: 12;
-}
-
-.paragraph-xs {
-    font-size: micro;
-    color: ?color-interface-medium;
-    line-height: 1.25;
-    margin-bottom: 8;
-}
-
-.paragraph-lg {
-    font-size: large;
-    color: ?color-interface-medium;
-    line-height: 1;
-    margin-bottom: 16;
-}
-
-/* Text Decoration */
-.text-underline {
-    text-decoration: underline;
-}
-
-.text-strikethrough {
-    text-decoration: strikethrough;
-}
-
-.text-linethrough {
-    text-decoration: line-through;
-}
-
-/* Opacity */
-.o-00, .o-0 {
-    opacity: 0;
-}
-
-.o-10 {
-    opacity: .1;
-}
-
-.o-20 {
-    opacity: .2;
-}
-
-.o-30 {
-    opacity: .3;
-}
-
-.o-40 {
-    opacity: .4;
-}
-
-.o-50 {
-    opacity: .5;
-}
-
-.o-60 {
-    opacity: .6;
-}
-
-.o-70 {
-    opacity: .7;
-}
-
-.o-80 {
-    opacity: .8;
-}
-
-.o-90 {
-    opacity: .9;
-}
-
-/* Leading */
-.leading-none {
-    line-height: 1;
-}
-
-.leading-tight {
-    line-height: 1.1;
-}
-
-.leading-snug {
-    line-height: 1.2;
-}
-
-.leading-normal {
-    line-height: 1.25;
-}
-
-.leading-relaxed {
-    line-height: 1.4;
-}
-
-.leading-loose {
-    line-height: 1.6;
-}
-
-/* Text Alignment */
-.text-center {
-    text-align: center;
-}
-
-.text-right {
-    text-align: end;
-}
-
-.text-left {
-    text-align: start;
-}
-
-.text-start {
-    text-align: start;
-}
-
-.text-end {
-    text-align: end;
-}
-
-/* Border Radius */
-.rounded-none {
-    border-radius: 0;
-}
-
-.rounded-sm {
-    border-radius: 4;
-}
-
-.rounded {
-    border-radius: 8;
-}
-
-.rounded-lg {
-    border-radius: 16;
-}
-
-.rounded-full {
-    border-radius: 1000;
-}
-
- /* Fields */
-fieldgroupheader .required-indicator {
-    margin-top: 2;    
-}
-
-.required-indicator {
-    color: transparent;
-    width: 6;
-    height: 6;
-    border-radius: 3;
-}
-
-fieldgroupheader.required .required-indicator,
-formfield.required .required-indicator,
-.unlabeled.required {
-    color: ?color-danger-strong;
-}
-
-.dark-mode fieldgroupheader.required .required-indicator,
-.dark-mode formfield.required .required-indicator  {
-    color: ?color-danger-soft;
-}
-
-^picker,
-^datepicker {
-    -rock-picker-placeholder-color: ?color-interface-medium;
-    rock-placeholder-text-color: ?color-interface-medium;
-}
-
-^borderlessentry,
-^datepicker,
-^picker,
-^entry, 
-^editor {
-    color: ?color-interface-strong;
-    rock-placeholder-text-color: ?color-interface-medium;
-}
-
-.dark-mode ^borderlessentry,
-.dark-mode ^picker,
-.dark-mode ^editor,
-.dark-mode ^datepicker,
-.dark-mode ^entry {
-    color: ?color-interface-soft;
-}
-
-^FieldStack {
-    border-color: ?color-interface-medium;
-}
-
-formfield, .unlabeled {
-    padding: 8 12;    
-}
-
-^Button {
-    font-style: bold;
-}
-
-/*
-    Control CSS
-    -----------------------------------------------------------
-*/
-/* MobileInsertMark - Used by Mobile Shell to insert it's own standard control CSS */
-
-/* Flyout Styling */
-
-.flyout-menu ^listview {
-    background-color: ?color-brand-strong;
-}
-
-.flyout-menu ^boxview {
-    background-color: #fff;
-    opacity: 0.4;
-}
-
-.flyout-menu-item {
-    font-size: 21;
-}
-
-/* Countdown */
-.countdown-field {
-    width: 32;
-}
-
-.countdown-field-value,
-.countdown-separator-value,
-.countdown-complete-message {
-    font-size: 24;
-    font-style: bold;
-    color: ?color-text;
-}
-
-.countdown-separator-value {
-    color: ?color-interface-stronger;
-}
-
-.countdown-field-label {
-    font-size: 12;
-    color: ?color-interface-stronger;
-}
-
-.countdown-complete .countdown-field-value,
-.countdown-complete .countdown-separator-value {}
-
-.less-than-day .countdown-field-value {}
-.less-than-hour {}
-.less-than-15-min {}
-.less-than-5-min{}
-
-/* Modal */
-.modal {
-    background-color: #ffffff;
-    padding: 0;
-    margin: 48 16;
-    border-radius: 8;
-}
-
-.modal-anchor-top {
-    margin: 0 0 48 0;
-    corner-radius: 0 8;
-}
-
-.modal-anchor-bottom {
-    margin: 48 0 0 0;
-    corner-radius: 8 0;
-}
-
-.modal-header {
-    background-color: ?color-interface-strong;
-    padding: 16;
-}
-
-.modal-body {
-    padding: 16;
-    background-color: #ffffff;
-}
-
-.modal-anchor-top .modal-body {
-    padding-top: 32;
-}
-
-.modal-anchor-bottom .modal-body {
-    padding-bottom: 32;
-}
-
-.modal-close,
-.modal-title {
-    color: #ffffff; 
-}
-
-.modal-title {
-    line-height: 0;
-    margin: 0;
-    padding: 0;
-}
-
-.modal-close {
-    opacity: 0.5;
-}
-
-
-/* Divider */
-.divider {
-    background-color: ?color-interface-medium;
-    height: 1;
-}
-
-.divider-thick {
-    height: 2;
-}
-
-.divider-thicker {
-    height: 4;
-}
-
-.divider-thickest {
-    height: 8;
-}
-
-/*** Alerts ***/
-
-/* Info */
-.alert-info {
-    background-color: ?color-info-soft;
-}
-
-.alert-info .alert-message, .alert-info .alert-heading {
-    color: ?color-info-strong;
-}
-
-.dark-mode .alert-info {
-    background-color: ?color-info-strong;
-}
-
-.dark-mode .alert-info .alert-message, .dark-mode .alert-info .alert-heading {
-    color: ?color-info-soft;
-}
-
-/* Success */
-.alert-success {
-    background-color: ?color-success-soft;
-}
-
-.alert-success .alert-message, .alert-success .alert-heading {
-    color: ?color-success-strong;
-}
-
-.dark-mode .alert-success {
-    background-color: ?color-success-strong;
-}
-
-.dark-mode .alert-success .alert-message, .dark-mode .alert-success .alert-heading {
-    color: ?color-success-soft;
-}
-
-/*  Warning */
-.alert-warning {
-    background-color: ?color-warning-soft;
-}
-
-.alert-warning .alert-message, .alert-warning .alert-heading {
-    color: ?color-warning-strong;
-}
-
-.dark-mode .alert-warning {
-    background-color: ?color-warning-strong;
-}
-
-.dark-mode .alert-warning .alert-message, .dark-mode .alert-warning .alert-heading {
-    color: ?color-warning-soft;
-}
-
-/* Primary */
-.alert-primary {
-    background-color: ?color-primary-soft;
-}
-
-.alert-primary .alert-message, .alert-primary .alert-heading {
-    color: ?color-primary-strong;
-}
-
-.dark-mode .alert-primary {
-    background-color: ?color-primary-strong;
-}
-
-.dark-mode .alert-primary .alert-message, .dark-mode .alert-primary .alert-heading {
-    color: ?color-primary-soft;
-}
-
-/* Secondary */
-.alert-secondary {
-    background-color: ?color-secondary-soft;
-}
-
-.alert-secondary .alert-message, .alert-secondary .alert-heading {
-    color: ?color-secondary-strong;
-}
-
-.dark-mode .alert-secondary {
-    background-color: ?color-secondary-strong;
-}
-
-.dark-mode .alert-secondary .alert-message, .dark-mode .alert-secondary .alert-heading{
-    color: ?color-secondary-soft;
-}
-
-/* Error */
-.alert-danger {
-    background-color: ?color-danger-soft;
-}
-
-.alert-danger .alert-message, .alert-danger .alert-heading {
-    color: ?color-danger-strong;
-}
-
-.dark-mode .alert-danger {
-    background-color: ?color-danger-strong;
-}
-
-.dark-mode .alert-danger .alert-message, .dark-mode .alert-danger .alert-heading {
-    color: ?color-danger-soft;
-}
-
-/* Dark Alert */
-.alert-dark {
-    background-color: ?color-interface-strong;
-}
-
-.alert-dark .alert-message, .alert-dark .alert-heading {
-    color: ?color-interface-soft;
-}
-
-.dark-mode .alert-dark {
-    background-color: ?color-interface-soft;
-}
-
-.dark-mode .alert-dark .alert-message, .dark-mode .alert-dark .alert-heading {
-    color: ?color-interface-strong;
-}
-
-/* Light Alert */
-.alert-light {
-    background-color: ?color-interface-soft;
-}
-
-.alert-light .alert-message, .alert-light .alert-heading {
-    color: ?color-interface-strong;
-}
-
-.dark-mode .alert-light {
-    background-color: ?color-interface-strong;
-}
-
-.dark-mode .alert-light .alert-message, .dark-mode .alert-light .alert-heading {
-    color: ?color-interface-soft;
 }
 
 /*** Buttons ***/
-
 /* Primary */
 .btn.btn-primary {
     background-color: ?color-primary-strong;
@@ -1600,6 +1027,837 @@ formfield, .unlabeled {
     background-color: transparent;
 }
 
+.flyout-menu ^listview {
+    background-color: ?color-brand;
+}
+
+.flyout-menu ^boxview {
+    background-color: #fff;
+    opacity: 0.4;
+}
+
+.flyout-menu-item {
+    font-size: 21;
+}
+
+/* Button Sizes */
+.btn.btn-lg {
+    font-size: large;
+    padding: 20;
+}
+
+/* Visibility Classes */
+.visible {
+    visibility: visible;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.collapse {
+    visibility: collapse;
+}
+
+.text {
+    font-size: ?font-size-default;
+    color: ?color-interface-medium;
+}
+
+/* Opacity */
+.o-00, .o-0 {
+    opacity: 0;
+}
+
+.o-10 {
+    opacity: .1;
+}
+
+.o-20 {
+    opacity: .2;
+}
+
+.o-30 {
+    opacity: .3;
+}
+
+.o-40 {
+    opacity: .4;
+}
+
+.o-50 {
+    opacity: .5;
+}
+
+.o-60 {
+    opacity: .6;
+}
+
+.o-70 {
+    opacity: .7;
+}
+
+.o-80 {
+    opacity: .8;
+}
+
+.o-90 {
+    opacity: .9;
+}
+
+/* Leading */
+.leading-none {
+    line-height: 1;
+}
+
+.leading-tight {
+    line-height: 1.1;
+}
+
+.leading-snug {
+    line-height: 1.2;
+}
+
+.leading-normal {
+    line-height: 1.25;
+}
+
+.leading-relaxed {
+    line-height: 1.4;
+}
+
+.leading-loose {
+    line-height: 1.6;
+}
+
+/* Text Alignment */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: end;
+}
+
+.text-left {
+    text-align: start;
+}
+
+.text-start {
+    text-align: start;
+}
+
+.text-end {
+    text-align: end;
+}
+
+/* Border Radius */
+.rounded-none {
+    border-radius: 0;
+}
+
+.rounded-sm {
+    border-radius: 4;
+}
+
+.rounded {
+    border-radius: 8;
+}
+
+.rounded-lg {
+    border-radius: 16;
+}
+
+.rounded-full {
+    border-radius: 1000;
+}
+
+/* Text Alignment */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: end;
+}
+
+.text-left {
+    text-align: start;
+}
+
+.text-start {
+    text-align: start;
+}
+
+.text-end {
+    text-align: end;
+}
+
+ /* Fields */
+fieldgroupheader .required-indicator {
+    margin-top: 2;    
+}
+
+.required-indicator {
+    color: transparent;
+    width: 6;
+    height: 6;
+    border-radius: 3;
+}
+
+fieldgroupheader.required .required-indicator,
+formfield.required .required-indicator,
+.unlabeled.required {
+    color: ?color-danger-strong;
+}
+
+.dark-mode fieldgroupheader.required .required-indicator,
+.dark-mode formfield.required .required-indicator  {
+    color: ?color-danger-soft;
+}
+
+^picker,
+^datepicker {
+    -rock-picker-placeholder-color: ?color-interface-medium;
+    rock-placeholder-text-color: ?color-interface-medium;
+}
+
+^borderlessentry,
+^datepicker,
+^picker,
+^entry, 
+^editor {
+    color: ?color-interface-strong;
+    rock-placeholder-text-color: ?color-interface-medium;
+}
+
+.dark-mode ^borderlessentry,
+.dark-mode ^picker,
+.dark-mode ^editor,
+.dark-mode ^datepicker,
+.dark-mode ^entry {
+    color: ?color-interface-soft;
+}
+
+^FieldStack {
+    border-color: ?color-interface-medium;
+}
+
+formfield, .unlabeled {
+    padding: 8 12;    
+}";
+            private static string baseStylesWeb = @"";
+
+            private static string legacyStylesMobile = @"/*
+/*
+Resets
+-----------------------------------------------------------
+*/
+
+/* Fixes frame backgrounds from being black while in dark mode */
+
+^editor {
+    background-color: transparent;
+    color: ?color-text;
+    margin: -5, -10;
+}
+
+^frame {
+    background-color: transparent;
+}
+
+^radiobutton {
+    background-color: transparent;
+}
+
+^Page {
+    -rock-status-bar-text: light;
+}
+
+^contentpage {
+    background-color: ?color-background;
+}
+
+^label {
+    font-size: ?font-size-default;
+    color: ?color-text;
+}
+
+icon {
+    color: ?color-text;
+}
+
+/*
+    Utility Classes
+    -----------------------------------------------------------
+*/
+
+.list-item {
+    padding-bottom: 12;
+}
+
+.h1 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: 34;
+    margin-bottom: 0;
+    line-height: 1;
+}
+
+.h2 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: 28;
+    line-height: 1;
+}
+
+.h3 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: 22;
+    line-height: 1.05;
+}
+
+.h4 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: 16;
+    line-height: 1.1;
+}
+
+.h5, .h6 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: 13;
+    line-height: 1.25;
+}
+
+.link{
+    color: ?color-primary;
+}
+
+/* Class for styling code that matches Gitbook */
+.code {
+    background-color: #183055;
+    color: #e6ecf1;
+    padding: 16;
+    font-size: 12;
+}
+
+/* Text Weights */
+.font-weight-bold {
+    font-style: bold;
+}
+
+.font-italic {
+    font-style: italic;
+}
+
+/* Visibility Classes */
+.visible {
+    visibility: visible;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.collapse {
+    visibility: collapse;
+}
+
+/* Text Named Sizes */
+.text {
+    font-size: ?font-size-default;
+    color: ?color-text;
+}
+
+.text-xs {
+    font-size: micro;
+}
+
+.text-sm {
+    font-size: small;
+}
+
+.text-md {
+    font-size: medium;
+}
+
+.text-lg {
+    font-size: large;
+}
+
+.text-title {
+    font-size: title;
+    color: ?color-text;
+}
+
+.text-subtitle {
+    font-size: subtitle;
+}
+
+.text-caption {
+    font-size: caption;
+}
+
+.text-body {
+    font-size: body;
+}
+
+.title {
+    font-style: bold;
+    font-size: ?font-size-default;
+    line-height: 1;
+}
+
+/* Body Styles */
+.paragraph {
+    font-size: ?font-size-default;
+    color: ?color-text;
+    line-height: 1.15;
+    margin-bottom: 24;
+}
+
+.paragraph-sm {
+    font-size: small;
+    color: ?color-text;
+    line-height: 1.25;
+    margin-bottom: 12;
+}
+
+.paragraph-xs {
+    font-size: micro;
+    color: ?color-text;
+    line-height: 1.25;
+    margin-bottom: 8;
+}
+
+.paragraph-lg {
+    font-size: large;
+    color: ?color-text;
+    line-height: 1;
+    margin-bottom: 16;
+}
+
+/* Text Decoration */
+.text-underline {
+    text-decoration: underline;
+}
+
+.text-strikethrough {
+    text-decoration: strikethrough;
+}
+
+.text-linethrough {
+    text-decoration: line-through;
+}
+
+/* Opacity */
+.o-00, .o-0 {
+    opacity: 0;
+}
+
+.o-10 {
+    opacity: .1;
+}
+
+.o-20 {
+    opacity: .2;
+}
+
+.o-30 {
+    opacity: .3;
+}
+
+.o-40 {
+    opacity: .4;
+}
+
+.o-50 {
+    opacity: .5;
+}
+
+.o-60 {
+    opacity: .6;
+}
+
+.o-70 {
+    opacity: .7;
+}
+
+.o-80 {
+    opacity: .8;
+}
+
+.o-90 {
+    opacity: .9;
+}
+
+/* Leading */
+.leading-none {
+    line-height: 1;
+}
+
+.leading-tight {
+    line-height: 1.1;
+}
+
+.leading-snug {
+    line-height: 1.2;
+}
+
+.leading-normal {
+    line-height: 1.25;
+}
+
+.leading-relaxed {
+    line-height: 1.4;
+}
+
+.leading-loose {
+    line-height: 1.6;
+}
+
+/* Text Alignment */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-start {
+    text-align: start;
+}
+
+.text-end {
+    text-align: end;
+}
+
+/* Border Radius */
+.rounded-none {
+    border-radius: 0;
+}
+
+.rounded-sm {
+    border-radius: 4;
+}
+
+.rounded {
+    border-radius: 8;
+}
+
+.rounded-lg {
+    border-radius: 16;
+}
+
+.rounded-full {
+    border-radius: 1000;
+}
+
+/*
+    Control CSS
+    -----------------------------------------------------------
+*/
+/* MobileInsertMark - Used by Mobile Shell to insert it's own standard control CSS */
+
+/* Flyout Styling */
+
+.flyout-menu ^listview {
+    background-color: ?color-brand;
+}
+
+.flyout-menu ^boxview {
+    background-color: #fff;
+    opacity: 0.4;
+}
+
+.flyout-menu-item {
+    font-size: 21;
+}
+
+/* Countdown */
+.countdown-field {
+    width: 32;
+}
+
+.countdown-field-value,
+.countdown-separator-value,
+.countdown-complete-message {
+    font-size: 24;
+    font-style: bold;
+    color: ?color-text;
+}
+
+.countdown-separator-value {
+    color: ?color-gray-500;
+}
+
+.countdown-field-label {
+    font-size: 12;
+    color: ?color-gray-500;
+}
+
+.countdown-complete .countdown-field-value,
+.countdown-complete .countdown-separator-value {}
+
+.less-than-day .countdown-field-value {}
+.less-than-hour {}
+.less-than-15-min {}
+.less-than-5-min{}
+
+/* Modal */
+.modal {
+    background-color: #ffffff;
+    padding: 0;
+    margin: 48 16;
+    border-radius: 8;
+}
+
+.modal-anchor-top {
+    margin: 0 0 48 0;
+    corner-radius: 0 8;
+}
+
+.modal-anchor-bottom {
+    margin: 48 0 0 0;
+    corner-radius: 8 0;
+}
+
+.modal-header {
+    background-color: ?color-gray-400;
+    padding: 16;
+}
+
+.modal-body {
+    padding: 16;
+    background-color: #ffffff;
+}
+
+.modal-anchor-top .modal-body {
+    padding-top: 32;
+}
+
+.modal-anchor-bottom .modal-body {
+    padding-bottom: 32;
+}
+
+.modal-close,
+.modal-title {
+    color: #ffffff; 
+}
+
+.modal-title {
+    line-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.modal-close {
+    opacity: 0.5;
+}
+
+
+/* Divider */
+.divider {
+    background-color: ?color-gray-200;
+    height: 1;
+}
+
+.divider-thick {
+    height: 2;
+}
+
+.divider-thicker {
+    height: 4;
+}
+
+.divider-thickest {
+    height: 8;
+}
+
+/* Buttons */
+.btn {
+    border-radius: ?radius-base;
+    padding: 14 16;
+}
+
+.btn.btn-primary {
+    background-color: ?color-primary;
+    color: #ffffff;
+}
+
+.btn.btn-success {
+    background-color: ?color-success;
+    color: #ffffff;
+}
+
+.btn.btn-info {
+    background-color: ?color-info;
+    color: #ffffff;
+}
+
+.btn.btn-warning {
+    background-color: ?color-warning;
+    color: #ffffff;
+}
+
+.btn.btn-danger {
+    background-color: ?color-danger;
+    color: #ffffff;
+}
+
+.btn.btn-dark {
+    color: #ffffff;
+    background-color: ?color-dark;
+}
+
+.btn.btn-light {
+    color: ?color-text;
+    background-color: ?color-light;
+}
+
+.btn.btn-secondary {
+    color: #ffffff;
+    background-color: ?color-secondary;
+}
+
+.btn.btn-brand {
+    color: #ffffff;
+    background-color: ?color-brand;
+}
+
+.btn.btn-default {
+    color: ?color-primary;
+    border-color: ?color-primary;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-link {
+    color: ?color-primary;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-secondary {
+    color: ?color-secondary;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-success {
+    color: ?color-success;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-danger {
+    color: ?color-danger;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-warning {
+    color: ?color-warning;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-info {
+    color: ?color-info;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-light {
+    color: ?color-text;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-dark {
+    color: ?color-dark;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-link-brand {
+    color: ?color-brand;
+    border-width: 0;
+    background-color: transparent;
+}
+
+.btn.btn-outline-primary {
+    color: ?color-primary;
+    border-color: ?color-primary;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-secondary {
+    color: ?color-secondary;
+    border-color: ?color-secondary;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-success {
+    color: ?color-success;
+    border-color: ?color-success;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-danger {
+    color: ?color-danger;
+    border-color: ?color-danger;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-warning {
+    color: ?color-warning;
+    border-color: ?color-warning;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-info {
+    color: ?color-info;
+    border-color: ?color-info;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-light {
+    color: ?color-text;
+    border-color: ?color-light;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-dark {
+    color: ?color-dark;
+    border-color: ?color-dark;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.btn.btn-outline-brand {
+    color: ?color-brand;
+    border-color: ?color-brand;
+    border-width: 1;
+    background-color: transparent;
+}
+
+
 /* Button Sizes */
 .btn.btn-lg {
     font-size: large;
@@ -1615,41 +1873,41 @@ formfield, .unlabeled {
 /* Toggle Button CSS */
 .toggle-button {
     border-radius: 0;
-    border-color: ?color-primary-strong;
+    border-color: ?color-primary;
     background-color: transparent;
     padding: 9 12 12 12;
 }
 
 .toggle-button .title {
-    color: ?color-primary-strong;
+    color: ?color-primary;
     font-size: large;
 }
 
 .toggle-button .append-text {
-    color: ?color-primary-strong;
+    color: ?color-primary;
     font-size: small;
 }
 
 .toggle-button .icon {
     margin: 3 0 0 0;
-    color: ?color-primary-strong;
+    color: ?color-primary;
     font-size: large;
 }
 
 .toggle-button.checked {
-    background-color: ?color-primary-strong;
+    background-color: ?color-primary;
 }
 
 .toggle-button.checked .title {
-    color: ?color-interface-softest;
+    color: white;
 }
 
 .toggle-button.checked .append-text {
-    color: ?color-interface-softest;
+    color: white;
 }
 
 .toggle-button.checked .icon {
-    color: ?color-interface-softest;
+    color: white;
 }
 
 /*
@@ -1661,7 +1919,7 @@ formfield, .unlabeled {
 .noteeditor {
     border-color: ?color-text;
     padding: 8;
-    background-color: ?color-interface-softer;
+    background-color: ?color-gray-100;
     margin-top: 12;
     margin-bottom: 12;
 }
@@ -1698,106 +1956,6 @@ formfield, .unlabeled {
     font-size: 28;
 }
 
-
-/*** Search Block ***/
-.block-search .search-frame {
-  border-color: #c4c4c4;
-  border-radius: 20;
-  
-  margin: 0, 12;
-}
-
-.search-field-layout {
-  column-gap: 4;
-}
-
-.search-layout {
-  row-gap: 4;
-}
-
-.search-item-container {
-  padding: 8;
-  background-color: initial;
-  height: 58;
-}
-
-.search-item-container .search-image {
-  width: 40;
-  height: 40;
-  margin: 0, 4, 14, 0;
-}
-
-.search-item-container .search-item-name {
-  font-size: 17;
-  font-style: bold;
-}
-
-.location-preference-btn,.signup-btn {
-  margin: 0, 0, 0, 4;
-}
-
-.search-loading-indicator {
-  height: 24;
-}
-
-/*** Notification Message List Block ***/
-.block-notification-message-list .btn-filter,
-.block-notification-message-list .btn-mark-all-read {
-  background-color: transparent;
-}
-
-.block-notification-message-list .btn-filter.active {
-  background-color: #eee;
-}
-
-.block-notification-message-list .result-image {
-  height: 48;
-  width: 48;
-}
-
-.block-notification-message-list .result-layout {
-  col-gap: 8;
-  row-gap: 8;
-}
-
-.block-notification-message-list .icon-count-view {
-  height: 32;
-  width: 32;
-}
-
-.block-notification-message-list .message-date,
-.block-notification-message-list .item-chevron {
-  font-size: 12;
-  margin-bottom: 6;
-  color: #666666;
-}
-
-.block-notification-message-list .unread-indicator {
-  height: 12;
-  width: 12;
-  border-radius: 6;
-  padding: 0;
-  background-color: #d4442e;
-}
-
-.block-notification-message-list .date-chevron-layout {
-  -xf-spacing: 2;
-}
-
-.block-notification-message-list .header-view {
-  height: 40;
-  col-gap: 0;
-  row-gap: 0;
-}
-
-.block-notification-message-list .header-view .btn-filter,
-.block-notification-message-list .header-view .btn-mark-all-read {
-    margin: 4, 0, 8, 0;
-}
-
-.block-notification-message-list .text-label {
-  margin: 0, 0, 12, 0;
-}
 
 /* My Prayer Requests */
 .block-my-prayer-requests .prayer-request-list {
@@ -1841,7 +1999,7 @@ formfield, .unlabeled {
 .calendar-filter {
     padding: 8;
     border-radius: ?radius-base;
-    background-color: ?color-interface-softer;
+    background-color: ?color-gray-200;
 }
 
 .calendar-filter label,
@@ -1880,14 +2038,14 @@ formfield, .unlabeled {
     background-color: initial;
 }
 .calendar-day-current {
-    background-color: ?color-interface-softer;
+    background-color: ?color-gray-200;
 }
 .calendar-day-current .calendar-day-title {
     color: ?color-text;
 }
 
 .calendar-day-adjacent .calendar-day-title {
-    color: ?color-interface-soft;
+    color: ?color-gray-400;
 }
 
 .calendar-events-heading {
@@ -1907,13 +2065,13 @@ formfield, .unlabeled {
 .calendar-event {
     padding: 12;
     border-radius: ?radius-base;
-    background-color: ?color-interface-softer;
+    background-color: ?color-gray-200;
     margin-bottom: 24;
 }
 
 .calendar-event-summary {
     padding: 0;
-    background-color: ?color-interface-softer;
+    background-color: ?color-gray-200;
 }
 
 .calendar-event-title {
@@ -1944,6 +2102,100 @@ formfield, .unlabeled {
 
 .next-month {
     padding-right: 0;
+}
+
+/* Forms Styles */
+
+.form-group {
+    margin: 0 0 12 0;
+}
+
+.form-group .form-group-title {
+    margin: 0 0 5 0;
+    color: ?color-primary;
+    font-size: 12;
+}
+
+.form-field {
+    padding: 12;
+    color: #282828;
+}
+^borderlessentry,
+^datepicker,
+^checkbox, 
+^picker,
+^entry, 
+^switch,
+^editor {
+    color: ?color-text;
+    font-size: ?font-size-default;
+}
+
+^literal {
+    line-height: 1.15;
+    margin-bottom: 16;
+}
+
+^editor {
+    margin: -5, -10;
+}
+
+/* Field Titles */
+fieldgroupheader {
+   
+}
+
+fieldgroupheader .title,
+formfield .title {
+    color: ?color-text;
+    font-style: bold;
+    font-size: ?font-size-default;
+}
+
+fieldgroupheader.error .title,
+formfield.error .title {
+    color: ?color-danger;
+}
+
+formfield .title {
+    margin-right: 12;
+    line-height: 1;
+}
+
+/* Required Indicator */
+fieldgroupheader .required-indicator,
+formfield .required-indicator {
+    color: transparent;
+    width: 4;
+    height: 4;
+    border-radius: 2;
+}
+
+fieldgroupheader.required .required-indicator,
+formfield.required .required-indicator {
+    color: ?color-danger;
+}
+
+/* Field Stacks */
+^fieldstack {
+    border-radius: 0;
+    border-color: ?color-secondary;
+    border-width: 1;
+    margin-top: 4;
+    margin-bottom: 12;
+}
+
+/* Form Fields  */
+formfield {
+    padding: 12 12 12 6;
+}
+
+fieldcontainer > .no-fieldstack {
+    margin-bottom: 12;
+}
+
+formfield .required-indicator {
+    margin-right: 4;
 }
 
 /* Cards */
@@ -2125,6 +2377,9 @@ formfield, .unlabeled {
     font-style: bold;
 }
 
+
+
+
 /*** Connection Opportunity List block ***/
 .connection-opportunity-list-layout .connection-opportunities {
     margin: 0, 12, 0, 0;
@@ -2159,6 +2414,7 @@ formfield, .unlabeled {
     background-color: #007acc;
     color: #fff;
 }
+
 
 /*** Connection Request List block ***/
 .connection-request-list-layout .connection-requests {
@@ -2199,253 +2455,7 @@ formfield, .unlabeled {
     color: #fff;
 }
 
-/*** Onboarding Block ***/
-.block-onboard-person .other-campus-buttons {
-  column-gap: 6;
-}
-
-.block-onboard-person .screen-campus-sticky {
-    padding-bottom: 12;
-}
-
-.block-onboard-person .screen-interests-sticky {
-    padding-bottom: 12;
-}
-
-.block-onboard-person .screen {
-    padding: 16,24,16,24;
-}
-
-.block-onboard-person .header {
-    -xf-spacing: 8;
-}
-
-.android .block-onboard-person .sticky-content {
-    padding-bottom: 24;
-}
-
-.block-onboard-person .screen-personal-information-sticky {
-    padding-bottom: 12;
-}
-
-.block-onboard-person .screen-create-login-sticky {
-    padding-bottom: 12;
-}
-
-.block-onboard-person .header .title {
-  font-size: 36;
-}
-
-.block-onboard-person .mobile-phone-box {
-  rock-placeholder-text-color: #CED4DA;
-}
-
-.block-onboard-person .header .subtitle {
-  font-size: 14;
-}
-
-.block-onboard-person .screen-content {
-    row-gap: 8;
-}
-
-.block-onboard-person .screen-hello .other-signin-text {
-  text-align: center;
-  font-size: 12;
-}
-
-/*** Daily Challenge Entry ***/
-.block-daily-challenge-entry .challenge,
-.block-daily-challenge-entry .challenge-view {
-    -xf-spacing: 0;
-}
-
-.block-daily-challenge-entry .challenge-missed {
-    padding: 20;
-}
-
-.block-daily-challenge-entry .challenge-item {
-    padding: 20;
-    background: linear-gradient(270deg, #00000000 0%, #17000000 100%);
-}
-
-.block-daily-challenge-entry .challenge .input-field ^FormField {
-    background: white;
-}
-
-.block-daily-challenge-entry .memo-field {
-    height: 75;
-}
-
-.field-section {
-    margin-bottom: 12;
-}
-
-/*** Notes ***/
-.notes-container .notes-empty {
-  margin: 16;
-}
-
-.note-edit-container {
-  padding: 16;
-}
-
-.note-container {
-  padding: 14, 14, 14, 0;
-  background-color: initial;
-}
-
-.note-container .separator {
-  margin-top: 14;
-}
-
-.note-container-readonly {
-  padding: 14;
-  background-color: initial;
-}
-
-.note-container .note-author-image {
-  width: 40;
-  height: 40;
-  margin: 0, 4, 14, 0;
-}
-
-.notes-container .note-header .note-edit-icon,
-.notes-container .note-header .note-delete-icon {
-  width: 32;
-  height: 32;
-  font-size: 20;
-  color: #b6b6b6;
-  margin: 20, 8, 0, 0;
-}
-
-.notes-container .note-header .note-child-notes {
-  font-size: 17;
-  font-style: bold;
-  margin: 14, 0, 0, 10;
-}
-
-.note-container .note-author {
-  font-size: 17;
-  font-style: bold;
-}
-
-.note-container .note-private-icon {
-  font-size: 12;
-  color: #999999;
-  margin: 4, 0, 4, 0;
-}
-
-.note-container .note-date {
-  font-size: 12;
-  color: #666666;
-}
-
-.note-container .note-text {
-  font-size: 15;
-  color: #666666;
-  margin: 0, 0, 8, 0;
-}
-
-.note-container .note-read-more-icon {
-  font-size: 12;
-  color: #666666;
-  margin: 0, 1, 0, 0;
-}
-
-.note-container .note-reply-count {
-  font-size: 10;
-  color: #2877c0;
-}
-
-.note-container.note-is-alert {
-  background-color: #d4442e;
-}
-.note-container.note-is-alert .note-author,
-.note-container.note-is-alert .note-date,
-.note-container.note-is-alert .note-text,
-.note-container.note-is-alert .note-read-more-icon {
-  color: #e7e7e7;
-}
-.note-container.note-is-alert .note-private-icon,
-.note-container.note-is-alert .note-reply-count {
-  color: #b3b3b3;
-}
-
 /*** Connection Request Detail Block ***/
-.connection-request-detail-view-content {
-  margin: 12;
-  -xf-spacing: 0;
-}
-
-.add-activity-sheet {
-  padding: 12;
-  background-color: #f3f2f7;
-}
-
-.add-activity-sheet ^FieldStack {
-  background-color: white;
-}
-
-.connection-request-detail-layout {
-  padding: 12;
-  background-color: #f3f2f7;
-}
-
-.connection-request-detail-layout ^FieldStack {
-  background-color: white;
-}
-
-.person-name-and-status {
-    -xf-spacing: 0;
-}
-
-.search-icon {
-    color: #ffffff;
-}
-
-.modal-close {
-    font-size: 32;
-}
-
-.results-layout {
-    padding: 0;
-    margin: 0;
-}
-
-.activity-container .activity-author-image {
-  width: 40;
-  height: 40;
-}
-
-.activity-container .activity-date {
-  font-size: 12;
-  color: #666666;
-}
-
-.activity-container .activity-text {
-  font-size: 15;
-  color: #666666;
-}
-
-.activity-container .activity-read-more-icon {
-  font-size: 12;
-  color: #666666;
-}
-
-.activity-container {
-  background-color: white;
-  row-gap: 0;
-  padding: 12, 12, 12, 0;
-}
-
-.activity-container .divider {
-  margin-top: 12;
-}
-
-.connection-request-detail-content .actions {
-  margin: 0, 0, 0, 8;
-}
-
 .connection-request-detail-content {
     -xf-spacing: 0;
 }
@@ -2627,29 +2637,6 @@ formfield, .unlabeled {
     margin: 0, 12, 0, 0;
 }
 
-
-/*** Group Member List Block ***/
-.group-member-list-header {
-  -xf-spacing: 2;
-}
-
-.member-container {
-  padding: 14;
-  background-color: initial;
-  height: 58;
-}
-
-.member-container .member-person-image {
-  width: 40;
-  height: 40;
-  margin: 0, 4, 14, 0;
-}
-
-.member-container .member-name {
-  font-size: 17;
-  font-style: bold;
-}
-
 /*** Group Schedule Toolbox Block ***/
 
 .schedule-toolbox-container .detail-title
@@ -2740,6 +2727,91 @@ formfield, .unlabeled {
     height: 30;
 }
 /*** Reminder Blocks ***/
+.reminder-type-item-layout {
+  -xf-spacing:0;
+}
+
+.reminder-type-item {
+  padding: 8;
+}
+
+.reminder-type-item .reminder-type-info-layout {
+  -xf-spacing: 0;
+}
+
+.reminder-type-item .reminder-type-count-label-and-icon-layout {
+  -xf-spacing: 8;
+}
+
+.reminder-type-item .reminder-icon-frame {
+  width: 48;
+  height: 48;
+  border-radius: 24;
+  padding: 0;
+}
+
+.reminder-type-item .reminder-icon-frame ^Icon {
+  color: white;
+  font-size: 22;
+}
+
+.filtered-reminder-card {
+  padding: 16;
+  border-color: #c2c1be;
+  border-width: 1;
+  border-radius: 8;
+}
+
+.filtered-reminder-card ^stacklayout {
+  -xf-spacing: 0;
+}
+
+.filtered-reminder-card .icon-frame {
+  width: 64;
+  height: 64;
+  border-radius: 32;
+  padding: 0;
+}
+
+.filtered-reminder-card .icon-frame ^Icon {
+  font-size: 28;
+}
+
+/* I want this to also apply a background color to
+the .filter-card-icon class */
+.filtered-reminder-card .reminders-all, .reminders-all .icon-frame { 
+  background-color: #E2D8D8;
+}
+
+.filtered-reminder-card .reminders-due, .reminders-due .icon-frame  {
+  background-color: #FBC0C0;
+}
+
+.filtered-reminder-card .reminders-future, .reminders-future .icon-frame  {
+  background-color: #C0E5FB;
+}
+
+.filtered-reminder-card .reminders-completed, .reminders-completed .icon-frame {
+  background-color: #C0FBE7;
+}
+
+.reminder-dashboard-layout {
+  -xf-spacing: 0;
+}
+
+.add-reminder-icon-frame { 
+  background-color: #009CE3;
+  width: 24;
+  height: 24;
+  border-radius: 12;
+  padding: 0;
+}
+
+.add-reminder-icon-frame ^Icon {
+  font-size: 16;
+  color: white;
+}
+
 .reminder-date {
   color: #a3a0a0;
 }
@@ -2762,138 +2834,6 @@ formfield, .unlabeled {
 
 .reminder-type-frame {
   padding: 0;
-}
-
-/*** SMS Conversation Block ***/
-.block-sms-conversation .header-view {
-    background-color: #f9f4f8;
-    height: 54;
-}
-
-.block-sms-conversation .title-and-subtitle {
-    -xf-spacing: 0;
-}
-
-.block-sms-conversation .header-view .phone-icon {
-    color: #007aff;
-}
-
-.block-sms-conversation .header-view .title {
-    color: #000000;
-}
-
-.block-sms-conversation .header-view .subtitle {
-    color: #827f81;
-}
-
-.block-sms-conversation .reconnecting-view {
-    background-color: #f9f4f8;
-}
-
-.block-sms-conversation .reconnecting-text {
-    color: #000000;
-}
-
-.block-sms-conversation .header-separator {
-    background-color: #e5e5e5;
-    height: 1;
-}
-
-.block-sms-conversation .input-view {
-    col-gap: 6;
-    margin: 0 12;
-}
-
-.block-sms-conversation .input-view .send-icon {
-    color: #ffffff;
-    background-color: #009ce3;
-}
-
-.block-sms-conversation .input-view .send-icon-disabled {
-    color: #ffffff;
-    background-color: #e1e2e5;
-}
-
-.block-sms-conversation .input-view .input-frame {
-    border-color: #c4c4c4;
-}
-
-.block-sms-conversation .snippets-view {
-    background-color: #d5d8dd;
-}
-
-.block-sms-conversation .snippets-view .close-icon {
-    color: #999999;
-}
-
-.block-sms-conversation .snippets-view .snippet {
-    background-color: #ffffff;
-}
-
-.block-sms-conversation .input-grid {
-    col-gap: 0;
-    row-gap: 0;
-    margin: 12, 6, 6, 6;
-}
-
-/*** SMS Conversation List Block ***/
-.block-sms-conversation-list .header-view {
-    background-color: #f9f4f8;
-    height: 54;
-}
-
-.block-sms-conversation-list .header-view .expand-icon {
-    color: #a0a0a0;
-}
-
-.block-sms-conversation-list .header-view .new-icon {
-    color: #007aff;
-}
-
-.block-sms-conversation-list .reconnecting-view {
-    background-color: #f9f4f8;
-}
-
-.block-sms-conversation-list .reconnecting-text {
-    color: #000000;
-}
-
-.block-sms-conversation-list .header-separator {
-    background-color: #e5e5e5;
-    height: 1;
-}
-
-.block-sms-conversation-list .conversation .unread-icon {
-    color: #009ce3;
-}
-
-.block-sms-conversation-list .conversation .more-icon {
-    color: #009ce3;
-}
-
-^PersonSearchView .search-frame {
-    border-color: #c4c4c4;
-    border-radius: 20;
-}
-
-^PersonSearchView .select-icon {
-    color: #009ce3;
-}
-
-^PersonSearchView .result-detail-view {
-    background-color: #f9f9f9;
-    border-radius: 8;
-}
-
-^PersonSearchView .result-item-view {
-    padding: 8, 8, 8, 0;
-    col-gap: 4;
-    row-gap: 0;
-}
-
-^PersonSearchView .divider {
-    margin-top: 8;
-    padding: 0;
 }
 
 /* Person Profile Blocks */
@@ -2921,8 +2861,8 @@ formfield, .unlabeled {
   padding: 0;
 }
 
-.block-personprofile .block-panel .items-frame .item-layout,
-.block-attributevalues .block-panel .items-frame .item-layout {
+.block-personprofile .block-panel .items-frame .item-flex-layout,
+.block-attributevalues .block-panel .items-frame .item-flex-layout {
   padding: 0, 8;
 }
 
@@ -2948,10 +2888,7 @@ formfield, .unlabeled {
 .person-profile-email-edit-sheet.email-field-container ^SwitchList ^Divider {
   padding: 0, 8;
   margin: 0;
-}
-";
-            private static string baseStylesWeb = @"";
-
+}";
             #endregion
         }
     }
