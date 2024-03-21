@@ -16,6 +16,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
+    [TestCategory("Core.Crm.Person")]
     public class PersonServiceTests : DatabaseTestsBase
     {
         #region Setup
