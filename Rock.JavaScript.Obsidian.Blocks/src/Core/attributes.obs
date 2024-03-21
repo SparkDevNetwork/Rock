@@ -106,14 +106,7 @@
     import { PreferenceKey } from "./Attributes/types.partial";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-
-    type BlockConfiguration = {
-        entityTypeGuid?: Guid;
-        entityTypes?: ListItemBag[];
-        hideColumns: string[];
-        enableShowInGrid: boolean;
-        allowSettingOfValues: boolean;
-    };
+    import { AttributesOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/Attributes/attributesOptionsBag";
 
     type EditAttribute = {
         entityTypeQualifierColumn?: string | null;
@@ -145,18 +138,18 @@
         rows?: GridRow[];
     }
 
-    const config = useConfigurationValues<ListBlockBox<BlockConfiguration>>();
+    const config = useConfigurationValues<ListBlockBox<AttributesOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
 
     /** True if the entity type picker should be visible on the page. */
-    const showEntityTypePicker = computed(() => !config.options?.entityTypeGuid);
+    const showEntityTypePicker = computed(() => !config?.options?.entityTypeGuid);
 
     /** The list of entity types to show in the entity type picker. */
-    const entityTypeOptions = computed(() => config.options?.entityTypes ?? []);
+    const entityTypeOptions = computed(() => config?.options?.entityTypes ?? []);
 
     /** True if the entity type qualifier text boxes should be shown. */
-    const showEntityTypeQualifier = computed(() => !config.options?.entityTypeGuid);
+    const showEntityTypeQualifier = computed(() => !config?.options?.entityTypeGuid);
 
     // #region Attribute Editing
 
@@ -322,7 +315,7 @@
      * @param row The row that initiated the action.
      */
     async function onEditAttributeValue(key: Guid): Promise<void> {
-        if (!config.options?.allowSettingOfValues) {
+        if (!config?.options?.allowSettingOfValues) {
             return;
         }
 
@@ -392,10 +385,10 @@
     const activeFilter = ref(preferences.getValue(PreferenceKey.FilterActive));
 
     /** The currently selected entity type by the user. */
-    const entityTypeGuid = computed(() => config.options?.entityTypeGuid || entityTypeGuidFilter.value);
+    const entityTypeGuid = computed(() => config?.options?.entityTypeGuid || entityTypeGuidFilter.value);
 
     /** True if we have a valid entity type selected or via configuration. */
-    const entityTypeSelectionIsValid = computed(() => !!config.options?.entityTypeGuid || entityTypeGuidFilter.value !== "");
+    const entityTypeSelectionIsValid = computed(() => !!config?.options?.entityTypeGuid || entityTypeGuidFilter.value !== "");
 
     /** Whether or not the modal for editing filters should be shown */
     const showFilterModal = ref(false);

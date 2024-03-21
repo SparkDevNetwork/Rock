@@ -81,7 +81,6 @@ export abstract class FieldTypeBase implements IFieldType {
                 return {
                     content: computed(() => {
                         return this.getHtmlValue(props.modelValue ?? "", props.configurationValues, props.isEscaped);
-                        // return props.isEscaped ? escapeHtml(html) : html;
                     })
                 };
             },
@@ -98,7 +97,6 @@ export abstract class FieldTypeBase implements IFieldType {
                 return {
                     content: computed(() => {
                         return this.getCondensedHtmlValue(props.modelValue ?? "", props.configurationValues, props.isEscaped);
-                        // return props.isEscaped ? escapeHtml(html) : html;
                     })
                 };
             },
