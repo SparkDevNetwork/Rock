@@ -29,6 +29,5 @@
 <script setup lang="ts">
     import NativeViewTransition from "./nativeViewTransition.partial";
 
-    // @ts-expect-error startViewTransition is not standard yet.
-    const hasNativeViewTransitions = !!document.startViewTransition;
+    const hasNativeViewTransitions = !!document["startViewTransition"];
 </script>

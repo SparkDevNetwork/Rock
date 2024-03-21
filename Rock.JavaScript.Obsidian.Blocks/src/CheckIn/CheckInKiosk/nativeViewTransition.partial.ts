@@ -61,8 +61,6 @@ const NativeViewTransition: ComponentOptions = {
 
         return () => {
             const children = slots.default && getTransitionRawChildren(slots.default(), true);
-            // const oldHasNonComment = hasNonComment(instance?.subTree.children as VNode[]);
-            // const newHasNonComment = hasNonComment(children);
 
             if (areChildrenSame(children, instance?.subTree?.children as VNode[])) {
                 return children;
