@@ -95,9 +95,10 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private ContentChannelListOptionsBag GetBoxOptions()
         {
-            var options = new ContentChannelListOptionsBag();
-
-            options.ContentChannelTypeItems = ContentChannelTypeCache.All().OrderBy( c => c.Name ).ToListItemBagList();
+            var options = new ContentChannelListOptionsBag
+            {
+                ContentChannelTypeItems = ContentChannelTypeCache.All().OrderBy( c => c.Name ).ToListItemBagList()
+            };
 
             return options;
         }
@@ -210,6 +211,7 @@ namespace Rock.Blocks.Cms
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new ContentChannelService( rockContext );
+                var contentChannelItemService = new ContentChannelItemService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( entity == null )
@@ -228,10 +230,18 @@ namespace Rock.Blocks.Cms
                 }
 
                 entity.ParentContentChannels.Clear();
-                entity.ChildContentChannels.Clear();
 
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    var channelItemsToDelete = contentChannelItemService
+                        .Queryable()
+                        .Where( t => t.ContentChannelId == entity.Id );
+
+                    contentChannelItemService.DeleteRange( channelItemsToDelete );
+
+                    entityService.Delete( entity );
+                    rockContext.SaveChanges();
+                } );
 
                 return ActionOk();
             }

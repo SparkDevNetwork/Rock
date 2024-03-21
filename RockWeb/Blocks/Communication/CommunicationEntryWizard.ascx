@@ -282,9 +282,11 @@
                                             Label="Communication Medium"
                                             Help="The communication medium that you would like to send your message through."
                                             RepeatDirection="Horizontal"
-                                            CssClass="js-medium-radio" />
+                                            CssClass="js-medium-radio"
+                                            AutoPostBack="true"
+                                            OnSelectedIndexChanged="rblCommunicationMedium_SelectedIndexChanged" />
 
-                                        <span class="small help-block js-medium-recipientpreference-notification" style="display: none">Selecting 'Recipient Preference' will require adding content for email and SMS mediums.</span>
+                                        <span runat="server" ID="spnRecipientPreferenceNotification" class="small help-block js-medium-recipientpreference-notification" Visible="false">Selecting 'Recipient Preference' will require adding content for email and SMS mediums.</span>
                                     </div>
                                 </div>
 
@@ -1613,10 +1615,6 @@
                         }
                     });
                 }
-
-                $('.js-medium-radio input').on('click', function (e) {
-                    setActiveMediumTypeButton($(this));
-                });
 
                 $(".js-send-communications-date input").on('change', function (e) {
                     var ctrl = $(this);

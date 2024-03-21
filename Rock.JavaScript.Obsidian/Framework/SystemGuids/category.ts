@@ -47,6 +47,8 @@ export const Category = {
     HistoryGroup: "180C5767-8769-4C51-865F-FEE29AEF80A0",
     /** History of group changes */
     HistoryGroupChanges: "089EB47D-D0EF-493E-B867-DC51BCDEF319",
+    /** History of location changes */
+    HistoryLocation: "67E8F6D1-2F20-43FD-BAEC-144E70428AC3",
     /** History changes for person */
     HistoryPerson: "6F09163D-7DDD-4E1E-8D18-D7CAA04451A7",
     /** History of person activity */

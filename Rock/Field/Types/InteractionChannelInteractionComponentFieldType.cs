@@ -58,7 +58,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            var configurationValues =  base.GetPrivateConfigurationValues( publicConfigurationValues );
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
             if ( configurationValues.TryGetValue( ConfigKey.DefaultInteractionChannelGuid, out string interactionChannelJson ) )
             {
@@ -135,10 +135,13 @@ namespace Rock.Field.Types
             {
                 GetModelsFromAttributeValue( privateValue, out var interactionChannel, out var interactionComponent );
 
-                if ( interactionComponent != null )
+                var jsonValue = new JsonValue
                 {
-                    return interactionComponent.ToListItemBag().ToCamelCaseJson( false, true );
-                }
+                    InteractionChannel = interactionChannel?.ToListItemBag(),
+                    InteractionComponent = interactionComponent?.ToListItemBag()
+                };
+
+                return jsonValue.ToCamelCaseJson( false, true );
             }
 
             return string.Empty;
@@ -147,20 +150,8 @@ namespace Rock.Field.Types
         /// <inheritdoc />
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var jsonValue = publicValue.FromJsonOrNull<ListItemBag>();
-
-            if ( jsonValue != null )
-            {
-                var componentGuid = jsonValue.Value.AsGuidOrNull();
-
-                if ( componentGuid.HasValue )
-                {
-                    var component = InteractionComponentCache.Get( componentGuid.Value );
-                    return $"{component.InteractionChannel.Guid}|{componentGuid}";
-                }
-            }
-
-            return string.Empty;
+            var jsonValue = publicValue.FromJsonOrNull<JsonValue>();
+            return jsonValue != null ? $"{jsonValue.InteractionChannel?.Value}|{jsonValue.InteractionComponent?.Value}" : string.Empty;
         }
 
         #region Parse Helpers
@@ -450,6 +441,19 @@ namespace Rock.Field.Types
         }
 
 #endif
+        #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// Data sent to the obsidian client.
+        /// </summary>
+        private sealed class JsonValue
+        {
+            public ListItemBag InteractionChannel { get; set; }
+            public ListItemBag InteractionComponent { get; set; }
+        }
+
         #endregion
     }
 }

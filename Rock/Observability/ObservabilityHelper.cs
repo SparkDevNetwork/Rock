@@ -180,7 +180,7 @@ namespace Rock.Observability
 
                    .SetResourceBuilder(
                        ResourceBuilder.CreateDefault()
-                           .AddService( serviceName: serviceName, serviceVersion: "1.0.0" ) )
+                           .AddService( serviceName: serviceName, serviceVersion: "1.0.0", serviceInstanceId: GetServiceInstanceId() ) )
                    .Build();
 
                 // If there was already a trace provider running call the ActivitySource refresh to ensure it knows to update it's service name
@@ -214,21 +214,8 @@ namespace Rock.Observability
 
             if ( observabilityEnabled && endpointUri != null )
             {
-                var nodeName = RockMessageBus.NodeName.ToLower();
-                var machineName = _machineName.Value;
-                string instanceId;
-
-                if ( nodeName != machineName )
-                {
-                    instanceId = $"{machineName} ({nodeName})";
-                }
-                else
-                {
-                    instanceId = machineName;
-                }
-
                 _currentMeterProvider = Sdk.CreateMeterProviderBuilder()
-                    .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0", serviceInstanceId: instanceId ) )
+                    .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0", serviceInstanceId: GetServiceInstanceId() ) )
                     .AddMeter( serviceName )
                     .AddOtlpExporter( o =>
                     {
@@ -286,6 +273,12 @@ namespace Rock.Observability
                 var machineName = _machineName.Value;
                 var instanceId = nodeName != machineName ? $"{machineName} ({nodeName})" : machineName;
 
+                if ( string.IsNullOrWhiteSpace( ServiceName ) )
+                {
+                    // The Observability service is not configured, so exit.
+                    return;
+                }
+
                 var resourceBuilder = ResourceBuilder.CreateDefault()
                     .AddService( serviceName: ServiceName, serviceVersion: "1.0.0", serviceInstanceId: instanceId );
 
@@ -313,9 +306,9 @@ namespace Rock.Observability
             if ( Activity.Current != null )
             {
                 var rootActivity = GetRootActivity( Activity.Current );
-                var childCount = rootActivity.GetTagItem( "rock-descendant-count" ) as int? ?? 0;
+                var childCount = rootActivity.GetTagItem( "rock.descendant_count" ) as int? ?? 0;
 
-                rootActivity.SetTag( "rock-descendant-count", childCount + 1 );
+                rootActivity.SetTag( "rock.descendant_count", childCount + 1 );
 
                 // Subtract one since the root activity is not counted in childCount.
                 if ( childCount >= SpanCountLimit - 1 )
@@ -335,7 +328,7 @@ namespace Rock.Observability
             var machineName = _machineName.Value;
 
             // Add on default attributes
-            activity.AddTag( "rock-node", nodeName );
+            activity.AddTag( "rock.node", nodeName );
 
             if (nodeName != machineName )
             {
@@ -357,7 +350,7 @@ namespace Rock.Observability
         /// </summary>
         /// <param name="activity">The activity to start with when walking up the ancestor tree.</param>
         /// <returns>The ancestor Activity that has no parent or <c>null</c> if <paramref name="activity"/> was also null.</returns>
-        private static Activity GetRootActivity( Activity activity )
+        internal static Activity GetRootActivity( Activity activity )
         {
             if ( activity == null )
             {
@@ -403,6 +396,25 @@ namespace Rock.Observability
             }
 
             return new Uri( string.Concat( uri.AbsoluteUri, separator, path ) );
+        }
+
+        /// <summary>
+        /// Gets the service instance identifier.
+        /// </summary>
+        /// <returns>A string containing the instance identifier.</returns>
+        private static string GetServiceInstanceId()
+        {
+            var nodeName = RockMessageBus.NodeName.ToLower();
+            var machineName = _machineName.Value;
+
+            if ( nodeName != machineName )
+            {
+                return $"{machineName} ({nodeName})";
+            }
+            else
+            {
+                return machineName;
+            }
         }
     }
 }

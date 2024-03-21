@@ -302,6 +302,11 @@ namespace Rock.SystemGuid
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
 
         /// <summary>
+        /// The <see cref="Rock.Jobs.UpdateAnalyticsSourceZipCode" /> job.
+        /// </summary>
+        public const string UPDATE_ANALYTICS_SOURCE_ZIPCODE = "29731D97-699D-4D34-A9F4-50C7C33D5C48";
+
+        /// <summary>
         /// The Post Update Data Migration Job to swap the Notes Block
         /// </summary>
         public const string DATA_MIGRATIONS_SWAP_NOTES_BLOCK = "8390C1AC-88D6-474A-AC05-8FFBD358F75D";
@@ -336,7 +341,7 @@ namespace Rock.SystemGuid
         /// The post update data migration job to chop the Login and Account Entry blocks.
         /// </summary>
         public const string DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS = "A65D26C1-229E-4198-B388-E269C3534BC0";
-        
+
         /// <summary>
         /// The post update data migration job to chop the Email Preference Entry block.
         /// </summary>

@@ -38,13 +38,9 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_SELECTOR )]
     public class MediaSelectorFieldType : FieldType, ILinkableFieldType
     {
-        #region Configuration
-
         private const string MODE_TYPE = "modetype";
         private const string ITEM_WIDTH = "itemwidth";
         private const string MEDIA_ITEMS = "mediaitems";
-
-        #endregion
 
         #region Configuration
 

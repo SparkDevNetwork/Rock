@@ -288,20 +288,33 @@ namespace Rock.Data.Interception
             if ( activity != null )
             {
                 var observabilityInfo = DbCommandObservabilityCache.Get( command.CommandText );
+                var rootActivity = ObservabilityHelper.GetRootActivity( activity );
+                var isTargeted = DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash );
 
                 activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
                 activity.AddTag( "db.system", "mssql" );
-                activity.AddTag( "db.query", command.CommandText.Truncate( ObservabilityHelper.MaximumAttributeLength, false ) );
-                activity.AddTag( "rock-otel-type", "rock-db" );
-                activity.AddTag( "rock-db-hash", observabilityInfo.CommandHash );
+                activity.AddTag( "rock.otel_type", "rock-db" );
+                activity.AddTag( "rock.db.hash", observabilityInfo.CommandHash );
+
+                if ( rootActivity != null )
+                {
+                    var queryCount = rootActivity.GetTagItem( "rock.db.query_count" ) as int? ?? 0;
+
+                    rootActivity.SetTag( "rock.db.query_count", queryCount + 1 );
+                }
+
+                if ( isTargeted || DbCommandObservabilityCache.IsQueryIncluded )
+                {
+                    activity.AddTag( "db.query", command.CommandText.Truncate( ObservabilityHelper.MaximumAttributeLength, false ) );
+                }
 
                 // Check if this query should get additional observability telemetry
-                if ( DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash ) )
+                if ( isTargeted )
                 {
                     // Append stack trace
                     var stackTrace = TrimInfrastructureFromStackTrace( new StackTrace( true ).ToString() );
 
-                    activity.AddTag( "rock-db-stacktrace", stackTrace.Truncate( ObservabilityHelper.MaximumAttributeLength ) );
+                    activity.AddTag( "rock.db.stacktrace", stackTrace.Truncate( ObservabilityHelper.MaximumAttributeLength ) );
 
                     // Append parameters
                     var parameters = new StringBuilder();
@@ -312,7 +325,7 @@ namespace Rock.Data.Interception
                         parameters.Append( $"{keyValue.Key}: {keyValue.Value}{Environment.NewLine}" );
                     }
 
-                    activity.AddTag( "rock-db-parameters", parameters.ToString().Truncate( ObservabilityHelper.MaximumAttributeLength ) );
+                    activity.AddTag( "rock.db.parameters", parameters.ToString().Truncate( ObservabilityHelper.MaximumAttributeLength ) );
                 }
 
                 // Add observability metric
@@ -374,7 +387,7 @@ namespace Rock.Data.Interception
 
                 // Complete the observability activity if it is the correct
                 // activity.
-                if ( activity != null && activity.GetTagItem( "rock-db-hash" ) is string activityHash && queryHash == activityHash )
+                if ( activity != null && activity.GetTagItem( "rock.db.hash" ) is string activityHash && queryHash == activityHash )
                 {
                     activity.Dispose();
                 }

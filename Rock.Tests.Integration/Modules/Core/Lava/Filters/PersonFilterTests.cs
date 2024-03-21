@@ -17,17 +17,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tests.Integration.Organization;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
 {
     /// <summary>
     /// Tests for Lava Filters categorized as "Person".
@@ -128,7 +131,6 @@ namespace Rock.Tests.Integration.Core.Lava
             var campusManager = CampusDataManager.Instance;
             campusManager.AddCampusTestDataSet();
 
-            //var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
 
             var template = @"
@@ -453,6 +455,33 @@ Your token is: <token>
             person.AccountProtectionProfile = profile;
 
             rockContext.SaveChanges();
+        }
+
+        [TestMethod]
+        public void PersonByPersonActionIdentifier_WithValidIdentifier_ReturnsPerson()
+        {
+            var rockContext = new RockContext();
+
+            var person = new PersonService( rockContext ).Queryable().First( x => x.Guid.ToString() == TestGuids.TestPeople.BillMarble );
+            var action = "photo-opt-out";
+            var actionIdentifier = person.GetPersonActionIdentifier( action );
+
+            var values = new LavaDataDictionary()
+            {
+                { "IdentifierToken", actionIdentifier }
+            };
+
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            const string template = @"
+{% assign person = IdentifierToken | PersonByPersonActionIdentifier: 'photo-opt-out' %}
+Current Person Guid = {{ person.Guid }}
+";
+            string outputExpected = $"Current Person Guid = {person.Guid}";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
         }
 
         #endregion

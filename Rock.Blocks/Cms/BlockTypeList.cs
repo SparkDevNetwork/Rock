@@ -212,7 +212,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "description", a => a.Description )
                 .AddTextField( "path", a => a.Path )
                 .AddTextField( "entityTypeId", a => a.EntityTypeId.HasValue ? a.EntityTypeId.Value.ToString() : string.Empty )
-                .AddTextField( "blocksCount", a => a.BlocksCount.ToString() )
+                .AddField( "blocksCount", a => a.BlocksCount )
                 .AddTextField( "status", a => a.Status )
                 .AddField( "isSystem", a => a.IsSystem );
         }

@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Data.SqlClient;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.BulkImport;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Crm.Attendance
+namespace Rock.Tests.Integration.Modules.Crm.Attendance
 {
     [TestClass]
-    public class AttendanceBulkImportTest
+    public class AttendanceBulkImportTest : DatabaseTestsBase
     {
         private AttendancesImport GetAttendancesImport()
         {

@@ -14,16 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.DotLiquid
 {
     /// <summary>
     /// Tests that are specifically intended for the RockLiquid implementation of Lava.
@@ -41,7 +43,7 @@ namespace Rock.Tests.Integration.Core.Lava
         [Ignore( "Enable this test only if needed to test specific aspects of the RockLiquid implementation." )]
         public void DotLiquid_FilterRegisteredToDotLiquidFramework_ProducesCorrectResultInLavaLibrary()
         {
-            DotLiquid.Template.RegisterFilter( typeof( TestDotLiquidFilter ) );
+            global::DotLiquid.Template.RegisterFilter( typeof( TestDotLiquidFilter ) );
 
             var rockContext = new RockContext();
 

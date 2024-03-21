@@ -115,8 +115,14 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" NumberOfColumns="2" />
-                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" NumberOfColumns="2" />
+                            <Rock:AttributeValuesContainer ID="avcGroupMemberAttributes" runat="server" NumberOfColumns="2" />
+                            <Rock:AttributeValuesContainer ID="avcGroupMemberAttributesReadOnly" runat="server" NumberOfColumns="2" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:AttributeValuesContainer ID="avcGroupMemberAssignmentAttributes" runat="server" NumberOfColumns="2" />
+                            <Rock:AttributeValuesContainer ID="avcGroupMemberAssignmentAttributesReadOnly" runat="server" NumberOfColumns="2" />
                         </div>
                     </div>
 

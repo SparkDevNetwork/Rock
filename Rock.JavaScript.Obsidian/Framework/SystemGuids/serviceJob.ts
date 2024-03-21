@@ -155,6 +155,8 @@ export const ServiceJob = {
     StepsAutomation: "97858941-0447-49D6-9E35-B03665FEE965",
     /** The media synchronize job. */
     SyncMedia: "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
+    /** The Rock.Jobs.UpdateAnalyticsSourceZipCode job. */
+    UpdateAnalyticsSourceZipcode: "29731D97-699D-4D34-A9F4-50C7C33D5C48",
     /** The Update Persisted Attribute Values job. */
     UpdatePersistedAttributeValue: "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70",
     /** The Rock.Jobs.UpdatePersistedDatasets job. */

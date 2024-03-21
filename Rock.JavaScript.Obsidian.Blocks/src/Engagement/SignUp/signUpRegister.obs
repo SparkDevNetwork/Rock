@@ -75,7 +75,8 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, provide, ref } from "vue";
+    import { MemberAttributes, MemberOpportunityAttributes } from "./types.partial";
     import RegisterAnonymous from "./SignUpRegister/registerAnonymous.partial.obs";
     import RegisterFamily from "./SignUpRegister/registerFamily.partial.obs";
     import RegisterGroup from "./SignUpRegister/registerGroup.partial.obs";
@@ -93,6 +94,7 @@
     import { SignUpRegisterResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegisterResponseBag";
     import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const config = useConfigurationValues<SignUpRegisterInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -103,6 +105,9 @@
     const registerMode = ref<RegisterMode>(config.mode ?? RegisterMode.Anonymous);
     const communicationPreferenceItems = ref<ListItemBag[]>(config.communicationPreferenceItems ?? []);
     const registrants = ref<SignUpRegistrantBag[]>(config.registrants ?? []);
+
+    const memberAttributes = ref<Record<string, PublicAttributeBag>>(config.memberAttributes ?? {});
+    const memberOpportunityAttributes = ref<Record<string, PublicAttributeBag>>(config.memberOpportunityAttributes ?? {});
 
     const isRegistering = ref(false);
     const errorMessage = ref("");
@@ -203,6 +208,9 @@
     }
 
     // #endregion
+
+    provide(MemberAttributes, memberAttributes);
+    provide(MemberOpportunityAttributes, memberOpportunityAttributes);
 
     onConfigurationValuesChanged(reloadBlock);
 </script>

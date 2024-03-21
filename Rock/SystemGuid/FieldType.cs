@@ -99,6 +99,11 @@ namespace Rock.SystemGuid
         public const string BINARY_FILE_TYPES = "A5365133-FF87-48B3-BCA3-AF6D871F8895";
 
         /// <summary>
+        /// Block Template field type
+        /// </summary>
+        public const string BLOCK_TEMPLATE = "CCD73456-C83B-4D6E-BD69-8133D2EB996D";
+
+        /// <summary>
         /// Boolean field type
         /// </summary>
         public const string BOOLEAN = "1EDAFDED-DFE6-4334-B019-6EECBA89E05A";
@@ -132,6 +137,11 @@ namespace Rock.SystemGuid
         /// Check List field type
         /// </summary>
         public const string CHECK_LIST = "31532E03-CF25-4A9F-855C-BA16C4075679";
+
+        /// <summary>
+        /// Check-In Configuration Type
+        /// </summary>
+        public const string CHECK_IN_CONFIGURATION_TYPE = "7522975C-C224-489A-985D-B44580DFC5BD";
 
         /// <summary>
         /// Code Editor field type
@@ -589,6 +599,11 @@ namespace Rock.SystemGuid
         public const string PHONE_NUMBER = "6B1908EC-12A2-463A-A7BD-970CE0FAF097";
 
         /// <summary>
+        /// Prayer Request field type
+        /// </summary>
+        public const string PRAYER_REQUEST = "E34A29A4-3787-4CF5-9C17-08EFB9E2FD23";
+
+        /// <summary>
         /// Range Slider field type
         /// </summary>
         public const string RANGE_SLIDER = "C8B6C51A-DD7C-4B75-8604-F0580697088E";
@@ -607,6 +622,11 @@ namespace Rock.SystemGuid
         /// Registration Template field type
         /// </summary>
         public const string REGISTRATION_TEMPLATE = "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620";
+
+        /// <summary>
+        /// Registration Templates field type
+        /// </summary>
+        public const string REGISTRATION_TEMPLATES = "F56DED5E-C135-42B2-A529-878CB30436B5";
 
         /// <summary>
         /// Registration Entry field type

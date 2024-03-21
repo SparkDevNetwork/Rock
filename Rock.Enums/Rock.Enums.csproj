@@ -64,6 +64,7 @@
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
     <Compile Include="Cms\BlockLocation.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
+    <Compile Include="Cms\BotGuardianLevel.cs" />
     <Compile Include="Cms\ContentChannelDateType.cs" />
     <Compile Include="Cms\ContentChannelItemStatus.cs" />
     <Compile Include="Cms\ContentCollectionFilterControl.cs" />
@@ -87,7 +88,11 @@
     <Compile Include="Connection\ConnectionTypeViewMode.cs" />
     <Compile Include="Connection\ConnectionWorkflowTriggerType.cs" />
     <Compile Include="Connection\GroupRequirementsFilter.cs" />
+    <Compile Include="Controls\DetailPanelMode.cs" />
     <Compile Include="Controls\MediaSelectorMode.cs" />
+    <Compile Include="Controls\RockCacheabilityType.cs" />
+    <Compile Include="Controls\UniversalItemValuePickerDisplayStyle.cs" />
+    <Compile Include="Core\BenchmarkRepititionMode.cs" />
     <Compile Include="Core\Grid\BooleanFilterMethod.cs" />
     <Compile Include="Core\Grid\DateFilterMethod.cs" />
     <Compile Include="Core\Grid\NumberFilterMethod.cs" />

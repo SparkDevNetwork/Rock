@@ -151,9 +151,21 @@ namespace Rock.Model
             }
         }
 
+        #endregion
+
+        #region Helper Classes
+        /// <summary>
+        /// Result of the <see cref="PersistedDataset.UpdateResultData"/> method.
+        /// </summary>
         public class UpdateResult
         {
+            /// <summary>
+            /// Gets or sets a value indicating whether this <see cref="UpdateResult"/> is a success.
+            /// </summary>
             public bool IsSuccess { get; set; }
+            /// <summary>
+            /// Gets or sets the warning message.
+            /// </summary>
             public string WarningMessage { get; set; }
         }
 

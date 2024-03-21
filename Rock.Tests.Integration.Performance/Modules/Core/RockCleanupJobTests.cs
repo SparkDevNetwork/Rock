@@ -35,7 +35,7 @@ namespace Rock.Tests.Integration.Performance.Core
         {
             TestHelper.ExecuteWithTimer( "Rock Cleanup: Cleanup Interaction Sessions", () =>
             {
-                var jobTests = new global::Rock.Tests.Integration.Core.Jobs.RockCleanupJobTests();
+                var jobTests = new global::Rock.Tests.Integration.Modules.Core.Jobs.RockCleanupJobTests();
 
                 jobTests.RockCleanup_CleanupInteractionSessions_RemovesSessionsWithNoInteractions();
             } );

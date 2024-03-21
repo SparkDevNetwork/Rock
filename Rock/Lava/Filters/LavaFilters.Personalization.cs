@@ -47,7 +47,7 @@ namespace Rock.Lava
                 if ( !personalizationTypes.Any() || personalizationTypes.Contains( "segments" ) )
                 {
                     var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
-                    var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPerson( person, rockContext );
+                    var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context, System.Web.HttpContext.Current, person );
 
                     var segments = PersonalizationSegmentCache.All()
                         .Where( ps => personSegmentIdList.Contains( ps.Id ) )
@@ -131,7 +131,7 @@ namespace Rock.Lava
             var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
             var key = $"PersonalizationSegmentIdList_{ person.Guid }";
-            var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForContext( context, httpContext, person );
+            var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context, httpContext, person );
             var addSegmentIdList = newSegmentIdList.Except( personSegmentIdList ).ToList();
 
             // Add the new Personalization Segments.

@@ -1208,9 +1208,13 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
-
-            ApplySectionVisibilityRules( formSections, formSectionControlLookup );
+            if ( setValues )
+            {
+                // Apply the field visibility rules only if the Edit Values on the FieldVisibilityWrappers are set.
+                // This solves the issue with the Attributes having a partial postback. Reason: GitHub Issue #5602.
+                FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
+                ApplySectionVisibilityRules( formSections, formSectionControlLookup );
+            }
 
             if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {
@@ -1746,7 +1750,7 @@ namespace RockWeb.Blocks.WorkFlow
                         CampusId = person.PrimaryCampusId
                     };
 
-                    newFamilyRockContext.Groups.Add( family );
+                    new GroupService( newFamilyRockContext ).Add( family );
 
                     var adultRoleId = familyGroupType.Roles.Find( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
                     var familyMember = new GroupMember

@@ -25,7 +25,4 @@
 export type ForgotUserNameSendInstructionsRequestBag = {
     /** The email to which to send instructions. */
     email?: string | null;
-
-    /** Gets or sets a value indicating whether the solved captcha is valid. */
-    isCaptchaValid: boolean;
 };

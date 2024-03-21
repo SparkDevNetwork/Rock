@@ -624,14 +624,14 @@ namespace RockWeb.Blocks.Communication
                     var newCommunication = communicationService.Copy( e.RowKeyId, CurrentPersonAliasId );
                     if ( newCommunication != null )
                     {
-                        activity?.AddTag( "rock-communication-to-copy-id", e.RowKeyId );
+                        activity?.AddTag( "rock.communication_to_copy_id", e.RowKeyId );
 
                         communicationService.Add( newCommunication );
                         rockContext.SaveChanges();
 
                         newCommunicationId = newCommunication.Id;
 
-                        activity?.AddTag( "rock-new-communication-id", newCommunicationId );
+                        activity?.AddTag( "rock.new_communication_id", newCommunicationId );
                     }
                 }
             }

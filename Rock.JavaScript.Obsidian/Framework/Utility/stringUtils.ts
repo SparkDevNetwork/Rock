@@ -272,6 +272,18 @@ export function defaultControlCompareValue(value: string, itemValue: string): bo
 }
 
 /**
+ * Determins whether or not a given string contains any HTML tags in.
+ *
+ * @param value The string potentially containing HTML
+ *
+ * @returns true if it contains HTML, otherwise false
+ */
+export function containsHtmlTag(value: string): boolean {
+    return /<\S/.test(value);
+}
+
+
+/**
  * Create a 32-bit integer hash representation of a string.
  *
  * @param str The string to be hashed
@@ -289,9 +301,9 @@ export function createHash(str: string): number {
 
     return hash;
 }
-
 export default {
     asCommaAnd,
+    containsHtmlTag,
     escapeHtml,
     splitCamelCase,
     isNullOrWhiteSpace,

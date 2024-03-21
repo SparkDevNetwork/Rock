@@ -61,7 +61,7 @@
         },
         set(newValue) {
             internalValue.value = {
-                rockCacheabilityType: toNumber(newValue),
+                rockCacheabilityType: <RockCacheabilityType>toNumber(newValue),
                 maxAge: internalValue.value.maxAge,
                 sharedMaxAge: internalValue.value.sharedMaxAge
             };

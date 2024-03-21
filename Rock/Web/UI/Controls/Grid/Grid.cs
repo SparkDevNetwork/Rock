@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -2179,6 +2180,11 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             var workSheetName = "Export";
             var title = "Rock Export";
 
+            // Safely retrieve the cancellation token so Rock can cancel the export if the request is aborted.
+            // Checking if the request is cancelled is cheap but it makes the code less readable,
+            // thus cancellation checks should only be added before performance-heavy regions.
+            var cancellationToken = Context?.GetOwinContext()?.Request?.CallCancelled ?? CancellationToken.None;
+
             // Create the excel file.
             using ( var excel = new ExcelPackage() )
             {
@@ -2231,12 +2237,19 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 var rowCounter = headerRows;
                 var columnCounter = 1;
                 var preventVerticalAlignmentFormatting = false;
+                    
+                // Stop exporting if the client aborted the request.
+                if ( cancellationToken.IsCancellationRequested )
+                {
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
 
                 if ( this.ExportSource == ExcelExportSource.ColumnOutput )
                 {
                     // Columns to export with their column index as the key
                     var gridColumns = new Dictionary<int, DataControlField>();
-                    for ( int i = 0; i < this.CreatedColumns.Count; i++ )
+                    for ( var i = 0; i < this.CreatedColumns.Count; i++ )
                     {
                         var dataField = this.CreatedColumns[i];
                         var rockField = this.CreatedColumns[i] as IRockGridField;
@@ -2255,6 +2268,13 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     {
                         worksheet.Cells[rowCounter, columnCounter].Value = col.Value.HeaderText;
                         columnCounter++;
+                    }
+                    
+                    // Stop exporting if the client aborted the request.
+                    if ( cancellationToken.IsCancellationRequested )
+                    {
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
                     }
 
                     var defaultCellStyle = worksheet.Workbook.Styles.CellXfs.FirstOrDefault();
@@ -2281,6 +2301,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     // and will be updated once RebindGrid is called.
                     while ( this.PageIndex < this.PageCount && this.PageIndex > previousPageIndex )
                     {
+                        // Processing page of data.
+
+                        // Stop exporting if the client aborted the request.
+                        if ( cancellationToken.IsCancellationRequested )
+                        {
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
+
                         // Bind the grid data for the current page.
                         RebindGrid( e, disablePaging: false, isExporting: true, isCommunication: false );
 
@@ -2294,6 +2323,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         var selectedKeys = SelectedKeys.ToList();
                         for ( var i = 0; i < dataItems.Count; i++ )
                         {
+                            // Processing row of data in page.
+                    
+                            // Stop exporting if the client aborted the request.
+                            if ( cancellationToken.IsCancellationRequested )
+                            {
+                                Context.ApplicationInstance.CompleteRequest();
+                                return;
+                            }
+
                             var dataItem = dataItems[i];
                             var gridViewRow = gridViewRows[i];
 
@@ -2315,6 +2353,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             var gridViewRowCellLookup = gridViewRow.Cells.OfType<DataControlFieldCell>().ToDictionary( k => k.ContainingField, v => v );
                             foreach ( var col in gridColumns )
                             {
+                                // Processing cell of data in row.
+
                                 columnCounter++;
 
                                 object exportValue = null;
@@ -2351,12 +2391,19 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     // disable paging if no specific keys where selected (or if no select option is shown)
                     var selectAll = !SelectedKeys.Any();
                     RebindGrid( e, selectAll, isExporting: true, isCommunication: false );
+                    
+                    // Stop exporting if the client aborted the request.
+                    if ( cancellationToken.IsCancellationRequested )
+                    {
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
+                    }
 
                     // DataSourceAsDataTable is only set after RebindGrid is called.
                     if ( this.DataSourceAsDataTable != null )
                     {
                         var gridDataFields = this.Columns.OfType<BoundField>().ToList();
-                        DataTable data = this.DataSourceAsDataTable;
+                        var data = this.DataSourceAsDataTable;
                         columnCounter = 0;
 
                         var encryptedColumns = new List<int>();
@@ -2381,10 +2428,17 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         }
 
                         // print data
-                        int gridRowCounter = 0;
+                        var gridRowCounter = 0;
                         var selectedKeys = SelectedKeys.ToList();
                         foreach ( DataRowView rowView in data.DefaultView )
                         {
+                            // Stop exporting if the client aborted the request.
+                            if ( cancellationToken.IsCancellationRequested )
+                            {
+                                Context.ApplicationInstance.CompleteRequest();
+                                return;
+                            }
+
                             if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                             {
                                 if ( gridRowCounter == this.Rows.Count )
@@ -2414,12 +2468,12 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
                             rowCounter++;
 
-                            for ( int i = 0; i < data.Columns.Count; i++ )
+                            for ( var i = 0; i < data.Columns.Count; i++ )
                             {
                                 var value = encryptedColumns.Contains( i ) ? Security.Encryption.DecryptString( rowView.Row[i].ToString() ) : rowView.Row[i];
                                 value = value.ReverseCurrencyFormatting();
 
-                                int columnIndex = i + 1;
+                                var columnIndex = i + 1;
                                 ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnIndex], value );
 
                                 // Update column formatting based on data
@@ -2430,13 +2484,13 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     else
                     {
                         var definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
-                        Dictionary<PropertyInfo, bool> propIsDefinedValueLookup = new Dictionary<PropertyInfo, bool>();
-                        Dictionary<BoundField, PropertyInfo> boundFieldPropLookup = new Dictionary<BoundField, PropertyInfo>();
+                        var propIsDefinedValueLookup = new Dictionary<PropertyInfo, bool>();
+                        var boundFieldPropLookup = new Dictionary<BoundField, PropertyInfo>();
                         var attributeFields = this.Columns.OfType<AttributeField>().ToList();
                         var lavaFields = new List<LavaField>();
                         var visibleFields = new Dictionary<int, DataControlField>();
 
-                        int fieldOrder = 0;
+                        var fieldOrder = 0;
                         foreach ( DataControlField dataField in this.Columns )
                         {
                             if ( dataField is BoundField )
@@ -2495,11 +2549,18 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                 visibleFields.Add( fieldOrder++, column );
                             }
                         }
+                    
+                        // Stop exporting if the client aborted the request.
+                        if ( cancellationToken.IsCancellationRequested )
+                        {
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
 
                         var oType = GetDataSourceObjectType();
 
                         // get all properties of the objects in the grid
-                        List<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
+                        var allprops = new List<PropertyInfo>( oType.GetProperties() );
 
                         // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
                         allprops = FilterDynamicObjectPropertiesCollection( oType, allprops );
@@ -2507,7 +2568,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                         // The fields are exported in the same order as they appear in the Grid.
                         var props = new List<PropertyInfo>();
-                        foreach ( PropertyInfo prop in allprops )
+                        foreach ( var prop in allprops )
                         {
                             // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                             var getMethod = prop.GetGetMethod();
@@ -2530,12 +2591,19 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         // Grid column headings
                         var boundPropNames = new List<string>();
                         var addedHeaderNames = new List<string>();
+                    
+                        // Stop exporting if the client aborted the request.
+                        if ( cancellationToken.IsCancellationRequested )
+                        {
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
 
                         // Array provides slight performance improvement here over a list
                         var orderedVisibleFields = visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ).ToArray();
-                        for ( int i = 0; i < orderedVisibleFields.Count(); i++ )
+                        for ( var i = 0; i < orderedVisibleFields.Count(); i++ )
                         {
-                            DataControlField dataField = orderedVisibleFields[i];
+                            var dataField = orderedVisibleFields[i];
                             if ( dataField.HeaderText.IsNullOrWhiteSpace() )
                             {
                                 dataField.HeaderText = string.Format( "Column {0}", i );
@@ -2601,17 +2669,24 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             columnCounter++;
                         }
 
-                        string appRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~/" );
-                        string themeRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~~/" );
+                        var appRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~/" );
+                        var themeRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~~/" );
 
                         // print data
                         int dataIndex = 0;
 
-                        IList data = this.DataSourceAsList;
+                        var data = this.DataSourceAsList;
 
                         var selectedKeys = SelectedKeys.ToList();
                         foreach ( var item in data )
                         {
+                            // Stop exporting if the client aborted the request.
+                            if ( cancellationToken.IsCancellationRequested )
+                            {
+                                Context.ApplicationInstance.CompleteRequest();
+                                return;
+                            }
+
                             if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                             {
                                 var dataKeyValue = item.GetPropertyValue( this.DataKeyNames[0] );
@@ -2630,7 +2705,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                 if ( ObjectList != null )
                                 {
                                     // If an object list exists, check to see if the associated object has attributes
-                                    string key = DataKeys[dataIndex].Value.ToString();
+                                    var key = DataKeys[dataIndex].Value.ToString();
                                     if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
                                     {
                                         dataItemWithAttributes = ObjectList[key] as IHasAttributes;
@@ -2662,12 +2737,12 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                 var attributeField = dataField as AttributeField;
                                 if ( attributeField != null )
                                 {
-                                    bool exists = dataItemWithAttributes.Attributes.ContainsKey( attributeField.DataField );
+                                    var exists = dataItemWithAttributes.Attributes.ContainsKey( attributeField.DataField );
                                     if ( exists )
                                     {
                                         var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
-                                        string rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
-                                        string resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false )?.ReverseCurrencyFormatting()?.ToString();
+                                        var rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
+                                        var resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false )?.ReverseCurrencyFormatting()?.ToString();
                                         if ( !string.IsNullOrEmpty( resultHtml ) )
                                         {
                                             worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
@@ -2687,7 +2762,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                     object exportValue = null;
                                     if ( prop != null )
                                     {
-                                        object propValue = prop.GetValue( item, null );
+                                        var propValue = prop.GetValue( item, null );
 
                                         if ( dataField is CallbackField )
                                         {
@@ -2741,7 +2816,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                     }
                                     mergeValues.Add( "Row", item );
 
-                                    string resolvedValue = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
+                                    var resolvedValue = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
                                     resolvedValue = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
 
                                     if ( !string.IsNullOrEmpty( resolvedValue ) )
@@ -2780,7 +2855,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
                             {
                                 columnCounter++;
-                                object propValue = prop.GetValue( item, null );
+                                var propValue = prop.GetValue( item, null );
                                 if ( propValue != null )
                                 {
                                     var cell = worksheet.Cells[rowCounter, columnCounter];
@@ -2796,8 +2871,22 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         }
                     }
                 }
+                    
+                // Stop exporting if the client aborted the request.
+                if ( cancellationToken.IsCancellationRequested )
+                {
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
 
                 worksheet.FormatWorksheet( title, headerRows, rowCounter, columnCounter, preventVerticalAlignmentFormatting );
+                    
+                // Stop exporting if the client aborted the request.
+                if ( cancellationToken.IsCancellationRequested )
+                {
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
 
                 // send the spreadsheet to the browser
                 excel.SendToBrowser( this.Page, filename );
@@ -3658,7 +3747,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 dataKeyField = this.PersonIdField;
             }
 
-            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>().FirstOrDefault( a => a.ColumnName == dataKeyField );
+            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>()
+                .FirstOrDefault( a => string.Equals( a.ColumnName, dataKeyField, StringComparison.OrdinalIgnoreCase ) );
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
             List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();

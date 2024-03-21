@@ -131,6 +131,10 @@ namespace Rock.WebStartup
                 ShowDebugTimingMessage( "Initialize RockContext" );
             }
 
+            LogStartupMessage( "Initializing Timezone" );
+            RockDateTimeHelper.SynchronizeTimeZoneConfiguration( RockDateTime.OrgTimeZoneInfo.Id );
+            ShowDebugTimingMessage( $"Initialize Timezone ({RockDateTime.OrgTimeZoneInfo.Id})" );
+
             RockInstanceConfig.SetDatabaseIsAvailable( true );
 
             // Initialize observability after the database.
@@ -149,7 +153,6 @@ namespace Rock.WebStartup
             LogStartupMessage( "Configuring Date Settings" );
             RockDateTime.FirstDayOfWeek = new AttributeService( new RockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
             InitializeRockGraduationDate();
-
             ShowDebugTimingMessage( "Initialize RockDateTime" );
 
             if ( runMigrationFileInfo.Exists )
@@ -531,7 +534,7 @@ namespace Rock.WebStartup
         /// Searches all assemblies for <see cref="IEntitySaveHook"/> subclasses
         /// that need to be registered in the default save hook provider.
         /// </summary>
-        private static void ConfigureEntitySaveHooks()
+        internal static void ConfigureEntitySaveHooks()
         {
             var hookProvider = Rock.Data.DbContext.SharedSaveHookProvider;
             var entityHookType = typeof( EntitySaveHook<> );
@@ -659,7 +662,7 @@ namespace Rock.WebStartup
                 return result;
             }
 
-            var configConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"]?.ConnectionString;
+            var configConnectionString = RockInstanceConfig.Database.ConnectionString;
 
             try
             {
@@ -984,11 +987,10 @@ namespace Rock.WebStartup
                         name = elementType.Name;
                     }
 
-                    engine.RegisterTag( name, ( shortcodeName ) =>
+                    engine.RegisterTag( name, ( tagName ) =>
                     {
-                        var shortcode = Activator.CreateInstance( elementType ) as ILavaTag;
-
-                        return shortcode;
+                        var tag = Activator.CreateInstance( elementType ) as ILavaTag;
+                        return tag;
                     } );
 
                     try

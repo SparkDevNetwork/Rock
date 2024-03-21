@@ -514,6 +514,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFINED_TYPE_TRANSACTION_SOURCE_ICONCSSCLASS = "9617D1DC-6561-4314-83EB-7F0ACBA2E259";
 
+        /// <summary>
+        /// The Financial Frequency DefinedType > Interval Days DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_FINANCIAL_FREQUENCY_INTERVAL_DAYS = "E18CB1D2-08A9-4D12-BCEA-33369193C869";
+
         #endregion
 
         #region Device Type Attributes

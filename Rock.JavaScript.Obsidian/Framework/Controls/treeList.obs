@@ -2,7 +2,16 @@
 <template>
     <div style="overflow-x: hidden; max-width: 100%;">
         <ul class="rocktree">
-            <TreeListItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
+            <TreeListItem v-for="child in internalItems"
+                          :modelValue="modelValue"
+                          :item="child"
+                          :multiple="multiple"
+                          :disableFolderSelection="disableFolderSelection"
+                          :autoExpand="autoExpand"
+                          :showChildCount="showChildCount"
+                          :provider="provider"
+                          @update:modelValue="onUpdateSelectedValues"
+                          @treeitem-expanded="onItemExpanded" />
         </ul>
     </div>
 </template>
@@ -70,7 +79,7 @@
      */
     const getRootItems = async (): Promise<void> => {
         if (props.provider) {
-            const result = props.provider.getRootItems();
+            const result = props.provider.getRootItems(props.modelValue);
             const rootItems = isPromise(result) ? await result : result;
 
             internalItems.value = JSON.parse(JSON.stringify(rootItems)) as TreeItemBag[];

@@ -27,6 +27,7 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -156,6 +157,11 @@ namespace Rock.Jobs
                                 value will also be updated every time a DataView result is persisted, which is not what we want here.
                             */
                             persistContext.SaveChanges( true );
+
+                            // Because we are disabling the pre-post logic (which
+                            // includes cache flush), we need to manually flush
+                            // the cached item.
+                            DataViewCache.FlushItem( dataView.Id );
 
                             updatedDataViewCount++;
 

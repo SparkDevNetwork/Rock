@@ -146,8 +146,8 @@ namespace Rock.Model
 
             using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW ACTIVITY {ActivityTypeCache?.Name}" ) )
             {
-                diagnosticActivity?.AddTag( "rock-workflow-activitytype-id", ActivityTypeId );
-                diagnosticActivity?.AddTag( "rock-workflow-activitytype-name", ActivityTypeCache?.Name ?? string.Empty );
+                diagnosticActivity?.AddTag( "rock.workflow.activitytype.id", ActivityTypeId );
+                diagnosticActivity?.AddTag( "rock.workflow.activitytype.name", ActivityTypeCache?.Name ?? string.Empty );
 
                 errorMessages = new List<string>();
 

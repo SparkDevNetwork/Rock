@@ -1,0 +1,119 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <CategoryPicker v-model="category"
+                                label="Category"
+                                :entityTypeGuid="EntityType.Tag" />
+            </div>
+
+            <div class="col-md-4">
+                <EntityTypePicker v-model="entityType"
+                                  label="Entity Type"
+                                  showBlankItem />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBoxList v-model="scopes"
+                              label="Scope"
+                              :items="scopeItems"
+                              horizontal
+                              :repeatColumns="2" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <PersonPicker v-if="showPersonPicker"
+                              v-model="owner"
+                              label="Owner" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const category = ref(props.modelValue.category);
+    const entityType = ref(props.modelValue.entityType);
+    const scopes = ref(props.modelValue.scopes);
+    const owner = ref(props.modelValue.owner);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const scopeItems: ListItemBag[] = [
+        {
+            text: "Organization",
+            value: "Organization"
+        },
+        {
+            text: "Personal",
+            value: "Personal"
+        }
+    ];
+
+    const showPersonPicker = computed((): boolean => {
+        return scopes.value.includes("Personal");
+    });
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            category: category.value,
+            scopes: scopes.value,
+            entityType: entityType.value,
+            owner: owner.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        category.value = props.modelValue.category;
+        scopes.value = props.modelValue.scopes;
+        entityType.value = props.modelValue.entityType;
+        owner.value = props.modelValue.owner;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

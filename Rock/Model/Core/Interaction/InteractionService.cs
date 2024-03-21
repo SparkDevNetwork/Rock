@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Rock.Attribute;
 using Rock.BulkImport;
 using Rock.Data;
 using Rock.Transactions;
@@ -226,7 +228,7 @@ namespace Rock.Model
             return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
 
-        private static ConcurrentDictionary<string, int> _deviceTypeIdLookup = new ConcurrentDictionary<string, int>();
+        private const string DeviceTypeIdLookupCacheKey = "InteractionServiceDeviceTypeIdLookup";
 
         /// <summary>
         /// Gets the interaction device type identifier.
@@ -238,12 +240,20 @@ namespace Rock.Model
         /// <returns></returns>
         public int GetInteractionDeviceTypeId( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
+            var lookupTable = RockCacheManager<object>.Instance.Get( DeviceTypeIdLookupCacheKey ) as ConcurrentDictionary<string, int>;
+
+            if ( lookupTable == null )
+            {
+                lookupTable = new ConcurrentDictionary<string, int>();
+                RockCacheManager<object>.Instance.AddOrUpdate( DeviceTypeIdLookupCacheKey, lookupTable );
+            }
+
             var lookupKey = $"{application}|{operatingSystem}|{clientType}";
-            int? deviceTypeId = _deviceTypeIdLookup.GetValueOrNull( lookupKey );
+            int? deviceTypeId = lookupTable.GetValueOrNull( lookupKey );
             if ( deviceTypeId == null )
             {
                 deviceTypeId = GetOrCreateInteractionDeviceTypeId( application, operatingSystem, clientType, deviceTypeData );
-                _deviceTypeIdLookup.AddOrReplace( lookupKey, deviceTypeId.Value );
+                lookupTable.AddOrReplace( lookupKey, deviceTypeId.Value );
             }
 
             return deviceTypeId.Value;
@@ -494,6 +504,77 @@ namespace Rock.Model
             else
             {
                 pageViewTransaction.Enqueue();
+            }
+
+            var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
+            RegisterIntentInteractions( intentSettings.InteractionIntentValueIds, immediate: immediate );
+        }
+
+        /// <summary>
+        /// Creates interactions for the provided interaction intent defined values.
+        /// </summary>
+        /// <param name="interactionIntentValueIds">The interaction intent defined value identifiers.</param>
+        /// <param name="interactionOperation">The optional interaction operation.</param>
+        /// <param name="immediate">Whether the transaction should be written to the database immediately. If false, it will be added to the transaction queue.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        public static void RegisterIntentInteractions( IEnumerable<int> interactionIntentValueIds, string interactionOperation = "View", bool immediate = false )
+        {
+            if ( interactionIntentValueIds?.Any() != true )
+            {
+                return;
+            }
+
+            var channelTypeMediumValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_INTERACTION_INTENTS )?.Id;
+            var definedTypeEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.DEFINED_TYPE )?.Id;
+            var interactionIntentDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.INTERACTION_INTENT.AsGuid() )?.Id;
+
+            if ( !channelTypeMediumValueId.HasValue
+                || !definedTypeEntityTypeId.HasValue
+                || !interactionIntentDefinedTypeId.HasValue )
+            {
+                // Missing required system values.
+                return;
+            }
+
+            foreach ( var intentValueId in interactionIntentValueIds )
+            {
+                var intentValue = DefinedValueCache.Get( intentValueId );
+                if ( intentValue == null
+                    || intentValue.DefinedTypeId != interactionIntentDefinedTypeId.Value
+                    || intentValue.Value.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                var info = new InteractionTransactionInfo
+                {
+                    ChannelTypeMediumValueId = channelTypeMediumValueId,
+                    ChannelName = "Interaction Intents",
+                    ComponentEntityTypeId = definedTypeEntityTypeId,
+                    ChannelEntityId = interactionIntentDefinedTypeId,
+                    ComponentEntityId = intentValue.Id,
+                    ComponentName = intentValue.Value,
+                    InteractionOperation = interactionOperation
+                };
+
+                var intentTransaction = new InteractionTransaction( info );
+
+                if ( immediate )
+                {
+                    intentTransaction.Execute();
+                }
+                else
+                {
+                    intentTransaction.Enqueue();
+                }
             }
         }
 

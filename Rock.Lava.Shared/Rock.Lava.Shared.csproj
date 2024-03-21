@@ -77,6 +77,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shortcodes\ILavaShortcode.cs" />
     <Compile Include="Utility\InputParser.cs" />
+    <Compile Include="Utility\LavaDataHelper.cs" />
+    <Compile Include="Utility\LavaDataTypeInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

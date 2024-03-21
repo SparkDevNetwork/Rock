@@ -735,7 +735,8 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private FinancialScheduledTransaction _scheduledTransactionToBeTransferred = null;
 
-        
+        private int _accountCampusContextFilter = -1;
+        private int _currentCampusContextId = -1;
 
         #endregion
 
@@ -1067,6 +1068,8 @@ mission. We are so grateful for your commitment.</p>
                     pnlSelection.Visible = false;
                 }
 
+                SetCampusContextFilters();
+
                 ConfigureCampusAccountAmountPicker();
             }
             else
@@ -1127,9 +1130,18 @@ mission. We are so grateful for your commitment.</p>
         private void ConfigureCampusAccountAmountPicker()
         {
             var allowAccountsInUrl = this.GetAttributeValue( AttributeKey.AllowAccountOptionsInURL ).AsBoolean();
+
             var rockContext = new RockContext();
-            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() )
-                .OrderBy( a => a.Order )
+            var accountsQuery = new FinancialAccountService( rockContext )
+                .GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() );
+
+            if ( _currentCampusContextId > -1 )
+            {
+                accountsQuery = accountsQuery.Where( a => ( _accountCampusContextFilter == 0 && a.CampusId == _currentCampusContextId )
+                    || ( _accountCampusContextFilter == 1 && ( a.CampusId == null || a.CampusId == _currentCampusContextId ) ) );
+            }
+
+            List<int> selectableAccountIds = accountsQuery.OrderBy( a => a.Order )
                 .Select( a => a.Id )
                 .ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
@@ -1176,6 +1188,11 @@ mission. We are so grateful for your commitment.</p>
                 List<ParameterAccountOption> parameterAccountOptions = ParseAccountUrlOptions();
                 if ( parameterAccountOptions.Any() )
                 {
+                    if ( _currentCampusContextId > -1 )
+                    {
+                        parameterAccountOptions.RemoveAll( a => ( _accountCampusContextFilter == 0 && a.CampusId != _currentCampusContextId ) || ( _accountCampusContextFilter == 1 && ( a.CampusId != null && a.CampusId != _currentCampusContextId ) ) );
+                    }
+
                     selectableAccountIds = parameterAccountOptions.Select( a => a.AccountId ).ToList();
                     string invalidAccountInURLMessage = this.GetAttributeValue( AttributeKey.InvalidAccountMessage );
                     if ( invalidAccountInURLMessage.IsNotNullOrWhiteSpace() )
@@ -1272,6 +1289,12 @@ mission. We are so grateful for your commitment.</p>
                     && !caapPromptForAccountAmounts.SelectableAccountIds.Contains( f.Id )
                     && ( f.StartDate == null || f.StartDate <= RockDateTime.Today )
                     && ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) );
+
+            if ( _currentCampusContextId > -1 )
+            {
+                availableAccounts = availableAccounts.Where( a => ( _accountCampusContextFilter == 0 && a.CampusId == _currentCampusContextId )
+                    || ( _accountCampusContextFilter == 1 && ( a.CampusId == null || a.CampusId == _currentCampusContextId ) ) );
+            }
 
             if ( enableAccountHierarchy )
             {
@@ -1451,6 +1474,7 @@ mission. We are so grateful for your commitment.</p>
 
                     parameterAccountOption.Amount = accountOptionParts[1].AsDecimalOrNull();
                     parameterAccountOption.Enabled = accountOptionParts[2].AsBooleanOrNull() ?? true;
+                    parameterAccountOption.CampusId = FinancialAccountCache.Get( parameterAccountOption.AccountId )?.CampusId;
                     result.Add( parameterAccountOption );
                 }
             }
@@ -1716,7 +1740,20 @@ mission. We are so grateful for your commitment.</p>
         {
             if ( ValidatePaymentInfo( out string errorMessage ) )
             {
-                SetConfirmationText();
+                ReferencePaymentInfo paymentInfo = GetPaymentInfo( out errorMessage );
+                if ( !string.IsNullOrEmpty( errorMessage ) )
+                {
+                    ShowMessage( NotificationBoxType.Validation, "Before we finish...", errorMessage );
+                    return;
+                }
+                else if ( paymentInfo == null )
+                {
+                    errorMessage = "There was a problem creating the payment information";
+                    ShowMessage( NotificationBoxType.Validation, "Before we finish...", errorMessage );
+                    return;
+                }
+
+                SetConfirmationText( paymentInfo );
                 if ( this.PartialPostbacksAllowed )
                 {
                     this.AddHistory( "GivingDetail", EntryStep.PromptForAmount.ConvertToString( false ), null );
@@ -3086,9 +3123,8 @@ mission. We are so grateful for your commitment.</p>
             return true;
         }
 
-        private void SetConfirmationText()
+        private void SetConfirmationText( ReferencePaymentInfo paymentInfo )
         {
-            ReferencePaymentInfo paymentInfo = GetPaymentInfo();
             var enableTextToGiveSetup = GetAttributeValue( AttributeKey.EnableTextToGiveSetup ).AsBoolean();
             bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
 
@@ -3153,20 +3189,13 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Gets the payment information.
         /// </summary>
-        private ReferencePaymentInfo GetPaymentInfo()
+        private ReferencePaymentInfo GetPaymentInfo( out string errorMessage )
         {
-            ReferencePaymentInfo paymentInfo;
-            if ( rblSavedAccount.Items.Count > 0 && ( rblSavedAccount.SelectedValueAsId() ?? 0 ) > 0 )
-            {
-                paymentInfo = GetReferenceInfo( rblSavedAccount.SelectedValueAsId().Value );
-            }
-            else
-            {
-                paymentInfo = new ReferencePaymentInfo();
+            errorMessage = null;
 
-                var financialGatewayComponent = this.FinancialGatewayComponent;
-                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out _ );
-            }
+            var isSavedAccount = ( rblSavedAccount.Items.Count > 0 && ( rblSavedAccount.SelectedValueAsId() ?? 0 ) > 0 );
+
+            var paymentInfo = ( isSavedAccount ) ? GetReferenceInfo( rblSavedAccount.SelectedValueAsId().Value ) : new ReferencePaymentInfo();
 
             paymentInfo.Amount = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue ).Sum( a => a.Amount.Value );
             paymentInfo.Email = txtEmail.Text;
@@ -3180,6 +3209,13 @@ mission. We are so grateful for your commitment.</p>
 
             var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             paymentInfo.TransactionTypeValueId = transactionType.Id;
+
+            if ( !isSavedAccount )
+            {
+                // If this is not a saved account, the Gateway may alter the data in paymentInfo (e.g., to use a separate billing address, if the gateway's hosted payment control permits this).
+                var financialGatewayComponent = this.FinancialGatewayComponent;
+                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+            }
 
             return paymentInfo;
         }
@@ -3351,8 +3387,14 @@ mission. We are so grateful for your commitment.</p>
 
         private ReferencePaymentInfo GetTxnPaymentInfo( Person person, out string errorMessage )
         {
-            ReferencePaymentInfo paymentInfo = GetPaymentInfo();
-            if ( paymentInfo == null )
+            errorMessage = null;
+
+            ReferencePaymentInfo paymentInfo = GetPaymentInfo( out errorMessage );
+            if ( !string.IsNullOrEmpty( errorMessage ) )
+            {
+                return null;
+            }
+            else if ( paymentInfo == null )
             {
                 errorMessage = "There was a problem creating the payment information";
                 return null;
@@ -3367,6 +3409,12 @@ mission. We are so grateful for your commitment.</p>
             {
                 var financialGatewayComponent = this.FinancialGatewayComponent;
                 financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    ShowMessage( NotificationBoxType.Danger, "", errorMessage ?? "Unknown Error" );
+                    return null;
+                }
+
                 var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentInfo, out errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
                 {
@@ -4015,6 +4063,22 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
+        /// <summary>
+        /// Sets the campus context filters.
+        /// </summary>
+        private void SetCampusContextFilters()
+        {
+            _accountCampusContextFilter = GetAttributeValue( AttributeKey.AccountCampusContext ).AsType<int>();
+            if ( _accountCampusContextFilter > -1 )
+            {
+                var campusEntity = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Campus ) ) );
+                if ( campusEntity != null )
+                {
+                    _currentCampusContextId = campusEntity.Id;
+                }
+            }
+        }
+
         #endregion
 
         #region Helper Classes
@@ -4120,6 +4184,8 @@ mission. We are so grateful for your commitment.</p>
             public decimal? Amount { get; set; }
 
             public bool Enabled { get; set; }
+
+            public int? CampusId { get; set; }
         }
 
         #endregion

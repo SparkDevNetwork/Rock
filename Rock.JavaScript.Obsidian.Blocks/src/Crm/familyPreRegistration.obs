@@ -62,9 +62,9 @@
                         </div>
                     </Panel>
 
-                    <Panel title="Adult Information">
+                    <Panel :title="`${pluralize(adultLabel)} Information`">
                         <template #default>
-                            <h4 class="heading-individual">First Adult</h4>
+                            <h4 class="heading-individual">First {{ adultLabel }}</h4>
 
                             <div class="row">
                                 <div class="col-sm-6">
@@ -266,7 +266,7 @@
 
                             <hr />
 
-                            <h4 class="heading-individual">Second Adult</h4>
+                            <h4 class="heading-individual">Second {{ adultLabel }}</h4>
 
                             <div class="adult-2-fields">
                                 <div class="row">
@@ -442,16 +442,18 @@
                         </template>
                     </Panel>
 
-                    <Panel type="default" title="Children">
+                    <Panel type="default" :title="pluralize(childLabel)">
                         <PreRegistrationChildren
                                                  v-model="children"
                                                  :disabled="isSaving || isNavigating"
                                                  :lastName="adult1.lastName"
+                                                 :childLabel="childLabel"
+                                                 :adultLabel="adultLabel"
                                                  @addChild="onAddChild"
                                                  @removeChild="onRemoveChild" />
                     </Panel>
 
-                    <Captcha v-if="!disableCaptcha" v-model="isCaptchaValid"></Captcha>
+                    <Captcha v-if="!disableCaptcha" ref="captchaElement"></Captcha>
                 </template>
 
                 <template #footerActions>
@@ -513,7 +515,8 @@
     import { FamilyPreRegistrationScheduleDateBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationScheduleDateBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -536,13 +539,15 @@
     const isUsernameAvailable = ref<boolean | null | undefined>();
     const confirmPassword = ref<string>("");
     const address = ref<AddressControlBag | undefined>(config.address ?? undefined);
-    const isCaptchaValid = ref("");
     const familyAttributeValues = ref<Record<string, string>>(config.familyAttributeValues || {});
     const createAccount = ref<CreateAccountRequest>({
         username: "",
         password: ""
     });
     const disableCaptcha = ref(config.disableCaptchaSupport);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const adultLabel = config.adultLabel || "Adult";
+    const childLabel = config.childLabel || "Child";
 
     // Create the request bags that will be used to pre-register the adults and children.
     const adult1Request = ref<PersonRequestBag>(convertPersonToPersonRequest(config.adult1));
@@ -561,31 +566,29 @@
 
     const isAdult1Entered = computed<boolean>(() => !!adult1.firstName.trim());
     const isAdult2Entered = computed<boolean>(() => !!adult2.firstName.trim());
-    const isAdult2FirstNameEntered = computed<boolean>(() => !!adult2.firstName.trim());
-    const isAdult2LastNameEntered = computed<boolean>(() => !!adult2.lastName.trim());
 
     // Validation rules are executed in order and stop on the first failure.
     // Even though the first rule is a required rule,
     // we need to add the special "required" rule to get the required indicator to display.
     const adult1RequiredRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for First Adult`),
+        createRuleWithSuffix(required, `for First ${adultLabel}`),
         "required"
     ]);
 
     const adult1RequiredGenderRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for First Adult`),
-        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for First Adult"),
+        createRuleWithSuffix(required, `for First ${adultLabel}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for First ${adultLabel}`),
         "required"
     ]);
 
     const adult2RequiredRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for Second Adult`),
+        createRuleWithSuffix(required, `for Second ${adultLabel}`),
         "required"
     ]);
 
     const adult2RequiredGenderRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for Second Adult`),
-        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for Second Adult"),
+        createRuleWithSuffix(required, `for Second ${adultLabel}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for Second ${adultLabel}`),
         "required"
     ]);
 
@@ -645,14 +648,20 @@
                 createAccount: createAccount.value,
                 familyAttributeValues: familyAttributeValues.value,
                 familyGuid: config.familyGuid,
-                isCaptchaValid: asBoolean(isCaptchaValid.value),
                 plannedVisitDate: plannedVisitDate.value,
                 scheduleGuid: scheduleGuid.value
             };
 
             clearErrors();
 
-            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag });
+            const actionContext: BlockActionContextBag = {};
+
+            if (captchaElement.value) {
+                actionContext.captcha = await captchaElement.value.getToken();
+                captchaElement.value.refreshToken();
+            }
+
+            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag }, actionContext);
 
             if (result.isSuccess && result?.data) {
                 if (result.data.errors?.length) {
@@ -763,7 +772,7 @@
         const adult2FirstName = adult2.firstName?.trim();
 
         if (!adult1FirstName && !adult2FirstName) {
-            return "is invalid. The name of at least one adult needs to be entered.";
+            return `is invalid. The name of at least one ${adultLabel} needs to be entered.`;
         }
 
         return true;

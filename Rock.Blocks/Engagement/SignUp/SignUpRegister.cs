@@ -148,6 +148,8 @@ namespace Rock.Blocks.Engagement.SignUp
             }
         }
 
+        public Person CurrentPerson => this.GetCurrentPerson();
+
         public DefinedValueCache MobilePhoneDefinedValueCache
         {
             get
@@ -197,6 +199,8 @@ namespace Rock.Blocks.Engagement.SignUp
             box.RequireEmail = registrationData.RequireEmail;
             box.RequireMobilePhone = registrationData.RequireMobilePhone;
             box.Registrants = registrationData.Registrants;
+            box.MemberAttributes = registrationData.MemberAttributes;
+            box.MemberOpportunityAttributes = registrationData.MemberOpportunityAttributes;
         }
 
         /// <summary>
@@ -284,6 +288,12 @@ namespace Rock.Blocks.Engagement.SignUp
                 }
             }
 
+            // Get any existing GroupMember records tied to this project, regardless of occurrence.
+            GetExistingProjectMembers( registrationData, shouldTrack );
+
+            // Get any existing registrations for this specific project occurrence.
+            GetExistingRegistrations( registrationData, shouldTrack );
+
             if ( mode == RegisterMode.Anonymous )
             {
                 // Try to pre-populate the registrant info for the current Person.
@@ -292,16 +302,11 @@ namespace Rock.Blocks.Engagement.SignUp
                     var person = this.RequestContext.CurrentPerson;
 
                     // Check if we have an existing project GroupMember record for this Group and Person combination.
-                    var existingProjectGroupMember = _groupMemberService
-                        .Queryable()
-                        .AsNoTracking()
-                        .FirstOrDefault( gm =>
-                            gm.GroupId == registrationData.Project.Id
-                            && gm.PersonId == person.Id
-                        );
+                    var existingProjectGroupMember = registrationData.ExistingProjectMembers
+                        .FirstOrDefault( pm => pm.GroupMember.Person.Id == person.Id )
+                        ?.GroupMember;
 
                     var registrant = CreateRegistrant( person, existingProjectGroupMember );
-                    registrant.PersonIdKey = null; // Clear this out, as registrants should always be considered anonymous in this mode.
                     registrant.WillAttend = true;
 
                     if ( registrationData.ProjectHasRequiredGroupRequirements )
@@ -323,6 +328,19 @@ namespace Rock.Blocks.Engagement.SignUp
                 {
                     // An error message will have been added.
                     return registrationData;
+                }
+            }
+
+            GetRegistrantAttributes( rockContext, registrationData );
+            GetRegistrantAttributeValues( rockContext, registrationData );
+
+            if ( mode == RegisterMode.Anonymous )
+            {
+                // Now that we've loaded any previously-saved attribute values, let's clear out each registrant's
+                // person ID key, as registrants should always be considered anonymous in this mode.
+                foreach ( var registrant in registrationData.Registrants )
+                {
+                    registrant.PersonIdKey = null;
                 }
             }
 
@@ -515,12 +533,6 @@ namespace Rock.Blocks.Engagement.SignUp
                 registrationData.ErrorMessage = $"{UnableToRegisterPrefix} as you don't belong to the specified {groupTerm}.";
                 return false;
             }
-
-            // Get any existing GroupMember records tied to this project, regardless of occurrence.
-            GetExistingProjectMembers( registrationData, shouldTrack );
-
-            // Get any existing registrations for this specific project occurrence.
-            GetExistingRegistrations( registrationData, shouldTrack );
 
             // Create a registrant entry for each GroupMember.
             foreach ( var groupMember in groupMembers )
@@ -720,6 +732,66 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
+        /// Gets the registrant member and member opportunity attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationData">the registration data.</param>
+        private void GetRegistrantAttributes( RockContext rockContext, RegistrationData registrationData )
+        {
+            // Load all member attributes for this project.
+            var groupMember = new GroupMember { GroupId = registrationData.Project.Id };
+            groupMember.LoadAttributes( rockContext );
+            registrationData.MemberAttributes = groupMember.GetPublicAttributesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+
+            // Load all member opportunity attributes for this project.
+            var groupMemberAssignment = new GroupMemberAssignment { GroupId = registrationData.Project.Id };
+            groupMemberAssignment.LoadAttributes( rockContext );
+            registrationData.MemberOpportunityAttributes = groupMemberAssignment.GetPublicAttributesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+        }
+
+        /// <summary>
+        /// Gets the registrant member and member opportunity attribute values.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationData">the registration data.</param>
+        private void GetRegistrantAttributeValues( RockContext rockContext, RegistrationData registrationData )
+        {
+            foreach ( var registrant in registrationData.Registrants )
+            {
+                var existingProjectGroupMember = registrationData.ExistingProjectMembers
+                        .FirstOrDefault( pm => pm.GroupMember.Person.IdKey == registrant.PersonIdKey )
+                        ?.GroupMember;
+
+                if ( existingProjectGroupMember == null )
+                {
+                    continue;
+                }
+
+                existingProjectGroupMember.LoadAttributes( rockContext );
+                registrant.MemberAttributeValues = existingProjectGroupMember.GetPublicAttributeValuesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+
+                var existingRegistration = registrationData.ExistingRegistrations
+                        .FirstOrDefault( gma => gma.GroupMember.Id == existingProjectGroupMember.Id );
+
+                if ( existingRegistration != null )
+                {
+                    existingRegistration.LoadAttributes( rockContext );
+                    registrant.MemberOpportunityAttributeValues = existingRegistration.GetPublicAttributeValuesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the attribute is public.
+        /// </summary>
+        /// <param name="attributeCache">The attribute to check.</param>
+        /// <returns>Whether the attribute is public.</returns>
+        private bool IsPublicAttribute( AttributeCache attributeCache )
+        {
+            return attributeCache.IsPublic;
+        }
+
+        /// <summary>
         /// Gets the communication preference items that should be presented for registrant to select.
         /// </summary>
         /// <returns>The communication preference items that should be presented for registrant to select.</returns>
@@ -793,6 +865,7 @@ namespace Rock.Blocks.Engagement.SignUp
             var registrantsToRegister = new List<SignUpRegistrantBag>();
             var registrantsToMessage = new List<SignUpRegistrantBag>();
 
+            var registrantAttributeValuesToSave = new List<RegistrantAttributeValuesToSave>();
             var communicationUpdates = new List<CommunicationUpdate>();
 
             var groupMemberAssignmentsToDelete = new List<GroupMemberAssignment>();
@@ -829,14 +902,18 @@ namespace Rock.Blocks.Engagement.SignUp
                     //      c) If they aren't already registered for this project occurrence, add them to the `registrantsToRegister` list (if there are no unmet Group
                     //         requirements), so we can create missing GroupMember and GroupMemberAssignment records.
                     //      d) If we create and register a new Person record for this registrant, add them to the `communicationUpdates` collection so we can ensure
-                    //         we have their communication preferences saved; otherwise, Anonymous mode cannot be used to update existing Person communication preferences
-                    //         or records, as it's too risky. Someone could maliciously - or even accidentally - update records that don't belong to them.
+                    //         we have their communication preferences saved.
+                    //      e) If we find an existing Person record, we can only update their [Mobile]PhoneNumber.IsMessagingEnabled bit if:
+                    //              i) The provided mobile phone number matches exactly AND
+                    //             ii) They didn't provide an email address OR the provided email address matches exactly.
+                    //         otherwise, Anonymous mode cannot be used to update existing Person records, as it's too risky. Someone could maliciously - or even
+                    //         accidentally - update records that don't belong to them.
 
                     existingProjectMember = null;
                     existingRegistration = null;
 
                     // Note that this query and lookup will only use arguments that are defined, so it's safe to pass nulls, Etc. into this constructor.
-                    var personQuery = new PersonService.PersonMatchQuery( registrant.FirstName, registrant.LastName, registrant.Email, registrant.MobilePhoneNumber );
+                    var personQuery = new PersonService.PersonMatchQuery( registrant.FirstName?.Trim(), registrant.LastName?.Trim(), registrant.Email?.Trim(), registrant.MobilePhoneNumber?.Trim() );
                     var person = _personService.FindPerson( personQuery, updatePrimaryEmail: false );
 
                     var wasFirstNameProvided = !string.IsNullOrWhiteSpace( registrant.FirstName );
@@ -844,45 +921,41 @@ namespace Rock.Blocks.Engagement.SignUp
                     var wasEmailProvided = !string.IsNullOrWhiteSpace( registrant.Email );
                     var wasMobilePhoneProvided = !string.IsNullOrWhiteSpace( registrant.MobilePhoneNumber );
 
-                    var firstNameUpper = registrant.FirstName?.ToUpper();
-                    var lastNameUpper = registrant.LastName?.ToUpper();
-                    var emailUpper = registrant.Email?.ToUpper();
+                    var registrantFirstNameUpper = registrant.FirstName?.Trim().ToUpper();
+                    var registrantLastNameUpper = registrant.LastName?.Trim().ToUpper();
+                    var registrantEmailUpper = registrant.Email?.Trim().ToUpper();
+                    var registrantCleanMobilePhoneNumber = wasMobilePhoneProvided
+                        ? PhoneNumber.CleanNumber( registrant.MobilePhoneNumber )
+                        : null;
 
-                    // It's possible that this lookup has returned a Person who doesn't match exactly. In this case, we'll create a new (possibly duplicate) Person, to be safe.
-                    if ( person != null &&
-                        (
-                            ( wasFirstNameProvided &&
-                                (
-                                    // Provided FirstName should match either the stored FirstName or NickName.
-                                    !new List<string>
-                                    {
-                                        person.FirstName.ToUpper(),
-                                        person.NickName.ToUpper()
-                                    }.Contains( firstNameUpper )
-                                )
-                            )
-                            || ( wasLastNameProvided && person.LastName.ToUpper() != lastNameUpper )
-                            || ( wasEmailProvided && person.Email.ToUpper() != emailUpper )
-                        )
-                    )
+                    // In the event that someone provides both an email address and a mobile phone number, they must both match.
+                    // Otherwise, we're going to create a new Person record to play it safe; better to have duplicates to merge
+                    // than to allow someone to maliciously/accidentally overwrite a Person's existing communication records.
+                    if ( person != null && wasEmailProvided && wasMobilePhoneProvided )
                     {
-                        // One of the string comparisons failed; create a new Person.
-                        person = null;
-                    }
-
-                    // Make sure the provided mobile phone number matches.
-                    if ( person != null && wasMobilePhoneProvided )
-                    {
-                        var mobilePhone = person.GetPhoneNumber( MobilePhoneDefinedValueCache.Guid );
-                        if ( mobilePhone == null || PhoneNumber.CleanNumber( mobilePhone.Number ) != PhoneNumber.CleanNumber( registrant.MobilePhoneNumber ) )
+                        if ( person.Email?.Trim().ToUpper() != registrantEmailUpper )
                         {
-                            // Number doesn't match; create a new Person.
+                            // Email doesn't match; create a new Person.
                             person = null;
+                        }
+                        else
+                        {
+                            var mobilePhoneNumber = person.GetPhoneNumber( MobilePhoneDefinedValueCache.Guid );
+                            if ( mobilePhoneNumber == null || PhoneNumber.CleanNumber( mobilePhoneNumber.Number ) != registrantCleanMobilePhoneNumber )
+                            {
+                                // Number doesn't match; create a new Person.
+                                person = null;
+                            }
                         }
                     }
 
-                    // Final attempt to prevent a duplicate person: look in the registrar's family members to find a match.
-                    if ( person == null && wasFirstNameProvided && registrarPerson != null )
+                    // Final attempt to prevent a duplicate person: If we didn't find a Person and neither email address
+                    // nor mobile phone number were provided, look in the registrar's family members to find a match.
+                    if ( person == null
+                        && registrarPerson != null
+                        && wasFirstNameProvided
+                        && !wasEmailProvided
+                        && !wasMobilePhoneProvided )
                     {
                         if ( familyMemberPeople == null )
                         {
@@ -895,18 +968,18 @@ namespace Rock.Blocks.Engagement.SignUp
                         person = familyMemberPeople
                             .FirstOrDefault( p =>
                                 (
-                                    p.FirstName.ToUpper() == firstNameUpper
-                                    || p.NickName.ToUpper() == firstNameUpper
+                                    p.FirstName?.Trim().ToUpper() == registrantFirstNameUpper
+                                    || p.NickName?.Trim().ToUpper() == registrantFirstNameUpper
                                 ) && (
                                     !wasLastNameProvided
-                                    || p.LastName.ToUpper() == lastNameUpper
+                                    || p.LastName?.Trim().ToUpper() == registrantLastNameUpper
                                 )
                             );
                     }
 
                     if ( person == null )
                     {
-                        // For new people only: set `Person.CommunicationPreference` (and `GroupMember.CommunicationPreference`) only if we can
+                        // For new people: set `Person.CommunicationPreference` (and `GroupMember.CommunicationPreference`) only if we can
                         // confidently determine the preference, based on the provided values:
                         //  1) If both `registrant.Email` and `registrant.MobilePhoneNumber` are defined, we don't know which they'd prefer.
                         //  2) If only `registrant.Email` is defined, the preference is `CommunicationType.Email`.
@@ -923,9 +996,9 @@ namespace Rock.Blocks.Engagement.SignUp
 
                         person = new Person
                         {
-                            FirstName = registrant.FirstName,
-                            LastName = registrant.LastName,
-                            Email = registrant.Email,
+                            FirstName = registrant.FirstName?.Trim(),
+                            LastName = registrant.LastName?.Trim(),
+                            Email = registrant.Email?.Trim(),
                             RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                             CommunicationPreference = communicationPreference
                         };
@@ -970,6 +1043,32 @@ namespace Rock.Blocks.Engagement.SignUp
 
                         existingRegistration = registrationData.ExistingRegistrations
                             .FirstOrDefault( gma => gma.GroupMember.Person.IdKey == registrant.PersonIdKey );
+
+                        // We can only update an existing Person's [Mobile]PhoneNumber.IsMessagingEnabled bit if:
+                        //  1) The provided mobile phone number matches exactly AND
+                        //  2) They didn't provide an email address OR the provided email address matches exactly.
+                        var mobilePhoneNumber = person.GetPhoneNumber( MobilePhoneDefinedValueCache.Guid );
+                        if ( mobilePhoneNumber != null
+                            && PhoneNumber.CleanNumber( mobilePhoneNumber.Number ) == registrantCleanMobilePhoneNumber
+                            && (
+                                !wasEmailProvided
+                                || person.Email?.Trim().ToUpper() == registrantEmailUpper
+                            )
+                        )
+                        {
+                            // Note that we're only updating the IsMessagingEnabled bit from the provided registrant's
+                            // AllowSms value; the rest of the values will simply be copied back from the existing mobile
+                            // phone number, to ensure this anonymous form cannot be used to hijack an existing Person's
+                            // communication records.
+                            person.UpdatePhoneNumber(
+                                MobilePhoneDefinedValueCache.Id,
+                                mobilePhoneNumber.CountryCode,
+                                mobilePhoneNumber.Number,
+                                registrant.AllowSms,
+                                mobilePhoneNumber.IsUnlisted,
+                                rockContext
+                            );
+                        }
                     }
 
                     // If the individual performing this registration request is not logged in, set the "registrar" to the first Person registered.
@@ -1028,6 +1127,14 @@ namespace Rock.Blocks.Engagement.SignUp
                         // This individual was previously registered, and is still registered.
                         // Add them to the `registered` collection so we can assure the registrar that they're still registered.
                         registered.Add( registrant );
+
+                        // Ensure any changes to attribute values are saved.
+                        registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
+                        {
+                            Registrant = registrant,
+                            GroupMember = existingProjectMember?.GroupMember,
+                            GroupMemberAssignment = existingRegistration
+                        } );
                     }
                     else
                     {
@@ -1157,6 +1264,14 @@ namespace Rock.Blocks.Engagement.SignUp
                         // Add them to the `registered` collection so we can assure the registrar that they're still registered.
                         registered.Add( registrant );
 
+                        // Ensure any changes to attribute values are saved.
+                        registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
+                        {
+                            Registrant = registrant,
+                            GroupMember = existingProjectMember?.GroupMember,
+                            GroupMemberAssignment = existingRegistration
+                        } );
+
                         if ( mode == RegisterMode.Family )
                         {
                             // The registrar might have changed their communication preference; make sure to keep this family member's preference in sync.
@@ -1259,7 +1374,9 @@ namespace Rock.Blocks.Engagement.SignUp
                 //     GroupMember entity.
                 //  2) The GroupMember record might already exist for a given registrant, as they might already be signed up for other occurrences
                 //     within this same project.
-                //  3) Supplement any `CommunicationUpdate` instances that have missing GroupMember or Person references.
+                //  3) Add the registrant along with their GroupMember and GroupMemberAssignment records to the `registrantAttributesToSave`
+                //     collection to ensure their attribute values are saved.
+                //  4) Supplement any `CommunicationUpdate` instances that have missing GroupMember or Person references.
 
                 var groupRoleId = registrationData.GroupType.DefaultGroupRoleId;
                 if ( !groupRoleId.HasValue )
@@ -1298,6 +1415,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     // Always create a new GroupMemberAssignment record.
                     var groupMemberAssignment = new GroupMemberAssignment
                     {
+                        GroupId = registrationData.Project.Id,
                         LocationId = registrationData.Location.Id,
                         ScheduleId = registrationData.Schedule.Id,
                     };
@@ -1372,6 +1490,13 @@ namespace Rock.Blocks.Engagement.SignUp
                     registered.Add( registrant );
                     workflowMembers.Add( projectGroupMember );
 
+                    registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
+                    {
+                        Registrant = registrant,
+                        GroupMember = projectGroupMember,
+                        GroupMemberAssignment = groupMemberAssignment
+                    } );
+
                     if ( registrantsToMessage.Contains( registrant ) )
                     {
                         communicationRecipients.Add( groupMemberAssignment );
@@ -1402,6 +1527,8 @@ namespace Rock.Blocks.Engagement.SignUp
                 {
                     // Initial save to release FK constraints tied to any referenced entities we'll be deleting.
                     rockContext.SaveChanges();
+
+                    SaveRegistrantAttributeValues( rockContext, registrationData, registrantAttributeValuesToSave );
 
                     if ( groupMembersToDelete.Any() )
                     {
@@ -1443,6 +1570,50 @@ namespace Rock.Blocks.Engagement.SignUp
                 UnsuccessfulRegistrantNames = unsuccessful.Select( r => r.FullName ).ToList(),
                 WarningMessage = warningMessage
             };
+        }
+
+        /// <summary>
+        /// Saves registrant attribute values.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationData">The registration data.</param>
+        /// <param name="registrantAttributeValuesToSave">The registrant attribute values to save.</param>
+        private void SaveRegistrantAttributeValues( RockContext rockContext, RegistrationData registrationData, List<RegistrantAttributeValuesToSave> registrantAttributeValuesToSave )
+        {
+            if ( registrationData.Mode != RegisterMode.Anonymous )
+            {
+                // Attributes are currently only supported in anonymous registration mode.
+                // Family and Group modes will need significant UI updates in order to collect
+                // attribute values per registrant. If we choose to support attributes within
+                // those modes in the future, this `if` block simply needs to be removed, as
+                // the remainder of this server-side file already supports attributes,
+                // regardless of mode.
+                return;
+            }
+
+            if ( registrationData.MemberAttributes?.Any() != true && registrationData.MemberOpportunityAttributes?.Any() != true )
+            {
+                return;
+            }
+
+            foreach ( var r in registrantAttributeValuesToSave )
+            {
+                var attributeValues = r.Registrant.MemberAttributeValues;
+                if ( r.GroupMember != null && attributeValues?.Any() == true )
+                {
+                    r.GroupMember.LoadAttributes( rockContext );
+                    r.GroupMember.SetPublicAttributeValues( attributeValues, CurrentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
+                    r.GroupMember.SaveAttributeValues( rockContext );
+                }
+
+                attributeValues = r.Registrant.MemberOpportunityAttributeValues;
+                if ( r.GroupMemberAssignment != null && attributeValues?.Any() == true )
+                {
+                    r.GroupMemberAssignment.LoadAttributes( rockContext );
+                    r.GroupMemberAssignment.SetPublicAttributeValues( attributeValues, CurrentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
+                    r.GroupMemberAssignment.SaveAttributeValues( rockContext );
+                }
+            }
         }
 
         /// <summary>
@@ -1652,6 +1823,16 @@ namespace Rock.Blocks.Engagement.SignUp
             public List<SignUpRegistrantBag> Registrants => _registrants;
 
             /// <summary>
+            /// Gets or sets the registrant member attributes.
+            /// </summary>
+            public Dictionary<string, PublicAttributeBag> MemberAttributes { get; set; }
+
+            /// <summary>
+            /// Gets or sets the registrant member opportunity attributes.
+            /// </summary>
+            public Dictionary<string, PublicAttributeBag> MemberOpportunityAttributes { get; set; }
+
+            /// <summary>
             /// Gets whether the specified Schedule has a future start date/time.
             /// </summary>
             public bool ScheduleHasFutureStartDateTime
@@ -1747,6 +1928,27 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
+        /// A runtime object to represent a registrant with attribute values that should be saved.
+        /// </summary>
+        private class RegistrantAttributeValuesToSave
+        {
+            /// <summary>
+            /// Gets or sets the <see cref="SignUpRegistrantBag"/> whose attributes should be saved.
+            /// </summary>
+            public SignUpRegistrantBag Registrant { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="Rock.Model.GroupMember"/> whose attributes should be saved.
+            /// </summary>
+            public GroupMember GroupMember { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="Rock.Model.GroupMemberAssignment"/> whose attributes should be saved.
+            /// </summary>
+            public GroupMemberAssignment GroupMemberAssignment { get; set; }
+        }
+
+        /// <summary>
         /// A runtime object to represent a communication update (communication preference, email, mobile phone number) that needs to take place
         /// for a given registrant.
         /// <para>
@@ -1761,7 +1963,7 @@ namespace Rock.Blocks.Engagement.SignUp
         private class CommunicationUpdate
         {
             /// <summary>
-            /// Gets or sets the <see cref="Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag"/> that requires a communication update.
+            /// Gets or sets the <see cref="SignUpRegistrantBag"/> that requires a communication update.
             /// </summary>
             public SignUpRegistrantBag Registrant { get; set; }
 

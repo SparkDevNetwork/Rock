@@ -340,6 +340,7 @@ namespace RockWeb.Blocks.Tv
             if ( site == null )
             {
                 nbMessages.Text = "Could not find the application.";
+                return;
             }
 
             pdAuditDetails.SetEntity( site, ResolveRockUrl( "~" ) );

@@ -7,7 +7,9 @@
                              :grid="gridState"
                              :gridActions="gridActions"
                              :visibleColumnCount="visibleColumnCount"
-                             :countMessage="countMessage" />
+                             :countMessage="countMessage"
+                             :isCountMessageVisible="isCountMessageVisible"
+                             :isSearchVisible="isSearchVisible" />
 
             <slot name="gridHeaderPrepend" />
 
@@ -38,6 +40,8 @@
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
                       :itemTerm="gridState.itemTerm"
+                      :markInactiveRows="markInactiveRows"
+                      :rowClass="rowClass"
                       @click="onRowClick" />
         </div>
 
@@ -49,6 +53,8 @@
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
                       :itemTerm="gridState.itemTerm"
+                      :markInactiveRows="markInactiveRows"
+                      :rowClass="rowClass"
                       @click="onRowClick" />
         </div>
 
@@ -59,6 +65,8 @@
                          :tooltipField="tooltipField"
                          :isSelectable="isSelectionEnabled"
                          :itemTerm="gridState.itemTerm"
+                         :markInactiveRows="markInactiveRows"
+                         :rowClass="rowClass"
                          @click="onRowClick" />
 
         <div class="grid-footing">
@@ -704,6 +712,26 @@
         },
 
         /**
+         * If set to true, each row with an `isActive` property set to false
+         * will be visually distinct
+         */
+        markInactiveRows: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * A CSS class that will be applied to each row. If you supply a string,
+         * will apply that directly. You can also use a function that takes the
+         * row object and returns a string, which allows you to apply different
+         * classes to different rows depending on the row data.
+         */
+        rowClass: {
+            type: [String, Function] as PropType<string | ((row: Record<string, unknown>) => string)>,
+            default: undefined
+        },
+
+        /**
          * Any fields that should be included when sending a communication. If
          * a column name matches the field name then the formatted value of
          * the column will be used. Otherwise the raw field value will be used.
@@ -788,7 +816,26 @@
         onSelectItem: {
             type: Function as PropType<((key: string) => void | Promise<void>)>,
             required: false
-        }
+        },
+
+        /**
+         * When `true`, the row count message will be displayed. When `false`,
+         * the row count message will be hidden.
+         */
+        isCountMessageVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        /**
+         * When `true`, the search box will be displayed. When `false`, the
+         * search box will be hidden.
+         */
+        isSearchVisible: {
+            type: Boolean,
+            default: true
+        },
+
     });
 
     const emit = defineEmits<{
@@ -1108,7 +1155,7 @@
                     handler: () => onCustomRoute(action.route ?? ""),
                     iconCssClass: action.iconCssClass,
                     title: action.name || "Custom Action",
-                    tooltip: action.description ?? undefined
+                    tooltip: action.description ?? undefined,
                 });
             }
         }

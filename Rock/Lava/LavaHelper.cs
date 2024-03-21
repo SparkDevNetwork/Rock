@@ -41,6 +41,13 @@ namespace Rock.Lava
     /// </summary>
     public static class LavaHelper
     {
+        /// <summary>
+        /// The merge field prefix for internal merge fields. These merge fields
+        /// will be marked as internal so they are not available to Lava template
+        /// itself but can be used by filters and such.
+        /// </summary>
+        internal static readonly string InternalMergeFieldPrefix = "$_";
+
         #region Constructors
 
         static LavaHelper()

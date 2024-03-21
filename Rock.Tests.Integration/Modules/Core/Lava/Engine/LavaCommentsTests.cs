@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// Tests for Lava Template comments.
@@ -261,6 +263,40 @@ Example End<br>
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
+        /// <summary>
+        /// Verify that a Lava shorthand comment embedded in a Lava tag is correctly parsed. (Fluid Only)
+        /// </summary>
+        [TestMethod]
+        public void ShorthandComment_CommentInLavaTag_IsRemoved()
+        {
+            var input = @"
+Example Start<br>
+{% lava
+    assign var1 = 'Value 1'
+    //- Line Comment: A comment that is confined to a single line.
+    assign var2 = 'Value 2'
+    /- Block Comment: A comment that can span...
+       ... multiple lines. -/
+    assign var3 = 'Value 3'
+%}
+//- Line Comment #2
+{{ var1 }}<br>
+{{ var2 }}<br>
+{{ var3 }}<br>
+Example End<br>
+";
+
+            var expectedOutput = @"
+Example Start<br>
+Value 1<br>
+Value 2<br>
+Value 3<br>
+Example End<br>
+";
+
+            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, input );
+        }
+
         [TestMethod]
         public void ShorthandBlockComment_SpanningMultipleLines_RemovesNewLinesContainedInComment()
         {
@@ -342,6 +378,18 @@ Line 1<br>
             var expectedOutput = @"Line 1<br>";
 
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void ShorthandLineComment_WithLeadingWhiteSpace_RendersLineWithWhiteSpace()
+        {
+            var input = "Line 1\n   //-\nLine 2";
+            var expectedOutput = "Line 1\n   \nLine 2";
+
+            var renderOptions = new LavaTestRenderOptions { IgnoreWhiteSpace = false };
+            var result = TestHelper.GetTemplateRenderResult( typeof( FluidEngine ), input, options: renderOptions );
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input, options: renderOptions );
         }
 
         [TestMethod]

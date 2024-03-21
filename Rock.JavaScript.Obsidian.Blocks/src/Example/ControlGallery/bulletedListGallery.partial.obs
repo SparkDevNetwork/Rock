@@ -1,5 +1,5 @@
 <template>
-    <GalleryAndResult :value="{ 'input:items': items }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+    <GalleryAndResult :value="{ 'input:items': items }" hasMultipleValues description="This thing does something" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
         <BulletedList :items="items" :label="label" :help="help" />
 

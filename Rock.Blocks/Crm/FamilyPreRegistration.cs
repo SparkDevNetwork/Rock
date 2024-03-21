@@ -366,6 +366,15 @@ namespace Rock.Blocks.Crm
         Category = CategoryKey.AdultFields,
         Order = 14 )]
 
+    [TextField(
+        "Adult Label",
+        Key = AttributeKey.AdultLabel,
+        Description = "The label that should be used when referring to adults on the form. Please provide this in the singular form.",
+        Category = CategoryKey.AdultFields,
+        DefaultValue = "Adult",
+        IsRequired = false,
+        Order = 15 )]
+
     #endregion
 
     #region Child Category
@@ -479,6 +488,16 @@ namespace Rock.Blocks.Crm
         DefaultValue = "Hide",
         Category = CategoryKey.ChildFields,
         Order = 10 )]
+
+    [TextField(
+        "Child Label",
+        Key = AttributeKey.ChildLabel,
+        Description = "The label that should be used when referring to children on the form. Please provide this in the singular form.",
+        DefaultValue = "Child",
+        IsRequired = false,
+        Category = CategoryKey.ChildFields,
+        Order = 11 )]
+
     #endregion
 
     #region Child Relationship Category
@@ -559,6 +578,7 @@ namespace Rock.Blocks.Crm
             public const string CreateAccountDescription = "CreateAccountDescription";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
+            public const string AdultLabel = "AdultLabel";
 
             public const string ChildSuffix = "ChildSuffix";
             public const string ChildGender = "ChildGender";
@@ -571,6 +591,7 @@ namespace Rock.Blocks.Crm
             public const string ChildProfilePhoto = "ChildProfilePhoto";
             public const string ChildRaceOption = "ChildRaceOption";
             public const string ChildEthnicityOption = "ChildEthnicityOption";
+            public const string ChildLabel = "ChildLabel";
 
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
@@ -1043,10 +1064,21 @@ namespace Rock.Blocks.Crm
                     var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                     if ( homeLocationType != null )
                     {
-                        // Find a location record for the address that was entered.
-                        Location location = null;
-                        if ( bag.Address.Street1.IsNotNullOrWhiteSpace() && bag.Address.City.IsNotNullOrWhiteSpace() )
+                        // Only save the location if it is valid according to the country's requirements.
+                        Location location = new Location()
                         {
+                            Street1 = bag.Address.Street1,
+                            Street2 = bag.Address.Street2,
+                            City = bag.Address.City,
+                            State = bag.Address.State,
+                            PostalCode = bag.Address.PostalCode,
+                            Country = bag.Address.Country,
+                        };
+                        var isValid = LocationService.ValidateLocationAddressRequirements( location, out string validationMessage );
+
+                        if ( isValid )
+                        {
+                            // Find a location record for the address that was entered.
                             location = new LocationService( rockContext ).Get(
                                 // TODO: The default country should be removed once Obsidian has full country support.
                                 bag.Address.Street1,
@@ -1605,10 +1637,10 @@ namespace Rock.Blocks.Crm
         {
             errorMessages = new List<string>();
 
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
-            if ( !disableCaptcha && !bag.IsCaptchaValid )
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
-                errorMessages.Add( "There was an issue processing your request. Please try again. If the issue persists please contact us." );
+                errorMessages.Add( "Captcha was not valid." );
                 return false;
             }
 
@@ -1930,6 +1962,8 @@ namespace Rock.Blocks.Crm
                 ChildRaceField = GetFieldBag( AttributeKey.ChildRaceOption ),
                 ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption ),
                 DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                AdultLabel = GetAttributeValue( AttributeKey.AdultLabel ),
+                ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };
 
             using ( var rockContext = new RockContext() )

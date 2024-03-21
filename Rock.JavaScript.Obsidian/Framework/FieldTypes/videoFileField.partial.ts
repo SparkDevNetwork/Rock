@@ -18,11 +18,14 @@
 import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export const enum ConfigurationValueKey {
-    BinaryFileType = "binaryFileType",
+    FileName = "fileName",
     MimeType = "mimeType",
-    FilePath = "filePath"
+    FilePath = "filePath",
+    FileGuid = "fileGuid",
+    BinaryFileType = "binaryFileType"
 }
 
 // The edit component can be quite large, so load it only as needed.
@@ -42,5 +45,44 @@ export class VideoFileFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
+        const filePath = configurationValues[ConfigurationValueKey.FilePath];
+        const mimeType = configurationValues[ConfigurationValueKey.MimeType];
+        const fileGuid = configurationValues[ConfigurationValueKey.FileGuid];
+
+        const html = `<video
+        src='${filePath}?guid=${fileGuid}'
+        class='js-media-video'
+        type='${mimeType}'
+        controls='controls'
+        style='width:100%;height:100%;'
+        width='100%'
+        height='100%'
+        preload='auto'
+    >
+    </video>
+
+    <script>
+        Rock.controls.mediaPlayer.initialize();
+    </script>`;
+
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
+
+        return html;
+    }
+
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
+        const fileGuid = configurationValues[ConfigurationValueKey.FileGuid];
+        const html = `<a href="/GetFile.ashx?guid=${fileGuid}">${value}</a>`;
+
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
+
+        return html;
     }
 }

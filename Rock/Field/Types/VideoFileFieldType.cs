@@ -37,6 +37,10 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.VIDEO_FILE )]
     public class VideoFileFieldType : FileFieldType, IEntityReferenceFieldType
     {
+        private const string FILE_PATH = "filePath";
+        private const string MIME_TYPE = "mimeType";
+        private const string FILE_NAME = "fileName";
+        private const string FILE_GUID = "fileGuid";
 
         #region Formatting
 
@@ -79,6 +83,42 @@ namespace Rock.Field.Types
         {
             // Extract the raw value.
             return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+            var binaryFileGuid = privateValue.AsGuidOrNull();
+
+            if ( !binaryFileGuid.HasValue )
+            {
+                return publicConfigurationValues;
+            }
+
+            // Configuration to help display the HTML value on the remote device.
+            using ( var rockContext = new RockContext() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                var binaryFileInfo = binaryFileService.GetSelect( binaryFileGuid.Value, bf => new
+                {
+                    bf.FileName,
+                    bf.MimeType
+                } );
+
+                publicConfigurationValues[FILE_NAME] = binaryFileInfo.FileName;
+                publicConfigurationValues[MIME_TYPE] = binaryFileInfo.MimeType;
+                publicConfigurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                publicConfigurationValues[FILE_GUID] = binaryFileGuid.ToString();
+            }
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            return new Dictionary<string, string>();
         }
 
         /// <inheritdoc/>

@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -54,7 +53,7 @@ namespace Rock.Blocks.CMS
 
     #endregion
 
-    [Rock.SystemGuid.EntityTypeGuid( "AD614123-C7CA-40EE-B5D5-64D0D1C91378")]
+    [Rock.SystemGuid.EntityTypeGuid( "AD614123-C7CA-40EE-B5D5-64D0D1C91378" )]
     [Rock.SystemGuid.BlockTypeGuid( "72EDDF3D-625E-40A9-A68B-76236E77A3F3" )]
     public class PageShortLinkDetail : RockDetailBlockType
     {
@@ -138,9 +137,10 @@ namespace Rock.Blocks.CMS
             errorMessage = null;
 
             // should have a token of minimum length
-            if ( pageShortLink.Token.Length < _minTokenLength )
+            var minTokenLength = GetAttributeValue( AttributeKey.MinimumTokenLength ).AsIntegerOrNull() ?? 7;
+            if ( pageShortLink.Token.Length < minTokenLength )
             {
-                errorMessage = string.Format( "Please enter a token that is a least {0} characters long.", _minTokenLength );
+                errorMessage = string.Format( "Please enter a token that is a least {0} characters long.", minTokenLength );
                 return false;
             }
 
@@ -150,6 +150,23 @@ namespace Rock.Blocks.CMS
             if ( isTokenUsedBySite )
             {
                 errorMessage = "The selected token is already being used. Please enter a different token.";
+                return false;
+            }
+
+            if ( pageShortLink.SiteId == 0 )
+            {
+                errorMessage = "Please select a valid site.";
+                return false;
+            }
+
+            if ( pageShortLink.Url.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "Please enter a valid URL.";
+                return false;
+            }
+
+            if ( !pageShortLink.IsValid )
+            {
                 return false;
             }
 
@@ -169,8 +186,8 @@ namespace Rock.Blocks.CMS
 
             if ( entity != null )
             {
-                var isViewable = entity.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -298,7 +315,7 @@ namespace Rock.Blocks.CMS
             }
 
             box.IfValidProperty( nameof( box.Entity.Site ),
-                () => entity.SiteId = ( int ) box.Entity.Site.GetEntityId<Site>( rockContext ) );
+                () => entity.SiteId = box.Entity.Site.GetEntityId<Site>( rockContext ).ToIntSafe() );
 
             box.IfValidProperty( nameof( box.Entity.Token ),
                 () => entity.Token = box.Entity.Token );
@@ -402,9 +419,9 @@ namespace Rock.Blocks.CMS
                 return false;
             }
 
-            if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${PageShortLink.FriendlyTypeName}." );
+                error = ActionForbidden( $"Not authorized to edit ${PageShortLink.FriendlyTypeName}." );
                 return false;
             }
 
@@ -523,7 +540,7 @@ namespace Rock.Blocks.CMS
                 return ActionOk( this.GetParentPageUrl() );
             }
         }
-            
+
         /// <summary>
         /// Refreshes the list of attributes that can be displayed for editing
         /// purposes based on any modified values on the entity.

@@ -928,6 +928,9 @@ Guid - ContentChannelItem Guid";
                 contentChannelItem, new InteractionTransactionInfo { InteractionSummary = contentChannelItem.Title } );
 
             interactionTransaction.Enqueue();
+
+            var intentSettings = contentChannelItem.GetAdditionalSettings<ContentChannelItemService.IntentSettings>();
+            InteractionService.RegisterIntentInteractions( intentSettings.InteractionIntentValueIds );
         }
 
         /// <summary>

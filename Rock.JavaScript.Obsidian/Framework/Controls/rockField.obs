@@ -13,7 +13,7 @@
                 </div>
             </div>
         </template>
-        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" />
     </div>
     <div v-else>
         <component :is="editComponent"
@@ -63,6 +63,10 @@
         dataEntryMode: {
             type: String as PropType<DataEntryMode>,
             default: undefined
+        },
+        isEscaped: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -83,8 +87,8 @@
     /** True if this field is required and must be filled in. */
     const isRequired = computed(() => props.attribute.isRequired);
 
-     /** attribute Guid. */
-     const attributeGuid = computed(() => props.attribute.attributeGuid);
+    /** attribute Guid. */
+    const attributeGuid = computed(() => props.attribute.attributeGuid);
 
     /** Indicates to the editor component if this field is required or not. */
     const rules = computed(() => isRequired.value ? "required" : "");
@@ -108,12 +112,12 @@
         //const _ignored = props.attributeValue.value;
 
         return props.isCondensed
-            ? field.value?.getCondensedFormattedComponent()
-            : field.value?.getFormattedComponent();
+            ? field.value?.getCondensedFormattedComponent(configurationValues.value)
+            : field.value?.getFormattedComponent(configurationValues.value);
     });
 
     /** The edit component to use to display the value. */
-    const editComponent = computed(() => field.value?.getEditComponent());
+    const editComponent = computed(() => field.value?.getEditComponent(configurationValues.value));
 
     /** The value to display or edit. */
     const value = computed({

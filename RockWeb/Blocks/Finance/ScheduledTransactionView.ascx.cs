@@ -854,7 +854,7 @@ namespace RockWeb.Blocks.Finance
 
             btnRefresh.Visible = gateway != null && gateway.GetScheduledPaymentStatusSupported;
             btnUpdate.Visible = gateway != null && gateway.UpdateScheduledPaymentSupported;
-            btnCancelSchedule.Visible = financialScheduledTransaction.IsActive;
+            btnCancelSchedule.Visible = financialScheduledTransaction.IsActive && gateway.UpdateScheduledPaymentSupported;
             btnReactivateSchedule.Visible = !financialScheduledTransaction.IsActive && gateway != null && gateway.ReactivateScheduledPaymentSupported;
         }
 

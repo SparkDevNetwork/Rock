@@ -17,6 +17,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+
 using Newtonsoft.Json;
 using RestSharp;
 using Rock.Web;
@@ -70,6 +72,54 @@ namespace Rock.Utility.CaptchaApi
                 request.Timeout = 5000;
 
                 var response = _client.Execute<CloudFlareCaptchaResponse>( request );
+
+                return response.Data.Success;
+            }
+            catch ( Exception e )
+            {
+                Rock.Model.ExceptionLogService.LogException( e );
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified token is valid.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <param name="remoteIpAddress">The IP address of the client, this may currently be <c>null</c>.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified token is valid; otherwise, <c>false</c>.
+        /// </returns>
+        public async Task<bool> IsTurnstileTokenValidAsync( string token, string remoteIpAddress )
+        {
+            var siteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
+            var secret = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
+
+            if ( string.IsNullOrWhiteSpace( siteKey ) || string.IsNullOrWhiteSpace( secret ) )
+            {
+                return true;
+            }
+
+            if ( string.IsNullOrWhiteSpace( token ) )
+            {
+                return false;
+            }
+
+            try
+            {
+                var request = new RestRequest( "/turnstile/v0/siteverify", Method.POST );
+
+                request.AddParameter( "secret", secret );
+                request.AddParameter( "response", token );
+
+                if ( remoteIpAddress.IsNotNullOrWhiteSpace() )
+                {
+                    request.AddParameter( "remoteip", remoteIpAddress );
+                }
+
+                request.Timeout = 5000;
+
+                var response = await _client.ExecuteTaskAsync<CloudFlareCaptchaResponse>( request );
 
                 return response.Data.Success;
             }

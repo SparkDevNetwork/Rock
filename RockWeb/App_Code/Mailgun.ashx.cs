@@ -35,6 +35,9 @@ public class Mailgun : IHttpHandler
     private HttpResponse response;
     private MailgunRequestPayload mailgunRequestPayload;
 
+    private static volatile bool HasLoggedWebhookKeyException = false;
+    private static readonly object _webhookKeyExceptionLock = new object();
+
     public void ProcessRequest( HttpContext context )
     {
         request = context.Request;
@@ -179,7 +182,9 @@ public class Mailgun : IHttpHandler
                 .Where( a => a.EntityTypeId == emailMediumEntity.Id && a.Key == "TransportContainer" )
                 .FirstOrDefault();
 
-            var emailMediumAttributeValue = new AttributeValueService( rockContext )
+            var attributeValueService = new AttributeValueService( rockContext );
+
+            var emailMediumAttributeValue = attributeValueService
                 .Queryable()
                 .Where( v => v.AttributeId == emailMediumAttribute.Id )
                 .FirstOrDefault();
@@ -212,12 +217,51 @@ public class Mailgun : IHttpHandler
 
                     Reason: Compatibility with preexisting AND newly-created Mailgun accounts.
                 */
-                webhookSigningKey = new AttributeValueService( rockContext )
+                webhookSigningKey = attributeValueService
                     .Queryable()
                     .AsNoTracking()
                     .Where( v => v.Attribute.EntityTypeId == mailgunEntity.Id && v.Attribute.Key == "HTTPWebhookSigningKey" )
                     .Select( v => v.Value )
                     .FirstOrDefault();
+            }
+
+            if ( webhookSigningKey.IsNullOrWhiteSpace() )
+            {
+                /*
+                    3/7/2024 - JPH
+
+                    If the webhook signing key was not found / is not defined, fall back to using the API key.
+                    Also, log an exception if if we haven't already done so.
+
+                    Reason: Migration sometimes fails to copy Mailgun API key to HTTP webhook signing key attribute.
+                    https://github.com/SparkDevNetwork/Rock/issues/5780
+                 */
+                webhookSigningKey = attributeValueService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( v => v.Attribute.EntityTypeId == mailgunEntity.Id && v.Attribute.Key == "APIKey" )
+                    .Select( v => v.Value )
+                    .FirstOrDefault();
+
+                if ( !HasLoggedWebhookKeyException )
+                {
+                    lock ( _webhookKeyExceptionLock )
+                    {
+                        if ( !HasLoggedWebhookKeyException )
+                        {
+                            ExceptionLogService.LogException( @"The Mailgun ""HTTP Webhook Signing Key"" is not defined. Please set this value within Admin Tools > Communications > Communication Transports > Mailgun HTTP." );
+
+                            HasLoggedWebhookKeyException = true;
+                        }
+                    }
+                }
+            }
+
+            if ( webhookSigningKey.IsNullOrWhiteSpace() )
+            {
+                response.Write( "HTTP webhook signing key not defined." );
+                response.StatusCode = 500;
+                return;
             }
 
             if ( !Rock.Mailgun.MailgunUtilities.AuthenticateMailgunRequest( mailgunRequestPayload.TimeStamp, mailgunRequestPayload.Token, mailgunRequestPayload.Signature, webhookSigningKey ) )

@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Engagement.Steps
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     /// <summary>
     /// Tests for StepProgramService that use the database
     /// </summary>
     [TestClass]
-    public class StepProgramServiceTests
+    public class StepProgramServiceTests : DatabaseTestsBase
     {
         private const string ForeignKey = "_StepProgramServiceTests_F120ABA8-6F8B-4ED1-B856-45196593AB61_";
 

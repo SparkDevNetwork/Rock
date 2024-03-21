@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Attribute;
 
 namespace Rock.Data
 {
     /// <summary>
-    /// Represents a model that supports categorized, additional settings.
+    /// Represents a model that supports reading and writing categorized, additional settings.
     /// </summary>
-    public interface IHasAdditionalSettings
+    public interface IHasAdditionalSettings : IHasReadOnlyAdditionalSettings
     {
         /// <summary>
         /// Gets or sets the additional settings JSON string.
@@ -32,6 +33,15 @@ namespace Rock.Data
         /// <value>
         /// The additional settings JSON string.
         /// </value>
-        string AdditionalSettingsJson { get; set; }
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        new string AdditionalSettingsJson { get; set; }
     }
 }

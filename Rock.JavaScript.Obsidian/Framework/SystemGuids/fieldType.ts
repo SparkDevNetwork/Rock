@@ -53,6 +53,8 @@ export const FieldType = {
     BinaryFileType: "09EC7F0D-3505-4090-B010-ABA68CB9B904",
     /** Binary File Types field type */
     BinaryFileTypes: "A5365133-FF87-48B3-BCA3-AF6D871F8895",
+    /** Block Template field type */
+    BlockTemplate: "CCD73456-C83B-4D6E-BD69-8133D2EB996D",
     /** Boolean field type */
     Boolean: "1EDAFDED-DFE6-4334-B019-6EECBA89E05A",
     /** Campus field type */
@@ -65,6 +67,8 @@ export const FieldType = {
     Categories: "775899FB-AC17-4C2C-B809-CF3A1D2AA4E1",
     /** Category field type */
     Category: "309460EF-0CC5-41C6-9161-B3837BA3D374",
+    /** Check-In Configuration Type */
+    CheckInConfigurationType: "7522975C-C224-489A-985D-B44580DFC5BD",
     /** Check List field type */
     CheckList: "31532E03-CF25-4A9F-855C-BA16C4075679",
     /** Code Editor field type */
@@ -249,6 +253,8 @@ export const FieldType = {
     PersonBadges: "3F1AE891-7DC8-46D2-865D-11543B34FB60",
     /** Phone Number field type */
     PhoneNumber: "6B1908EC-12A2-463A-A7BD-970CE0FAF097",
+    /** Prayer Request field type */
+    PrayerRequest: "E34A29A4-3787-4CF5-9C17-08EFB9E2FD23",
     /** Range Slider field type */
     RangeSlider: "C8B6C51A-DD7C-4B75-8604-F0580697088E",
     /** Rating field type */
@@ -257,6 +263,8 @@ export const FieldType = {
     RegistrationInstance: "5F0F6D6A-DEB7-47AD-93C7-4CCC88EF932D",
     /** Registration Template field type */
     RegistrationTemplate: "E1EBAEE8-AF7E-426D-9A1B-02CBD785E620",
+    /** Registration Templates field type */
+    RegistrationTemplates: "F56DED5E-C135-42B2-A529-878CB30436B5",
     /** Registration Entry field type */
     RegistryEntry: "D98E1D88-2240-4248-B93B-0512BD3BB61A",
     /** Registration Template field type */

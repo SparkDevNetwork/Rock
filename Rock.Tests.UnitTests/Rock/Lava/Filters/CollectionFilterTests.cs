@@ -33,6 +33,23 @@ namespace Rock.Tests.UnitTests.Lava
         List<string> _TestDuplicateStringList = new List<string>() { "Item 1", "Item 2 (duplicate)", "Item 2 (duplicate)", "Item 2 (duplicate)", "Item 3" };
 
         [TestMethod]
+        public void Compact_DocumentationExample_ProducesExpectedOutput()
+        {
+            var template = @"
+{% assign fruits = '' | AddToArray:'apples' | AddToArray:nil | AddToArray:'oranges' | AddToArray:nil | AddToArray:'peaches' %}
+Whole Fruit: {{ fruits | Join:', ' }}
+{% assign squashedFruits = fruits | Compact %}
+Squashed Fruit: {{ squashedFruits | Join:', ' }}
+";
+            var expectedOutput = @"
+Whole Fruit: apples, , oranges, , peaches
+Squashed Fruit: apples, oranges, peaches
+";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        [TestMethod]
         public void Compact_ForArrayWithNullValues_RemovesNullValues()
         {
             var names = new List<string>() { null, "Alisha", "Brian", null, "Cynthia" };
@@ -41,6 +58,20 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
                 "Alisha,Brian,Cynthia",
                 "{{ TestList | Compact | Join:',' }}", mergeValues );
+        }
+
+        [TestMethod]
+        public void Concat_DocumentationExample_ProducesExpectedOutput()
+        {
+            var template = @"
+{% assign primaryColors = 'red, yellow, blue' | Split: ', ' %}
+{% assign secondaryColors = 'orange, green, violet' | Split: ', ' %}
+{% assign allColors = primaryColors | Concat: secondaryColors %}
+{{ allColors | Join:', ' }}
+";
+            var expectedOutput = @"red, yellow, blue, orange, green, violet";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
         [TestMethod]

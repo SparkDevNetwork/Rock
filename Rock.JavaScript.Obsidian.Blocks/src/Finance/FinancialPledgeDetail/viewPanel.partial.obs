@@ -27,8 +27,8 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeBag";
     import { FinancialPledgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeDetailOptionsBag";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
         modelValue: {
@@ -108,16 +108,23 @@
             valueBuilder.addTextValue("Payment Schedule", props.modelValue.pledgeFrequencyValue.text);
         }
 
+        if (props.modelValue.startDate && props.modelValue.endDate) {
+            valueBuilder.addTextValue("Date Range", `${RockDateTime.parseISO(props.modelValue.startDate ?? "")?.toASPString("d")} to ${RockDateTime.parseISO(props.modelValue.endDate ?? "")?.toASPString("d")}`);
+        }
+        else if (props.modelValue.startDate) {
+            valueBuilder.addTextValue("Start Date", `${RockDateTime.parseISO(props.modelValue.startDate ?? "")?.toASPString("d")}`);
+        }
+        else if (props.modelValue.endDate) {
+            valueBuilder.addTextValue("End Date", `${RockDateTime.parseISO(props.modelValue.endDate ?? "")?.toASPString("d")}`);
+        }
+
+        if (props.modelValue.pledgeFrequencyValue?.text) {
+            valueBuilder.addTextValue("Payment Schedule", props.modelValue.pledgeFrequencyValue.text);
+        }
+
         return valueBuilder.build();
     });
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
 </script>

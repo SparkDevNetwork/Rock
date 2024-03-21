@@ -14,16 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
 {
     [TestClass]
     public class EncodingFilterTests : LavaIntegrationTestBase
@@ -151,6 +154,70 @@ Hello Ted!
             input = input.Replace( "<input>", inputHash );
 
             TestHelper.AssertTemplateOutput( string.Empty, input );
+        }
+
+        #endregion
+
+        #region Encryption Tests
+
+        [TestMethod]
+        public void Decrypt_DocumentationExample_ReturnsExpectedOutput()
+        {
+            var text = "Hello there!";
+            var encryptedString = Rock.Security.Encryption.EncryptString( text );
+
+            var inputTemplate = @"{{ '<input>' | Decrypt }}";
+            inputTemplate = inputTemplate.Replace( "<input>", encryptedString );
+
+            TestHelper.AssertTemplateOutput( text, inputTemplate );
+        }
+
+        [TestMethod]
+        public void Encrypt_DocumentationExample_ReturnsExpectedOutput()
+        {
+            // The same input text returns a different encrypted string on each execution, because 
+            // the encryption method (AES) includes an initialization vector (IV) to randomize the result.
+            var inputTemplate = @"
+{% assign encryptedText = 'This is my secret!' | Encrypt %}
+<p>The encrypted message is: {{ encryptedText }}</p>
+{% assign decryptedText = encryptedText | Decrypt %}
+<p>The decrypted message is: {{ decryptedText }}</p>
+";
+
+            var expectedOutput = @"
+The encrypted message is: *
+The decrypted message is: This is my secret!
+";
+
+            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, inputTemplate, new LavaTestRenderOptions { Wildcards = new List<string> { "*" } } );
+        }
+
+        [DataTestMethod]
+        [DataRow( "" )]
+        [DataRow( null )]
+        [DataRow( "This is my secret!" )]
+        public void Encrypt_WithStringInput_ReturnsEncryptedOutput( string input )
+        {
+            // Verify that the filter has transformed the input in some way.
+            var inputTemplate1 = @"
+{% assign encryptedText = '<input>' | Encrypt %}
+{{ encryptedText }}
+";
+
+            var output1 = TestHelper.GetTemplateOutput( typeof( FluidEngine ), inputTemplate1 );
+
+            Assert.That.AreNotEqual( output1?.RemoveWhiteSpace(), input?.RemoveWhiteSpace() );
+
+            // Verify that the input text can be encrypted and decrypted successfully.
+            var inputTemplate2 = @"
+{% assign encryptedText = '<input>' | Encrypt %}
+{% assign decryptedText = encryptedText | Decrypt %}
+{{ decryptedText }}
+";
+
+            inputTemplate2 = inputTemplate2.Replace( "<input>", input );
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), input, inputTemplate2 );
         }
 
         #endregion

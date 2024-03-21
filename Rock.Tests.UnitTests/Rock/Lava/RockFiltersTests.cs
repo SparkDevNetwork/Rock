@@ -20,6 +20,7 @@ using Http.TestLibrary;
 namespace Rock.Tests.Rock.Lava
 {
     [TestClass]
+    [TestCategory( TestFeatures.Lava )]
     public class RockFiltersTest
     {
         // A fake web-root Content folder for any tests that use the HTTP Context simulator

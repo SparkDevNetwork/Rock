@@ -194,7 +194,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Code Sent Screen Subtitle",
         Description = "The text to display at the top of the Code Sent screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
-        DefaultValue = "You should be recieving a verification code from us shortly. When it arrives type or paste it below.",
+        DefaultValue = "You should be receiving a verification code from us shortly. When it arrives type or paste it below.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CodeSentScreenSubtitle,
         Order = 3 )]
@@ -413,7 +413,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_SECURITY_ONBOARD_PERSON )]
-    [Rock.SystemGuid.BlockTypeGuid( "9544EE9E-07C2-4F14-9C93-3B16EBF0CC47")]
+    [Rock.SystemGuid.BlockTypeGuid( "9544EE9E-07C2-4F14-9C93-3B16EBF0CC47" )]
     public class OnboardPerson : RockBlockType
     {
         #region Block Attributes
@@ -1615,7 +1615,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                     // Only a single match is taken as a quality match. If
                     // there were more than 1 then we don't match.
-                    person = people.Count == 1 ? people[0] : null;
+                    person = people.Count == 1 ? people[ 0 ] : null;
                 }
                 else if ( request.SendSms && request.PhoneNumber.IsNotNullOrWhiteSpace() )
                 {
@@ -1626,7 +1626,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                     // Only a single match is taken as a quality match. If
                     // there were more than 1 then we don't match.
-                    person = personIds.Count == 1 ? new PersonService( rockContext ).Get( personIds[0] ) : null;
+                    person = personIds.Count == 1 ? new PersonService( rockContext ).Get( personIds[ 0 ] ) : null;
                 }
                 else
                 {
@@ -1786,6 +1786,11 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // values now before we start creating the person.
                 if ( request.Details.UserName.IsNotNullOrWhiteSpace() )
                 {
+                    if( !UserLoginService.IsUsernameValid( request.Details.UserName ) )
+                    {
+                        return ActionBadRequest( UserLoginService.FriendlyUsernameRules() );
+                    }
+
                     if ( !UserLoginService.IsPasswordValid( request.Details.Password ) )
                     {
                         return ActionBadRequest( UserLoginService.FriendlyPasswordRules() );
