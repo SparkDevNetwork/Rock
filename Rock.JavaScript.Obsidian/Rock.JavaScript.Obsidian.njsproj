@@ -326,6 +326,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\BinaryFileDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\DefinedValueList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\Notes\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NotificationMessageList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CategoryDetail\" />
@@ -793,6 +794,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusList\campusListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedValueList\definedValueBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\DefinedValueList\definedValueListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\deleteNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\editNoteRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\Notes\noteBag.d.ts" />

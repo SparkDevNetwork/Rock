@@ -62,6 +62,8 @@
     <Compile Include="Blocks\Core\AuditList\AuditListOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DefinedValueList\DefinedValueBag.cs" />
+    <Compile Include="Blocks\Core\DefinedValueList\DefinedValueListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduleDetail\ScheduleExclusionBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelBag.cs" />
     <Compile Include="Blocks\Core\InteractionChannelDetail\InteractionChannelDetailOptionsBag.cs" />
