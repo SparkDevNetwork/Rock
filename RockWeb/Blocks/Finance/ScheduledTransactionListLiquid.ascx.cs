@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -97,6 +98,16 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Order = 10 )]
 
+    [DefinedValueField(
+        "Transaction Types",
+        Key = AttributeKey.TransactionTypes,
+        Description = "This setting filters the list of transactions by transaction type.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE,
+        DefaultValue = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION,
+        AllowMultiple = true,
+        Order = 11 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "081FF29F-0A9F-4EC3-95AD-708FA0E6132D" )]
     public partial class ScheduledTransactionListLiquid : RockBlock
     {
@@ -113,6 +124,7 @@ namespace RockWeb.Blocks.Finance
             public const string GatewayFilter = "GatewayFilter";
             public const string TransferToGateway = "TransferToGateway";
             public const string TransferButtonText = "TransferButtonText";
+            public const string TransactionTypes = "TransactionTypes";
         }
 
         private static class PageParameterKey
@@ -127,6 +139,15 @@ namespace RockWeb.Blocks.Finance
         /// The _transfer to gateway unique identifier is set to non-null if the block setting is set.
         /// </summary>
         private Guid? _transferToGatewayGuid = null;
+
+        #endregion
+
+        #region Properties
+        
+        /// <summary>
+        /// List of transaction type defined value guids used to filter the transactions.
+        /// </summary>
+        private List<Guid> TransactionTypesFilter => this.GetAttributeValues( AttributeKey.TransactionTypes ).AsGuidList().Where( guid => DefinedValueCache.Get( guid ) != null ).ToList();
 
         #endregion
 
@@ -266,6 +287,7 @@ namespace RockWeb.Blocks.Finance
                 scheduleSummary.Add( "Status", transactionSchedule.Status );
                 scheduleSummary.Add( "CardExpirationDate", transactionSchedule.FinancialPaymentDetail.ExpirationDate );
                 scheduleSummary.Add( "CardIsExpired", transactionSchedule.FinancialPaymentDetail.CardExpirationDate < RockDateTime.Now );
+                scheduleSummary.Add( "TransactionType", transactionSchedule.TransactionTypeValue?.Value );
 
                 List<Dictionary<string, object>> summaryDetails = new List<Dictionary<string, object>>();
                 decimal totalAmount = 0;
@@ -446,6 +468,7 @@ namespace RockWeb.Blocks.Finance
                 givingIds.Add( CurrentPerson.GivingId );
 
                 var schedules = transactionService.Queryable()
+                    .Include( a => a.TransactionTypeValue )
                     .Include( a => a.ScheduledTransactionDetails.Select( s => s.Account ) )
                     .Where( s => givingIds.Contains( s.AuthorizedPersonAlias.Person.GivingId ) && s.IsActive == true );
 
@@ -455,6 +478,9 @@ namespace RockWeb.Blocks.Finance
                 {
                     schedules = schedules.Where( s => s.FinancialGateway.Guid == gatewayFilterGuid );
                 }
+
+                // Filter by transaction type.
+                schedules = schedules.Where( s => s.TransactionTypeValueId.HasValue && TransactionTypesFilter.Contains( s.TransactionTypeValue.Guid ) );
 
                 // Refresh the active transactions
                 transactionService.GetStatus( schedules, true );
