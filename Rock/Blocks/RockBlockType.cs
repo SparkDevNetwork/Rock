@@ -847,11 +847,11 @@ Obsidian.onReady(() => {{
         /// <returns>An action result that contains the block configuration data.</returns>
         [BlockAction]
         [RockInternal( "1.14" )]
-        public BlockActionResult RefreshObsidianBlockInitialization()
+        public async Task<BlockActionResult> RefreshObsidianBlockInitialization()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
 
-            return ActionOk( GetConfigBagAsync( rootElementId ) );
+            return ActionOk( await GetConfigBagAsync( rootElementId ) );
         }
 
         #endregion
