@@ -263,7 +263,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Gets the identifiers of the notes currently being watched by the person.
         /// </summary>
-        /// <param name="notes">The notes that willbe displayed to the person.</param>
+        /// <param name="notes">The notes that will be displayed to the person.</param>
         /// <param name="currentPerson">The current person the notes will be displayed to.</param>
         /// <param name="rockContext">The rock context to use when accessing the database.</param>
         /// <returns>A list of identifiers representing which notes are currently being watched.</returns>
@@ -282,7 +282,7 @@ namespace Rock.Blocks.Core
                     && noteIds.Contains( nw.NoteId.Value )
                     && nw.WatcherPersonAlias.PersonId == currentPerson.Id
                     && nw.IsWatching )
-                .Select( n => n.Id )
+                .Select( nw => nw.NoteId.Value )
                 .ToList();
 
             return watchedNoteIds;
