@@ -201,7 +201,7 @@ namespace Rock.Model
                 };
 
                 // If the registrant is on the waitlist then set costs to 0 and add a waitlist indicator to the name for the payment summary grid
-                if ( registrant.IsOnWaitList )
+                if ( registrant.IsOnWaitList ) // TODO JMH Do something like this for payment plan registrations (zero out the cost so the registration appears completed)?
                 {
                     costSummary.Description += " (Waiting List)";
                     costSummary.Cost = 0.0m;

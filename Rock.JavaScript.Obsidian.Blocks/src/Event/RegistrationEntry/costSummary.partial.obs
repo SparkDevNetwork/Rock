@@ -360,7 +360,7 @@
     // #region Watchers
 
     watch(defaultPaymentAmount, () => {
-        registrationEntryState.amountToPayToday = defaultPaymentAmount.value;
+        registrationEntryState.amountToPayToday = defaultPaymentAmount.value; // TODO JMH The amountToPayToday is set here on load of the summary.partial.obs component via this child component.
     }, {
         immediate: true
     });
