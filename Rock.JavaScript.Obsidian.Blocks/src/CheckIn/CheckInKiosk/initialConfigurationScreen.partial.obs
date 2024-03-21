@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, toRaw, watch } from "vue";
+    import { PropType, computed, ref, toRaw, watch, onMounted } from "vue";
     import MainPanel from "./mainPanel.partial.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ContentTransition from "./contentTransition.partial.obs";
@@ -337,5 +337,5 @@
     watch(kioskGuid, updateAreaItems);
     watch([isCustomConfigurationValid, isCustomConfigurationVisible], updateActions);
 
-    updateActions();
+    onMounted(() => updateActions());
 </script>

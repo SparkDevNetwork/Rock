@@ -4,7 +4,8 @@
         <PageHeader title="Rock Solid"
                     :hasBack="true"
                     :hideNavigation="hideNavigation"
-                    @back="onBack" />
+                    @back="onBack"
+                    @home="onHome" />
 
         <section class="page-body">
             <ContentTransition>
@@ -13,7 +14,8 @@
                                             @updateActions="onUpdateActions($event, Screen.Configuration)"
                                             @configured="onConfigured" />
 
-                <WelcomeScreen v-if="currentScreen === Screen.Welcome">
+                <WelcomeScreen v-if="currentScreen === Screen.Welcome"
+                               @start="onWelcomeStart">
                 </WelcomeScreen>
             </ContentTransition>
         </section>
@@ -163,6 +165,7 @@
     flex-direction: row;
     flex-shrink: 0;
     gap: var(--item-spacing);
+    min-height: 64px;
     color: var(--tones-dark);
 }
 
@@ -174,6 +177,8 @@
 }
 
 .check-in-page .page-footer .configure-button {
+    padding: 2px 8px;
+    font-size: 28px;
     color: var(--tones-medium);
 }
 
@@ -226,7 +231,7 @@
  */
 .check-in-page .welcome-screen {
     display: grid;
-    flex-grow: 1;
+    height: 100%;
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 2fr 1fr;
     gap: var(--item-spacing);
@@ -268,9 +273,9 @@
 </style>
 
 <script setup lang="ts">
-    import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
-    import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import InitialConfigurationScreen from "./CheckInKiosk/initialConfigurationScreen.partial.obs";
+    import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
+    import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref } from "vue";
@@ -289,14 +294,28 @@
 
     const currentScreenActions = ref<PanelAction[]>([]);
 
+    function navigateToScreen(screen: Screen): void {
+        currentScreenActions.value = [];
+        currentScreen.value = screen;
+    }
+
     function onConfigured(value: KioskConfigurationBag): void {
         console.log("configured", value);
+        navigateToScreen(Screen.Welcome);
     }
 
     function onUpdateActions(actions: PanelAction[], source: Screen): void {
         if (currentScreen.value === source) {
             currentScreenActions.value = actions;
         }
+    }
+
+    function onWelcomeStart(): void {
+        navigateToScreen(Screen.Search);
+    }
+
+    function onHome(): void {
+        navigateToScreen(Screen.Welcome);
     }
 
     function onBack(): void {
