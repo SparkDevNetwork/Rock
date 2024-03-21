@@ -615,6 +615,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the number of days until the Person's next birthday.
+        /// This is an in-memory calculation. If needed in a LinqToSql query, use the DaysUntilBirthday property instead.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's next birthday,
+        /// or null if the person's birth date is not available.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int? DaysToBirthdayOrNull
+        {
+            get
+            {
+                // If either day or month are not defined, exit.
+                if ( !this.BirthDay.HasValue || !this.BirthMonth.HasValue )
+                {
+                    return null;
+                }
+
+                return GetDaysToNextAnnualDate( this.BirthDay.Value, this.BirthMonth.Value, RockDateTime.Today );
+            }
+        }
+
+        /// <summary>
         /// Gets the number of days until the Person's birthday. This is an in-memory calculation. If needed in a LinqToSql query
         /// use DaysUntilBirthday property instead
         /// </summary>
@@ -624,6 +648,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        /*
+            [2024-03-21 - DL]
+
+            When this method is removed, rename the DaysToBirthdayOrNull property to DaysToBirthday.
+
+            Reason: To replace this with a method of the same name having a nullable return value.
+        */
+        [Obsolete( "Use the DaysToBirthdayOrNull property instead." )]
+        [RockObsolete( "1.17" )] // IMPORTANT: Refer to the engineering note above.
         public virtual int DaysToBirthday
         {
             get
@@ -712,6 +745,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        /*
+            [2024-03-21 - DL]
+
+            When this method is removed, rename the DaysToAnniversaryOrNull property to DaysToAnniversary.
+
+            Reason: To replace this with a method of the same name having a nullable return value.
+        */
+        [Obsolete("Use the DaysToAnniversaryOrNull property instead.")]
+        [RockObsolete( "1.17" )] // IMPORTANT: Refer to the engineering note above.
         public virtual int DaysToAnniversary
         {
             get
@@ -746,6 +788,29 @@ namespace Rock.Model
             private set
             {
                 // intentionally blank
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of days until the Person's next anniversary.
+        /// This is an in-memory calculation. If needed in a LinqToSql query, use the DaysUntilAnniversary property instead.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary,
+        /// or null if the person's anniversary is not available.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int? DaysToAnniversaryOrNull
+        {
+            get
+            {
+                if ( !this.AnniversaryDate.HasValue )
+                {
+                    return null;
+                }
+
+                return GetDaysToNextAnnualDate( this.AnniversaryDate.Value.Day, this.AnniversaryDate.Value.Month, RockDateTime.Today );
             }
         }
 
@@ -1136,8 +1201,8 @@ namespace Rock.Model
         {
             var dictionary = base.ToDictionary();
             dictionary.TryAdd( "Age", AgePrecise );
-            dictionary.TryAdd( "DaysToBirthday", DaysToBirthday );
-            dictionary.TryAdd( "DaysToAnniversary", DaysToAnniversary );
+            dictionary.TryAdd( "DaysToBirthday", this.DaysToBirthdayOrNull );
+            dictionary.TryAdd( "DaysToAnniversary", this.DaysToAnniversaryOrNull );
             dictionary.TryAdd( "FullName", FullName );
             dictionary.TryAdd( "PrimaryAliasId", this.PrimaryAliasId );
             return dictionary;
@@ -1825,6 +1890,46 @@ namespace Rock.Model
             {
                 return Enums.Crm.AgeBracket.SixtyFiveOrOlder;
             }
+        }
+
+        /// <summary>
+        /// Calculate the number of days until the next occurrence of an annually recurring date.
+        /// </summary>
+        /// <param name="day">The day of the month</param>
+        /// <param name="month">The month of the year</param>
+        /// <param name="asAtDate">The reference date from which the next recurrence is calculated</param>
+        /// <returns>
+        /// The number of days from the reference date until the next occurrence of the annually recurring date,
+        /// or null if the next occurrence date is invalid.
+        /// </returns>
+        internal static int? GetDaysToNextAnnualDate( int day, int month, DateTime asAtDate )
+        {
+            // Get the year of the next occurrence with regard to the asAtDate,
+            // either this year or the following year.
+            var year = asAtDate.Year;
+            if ( month < asAtDate.Month
+                || ( month == asAtDate.Month && day < asAtDate.Day ) )
+            {
+                year++;
+            }
+
+            // Validate the next occurrence.
+            // If the date is not valid but the day is greater than 28, check the previous day for a valid date.
+            // This addresses the case where the recurrence falls on a leap day and we take the previous day as the next recurrence.
+            DateTime testDate;
+            var yyyymm = $"{year}-{month}";
+            while ( !DateTime.TryParse( $"{yyyymm}-{day}", out testDate ) && day > 28 )
+            {
+                day--;
+            }
+
+            // The recurrence day and month are invalid.
+            if ( testDate == DateTime.MinValue )
+            {
+                return null;
+            }
+
+            return Convert.ToInt32( testDate.Subtract( asAtDate ).TotalDays );
         }
 
         #endregion
