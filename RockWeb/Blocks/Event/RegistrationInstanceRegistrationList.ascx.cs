@@ -399,10 +399,13 @@ namespace RockWeb.Blocks.Event
                         balanceCssClass = "label-success";
                     }
 
-                    lBalance.Text = string.Format(@"<span class='label {0}'>{1}</span><input type='hidden' class='js-has-payments' value='{2}' />",
-                        balanceCssClass,
-                        balanceDue.FormatAsCurrency(),
-                        hasPayments.ToTrueFalse() );
+                    var paymentPlanIcon = string.Empty;
+                    if ( registration.PaymentPlanFinancialScheduledTransactionId.HasValue )
+                    {
+                        paymentPlanIcon = "<i class='fa fa-calendar-day'></i>";
+                    }
+
+                    lBalance.Text = $"<span class='label {balanceCssClass}'>{balanceDue.FormatAsCurrency()}{paymentPlanIcon}</span><input type='hidden' class='js-has-payments' value='{hasPayments.ToTrueFalse()}' />";
                 }
             }
         }
