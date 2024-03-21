@@ -38,6 +38,7 @@
                                 <Rock:DateField DataField="EndDate" HeaderText="Ending" SortExpression="EndDate" />
                                 <Rock:DateField DataField="NextPaymentDate" HeaderText="Next Payment" SortExpression="NextPaymentDate" />
                                 <Rock:DefinedValueField DataField="FinancialPaymentDetail.CurrencyTypeValueId" HeaderText="Currency Type" SortExpression="FinancialPaymentDetail.CurrencyTypeValue.Value" />
+                                <Rock:DefinedValueField DataField="TransactionTypeValueId" HeaderText="Transaction Type" SortExpression="TransactionTypeValue.Value" Visible="false" />
                                 <Rock:RockBoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" SortExpression="GatewayScheduleId" />
                                 <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             </Columns>
