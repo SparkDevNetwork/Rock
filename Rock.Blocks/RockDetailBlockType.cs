@@ -33,7 +33,7 @@ namespace Rock.Blocks
         /// if page parameters requested creation.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Campus"/> to be viewed or edited on the page.</returns>
+        /// <returns>The entity to be viewed or edited on the page.</returns>
         protected TEntity GetInitialEntity<TEntity, TService>( RockContext rockContext, string entityIdKey )
             where TService : Service<TEntity>
             where TEntity : Rock.Data.Entity<TEntity>, new()
@@ -41,8 +41,6 @@ namespace Rock.Blocks
             var entityId = RequestContext.GetPageParameter( entityIdKey );
             var id = !PageCache.Layout.Site.DisablePredictableIds ? entityId.AsIntegerOrNull() : null;
             var guid = entityId.AsGuidOrNull();
-
-            var entityService = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
 
             // If a zero identifier is specified then create a new entity.
             if ( ( id.HasValue && id.Value == 0 ) || ( guid.HasValue && guid.Value == Guid.Empty ) || ( !id.HasValue && !guid.HasValue && entityId.IsNullOrWhiteSpace() ) )
@@ -53,6 +51,36 @@ namespace Rock.Blocks
                     Guid = Guid.Empty
                 };
             }
+
+            var entityService = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
+
+            return entityService.GetNoTracking( entityId, !PageCache.Layout.Site.DisablePredictableIds );
+        }
+
+        /// <summary>
+        /// Gets the initial entity from page parameters or creates a new entity
+        /// if page parameters requested creation. The block's <see cref="RockContext"/>
+        /// property will be used to access the database.
+        /// </summary>
+        /// <returns>The entity to be viewed or edited on the page.</returns>
+        protected TEntity GetInitialEntity<TEntity>( string entityIdKey )
+            where TEntity : Rock.Data.Entity<TEntity>, new()
+        {
+            var entityId = RequestContext.GetPageParameter( entityIdKey );
+            var id = !PageCache.Layout.Site.DisablePredictableIds ? entityId.AsIntegerOrNull() : null;
+            var guid = entityId.AsGuidOrNull();
+
+            // If a zero identifier is specified then create a new entity.
+            if ( ( id.HasValue && id.Value == 0 ) || ( guid.HasValue && guid.Value == Guid.Empty ) || ( !id.HasValue && !guid.HasValue && entityId.IsNullOrWhiteSpace() ) )
+            {
+                return new TEntity
+                {
+                    Id = 0,
+                    Guid = Guid.Empty
+                };
+            }
+
+            var entityService = ( Service<TEntity> ) Reflection.GetServiceForEntityType( typeof( TEntity ), RockContext );
 
             return entityService.GetNoTracking( entityId, !PageCache.Layout.Site.DisablePredictableIds );
         }

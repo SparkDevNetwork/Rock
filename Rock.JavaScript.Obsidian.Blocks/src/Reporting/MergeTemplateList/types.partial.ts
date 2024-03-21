@@ -15,19 +15,18 @@
 // </copyright>
 //
 
-import { RockCacheabilityType } from "@Obsidian/Enums/Controls/rockCacheabilityType";
-import { TimeInterval } from "@Obsidian/ViewModels/Utility/timeInterval";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/**
- * Represents a setting for how to cache a resource. Based on Rock.Utility.RockCacheability
- */
-export type RockCacheability = {
-    /** Cache header type */
-    rockCacheabilityType: RockCacheabilityType;
+export const enum NavigationUrlKey {
+    DetailPage = "DetailPage"
+}
 
-    /** Max amount of time to cache */
-    maxAge: TimeInterval;
+export const enum PreferenceKey {
+    FilterPerson = "filter-person",
+    FilterShowGlobalTemplates = "filter-show-global-templates",
+}
 
-    /** Max amount of time to cache in a shared cache */
-    sharedMaxAge: TimeInterval;
+export type GridSettingsOptions = {
+    person?: ListItemBag | null;
+    showGlobaltemplates: string | null;
 };

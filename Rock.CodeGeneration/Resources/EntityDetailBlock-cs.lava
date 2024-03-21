@@ -67,18 +67,15 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>();
+            var box = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );{% if UseAttributeValues == true %}
-                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<{{ EntityName }}>();{% endif %}
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );{% if UseAttributeValues == true %}
+            box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<{{ EntityName }}>();{% endif %}
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -86,9 +83,8 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private {{ EntityName }}DetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private {{ EntityName }}DetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new {{ EntityName }}DetailOptionsBag();
 
@@ -100,10 +96,9 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="{{ EntityName | CamelCase }}">The {{ EntityName }} to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the {{ EntityName }} is valid, <c>false</c> otherwise.</returns>
-        private bool Validate{{ EntityName }}( {{ EntityName }} {{ EntityName | CamelCase }}, RockContext rockContext, out string errorMessage )
+        private bool Validate{{ EntityName }}( {{ EntityName }} {{ EntityName | CamelCase }}, out string errorMessage )
         {
             errorMessage = null;
 
@@ -115,10 +110,9 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -129,7 +123,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
             var isViewable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );{% if UseAttributeValues == true %}
 
-            entity.LoadAttributes( rockContext );{% endif %}
+            entity.LoadAttributes( RockContext );{% endif %}
 
             if ( entity.Id != 0 )
             {
@@ -221,9 +215,8 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// </summary>
         /// <param name="entity">The entity to be updated.</param>
         /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( {{ EntityName }} entity, DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box, RockContext rockContext )
+        private bool UpdateEntityFromBox( {{ EntityName }} entity, DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box )
         {
             if ( box.ValidProperties == null )
             {
@@ -236,7 +229,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
             {% if UseAttributeValues == true %}box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
                     entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
                 } );
@@ -248,11 +241,10 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// Gets the initial entity from page parameters or creates a new entity
         /// if page parameters requested creation.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The <see cref="{{ EntityName }}"/> to be viewed or edited on the page.</returns>
-        private {{ EntityName }} GetInitialEntity( RockContext rockContext )
+        private {{ EntityName }} GetInitialEntity()
         {
-            return GetInitialEntity<{{ EntityName }}, {{ ServiceName }}>( rockContext, PageParameterKey.{{ EntityName }}Id );
+            return GetInitialEntity<{{ EntityName }}, {{ ServiceName }}>( RockContext, PageParameterKey.{{ EntityName }}Id );
         }
 
         /// <summary>
@@ -270,17 +262,14 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            var entity = GetInitialEntity();{% if UseAttributeValues == true %}
+
+            if ( entity != null )
             {
-                var entity = GetInitialEntity( rockContext );{% if UseAttributeValues == true %}
+                entity.LoadAttributes( RockContext );
+            }{% endif %}
 
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }{% endif %}
-
-                return GetSecurityGrantToken( entity );
-            }
+            return GetSecurityGrantToken( entity );
         }
 
         /// <summary>
@@ -301,13 +290,12 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// Attempts to load an entity to be used for an edit action.
         /// </summary>
         /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
         /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
         /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
         /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out {{ EntityName }} entity, out BlockActionResult error )
+        private bool TryGetEntityForEditAction( string idKey, out {{ EntityName }} entity, out BlockActionResult error )
         {
-            var entityService = new {{ EntityName }}Service( rockContext );
+            var entityService = new {{ EntityName }}Service( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -358,22 +346,19 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }{% if UseAttributeValues == true %}
+                return actionError;
+            }{% if UseAttributeValues == true %}
 
-                entity.LoadAttributes( rockContext );{% endif %}
+            entity.LoadAttributes( RockContext );{% endif %}
 
-                var box = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
+            var box = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>
+            {
+                Entity = GetEntityBagForEdit( entity )
+            };
 
-                return ActionOk( box );
-            }
+            return ActionOk( box );
         }
 
         /// <summary>
@@ -384,33 +369,31 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new {{ ServiceName }}( rockContext );
+                var entityService = new {{ ServiceName }}( RockContext );
 
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                if ( !TryGetEntityForEditAction( box.Entity.IdKey, out var entity, out var actionError ) )
                 {
                     return actionError;
                 }
 
                 // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                if ( !UpdateEntityFromBox( entity, box ) )
                 {
                     return ActionBadRequest( "Invalid data." );
                 }
 
                 // Ensure everything is valid before saving.
-                if ( !Validate{{ EntityName }}( entity, rockContext, out var validationMessage ) )
+                if ( !Validate{{ EntityName }}( entity, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
                 }
 
                 var isNew = entity.Id == 0;
 
-                rockContext.WrapTransaction( () =>
+                RockContext.WrapTransaction( () =>
                 {
-                    rockContext.SaveChanges();{% if UseAttributeValues == true %}
-                    entity.SaveAttributeValues( rockContext );{% endif %}
+                    RockContext.SaveChanges();{% if UseAttributeValues == true %}
+                    entity.SaveAttributeValues( RockContext );{% endif %}
                 } );
 
                 if ( isNew )
@@ -423,7 +406,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
                 // Ensure navigation properties will work now.
                 entity = entityService.Get( entity.Id );{% if UseAttributeValues == true %}
-                entity.LoadAttributes( rockContext );{% endif %}
+                entity.LoadAttributes( RockContext );{% endif %}
 
                 return ActionOk( GetEntityBagForView( entity ) );
             }
@@ -437,25 +420,22 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new {{ ServiceName }}( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new {{ ServiceName }}( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -467,49 +447,46 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box )
         {
-            {% if UseAttributeValues == true %}using ( var rockContext = new RockContext() )
+            {% if UseAttributeValues == true %}if ( !TryGetEntityForEditAction( box.Entity.IdKey, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                return actionError;
+            }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Reload attributes based on the new property values.
+            entity.LoadAttributes( RockContext );
+
+            var refreshedBox = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>
+            {
+                Entity = GetEntityBagForEdit( entity )
+            };
+
+            var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
+            var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
+
+            // If the attributes haven't changed then return a 204 status code.
+            if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
+            {
+                return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
+            }
+
+            // Replace any values for attributes that haven't changed with
+            // the value sent by the client. This ensures any unsaved attribute
+            // value changes are not lost.
+            foreach ( var kvp in refreshedBox.Entity.Attributes )
+            {
+                if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
                 {
-                    return actionError;
+                    refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
                 }
+            }
 
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
-            }{% else %}return ActionBadRequest( "Attributes are not supported by this block." );{% endif %}
+            return ActionOk( refreshedBox );{% else %}return ActionBadRequest( "Attributes are not supported by this block." );{% endif %}
         }
 
         #endregion

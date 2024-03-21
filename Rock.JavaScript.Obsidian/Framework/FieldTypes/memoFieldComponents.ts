@@ -54,6 +54,13 @@ export const EditComponent = defineComponent({
             const showCountDownConfig = props.configurationValues[ConfigurationValueKey.ShowCountDown];
             const showCountDownValue = asBooleanOrNull(showCountDownConfig) || false;
 
+            const allowHtmlConfig = props.configurationValues[ConfigurationValueKey.AllowHtml];
+            const allowHtmlValue = asBooleanOrNull(allowHtmlConfig) || false;
+            if(allowHtmlValue){
+                attributes.allowHtml = allowHtmlValue;
+            }
+
+
             if (showCountDownValue) {
                 attributes.showCountDown = showCountDownValue;
             }

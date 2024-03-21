@@ -366,7 +366,8 @@ namespace Rock.Financial
 
 
                     List<int> personAliasIds;
-                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Person Alias Ids" ) ) {
+                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Person Alias Ids" ) )
+                    {
                         /*
                             1/4/2024 - JPH
 
@@ -407,15 +408,15 @@ namespace Rock.Financial
                         var transactionAccountIds = transactionSettings.GetIncludedAccountIds( rockContext );
 
                         foreach ( var financialTransaction in financialTransactionsList )
-                    {
-                        if ( transactionAccountIds.Any() )
                         {
-                            // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
-                            financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.Where( a => transactionAccountIds.Contains( a.AccountId ) ).ToList();
-                        }
+                            if ( transactionAccountIds.Any() )
+                            {
+                                // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
+                                financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.Where( a => transactionAccountIds.Contains( a.AccountId ) ).ToList();
+                            }
 
-                        financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.PublicName ).ToList();
-                    }
+                            financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.PublicName ).ToList();
+                        }
                     }
 
                     var lavaTemplateLava = financialStatementTemplate.ReportTemplate;
@@ -838,7 +839,7 @@ namespace Rock.Financial
             {
 
                 int? doNotSendGivingStatementAttributeId = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.Id;
-                var defaultIsOptOut = (AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.DefaultValue).AsBoolean();
+                var defaultIsOptOut = ( AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.DefaultValue ).AsBoolean();
 
                 if ( !doNotSendGivingStatementAttributeId.HasValue )
                 {
@@ -1525,7 +1526,7 @@ namespace Rock.Financial
             /// <value>
             /// The percent complete.
             /// </value>
-            public int PercentComplete => ( int ) ( ( this.AmountGiven * 100 ) / this.AmountPledged );
+            public int PercentComplete => ( int ) ( ( this.AmountGiven * 100 ) / ( this.AmountPledged > 0 ? this.AmountPledged : 1 ) );
 
             /// <summary>
             /// Gets or sets the amount remaining.

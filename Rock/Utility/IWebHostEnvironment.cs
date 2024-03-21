@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting
     }
 }
 
-namespace Rock.Rest
+namespace Rock.Utility
 {
     /// <summary>
     /// Temporary implementation of IWebHostEnvironment until we move to
