@@ -15,24 +15,19 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
-using System.Web.Http.Controllers;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Rock.Blocks;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -41,6 +36,30 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class BlocksController
     {
+        #region Fields
+
+        /// <summary>
+        /// The service provider for this instance.
+        /// </summary>
+        private readonly IServiceProvider _serviceProvider;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlocksController"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider for this instance.</param>
+        [ActivatorUtilitiesConstructor]
+        public BlocksController( IServiceProvider serviceProvider )
+            : base( new BlockService( new RockContext() ) )
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        #endregion
+
         /// <summary>
         /// Deletes the specified Block with extra logic to flush caches.
         /// </summary>
@@ -123,7 +142,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "E025B9B5-060A-4853-AC78-0D5B850771F8" )]
         public async Task<IHttpActionResult> BlockAction( Guid blockGuid, string actionName )
         {
-            return await v2.BlockActionsController.ProcessAction( this, null, blockGuid, actionName, null );
+            return await v2.BlockActionsController.ProcessAction( this, null, blockGuid, actionName, null, _serviceProvider );
         }
 
         /// <summary>
@@ -143,7 +162,7 @@ namespace Rock.Rest.Controllers
         {
             if ( parameters == string.Empty )
             {
-                return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, null );
+                return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, null, _serviceProvider );
             }
 
             //
@@ -159,7 +178,7 @@ namespace Rock.Rest.Controllers
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, parameterToken );
+                    return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, parameterToken, _serviceProvider );
                 }
             }
         }
@@ -177,7 +196,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "31EA4036-31E1-4A0B-9354-44BEC3C228EB" )]
         public async Task<IHttpActionResult> BlockAction( string pageGuid, string blockGuid, string actionName )
         {
-            return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null );
+            return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null, _serviceProvider );
         }
 
         /// <summary>
@@ -195,7 +214,7 @@ namespace Rock.Rest.Controllers
         {
             if ( parameters == string.Empty )
             {
-                return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null );
+                return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null, _serviceProvider );
             }
 
             //
@@ -211,7 +230,7 @@ namespace Rock.Rest.Controllers
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, parameterToken );
+                    return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, parameterToken, _serviceProvider );
                 }
             }
         }
@@ -229,7 +248,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         public async Task<IHttpActionResult> BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
         {
-            return await v2.BlockActionsController.ProcessAction( this, pageIdentifier.AsGuidOrNull(), blockIdentifier.AsGuidOrNull(), actionName, parameters );
+            return await v2.BlockActionsController.ProcessAction( this, pageIdentifier.AsGuidOrNull(), blockIdentifier.AsGuidOrNull(), actionName, parameters, _serviceProvider );
         }
     }
 }

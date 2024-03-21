@@ -1,0 +1,188 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Audit"
+          :entityTypeGuid="EntityType.Audit"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectItem="onShowAuditDetails">
+
+        <TextColumn name="auditType"
+                    title="Action"
+                    field="auditType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <TextColumn name="entityType"
+                    title="Entity Type"
+                    field="entityType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <NumberColumn name="entityId"
+                      title="Entity Id"
+                      field="entityId"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="2%" />
+
+        <TextColumn name="title"
+                    title="Entity Description"
+                    field="title"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <NumberColumn name="properties"
+                      title="Properties Updated"
+                      field="properties"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="2%" />
+
+        <DateTimeColumn name="dateTime"
+                        title="When"
+                        field="dateTime"
+                        visiblePriority="xs"
+                        width="10%" />
+
+        <PersonColumn name="person"
+                      title="Who"
+                      field="person"
+                      showAsLink />
+
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :entityTypeItems="config.options?.entityTypeItems ?? []" />
+
+    <AuditDetailsModal :modelValue="auditDetails" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { textValueFilter, numberValueFilter, PersonColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { AuditDetail, GridSettingsOptions, PreferenceKey } from "./AuditList/types.partial";
+    import { AuditListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AuditList/auditListOptionsBag";
+    import { computed, reactive, ref, watch } from "vue";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import GridSettingsModal from "./AuditList/gridSettingsModal.partial.obs";
+    import AuditDetailsModal from "./AuditList/auditDetailsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<AuditListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const isGridSettingsVisible = ref(false);
+    const auditDetails = ref<AuditDetail[]>([]);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        entityType: preferences.getValue(PreferenceKey.FilterEntityType),
+        entityId: toNumber(preferences.getValue(PreferenceKey.FilterEntityId)),
+        who: preferences.getValue(PreferenceKey.FilterWho)?.length > 0 ?
+            JSON.parse(preferences.getValue(PreferenceKey.FilterWho)) :
+            undefined,
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Returns `true` if the grid settings filters are active; otherwise `false`.
+     */
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.entityType ||
+            !!gridSettings.value.entityId ||
+            !!gridSettings.value.who;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Watch for changes to the grid settings and update the preferences as needed.
+     */
+     watch(gridSettings, async () => {
+        // Handle the potential null or undefined values for each setting
+        const entityType = gridSettings.value.entityType ?? "";
+        const entityId = toNumber(gridSettings.value.entityId);
+        const who = JSON.stringify(gridSettings.value.who ?? "");
+
+        // Set the preferences with the appropriate values
+        preferences.setValue(PreferenceKey.FilterEntityType, entityType);
+        preferences.setValue(PreferenceKey.FilterEntityId, entityId.toString());
+        preferences.setValue(PreferenceKey.FilterWho, who);
+
+        // Save the preferences
+        await preferences.save();
+
+        // Reload the grid data
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Show Details button has been clicked by the individual.
+     * @param key The key of the row that was selected.
+     */
+     async function onShowAuditDetails(key: string): Promise<void> {
+        const result = await invokeBlockAction("GetAuditDetails", { idKey: key });
+
+        if (result.isSuccess && result.data) {
+            const responseData = result.data as AuditDetail[];
+            const details: AuditDetail[] = [];
+            for (let i = 0; i < responseData.length; i++) {
+                details.push(responseData[i]);
+            }
+
+            auditDetails.value = details;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error occurred while getting audit details.");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

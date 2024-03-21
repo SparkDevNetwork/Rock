@@ -13,15 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 
-import { TimeIntervalUnit } from "../../Enums/Core/timeIntervalUnit";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/**
- * Represents an amount of time, denoted by a number of a unit of time
- *
- * Based on Rock.Utility.TimeInterval
- */
-export type TimeInterval = {
-    value: number | null;
-    unit: TimeIntervalUnit | null;
+export const enum PreferenceKey {
+    FilterEntityType = "filter-entity-type",
+
+    FilterEntityId = "filter-entity-id",
+
+    FilterWho = "filter-who",
+}
+
+export type AuditDetail = {
+    property: string;
+
+    originalValue: string;
+
+    currentValue: string;
 };
+
+export type GridSettingsOptions = {
+    entityType?: string | null;
+
+    entityId?: number | null;
+
+    who?: ListItemBag | null;
+};
+

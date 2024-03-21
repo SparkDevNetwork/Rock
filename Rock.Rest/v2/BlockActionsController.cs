@@ -27,10 +27,13 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Results;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Blocks;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Utility.CaptchaApi;
@@ -46,6 +49,28 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "31D6B6FC-7740-483A-81D2-D62283F67C0A")]
     public class BlockActionsController : ApiControllerBase 
     {
+        #region Fields
+
+        /// <summary>
+        /// The service provider for this instance.
+        /// </summary>
+        private readonly IServiceProvider _serviceProvider;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockActionsController"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider for this instance.</param>
+        public BlockActionsController( IServiceProvider serviceProvider )
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        #endregion
+
         #region API Methods
 
         /// <summary>
@@ -61,7 +86,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "CC3DE0C2-8703-4925-A16C-F47A31FE9C69" )]
         public async Task<IHttpActionResult> BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
         {
-            return await ProcessAction( this, pageGuid, blockGuid, actionName, null );
+            return await ProcessAction( this, pageGuid, blockGuid, actionName, null, _serviceProvider );
         }
 
         /// <summary>
@@ -80,7 +105,7 @@ namespace Rock.Rest.v2
         {
             if ( parameters == string.Empty )
             {
-                return await ProcessAction( this, pageGuid, blockGuid, actionName, null );
+                return await ProcessAction( this, pageGuid, blockGuid, actionName, null, _serviceProvider );
             }
 
             //
@@ -96,7 +121,7 @@ namespace Rock.Rest.v2
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return await ProcessAction( this, pageGuid, blockGuid, actionName, parameterToken );
+                    return await ProcessAction( this, pageGuid, blockGuid, actionName, parameterToken, _serviceProvider );
                 }
             }
         }
@@ -113,8 +138,9 @@ namespace Rock.Rest.v2
         /// <param name="blockGuid">The block unique identifier.</param>
         /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        internal static async Task<IHttpActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters )
+        /// <param name="serviceProvider">The provider of the services that will be used to process the action.</param>
+        /// <returns>The result of the block action method.</returns>
+        internal static async Task<IHttpActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters, IServiceProvider serviceProvider )
         {
             try
             {
@@ -184,7 +210,7 @@ namespace Rock.Rest.v2
                 // Get the class that handles the logic for the block.
                 //
                 var blockCompiledType = blockCache.BlockType.GetCompiledType();
-                var block = Activator.CreateInstance( blockCompiledType );
+                var block = ActivatorUtilities.CreateInstance( serviceProvider, blockCompiledType );
 
                 if ( !( block is Blocks.IRockBlockType rockBlock ) )
                 {
@@ -199,6 +225,11 @@ namespace Rock.Rest.v2
                 rockBlock.BlockCache = blockCache;
                 rockBlock.PageCache = pageCache;
                 rockBlock.RequestContext = requestContext;
+
+                if ( rockBlock is RockBlockType rockBlockType )
+                {
+                    rockBlockType.RockContext = serviceProvider.GetRequiredService<RockContext>();
+                }
 
                 var actionParameters = new Dictionary<string, JToken>( StringComparer.InvariantCultureIgnoreCase );
 

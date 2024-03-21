@@ -50,6 +50,7 @@
     <Content Include="src\Cms\LibraryViewer\itemListSort.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
+    <Content Include="src\Core\auditList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -57,6 +58,7 @@
     <Content Include="src\Core\categoryDetailCustomSettings.vue" />
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
+    <Content Include="src\Core\definedValueList.obs" />
     <Content Include="src\Core\followingEventTypeDetail.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\viewPanel.partial.obs" />
@@ -90,6 +92,9 @@
     <Content Include="src\Engagement\achievementAttemptDetail.obs" />
     <Content Include="src\Engagement\AchievementAttemptDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\AchievementAttemptDetail\viewPanel.partial.obs" />
+    <Content Include="src\Engagement\stepProgramDetail.obs" />
+    <Content Include="src\Engagement\StepProgramDetail\editPanel.partial.obs" />
+    <Content Include="src\Engagement\StepProgramDetail\viewPanel.partial.obs" />
     <Content Include="src\Engagement\streakDetail.obs" />
     <Content Include="src\Engagement\StreakDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StreakDetail\viewPanel.partial.obs" />
@@ -149,6 +154,7 @@
     <Content Include="src\Group\groupRegistration.obs" />
     <Content Include="src\Group\GroupRegistration\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRegistration\viewPanel.partial.obs" />
+    <Content Include="src\Reporting\mergeTemplateList.obs" />
     <Content Include="src\Security\ConfirmAccount.obs" />
     <Content Include="src\Security\ConfirmAccount\accountConfirmation.partial.obs" />
     <Content Include="src\Security\ConfirmAccount\changePassword.partial.obs" />
@@ -285,6 +291,7 @@
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
+    <Folder Include="src\Core\DefinedValueList\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
     <Folder Include="src\Core\SuggestionDetail\" />
@@ -304,6 +311,7 @@
     <Folder Include="src\Engagement\AchievementAttemptDetail\" />
     <Folder Include="src\Engagement\AchievementTypeDetail\" />
     <Folder Include="src\Bus\" />
+    <Folder Include="src\Engagement\StepProgramDetail\" />
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
     <Folder Include="src\Engagement\StreakTypeExclusionDetail\" />
@@ -321,6 +329,7 @@
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupRegistration\" />
+    <Folder Include="src\Reporting\MergeTemplateList\" />
     <Folder Include="src\Security\ConfirmAccount\" />
     <Folder Include="src\Security\RestKeyDetail\" />
     <Folder Include="src\Engagement\" />
@@ -429,6 +438,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\DefinedValueList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
@@ -458,6 +468,7 @@
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\AchievementAttemptDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Engagement\StepProgramDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
@@ -475,6 +486,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialBatchDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Group\GroupRegistration\types.d.ts" />
+    <TypeScriptCompile Include="src\Reporting\MergeTemplateList\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\events.d.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\views.ts" />
     <TypeScriptCompile Include="src\Security\RestKeyDetail\types.partial.ts" />

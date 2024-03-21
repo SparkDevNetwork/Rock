@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 
 using Humanizer;
@@ -1263,7 +1264,8 @@ namespace RockWeb.Blocks.Mobile
             {
                 var siteService = new SiteService( rockContext );
 
-                siteService.BuildMobileApplication( applicationId );
+                var task = Task.Run( async () => await siteService.BuildMobileApplicationAsync( applicationId ) );
+                task.Wait();
 
                 ShowDetail( applicationId );
             }

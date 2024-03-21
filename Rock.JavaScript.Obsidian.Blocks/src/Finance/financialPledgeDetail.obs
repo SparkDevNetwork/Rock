@@ -12,7 +12,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="FinancialPledge"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
@@ -63,7 +63,7 @@
 
     const entityTypeGuid = EntityType.FinancialPledge;
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Add);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -117,6 +117,10 @@
 
     const options = computed((): FinancialPledgeDetailOptionsBag => {
         return config.options ?? {};
+    });
+
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value === DetailPanelMode.Add;
     });
 
     // #endregion

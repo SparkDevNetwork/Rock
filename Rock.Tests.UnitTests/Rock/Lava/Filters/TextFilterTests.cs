@@ -447,6 +447,33 @@ namespace Rock.Tests.UnitTests.Lava
         #region Filter Tests: Split
 
         /// <summary>
+        /// Split filter should retain or remove zero-length items in accordance with the specified "removeEmpty" parameter when handling an empty string or empty list.
+        /// </summary>
+        /// <remarks>
+        /// The default Liquid language behavior for this filter is to remove empty entries.
+        /// </remarks>
+        [DataTestMethod]
+        [DataRow( ",", "','", "0" )]
+        [DataRow( ",", "',',true", "0" )]
+        [DataRow( ",", "',',false", "2" )]
+        [DataRow( "", "','", "0" )]
+        [DataRow( "", "',',true", "0" )]
+        [DataRow( "", "',',false", "1" )]
+        public void Split_WithRemoveEmptyEntriesOption_RetainsOrRemovesEmptyEntries_WhenEmptyString( string inputString, string filterArgsString, string expectedOutput )
+        {
+            // Note: This test is different than the other Split tests so we
+            // we can truly detect the empty list case.
+            var template = @"
+{{ '<inputString>' | Split:<args> | Size }}
+";
+
+            template = template.Replace( "<inputString>", inputString );
+            template = template.Replace( "<args>", filterArgsString );
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
         /// Split filter should retain or remove zero-length items in accordance with the specified "removeEmpty" parameter.
         /// </summary>
         /// <remarks>

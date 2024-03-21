@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Reminders
         RockRequestContext IRockBlockType.RequestContext { get; set; }
 
         /// <inheritdoc/>
-        object IRockBlockType.GetBlockInitialization( RockClientType clientType )
+        System.Threading.Tasks.Task<object> IRockBlockType.GetBlockInitializationAsync( RockClientType clientType )
         {
             throw new NotImplementedException();
         }

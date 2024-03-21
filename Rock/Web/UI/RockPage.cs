@@ -61,7 +61,7 @@ namespace Rock.Web.UI
     /// RockPage is the base abstract class that all page templates in Rock should inherit from
     /// </summary>
     /// <seealso cref="System.Web.UI.Page" />
-    public abstract class RockPage : Page
+    public abstract class RockPage : Page, IHttpAsyncHandler
     {
         #region Private Variables
 
@@ -1331,6 +1331,11 @@ Rock.settings.initialize({{
                                     {
                                         var scope = CreateServiceScope();
                                         var blockEntity = ActivatorUtilities.CreateInstance( scope.ServiceProvider, block.BlockType.EntityType.GetEntityType() );
+
+                                        if ( blockEntity is RockBlockType rockBlockType )
+                                        {
+                                            rockBlockType.RockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
+                                        }
 
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
@@ -4867,6 +4872,22 @@ $.ajax({
                 }
             }
         }
+        #endregion
+
+        #region IHttpAsyncHandler Implementation
+
+        /// <inheritdoc/>
+        public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
+        {
+            return AsyncPageBeginProcessRequest( context, cb, extraData );
+        }
+
+        /// <inheritdoc/>
+        public void EndProcessRequest( IAsyncResult result )
+        {
+            AsyncPageEndProcessRequest( result );
+        }
+
         #endregion
     }
 
