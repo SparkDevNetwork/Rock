@@ -133,6 +133,7 @@
     <Compile Include="Core\EventList.cs" />
     <Compile Include="Core\FollowingSuggestionTypeList.cs" />
     <Compile Include="Core\LocationList.cs" />
+    <Compile Include="Core\DefinedValueList.cs" />
     <Compile Include="Core\Notes.cs" />
     <Compile Include="Core\NoteTypeList.cs" />
     <Compile Include="Core\NoteWatchDetail.cs" />
@@ -184,6 +185,7 @@
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
     <Compile Include="Reporting\MetricValueDetail.cs" />
     <Compile Include="Reporting\InteractionComponentDetail.cs" />
+    <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Engagement\StepTypeDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />
