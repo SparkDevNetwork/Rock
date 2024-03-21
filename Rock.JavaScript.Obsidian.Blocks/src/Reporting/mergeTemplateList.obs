@@ -8,7 +8,7 @@
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"
-          :gridSettings="config.options?.isFilterVisible"
+          :gridSettings="isPersonAndGlobalOwnership"
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
@@ -21,7 +21,7 @@
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
-        <Column v-if="config.options?.isFilterVisible"
+        <Column v-if="isPersonAndGlobalOwnership"
                 name="owner"
                 title="Owner"
                 :filter="textValueFilter"
@@ -50,6 +50,7 @@
     import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./MergeTemplateList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./MergeTemplateList/gridSettingsModal.partial.obs";
+    import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
 
     const config = useConfigurationValues<ListBlockBox<MergeTemplateListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -73,6 +74,13 @@
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
         return !!gridSettings.value.person?.value || !!gridSettings.value.showGlobaltemplates;
+    });
+
+    /** `true` if the block MergeTemplateOwnership is sey to PersonalAndGlobal,
+     *  if true the grid filter and Owner column are displayed.
+     */
+    const isPersonAndGlobalOwnership = computed((): boolean => {
+        return config.options?.mergeTemplateOwnership === MergeTemplateOwnership.PersonalAndGlobal;
     });
 
     // #endregion

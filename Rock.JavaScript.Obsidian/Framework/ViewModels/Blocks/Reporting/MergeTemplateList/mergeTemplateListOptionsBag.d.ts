@@ -21,8 +21,10 @@
 // </copyright>
 //
 
+import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
+
 /** The additional configuration options for the Merge Template List block. */
 export type MergeTemplateListOptionsBag = {
-    /** Gets or sets a value indicating whether the grid filter is visible. */
-    isFilterVisible: boolean;
+    /** Gets or sets the configured merge template ownership. */
+    mergeTemplateOwnership: MergeTemplateOwnership;
 };

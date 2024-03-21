@@ -125,11 +125,9 @@ namespace Rock.Blocks.Reporting
         /// <returns>The options that provide additional details to the block.</returns>
         private MergeTemplateListOptionsBag GetBoxOptions()
         {
-            var mergeTemplateOwnership = GetTemplateOwnership();
-
             var options = new MergeTemplateListOptionsBag()
             {
-                IsFilterVisible = mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal
+                MergeTemplateOwnership = ( Enums.Controls.MergeTemplateOwnership ) GetTemplateOwnership()
             };
 
             return options;

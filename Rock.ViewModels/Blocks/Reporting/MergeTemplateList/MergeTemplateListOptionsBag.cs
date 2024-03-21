@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Enums.Controls;
+
 namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateList
 {
     /// <summary>
@@ -23,11 +25,11 @@ namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateList
     public class MergeTemplateListOptionsBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the grid filter is visible.
+        /// Gets or sets the configured merge template ownership.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if the grid filter is visible; otherwise, <c>false</c>.
+        /// The merge template ownership.
         /// </value>
-        public bool IsFilterVisible { get; set; }
+        public MergeTemplateOwnership MergeTemplateOwnership { get; set; }
     }
 }
