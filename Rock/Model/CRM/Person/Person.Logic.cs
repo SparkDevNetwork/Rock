@@ -615,6 +615,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the number of days until the Person's next birthday.
+        /// This is an in-memory calculation. If needed in a LinqToSql query, use the DaysUntilAnniversary property instead.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary,
+        /// or null if the person's birth date is not available.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int? DaysToBirthdayOrNull
+        {
+            get
+            {
+                // If either day or month are not defined, exit.
+                if ( !this.BirthDay.HasValue || !this.BirthMonth.HasValue )
+                {
+                    return null;
+                }
+
+                return GetDaysToNextAnniversaryDate( this.BirthDay.Value, this.BirthMonth.Value, RockDateTime.Today );
+            }
+        }
+
+        /// <summary>
         /// Gets the number of days until the Person's birthday. This is an in-memory calculation. If needed in a LinqToSql query
         /// use DaysUntilBirthday property instead
         /// </summary>
@@ -624,6 +648,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        [Obsolete( "Use the DaysToBirthdayOrNull property instead." )]
+        // When this method is removed, rename the DaysToBirthdayOrNull property to DaysToBirthday.
+        // The intention is to replace this with a method of the same name having a nullable return value.
+        [RockObsolete( "1.17" )]
         public virtual int DaysToBirthday
         {
             get
@@ -643,7 +671,7 @@ namespace Rock.Model
                         }
 
                         DateTime bday = DateTime.MinValue;
-                        while ( !DateTime.TryParse( BirthMonth.Value.ToString() + "/" + day.ToString() + "/" + year.ToString(), out bday ) && day > 28 )
+                        while ( !DateTime.TryParse( $"{year}-{BirthMonth.Value}-{day}", out bday ) && day > 28 )
                         {
                             day--;
                         }
@@ -712,6 +740,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        [Obsolete("Use the DaysToAnniversaryOrNull property instead.")]
+        // When this method is removed, rename the DaysToAnniversaryOrNull property to DaysToAnniversary.
+        // The intention is to replace this with a method of the same name having a nullable return value.
+        [RockObsolete("1.17")] 
         public virtual int DaysToAnniversary
         {
             get
@@ -729,7 +761,7 @@ namespace Rock.Model
                     }
 
                     DateTime aday = DateTime.MinValue;
-                    while ( !DateTime.TryParse( month.ToString() + "/" + day.ToString() + "/" + year.ToString(), out aday ) && day > 28 )
+                    while ( !DateTime.TryParse( $"{year}-{month}-{day}", out aday ) && day > 28 )
                     {
                         day--;
                     }
@@ -746,6 +778,29 @@ namespace Rock.Model
             private set
             {
                 // intentionally blank
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of days until the Person's next anniversary.
+        /// This is an in-memory calculation. If needed in a LinqToSql query, use the DaysUntilAnniversary property instead.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary,
+        /// or null if the person's anniversary is not available.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int? DaysToAnniversaryOrNull
+        {
+            get
+            {
+                if ( !this.AnniversaryDate.HasValue )
+                {
+                    return null;
+                }
+
+                return GetDaysToNextAnniversaryDate( this.AnniversaryDate.Value.Day, this.AnniversaryDate.Value.Month, RockDateTime.Today );
             }
         }
 
@@ -1136,8 +1191,8 @@ namespace Rock.Model
         {
             var dictionary = base.ToDictionary();
             dictionary.AddOrIgnore( "Age", AgePrecise );
-            dictionary.AddOrIgnore( "DaysToBirthday", DaysToBirthday );
-            dictionary.AddOrIgnore( "DaysToAnniversary", DaysToAnniversary );
+            dictionary.AddOrIgnore( "DaysToBirthday", this.DaysToBirthdayOrNull );
+            dictionary.AddOrIgnore( "DaysToAnniversary", this.DaysToAnniversaryOrNull );
             dictionary.AddOrIgnore( "FullName", FullName );
             dictionary.AddOrIgnore( "PrimaryAliasId", this.PrimaryAliasId );
             return dictionary;
@@ -1825,6 +1880,46 @@ namespace Rock.Model
             {
                 return Enums.Crm.AgeBracket.SixtyFiveOrOlder;
             }
+        }
+
+        /// <summary>
+        /// Calculate the number of days until the next occurrence of an anniversary date.
+        /// </summary>
+        /// <param name="anniversaryDay">The day of the month on which the anniversary occurs.</param>
+        /// <param name="anniversaryMonth">The month of the year in which the anniversary occurs</param>
+        /// <param name="asAtDate">The reference date from which the anniversary is calculated.</param>
+        /// <returns>
+        /// The number of days from the reference date until the next occurrence of the anniversary date,
+        /// or null if the anniversary date is invalid.
+        /// </returns>
+        internal static int? GetDaysToNextAnniversaryDate( int anniversaryDay, int anniversaryMonth, DateTime asAtDate )
+        {
+            // Get the year in which the anniversary will next be celebrated with regard to the asAtDate,
+            // either this year or the following year.
+            var year = asAtDate.Year;
+            if ( anniversaryMonth < asAtDate.Month
+                || ( anniversaryMonth == asAtDate.Month && anniversaryDay < asAtDate.Day ) )
+            {
+                year++;
+            }
+
+            // Validate the next anniversary date.
+            // If the date is not valid but the day is greater than 28, check the previous day for a valid date.
+            // This addresses the case where the anniversary falls on a leap day and we take the previous day as the next anniversary.
+            DateTime testDate;
+            var yyyymm = $"{year}-{anniversaryMonth}";
+            while ( !DateTime.TryParse( $"{yyyymm}-{anniversaryDay}", out testDate ) && anniversaryDay > 28 )
+            {
+                anniversaryDay--;
+            }
+
+            // The anniversary day and month are invalid.
+            if ( testDate == DateTime.MinValue )
+            {
+                return null;
+            }
+
+            return Convert.ToInt32( testDate.Subtract( asAtDate ).TotalDays );
         }
 
         #endregion
