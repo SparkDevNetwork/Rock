@@ -61,7 +61,7 @@ namespace Rock.Jobs
         DefaultBooleanValue = false,
         Order = 3 )]
 
-    [KeyValueListField( "Webform BlockType Attribute Keys To Ignore During Validation.",
+    [KeyValueListField( "Webform BlockType Attribute Keys To Ignore During Validation",
         Description = "A Guid [key] of the old Webform BlockType and the [value] as a comma delimited list of BlockType Attribute keys to ignore when validating the Obsidian and Webforms blocks have the same keys.",
         Key = AttributeKey.BlockAttributeKeysToIgnore,
         IsRequired = false,
@@ -185,9 +185,7 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
 
             // Register the attributes of the new block type in the database if not already registered.
-            var newBlockTypes = BlockTypeGuidReplacementPairs.Values.Select( g => BlockTypeCache.Get( g ) ).ToList();
-            newBlockTypes.ForEach( b => b.MarkInstancePropertiesVerified( false ) ); // mark as block type as unverified to ensure the block type attributes are registered.
-            BlockTypeService.VerifyBlockTypeInstanceProperties( newBlockTypes.Select( b => b.Id ).ToArray() );
+            BlockTypeService.VerifyBlockTypeInstanceProperties( BlockTypeGuidReplacementPairs.Values.Select( g => BlockTypeCache.GetId( g ).Value ).ToArray() );
 
             foreach ( var blockTypeGuidPair in BlockTypeGuidReplacementPairs )
             {

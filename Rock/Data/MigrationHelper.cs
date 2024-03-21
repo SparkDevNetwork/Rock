@@ -3524,7 +3524,8 @@ END" );
         }
 
         /// <summary>
-        /// This is a quick fix method. DO NOT USE. 
+        /// This is a quick fix method. DO NOT USE.
+        /// This job is being used by the Chop/Swap Job. TO BE DELETED once all the migrations are done.
         /// </summary>
         /// <param name="newBlockAttributeGuid"></param>
         /// <param name="attributeQualifierKey"></param>
