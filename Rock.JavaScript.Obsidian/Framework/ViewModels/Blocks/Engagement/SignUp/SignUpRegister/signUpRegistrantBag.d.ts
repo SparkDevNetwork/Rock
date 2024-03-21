@@ -47,6 +47,12 @@ export type SignUpRegistrantBag = {
     /** Gets or sets the registrant's last name. */
     lastName?: string | null;
 
+    /** Gets or sets the registrant's member attribute values. */
+    memberAttributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the registrant's member opportunity attribute values. */
+    memberOpportunityAttributeValues?: Record<string, string> | null;
+
     /** Gets or sets the registrant's mobile phone country code. */
     mobilePhoneCountryCode?: string | null;
 

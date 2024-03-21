@@ -39,10 +39,10 @@ namespace Rock.Web
             {
                 using ( var activity = ObservabilityHelper.StartActivity( $"BLOCK INIT {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" ) )
                 {
-                    activity?.AddTag( "rock-otel-type", "rock-block" );
-                    activity?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
-                    activity?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
-                    activity?.AddTag( "rock-node", RockMessageBus.NodeName );
+                    activity?.AddTag( "rock.otel_type", "rock-block" );
+                    activity?.AddTag( "rock.blocktype.name", rockBlock.BlockCache.BlockType.Name );
+                    activity?.AddTag( "rock.blocktype.id", rockBlock.BlockCache.BlockType.Id );
+                    activity?.AddTag( "rock.node", RockMessageBus.NodeName );
 
                     base.OnInit( e );
                 }
@@ -64,9 +64,9 @@ namespace Rock.Web
             {
                 using ( var activity = ObservabilityHelper.StartActivity( $"BLOCK LOAD {rockBlock.BlockCache.BlockType.Name} - {rockBlock.BlockCache.Name}" ) )
                 {
-                    activity?.AddTag( "rock-otel-type", "rock-block" );
-                    activity?.AddTag( "rock-blocktype-name", rockBlock.BlockCache.BlockType.Name );
-                    activity?.AddTag( "rock-blocktype-id", rockBlock.BlockCache.BlockType.Id );
+                    activity?.AddTag( "rock.otel_type", "rock-block" );
+                    activity?.AddTag( "rock.blocktype.name", rockBlock.BlockCache.BlockType.Name );
+                    activity?.AddTag( "rock.blocktype.id", rockBlock.BlockCache.BlockType.Id );
 
                     base.OnLoad( e );
                 }

@@ -154,7 +154,7 @@ namespace Rock.UniversalSearch.IndexModels
                     && gm.IsArchived == false
                     && gm.GroupMemberStatus == GroupMemberStatus.Active );
 
-            var groupMemberCount = rockContext.GroupMembers.Count( gm => gm.GroupId == group.Id && gm.IsArchived == false && gm.GroupMemberStatus == GroupMemberStatus.Active );
+            var groupMemberCount = rockContext.Set<GroupMember>().Count( gm => gm.GroupId == group.Id && gm.IsArchived == false && gm.GroupMemberStatus == GroupMemberStatus.Active );
             if ( groupMemberCount > 10000 )
             {
                 Rock.Logging.RockLogger.Log.Debug( Logging.RockLogDomains.Bus, $"Skipping universal search index of Group {group.Name} becauses the number of active users {groupMemberCount} exceeds the limit of 10K." );

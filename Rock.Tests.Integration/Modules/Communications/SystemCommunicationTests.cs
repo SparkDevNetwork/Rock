@@ -1,16 +1,19 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Data;
-using Rock.Model;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Linq;
 
-namespace Rock.Tests.Integration.Communications
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Data;
+using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.Tests.Integration.Modules.Communications
 {
     /// <summary>
     /// Tests for System Communications
     /// </summary>
     [TestClass]
-    public class SystemCommunicationTests
+    public class SystemCommunicationTests : DatabaseTestsBase
     {
         [TestMethod]
         public void SystemCommunications_DoesNotContainPrayerRequestNotification()

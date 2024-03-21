@@ -87,7 +87,7 @@
 
     // #region Event Handlers
 
-    async function fetchData(): Promise<void | boolean> {
+    async function fetchData(): Promise<void> {
         if (isLoading.value) {
             // Still Loading Previous Request. Don't want to start another one.
             return;

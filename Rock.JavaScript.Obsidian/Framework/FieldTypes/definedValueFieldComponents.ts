@@ -102,6 +102,8 @@ export const EditComponent = defineComponent({
                 attributes.enhanceForLongLists = asBoolean(enhancedConfig);
             }
 
+            attributes.multiple = isMultiple.value;
+
             return attributes;
         });
 

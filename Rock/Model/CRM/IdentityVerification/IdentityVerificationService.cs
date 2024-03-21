@@ -106,7 +106,7 @@ namespace Rock.Model
                     RequestIpAddress = ipAddress
                 };
                 Add( identityVerification );
-                ( ( RockContext ) Context ).IdentityVerificationCodes.Attach( verificationCode );
+                new IdentityVerificationCodeService( ( RockContext ) Context ).Attach( verificationCode );
                 Context.SaveChanges();
                 return identityVerification;
             }

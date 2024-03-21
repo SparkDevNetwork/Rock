@@ -1434,7 +1434,7 @@ WHERE gta.GroupTypeId IS NULL" );
         {
             using ( var rockContextForGroupUpdate = new RockContext() )
             {
-                rockContextForGroupUpdate.Groups.Attach( lookupGroup );
+                new GroupService( rockContextForGroupUpdate ).Attach( lookupGroup );
                 var group = lookupGroup;
 
                 UpdateGroupPropertiesFromGroupImport( group, groupImport, foreignSystemKey, importDateTime );
@@ -2245,7 +2245,7 @@ WHERE gta.GroupTypeId IS NULL" );
         {
             using ( var rockContextForPersonUpdate = new RockContext() )
             {
-                rockContextForPersonUpdate.People.Attach( lookupPerson );
+                new PersonService( rockContextForPersonUpdate ).Attach( lookupPerson );
                 var person = lookupPerson;
 
                 // Add/Update PhoneNumbers
@@ -2840,7 +2840,7 @@ WHERE gta.GroupTypeId IS NULL" );
         {
             using ( var rockContextForBusinessUpdate = new RockContext() )
             {
-                rockContextForBusinessUpdate.People.Attach( lookupBusiness );
+                new PersonService( rockContextForBusinessUpdate ).Attach( lookupBusiness );
                 var business = lookupBusiness;
 
                 // Add/Update PhoneNumbers

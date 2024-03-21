@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialBatchDetail;
 using Rock.Web;
@@ -194,6 +195,14 @@ namespace Rock.Blocks.Finance
             {
                 options.BatchNameDefinedTypeGuid = GetAttributeValue( AttributeKey.BatchNames );
             }
+
+            var currencyInfo = new RockCurrencyCodeInfo();
+            options.CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces,
+                SymbolLocation = currencyInfo.SymbolLocation
+            };
 
             return options;
         }

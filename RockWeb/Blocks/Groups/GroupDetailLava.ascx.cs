@@ -527,7 +527,7 @@ namespace RockWeb.Blocks.Groups
 
                         if ( groupLocation != null )
                         {
-                            rockContext.GroupLocations.Remove( groupLocation );
+                            new GroupLocationService( rockContext ).Delete( groupLocation );
                         }
                     }
                 }

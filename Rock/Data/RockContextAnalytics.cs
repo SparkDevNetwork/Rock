@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Utility.Settings;
+
 namespace Rock.Data
 {
     /// <summary>
@@ -42,7 +44,7 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContextAnalytics"/> class.
         /// </summary>
         public RockContextAnalytics()
-            : base( new RockContext( GetConnectionString<RockContextAnalytics>() ) )
+            : base( new RockContext( RockInstanceConfig.Database.AnalyticsConnectionString ) )
         {
             //
         }

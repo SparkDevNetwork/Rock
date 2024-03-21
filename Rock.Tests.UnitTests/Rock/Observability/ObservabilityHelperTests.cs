@@ -55,7 +55,7 @@ namespace Rock.Tests.UnitTests.Rock.Observability
                     }
 
                     Assert.AreEqual( expectedCount, childActivityCount, "Incorrect child activity count." );
-                    Assert.AreEqual( 15_015, rootActivity.GetTagItem( "rock-descendant-count" ), "Incorrect descendant count." );
+                    Assert.AreEqual( 15_015, rootActivity.GetTagItem( "rock.descendant_count" ), "Incorrect descendant count." );
                 }
             }
         }

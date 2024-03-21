@@ -1294,8 +1294,14 @@ btnCopyToClipboard.ClientID );
             attendanceOccurrencesOrderedList = attendanceOccurrencesOrderedList
                 .Where( a =>
                  {
+                     // If the item's next start date doesn't equal the occurrence date, don't show it.
+                     // This likely represents an occurrence that was created, but has since been excluded.
+                     if ( !a.ScheduledDateTime.HasValue || !a.ScheduledDateTime.Value.Date.Equals( a.OccurrenceDate.Date ) )
+                     {
+                         return false;
+                     }
                      // only include this occurrence if Schedule is configured for this Group Location
-                     if ( groupLocationSchedules.Any( x => x.GroupId == a.Group.Id && x.LocationId == a.LocationId && x.GroupLocationScheduleIds.Contains( a.Schedule.Id ) ) )
+                     else if ( groupLocationSchedules.Any( x => x.GroupId == a.Group.Id && x.LocationId == a.LocationId && x.GroupLocationScheduleIds.Contains( a.Schedule.Id ) ) )
                      {
                          return true;
                      }

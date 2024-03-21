@@ -242,7 +242,7 @@ namespace Rock.Communication.Transport
             return new SafeSenderResult();
         }
 
-        private void AddAdditionalHeaders( RestRequest restRequest, Dictionary<string, string> headers )
+        private void AddAdditionalHeaders( RestRequest restRequest, Dictionary<string, string> metadata, Dictionary<string, string> headers )
         {
             // Add tracking settings
             restRequest.AddParameter( "o:tracking", CanTrackOpens.ToYesNo() );
@@ -250,15 +250,24 @@ namespace Rock.Communication.Transport
             restRequest.AddParameter( "o:tracking-clicks", CanTrackOpens.ToYesNo() );
 
             // Add additional JSON info
-            if ( headers != null )
+            if ( metadata != null )
             {
                 var variables = new List<string>();
-                foreach ( var param in headers )
+                foreach ( var param in metadata )
                 {
                     variables.Add( string.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
                 }
 
                 restRequest.AddParameter( "v:X-Mailgun-Variables", string.Format( @"{{{0}}}", variables.AsDelimited( "," ) ) );
+            }
+
+            // Add headers
+            if ( headers != null )
+            {
+                foreach (var header in headers )
+                {
+                    restRequest.AddParameter( $"h:{header.Key}", header.Value );
+                }
             }
         }
 
@@ -313,8 +322,8 @@ namespace Rock.Communication.Transport
             // Body (html)
             restRequest.AddParameter( "html", rockEmailMessage.Message );
 
-            // Communication record for tracking opens & clicks
-            AddAdditionalHeaders( restRequest, rockEmailMessage.MessageMetaData );
+            // Communication record for tracking opens & clicks, and headers.
+            AddAdditionalHeaders( restRequest, rockEmailMessage.MessageMetaData, rockEmailMessage.EmailHeaders );
 
             // Attachments
             foreach ( var attachment in rockEmailMessage.Attachments )

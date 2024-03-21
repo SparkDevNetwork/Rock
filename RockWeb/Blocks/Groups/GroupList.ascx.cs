@@ -72,8 +72,8 @@ namespace RockWeb.Blocks.Groups
         Category = "Add Group",
         Order = 16,
         Key = AttributeKey.GroupPickerType )]
-    [GroupField( "Root Group",
-        Description = "Select the root group to use as a starting point for the tree view.",
+    [GroupField( "Root Group (for Add Group)",
+        Description = "Select the root group to use as a starting point for the tree view when using the \"Group Picker\" Group Picker Type.",
         IsRequired = false,
         Category = "Add Group",
         Order = 17,
@@ -778,16 +778,6 @@ namespace RockWeb.Blocks.Groups
 
             var qryGroups = groupService.AsNoFilter()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
-
-            var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
-            if ( rootGroupGuid.HasValue )
-            {
-                var parentGroup = groupService.Get( rootGroupGuid.Value );
-                if ( parentGroup != null )
-                {
-                    qryGroups = qryGroups.Where( g => g.ParentGroupId == parentGroup.Id );
-                }
-            }
 
             string limitToActiveStatus = GetAttributeValue( AttributeKey.LimittoActiveStatus );
 

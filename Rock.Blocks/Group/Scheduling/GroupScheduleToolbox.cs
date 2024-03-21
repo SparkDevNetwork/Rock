@@ -2123,12 +2123,15 @@ namespace Rock.Blocks.Group.Scheduling
                 locationIdsByGuid: ( Dictionary<Guid, int?> ) null
             );
 
-            // Ensure the selected person meets group requirements.
-            if ( new GroupService( rockContext )
-                    .GroupMembersNotMeetingRequirements( selectedGroup, false, false )
-                    .Any( gm => gm.Key.PersonId == selectedPersonId ) )
+            if ( selectedGroup.SchedulingMustMeetRequirements )
             {
-                return response;
+                // Ensure the selected person meets group requirements.
+                if ( new GroupService( rockContext )
+                        .GroupMembersNotMeetingRequirements( selectedGroup, false, false )
+                        .Any( gm => gm.Key.PersonId == selectedPersonId ) )
+                {
+                    return response;
+                }
             }
 
             // Determine the date/time ranges to use when sourcing additional time sign-ups. The minimum begin date/time

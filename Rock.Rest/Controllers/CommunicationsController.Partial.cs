@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -92,7 +92,7 @@ namespace Rock.Rest.Controllers
                        communicationToAdd.SendDateTime = sentDateTime;
                        communicationToAdd.Status = Model.CommunicationStatus.Approved;
 
-                       communicationToAdd = rockContext.Communications.Add( communicationToAdd );
+                       new Model.CommunicationService( rockContext ).Add( communicationToAdd );
 
                        var recipientsCount = ( importCommunication.Recipients?.Count ).GetValueOrDefault( 0 );
 
@@ -123,7 +123,7 @@ namespace Rock.Rest.Controllers
                            importCommunicationRecipientToAdd.Status = Model.CommunicationRecipientStatus.Delivered;
                            importCommunicationRecipientToAdd.Communication = communicationToAdd;
 
-                           rockContext.CommunicationRecipients.Add( importCommunicationRecipientToAdd );
+                           new Model.CommunicationRecipientService( rockContext ).Add( importCommunicationRecipientToAdd );
 
                            // Add the recipient Guid(s) that are associated with the parent communication
                            var infoItem = addedInfo.FirstOrDefault( v => v.Details.CommunicationGuid == communicationToAdd.Guid );

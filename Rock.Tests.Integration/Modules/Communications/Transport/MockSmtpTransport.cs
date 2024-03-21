@@ -18,7 +18,7 @@ using Rock.Communication;
 using Rock.Communication.Transport;
 using Rock.Model;
 
-namespace Rock.Tests.Integration.Communications.Transport
+namespace Rock.Tests.Integration.Modules.Communications.Transport
 {
     /// <summary>
     /// A mock transport component useful for testing communications involving the SMTP protocol.

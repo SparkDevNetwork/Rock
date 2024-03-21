@@ -137,9 +137,10 @@ namespace Rock.Blocks.CMS
             errorMessage = null;
 
             // should have a token of minimum length
-            if ( pageShortLink.Token.Length < _minTokenLength )
+            var minTokenLength = GetAttributeValue( AttributeKey.MinimumTokenLength ).AsIntegerOrNull() ?? 7;
+            if ( pageShortLink.Token.Length < minTokenLength )
             {
-                errorMessage = string.Format( "Please enter a token that is a least {0} characters long.", _minTokenLength );
+                errorMessage = string.Format( "Please enter a token that is a least {0} characters long.", minTokenLength );
                 return false;
             }
 

@@ -21,6 +21,7 @@ using Rock.Tests.Shared;
 namespace Rock.Tests.Rock.Lava
 {
     [TestClass]
+    [TestCategory( TestFeatures.Lava )]
     public class LavaHelperTests
     {
         [TestMethod]

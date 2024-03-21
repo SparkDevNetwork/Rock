@@ -47,7 +47,7 @@
     });
 
     /** The filter component to use to display and edit the value. */
-    const filterComponent = computed(() => field.value?.getFilterComponent());
+    const filterComponent = computed(() => field.value?.getFilterComponent(configurationValues.value));
 
     /** The configuration values for the editor component. */
     const configurationValues = computed(() => props.attribute.configurationValues ?? {});

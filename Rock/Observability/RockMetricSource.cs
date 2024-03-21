@@ -37,7 +37,7 @@ namespace Rock.Observability
         private static readonly string[] GenNames = new string[] { "gen0", "gen1", "gen2", "loh", "poh" };
 
         // Performance counters
-        private static PerformanceCounter _cpuPerformancCounter = null;
+        private static readonly PerformanceCounter _cpuPerformancCounter = null;
 
         private static readonly string _rockVersion = VersionInfo.VersionInfo.GetRockProductVersionFullName();
 
@@ -94,10 +94,17 @@ namespace Rock.Observability
             // Initialize the global metric
             MeterInstance = new Meter( ObservabilityHelper.ServiceName, "1.0.0" );
 
-            _commonTags.Add( "rock-version", _rockVersion );
+            _commonTags.Add( "rock.version", _rockVersion );
 
             // Create needed Performance Counters
-            _cpuPerformancCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );
+            try
+            {
+                _cpuPerformancCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );
+            }
+            catch
+            {
+                _cpuPerformancCounter = null;
+            }
         }
 
         #endregion
@@ -229,9 +236,12 @@ namespace Rock.Observability
                 description: "Count of the number of database queries." );
 
             // Setup Hosting metrics (metrics about the entire server environment)
-            MeterInstance.CreateObservableGauge<float>( "hosting.cpu.total", () => GetCpuMeasure(),
-                unit: "%",
-                description: "The percent CPU of the web VM." );
+            if ( _cpuPerformancCounter != null )
+            {
+                MeterInstance.CreateObservableGauge<float>( "hosting.cpu.total", () => GetCpuMeasure(),
+                    unit: "%",
+                    description: "The percent CPU of the web VM." );
+            }
 
             MeterInstance.CreateObservableGauge(
                 "hosting.volumes.space",

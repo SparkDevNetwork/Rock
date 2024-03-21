@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Web;
 
@@ -34,3 +35,5 @@ using System.Web;
 // The following attribute will set an initializer to be run early in the ASP.Net pipeline on application
 // start. Your can find more information on how this works at: https://haacked.com/archive/2010/05/16/three-hidden-extensibility-gems-in-asp-net-4.aspx/
 [assembly: PreApplicationStartMethod( typeof( Rock.AssemblyInitializer ), "Initialize" )]
+
+[assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]

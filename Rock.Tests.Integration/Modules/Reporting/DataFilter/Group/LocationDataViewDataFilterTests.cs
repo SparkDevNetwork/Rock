@@ -15,12 +15,14 @@
 // </copyright>
 //
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Reporting.DataFilter
+namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Group
 {
     /// <summary>
     /// Test DataFilter: Group/Related Data View/Location Data View.

@@ -97,7 +97,19 @@ namespace Rock.Web.Cache
                     return ConfiguredTheme;
                 }
 
-                var cookieName = $"Site:{ Id }:theme";
+                // FileManager, RockFileBrowser, RockImageBrowser and RockMergeField
+                // controls need to use paths from the main internal site, but themed
+                // as other sites (potentially). To avoid updating the site theme cookie
+                // in these cases we use a different query string parameter.
+                var editorTheme = request["EditorTheme"];
+                if (
+                    editorTheme.IsNotNullOrWhiteSpace() &&
+                    System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + editorTheme ) ) )
+                {
+                    return editorTheme;
+                }
+
+                var cookieName = $"Site:{Id}:theme";
                 var cookie = request.Cookies[cookieName];
 
                 var theme = request["theme"];
@@ -720,8 +732,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes this instance.
         /// </summary>
-        [Obsolete("This will not work with a distributed cache system such as Redis. Flush the Site from the cache instead.", true)]
-        [RockObsolete("1.10")]
+        [Obsolete( "This will not work with a distributed cache system such as Redis. Flush the Site from the cache instead.", true )]
+        [RockObsolete( "1.10" )]
         public static void RemoveSiteDomains()
         {
             _siteDomains = new ConcurrentDictionary<string, int?>();
@@ -752,7 +764,7 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    _siteDomains.AddOrUpdate( host, (int?)null, ( k, v ) => (int?)null );
+                    _siteDomains.AddOrUpdate( host, ( int? ) null, ( k, v ) => ( int? ) null );
                 }
             }
 

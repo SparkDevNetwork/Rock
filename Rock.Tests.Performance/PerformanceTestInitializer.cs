@@ -14,38 +14,36 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Configuration;
+using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Tests.Integration;
+
+using Rock.Tests.Integration.TestFramework;
 
 namespace Rock.Tests.Performance
 {
     [TestClass]
+    [DeploymentItem( "app.TestSettings.config" )]
+    [DeploymentItem( "app.ConnectionStrings.config" )]
     public sealed class PerformanceTestInitializer
     {
+        [TestMethod]
+        public void ForceDeployment()
+        {
+            // This method is required to workaround an issue with the MSTest deployment process.
+            // It exists to ensure that the DeploymentItem attributes decorating this class are processed,
+            // so that the required files are copied to the test deployment directory.
+            // For further details, see https://github.com/microsoft/testfx/issues/634.
+        }
+
         /// <summary>
         /// This will run before any tests in this assembly are run.
         /// </summary>
         /// <param name="context">The context.</param>
         [AssemblyInitialize]
-        public static void AssemblyInitialize( TestContext context )
+        public static async Task AssemblyInitialize( TestContext context )
         {
-            // Copy the configuration settings to the TestContext so they can be accessed by the integration tests project initializer.
-            AddTestContextSettingsFromConfigurationFile( context );
-
-            IntegrationTestInitializer.Initialize( context );
+            await IntegrationTestInitializer.InitializeTestEnvironment( context );
         }
-
-        public static void AddTestContextSettingsFromConfigurationFile( TestContext context )
-        {
-            // This project is not a Test Project type, so it does not load configuration from a .runsettings file.
-            // Copy the configuration settings to the TestContext so they can be accessed by the integration tests project initializer.
-            foreach ( var key in ConfigurationManager.AppSettings.AllKeys )
-            {
-                context.Properties[key] = ConfigurationManager.AppSettings[key];
-            }
-
-        }
-
     }
 }

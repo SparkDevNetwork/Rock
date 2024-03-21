@@ -69,7 +69,7 @@
             <template #format="{ row }">
                 <div class="text-sm">
                     <div v-for="account in row.accounts">
-                        {{ account.name }}: {{ toCurrencyOrNull(account.amount) }}
+                        {{ account.name }}: {{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}
                     </div>
                 </div>
             </template>
@@ -86,7 +86,7 @@
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.variance" class="label label-warning">
-                    {{ toCurrencyOrNull(row.variance.amount) }} | {{ row.variance.count }}
+                    {{ toCurrencyOrNull(row.variance.amount, config.options?.currencyInfo) }} | {{ row.variance.count }}
                 </span>
             </template>
         </Column>
@@ -146,7 +146,7 @@
                         visiblePriority="md">
             <template #format="{ row }">
                 <div class="flex-grow-1 text-right">
-                    {{ toCurrencyOrNull(row.totalAmount) }}
+                    {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
                 </div>
             </template>
         </CurrencyColumn>
@@ -174,11 +174,11 @@
                     <table>
                         <tr v-for="account in visibleAccountSummaries">
                             <td :class="{ 'font-italic': account.isOtherAccount }">{{ account.name }}</td>
-                            <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount) }}</td>
+                            <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}</td>
                         </tr>
                         <tr>
                             <td class="text-bold">Total</td>
-                            <td class="text-bold text-right" style="padding-left:52px;">{{ toCurrencyOrNull(summaryTotal) }}</td>
+                            <td class="text-bold text-right" style="padding-left:52px;">{{ toCurrencyOrNull(summaryTotal, config.options?.currencyInfo) }}</td>
                         </tr>
                     </table>
                 </div>
@@ -485,7 +485,7 @@
         let filterValue = "";
 
         for (const account of (row as Row).accounts) {
-            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount) ?? ""}`;
+            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount, config.options?.currencyInfo) ?? ""}`;
         }
 
         return filterValue;

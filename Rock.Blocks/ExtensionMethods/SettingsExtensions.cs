@@ -155,7 +155,7 @@ namespace Rock.Blocks
         /// <param name="values">The comma-delimited string values for which to create <see cref="ListItemBag"/>s.</param>
         /// <param name="availableOptions">The available options to which each value should be matched.</param>
         /// <returns>A <see cref="ListItemBag"/> list of values and their corresponding friendly text from the matching available options.</returns>
-        public static List<ListItemBag> ToListItemsBagListUsingAvailableOptions( this string delimitedValues, List<ListItemBag> availableOptions )
+        public static List<ListItemBag> ToListItemBagListUsingAvailableOptions( this string delimitedValues, List<ListItemBag> availableOptions )
         {
             var listItemBags = new List<ListItemBag>();
 
@@ -182,6 +182,36 @@ namespace Rock.Blocks
         #endregion
 
         #region Convenience Converters: Entity-Specific Usages of Generic Converters
+
+        #region Campuses
+
+        /// <summary>
+        /// Deserializes the campus guid string into a <see cref="ListItemBag"/> so it can be populated in the associated UI control.
+        /// <para>
+        /// The <see cref="CampusCache"/> is used to populate the <see cref="ListItemBag.Text"/> for the deserialized guid value.
+        /// </para>
+        /// </summary>
+        /// <param name="campusGuidString">The campus guid string.</param>
+        /// <returns>A <see cref="ListItemBag"/> representing the campus.</returns>
+        public static ListItemBag CampusGuidToListItemBag( this string campusGuidString )
+        {
+            return campusGuidString.ToListItemBagUsingCache( CampusCache.Get );
+        }
+
+        /// <summary>
+        /// Deserializes the comma-delimited campus guid strings into <see cref="ListItemBag"/>s so they can be populated in the associated UI control.
+        /// <para>
+        /// The <see cref="CampusCache"/> is used to populate the <see cref="ListItemBag.Text"/> for each deserialized guid value.
+        /// </para>
+        /// </summary>
+        /// <param name="campusGuidStrings">The comma-delimited campus guid strings.</param>
+        /// <returns>A <see cref="ListItemBag"/> list representing the campuses.</returns>
+        public static List<ListItemBag> CampusGuidsToListItemBagList( this string campusGuidStrings )
+        {
+            return campusGuidStrings.ToListItemBagListUsingCache( CampusCache.Get );
+        }
+
+        #endregion
 
         #region Categories
 

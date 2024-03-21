@@ -200,6 +200,14 @@ namespace Rock.Blocks.Finance
                 .OrderBy( dv => dv.Order )
                 .ToListItemBagList();
 
+            var currencyInfo = new RockCurrencyCodeInfo();
+            options.CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
+            {
+                Symbol = currencyInfo.Symbol,
+                DecimalPlaces = currencyInfo.DecimalPlaces,
+                SymbolLocation = currencyInfo.SymbolLocation
+            };
+
             return options;
         }
 

@@ -696,7 +696,7 @@ namespace Rock.Web.Cache
                 rockControl.Warning = options.WarningText;
                 rockControl.Required = isRequired;
                 rockControl.ValidationGroup = options.ValidationGroup;
-                if ( options.LabelText.IsNullOrWhiteSpace() && isRequired )
+                if ( options.LabelText.IsNullOrWhiteSpace() && isRequired && rockControl.RequiredErrorMessage.IsNullOrWhiteSpace() )
                 {
                     rockControl.RequiredErrorMessage = $"{Name} is required.";
                 }

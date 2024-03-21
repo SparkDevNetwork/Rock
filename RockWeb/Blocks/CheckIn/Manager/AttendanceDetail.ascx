@@ -47,7 +47,7 @@
             </div>
 
             <div class="actions">
-                <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                <asp:LinkButton ID="btnEdit" runat="server" CausesValidation="false" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
             </div>
         </div>

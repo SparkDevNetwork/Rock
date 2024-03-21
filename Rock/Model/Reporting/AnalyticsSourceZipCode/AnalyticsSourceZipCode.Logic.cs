@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
@@ -26,6 +42,8 @@ namespace Rock.Model
     /// </summary>
     public partial class AnalyticsSourceZipCode
     {
+        private const string CensusDataPath = "App_Data\\Formatted_Census_Data.xlsx";
+
         /// <summary>
         /// Saves the analytics source zip code data.
         /// </summary>
@@ -81,7 +99,7 @@ namespace Rock.Model
                     // Get the current batch
                     var currentBatch = analyticsZipCodes.Skip( i * batchSize ).Take( batchSize ).ToList();
 
-                    rockContext.AnalyticsSourceZipCodes.AddRange( currentBatch );
+                    rockContext.Set<AnalyticsSourceZipCode>().AddRange( currentBatch );
                     rockContext.SaveChanges();
                 }
 
@@ -92,7 +110,7 @@ namespace Rock.Model
                 using ( var rockContext = new RockContext() )
                 {
                     // Since we are not saving the DbGeography details we'll just use EFBatchOperation to BulkInsert.
-                    EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceZipCodes ).InsertAll( analyticsZipCodes );
+                    EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourceZipCode>() ).InsertAll( analyticsZipCodes );
                 }
             }
         }
@@ -124,7 +142,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static List<AnalyticsSourceZipCode> GetZipCodeCensusData()
         {
-            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Content\\InternalSite\\Formatted_Census_Data.xlsx" );
+            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, CensusDataPath );
             var fileInfo = new FileInfo( path );
 
             using ( var excelPackage = new ExcelPackage( fileInfo ) )
@@ -171,12 +189,26 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Deletes the census data file.
+        /// </summary>
+        public static void DeleteCensusDataFile()
+        {
+            var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, CensusDataPath );
+
+            if ( File.Exists( path ) )
+            {
+                File.Delete( path );
+            }
+        }
+
+#pragma warning disable CS1587
         /**
-          * 01/08/2024 - KA
-          * 
-          * The download method is commented out at the moment due to the large file that would otherwise be downloaded (over 900MB).
-          * There might be a future change to allow end users to selectively choose to download the boundary data.
-          */
+        * 01/08/2024 - KA
+        * 
+        * The download method is commented out at the moment due to the large file that would otherwise be downloaded (over 900MB).
+        * There might be a future change to allow end users to selectively choose to download the boundary data.
+        */
 
         /// <summary>
         /// Downloads the Boundary data as a memory stream.
@@ -238,6 +270,8 @@ namespace Rock.Model
 
         //    return data.OrderBy( z => z.ZipCode ).ToList();
         //}
+
+#pragma warning restore CS1587
 
         /// <summary>
         /// Set serialization errors as handled so properties that cannot be parsed are left as their default value.

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -43,6 +44,20 @@ namespace Rock.Web.UI.Controls
         private GeoPicker _pointPicker;
         private GeoPicker _polygonPicker;
         private HiddenField _hfCurrentPickerMode;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationPicker" /> class.
+        /// </summary>
+        public LocationPicker()
+            : base()
+        {
+            HelpBlock = new HelpBlock();
+            WarningBlock = new WarningBlock();
+        }
 
         #endregion
 
@@ -132,7 +147,9 @@ namespace Rock.Web.UI.Controls
                  * In some circumstances, such as when this control is used as a child control of the AttributeMatrixEditor, ViewState does not correctly
                  * reflect the picker mode if a postback is triggered by another editor control and the picker has not been previously accessed.
                  */
-                var currentPickerMode = _hfCurrentPickerMode.Value.ConvertToEnumOrNull<LocationPickerMode>();
+                EnsureChildControls();
+
+                var currentPickerMode = _hfCurrentPickerMode?.Value.ConvertToEnumOrNull<LocationPickerMode>();
 
                 if ( !currentPickerMode.HasValue )
                 {
@@ -793,16 +810,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return _namedPicker.Help;
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
             set
             {
-                EnsureChildControls();
-                _namedPicker.Help = value;
-                _addressPicker.Help = value;
-                _pointPicker.Help = value;
-                _polygonPicker.Help = value;
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
             }
         }
 
@@ -816,16 +831,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return _namedPicker.Warning;
+                return WarningBlock != null ? WarningBlock.Text : string.Empty;
             }
             set
             {
-                EnsureChildControls();
-                _namedPicker.Warning = value;
-                _addressPicker.Warning = value;
-                _pointPicker.Warning = value;
-                _polygonPicker.Warning = value;
+                if ( WarningBlock != null )
+                {
+                    WarningBlock.Text = value;
+                }
             }
         }
 
@@ -904,22 +917,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The help block.
         /// </value>
-        public HelpBlock HelpBlock
-        {
-            get
-            {
-                EnsureChildControls();
-                return _namedPicker.HelpBlock;
-            }
-            set
-            {
-                EnsureChildControls();
-                _namedPicker.HelpBlock = value;
-                _addressPicker.HelpBlock = value;
-                _pointPicker.HelpBlock = value;
-                _polygonPicker.HelpBlock = value;
-            }
-        }
+        public HelpBlock HelpBlock { get; set; }
 
         /// <summary>
         /// Gets the warning block.
@@ -927,22 +925,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The warning block.
         /// </value>
-        public WarningBlock WarningBlock
-        {
-            get
-            {
-                EnsureChildControls();
-                return _namedPicker.WarningBlock;
-            }
-            set
-            {
-                EnsureChildControls();
-                _namedPicker.WarningBlock = value;
-                _addressPicker.WarningBlock = value;
-                _pointPicker.WarningBlock = value;
-                _polygonPicker.WarningBlock = value;
-            }
-        }
+        public WarningBlock WarningBlock { get; set; }
 
         /// <summary>
         /// Gets the required field validator.

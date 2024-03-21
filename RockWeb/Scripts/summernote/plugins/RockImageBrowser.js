@@ -13,7 +13,7 @@
             var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/rockfilebrowser";
             iframeUrl += "?RootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.imageFolderRoot);
             iframeUrl += "&BrowserMode=image";
-            iframeUrl += "&Theme=" + context.options.rockTheme;
+            iframeUrl += "&EditorTheme=" + context.options.rockTheme;
             iframeUrl += "&ModalMode=1";
             iframeUrl += "&Title=Select%20Image";
 

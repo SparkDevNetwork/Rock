@@ -49,6 +49,9 @@ namespace Rock.Client
         public string BodyCssClass { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.Cms.BotGuardianLevel BotGuardianLevel { get; set; } = Rock.Client.Enums.BotGuardianLevel.Inherit;
+
+        /// <summary />
         public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary />
@@ -185,6 +188,7 @@ namespace Rock.Client
             this.AdditionalSettingsJson = source.AdditionalSettingsJson;
             this.AllowIndexing = source.AllowIndexing;
             this.BodyCssClass = source.BodyCssClass;
+            this.BotGuardianLevel = source.BotGuardianLevel;
             this.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             this.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             this.BrowserTitle = source.BrowserTitle;

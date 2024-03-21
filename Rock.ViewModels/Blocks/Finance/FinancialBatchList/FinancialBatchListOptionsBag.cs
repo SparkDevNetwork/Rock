@@ -51,5 +51,10 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialBatchList
         /// The sources that can be used to filter the results.
         /// </summary>
         public List<ListItemBag> Sources { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CurrencyInfo
+        /// </summary>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }

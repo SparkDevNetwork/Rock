@@ -1,26 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Integration.Core.Jobs;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Jobs
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     /// <summary>
     /// Defines test class SendFollowingEventNotificationTests.
     /// </summary>
     [TestClass]
-    public class SendFollowingEventNotificationTests
+    public class SendFollowingEventNotificationTests : DatabaseTestsBase
     {
-        [ClassInitialize]
-        public static void TestInitialize( TestContext context )
-        {
-            TestDatabaseHelper.ResetDatabase();
-        }
-
         #region Tests
 
         /// <summary>

@@ -15,16 +15,20 @@
 // </copyright>
 
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Field;
 using Rock.Field.Types;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
+
 using static Rock.Field.Types.UrlLinkFieldType;
 
-namespace Rock.Tests.Integration.Core
+namespace Rock.Tests.Integration.Modules.Core.Field.Types
 {
     [TestClass]
-    public class UrlLinkFieldTypeTests
+    public class UrlLinkFieldTypeTests : DatabaseTestsBase
     {
         [TestMethod]
         public void FormatValue_ShouldReturnCompleteATag()

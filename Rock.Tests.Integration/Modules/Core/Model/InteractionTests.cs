@@ -16,24 +16,19 @@
 //
 using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Reporting
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class InteractionTests
+    public class InteractionTests : DatabaseTestsBase
     {
-        private string interactionForeignKey;
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            TestDatabaseHelper.ResetDatabase();
-
-            interactionForeignKey = $"Test {Guid.NewGuid()}";
-        }
+        private readonly string interactionForeignKey = $"Test {Guid.NewGuid()}";
 
         [TestCleanup]
         public void TestCleanup()
@@ -42,20 +37,6 @@ namespace Rock.Tests.Integration.Reporting
         }
 
         [TestMethod]
-        public void InteractionDateKeyGetsSetCorrectly()
-        {
-            var testList = TestDataHelper.GetAnalyticsSourceDateTestData();
-
-            foreach ( var keyValue in testList )
-            {
-                Interaction interaction = new Interaction();
-                interaction.InteractionDateTime = keyValue.Value;
-                Assert.AreEqual( keyValue.Key, interaction.InteractionDateKey );
-            }
-        }
-
-        [TestMethod]
-        [Ignore("Fix required. Adding an interaction with a new Device Type in the same action causes an exception. [Last modified by MB]")]
         public void InteractionDateKeySavesCorrectly()
         {
             var rockContext = new RockContext();
@@ -77,7 +58,6 @@ namespace Rock.Tests.Integration.Reporting
         }
 
         [TestMethod]
-        [Ignore( "Fix required. Adding an interaction with a new Device Type in the same action causes an exception. [Last modified by MB]" )]
         public void InteractionDateKeyJoinsCorrectly()
         {
             var expectedRecordCount = 15;
@@ -111,13 +91,14 @@ namespace Rock.Tests.Integration.Reporting
             }
         }
 
-        private Rock.Model.Interaction BuildInteraction( RockContext rockContext, DateTime interactionDate )
+        private Interaction BuildInteraction( RockContext rockContext, DateTime interactionDate )
         {
             var args = new TestDataHelper.Interactions.CreatePageViewInteractionActionArgs
             {
                 PageIdentifier = SystemGuid.Page.EXCEPTION_LIST,
                 ForeignKey = interactionForeignKey,
-                ViewDateTime = interactionDate
+                ViewDateTime = interactionDate,
+                BrowserIpAddress = "127.0.0.1"
             };
 
             var interaction = TestDataHelper.Interactions.CreatePageViewInteraction( args, rockContext );

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,23 @@ namespace Rock.Bus.Transport
                 { BaseAttributeKey.Active, true.ToString() },
                 { BaseAttributeKey.Order, 0.ToString() }
             };
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InMemory"/> class.
+        /// </summary>
+        public InMemory()
+            : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InMemory" /> class.
+        /// </summary>
+        /// <param name="updateAttributes">if set to <c>true</c> then attributes will be loaded from database.</param>
+        public InMemory( bool updateAttributes )
+            : base( updateAttributes )
+        {
         }
 
         /// <summary>

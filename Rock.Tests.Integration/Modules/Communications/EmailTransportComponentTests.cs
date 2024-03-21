@@ -4,29 +4,27 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
 using Moq.Protected;
+
 using Rock.Communication;
 using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Communications
+namespace Rock.Tests.Integration.Modules.Communications
 {
     [TestClass]
-    public class EmailTransportComponentTests
+    public class EmailTransportComponentTests : DatabaseTestsBase
     {
-        private static byte[] _testTextFileBytes = File.ReadAllBytes( @"TestData\TextDoc.txt" );
-        private static byte[] _testJpgFileBytes = File.ReadAllBytes( @"TestData\test.jpg" );
-
-        [ClassInitialize]
-        public static void TestInitialize( TestContext context )
-        {
-            TestDatabaseHelper.ResetDatabase();
-        }
+        private static readonly byte[] _testTextFileBytes = File.ReadAllBytes( @"TestData\TextDoc.txt" );
+        private static readonly byte[] _testJpgFileBytes = File.ReadAllBytes( @"TestData\test.jpg" );
 
         #region Rock Email Message Test
 

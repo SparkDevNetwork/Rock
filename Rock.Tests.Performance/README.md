@@ -5,8 +5,7 @@ This project is intended to store console applications and test harnesses that m
 ## Setup
 This project requires a connection to a Rock database, initialized with the standard Rock sample data.
 
-To configure the database connection, add a file `app.ConnectionStrings.config` to your local project folder, using the existing `app.ConnectionStrings.config.example` as a template.
-The new file will automatically be copied to the local `bin` directory when the project is built.
+This project follows the same database access pattern as the Rock.Tests.Integration project, so please see the Readme file there for details on configuring your local database.
 
 ### Lava Performance Test Console
 This console is used to measure and compare the performance of the various Liquid frameworks which can be used by the Rock Lava library.

@@ -730,17 +730,6 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            // Determine account campus context mode
-            _accountCampusContextFilter = GetAttributeValue( AttributeKey.AccountCampusContext ).AsType<int>();
-            if ( _accountCampusContextFilter > -1 )
-            {
-                var campusEntity = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Campus ) ) );
-                if ( campusEntity != null )
-                {
-                    _currentCampusContextId = campusEntity.Id;
-                }
-            }
-
             RegisterScript();
         }
 

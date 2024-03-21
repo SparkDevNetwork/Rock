@@ -29,7 +29,7 @@
                                      :disallowPastDateSelection="true" />
                 </div>
                 <div v-if="config.displayLocationSort" :class="columnClass" class="filters-locationsort">
-                    <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel" class="input-max-w-xl" />
+                    <TextBox v-model="selectedLocationSort" :label="config.locationSortLabel ?? undefined" class="input-max-w-xl" />
                 </div>
                 <div v-if="config.displayLocationRangeFilter" :class="columnClass" class="filters-locationrange">
                     <NumberBox v-model="selectedLocationRange" label="Within" formGroupClasses="input-max-w-md">

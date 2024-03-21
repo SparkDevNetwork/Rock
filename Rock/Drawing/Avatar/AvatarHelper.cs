@@ -139,8 +139,15 @@ namespace Rock.Drawing.Avatar
             // If there is a photo in the settings we will always use that
             if ( settings.PhotoId.HasValue )
             {
-                // Get image from the binary file
-                avatar = RockImage.GetPersonImageFromBinaryFileService( settings.PhotoId.Value );
+                try
+                {
+                    // Get image from the binary file
+                    avatar = RockImage.GetPersonImageFromBinaryFileService( settings.PhotoId.Value );
+                }
+                catch ( Exception )
+                {
+                    return null;
+                }
 
                 // Resize image
                 avatar?.CropResize( settings.Size, settings.Size );
@@ -181,12 +188,13 @@ namespace Rock.Drawing.Avatar
                 avatar.Mutate( o => o.ApplyCircleCorners() );
             }
 
+
             // Cache the image to the file system
             try
             {
                 avatar.SaveAsPng( $"{settings.CachePath}{settings.CacheKey}.png" );
             }
-            catch (Exception) { }
+            catch ( Exception ) { }
 
             var outputStream = new MemoryStream();
             avatar.SaveAsPng( outputStream );

@@ -799,6 +799,8 @@ namespace RockWeb.Blocks.Mobile
             pnlEditPage.Visible = true;
             pnlDetails.Visible = false;
             pnlBlocks.Visible = false;
+            // Hide Context Panel if a valid pageId is not provided, even if the block has required context entities.
+            phContextPanel.Visible = phContextPanel.Visible && pageId != 0;
 
             UpdateAdvancedSettingsVisibility();
         }

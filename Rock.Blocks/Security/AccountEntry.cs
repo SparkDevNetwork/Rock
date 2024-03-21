@@ -711,6 +711,36 @@ namespace Rock.Blocks.Security
                 // Do not enforce security; otherwise, some attribute values may not be set for unauthenticated users.
                 enforceSecurity: false,
                 attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) );
+
+            /*
+                2024/02/27 - JSC
+
+                To prevent the DbContext from trying to save AttributeValues with
+	            both an empty and a DefaultValue we need to update the persons AttributeValue
+	            so that any values which are set to the default get replaced with an empty string.
+	            When person.SaveAttributeValues is called the empty value will not be persisted.
+	            We don't want to modify the behavior of Attribute/Helper.SaveAttributeValues
+	            as there are times when we DO want to persist default values 
+	            (e.g. when a user explicitly edits a page with those values shown).
+	
+                 Reason: New registration creates AttributeValues with configured DefaultValues.
+            */
+            var attributesWithDefaults = person.Attributes
+                .Where( a => a.Value.DefaultValue.IsNotNullOrWhiteSpace() )
+                .Select( a => a.Value );
+
+            foreach ( var attributeWithDefault in attributesWithDefaults )
+            {
+                var personAttributeValue = person.GetAttributeValue( attributeWithDefault.Key );
+
+                // If the cacheValue is null or the default then set an empty value for it
+                // Otherwise the default value will be returned and persisted in Attribute.Helper.SaveAttributeValues.
+                if ( personAttributeValue == null || personAttributeValue.Equals( attributeWithDefault.DefaultValue, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    person.SetAttributeValue( attributeWithDefault.Key, string.Empty );
+                }
+            }
+
             person.SaveAttributeValues( rockContext );
 
             return person;

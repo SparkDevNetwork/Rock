@@ -16,7 +16,8 @@
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="!isSecurityVisible"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -133,7 +134,11 @@
     });
 
     const options = computed((): SnippetDetailOptionsBag => {
-        return config.options ?? { isAuthorizedToEdit: false, isPersonalAllowed: false };
+        return config.options ?? {} as SnippetDetailOptionsBag;
+    });
+
+    const isSecurityVisible = computed((): boolean => {
+        return config.entity?.canAdministrate === true;
     });
 
     // #endregion

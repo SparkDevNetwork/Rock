@@ -349,6 +349,63 @@ namespace Rock.Web.UI.Controls
         public string LegendPosition { get; set; }
 
         /// <summary>
+        /// Gets the corresponding ChartJs legend location settings for the current Rock Chart settings.
+        /// </summary>
+        /// <param name="legendPosition"></param>
+        /// <param name="legendAlignment"></param>
+        protected void GetChartJsLegendLocationSettings( out string legendPosition, out string legendAlignment )
+        {
+            var rockLegendPosition = this.LegendPosition?.ToLower() ?? string.Empty;
+
+            if ( rockLegendPosition == "n" )
+            {
+                legendPosition = "top";
+                legendAlignment = "center";
+            }
+            else if ( rockLegendPosition == "ne" )
+            {
+                legendPosition = "top";
+                legendAlignment = "end";
+            }
+            else if ( rockLegendPosition == "e" )
+            {
+                legendPosition = "right";
+                legendAlignment = "end";
+            }
+            else if ( rockLegendPosition == "se" )
+            {
+                legendPosition = "bottom";
+                legendAlignment = "end";
+            }
+            else if ( rockLegendPosition == "s" )
+            {
+                legendPosition = "bottom";
+                legendAlignment = "center";
+            }
+            else if ( rockLegendPosition == "sw" )
+            {
+                legendPosition = "bottom";
+                legendAlignment = "start";
+            }
+            else if ( rockLegendPosition ==  "w" )
+            {
+                legendPosition = "left";
+                legendAlignment = "start";
+            }
+            else if ( rockLegendPosition == "nw" )
+            {
+                legendPosition = "top";
+                legendAlignment = "start";
+            }
+            else
+            {
+                // Default to bottom-centre.
+                legendPosition = "bottom";
+                legendAlignment = "center";
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a flag indicating if a legend is displayed on the chart.
         /// </summary>
         public bool ShowLegend { get; set; }
@@ -362,6 +419,9 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets the style settings applied to the chart subtitle. 
         /// </summary>
         public ChartTextElementStyle SubtitleFormat { get; set; }
+
+        /// <inheritdoc/>
+        public bool MaintainAspectRatio { get; set; }
 
         /// <summary>
         /// Override this method to generate the JSON model used as the data source for the chart.

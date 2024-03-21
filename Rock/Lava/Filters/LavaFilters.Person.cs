@@ -1115,7 +1115,7 @@ namespace Rock.Lava
         /// <returns>A single Campus, or a list of Campuses in ascending order of distance from the target Person.</returns>
         public static object NearestCampus( ILavaRenderContext context, object input, object maximumCount = null )
         {
-            var resultSetSize = InputParser.TryConvertInteger( maximumCount, 1, 0 ) ?? 0;
+            var resultSetSize = InputParser.ConvertToIntegerOrDefault( maximumCount, 1, 0 ) ?? 0;
             if ( resultSetSize <= 0 )
             {
                 return null;

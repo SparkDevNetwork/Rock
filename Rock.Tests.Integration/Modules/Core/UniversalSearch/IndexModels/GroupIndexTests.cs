@@ -14,20 +14,20 @@
 // limitations under the License.
 // </copyright>
 
-using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-using Rock;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Data.Entity;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.UniversalSearch
+namespace Rock.Tests.Integration.Modules.Core.UniversalSearch
 {
     [TestClass]
-    public class GroupIndexTests
+    public class GroupIndexTests : DatabaseTestsBase
     {
         [TestMethod]
         [Ignore]

@@ -1,19 +1,23 @@
-﻿using Newtonsoft.Json;
-using Rock.Model;
-using System.Data.Entity.Spatial;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Tests.Shared;
+﻿using System.Data.Entity.Spatial;
 
-namespace Rock.Tests.Integration.Core
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Newtonsoft.Json;
+
+using Rock.Model;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
-    public class DeviceTests
+    public class DeviceTests : DatabaseTestsBase
     {
         /* These DbGeography calls require the SqlServerTypes package on machines without full SQL Server.
          * However, none of them will actually find the SqlServerSpatial110.dll in the /bin folder. */
 
         [TestMethod]
         [Ignore( "Need the SqlServerTypes library to resolve" )]
-        
+       
         public void FallsWithinGeoFence()
         {
             var deviceWithGeoFence = BufferedDevice();

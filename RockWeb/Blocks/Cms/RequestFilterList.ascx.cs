@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Cms
 
             var anonymousVisitorPersonGuid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid();
 
-            var personAliasPersonalizationsQry = rockContext.PersonAliasPersonalizations;
+            var personAliasPersonalizationsQry = rockContext.Set<PersonAliasPersonalization>();
 
             var requestFilterQuery = requestFilterService.Queryable();
 

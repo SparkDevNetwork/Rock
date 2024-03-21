@@ -213,7 +213,9 @@ namespace Rock.Communication.Transport
                                 recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
                             }
 
-                            PushMessage( recipient.To.SplitDelimitedValues( "," ).ToList(), pushMessage, recipient.MergeFields );
+                            var to = recipient.To.SplitDelimitedValues( "," ).Where( s => s.IsNotNullOrWhiteSpace() ).ToList();
+
+                            PushMessage( to, pushMessage, recipient.MergeFields );
                         }
                         catch ( Exception ex )
                         {
@@ -226,7 +228,7 @@ namespace Rock.Communication.Transport
                 {
                     try
                     {
-                        PushMessage( recipients.SelectMany( r => r.To.SplitDelimitedValues( "," ).ToList() ).ToList(), pushMessage, mergeFields );
+                        PushMessage( recipients.SelectMany( r => r.To.SplitDelimitedValues( "," ).Where( s => s.IsNotNullOrWhiteSpace() ).ToList() ).ToList(), pushMessage, mergeFields );
                     }
                     catch ( Exception ex )
                     {
@@ -341,7 +343,7 @@ namespace Rock.Communication.Transport
                                         {
                                             notification.Android = new AndroidConfig
                                             {
-                                                Notification =
+                                                Notification = new AndroidNotification
                                                 {
                                                     Sound = sound
                                                 }
@@ -349,7 +351,7 @@ namespace Rock.Communication.Transport
 
                                             notification.Apns = new ApnsConfig
                                             {
-                                                Aps =
+                                                Aps = new Aps
                                                 {
                                                     Sound = sound
                                                 }
@@ -459,17 +461,17 @@ namespace Rock.Communication.Transport
             // Android config
             var androidConfig = new AndroidConfig
             {
-                Notification =
+                Notification = new AndroidNotification
                 {
                     ClickAction = "Rock.Mobile.Main",
-                    Sound = sound,
+                    Sound = sound ?? string.Empty,
                 }
             };
 
             // iOS config
             var apnsConfig = new ApnsConfig
             {
-                Aps =
+                Aps = new Aps
                 {
                     Badge = emailMessage.Data?.ApplicationBadgeCount
                 }

@@ -17,12 +17,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Lava;
 using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
     [TestClass]
     public class SqlCommandTests : LavaIntegrationTestBase
@@ -143,6 +146,7 @@ UNION
         /// Refer https://github.com/SparkDevNetwork/Rock/issues/4938.
         /// </summary>
         [TestMethod]
+        [Ignore( "Test needs to be updated to add the Stepping Stone campus first." )]
         public void SqlBlock_SelectFilterAppliedToResultSet_ReturnsSelectedField()
         {
             var input = @"

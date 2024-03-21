@@ -16,7 +16,7 @@
 //
 using System.Collections.Generic;
 
-namespace Rock.Tests.Performance
+namespace Rock.Tests.Performance.Modules.Lava
 {
     public static class TestData
     {

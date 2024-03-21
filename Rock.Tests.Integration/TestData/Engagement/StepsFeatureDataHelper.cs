@@ -22,6 +22,7 @@ using System.Linq;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestFramework;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
@@ -83,7 +84,7 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             // Known Step Achievements
             // These steps are specifically identified to enable verification of query and filtering operations.
-            
+
             public static Guid TedDeckerStepBaptismGuid = new Guid( "02BB71C9-5FE9-45B8-B230-51C7A8475B6B" );
             public static Guid TedDeckerStepConfirmationGuid = new Guid( "15412166-1DE0-41C0-9F8D-F07160513CAE" );
             public static Guid TedDeckerStepMarriage1Guid = new Guid( "414EBE88-2CD2-40E1-893B-216DEA2CB25E" );
@@ -93,18 +94,18 @@ namespace Rock.Tests.Integration.Crm.Steps
             public static Guid BillMarbleStepConfirmationGuid = new Guid( "FE6B8F0D-450B-4737-80EE-E2BC4FA4EAB5" );
             public static Guid BillMarbleStepMarriage1Guid = new Guid( "E6F37E9D-177F-4CEA-91EA-2C2B45C4B1FD" );
             public static Guid BillMarbleStepAlphaAttenderGuid = new Guid( "680F64F1-C579-4216-B08C-68AF3FC762EC" );
-            
+
             public static Guid AlishaMarbleStepBaptismGuid = new Guid( "12DF97EE-52E8-49CE-B804-2568B8837B81" );
             public static Guid AlishaMarbleStepConfirmationGuid = new Guid( "6B3037D8-23AC-478C-BCC9-7483B86976AA" );
             public static Guid AlishaMarbleStepMarriage1Guid = new Guid( "FB2BA405-4233-4E7E-83AB-8A94B5E2A80A" );
             public static Guid AlishaMarbleStepAlphaAttenderGuid = new Guid( "87976C94-C9E4-4839-9EFF-1E0B3F4EF5A0" );
-            
+
             public static Guid SarahSimmonsStepConfirmationGuid = new Guid( "E41A74DE-72C7-40B5-B05C-C1A72E09F5C0" );
             public static Guid SarahSimmonsStepMarriage1Guid = new Guid( "94342ACA-744B-41A0-9076-0BCB808514CF" );
             public static Guid SarahSimmonsStepAlphaAttenderGuid = new Guid( "B5907E4F-6197-4A9F-A1DB-046DE7BB2035" );
-            
+
             public static Guid BrianJonesStepBaptismGuid = new Guid( "92171B1E-25C8-408B-AA93-AB7263D02B5A" );
-            
+
             public static Guid BenJonesStepAlphaAttenderGuid = new Guid( "D5DDBBE4-9D62-4EDE-840D-E9DAB8F99430" );
 
             public static string ColorCodeRed = "#f00";
@@ -114,6 +115,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             // A DataView that returns all of the people who have been baptised in 2001.
             public static Guid DataViewStepsCompleted2001Guid = new Guid( "E52D89CD-19A0-44B3-8052-D4FD206AB499" );
 
+            public static Guid PrimaryTaskGuid = new Guid( "C817118D-3F96-4B1B-9ABE-E12148943891" );
             public static class DataSets
             {
                 public static string DataSetStepPrograms = "StepPrograms";
@@ -127,9 +129,7 @@ namespace Rock.Tests.Integration.Crm.Steps
         /// </summary>
         public static void RemoveStepsFeatureTestData()
         {
-            //var monitor = GetCurrentTaskActivity();
-
-            //monitor.LogInformation( "Removing existing Steps Feature test data..." );
+            LogHelper.Log( "Removing existing Steps Feature test data..." );
 
             var dataContext = new RockContext();
 
@@ -140,37 +140,38 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             recordsAffected = db.ExecuteSqlCommand( $"update [Report] set [DataViewId] = null where [DataViewId] IN ( select [Id] from [DataView] where ForeignKey = '{_SampleDataForeignKey}' )" );
 
-            //monitor.LogInformation( $"Modified {recordsAffected} Reports." );
+            LogHelper.Log( $"Modified {recordsAffected} Reports." );
 
             recordsAffected = db.ExecuteSqlCommand( $"update [DataView] set [CategoryId] = null where [CategoryId] IN ( select [Id] from [Category] where ForeignKey = '{_SampleDataForeignKey}' )" );
-            recordsAffected += db.ExecuteSqlCommand( $"delete from [DataView] where ForeignKey = '{_SampleDataForeignKey}'" );
-            
-            //monitor.LogInformation( $"Deleted {recordsAffected} Data Views." );
+            //recordsAffected += db.ExecuteSqlCommand( $"delete from [DataViewFilter] where [DataViewId] IN (SELECT [Id] FROM [DataView] WHERE ForeignKey = '{_SampleDataForeignKey}')" );
+            //recordsAffected += db.ExecuteSqlCommand( $"delete from [DataView] where ForeignKey = '{_SampleDataForeignKey}'" );
+
+            LogHelper.Log( $"Deleted {recordsAffected} Data Views." );
 
             recordsAffected = db.ExecuteSqlCommand( $"delete from [StepWorkflowTrigger] where [StepTypeId] IN ( select [Id] from [StepType] where ForeignKey = '{_SampleDataForeignKey}' )" );
             recordsAffected += db.ExecuteSqlCommand( $"delete from [StepWorkflowTrigger] where [StepProgramId] IN ( select[Id] from [StepProgram] where ForeignKey = '{_SampleDataForeignKey}' )" );
 
-            //monitor.LogInformation( $"Deleted {recordsAffected} Step Workflow Triggers." );
+            LogHelper.Log( $"Deleted {recordsAffected} Step Workflow Triggers." );
 
             recordsAffected = db.ExecuteSqlCommand( $"delete from [StepType] where ForeignKey = '{_SampleDataForeignKey}'" );
 
-            //monitor.LogInformation( $"Deleted {recordsAffected} Step Types." );
+            LogHelper.Log( $"Deleted {recordsAffected} Step Types." );
 
             recordsAffected = db.ExecuteSqlCommand( $"delete from [Step] where ForeignKey = '{_SampleDataForeignKey}'" );
 
-            //monitor.LogInformation( $"Deleted {recordsAffected} Steps." );
+            LogHelper.Log( $"Deleted {recordsAffected} Steps." );
 
             recordsAffected = db.ExecuteSqlCommand( $"delete from [StepProgram] where ForeignKey = '{_SampleDataForeignKey}'" );
 
-            //monitor.LogInformation( $"Deleted {recordsAffected} Step Programs." );
+            LogHelper.Log( $"Deleted {recordsAffected} Step Programs." );
 
             // Remove Categories associated with Steps data.
 
             recordsAffected = db.ExecuteSqlCommand( $"delete from [Category] where ForeignKey = '{_SampleDataForeignKey}'" );
 
-            //monitor.LogInformation( $"Deleted {recordsAffected} Categories." );
+            LogHelper.Log( $"Deleted {recordsAffected} Categories." );
 
-            //monitor.LogActionSuccess( $"Steps Feature test data removed." );
+            LogHelper.Log( $"Steps Feature test data removed." );
 
             _loadedFeatureDataSets.Clear();
         }
@@ -211,15 +212,13 @@ namespace Rock.Tests.Integration.Crm.Steps
         /// </summary>
         public static void AddStepsFeatureTestData()
         {
-            //var monitor = GetCurrentTaskActivity();
-
             RemoveStepsFeatureTestData();
 
             AddTestDataStepPrograms();
 
             AddKnownStepParticipations();
 
-            
+
         }
 
         private static bool GetFeatureDataLoadState( string datasetName )
@@ -229,7 +228,7 @@ namespace Rock.Tests.Integration.Crm.Steps
 
         private static void SetFeatureDataLoadState( string datasetName, bool isLoaded = true )
         {
-            if ( _loadedFeatureDataSets.Contains(datasetName) )
+            if ( _loadedFeatureDataSets.Contains( datasetName ) )
             {
                 if ( !isLoaded )
                 {
@@ -238,7 +237,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             }
             else
             {
-                if (isLoaded)
+                if ( isLoaded )
                 {
                     _loadedFeatureDataSets.Add( datasetName );
                 }
@@ -256,14 +255,10 @@ namespace Rock.Tests.Integration.Crm.Steps
                 return;
             }
 
-            //var monitor = GetCurrentTaskActivity();
-
             var dataContext = new RockContext();
 
             // Add Step Categories
-            //monitor.LogInformation( "Adding Step Categories..." );
-
-            //var categoryService = new CategoryService( dataContext );
+            LogHelper.StartTask( "Adding Step Categories..." );
 
             var categoryId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;
 
@@ -273,9 +268,6 @@ namespace Rock.Tests.Integration.Crm.Steps
             AddOrUpdateCategory( dataContext, adultCategory );
             AddOrUpdateCategory( dataContext, childCategory );
 
-            //categoryService.Add( adultCategory );
-            //categoryService.Add( childCategory );
-
             dataContext.SaveChanges();
 
             CategoryCache.Clear();
@@ -284,7 +276,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             var stepProgramService = new StepProgramService( dataContext );
 
             // Add Step Program "Sacraments"
-            //monitor.LogInformation( "Adding Step Program: Sacraments..." );
+            LogHelper.Log( "Adding Step Program: Sacraments..." );
 
             var programSacraments = CreateStepProgram( Constants.ProgramSacramentsGuid, Constants.CategoryAdultsGuid, "Sacraments", "The sacraments represent significant milestones in the Christian faith journey.", "fa fa-bible", 1 );
 
@@ -321,7 +313,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             dataContext.SaveChanges();
 
             // Add Step Program "Alpha"
-            //monitor.LogInformation( "Adding Step Program: Alpha..." );
+            LogHelper.Log( "Adding Step Program: Alpha..." );
 
             var programAlpha = CreateStepProgram( Constants.ProgramAlphaGuid, Constants.CategoryAdultsGuid, "Alpha", "Alpha is a series of interactive sessions that freely explore the basics of the Christian faith.", "fa fa-question", 2 );
 
@@ -338,7 +330,7 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             SetFeatureDataLoadState( Constants.DataSets.DataSetStepPrograms );
 
-            //monitor.LogActionSuccess( "Step Programs added." );
+            LogHelper.StopTask( Constants.PrimaryTaskGuid );
         }
 
         public static void AddKnownStepParticipations()
@@ -348,15 +340,13 @@ namespace Rock.Tests.Integration.Crm.Steps
                 return;
             }
 
-            //var monitor = GetCurrentTaskActivity();
-
             var dataContext = new RockContext();
 
             var stepService = new StepService( dataContext );
             var personLookup = new PersonLookup( dataContext );
 
             // Baptism
-            //monitor.LogInformation( "Adding Steps for Baptism..." );
+            LogHelper.Log( "Adding Steps for Baptism..." );
 
             Step baptism;
 
@@ -389,7 +379,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             stepService.Add( baptism );
 
             // Confirmation
-            //monitor.LogInformation( "Adding Steps for Confirmation..." );
+            LogHelper.Log( "Adding Steps for Confirmation..." );
 
             Step confirmation;
 
@@ -415,7 +405,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             stepService.Add( confirmation );
 
             // Marriage - First
-            //monitor.LogInformation( "Adding Steps for Marriage..." );
+            LogHelper.Log( "Adding Steps for Marriage..." );
 
             Step marriage;
 
@@ -442,7 +432,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             stepService.Add( marriage2 );
 
             // Alpha/Attender
-            //monitor.LogInformation( "Adding Steps for Alpha..." );
+            LogHelper.Log( "Adding Steps for Alpha..." );
 
             var alphaAttender = CreateWellKnownStep( Constants.BenJonesStepAlphaAttenderGuid,
                 Constants.StepTypeAttenderGuid,
@@ -453,23 +443,21 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             dataContext.SaveChanges();
 
-            //monitor.LogActionSuccess( "Steps added." );
+            LogHelper.StopTask( Constants.PrimaryTaskGuid );
 
             SetFeatureDataLoadState( Constants.DataSets.DataSetStepParticipations );
         }
 
         public static void AddStepDataViews()
         {
-            //var monitor = GetCurrentTaskActivity();
-
-            //monitor.LogInformation( "Adding Steps Data Views..." );
+            LogHelper.Log( "Adding Steps Data Views..." );
 
             var dataContext = new RockContext();
 
             // Add Data View Category "Steps".
             const string categoryDataViewStepsName = "Steps";
 
-            Debug.Print( $"Adding Data View Category \"{ categoryDataViewStepsName }\"..." );
+            Debug.Print( $"Adding Data View Category \"{categoryDataViewStepsName}\"..." );
 
             var entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.DataView ) ).Id;
 
@@ -484,7 +472,7 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             const string dataViewStepsCompleted2001Name = "Steps Completed in 2001";
 
-            Debug.Print( $"Adding Data View \"{ dataViewStepsCompleted2001Name }\"..." );
+            Debug.Print( $"Adding Data View \"{dataViewStepsCompleted2001Name}\"..." );
 
             DataView dataView = new DataView();
 
@@ -519,7 +507,7 @@ namespace Rock.Tests.Integration.Crm.Steps
             dateCompletedFilter.ExpressionType = FilterExpressionType.Filter;
             dateCompletedFilter.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Reporting.DataFilter.PropertyFilter ) );
 
-            var dateFilterSettings = new List<string> { "Property_CompletedDateTime", "4096", "\tDateRange|||1/01/2001 12:00:00 AM|31/12/2001 12:00:00 AM" };
+            var dateFilterSettings = new List<string> { "Property_CompletedDateTime", "4096", "\tDateRange|||1/01/2001 12:00:00 AM|12/31/2001 12:00:00 AM" };
 
             dateCompletedFilter.Selection = dateFilterSettings.ToJson();
 
@@ -527,14 +515,12 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             dataContext.SaveChanges();
 
-            //monitor.LogActionSuccess( "Steps Data Views added." );
+            LogHelper.StopTask( Constants.PrimaryTaskGuid );
         }
 
         public static void AddStepsRandomParticipationEntries()
         {
-            //var monitor = GetCurrentTaskActivity();
-
-            //monitor.LogInformation( "Adding random Steps..." );
+            LogHelper.Log( "Adding random Steps..." );
 
             // Get a complete set of active Step Types ordered by Program and structure order.
             var dataContext = new RockContext();
@@ -550,11 +536,16 @@ namespace Rock.Tests.Integration.Crm.Steps
             // Get a random selection of people that are not system users or specific users for which test data already exists.
             var personService = new PersonService( dataContext );
 
-            int tedPersonAliasId = 0;
+            var testPeopleGuidList = new List<Guid>
+            {
+                TestGuids.TestPeople.TedDecker.AsGuid(),
+                TestGuids.TestPeople.BillMarble.AsGuid(),
+                TestGuids.TestPeople.AlishaMarble.AsGuid(),
+                TestGuids.TestPeople.BrianJones.AsGuid(),
+                TestGuids.TestPeople.SarahSimmons.AsGuid()
+            };
 
-            var testPeopleIdList = new List<int> { tedPersonAliasId };
-
-            var personQuery = personService.Queryable().Where( x => !x.IsSystem && x.LastName != "Anonymous" && !testPeopleIdList.Contains( x.Id ) ).Select( x => x.Id );
+            var personQuery = personService.Queryable().Where( x => !x.IsSystem && x.LastName != "Anonymous" && !testPeopleGuidList.Contains( x.Guid ) ).Select( x => x.Id );
 
             var personAliasService = new PersonAliasService( dataContext );
 
@@ -579,11 +570,44 @@ namespace Rock.Tests.Integration.Crm.Steps
 
             var typeService = new StepTypeService( dataContext );
 
-            var stepTypesAll = typeService.Queryable().ToList();
+            var stepTypesAll = typeService.Queryable()
+                .OrderBy( t => t.Order )
+                .ToList();
+
+            // Get the Step Types that only allow a single completion to prevent them from being added again.
+            var uniqueStepTypeIdList = typeService.Queryable()
+                .Where( t => !t.AllowMultiple )
+                .Select( t => t.Id )
+                .ToList();
+
+            var uniqueStepParticipations = new Dictionary<int, HashSet<int>>();
+            foreach ( var uniqueStepTypeId in uniqueStepTypeIdList )
+            {
+                uniqueStepParticipations.Add( uniqueStepTypeId, new HashSet<int>() );
+            }
+
+            var stepService = new StepService( dataContext );
+            var uniqueStepsCompletedForStepTypes = stepService.Queryable().
+                Where( s => uniqueStepTypeIdList.Contains( s.StepTypeId )
+                    && personAliasIdList.Contains( s.PersonAliasId ) )
+                .Select( s => new { s.StepTypeId, s.PersonAliasId } )
+                .GroupBy( s => s.StepTypeId )
+                .ToList();
+
+            foreach ( var uniqueStepsForStepType in uniqueStepsCompletedForStepTypes )
+            {
+                var steps = uniqueStepParticipations[uniqueStepsForStepType.Key];
+
+                foreach ( var group in uniqueStepsForStepType )
+                {
+                    if ( !steps.Contains( group.PersonAliasId ) )
+                    {
+                        steps.Add( group.PersonAliasId );
+                    }
+                }
+            }
 
             var campusList = CampusCache.All();
-
-            StepService stepService = null;
 
             while ( personAliasIdQueue.Any() )
             {
@@ -614,13 +638,22 @@ namespace Rock.Tests.Integration.Crm.Steps
                     // Steps are added from last to first in reverse chronological order, with the last step being achieved in the current year.
                     stepsToAddCount = rng.Next( 1, maxStepTypeCount );
 
-                    //monitor.LogDebug( $"Adding Steps: PersonAliasId: {personAliasId}, ProgramId={stepProgramId}, Steps={stepsToAddCount}" );
-
                     var stepTypesToAdd = new Queue<StepType>( stepTypesAll.Take( stepsToAddCount ).Reverse() );
 
                     while ( stepTypesToAdd.Any() )
                     {
                         var stepTypeToAdd = stepTypesToAdd.Dequeue();
+
+                        // If this Step Type has already been recorded for this Person and does not allow multiple achievements, ignore it.
+                        bool isUniqueStep = uniqueStepParticipations.ContainsKey( stepTypeToAdd.Id );
+
+                        if ( isUniqueStep )
+                        {
+                            if ( uniqueStepParticipations[stepTypeToAdd.Id].Contains( personAliasId ) )
+                            {
+                                continue;
+                            }
+                        }
 
                         // If this is not the last step to be added for this person, make sure the status represents a completion.
                         if ( stepTypesToAdd.Any() )
@@ -675,6 +708,12 @@ namespace Rock.Tests.Integration.Crm.Steps
                         }
 
                         stepService.Add( newStep );
+                        stepService.Context.SaveChanges();
+
+                        if ( isUniqueStep )
+                        {
+                            uniqueStepParticipations[stepTypeToAdd.Id].Add( personAliasId );
+                        }
 
                         // Save a batch of records and recycle the context to speed up processing.
                         if ( stepCounter % 100 == 0 )
@@ -689,7 +728,7 @@ namespace Rock.Tests.Integration.Crm.Steps
                 }
             }
 
-            //monitor.LogActionSuccess( $"Created {stepCounter} Steps for {personCounter} people." );
+            LogHelper.StopTask( Constants.PrimaryTaskGuid );
         }
 
         #region Internal Methods
@@ -749,27 +788,6 @@ namespace Rock.Tests.Integration.Crm.Steps
             guidDictionary = stepStatusService.Queryable().ToDictionary( k => k.Guid, v => v.Id );
 
             _GuidToIdMap = _GuidToIdMap.Union( guidDictionary ).ToDictionary( k => k.Key, v => v.Value );
-
-            // Add Person Aliases - Map Person Guid to PersonAlias.Id
-            //var personAliasService = new PersonAliasService( dataContext );
-
-            //var personService = new PersonService( dataContext );
-
-            //var personKnownGuids = new List<Guid>();
-
-            //personKnownGuids.Add( PersonLookup.AlishaMarblePersonGuid );
-            //personKnownGuids.Add( Constants.BenJonesPersonGuid );
-            //personKnownGuids.Add( Constants.BillMarblePersonGuid );
-            //personKnownGuids.Add( Constants.BrianJonesPersonGuid );
-            //personKnownGuids.Add( Constants.SarahSimmonsPersonGuid );
-            //personKnownGuids.Add( Constants.TedDeckerPersonGuid );
-
-            //var knownPeople = personService.Queryable().Where( x => personKnownGuids.Contains( x.Guid ) );
-
-            //foreach ( var knownPerson in knownPeople )
-            //{
-            //    _GuidToIdMap.Add( knownPerson.Guid, knownPerson.PrimaryAliasId ?? 0 );
-            //}
         }
 
         private static Category CreateCategory( string name, Guid guid, int appliesToEntityTypeId, int order = 0 )
@@ -864,6 +882,4 @@ namespace Rock.Tests.Integration.Crm.Steps
 
         #endregion
     }
-
- //   #endregion
 }

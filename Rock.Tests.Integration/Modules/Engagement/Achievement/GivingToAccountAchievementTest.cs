@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Achievement;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Engagement.Achievements
+namespace Rock.Tests.Integration.Modules.Engagement.Achievements
 {
     /// <summary>
     /// Tests for Giving to Account Achievements that use the database
     /// </summary>
-    [Ignore("Fix required. [Last modified by DV]")]
     [TestClass]
-    public class GivingToAccountAchievementTest
+    public class GivingToAccountAchievementTest : DatabaseTestsBase
     {
         private const string ComponentEntityTypeName = "Rock.Achievement.Component.GivingToAccountAchievement";
 
@@ -370,6 +370,10 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         /// </summary>
         private static void CreateAchievementTypeData()
         {
+            // Create the component so it sets up the attributes.
+            AchievementContainer.Instance.Refresh();
+            _ = AchievementContainer.GetComponent( ComponentEntityTypeName );
+
             // Single Achievement Types
             var achievementSingleA1 = CreateAchievementType( "Test Giving Achievement Single, Accumulate 1", GivingAccountParentGuidString, false );
             _achievementIds.Insert( ( int ) GivingTestTypes.SingleAchievementAccumulate1, achievementSingleA1.Id );

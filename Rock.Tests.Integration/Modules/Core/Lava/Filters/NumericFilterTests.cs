@@ -14,10 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
 {
     [TestClass]
     public class NumericFilterTests : LavaIntegrationTestBase

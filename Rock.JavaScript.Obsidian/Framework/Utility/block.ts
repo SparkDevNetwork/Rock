@@ -27,6 +27,7 @@ import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionCo
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
+const staticContentSymbol = Symbol();
 
 // TODO: Change these to use symbols
 
@@ -149,6 +150,24 @@ export function onConfigurationValuesChanged(callback: () => void): void {
     if (callbacks !== undefined) {
         callbacks.push(callback);
     }
+}
+
+/**
+ * Provides the static content that the block provided on the server.
+ *
+ * @param content The static content from the server.
+ */
+export function provideStaticContent(content: string | undefined): void {
+    provide(staticContentSymbol, content);
+}
+
+/**
+ * Gets the static content that was provided by the block on the server.
+ *
+ * @returns A string of HTML content or undefined.
+ */
+export function useStaticContent(): string | undefined {
+    return inject<string>(staticContentSymbol);
 }
 
 

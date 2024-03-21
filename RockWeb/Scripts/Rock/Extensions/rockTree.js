@@ -177,6 +177,28 @@
                 // Wrapper function around jQuery.ajax. Appends a handler to databind the
                 // resulting JSON from the server and returns the promise
                 getNodes = function (parentId, parentNode) {
+                    if (self.options.getNodes) {
+                        self.clearError();
+
+                        return self.options
+                            .getNodes(parentId, parentNode, self.options.selectedIds, toExpandParentItems)
+                            .done(data => {
+                                try {
+                                    self.dataBind(data, parentNode);
+                                }
+                                catch (e) {
+                                    dfd.reject(e);
+                                }
+
+                                self.$el.trigger('rockTree:fetchCompleted', [{ success: true, data: data }]);
+                            })
+                            .fail(function (jqXHR, textStatus, errorThrown) {
+                                self.renderError(jqXHR.responseJSON ? jqXHR.responseJSON.ExceptionMessage : errorThrown);
+
+                                self.$el.trigger('rockTree:fetchCompleted', [{ success: false, data: jqXHR }]);
+                            });
+                    }
+
                     var restUrl = self.options.restUrl;
 
                     // If the Tree Node we are loading has an EntityId attribute, use it to identify the associated Data Entity key - otherwise use the Tree Node identifier itself.
@@ -221,7 +243,8 @@
             if (this.options.restUrl) {
 
                 if ((this.options.expandedIds && typeof this.options.expandedIds.length === 'number') ||
-                    (this.options.expandedCategoryIds && typeof this.options.expandedCategoryIds.length === 'number')) {
+                    (this.options.expandedCategoryIds && typeof this.options.expandedCategoryIds.length === 'number') ||
+                    this.options.universalItemPicker) {
                     toExpandParentItems = this.options.expandedIds || [];
                     toExpandCategories = this.options.expandedCategoryIds || [];
                     categoryPrefix = this.options.categoryPrefix;
@@ -252,14 +275,16 @@
                                 // If we find the node, make sure it's expanded, and fetch its children
                                 currentNode.isOpen = true;
 
-                                // Queue up current node
-                                inProgress[currentId] = currentId;
-                                getNodes(currentId, currentNode).done(function () {
-                                    // Dequeue on completion
-                                    delete inProgress[currentId];
-                                    // And notify the Deferred of progress
-                                    dfd.notify();
-                                });
+                                if (!self.options.universalItemPicker || !currentNode.children) {
+                                    // Queue up current node
+                                    inProgress[currentId] = currentId;
+                                    getNodes(currentId, currentNode).done(function () {
+                                        // Dequeue on completion
+                                        delete inProgress[currentId];
+                                        // And notify the Deferred of progress
+                                        dfd.notify();
+                                    });
+                                }
                             }
                         }
 
@@ -496,7 +521,7 @@
                     $li.append('<span class="rocktree-name" title="' + titleText + '"> <span class="rocktree-node-name-text">' + node.name + '</span>' + countInfoHtml + '</span>');
                     var $rockTreeNameNode = $li.find('.rocktree-name');
 
-                    if (!self.options.categorySelection && node.isCategory) {
+                    if ((!self.options.categorySelection && node.isCategory) || node.isSelectionDisabled) {
                         // Remove the hover event for the item since it is a category and we don't want to show it as being selectable.
                         $rockTreeNameNode.addClass('disabled');
                     }
@@ -688,7 +713,7 @@
                     i;
 
                 // Selecting a category when one is not allowed should do nothing.
-                if (!self.options.categorySelection && node.isCategory) {
+                if ((!self.options.categorySelection && node.isCategory) || node.isSelectionDisabled) {
                     return;
                 }
 
@@ -859,6 +884,7 @@
             include: [],
             mapData: _mapArrayDefault
         },
-        onSelected: []
+        onSelected: [],
+        universalItemPicker: false
     };
 }(jQuery));

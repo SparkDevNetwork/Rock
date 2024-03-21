@@ -39,7 +39,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class PageCache : ModelCache<PageCache, Page>
+    public class PageCache : ModelCache<PageCache, Page>, IHasReadOnlyAdditionalSettings
     {
         #region Properties
 
@@ -329,8 +329,16 @@ namespace Rock.Web.Cache
         /// <value>
         /// The additional settings.
         /// </value>
+        [Obsolete( "Use AdditionalSettingsJson instead." )]
+        [RockObsolete( "1.16" )]
         [DataMember]
         public string AdditionalSettings { get; private set; }
+
+
+        /// <inheritdoc/>
+        [RockInternal( "1.16.4" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; private set; }
 
         /// <summary>
         /// Gets or sets the median page load time in seconds. Typically calculated from a set of
@@ -698,6 +706,36 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the interaction intent defined value identifiers.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        [DataMember]
+        public List<int> InteractionIntentValueIds
+        {
+            get
+            {
+                if ( _interactionIntentValueIds == null )
+                {
+                    var intentSettings = this.GetAdditionalSettings<PageService.IntentSettings>();
+
+                    _interactionIntentValueIds = intentSettings.InteractionIntentValueIds ?? new List<int>();
+                }
+
+                return _interactionIntentValueIds;
+            }
+        }
+
+        private List<int> _interactionIntentValueIds;
+
         #endregion
 
         #region Additional Properties 
@@ -778,6 +816,7 @@ namespace Rock.Web.Cache
 #pragma warning disable CS0618
             AdditionalSettings = page.AdditionalSettings;
 #pragma warning restore CS0618
+            AdditionalSettingsJson = page.AdditionalSettingsJson;
             MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
             RateLimitPeriod = page.RateLimitPeriod;
             RateLimitRequestPerPeriod = page.RateLimitRequestPerPeriod;

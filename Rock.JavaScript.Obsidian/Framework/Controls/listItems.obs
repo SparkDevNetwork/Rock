@@ -1,15 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="internalValues"
+    <RockFormField :modelValue="internalValues"
+                   v-bind="fieldProps"
                    formGroupClasses="list-items"
-                   name="value-list">
+                   name="value-list"
+                   :rules="augmentedRules"
+                   watchDeep>
         <template #default="{ uniqueId }">
             <div class="control-wrapper">
                 <span :id="uniqueId">
                     <span class="list-items-rows"
-                     v-dragSource="dragOptions"
-                     v-dragTarget="dragOptions">
+                          v-dragSource="dragOptions"
+                          v-dragTarget="dragOptions">
                         <div v-for="(value, valueIndex) in internalValues" class="controls controls-row form-control-group list-item-row" :key="value.key ?? ''">
                             <div class="input-group">
                                 <span class="reorder-handle input-group-addon">
@@ -35,22 +37,33 @@
 }
 </style>
 <script setup lang="ts">
-    import { ref, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import type { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
+    import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
             type: String,
-            required: false,
             default: "[]"
         },
+
         valuePrompt: {
             type: String,
             default: "Value"
-        }
+        },
+
+        allowHtml: {
+            type: Boolean,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -68,6 +81,8 @@
 
     // convert the string[] of the modelValue to ValueItem[] so it can be edited correctly
     const internalValues = ref(parseModelValue(props.modelValue));
+
+    const fieldProps = useStandardRockFormFieldProps(props);
 
     watch(() => props.modelValue, () => {
         internalValues.value = parseModelValue(props.modelValue);
@@ -88,4 +103,29 @@
     const onRemoveClick = (index: number): void => {
         internalValues.value.splice(index, 1);
     };
+
+    const augmentedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (!props.allowHtml) {
+            rules.push(function (value: unknown) {
+                const isArr = Array.isArray(value);
+                if (isNullOrWhiteSpace(value) || (isArr && value.length === 0)) {
+                    return true;
+                }
+
+                if (isArr) {
+                    for (let i = 0; i < value.length; i++) {
+                        if (containsHtmlTag(value[i])) {
+                            return "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
+                        }
+                    }
+                }
+
+                return true;
+            } as ValidationRule);
+        }
+
+        return rules;
+    });
 </script>

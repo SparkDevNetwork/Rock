@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Engagement.Steps
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class StepTests
+    public class StepTests : DatabaseTestsBase
     {
         private string stepForiegnKey;
 

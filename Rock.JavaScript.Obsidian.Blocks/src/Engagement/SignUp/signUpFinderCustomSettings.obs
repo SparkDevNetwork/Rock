@@ -56,32 +56,43 @@
                         <CheckBoxList v-model="displayAttributeFilters"
                                       label="Display Attribute Filters"
                                       help="The group attributes that should be available for an individual to filter the results by."
-                                      :items="availableDisplayAttributeFilters" />
+                                      :items="availableDisplayAttributeFilters"
+                                      :repeatColumns="2" />
                     </div>
                 </div>
             </Panel>
 
-            <Panel v-if="displayCampusFilterSettings" title="Campus Filters" hasCollapse>
+            <Panel v-if="displayCampusFilterSettings" title="Campus Filters" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <CheckBox v-model="displayCampusFilter"
                                   label="Display Campus Filter"
-                                  help="Determines if the campus filter should be shown." />
+                                  help="Determines if the campus filter should be shown. If there is only one active campus to display then this filter will not be shown, even if enabled." />
+                        <CheckBox v-model="hideCampusesWithNoOpportunities"
+                                  label="Hide Campuses with no Sign-Up Opportunities"
+                                  help='Determines if campuses should be excluded from the filter list if they do not have any sign-up opportunities. This setting will be ignored if "Display Campus Filter" is disabled.' />
                         <CheckBox v-model="enableCampusContext"
                                   label="Enable Campus Context"
-                                  help="If the page has a campus context, its value will be used as a filter." />
+                                  help='If enabled and the page has a campus context, its value will be used as a filter. If "Display Campus Filter" is disabled when this setting is enabled, the "Campus Types", "Campus Statuses" and "Campuses" settings will be ignored. However, if "Display Campus Filter" is enabled and the campus context is one of the allowed campuses, it will be pre-selected in the filter list.' />
                     </div>
                     <div class="col-md-6">
                         <DefinedValuePicker v-model="campusTypes"
                                             label="Campus Types"
-                                            help="The types of campuses to include in the campus list."
+                                            help='The types of campuses to include in the filter list if "Display Campus Filter" is enabled. If the filter is not displayed, these are the types the results should be automatically filtered by.'
                                             :definedTypeGuid="DefinedType.CampusType"
-                                            :multiple="true" />
+                                            :multiple="true"
+                                            @update:modelValue="onCampusFiltersUpdated" />
                         <DefinedValuePicker v-model="campusStatuses"
                                             label="Campus Statuses"
-                                            help="The statuses of the campuses to include in the campus list."
+                                            help='The statuses of campuses to include in the filter list if "Display Campus Filter" is enabled. If the filter is not displayed, these are the statuses the results should be automatically filtered by.'
                                             :definedTypeGuid="DefinedType.CampusStatus"
-                                            :multiple="true" />
+                                            :multiple="true"
+                                            @update:modelValue="onCampusFiltersUpdated" />
+                        <CheckBoxList v-model="campuses"
+                                      label="Selectable Campuses"
+                                      help='The specific campuses to include in the filter list if "Display Campus Filter" is enabled. If the filter is not displayed, these are the campuses the results should be automatically filtered by.'
+                                      :items="availableCampuses"
+                                      :repeatColumns="3" />
                     </div>
                 </div>
             </Panel>
@@ -140,7 +151,7 @@
                 </div>
             </Panel>
 
-            <Panel title="Additional Filters" hasCollapse>
+            <Panel title="Additional Filters" :modelValue="true" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <CheckBox v-model="displayDateRange"
@@ -215,6 +226,7 @@
     import { Guid } from "@Obsidian/Types";
     import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { GetAvailableCampusesBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpFinder/getAvailableCampusesBag";
     import { SignUpFinderCustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpFinder/signUpFinderCustomSettingsBag";
     import { SignUpFinderCustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpFinder/signUpFinderCustomSettingsOptionsBag";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
@@ -282,8 +294,10 @@
     const displayCampusFilterSettings = ref(false);
     const displayCampusFilter = ref(false);
     const enableCampusContext = ref(false);
+    const hideCampusesWithNoOpportunities = ref(false);
     const campusTypes = ref<ListItemBag[]>([]);
     const campusStatuses = ref<ListItemBag[]>([]);
+    const campuses = ref<string[]>([]);
 
     // Selected values - Schedule Filters.
     const displayNamedScheduleFilter = ref(false);
@@ -310,6 +324,7 @@
     // Available options for controls.
     const availableProjectTypeGuids = ref<Guid[]>([]);
     const availableDisplayAttributeFilters = ref<ListItemBag[]>([]);
+    const availableCampuses = ref<ListItemBag[]>([]);
 
     // #endregion
 
@@ -349,8 +364,10 @@
             displayCampusFilterSettings.value = result.data.settings.displayCampusFilterSettings;
             displayCampusFilter.value = result.data.settings.displayCampusFilter;
             enableCampusContext.value = result.data.settings.enableCampusContext;
+            hideCampusesWithNoOpportunities.value = result.data.settings.hideCampusesWithNoOpportunities;
             campusTypes.value = result.data.settings.campusTypes ?? [];
             campusStatuses.value = result.data.settings.campusStatuses ?? [];
+            campuses.value = result.data.settings.campuses ?? [];
 
             // Load values - Schedule Filters.
             displayNamedScheduleFilter.value = result.data.settings.displayNamedScheduleFilter;
@@ -378,6 +395,7 @@
             securityGrant.updateToken(result.data.securityGrantToken);
             availableProjectTypeGuids.value = result.data.options.availableProjectTypeGuids ?? [];
             availableDisplayAttributeFilters.value = result.data.options.availableDisplayAttributeFilters ?? [];
+            availableCampuses.value = result.data.options.availableCampuses ?? [];
         }
         else {
             errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
@@ -398,7 +416,6 @@
         const selectedProjectTypeGuidStrings = projectTypes.value.map(pt => pt.value) ?? [];
 
         const result = await invokeBlockAction<ListItemBag[]>("GetUpdatedDisplayAttributeFilters", { selectedProjectTypeGuidStrings });
-
         if (!result.isSuccess) {
             errorMessage.value = result.errorMessage || "Unknown error when trying to load updated display attribute filters.";
             return;
@@ -409,6 +426,33 @@
         displayAttributeFilters.value = [
             ...displayAttributeFilters.value.filter(
                 (selected: string) => availableDisplayAttributeFilters.value.some(
+                    (available: ListItemBag) => available.value === selected
+                )
+            )
+        ];
+    }
+
+    /**
+     * Gets the updated, available campuses, based on the currently-selected campus type(s) and status(es).
+     */
+    async function onCampusFiltersUpdated(): Promise<void> {
+        // Get the currently-selected campus type and campus status guids and pass them to the server.
+        const bag: GetAvailableCampusesBag = {
+            selectedCampusTypes: campusTypes.value.map(ct => ct.value ?? "") ?? [],
+            selectedCampusStatuses: campusStatuses.value.map(cs => cs.value ?? "") ?? []
+        };
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetUpdatedAvailableCampuses", { bag });
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage || "Unknown error when trying to load updated campuses.";
+            return;
+        }
+
+        // Update the available campuses and remove any currently-selected campuses that are no longer available.
+        availableCampuses.value = result.data ?? [];
+        campuses.value = [
+            ...campuses.value.filter(
+                (selected: string) => availableCampuses.value.some(
                     (available: ListItemBag) => available.value === selected
                 )
             )
@@ -435,8 +479,10 @@
         // Save values - Campus Filters.
         setCustomSettingsBoxValue(box, "displayCampusFilter", displayCampusFilter.value);
         setCustomSettingsBoxValue(box, "enableCampusContext", enableCampusContext.value);
+        setCustomSettingsBoxValue(box, "hideCampusesWithNoOpportunities", hideCampusesWithNoOpportunities.value);
         setCustomSettingsBoxValue(box, "campusTypes", campusTypes.value);
         setCustomSettingsBoxValue(box, "campusStatuses", campusStatuses.value);
+        setCustomSettingsBoxValue(box, "campuses", campuses.value);
 
         // Save values - Schedule Filters.
         setCustomSettingsBoxValue(box, "displayNamedScheduleFilter", displayNamedScheduleFilter.value);

@@ -15,19 +15,22 @@
 // </copyright>
 //
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm.Following
+namespace Rock.Tests.Integration.Modules.Crm.Following
 {
     /// <summary>
     /// Tests for the Following feature.
     /// </summary>
     [TestClass]
-    public class FollowingTests
+    public class FollowingTests : DatabaseTestsBase
     {
         /// <summary>
         /// Verify that Followings added for either a Person entity or Person Alias entity are correctly retrieved.

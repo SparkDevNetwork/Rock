@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Engagement.Connections
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     /// <summary>
     /// Tests for ConnectionRequestService that use the database
     /// </summary>
     [TestClass]
-    public class ConnectionRequestServiceTests
+    public class ConnectionRequestServiceTests : DatabaseTestsBase
     {
         #region Constants
 
@@ -686,8 +689,6 @@ namespace Rock.Tests.Integration.Engagement.Connections
         [ClassInitialize]
         public static void ClassInitialize( TestContext _ )
         {
-            TestDatabaseHelper.ResetDatabase();
-
             DeleteTestData();
             CreateTestData();
         }

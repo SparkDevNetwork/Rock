@@ -10,7 +10,7 @@
             var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/rockfilebrowser";
             iframeUrl += "?rootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.documentFolderRoot);
             iframeUrl += "&browserMode=doc";
-            iframeUrl += "&theme=" + context.options.rockTheme;
+            iframeUrl += "&editorTheme=" + context.options.rockTheme;
             iframeUrl += "&modalMode=1";
             iframeUrl += "&title=Select%20File";
 

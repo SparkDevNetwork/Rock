@@ -115,6 +115,8 @@ export const ServiceJob = {
     DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
     /** The post update data migration job to chop the Email Preference Entry block. */
     DataMigrations162ChopEmailPreferenceEntry: "AE07C80A-80A4-48FD-908C-56DDB1CAA322",
+    /** The post update data migration job to remove legacy preference attributes. */
+    DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
@@ -151,8 +153,12 @@ export const ServiceJob = {
     StepsAutomation: "97858941-0447-49D6-9E35-B03665FEE965",
     /** The media synchronize job. */
     SyncMedia: "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
+    /** The Rock.Jobs.UpdateAnalyticsSourceZipCode job. */
+    UpdateAnalyticsSourceZipcode: "29731D97-699D-4D34-A9F4-50C7C33D5C48",
     /** The Update Persisted Attribute Values job. */
     UpdatePersistedAttributeValue: "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70",
+    /** The Rock.Jobs.UpdatePersistedDatasets job. */
+    UpdatePersistedDatasets: "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
 };

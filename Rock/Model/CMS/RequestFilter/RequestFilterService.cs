@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<PersonalizedEntity> GetPersonalizedEntityRequestFilterQuery( int entityTypeId, int entityId )
         {
-            return ( this.Context as RockContext ).PersonalizedEntities
+            return ( this.Context as RockContext ).Set<PersonalizedEntity>()
                 .Where( a => a.PersonalizationType == PersonalizationType.RequestFilter && a.EntityTypeId == entityTypeId && a.EntityId == entityId );
         }
 
@@ -66,7 +66,7 @@ namespace Rock.Model
                 PersonalizationEntityId = personalizationEntityId
             } ).ToList();
 
-            rockContext.PersonalizedEntities.AddRange( personalizedEntitiesToInsert );
+            rockContext.Set<PersonalizedEntity>().AddRange( personalizedEntitiesToInsert );
             rockContext.SaveChanges();
         }
 

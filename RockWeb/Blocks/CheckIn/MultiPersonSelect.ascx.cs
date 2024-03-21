@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.CheckIn
 
                     if ( _autoCheckin )
                     {
-                        var selectedOptions = person.GetOptions( true, true );
+                        var selectedOptions = person.GetOptions( true, false );
 
                         foreach ( var option in selectedOptions )
                         {
@@ -693,19 +693,19 @@ namespace RockWeb.Blocks.CheckIn
         {
             foreach ( var groupType in person.GroupTypes )
             {
-                if ( !groupType.PreSelected && groupType.AvailableForSchedule?.Any() == true )
+                if ( !groupType.PreSelected && groupType.AnyGroupsWithLocationsAndSchedules )
                 {
                     return true;
                 }
                 foreach ( var group in groupType.Groups )
                 {
-                    if ( !group.PreSelected && group.AvailableForSchedule?.Any() == true )
+                    if ( !group.PreSelected && group.AnyLocationsWithSchedules )
                     {
                         return true;
                     }
                     foreach ( var location in group.Locations )
                     {
-                        if ( !location.PreSelected && location.AvailableForSchedule?.Any() == true )
+                        if ( !location.PreSelected && location.AnySchedules )
                         {
                             return true;
                         }

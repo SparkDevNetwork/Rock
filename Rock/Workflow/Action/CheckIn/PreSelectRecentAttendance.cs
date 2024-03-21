@@ -58,19 +58,19 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             groupType.PreSelected = groupType.LastCheckIn.HasValue
                                 && groupType.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0
-                                && groupType.AvailableForSchedule?.Any() == true;
+                                && groupType.AnyGroupsWithLocationsAndSchedules;
 
                             foreach ( var group in groupType.Groups )
                             {
                                 group.PreSelected = group.LastCheckIn.HasValue
                                     && group.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0
-                                    && group.AvailableForSchedule?.Any() == true;
+                                    && group.AnyLocationsWithSchedules;
 
                                 foreach ( var location in group.Locations )
                                 {
                                     location.PreSelected = location.LastCheckIn.HasValue
                                         && location.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0
-                                        && location.AvailableForSchedule?.Any() == true;
+                                        && location.AnySchedules;
 
                                     foreach ( var schedule in location.Schedules )
                                     {

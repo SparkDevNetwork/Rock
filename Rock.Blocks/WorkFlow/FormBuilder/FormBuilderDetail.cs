@@ -19,11 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 
 using Rock.Attribute;
 using Rock.Blocks.WorkFlow.FormBuilder;
 using Rock.ClientService.Core.DefinedValue;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemKey;
@@ -542,6 +544,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 {
                     var attribute = AttributeCache.Get( formAttribute.AttributeId );
                     var fieldType = FieldTypeCache.Get( attribute.FieldTypeId );
+                    var universalFieldTypeGuidAttribute = fieldType?.Field?.GetType().GetCustomAttribute<UniversalFieldTypeGuidAttribute>();
 
                     if ( fieldType == null || fieldType.Field == null )
                     {
@@ -551,9 +554,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     sectionViewModel.Fields.Add( new FormFieldViewModel
                     {
                         ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Configure, null ),
+                        EditConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
                         DefaultValue = fieldType.Field.GetPublicEditValue( attribute.DefaultValue, attribute.ConfigurationValues ),
                         Description = attribute.Description,
                         FieldTypeGuid = fieldType.Guid,
+                        UniversalFieldTypeGuid = universalFieldTypeGuidAttribute?.Guid,
                         Guid = attribute.Guid,
                         IsHideLabel = formAttribute.HideLabel,
                         IsRequired = attribute.IsRequired,
@@ -749,6 +754,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             foreach ( var field in formFields )
             {
                 var fieldType = FieldTypeCache.Get( field.FieldTypeGuid );
+                var universalFieldTypeGuidAttribute = fieldType?.Field?.GetType().GetCustomAttribute<UniversalFieldTypeGuidAttribute>();
 
                 // If the field type or its C# component could not be found then
                 // we abort with a hard error. We need it to convert data.
@@ -760,7 +766,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 // Convert the attribute configuration into values that can be used
                 // for filtering a value.
                 var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( field.ConfigurationValues );
-                var publicConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, Field.ConfigurationValueUsage.Configure, null );
+                var publicConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, Field.ConfigurationValueUsage.Edit, null );
 
                 /*
                  * Daniel Hazelbaker - 3/17/2022
@@ -783,7 +789,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                         AttributeGuid = field.Guid,
                         ConfigurationValues = publicConfigurationValues,
                         Description = field.Description,
-                        FieldTypeGuid = field.FieldTypeGuid,
+                        FieldTypeGuid = universalFieldTypeGuidAttribute?.Guid ?? field.FieldTypeGuid,
                         Name = field.Name
                     }
                 };

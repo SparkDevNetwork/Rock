@@ -211,6 +211,11 @@ namespace Rock.SystemGuid
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
 
         /// <summary>
+        /// Guid for the types of interaction intent.
+        /// </summary>
+        public const string INTERACTION_INTENT = "F0E9555C-9464-41BD-BED7-96ADB0B79879";
+
+        /// <summary>
         /// Guid for the JSON Web Token Configuration
         /// </summary>
         public const string JWT_CONFIGURATION = "7D848CE3-F039-4CE1-A59B-F0D923F0C1A7";

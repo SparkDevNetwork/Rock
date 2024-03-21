@@ -7,6 +7,7 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -89,7 +90,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return systemPhoneNumberViewBag.value?.name ?? "";
+        return systemPhoneNumberViewBag.value?.name ?? "System Phone Number";
     });
 
     /**

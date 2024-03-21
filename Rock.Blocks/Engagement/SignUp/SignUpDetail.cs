@@ -161,6 +161,12 @@ namespace Rock.Blocks.Engagement.SignUp
                 return;
             }
 
+            if ( GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean() )
+            {
+                this.RequestContext.Response.SetPageTitle( occurrenceData.OpportunityName );
+                this.RequestContext.Response.SetBrowserTitle( occurrenceData.OpportunityName );
+            }
+
             box.SignUpDetailHtml = GetSignUpDetailHtml( occurrenceData );
         }
 
@@ -375,6 +381,20 @@ namespace Rock.Blocks.Engagement.SignUp
                 }
             }
 
+            public string OpportunityName
+            {
+                get
+                {
+                    var configName = this.Config?.ConfigurationName;
+                    if ( configName.IsNotNullOrWhiteSpace() )
+                    {
+                        return configName;
+                    }
+
+                    return this.ProjectName;
+                }
+            }
+
             public string Description
             {
                 get
@@ -503,6 +523,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 return new Project
                 {
                     Name = this.ProjectName,
+                    OpportunityName = this.OpportunityName,
                     Description = this.Description,
                     ScheduleName = this.ScheduleName,
                     FriendlySchedule = this.FriendlySchedule,
@@ -525,6 +546,8 @@ namespace Rock.Blocks.Engagement.SignUp
         private class Project : RockDynamic
         {
             public string Name { get; set; }
+
+            public string OpportunityName { get; set; }
 
             public string Description { get; set; }
 

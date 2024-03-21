@@ -346,7 +346,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     TransactionDateTime = a.TransactionDateTime,
                     TotalAmountBeforeRefund = a.TransactionDetails
-                        .Where( td => td.Account.IsTaxDeductible == true )
                         .Select( d => d.Amount )
                         .DefaultIfEmpty( 0.0M )
                         .Sum(),

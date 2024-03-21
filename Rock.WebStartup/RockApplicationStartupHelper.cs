@@ -518,7 +518,7 @@ namespace Rock.WebStartup
         /// Searches all assemblies for <see cref="IEntitySaveHook"/> subclasses
         /// that need to be registered in the default save hook provider.
         /// </summary>
-        private static void ConfigureEntitySaveHooks()
+        internal static void ConfigureEntitySaveHooks()
         {
             var hookProvider = Rock.Data.DbContext.SharedSaveHookProvider;
             var entityHookType = typeof( EntitySaveHook<> );
@@ -646,7 +646,7 @@ namespace Rock.WebStartup
                 return result;
             }
 
-            var configConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"]?.ConnectionString;
+            var configConnectionString = RockInstanceConfig.Database.ConnectionString;
 
             try
             {

@@ -1702,7 +1702,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // Create the new activity via the Create() method so that lazy
                 // loading will work after it has been saved. This gets used by
                 // the lava template.
-                var requestActivity = rockContext.ConnectionRequestActivities.Create();
+                var requestActivity = rockContext.Set<ConnectionRequestActivity>().Create();
                 requestActivity.ConnectionOpportunityId = request.ConnectionOpportunityId;
                 requestActivity.ConnectionActivityTypeId = activityTypeId;
                 requestActivity.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;

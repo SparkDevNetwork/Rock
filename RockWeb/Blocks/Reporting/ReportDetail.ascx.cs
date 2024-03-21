@@ -439,7 +439,7 @@ namespace RockWeb.Blocks.Reporting
                     if ( ex is RockDataViewFilterExpressionException )
                     {
                         RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                        nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( report.DataView );
+                        nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) report.DataView );
                     }
                     else
                     {

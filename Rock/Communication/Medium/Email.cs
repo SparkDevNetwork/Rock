@@ -85,7 +85,7 @@ You can view an online version of this email here:
         Order = 7 )]
 
     [TextField( "Unsubscribe URL",
-        Description = "Used in the List-Unsubscribe email header when the one-click option is disabled. <span class='tip tip-lava'></span>",
+        Description = "Used in the List-Unsubscribe email header. <span class='tip tip-lava'></span>",
         DefaultValue = "{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}?CommunicationId={{ Communication.Id }}",
         IsRequired = false,
         Key = AttributeKey.UnsubscribeURL,

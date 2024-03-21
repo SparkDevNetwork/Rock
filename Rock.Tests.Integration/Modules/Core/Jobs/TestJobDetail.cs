@@ -1,7 +1,8 @@
 ﻿using System;
+
 using Quartz;
 
-namespace Rock.Tests.Integration.Core.Jobs
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     /// <summary>
     /// Test Job Detail

@@ -474,6 +474,7 @@
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\Login\loginMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\Login\passwordlessLoginStep.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\blockLocation.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Cms\botGuardianLevel.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentChannelDateType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentChannelItemStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentCollectionFilterControl.ts" />
@@ -507,8 +508,10 @@
     <TypeScriptCompile Include="Framework\Enums\Controls\rockCacheabilityType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\slidingDateRangeType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Controls\timeUnitType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Controls\universalItemValuePickerDisplayStyle.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\addressInvalidReason.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\auditType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Core\benchmarkRepititionMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\cameraBarcodeConfiguration.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\changeType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Core\colorDepth.ts" />
@@ -854,6 +857,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendeeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpDetail\signUpDetailInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\getAvailableCampusesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderCustomSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderCustomSettingsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpFinder\signUpFinderInitializationBox.d.ts" />
@@ -1085,7 +1089,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\noteMentionItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\phoneNumberBoxWithSmsControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheabilityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\universalItemSearchPickerItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />
@@ -1157,6 +1163,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\contentChannelItemPickerGetAllForContentChannelItemOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\contentChannelItemPickerGetAllForContentChannelItemResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\contentChannelItemPickerGetContentChannelItemsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\currencyBoxGetCurrencyInfoOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\currencyBoxGetCurrencyInfoResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewPickerGetDataViewsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\componentPickerGetComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetAttributesOptionsBag.d.ts" />
@@ -1229,12 +1237,15 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\stepTypePickerGetStepTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\structuredContentEditorGetConfigurationOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\universalItemSearchPickerOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\universalItemTreePickerOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowActionTypePickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowPickerGetWorkflowsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowPickerGetWorkflowTypeForWorkflowOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\workflowTypePickerGetWorkflowTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesAccessedOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Utilities\updatePersonPreferencesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\currencyInfoBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\debugTiming.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\entityAuditBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\listItemBag.d.ts" />
@@ -1246,6 +1257,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressLogBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressStatusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressUpdateBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\timeIntervalBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\treeItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\validPropertiesBox.d.ts" />
     <TypeScriptCompile Include="System\core.ts" />

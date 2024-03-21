@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Crm.Attendance
+namespace Rock.Tests.Integration.Modules.Crm.Attendance
 {
     /// <summary>
     /// Used for testing anything regarding AttendanceCode.
@@ -19,15 +22,8 @@ namespace Rock.Tests.Integration.Crm.Attendance
     /// </summary>
     /// <seealso cref="System.IDisposable" />
     [TestClass]
-    public class AttendanceCodeTests
+    public class AttendanceCodeTests : DatabaseTestsBase
     {
-        /// <summary>
-        /// Setup test which cleans the AttendanceCode table for these tests.
-        /// </summary>
-        public AttendanceCodeTests()
-        {
-        }
-
         /// <summary>
         /// Runs before any tests in this class are executed.
         /// </summary>
@@ -227,69 +223,27 @@ namespace Rock.Tests.Integration.Crm.Attendance
         /// Requesting more codes than are possible should throw exception...
         /// because there's really nothing else we could do in that situation, right.
         /// </summary>
-        [TestMethod] [Ignore( "Requires a db" )]
-        public async Task RequestingMoreCodesThanPossibleShouldThrowException()
+        [TestMethod]
+        public void RequestingMoreCodesThanPossibleShouldThrowException()
         {
             var codeList = new List<string>();
             AttendanceCode code = null;
 
-            // Generate 99 codes (the maximum number of valid codes).
+            // Generate 100 codes (the maximum number of valid codes).
+            // 100 because "00" is a valid code.
             for ( int i = 0; i < 100; i++ )
             {
                 code = AttendanceCodeService.GetNew( 0, 0, 2, true );
                 codeList.Add( code.Code );
             }
 
-            // Now try to generate one more...
-            try
+            Assert.That.ThrowsException<TimeoutException>( () =>
             {
-                // We'll give this test only 30 seconds to complete, otherwise it's considered a failure.
-                // We'll prevent this call from hanging even if there is an infinite loop in the GetNew(...) call.
-                using ( var source = new CancellationTokenSource() )
-                {
-                    source.CancelAfter( TimeSpan.FromSeconds( 30 ) );
-                    var completionSource = new TaskCompletionSource<object>();
-                    source.Token.Register( () => completionSource.TrySetCanceled() );
+                code = AttendanceCodeService.GetNew( 0, 0, 2, true );
+                codeList.Add( code.Code );
+            } );
 
-                    // call the hundredth time (which typically hangs in v7.4 and earlier)
-                    var task = Task<AttendanceCode>.Factory.StartNew( () => AttendanceCodeService.GetNew( 0, 0, 2, true ), source.Token );
-                    await Task.WhenAny( task, completionSource.Task );
-
-                    // We can't check the task's Result property or else it will block again until there is a result...
-                    // ...but there is Result in the impossible case, so we're going to ignore the result anyhow.
-                    // code = task.Result; // <-- don't do this
-
-                    // If the task is still running, then it's a fail.
-                    if ( task.Status != TaskStatus.RanToCompletion )
-                    {
-                        // ... and I'd like to abort the task, but I've read this is a bad idea in production
-                        // environments so we will call Cancel():
-                        // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/cancel-async-tasks-after-a-period-of-time
-                        source.Cancel();
-
-                        Assert.That.True( task.Status == TaskStatus.Faulted );
-                    }
-                    else
-                    {
-                        // This should never happen. If it does, it means we're not really 
-                        // attempting to generate more codes than are possible -- so it's a Fail
-                        // too.
-                        Assert.That.True( true );
-                    }
-                }
-            }
-            catch ( OperationCanceledException )
-            {
-                // An exception in this case is considered better than hanging (since there is 
-                // no actual solution).
-                Assert.That.True( true );
-            }
-            catch ( TimeoutException )
-            {
-                // An exception in this case is considered better than hanging (since there is 
-                // no actual solution).
-                Assert.That.True( true );
-            }
+            Assert.That.AreEqual( 100, codeList.Count );
         }
 
         [TestMethod]

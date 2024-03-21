@@ -16,21 +16,24 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Tests.Integration;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Performance.Crm.Groups
+namespace Rock.Tests.Performance.Modules.Crm.Groups
 {
     /// <summary>
     /// Tests that verify the operation of Group Requirements.
     /// </summary>
     [TestClass]
-    public class GroupRequirementsPerformanceTests
+    public class GroupRequirementsPerformanceTests : DatabaseTestsBase
     {
         /// <summary>
         /// Verifies the performance of the CalculateGroupRequirements job.

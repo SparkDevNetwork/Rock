@@ -1,14 +1,16 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Attendances
 {
     [TestClass]
-    public class CheckinAttendance
+    public class CheckinAttendance : DatabaseTestsBase
     {
         [TestMethod]
         public void PerformanceTest()

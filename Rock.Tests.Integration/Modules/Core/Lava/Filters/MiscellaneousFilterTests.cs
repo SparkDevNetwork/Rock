@@ -15,21 +15,22 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
-using Rock.Model;
 using Rock.Lava.Fluid;
+using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using Rock.Lava.RockLiquid;
-using System.Linq.Expressions;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
 {
     /// <summary>
     /// Tests for Lava Filters categorized as "Miscellaneous".
@@ -492,6 +493,7 @@ BD8F1DCA377B95D905033E5FFC41CFCF8D4C11AE14A9BC964DFBD4BCEEB618F9795BE7F71295D3B7
         /// Verify the documentation example for this filter.
         /// </summary>
         [TestMethod]
+        [Ignore( "Test needs to add Stepping Stone campus before running." )]
         public void FromCache_DocumentationExample_ReturnsExpectedOutput()
         {
             var template = @"

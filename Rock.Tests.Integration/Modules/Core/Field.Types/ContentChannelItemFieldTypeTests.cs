@@ -15,18 +15,21 @@
 // </copyright>
 
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Field;
 using Rock.Field.Types;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Field.Types
+namespace Rock.Tests.Integration.Modules.Core.Field.Types
 {
     /// <summary>
     /// Test methods for Content Channel Item Field Types.
     /// </summary>
     [TestClass]
-    public class ContentChannelItemFieldTypeTests
+    public class ContentChannelItemFieldTypeTests : DatabaseTestsBase
     {
         /// <summary>
         /// Test whether the configuration values are required in order to get the edit value.

@@ -56,10 +56,10 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+import ListItems from "@Obsidian/Controls/listItems.obs";
 import ListBox from "@Obsidian/Controls/listBox.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
@@ -236,10 +236,22 @@ import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.part
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
 import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmountPickerGallery.partial.obs";
 import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
+import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
-import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
+import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
+import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
+import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
+import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
+import AttributeMatrixEditorGallery from "./ControlGallery/attributeMatrixEditorGallery.partial.obs";
+import BadgeControlGallery from "./ControlGallery/badgeControlGallery.partial.obs";
+import BadgeGallery from "./ControlGallery/badgeGallery.partial.obs";
+import WarningBlockGallery from "./ControlGallery/warningBlockGallery.partial.obs";
+import KeyValueListGallery from "./ControlGallery/keyValueListGallery.partial.obs";
+import YearPickerGallery from "./ControlGallery/yearPickerGallery.partial.obs";
+import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -1032,6 +1044,37 @@ const mediaSelectorGallery = defineComponent({
 });
 
 /** Demonstrates a list box */
+const listItemsGallery = defineComponent({
+    name: "ListItemsGallery",
+    components: {
+        GalleryAndResult,
+        ListItems,
+        TextBox
+    },
+    setup() {
+        return {
+            value: ref([]),
+            valuePrompt: ref(""),
+            importCode: getControlImportPath("listItems"),
+            exampleCode: `<ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{'output:modelValue': value, 'input:items': options}"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />
+
+    <template #settings>
+        <TextBox label="Value Prompt" v-model="valuePrompt" />
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a list box */
 const listBoxGallery = defineComponent({
     name: "ListBoxGallery",
     components: {
@@ -1559,35 +1602,6 @@ const inlineSwitchGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates a currency box */
-const currencyBoxGallery = defineComponent({
-    name: "CurrencyBoxGallery",
-    components: {
-        GalleryAndResult,
-        CurrencyBox
-    },
-    setup() {
-        return {
-            value: ref(1.23),
-            importCode: getControlImportPath("currencyBox"),
-            exampleCode: `<CurrencyBox label="Currency" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CurrencyBox label="Currency" v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
 /** Demonstrates an email box */
 const emailBoxGallery = defineComponent({
     name: "EmailBoxGallery",
@@ -1976,6 +1990,10 @@ const panelGallery = defineComponent({
                     text: "Drawer"
                 },
                 {
+                    value: "sidebar",
+                    text: "Sidebar"
+                },
+                {
                     value: "headerActions",
                     text: "Header Actions"
                 },
@@ -2009,6 +2027,7 @@ const panelGallery = defineComponent({
                 }
             ],
             simulateDrawer: computed((): boolean => simulateValues.value.includes("drawer")),
+            simulateSidebar: computed((): boolean => simulateValues.value.includes("sidebar")),
             simulateHeaderActions: computed((): boolean => simulateValues.value.includes("headerActions")),
             simulateSubheaderLeft: computed((): boolean => simulateValues.value.includes("subheaderLeft")),
             simulateSubheaderRight: computed((): boolean => simulateValues.value.includes("subheaderRight")),
@@ -2021,6 +2040,7 @@ const panelGallery = defineComponent({
             importCode: getSfcControlImportPath("panel"),
             exampleCode: `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">
     <template #helpContent>Help Content</template>
+    <template #sidebar>Sidebar Content</template>
     <template #drawer>Drawer Content</template>
     <template #headerActions>Header Actions</template>
     <template #subheaderLeft>Sub Header Left</template>
@@ -2043,6 +2063,10 @@ const panelGallery = defineComponent({
 
         <template v-if="simulateDrawer" #drawer>
             <div style="text-align: center;">Drawer Content</div>
+        </template>
+
+        <template v-if="simulateSidebar" #sidebar>
+            <div style="text-align: center;"><img src="https://placehold.co/280x158" /></div>
         </template>
 
         <template v-if="simulateHeaderActions" #headerActions>
@@ -2100,7 +2124,7 @@ const panelGallery = defineComponent({
             <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
             <CheckBox formGroupClasses="col-sm-3" v-model="hasZoom" label="Has Zoom" />
         </div>
-        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
+        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
 
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
@@ -4185,11 +4209,11 @@ const lavaCommandPickerGallery = defineComponent({
     },
     setup() {
         return {
-            columnCount: ref(0),
-            displayStyle: ref(PickerDisplayStyle.Auto),
+            columnCount: ref(3),
+            displayStyle: ref(PickerDisplayStyle.List),
             displayStyleItems,
             enhanceForLongLists: ref(false),
-            multiple: ref(false),
+            multiple: ref(true),
             showBlankItem: ref(false),
             value: ref({}),
             importCode: getControlImportPath("lavaCommandPicker"),
@@ -7692,7 +7716,7 @@ const noteTextEditorGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection>
 
-    <NoteTextEditor v-model="value" :avatar="avatar" />
+    <NoteTextEditor v-model="value" :avatar="avatar" label="Leave a Note" />
 
     <template #settings>
     </template>
@@ -8035,6 +8059,7 @@ const controlGalleryComponents: Record<string, Component> = [
     inlineSwitchGallery,
     checkBoxListGallery,
     mediaSelectorGallery,
+    listItemsGallery,
     listBoxGallery,
     phoneNumberBoxGallery,
     dropDownListGallery,
@@ -8046,7 +8071,7 @@ const controlGalleryComponents: Record<string, Component> = [
     socialSecurityNumberBoxGallery,
     timePickerGallery,
     ratingGallery,
-    currencyBoxGallery,
+    CurrencyBoxGallery,
     emailBoxGallery,
     numberUpDownGallery,
     staticFormControlGallery,

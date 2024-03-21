@@ -17,22 +17,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
 
-namespace Rock.Tests.Integration.Crm.Groups
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public partial class GroupMemberTests
+    public partial class GroupMemberTests : DatabaseTestsBase
     {
         [TestMethod]
         [DataRow( ElevatedSecurityLevel.None, AccountProtectionProfile.Low )]
         [DataRow( ElevatedSecurityLevel.High, AccountProtectionProfile.High )]
         [DataRow( ElevatedSecurityLevel.Extreme, AccountProtectionProfile.Extreme )]
-        [Ignore("Fix needed. This test returns an unexpected result. [MP]")]
         public void PostSave_ShouldUpdatePersonAccountProtectionProfileToCorrectValue( int expectedElevatedSecurityLevel, int expectedAccountProtectionProfile )
         {
             var personGuid = Guid.NewGuid();

@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+
 using Rock.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// An implementation of a provider for Lava Template objects that caches teplates in memory.

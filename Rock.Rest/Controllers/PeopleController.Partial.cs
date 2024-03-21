@@ -580,8 +580,8 @@ namespace Rock.Rest.Controllers
         /// </para>
         /// <para>For this reason, this endpoint does not and must not require authentication or authorization other than the encrypted person action identifier.</para>
         /// </remarks>
-        [System.Web.Http.Route( "api/People/OneClickUnsubscribe/{personActionIdentifier}")]
         [HttpPost]
+        [System.Web.Http.Route( "api/People/OneClickUnsubscribe/{personActionIdentifier}")]
         [Rock.SystemGuid.RestActionGuid( "D9B2C190-B881-4691-8941-079F47CE0E2F" )]
         public HttpResponseMessage OneClickUnsubscribe( string personActionIdentifier, string communicationListIdKey = null )
         {
@@ -609,15 +609,26 @@ namespace Rock.Rest.Controllers
             if ( communicationListIdKey.IsNotNullOrWhiteSpace() )
             {
                 // Unsubscribe from email communication list.
-                var communicationListsQuery = new GroupService( rockContext )
+                var communicationListQuery = new GroupService( rockContext )
                     .GetQueryableByKey( communicationListIdKey )
                     .IsCommunicationList();
-                personService.UnsubscribeFromEmail( person, communicationListsQuery );
+
+                // Execute the query once to determine if a valid communication list ID key was provided.
+                if ( !communicationListQuery.Any() )
+                {
+                    return new HttpResponseMessage( HttpStatusCode.BadRequest )
+                    {
+                        Content = new StringContent( "Invalid communication list" )
+                    };
+                }
+
+                personService.UnsubscribeFromEmail( person, communicationListQuery );
             }
             else
             {
                 personService.OneClickUnsubscribeFromEmail( person );
             }
+
             rockContext.SaveChanges();
 
             return new HttpResponseMessage( HttpStatusCode.NoContent );

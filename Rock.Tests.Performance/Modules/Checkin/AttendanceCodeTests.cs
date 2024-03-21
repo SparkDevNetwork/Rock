@@ -16,18 +16,21 @@
 //
 using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Performance.Model
+namespace Rock.Tests.Performance.Modules.Checkin
 {
     /// <summary>
     /// Used for testing anything regarding AttendanceCode.
     /// </summary>
     [TestClass]
-    public class AttendanceCodeTests
+    public class AttendanceCodeTests : DatabaseTestsBase
     {
         #region Setup
 
@@ -96,26 +99,38 @@ namespace Rock.Tests.Performance.Model
             int numericDigits = 4;
             bool isRandom = false;
 
-            var stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            int lastAttendanceCodeId;
 
-            for ( int i = 0; i < interations; i++ )
-            {
-                AttendanceCodeService.GetNew( alphaNumbericDigits, alphaDigits, numericDigits, isRandom );
-            }
-
-            stopWatch.Stop();
-            System.Diagnostics.Trace.Listeners.Add( new System.Diagnostics.TextWriterTraceListener( Console.Out ) );
-            System.Diagnostics.Trace.WriteLine( $"New GetNew Method AlphaNumericDigits: {alphaNumbericDigits}, AlphaDigits: {alphaDigits}, NumericDigits: {numericDigits}, IsRandom: {isRandom}, Number of Codes Generated: {interations}. Total Time: {stopWatch.ElapsedMilliseconds} ms." );
-            ClearAttendanceService();
-            AttendanceCodeService.FlushTodaysCodes();
-        }
-
-        private void ClearAttendanceService()
-        {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.ExecuteSqlCommand( "delete from AttendanceCode" );
+                lastAttendanceCodeId = new AttendanceCodeService( rockContext )
+                    .Queryable()
+                    .Select( ac => ac.Id )
+                    .Max();
+            }
+
+            try
+            {
+                var stopWatch = new System.Diagnostics.Stopwatch();
+                stopWatch.Start();
+
+                for ( int i = 0; i < interations; i++ )
+                {
+                    AttendanceCodeService.GetNew( alphaNumbericDigits, alphaDigits, numericDigits, isRandom );
+                }
+
+                stopWatch.Stop();
+                System.Diagnostics.Trace.Listeners.Add( new System.Diagnostics.TextWriterTraceListener( Console.Out ) );
+                System.Diagnostics.Trace.WriteLine( $"New GetNew Method AlphaNumericDigits: {alphaNumbericDigits}, AlphaDigits: {alphaDigits}, NumericDigits: {numericDigits}, IsRandom: {isRandom}, Number of Codes Generated: {interations}. Total Time: {stopWatch.ElapsedMilliseconds} ms." );
+            }
+            finally
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.ExecuteSqlCommand( $"delete from AttendanceCode where id > {lastAttendanceCodeId}" );
+                }
+
+                AttendanceCodeService.FlushTodaysCodes();
             }
         }
 

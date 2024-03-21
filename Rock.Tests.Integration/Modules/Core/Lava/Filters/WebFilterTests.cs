@@ -19,17 +19,19 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Web;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 using Rock.Utility;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava
 {
     /// <summary>
     /// Tests for Lava Filters related to operations that are only available in the Rock Web application.
@@ -38,7 +40,7 @@ namespace Rock.Tests.Integration.Core.Lava
     public class WebSiteFilterTests : LavaIntegrationTestBase
     {
         [TestInitialize]
-        public void Class_Initialize()
+        public void TestInitialize()
         {
             Rock.Web.RockRouteHandler.ReregisterRoutes();
         }
