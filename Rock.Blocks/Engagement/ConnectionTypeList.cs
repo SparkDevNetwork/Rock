@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.ConnectionTypeList;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Engagement
 {
@@ -101,7 +102,7 @@ namespace Rock.Blocks.Engagement
         {
             var entity = new ConnectionType();
 
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -187,7 +188,30 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( $"{ConnectionType.FriendlyTypeName} not found." );
                 }
 
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                // var connectionOppotunityies = new Service<ConnectionOpportunity>( rockContext ).Queryable().All( a => a.ConnectionTypeId == connectionType.Id );
+                var connectionOpportunities = entity.ConnectionOpportunities.ToList();
+                ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                ConnectionRequestActivityService connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                foreach ( var connectionOpportunity in connectionOpportunities )
+                {
+                    var connectionRequestActivities = new Service<ConnectionRequestActivity>( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id ).ToList();
+                    foreach ( var connectionRequestActivity in connectionRequestActivities )
+                    {
+                        connectionRequestActivityService.Delete( connectionRequestActivity );
+                    }
+
+                    rockContext.SaveChanges();
+                    string errorMessageConnectionOpportunity;
+                    if ( !connectionOpportunityService.CanDelete( connectionOpportunity, out errorMessageConnectionOpportunity ) )
+                    {
+                        return ActionBadRequest( errorMessageConnectionOpportunity );
+                    }
+
+                    connectionOpportunityService.Delete( connectionOpportunity );
+                }
+
+
+                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete ${ConnectionType.FriendlyTypeName}." );
                 }
@@ -197,11 +221,23 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( errorMessage );
                 }
 
+                rockContext.SaveChanges();
+
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
+
+                ConnectionWorkflowService.RemoveCachedTriggers();
+
                 return ActionOk();
             }
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<ConnectionType> GetOrderedListQueryable( IQueryable<ConnectionType> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( nameof( IOrdered.Order ) )
+                .ThenBy( e => e.Name );
         }
 
         #endregion

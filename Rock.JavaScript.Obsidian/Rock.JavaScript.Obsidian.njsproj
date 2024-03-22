@@ -349,6 +349,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\ConnectionTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpDetail\" />
@@ -858,6 +859,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\ConnectionTypeList\connectionTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceDetailInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendeeBag.d.ts" />
