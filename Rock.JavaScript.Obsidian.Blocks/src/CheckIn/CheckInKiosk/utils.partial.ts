@@ -21,17 +21,12 @@ import { KioskType } from "@Obsidian/Enums/Core/kioskType";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
+import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
 
 // #region Temporary Types
 
 export type CampusBag = CheckInItemBag & {
     kiosks?: KioskBag[] | null;
-};
-
-export type KioskBag = CheckInItemBag & {
-    type?: KioskType | null;
-
-    hasCamera: boolean;
 };
 
 export type CheckInKioskOptionsBag = {
@@ -54,16 +49,6 @@ export type SavedConfigurationBag = {
     name?: string | null;
 
     description?: string | null;
-};
-
-export type KioskConfigurationBag = {
-    kiosk?: CheckInItemBag | null;
-
-    template?: ConfigurationTemplateBag | null;
-
-    theme?: ListItemBag | null;
-
-    areas?: CheckInItemBag[] | null;
 };
 
 export enum Screen {
@@ -172,14 +157,14 @@ export async function getCameraItems(): Promise<ListItemBag[]> {
  */
 export function isHtmlCameraAvailable(kiosk: KioskBag | undefined): boolean {
     // Only show HTML5 Camera options if all the following are true
-    // -- Kiosk HasCamera is true
+    // -- Kiosk IsCameraEnabled is true
     // -- Kiosk Type has been set (the HTML5 camera feature won't be enabled until they specifically set the KioskType)
     // -- The KioskType is not an IPad
     // -- The current Theme supports the HTML5 Camera feature
     // -- Not running on the iPad application
 
     return !!kiosk
-        && kiosk.hasCamera
+        && kiosk.isCameraEnabled
         && kiosk.type !== null
         && kiosk.type !== undefined
         && kiosk.type !== KioskType.IPad

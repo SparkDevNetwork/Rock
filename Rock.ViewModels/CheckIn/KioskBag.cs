@@ -41,23 +41,5 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value><c>true</c> if this kiosk supports registration mode; otherwise, <c>false</c>.</value>
         public bool IsRegistrationModeEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating where printing will occur.
-        /// </summary>
-        /// <value>The destination of label printing.</value>
-        public PrintTo PrintTo { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating where to print labels from.
-        /// </summary>
-        /// <value>The source that will perform the label printing.</value>
-        public PrintFrom PrintFrom { get; set; }
-
-        /// <summary>
-        /// Gets or sets the printer device.
-        /// </summary>
-        /// <value>The printer device.</value>
-        public CheckInItemBag Printer { get; set; }
     }
 }

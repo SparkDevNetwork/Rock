@@ -128,12 +128,14 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CheckInKioskOptionsBag, getCameraItems, getCurrentPosition, isHtmlCameraAvailable, KioskBag, KioskConfigurationBag, SavedConfigurationBag } from "./utils.partial";
+    import { CheckInKioskOptionsBag, getCameraItems, getCurrentPosition, isHtmlCameraAvailable, SavedConfigurationBag } from "./utils.partial";
     import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
+    import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { onConfigurationValuesChanged, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
 
@@ -440,8 +442,7 @@
      * Handles the click event for the Next button.
      */
     function onNextClick(): void {
-        const kiosk = kioskItems.value
-            .find(a => areEqual(a.value, kioskGuid.value));
+        const kiosk = selectedKiosk.value;
         const selectedTheme = props.blockConfiguration.themes
             ?.find(a => a.value === theme.value);
         const template = props.blockConfiguration.templates
@@ -458,10 +459,7 @@
         }
 
         const configuration: KioskConfigurationBag = {
-            kiosk: {
-                guid: kiosk.value,
-                name: kiosk.text
-            },
+            kiosk: kiosk,
             theme: toRaw(selectedTheme),
             template: toRaw(template),
             areas: areas

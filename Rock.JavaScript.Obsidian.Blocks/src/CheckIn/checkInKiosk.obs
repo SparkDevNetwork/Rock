@@ -336,12 +336,14 @@
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref } from "vue";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
-    import { CheckInKioskOptionsBag, KioskConfigurationBag, Screen } from "./CheckInKiosk/utils.partial";
+    import { CheckInKioskOptionsBag, Screen } from "./CheckInKiosk/utils.partial";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { AbilityLevelDeterminationMode } from "@Obsidian/Enums/CheckIn/abilityLevelDeterminationMode";
     import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
     import { PhoneSearchMode } from "@Obsidian/Enums/CheckIn/phoneSearchMode";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
+    import { KioskType } from "@Obsidian/Enums/Core/kioskType";
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
 
@@ -389,8 +391,9 @@
     }
 
     if (currentScreen.value !== Screen.Configuration) {
+        // Temporary to allow for faster testing.
         configuration.value = {
-            "kiosk": { "guid": "61111232-01d7-427d-9c1f-d45cf4d3f7cb", "name": "Check-in Kiosk - 001 - Standard" },
+            "kiosk": { "guid": "61111232-01d7-427d-9c1f-d45cf4d3f7cb", "name": "Check-in Kiosk - 001 - Standard", "type": KioskType.Browser, "isCameraEnabled": true, "isRegistrationModeEnabled": false },
             "theme": { "value": "checkinaero", "text": "Checkin Aero", "category": null, "disabled": null },
             "template": {
                 "guid": "fedd389a-616f-4a53-906c-63d8255631c5",

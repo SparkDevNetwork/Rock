@@ -168,24 +168,8 @@ namespace Rock.Blocks.CheckIn
                 Name = kiosk.Name,
                 Type = kiosk.KioskType,
                 IsCameraEnabled = kiosk.HasCamera,
-                PrintFrom = kiosk.PrintFrom,
-                PrintTo = kiosk.PrintToOverride,
                 IsRegistrationModeEnabled = kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean()
             };
-
-            if ( kiosk.PrinterDeviceId.HasValue )
-            {
-                var printer = DeviceCache.Get( kiosk.PrinterDeviceId.Value, RockContext );
-
-                if ( printer != null )
-                {
-                    bag.Printer = new CheckInItemBag
-                    {
-                        Guid = printer.Guid,
-                        Name = printer.Name
-                    };
-                }
-            }
 
             return bag;
         }
