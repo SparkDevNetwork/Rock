@@ -476,6 +476,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
+            return; /// TODO remove after testing
             using ( var rockContext = new RockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );

@@ -286,6 +286,33 @@ namespace Rock.Blocks.Security
         Category = AttributeCategory.Captions,
         Order = 23 )]
 
+    [TextField(
+        "Random Text ",
+        Key = "Somerandomtext",
+        Description = "The text to show on the New Account button.",
+        IsPassword = true,
+        IsRequired = false,
+        DefaultValue = "Register",
+        Order = 25 )]
+
+    [TextField(
+        "Random Text ",
+        Key = "AnotherRandomText",
+        Description = "The text to show on the New Account button.",
+        IsPassword = false,
+        IsRequired = false,
+        DefaultValue = "Register",
+        Order = 28 )]
+
+    [TextField(
+        "Test Attribute",
+        Key = "TestAttribute",
+        Description = "The label to use for the username field.  For example, this allows an organization to customize it to 'Username / Email' in cases where both are supported.",
+        IsRequired = false,
+        IsPassword = false,
+        DefaultValue = "The Default Value",
+        Order = 19 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "D9482EF9-F774-4E37-AC84-8B340CBCA364" )]
