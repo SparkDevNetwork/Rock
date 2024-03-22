@@ -298,15 +298,6 @@ namespace Rock.Blocks.Security
         DefaultBooleanValue = false,
         Order = 30 )]
 
-    [TextField(
-        "Test Attribute",
-        Key = "TestAttribute",
-        Description = "The label to use for the username field.  For example, this allows an organization to customize it to 'Username / Email' in cases where both are supported.",
-        IsRequired = false,
-        IsPassword = false,
-        DefaultValue = "The Default Value",
-        Order = 35 )]
-
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "75704274-FDB8-4A0C-AE0E-510F1977BE0A" )]
