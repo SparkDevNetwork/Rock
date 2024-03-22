@@ -194,6 +194,9 @@ registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 import { SingleSelectFieldType } from "./singleSelectField.partial";
 registerFieldType(FieldTypeGuids.SingleSelect, new SingleSelectFieldType());
 
+import { SecurityRoleFieldType } from "./securityRoleField.partial";
+registerFieldType(FieldTypeGuids.SecurityRole, new SecurityRoleFieldType());
+
 import { StructureContentEditorFieldType } from "./structureContentEditorField.partial";
 registerFieldType(FieldTypeGuids.StructureContentEditor, new StructureContentEditorFieldType());
 
