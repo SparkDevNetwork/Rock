@@ -16,8 +16,6 @@
 //
 using System;
 
-using dotless.Core.Stylizers;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
