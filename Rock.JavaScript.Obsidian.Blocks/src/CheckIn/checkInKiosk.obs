@@ -10,9 +10,9 @@
         <section class="page-body">
             <ContentTransition>
                 <ConfigurationScreen v-if="currentScreen === Screen.Configuration"
-                                            :blockConfiguration="blockConfiguration"
-                                            @updateActions="onUpdateActions($event, Screen.Configuration)"
-                                            @configured="onConfigured" />
+                                     :blockConfiguration="blockConfiguration"
+                                     @updateActions="onUpdateActions($event, Screen.Configuration)"
+                                     @configured="onConfigured" />
 
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome"
                                @start="onWelcomeStart">
@@ -81,6 +81,13 @@
     display: flex;
     flex-direction: column;
     gap: var(--item-spacing);
+}
+
+.check-in-page .page-body .notice {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /*
@@ -192,6 +199,7 @@
 .check-in-page .configuration-screen {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .check-in-page .configuration-screen .saved-configuration-button {
@@ -358,7 +366,6 @@
     }
 
     function onConfigured(value: KioskConfigurationBag): void {
-        console.log(JSON.stringify(value));
         configuration.value = value;
         navigateToScreen(Screen.Welcome);
     }

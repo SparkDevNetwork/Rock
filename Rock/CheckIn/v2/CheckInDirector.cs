@@ -75,28 +75,8 @@ namespace Rock.CheckIn.v2
         {
             return GetConfigurationTemplates()
                 .OrderBy( t => t.Name )
-                .Select( t => new
-                {
-                    GroupType = t,
-                    Configuration = t.GetCheckInConfiguration( RockContext )
-                } )
-                .Where( t => t.Configuration != null )
-                .Select( t => new ConfigurationTemplateBag
-                {
-                    Guid = t.GroupType.Guid,
-                    Name = t.GroupType.Name,
-                    IconCssClass = t.GroupType.IconCssClass,
-                    AbilityLevelDetermination = t.Configuration.AbilityLevelDetermination,
-                    KioskCheckInType = t.Configuration.KioskCheckInType,
-                    FamilySearchType = t.Configuration.FamilySearchType,
-                    IsLocationCountDisplayed = t.Configuration.IsLocationCountDisplayed,
-                    IsOverrideAvailable = t.Configuration.IsOverrideAvailable,
-                    IsPhotoHidden = t.Configuration.IsPhotoHidden,
-                    IsSupervisorEnabled = t.Configuration.IsSupervisorEnabled,
-                    MaximumPhoneNumberLength = t.Configuration.MaximumPhoneNumberLength,
-                    MinimumPhoneNumberLength = t.Configuration.MinimumPhoneNumberLength,
-                    PhoneSearchType = t.Configuration.PhoneSearchType
-                } )
+                .Select( GetConfigurationTemplateBag )
+                .Where( c => c != null )
                 .ToList();
         }
 
@@ -355,6 +335,38 @@ namespace Rock.CheckIn.v2
 
             return GroupTypeCache.All( RockContext )
                 .Where( t => t.GroupTypePurposeValueId.HasValue && t.GroupTypePurposeValueId == checkinTemplateTypeId.Value );
+        }
+
+        /// <summary>
+        /// Gets the configuration template bag from the group type.
+        /// </summary>
+        /// <param name="groupType">The group type that represents the configuration template.</param>
+        /// <returns>An instance of <see cref="ConfigurationTemplateBag"/> if <paramref name="groupType"/> was a check-in template; otherwise <c>null</c>.</returns>
+        public ConfigurationTemplateBag GetConfigurationTemplateBag( GroupTypeCache groupType )
+        {
+            var configuration = groupType.GetCheckInConfiguration( RockContext );
+
+            if ( configuration == null )
+            {
+                return null;
+            }
+
+            return new ConfigurationTemplateBag
+            {
+                Guid = groupType.Guid,
+                Name = groupType.Name,
+                IconCssClass = groupType.IconCssClass,
+                AbilityLevelDetermination = configuration.AbilityLevelDetermination,
+                KioskCheckInType = configuration.KioskCheckInType,
+                FamilySearchType = configuration.FamilySearchType,
+                IsLocationCountDisplayed = configuration.IsLocationCountDisplayed,
+                IsOverrideAvailable = configuration.IsOverrideAvailable,
+                IsPhotoHidden = configuration.IsPhotoHidden,
+                IsSupervisorEnabled = configuration.IsSupervisorEnabled,
+                MaximumPhoneNumberLength = configuration.MaximumPhoneNumberLength,
+                MinimumPhoneNumberLength = configuration.MinimumPhoneNumberLength,
+                PhoneSearchType = configuration.PhoneSearchType
+            };
         }
 
         #endregion

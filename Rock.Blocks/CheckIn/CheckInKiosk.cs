@@ -47,11 +47,37 @@ namespace Rock.Blocks.CheckIn
     #region Block Attributes
 
     [BooleanField(
+        "Allow Manual Setup",
+        Key = AttributeKey.AllowManualSetup,
+        Description = "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.",
+        Category = AttributeCategory.Configuration,
+        DefaultBooleanValue = true,
+        Order = 0 )]
+
+    [BooleanField(
+        "Enable Location Sharing",
+        Key = AttributeKey.EnableLocationSharing,
+        Description = "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.",
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.Configuration,
+        Order = 1 )]
+
+    [IntegerField(
+        "Time to Cache Kiosk GeoLocation",
+        Key = AttributeKey.TimeToCacheKioskLocation,
+        Description = "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.",
+        IsRequired = false,
+        DefaultIntegerValue = 20,
+        Category = AttributeCategory.Configuration,
+        Order = 2 )]
+
+    [BooleanField(
         "Enable Kiosk Match By Name",
         Key = AttributeKey.EnableKioskMatchByName,
-        Description = "Enable a kiosk match by computer name by doing reverseIP lookup to get computer name based on IP address",
+        Description = "Enable a kiosk match by computer name by doing reverse IP lookup to get computer name based on IP address",
         DefaultBooleanValue = false,
-        Order = 8 )]
+        Category = AttributeCategory.Configuration,
+        Order = 3 )]
 
     #endregion
 
@@ -63,8 +89,27 @@ namespace Rock.Blocks.CheckIn
 
         private static class AttributeKey
         {
+            public const string AllowManualSetup = "AllowManualSetup";
+            public const string EnableLocationSharing = "EnableLocationSharing";
+            public const string TimeToCacheKioskLocation = "TimeToCacheKioskLocation";
             public const string EnableKioskMatchByName = "EnableKioskMatchByName";
         }
+
+        private static class AttributeCategory
+        {
+            public const string Configuration = "Configuration";
+        }
+
+        //private static class PageParameterKey
+        //{
+        //    public const string KioskId = "KioskId";
+        //    public const string CheckinConfigId = "CheckinConfigId";
+        //    public const string GroupTypeIds = "GroupTypeIds";
+        //    public const string GroupIds = "GroupIds";
+        //    public const string FamilyId = "FamilyId";
+        //    public const string CameraIndex = "CameraIndex";
+        //    public const string Theme = "Theme";
+        //}
 
         #endregion
 
@@ -95,16 +140,54 @@ namespace Rock.Blocks.CheckIn
         /// <inheritdoc/>
         public override async Task<object> GetObsidianBlockInitializationAsync()
         {
-            var config = await GetConfigurationByIpOrNameAsync();
             var director = new CheckInDirector( RockContext );
+            var config = await GetConfigurationByIpOrNameAsync( director );
 
             return new
             {
+                IsManualSetupAllowed = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean(),
+                IsConfigureByLocationEnabled = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean(),
+                GeoLocationCacheInMinutes = GetAttributeValue( AttributeKey.TimeToCacheKioskLocation ).AsInteger(),
                 Campuses = GetCampusesAndKiosks(),
                 DefaultTheme = PageCache.Layout?.Site?.Theme,
                 Templates = director.GetConfigurationTemplateBags(),
                 Themes = GetThemes()
             };
+        }
+
+        /// <summary>
+        /// Gets the kiosk bag that represents the specified kiosk device.
+        /// </summary>
+        /// <param name="kiosk">The kiosk device.</param>
+        /// <returns>A new instance of <see cref="KioskBag"/>.</returns>
+        private KioskBag GetKioskBag( DeviceCache kiosk )
+        {
+            var bag = new KioskBag
+            {
+                Guid = kiosk.Guid,
+                Name = kiosk.Name,
+                Type = kiosk.KioskType,
+                IsCameraEnabled = kiosk.HasCamera,
+                PrintFrom = kiosk.PrintFrom,
+                PrintTo = kiosk.PrintToOverride,
+                IsRegistrationModeEnabled = kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean()
+            };
+
+            if ( kiosk.PrinterDeviceId.HasValue )
+            {
+                var printer = DeviceCache.Get( kiosk.PrinterDeviceId.Value, RockContext );
+
+                if ( printer != null )
+                {
+                    bag.Printer = new CheckInItemBag
+                    {
+                        Guid = printer.Guid,
+                        Name = printer.Name
+                    };
+                }
+            }
+
+            return bag;
         }
 
         /// <summary>
@@ -145,12 +228,7 @@ namespace Rock.Blocks.CheckIn
                 {
                     Guid = Guid.Empty,
                     Name = string.Empty,
-                    Kiosks = kiosks[0].Select( k => new CheckInItemBag
-                    {
-                        Guid = k.Kiosk.Guid,
-                        Name = k.Kiosk.Name
-                    } )
-                    .ToList()
+                    Kiosks = kiosks[0].Select( k => GetKioskBag( k.Kiosk ) ).ToList()
                 } );
             }
 
@@ -162,12 +240,8 @@ namespace Rock.Blocks.CheckIn
                 {
                     Guid = campus.Guid,
                     Name = campus.Name,
-                    Kiosks = campusKiosks?.Select( k => new CheckInItemBag
-                    {
-                        Guid = k.Kiosk.Guid,
-                        Name = k.Kiosk.Name
-                    } )
-                    .ToList() ?? new List<CheckInItemBag>()
+                    Kiosks = campusKiosks?.Select( k => GetKioskBag( k.Kiosk ) ).ToList()
+                        ?? new List<KioskBag>()
                 } );
             }
 
@@ -216,9 +290,9 @@ namespace Rock.Blocks.CheckIn
         /// <summary>
         /// Attempts to match a known kiosk based on the IP address of the client.
         /// </summary>
-        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="director">The check-in director for this operation.</param>
         /// <returns>The configuration object or <c>null</c> if it could not be determined.</returns>
-        private async Task<object> GetConfigurationByIpOrNameAsync()
+        private async Task<object> GetConfigurationByIpOrNameAsync( CheckInDirector director )
         {
             var kiosk = await GetKioskFromIpOrNameAsync();
 
@@ -227,32 +301,17 @@ namespace Rock.Blocks.CheckIn
                 return null;
             }
 
-            var director = new CheckInDirector( RockContext );
-            var areas = director.GetKioskAreas( kiosk );
-            var template = GetPrimaryTemplate( areas );
-
-            if ( template == null )
-            {
-                return null;
-            }
-
-            var config = new
-            {
-                Kiosk = kiosk.ToListItemBag(),
-                Areas = areas.ToListItemBagList(),
-                Template = template.ToListItemBag()
-            };
-
-            return config;
+            return GetKioskConfiguration( director, kiosk );
         }
 
         /// <summary>
         /// Gets the primary configuration template to use from the list
         /// of areas.
         /// </summary>
+        /// <param name="director">The check-in director for this operation.</param>
         /// <param name="areas">The areas that will be used to determine the configuration template.</param>
         /// <returns>An instance of <see cref="GroupTypeCache"/> or <c>null</c>.</returns>
-        private GroupTypeCache GetPrimaryTemplate( ICollection<GroupTypeCache> areas )
+        private ConfigurationTemplateBag GetPrimaryTemplate( CheckInDirector director, ICollection<GroupTypeCache> areas )
         {
             foreach ( var groupType in areas )
             {
@@ -260,22 +319,101 @@ namespace Rock.Blocks.CheckIn
 
                 if ( template != null )
                 {
-                    return template;
+                    return director.GetConfigurationTemplateBag( template );
                 }
             }
 
             return null;
         }
 
+        /// <summary>
+        /// Gets the automatic configuration for the specified kiosk.
+        /// </summary>
+        /// <param name="director">The check-in director for this operation.</param>
+        /// <param name="kiosk">The kiosk whose configuration should be retrieved.</param>
+        /// <returns>An instance of <see cref="KioskConfigurationBag"/> if the kiosk was valid; otherwise <c>null</c>.</returns>
+        private KioskConfigurationBag GetKioskConfiguration( CheckInDirector director, DeviceCache kiosk )
+        {
+            var areas = director.GetKioskAreas( kiosk );
+            var template = GetPrimaryTemplate( director, areas );
+
+            if ( template == null )
+            {
+                return null;
+            }
+
+            var config = new KioskConfigurationBag
+            {
+                Kiosk = GetKioskBag( kiosk ),
+                Areas = areas.Select( a => new CheckInItemBag
+                {
+                    Guid = a.Guid,
+                    Name = a.Name
+                } ).ToList(),
+                Template = template,
+                Theme = new ListItemBag
+                {
+                    Value = PageCache.Layout.Site.Theme.ToLower(),
+                    Text = PageCache.Layout.Site.Theme.SplitCase()
+                }
+            };
+
+            return config;
+        }
+
+        /// <summary>
+        /// Returns a kiosk based on finding a geo location match for the
+        /// given latitude and longitude.
+        /// </summary>
+        /// <param name="latitude">The latitude of the physical device.</param>
+        /// <param name="longitude">The longitude of the physical device.</param>
+        /// <returns></returns>
+        public DeviceCache GetCurrentKioskByGeoFencing( double latitude, double longitude )
+        {
+            var checkInDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+
+            return DeviceCache.GetByGeocode( latitude, longitude, checkInDeviceTypeId, RockContext );
+        }
+
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// A request from the client to determine the kiosk configuration from
+        /// the geo-location specified by the latitude and longitude.
+        /// </summary>
+        /// <param name="latitude">The latitude of the physical device that wants to be a kiosk.</param>
+        /// <param name="longitude">The longitude of the physical device that wants to be a kiosk.</param>
+        /// <returns>The result of the operation.</returns>
+        [BlockAction]
+        public BlockActionResult GetConfigurationByLocation( double latitude, double longitude )
+        {
+            var kiosk = GetCurrentKioskByGeoFencing( latitude, longitude );
+
+            if ( kiosk == null )
+            {
+                return ActionNotFound( GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean()
+                    ? "We could not automatically determine your configuration."
+                    : "You are too far. Try again later." );
+            }
+
+            var director = new CheckInDirector( RockContext );
+            var config = GetKioskConfiguration( director, kiosk );
+
+            if ( config == null )
+            {
+                return ActionNotFound( "Invalid kiosk configuration." );
+            }
+
+            return ActionOk( config );
+        }
 
         #endregion
 
         private class CampusBag : CheckInItemBag
         {
-            public List<CheckInItemBag> Kiosks { get; set; }
+            public List<KioskBag> Kiosks { get; set; }
         }
     }
 }

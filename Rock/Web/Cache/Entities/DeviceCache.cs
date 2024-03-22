@@ -157,6 +157,13 @@ namespace Rock.Web.Cache
         public List<int> LocationIds { get; private set; }
 
         /// <summary>
+        /// Gets the location where this device is physically located. This
+        /// represents a geo-location, not a named location.
+        /// </summary>
+        /// <value>The location where this device is physically located.</value>
+        public NamedLocationCache Location => LocationId.HasValue ? NamedLocationCache.Get( LocationId.Value ) : null;
+
+        /// <summary>
         /// Gets the set of cached locations that this device uses.
         /// </summary>
         /// <value>The cached locations.</value>
@@ -246,6 +253,75 @@ namespace Rock.Web.Cache
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Finds the first matching device for the given lat/long coordinates.
+        /// The given coordinates must intersect one of the stored GeoFence
+        /// values to be a match. Use <paramref name="deviceTypeValueId"/> to
+        /// constrain matching to only certain device types.
+        /// </summary>
+        /// <param name="latitude">Latitude of the physical device.</param>
+        /// <param name="longitude">Longitude of the physical device.</param>
+        /// <param name="deviceTypeValueId">The type of device to filter for.</param>
+        /// <param name="rockContext">The database context to use if items are not in cache.</param>
+        /// <returns>A single matching <see cref="DeviceCache"/> or <c>null</c> if nothing was matched.</returns>
+        internal static DeviceCache GetByGeocode( double latitude, double longitude, int deviceTypeValueId, RockContext rockContext = null )
+        {
+            /* 2020-06-08 MDP
+              If more than one device is found, we'll have to pick one somehow
+              since there doesn't seem to be a way to determine which geofence to choose
+              if the geofences are overlapping at the specific latitude/longitude.
+
+              So if there this problem due to overlapping geofences, that would be a configuration issue.
+
+              We'll just deal with it by choosing the one with the lowest Id.
+           */
+
+            if ( rockContext != null )
+            {
+                return GetDevicesByGeocode( latitude, longitude, deviceTypeValueId, rockContext )
+                    .OrderBy( d => d.Id )
+                    .FirstOrDefault();
+            }
+            else
+            {
+                using ( var newRockContext = new RockContext() )
+                {
+                    return GetDevicesByGeocode( latitude, longitude, deviceTypeValueId, newRockContext )
+                        .OrderBy( d => d.Id )
+                        .FirstOrDefault();
+                }
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Returns a queryable of matching devices for the given latitude and
+        /// longitude coordinates. The given coordinates must intersect one of
+        /// the stored GeoFence values to be a match. Use <paramref name="deviceTypeValueId"/>
+        /// to constrain matching to only certain device types.
+        /// </para>
+        /// <para>
+        /// If more than one device is found, the caller will have to pick which one they want
+        /// since there doesn't seem to be a way to determine which geofence to choose
+        /// if the geofences are overlapping at the specific latitude/longitude
+        /// </para>
+        /// </summary>
+        /// <param name="latitude">Latitude of the physical device.</param>
+        /// <param name="longitude">Longitude of the physical device.</param>
+        /// <param name="deviceTypeValueId">The type of device to filter for.</param>
+        /// <param name="rockContext">The database context to use if items are not in cache.</param>
+        /// <returns>An enumeration of the matching <see cref="DeviceCache"/> objects.</returns>
+        private static IEnumerable<DeviceCache> GetDevicesByGeocode( double latitude, double longitude, int deviceTypeValueId, RockContext rockContext )
+        {
+            var geoLocation = Model.Location.GetGeoPoint( latitude, longitude );
+
+            return All( rockContext )
+                .Where( d =>
+                    d.DeviceTypeValueId == deviceTypeValueId
+                    && d.Location?.GeoFence != null
+                    && geoLocation.Intersects( d.Location.GeoFence ) );
         }
 
         /// <summary>

@@ -16,10 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Web.Cache
 {
@@ -95,6 +97,12 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.Location.PrinterDeviceId "/>
         [DataMember]
         public int? PrinterDeviceId { get; internal set; }
+
+        /// <inheritdoc cref="Rock.Model.Location.GeoPoint "/>
+        public DbGeography GeoPoint { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.Location.GeoFence "/>
+        public DbGeography GeoFence { get; private set; }
 
         /// <inheritdoc cref="Rock.Model.Location.ParentLocation" />
         public NamedLocationCache ParentLocation => this.ParentLocationId.HasValue ? NamedLocationCache.Get( ParentLocationId.Value ) : null;
@@ -261,6 +269,8 @@ namespace Rock.Web.Cache
             this.FirmRoomThreshold = location.FirmRoomThreshold;
             this.SoftRoomThreshold = location.SoftRoomThreshold;
             this.PrinterDeviceId = location.PrinterDeviceId;
+            this.GeoPoint = location.GeoPoint;
+            this.GeoFence = location.GeoFence;
             ChildLocationIds = location.ChildLocations.Select( l => l.Id ).ToList();
         }
 

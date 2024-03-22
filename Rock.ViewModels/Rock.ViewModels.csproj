@@ -404,6 +404,8 @@
     <Compile Include="CheckIn\AttendanceBag.cs" />
     <Compile Include="CheckIn\GroupOpportunityBag.cs" />
     <Compile Include="CheckIn\CheckInItemBag.cs" />
+    <Compile Include="CheckIn\KioskBag.cs" />
+    <Compile Include="CheckIn\KioskConfigurationBag.cs" />
     <Compile Include="CheckIn\LocationOpportunityBag.cs" />
     <Compile Include="CheckIn\ConfigurationTemplateBag.cs" />
     <Compile Include="CheckIn\PersonBag.cs" />
