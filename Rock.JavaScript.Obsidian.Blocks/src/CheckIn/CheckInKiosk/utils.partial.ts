@@ -22,6 +22,7 @@ import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
 import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
+import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
 
 // #region Temporary Types
 
@@ -30,6 +31,8 @@ export type CampusBag = CheckInItemBag & {
 };
 
 export type CheckInKioskOptionsBag = {
+    kioskConfiguration?: KioskConfigurationBag | null;
+
     isManualSetupAllowed: boolean;
 
     isConfigureByLocationEnabled: boolean;
@@ -38,7 +41,7 @@ export type CheckInKioskOptionsBag = {
 
     campuses?: CampusBag[] | null;
 
-    defaultTheme?: string | null;
+    currentTheme?: string | null;
 
     templates?: ConfigurationTemplateBag[] | null;
 

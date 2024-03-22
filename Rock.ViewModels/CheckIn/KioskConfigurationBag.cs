@@ -39,12 +39,6 @@ namespace Rock.ViewModels.CheckIn
         public ConfigurationTemplateBag Template { get; set; }
 
         /// <summary>
-        /// Gets or sets the theme.
-        /// </summary>
-        /// <value>The theme.</value>
-        public ListItemBag Theme { get; set; }
-
-        /// <summary>
         /// Gets or sets the enabled areas.
         /// </summary>
         /// <value>The enabled areas.</value>

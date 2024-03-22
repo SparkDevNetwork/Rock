@@ -460,7 +460,8 @@
 
         const configuration: KioskConfigurationBag = {
             kiosk: kiosk,
-            theme: toRaw(selectedTheme),
+            // TODO: Need to redirect when the theme changes.
+            //theme: toRaw(selectedTheme),
             template: toRaw(template),
             areas: areas
         };

@@ -39,7 +39,4 @@ export type KioskConfigurationBag = {
 
     /** Gets or sets the check-in template. */
     template?: ConfigurationTemplateBag | null;
-
-    /** Gets or sets the theme. */
-    theme?: ListItemBag | null;
 };

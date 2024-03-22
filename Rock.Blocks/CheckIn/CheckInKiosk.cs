@@ -100,16 +100,16 @@ namespace Rock.Blocks.CheckIn
             public const string Configuration = "Configuration";
         }
 
-        //private static class PageParameterKey
-        //{
-        //    public const string KioskId = "KioskId";
-        //    public const string CheckinConfigId = "CheckinConfigId";
-        //    public const string GroupTypeIds = "GroupTypeIds";
-        //    public const string GroupIds = "GroupIds";
-        //    public const string FamilyId = "FamilyId";
-        //    public const string CameraIndex = "CameraIndex";
-        //    public const string Theme = "Theme";
-        //}
+        private static class PageParameterKey
+        {
+            public const string KioskId = "KioskId";
+            public const string CheckinConfigId = "CheckinConfigId";
+            public const string GroupTypeIds = "GroupTypeIds";
+            public const string GroupIds = "GroupIds";
+            //public const string FamilyId = "FamilyId";
+            //public const string CameraIndex = "CameraIndex";
+            //public const string Theme = "Theme";
+        }
 
         #endregion
 
@@ -141,15 +141,18 @@ namespace Rock.Blocks.CheckIn
         public override async Task<object> GetObsidianBlockInitializationAsync()
         {
             var director = new CheckInDirector( RockContext );
-            var config = await GetConfigurationByIpOrNameAsync( director );
+
+            var kioskConfiguration = await GetConfigurationByUrlAsync( director )
+                ?? await GetConfigurationByIpOrNameAsync( director );
 
             return new
             {
+                KioskConfiguration = kioskConfiguration,
                 IsManualSetupAllowed = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean(),
                 IsConfigureByLocationEnabled = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean(),
                 GeoLocationCacheInMinutes = GetAttributeValue( AttributeKey.TimeToCacheKioskLocation ).AsInteger(),
                 Campuses = GetCampusesAndKiosks(),
-                DefaultTheme = PageCache.Layout?.Site?.Theme,
+                CurrentTheme = PageCache.Layout?.Site?.Theme,
                 Templates = director.GetConfigurationTemplateBags(),
                 Themes = GetThemes()
             };
@@ -251,6 +254,109 @@ namespace Rock.Blocks.CheckIn
         }
 
         /// <summary>
+        /// Attempts to configure the kiosk from query string parameters in
+        /// the URL.
+        /// </summary>
+        /// <param name="director">The check-in director to use.</param>
+        /// <returns>An instance of <see cref="KioskConfigurationBag"/> or <c>null</c>.</returns>
+        private async Task<KioskConfigurationBag> GetConfigurationByUrlAsync( CheckInDirector director )
+        {
+            var urlKioskId = PageParameter( PageParameterKey.KioskId ).AsIntegerOrNull();
+            var urlTemplateId = PageParameter( PageParameterKey.CheckinConfigId ).AsIntegerOrNull();
+            var urlAreaIds = ( PageParameter( PageParameterKey.GroupTypeIds ) ?? string.Empty ).SplitDelimitedValues().AsIntegerList();
+            var urlGroupIds = ( PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).SplitDelimitedValues().AsIntegerList();
+
+            // Rock check-in will set configuration using Group identifiers or
+            // GroupType identifiers but not both. This is to remove the
+            // possiblilty of a Group/GroupType mismatch. Check for groups
+            // first since the GroupTypes of those groups will overwrite the
+            // URL provided GroupType identifiers.
+            if ( urlGroupIds.Any() )
+            {
+                // Determine the GroupType(s) from the provided Group identifiers
+                // and add them to the configuration, replacing explicit ones if
+                // they were provided.
+                urlAreaIds = new GroupService( RockContext ).Queryable()
+                    .Where( g => urlGroupIds.Contains( g.Id ) )
+                    .Select( g => g.GroupTypeId )
+                    .Distinct()
+                    .ToList();
+
+                // TODO: Do we need this, see Asana task https://app.asana.com/0/1198840255983422/1206332550528719
+                // this.LocalDeviceConfig.CurrentGroupIds = urlGroupIds;
+            }
+
+            // Get all the data from cache.
+            var urlKiosk = urlKioskId.HasValue
+                ? DeviceCache.Get( urlKioskId.Value )
+                : null;
+            var urlAreas = urlAreaIds.Select( id => GroupTypeCache.Get( id, RockContext ) )
+                .Where( gt => gt != null )
+                .ToList();
+            ConfigurationTemplateBag urlTemplate = null;
+
+            if ( urlTemplateId.HasValue )
+            {
+                var templateGroupType = GroupTypeCache.Get( urlTemplateId.Value, RockContext );
+
+                if ( templateGroupType != null )
+                {
+                    urlTemplate = director.GetConfigurationTemplateBag( templateGroupType );
+                }
+            }
+
+            /*
+                2021-04-30 MSB
+                There is a route that supports not passing in the check-in type
+                id. If that route is used we need to try to get the check-in
+                type id from the selected group types.
+            */
+            if ( urlKiosk != null && urlAreas.Any() && urlTemplate == null )
+            {
+                urlTemplate = GetPrimaryTemplate( director, urlAreas );
+            }
+
+            // Need to display the admin UI if Rock didn't find the check-in type.
+            if ( urlTemplate == null )
+            {
+                return null;
+            }
+
+            /*
+                2020-09-10 MDP
+                If both PageParameterKey.CheckinConfigId and PageParameterKey.GroupTypeIds
+                are specified, set the local device configuration from those.
+                Then if PageParameterKey.KioskId is also specified set the
+                KioskId from that, otherwise determine it from the IP Address.
+                See https://app.asana.com/0/1121505495628584/1191546188992881/f
+            */
+
+            // If the kiosk device ID wasn't provided in the URL attempt
+            // to get it using the IPAddress.
+            if ( urlAreaIds.Any() && urlKiosk == null )
+            {
+                urlKiosk = await GetKioskFromIpOrNameAsync();
+            }
+
+            // If we didn't get everything, then we can't auto-configure.
+            if ( urlKiosk == null || urlTemplate == null || !urlAreas.Any() )
+            {
+                return null;
+            }
+
+            return new KioskConfigurationBag
+            {
+                Kiosk = GetKioskBag( urlKiosk ),
+                Template = urlTemplate,
+                Areas = urlAreas.Select( a => new CheckInItemBag
+                {
+                    Guid = a.Guid,
+                    Name = a.Name
+                } ).ToList()
+            };
+        }
+
+        /// <summary>
         /// Attempts to find the Device record for this kiosk by looking for a
         /// matching Device by IP Address, and optional host name if it can't
         /// be found from IP Address.
@@ -276,7 +382,7 @@ namespace Rock.Blocks.CheckIn
         /// </summary>
         /// <param name="director">The check-in director for this operation.</param>
         /// <returns>The configuration object or <c>null</c> if it could not be determined.</returns>
-        private async Task<object> GetConfigurationByIpOrNameAsync( CheckInDirector director )
+        private async Task<KioskConfigurationBag> GetConfigurationByIpOrNameAsync( CheckInDirector director )
         {
             var kiosk = await GetKioskFromIpOrNameAsync();
 
@@ -334,12 +440,7 @@ namespace Rock.Blocks.CheckIn
                     Guid = a.Guid,
                     Name = a.Name
                 } ).ToList(),
-                Template = template,
-                Theme = new ListItemBag
-                {
-                    Value = PageCache.Layout.Site.Theme.ToLower(),
-                    Text = PageCache.Layout.Site.Theme.SplitCase()
-                }
+                Template = template
             };
 
             return config;
