@@ -64,7 +64,7 @@ namespace Rock.Blocks.Event
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect'). If the Registration Template has a connection status set, then this setting will be overridden by that value.",
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
