@@ -395,6 +395,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateList\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\ForgotUserName\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\" />
@@ -1007,6 +1008,12 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryMetricCategoryBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryMetricItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntrySaveRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\personDtoBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityAnalysisBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGivingDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGroupDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountAccountConfirmationViewOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountActionNamesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountAlertControlBag.d.ts" />
