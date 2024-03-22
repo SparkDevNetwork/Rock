@@ -1070,8 +1070,8 @@ GO
             target.ForeignId = null;
             target.ForeignGuid = null;", type.Name );
 
-            // Only include these properties if the type is a model and doesn't inherit from another model
-            if ( type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> ) && !inheritsFromOtherBaseModel )
+            // Only include these properties if the type is a model
+            if ( type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> ) )
             {
                 sb.AppendFormat( @"
             target.CreatedByPersonAliasId = null;
