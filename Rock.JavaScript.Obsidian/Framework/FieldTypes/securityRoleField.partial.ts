@@ -22,7 +22,7 @@ import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum ConfigurationValueKey {
-    ClientValues = "values"
+    Values = "values"
 }
 
 // The edit component can be quite large, so load it only as needed.
@@ -30,22 +30,27 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./securityRoleFieldComponents")).EditComponent;
 });
 
-// The configuration component can be quite large, so load it only as needed.
+// Load the configuration component only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
     return (await import("./securityRoleFieldComponents")).ConfigurationComponent;
 });
 
+/**
+ * The field type handler for the Security Role field.
+ */
 export class SecurityRoleFieldType extends FieldTypeBase {
     public override getTextValue(value: string, configurationValues: Record<string, string>): string {
-        if (value === undefined || value === null || value === "") {
+        if (value === "") {
             return "";
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.ClientValues] ?? "[]") as ListItemBag[];
-            const selectedValue = values.find(o => o.value === value);
-
-            return selectedValue?.text ?? value;
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const userValues = value.split(",");
+            const selectedValues = values.filter(v => userValues.includes(v.value ?? ""));
+            return selectedValues.map(v => v.text)
+                .map(v => v?.split(":").pop()) // just get the name of the note type
+                .join(", ");
         }
         catch {
             return value;

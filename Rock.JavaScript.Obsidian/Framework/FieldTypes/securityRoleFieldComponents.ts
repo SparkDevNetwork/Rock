@@ -13,15 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-import { computed, defineComponent, ref, watch } from "vue";
-import {  getFieldEditorProps } from "./utils";
+//
+import { defineComponent, inject } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationValueKey } from "./securityRoleField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { ConfigurationValueKey } from "./securityRoleField.partial";
+import { getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({
-    name: "SecurityRoleFieldField.Edit",
+    name: "SecurityRoleField.Edit",
 
     components: {
         DropDownList
@@ -29,41 +29,54 @@ export const EditComponent = defineComponent({
 
     props: getFieldEditorProps(),
 
-    setup(props, { emit }) {
-        // The internal value used by the dropdownlist control.
-        const internalValue = ref<string>("");
-
-        // The available options to choose from.
-        const options = computed((): ListItemBag[] => {
-            const options = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
-            return options;
-        });
-
-        // Watch for changes from the parent component and update the client UI.
-        watch(() => props.modelValue, () => {
-            internalValue.value = props.modelValue;
-        }, {
-            immediate: true
-        });
-
-        // Watch for changes from the client and update the parent component.
-        watch(internalValue, () => {
-            emit("update:modelValue", internalValue.value);
-        });
-
+    setup() {
         return {
-            internalValue,
-            options
+            isRequired: inject("isRequired") as boolean
         };
     },
 
+    data() {
+        return {
+            internalValue: this.modelValue ?? ""
+        };
+    },
+
+    computed: {
+        options(): ListItemBag[] {
+            try {
+                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                return valuesConfig.map(v => {
+                    return {
+                        text: v.text,
+                        value: v.value
+                    } as ListItemBag;
+                });
+            }
+            catch {
+                return [];
+            }
+        }
+    },
+
+    watch: {
+        internalValue() {
+            this.$emit("update:modelValue", this.internalValue);
+        },
+        modelValue: {
+            immediate: true,
+            handler() {
+                this.internalValue = this.modelValue || "";
+            }
+        }
+    },
+
     template: `
-    <DropDownList v-model="internalValue" :items="options" :showBlankItem="true" />
-`
+        <DropDownList v-model="internalValue" :items="options" :repeatColumns="repeatColumns" horizontal />
+    `
 });
 
 export const ConfigurationComponent = defineComponent({
     name: "SecurityRoleField.Configuration",
-
-    template: ``
+    template: `
+`
 });

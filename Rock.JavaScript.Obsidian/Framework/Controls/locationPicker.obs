@@ -66,14 +66,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
-
-    const enum LocationPickerMode {
-        Address = 1,
-        Named = 2,
-        Point = 4,
-        Polygon = 8,
-        All = Address | Named | Point | Polygon
-    }
+    import { LocationPickerMode } from "@Obsidian/Enums/Controls/locationPickerMode";
 
     const props = defineProps({
         modelValue: {
@@ -159,7 +152,7 @@
 
     watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
-    watch(numericSelectedMode, () => emit("update:currentPickerMode", numericSelectedMode.value));
+    watch(numericSelectedMode, () => emit("update:currentPickerMode", numericSelectedMode.value as LocationPickerMode));
 
     watch(() => props.currentPickerMode, () => {
         selectedMode.value = props.currentPickerMode.toString() as "1" | "2" | "4" | "8";
@@ -170,6 +163,4 @@
             selectedMode.value = options.value[0].value as "1" | "2" | "4" | "8";
         }
     }, { immediate: true });
-
-    watch(numericSelectedMode, () => emit("update:currentPickerMode", numericSelectedMode.value));
 </script>

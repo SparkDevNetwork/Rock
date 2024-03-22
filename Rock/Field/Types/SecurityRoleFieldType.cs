@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
@@ -24,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -39,7 +41,7 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
-        private const string CLIENT_VALUES = "values";
+        private const string VALUES_PUBLIC_KEY = "values";
 
         #endregion
 
@@ -68,34 +70,32 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            using ( var rockContext = new RockContext() )
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = new GroupService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( g => g.IsSecurityRole )
+                    .OrderBy( o => o.Name )
+                    .Select( o => new ListItemBag
+                    {
+                        Value = o.Guid.ToString(),
+                        Text = o.Name
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            return publicConfigurationValues;
+        }
+
+        #endregion
+
         #region Edit Control
-
-
-        /// <inheritdoc />
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
-        {
-            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
-
-            var roles = new GroupService( new RockContext() )
-                .Queryable()
-                .Where( g => g.IsSecurityRole )
-                .OrderBy( t => t.Name )
-                .ToListItemBagList();
-
-            configurationValues[CLIENT_VALUES] = roles.ToCamelCaseJson( false, true );
-
-            return configurationValues;
-        }
-
-        /// <inheritdoc />
-        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
-        {
-            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
-
-            configurationValues.Remove( CLIENT_VALUES );
-
-            return configurationValues;
-        }
 
         #endregion
 

@@ -8587,6 +8587,221 @@ END
 
         #endregion
 
+        #region Persisted Datasets
+
+        /// <summary>
+        /// Adds a new persisted dataset with an associated schedule.
+        /// </summary>
+        /// <param name="scheduleGuid">The unique identifier of the schedule.</param>
+        /// <param name="scheduleName">The name of the schedule.</param>
+        /// <param name="scheduleDescription">The description of the schedule.</param>
+        /// <param name="iCalendarContent">The iCalendar content of the schedule.</param>
+        /// <param name="effectiveStartDate">The effective start date of the schedule.</param>
+        /// <param name="isScheduleActive">Indicates if the schedule is active.</param>
+        /// <param name="datasetGuid">The unique identifier of the persisted dataset.</param>
+        /// <param name="datasetAccessKey">The access key of the persisted dataset.</param>
+        /// <param name="datasetName">The name of the persisted dataset.</param>
+        /// <param name="datasetDescription">The description of the persisted dataset.</param>
+        /// <param name="allowManualRefresh">Indicates if manual refresh is allowed for the persisted dataset.</param>
+        /// <param name="resultFormat">Indicated the Result Format of the persisted dataset.</param>
+        /// <param name="buildScript">The build script of the persisted dataset.</param>
+        /// <param name="buildScriptType">The build script type of the persisted dataset.</param>
+        /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
+        /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
+        /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
+        public void AddPersistedDatasetWithSchedule(
+            string scheduleGuid,
+            string scheduleName,
+            string scheduleDescription,
+            string iCalendarContent,
+            DateTime effectiveStartDate,
+            bool isScheduleActive,
+            string datasetGuid,
+            string datasetAccessKey,
+            string datasetName,
+            string datasetDescription,
+            bool allowManualRefresh,
+            int resultFormat,
+            string buildScript,
+            int buildScriptType,
+            bool isDatasetSystem,
+            bool isDatasetActive,
+            string enabledLavaCommands )
+        {
+            Migration.Sql( string.Format( @"
+        DECLARE @ScheduleId INT;
+
+        INSERT INTO [Schedule] (
+            [Name],
+            [Description],
+            [iCalendarContent],
+            [EffectiveStartDate],
+            [IsActive],
+            [Guid]
+        )
+        VALUES (
+            '{0}',
+            '{1}',
+            '{2}',
+            '{3}',
+            {4},
+            '{5}'
+        );
+
+        SET @ScheduleId = SCOPE_IDENTITY();
+
+        INSERT INTO [PersistedDataset] (
+            [AccessKey],
+            [Name],
+            [Description],
+            [AllowManualRefresh],
+            [ResultFormat],
+            [BuildScript],
+            [BuildScriptType],
+            [IsSystem],
+            [IsActive],
+            [EnabledLavaCommands],
+            [PersistedScheduleId],
+            [Guid]
+        )
+        VALUES (
+            '{6}',
+            '{7}',
+            '{8}',
+            {9},
+            {10},
+            '{11}',
+            {12},
+            {13},
+            {14},
+            '{15}',
+            @ScheduleId,
+            '{16}'
+        );",
+                scheduleName,
+                scheduleDescription,
+                iCalendarContent,
+                effectiveStartDate,
+                isScheduleActive ? 1 : 0,
+                scheduleGuid,
+                datasetAccessKey,
+                datasetName.Replace( "'", "''" ),
+                datasetDescription.Replace( "'", "''" ),
+                allowManualRefresh ? 1 : 0,
+                resultFormat,
+                buildScript.Replace( "'", "''" ),
+                buildScriptType,
+                isDatasetSystem ? 1 : 0,
+                isDatasetActive ? 1 : 0,
+                enabledLavaCommands,
+                datasetGuid ) );
+        }
+
+        /// <summary>
+        /// Adds a new persisted dataset with a refresh interval.
+        /// </summary>
+        /// <param name="datasetGuid">The unique identifier of the persisted dataset.</param>
+        /// <param name="datasetAccessKey">The access key of the persisted dataset.</param>
+        /// <param name="datasetName">The name of the persisted dataset.</param>
+        /// <param name="datasetDescription">The description of the persisted dataset.</param>
+        /// <param name="allowManualRefresh">Indicates if manual refresh is allowed for the persisted dataset.</param>
+        /// <param name="buildScript">The build script of the persisted dataset.</param>
+        /// <param name="buildScriptType">The build script type of the persisted dataset.</param>
+        /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
+        /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
+        /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
+        /// <param name="refreshIntervalMinutes">The refresh interval in minutes for the persisted dataset.</param>
+        public void AddPersistedDatasetWithRefreshInterval(
+            string datasetGuid,
+            string datasetAccessKey,
+            string datasetName,
+            string datasetDescription,
+            bool allowManualRefresh,
+            int resultFormat,
+            string buildScript,
+            int buildScriptType,
+            bool isDatasetSystem,
+            bool isDatasetActive,
+            string enabledLavaCommands,
+            int refreshIntervalMinutes )
+        {
+            Migration.Sql( string.Format( @"
+        INSERT INTO [PersistedDataset] (
+            [AccessKey],
+            [Name],
+            [Description],
+            [AllowManualRefresh],
+            [ResultFormat],
+            [BuildScript],
+            [BuildScriptType],
+            [IsSystem],
+            [IsActive],
+            [EnabledLavaCommands],
+            [PersistedScheduleId],
+            [Guid]
+        )
+        VALUES (
+            '{0}',
+            '{1}',
+            '{2}',
+            {3},
+            {4},
+            '{5}',
+            {6},
+            {7},
+            {8},
+            '{9}',
+            {10},
+            '{11}'
+        );",
+                datasetAccessKey,
+                datasetName.Replace( "'", "''" ),
+                datasetDescription.Replace( "'", "''" ),
+                allowManualRefresh ? 1 : 0,
+                resultFormat,
+                buildScript.Replace( "'", "''" ),
+                buildScriptType,
+                isDatasetSystem ? 1 : 0,
+                isDatasetActive ? 1 : 0,
+                enabledLavaCommands,
+                refreshIntervalMinutes,
+                datasetGuid ) );
+        }
+
+        /// <summary>
+        /// Deletes a persisted dataset and its associated schedule.
+        /// </summary>
+        /// <param name="datasetGuid">The unique identifier of the persisted dataset.</param>
+        public void DeletePersistedDatasetWithSchedule( string datasetGuid )
+        {
+            Migration.Sql( string.Format( @"
+        DECLARE @ScheduleId INT;
+
+        SELECT @ScheduleId = [PersistedScheduleId]
+        FROM [PersistedDataset]
+        WHERE [Guid] = '{0}';
+
+        DELETE FROM [PersistedDataset]
+        WHERE [Guid] = '{0}';
+
+        DELETE FROM [Schedule]
+        WHERE [Id] = @ScheduleId;",
+                datasetGuid ) );
+        }
+
+        /// <summary>
+        /// Deletes a persisted dataset.
+        /// </summary>
+        /// <param name="datasetGuid">The unique identifier of the persisted dataset.</param>
+        public void DeletePersistedDataset( string datasetGuid )
+        {
+            Migration.Sql( string.Format( @"
+        DELETE FROM [PersistedDataset]
+        WHERE [Guid] = '{0}';",
+                datasetGuid ) );
+        }
+        #endregion
+
         /// <summary>
         /// Checks if a table column exists.
         /// </summary>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -145,6 +145,8 @@
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptList\AchievementAttemptListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\ConnectionTypeList\ConnectionTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\GetAvailableCampusesBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\AttendanceHistoryList\AttendanceHistoryListOptionsBag.cs" />
@@ -494,6 +496,7 @@
     <Compile Include="Blocks\Group\LandingPageContentBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\VolunteerGenerosityAnalysis\VolunteerGenerosityAnalysisBag.cs" />
     <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmMetricBag.cs" />
     <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmNodeBag.cs" />
     <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmNodeDetailOptionsBag.cs" />
