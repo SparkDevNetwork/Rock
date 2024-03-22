@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis;
 using Rock.Obsidian.UI;
-using Newtonsoft.Json;
 
 namespace Rock.Blocks.Reporting
 {
