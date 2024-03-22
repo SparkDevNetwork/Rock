@@ -24,7 +24,6 @@
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
 import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
  * Details about the configuration of a kiosk that will be used for check-in.

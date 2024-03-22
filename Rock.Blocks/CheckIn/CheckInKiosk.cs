@@ -108,7 +108,7 @@ namespace Rock.Blocks.CheckIn
             public const string GroupIds = "GroupIds";
             //public const string FamilyId = "FamilyId";
             //public const string CameraIndex = "CameraIndex";
-            //public const string Theme = "Theme";
+            public const string Theme = "Theme";
         }
 
         #endregion
@@ -152,7 +152,8 @@ namespace Rock.Blocks.CheckIn
                 IsConfigureByLocationEnabled = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean(),
                 GeoLocationCacheInMinutes = GetAttributeValue( AttributeKey.TimeToCacheKioskLocation ).AsInteger(),
                 Campuses = GetCampusesAndKiosks(),
-                CurrentTheme = PageCache.Layout?.Site?.Theme,
+                CurrentTheme = PageParameter( PageParameterKey.Theme )?.ToLower()
+                    .IfEmpty( PageCache.Layout?.Site?.Theme?.ToLower() ),
                 Templates = director.GetConfigurationTemplateBags(),
                 Themes = GetThemes()
             };

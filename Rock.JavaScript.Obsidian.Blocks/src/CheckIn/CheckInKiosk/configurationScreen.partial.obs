@@ -139,6 +139,24 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { onConfigurationValuesChanged, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
 
+    type TemporaryConfig = {
+        timestamp?: number;
+
+        campusGuid?: string;
+
+        kioskGuid?: string;
+
+        selectedCamera: string;
+
+        templateGuid?: string;
+
+        areaItems?: ConfigurationAreaBag[];
+
+        primaryAreaGuids?: string[];
+
+        secondaryAreaGuids?: string[];
+    };
+
     const props = defineProps({
         blockConfiguration: {
             type: Object as PropType<CheckInKioskOptionsBag>,
@@ -162,7 +180,7 @@
     const kioskGuid = ref<Guid>("");
 
     const isUsingCustomConfiguration = ref(false);
-    const theme = ref("");
+    const theme = ref(props.blockConfiguration.currentTheme ?? "");
     const templateGuid = ref<Guid>("");
     const areaItems = ref<ConfigurationAreaBag[]>([]);
     const primaryAreaGuids = ref<Guid[]>([]);
@@ -418,6 +436,74 @@
     }
 
     /**
+     * Redirects to the current URL using a new theme selection. This also
+     * saves any configuration data to local storage so it can be restored when
+     * the block re-loads.
+     *
+     * @param theme The theme to use in the redirect URL.
+     */
+    function redirectForTheme(theme: string): void {
+        const url = new URL(window.location.href);
+        const tempConfig: TemporaryConfig = {
+            timestamp: Date.now(),
+            campusGuid: campusGuid.value,
+            kioskGuid: kioskGuid.value,
+            selectedCamera: selectedCamera.value,
+            templateGuid: templateGuid.value,
+            areaItems: toRaw(areaItems.value),
+            primaryAreaGuids: toRaw(primaryAreaGuids.value),
+            secondaryAreaGuids: toRaw(secondaryAreaGuids.value)
+        };
+
+        try {
+            localStorage.setItem("Rock.CheckIn.CheckInKiosk.TemporaryConfiguration", JSON.stringify(tempConfig));
+        }
+        catch {
+            // Intentionally ignored, nothing we can do about it.
+        }
+
+        url.searchParams.set("theme", theme);
+
+        window.location.href = url.toString();
+    }
+
+    /**
+     * Attempts to restore the temporary configuration from a theme selection
+     * redirect. If the temporary configuration was found then the UI state is
+     * restored.
+     */
+    function attemptRestoreTemporaryConfiguration(): void {
+        try {
+            const json = localStorage.getItem("Rock.CheckIn.CheckInKiosk.TemporaryConfiguration");
+            localStorage.removeItem("Rock.CheckIn.CheckInKiosk.TemporaryConfiguraiton");
+
+            if (!json) {
+                return;
+            }
+
+            const tempConfig: TemporaryConfig = JSON.parse(json);
+
+            // Configuration is only valid for 5 seconds.
+            if (!tempConfig.timestamp || tempConfig.timestamp + 5000 < Date.now()) {
+                return;
+            }
+
+            campusGuid.value = tempConfig.campusGuid ?? "";
+            kioskGuid.value = tempConfig.kioskGuid ?? "";
+            selectedCamera.value = tempConfig.selectedCamera ?? "";
+            templateGuid.value = tempConfig.templateGuid ?? "";
+            areaItems.value = tempConfig.areaItems ?? [];
+            primaryAreaGuids.value = tempConfig.primaryAreaGuids ?? [];
+            secondaryAreaGuids.value = tempConfig.secondaryAreaGuids ?? [];
+
+            isUsingCustomConfiguration.value = true;
+        }
+        catch {
+            return;
+        }
+    }
+
+    /**
      * Event handler for when the Custom Configuration button is clicked.
      */
     function onCustomConfiguration(): void {
@@ -471,12 +557,20 @@
 
     // #endregion
 
+    attemptRestoreTemporaryConfiguration();
+
     watch(kioskGuid, () => {
         updateAreaItems();
         updateCameraItems();
     });
 
     watch([isCustomConfigurationValid, isCustomConfigurationVisible], updateActions);
+
+    watch(theme, () => {
+        if (theme.value !== "" && theme.value !== props.blockConfiguration.currentTheme) {
+            redirectForTheme(theme.value);
+        }
+    });
 
     onMounted(() => updateActions());
 
