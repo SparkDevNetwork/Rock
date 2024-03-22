@@ -368,6 +368,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\TagList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Crm\BadgeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\SignalTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\" />
@@ -942,6 +943,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\TagList\tagListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentList\assessmentListBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\BadgeList\badgeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\documentTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\documentTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\SignalTypeDetail\signalTypeBag.d.ts" />

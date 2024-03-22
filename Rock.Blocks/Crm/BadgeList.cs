@@ -99,9 +99,7 @@ namespace Rock.Blocks.Crm
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new Model.Badge();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -187,7 +185,7 @@ namespace Rock.Blocks.Crm
                     return ActionBadRequest( $"{Model.Badge.FriendlyTypeName} not found." );
                 }
 
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete ${Model.Badge.FriendlyTypeName}." );
                 }
