@@ -15,6 +15,7 @@
                                      @configured="onConfigured" />
 
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome"
+                               :configuration="configuration"
                                @start="onWelcomeStart">
                 </WelcomeScreen>
 

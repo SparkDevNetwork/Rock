@@ -12,7 +12,7 @@
         </div>
 
         <div class="scan-barcode-button">
-            <RockButton btnType="default">
+            <RockButton id="barcode-button" btnType="default">
                 <div class="title"><i class="fa fa-qrcode"></i></div>
                 <div class="subtitle">Scan A Barcode</div>
             </RockButton>
@@ -22,6 +22,16 @@
 
 <script setup lang="ts">
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
+    import { onMounted, PropType } from "vue";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        }
+    });
 
     const emit = defineEmits<{
         (event: "start"): void;
@@ -30,4 +40,24 @@
     function onStartClick(): void {
         emit("start");
     }
+
+    onMounted(async () => {
+        if (props.configuration.kiosk?.isCameraEnabled) {
+            const scanner = new Html5Qrcode("barcode-button");
+            const deviceId = (await Html5Qrcode.getCameras())[0].id;
+
+            scanner.start(deviceId, {
+                fps: 10,
+                aspectRatio: 4/3,
+                qrbox: {
+                    width: 250,
+                    height: 250
+                }
+            }, (decodedText) => {
+                console.log("SCAN", decodedText);
+            }, (_errorMessage) => {
+                // Ignore it, probably a partial read.
+            });
+        }
+    });
 </script>
