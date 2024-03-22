@@ -109,6 +109,7 @@
     <Content Include="src\Event\eventItemDetail.obs" />
     <Content Include="src\Event\EventItemDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventItemDetail\viewPanel.partial.obs" />
+    <Content Include="src\Finance\benevolenceTypeList.obs" />
     <Content Include="src\Finance\businessDetail.obs" />
     <Content Include="src\Finance\BusinessDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\BusinessDetail\viewPanel.partial.obs" />
@@ -314,6 +315,7 @@
     <Folder Include="src\Engagement\StreakTypeExclusionDetail\" />
     <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventItemDetail\" />
+    <Folder Include="src\Finance\BenevolenceTypeList\" />
     <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
@@ -469,6 +471,7 @@
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\BenevolenceTypeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
