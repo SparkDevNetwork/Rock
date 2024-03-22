@@ -103,7 +103,7 @@ namespace Rock.Jobs
             {
                 return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
-                    .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().Split( ',' ).ToHashSet() );
+                    .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().SplitDelimitedValues().ToHashSet() );
             }
         }
 
@@ -287,7 +287,7 @@ namespace Rock.Jobs
                         }
                     }
 
-                    CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings, oldBlockTypeAttributeKeys );
+                    CopyAttributeValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings, oldBlockTypeAttributeKeys );
 
                     CopyAuthFromOldBlocksToNewBlocks( migrationHelper, copiedBlockMappings );
 
@@ -413,37 +413,11 @@ namespace Rock.Jobs
             return replacedBlocksMap;
         }
 
-        private static void CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( RockContext rockContext, MigrationHelper migrationHelper, Dictionary<Model.Block, Model.Block> copiedBlockMappings, HashSet<string> oldBlockTypeAttributes )
+        private static void CopyAttributeValuesFromOldBlocksToNewBlocks( RockContext rockContext, MigrationHelper migrationHelper, Dictionary<Model.Block, Model.Block> copiedBlockMappings, HashSet<string> oldBlockTypeAttributes )
         {
             // Load the attributes for old and new blocks so we can copy values.
             copiedBlockMappings.Keys.LoadAttributes( rockContext );
             copiedBlockMappings.Values.LoadAttributes( rockContext );
-
-            // Copy attribute qualifiers.
-            foreach ( var copiedBlockMapping in copiedBlockMappings )
-            {
-                var oldBlock = copiedBlockMapping.Key;
-                var newBlock = copiedBlockMapping.Value;
-                var oldBlockAttributes = oldBlock.Attributes
-                    .Where( a => oldBlockTypeAttributes.Contains( a.Key ) )
-                    .ToDictionary( a => a.Key, a => a.Value );
-                var newBlockAttributes = newBlock.Attributes.ToDictionary( a => a.Key, a => a.Value, StringComparer.OrdinalIgnoreCase );
-
-                foreach ( var oldBlockAttributeValueKvp in oldBlockAttributes )
-                {
-                    var oldBlockAttribute = oldBlockAttributeValueKvp.Value;
-
-                    // Check if the new block has an attribute with the same attribute key.
-                    if ( newBlockAttributes.TryGetValue( oldBlockAttribute.Key, out var newBlockAttribute ) )
-                    {
-                        // Copy the attribute qualifiers from the old block attribute to the new block attribute.
-                        foreach ( var qualifierKvp in oldBlockAttribute.QualifierValues )
-                        {
-                            migrationHelper.AddAttributeQualifierForSQL( newBlockAttribute.Guid.ToString(), qualifierKvp.Key, qualifierKvp.Value.Value, Guid.NewGuid().ToString() );
-                        }
-                    }
-                }
-            }
 
             // Copy attribute values.
             foreach ( var copiedBlockMapping in copiedBlockMappings )

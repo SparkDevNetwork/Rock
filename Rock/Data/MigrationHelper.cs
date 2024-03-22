@@ -8540,7 +8540,8 @@ END
         /// <param name="blockTypeReplacements">A key value pair of the webforms block type GUID to be replaced with the corresponding obsidian block type GUID</param>
         /// <param name="migrationStrategy">The Migration Strategy to be used to replace the block. It can be either "Chop" or "Swap"</param>
         /// <param name="jobGuid">The GUID of the job</param>
-        public void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid )
+        /// <param name="blockAttributeKeysToIgnore">An optional dictionary of attribute keys to be ignored for the blocktypes being Chopped or Swapped.</param>
+        public void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid, Dictionary<string, string> blockAttributeKeysToIgnore = null )
         {
             if ( name.Length > 31 )
             {
@@ -8560,9 +8561,13 @@ END
             // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Migration 
             AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.SINGLE_SELECT, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Migration Strategy", "Migration Strategy", "Determines if the blocks should be chopped instead of swapped. By default,the old blocks are swapped with the new ones.", 2, "Swap", "FA99E828-2388-4CDF-B69B-DBC36332D6A4", "MigrationStrategy" );
 
+            // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Block Attribute Keys To Ignore
+            AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.KEY_VALUE_LIST, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Webform BlockType Attribute Keys To Ignore During Validation", "Webform BlockType Attribute Keys To Ignore During Validation", "A Guid [key] of the old Webform BlockType and the [value] as a comma delimited list of BlockType Attribute keys to ignore when validating the Obsidian and Webforms blocks have the same keys.", 3, "", "D5122332-BA5E-4919-BCE0-5F8EF301B43C", "BlockAttributeKeysToIgnore" );
+
             // Adding the values to the Attributes for the job
             AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "BlockTypeGuidReplacementPairs", SerializeDictionary( blockTypeReplacements ) );
             AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "MigrationStrategy", migrationStrategy );
+            AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "BlockAttributeKeysToIgnore", SerializeDictionary( blockAttributeKeysToIgnore ) );
         }
 
         private string SerializeDictionary( Dictionary<string, string> dictionary )
