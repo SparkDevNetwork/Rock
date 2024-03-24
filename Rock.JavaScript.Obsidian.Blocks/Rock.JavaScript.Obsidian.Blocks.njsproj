@@ -120,6 +120,7 @@
     <Content Include="src\Finance\financialGatewayDetail.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
+    <Content Include="src\Finance\savedAccountList.obs" />
     <Content Include="src\Group\Scheduling\groupScheduler.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\availableResources.partial.obs" />
     <Content Include="src\Group\Scheduling\GroupScheduler\cloneSchedules.partial.obs" />
@@ -322,6 +323,7 @@
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
+    <Folder Include="src\Finance\SavedAccountList\" />
     <Folder Include="src\Group\Scheduling\" />
     <Folder Include="src\Group\Scheduling\GroupScheduler\" />
     <Folder Include="src\Group\Scheduling\GroupScheduleToolbox\" />
@@ -480,6 +482,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\SavedAccountList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\utils.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduleToolbox\types.partial.ts" />
