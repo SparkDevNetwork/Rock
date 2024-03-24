@@ -155,6 +155,7 @@
     <Content Include="src\Group\GroupRegistration\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRegistration\viewPanel.partial.obs" />
     <Content Include="src\Reporting\mergeTemplateList.obs" />
+    <Content Include="src\Reporting\reportList.obs" />
     <Content Include="src\Security\ConfirmAccount.obs" />
     <Content Include="src\Security\ConfirmAccount\accountConfirmation.partial.obs" />
     <Content Include="src\Security\ConfirmAccount\changePassword.partial.obs" />
@@ -330,6 +331,7 @@
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupRegistration\" />
     <Folder Include="src\Reporting\MergeTemplateList\" />
+    <Folder Include="src\Reporting\ReportList\" />
     <Folder Include="src\Security\ConfirmAccount\" />
     <Folder Include="src\Security\RestKeyDetail\" />
     <Folder Include="src\Engagement\" />
@@ -487,6 +489,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Group\GroupRegistration\types.d.ts" />
     <TypeScriptCompile Include="src\Reporting\MergeTemplateList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Reporting\ReportList\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\events.d.ts" />
     <TypeScriptCompile Include="src\Security\ConfirmAccount\views.ts" />
     <TypeScriptCompile Include="src\Security\RestKeyDetail\types.partial.ts" />

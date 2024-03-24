@@ -394,6 +394,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\ReportList\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
@@ -1000,6 +1001,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateFileValidationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateList\mergeTemplateListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ReportList\reportListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetMetricsRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetMetricsResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\serviceMetricsEntryGetServiceTimesRequestBag.d.ts" />
