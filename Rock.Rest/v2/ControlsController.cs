@@ -505,12 +505,16 @@ namespace Rock.Rest.v2
             string errorMessage = null;
             string addressString = null;
 
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var orgCountryCode = globalAttributesCache.OrganizationCountry;
+            var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
+
             editedLocation.Street1 = options.Street1;
             editedLocation.Street2 = options.Street2;
             editedLocation.City = options.City;
             editedLocation.State = options.State;
             editedLocation.PostalCode = options.PostalCode;
-            editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : "US";
+            editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : defaultCountryCode;
 
             var locationService = new LocationService( new RockContext() );
 
@@ -543,6 +547,27 @@ namespace Rock.Rest.v2
                     Country = editedLocation.Country
                 }
             } );
+        }
+
+        /// <summary>
+        /// Validates the given address and returns the string representation of the address
+        /// </summary>
+        /// <param name="options">Address details to validate</param>
+        /// <returns>Validation information and a single string representation of the address</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AddressControlGetStreetAddressString" )]
+        [Rock.SystemGuid.RestActionGuid( "9258BA75-F922-4607-A2C0-036141621F0E" )]
+        public IHttpActionResult AddressControlGetStreetAddressString( [FromBody] AddressControlBag address )
+        {
+            Location editedLocation;
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var orgCountryCode = globalAttributesCache.OrganizationCountry;
+            var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
+
+            var locationService = new LocationService( new RockContext() );
+            editedLocation = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country.IsNotNullOrWhiteSpace() ? address.Country : defaultCountryCode, null );
+
+            return Ok( editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
         }
 
         #endregion
@@ -1057,9 +1082,9 @@ namespace Rock.Rest.v2
         /// Gets saved captcha Site Key
         /// </summary>
         [HttpPost]
-        [System.Web.Http.Route("CaptchaControlGetConfiguration")]
+        [System.Web.Http.Route( "CaptchaControlGetConfiguration" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid("9e066058-13d9-4b4d-8457-07ba8e2cacd3")]
+        [Rock.SystemGuid.RestActionGuid( "9e066058-13d9-4b4d-8457-07ba8e2cacd3" )]
         public IHttpActionResult CaptchaControlGetConfiguration()
         {
             var bag = new CaptchaControlConfigurationBag()

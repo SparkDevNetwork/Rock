@@ -6705,7 +6705,7 @@ const locationPickerGallery = defineComponent({
             value: "8"
         }];
 
-        const selectedOptions = ref([]);
+        const selectedOptions = ref(["1","2","4","8"]);
 
         const selectedAsNumber = computed(() => {
             if (selectedOptions.value.length === 0) {
@@ -6718,7 +6718,7 @@ const locationPickerGallery = defineComponent({
         });
 
         return {
-            value: ref(null),
+            value: ref(undefined),
             currentPickerMode: ref(2),
             options,
             selectedOptions,
