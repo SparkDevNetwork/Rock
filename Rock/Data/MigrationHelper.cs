@@ -58,6 +58,19 @@ namespace Rock.Data
         /// <param name="guid">The GUID.</param>
         /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
         /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
+        public void AddOrUpdateEntityType( string name, string guid, bool isEntity, bool isSecured )
+        {
+            UpdateEntityType( name, guid, isEntity, isSecured );
+        }
+
+        /// <summary>
+        /// Important: This method should be considered obsolete. Use AddOrUpdateEntityType instead.
+        /// Updates the EntityType by name (if it exists); otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
         public void UpdateEntityType( string name, string guid, bool isEntity, bool isSecured )
         {
             Migration.Sql( string.Format( @"
