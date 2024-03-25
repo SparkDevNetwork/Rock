@@ -47,7 +47,7 @@
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { FormError } from "@Obsidian/Utility/form";
     import RockValidation from "./rockValidation.obs";
-    import { validateAddress } from "@Obsidian/Utility/address";
+    import { validateAddress, getAddressString } from "@Obsidian/Utility/address";
     import Loading from "./loading.obs";
 
     const props = defineProps({
@@ -66,10 +66,10 @@
     // #region Values
 
     // Address Control
-    const controlValue = ref({ ...props.modelValue });
+    const controlValue = ref({});
 
     // This Picker
-    const pickerValue = ref({ ...props.modelValue });
+    const pickerValue = ref({});
     const pickerLabel = ref("");
     const errors = ref<FormError[]>([]);
     const isLoading = ref(false);
@@ -118,10 +118,11 @@
 
     // #region Watchers
 
-    watch(() => props.modelValue, () => {
+    watch(() => props.modelValue, async () => {
         updateRefValue(controlValue, { ...props.modelValue });
         updateRefValue(pickerValue, { ...props.modelValue });
-    });
+        pickerLabel.value = (await getAddressString(props.modelValue))?.data ?? "";
+    }, { immediate: true });
 
     watch(pickerValue, () => {
         emit("update:modelValue", pickerValue.value);

@@ -66,31 +66,33 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
-    import { LocationPickerMode } from "@Obsidian/Enums/Controls/locationPickerMode";
+    import { SingleLocationPickerMode, LocationPickerModeFlag, LocationPickerMode } from "@Obsidian/Enums/Controls/locationPickerMode";
+
+    type SingleLocationPickerModeString = `${SingleLocationPickerMode}`;
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<AddressControlBag | ListItemBag | string>
+            type: Object as PropType<AddressControlBag | ListItemBag | string | undefined>
         },
 
         currentPickerMode: {
-            type: Number as PropType<LocationPickerMode>,
-            default: 2
+            type: Number as PropType<SingleLocationPickerMode>,
+            default: () => LocationPickerMode.Named
         },
 
         allowedPickerModes: {
-            type: Number as PropType<LocationPickerMode>,
-            default: 15
+            type: Number as PropType<LocationPickerModeFlag>,
+            default: () => LocationPickerMode.All
         }
     });
 
     const emit = defineEmits<{
-        (_e: "update:modelValue", value: AddressControlBag | ListItemBag | string): void
-        (_e: "update:currentPickerMode", value: LocationPickerMode): void
+        (_e: "update:modelValue", value: AddressControlBag | ListItemBag | string | undefined): void
+        (_e: "update:currentPickerMode", value: SingleLocationPickerMode): void
     }>();
 
-    const selectedMode = ref<"1" | "2" | "4" | "8">(props.currentPickerMode.toString() as "1" | "2" | "4" | "8");
-    const numericSelectedMode = computed(() => Number(selectedMode.value));
+    const selectedMode = ref<SingleLocationPickerModeString>(props.currentPickerMode.toString() as SingleLocationPickerModeString);
+    const numericSelectedMode = computed<SingleLocationPickerMode>(() => Number(selectedMode.value) as SingleLocationPickerMode);
 
     const options = computed(() => {
         const optionList: ListItemBag[] = [];
@@ -126,7 +128,7 @@
         return optionList;
     });
 
-    const itemValue = ref<ListItemBag>({});
+    const itemValue = ref<ListItemBag | undefined>(undefined);
     const addressValue = ref<AddressControlBag>({});
     const pointValue = ref<string>("");
     const fenceValue = ref<string>("");
@@ -152,15 +154,30 @@
 
     watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
-    watch(numericSelectedMode, () => emit("update:currentPickerMode", numericSelectedMode.value as LocationPickerMode));
+    watch(numericSelectedMode, () => emit("update:currentPickerMode", numericSelectedMode.value));
+
+    watch(() => props.modelValue, () => {
+        if (numericSelectedMode.value === LocationPickerMode.Address) {
+            addressValue.value = props.modelValue as AddressControlBag;
+        }
+        if (numericSelectedMode.value === LocationPickerMode.Named) {
+            itemValue.value = props.modelValue as ListItemBag;
+        }
+        if (numericSelectedMode.value === LocationPickerMode.Point) {
+            pointValue.value = props.modelValue as string;
+        }
+        if (numericSelectedMode.value === LocationPickerMode.Polygon) {
+            fenceValue.value = props.modelValue as string;
+        }
+    }, { immediate: true });
 
     watch(() => props.currentPickerMode, () => {
-        selectedMode.value = props.currentPickerMode.toString() as "1" | "2" | "4" | "8";
+        selectedMode.value = props.currentPickerMode.toString() as SingleLocationPickerModeString;
     });
 
     watch(() => props.allowedPickerModes, () => {
         if (!(props.allowedPickerModes & numericSelectedMode.value)) {
-            selectedMode.value = options.value[0].value as "1" | "2" | "4" | "8";
+            selectedMode.value = options.value[0].value as SingleLocationPickerModeString;
         }
     }, { immediate: true });
 </script>

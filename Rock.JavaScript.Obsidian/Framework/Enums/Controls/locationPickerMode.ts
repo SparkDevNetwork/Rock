@@ -15,13 +15,24 @@
 // </copyright>
 //
 
-export const LocationPickerMode = {
-    None: 0,
+/** This is used when specifying one of the 4 true LocationPickerModes */
+export const SingleLocationPickerMode = {
     Address: 1,
     Named: 2,
     Point: 4,
     Polygon: 8,
+} as const;
+
+export type SingleLocationPickerMode = typeof SingleLocationPickerMode[keyof typeof SingleLocationPickerMode];
+
+/** This is mostly to match the webforms version of LocationPickerMode and can be used for comparisons to determine which flags were given. */
+export const LocationPickerMode = {
+    ...SingleLocationPickerMode,
+    None: 0,
     All: 15
 } as const;
 
-export type LocationPickerMode = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
+export type LocationPickerMode = typeof LocationPickerMode[keyof typeof LocationPickerMode];
+
+/** This is used when specifying potentially multiple modes as flags, e.g. when specifying all available modes. */
+export type LocationPickerModeFlag = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
