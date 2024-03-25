@@ -22,12 +22,13 @@ import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
 import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
-import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
+import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 
 // #region Temporary Types
 
 export type CampusBag = CheckInItemBag & {
-    kiosks?: KioskBag[] | null;
+    kiosks?: WebKioskBag[] | null;
 };
 
 export type CheckInKioskOptionsBag = {
@@ -63,6 +64,17 @@ export enum Screen {
 }
 
 // #endregion
+
+/* eslint-disable @typescript-eslint/naming-convention */
+export interface IRockCheckInNative {
+    /**
+     * Sets the kiosk identifier for the native application.
+     *
+     * @param kioskId The kiosk integer identifier.
+     */
+    SetKioskId(kioskId: number): void;
+}
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export function markdown(content: string | undefined | null): string {
     if (!content) {

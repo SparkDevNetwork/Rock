@@ -81,7 +81,7 @@
     import { Configuration } from "./utils.partial";
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
-    import { CheckInSimulatorOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/checkInSimulatorOptionsBag";
+    import { CheckInSimulatorOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInSimulator/checkInSimulatorOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, ref, watch } from "vue";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";

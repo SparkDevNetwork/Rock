@@ -340,7 +340,7 @@
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { CheckInKioskOptionsBag, Screen } from "./CheckInKiosk/utils.partial";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
 

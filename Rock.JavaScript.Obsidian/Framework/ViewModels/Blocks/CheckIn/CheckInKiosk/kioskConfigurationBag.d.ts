@@ -21,9 +21,9 @@
 // </copyright>
 //
 
+import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
-import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
 
 /**
  * Details about the configuration of a kiosk that will be used for check-in.
@@ -34,7 +34,7 @@ export type KioskConfigurationBag = {
     areas?: CheckInItemBag[] | null;
 
     /** Gets or sets the kiosk details. */
-    kiosk?: KioskBag | null;
+    kiosk?: WebKioskBag | null;
 
     /** Gets or sets the check-in template. */
     template?: ConfigurationTemplateBag | null;

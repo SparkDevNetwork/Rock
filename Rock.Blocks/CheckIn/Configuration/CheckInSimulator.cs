@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.Blocks.CheckIn.Configuration;
+using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInSimulator;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 

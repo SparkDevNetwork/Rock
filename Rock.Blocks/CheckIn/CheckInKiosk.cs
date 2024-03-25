@@ -26,8 +26,8 @@ using Microsoft.AspNetCore.Hosting;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
-using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
 using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -164,10 +164,11 @@ namespace Rock.Blocks.CheckIn
         /// </summary>
         /// <param name="kiosk">The kiosk device.</param>
         /// <returns>A new instance of <see cref="KioskBag"/>.</returns>
-        private KioskBag GetKioskBag( DeviceCache kiosk )
+        private WebKioskBag GetKioskBag( DeviceCache kiosk )
         {
-            var bag = new KioskBag
+            var bag = new WebKioskBag
             {
+                Id = kiosk.Id,
                 Guid = kiosk.Guid,
                 Name = kiosk.Name,
                 Type = kiosk.KioskType,
@@ -229,7 +230,7 @@ namespace Rock.Blocks.CheckIn
                     Guid = campus.Guid,
                     Name = campus.Name,
                     Kiosks = campusKiosks?.Select( k => GetKioskBag( k.Kiosk ) ).ToList()
-                        ?? new List<KioskBag>()
+                        ?? new List<WebKioskBag>()
                 } );
             }
 
@@ -499,7 +500,7 @@ namespace Rock.Blocks.CheckIn
 
         private class CampusBag : CheckInItemBag
         {
-            public List<KioskBag> Kiosks { get; set; }
+            public List<WebKioskBag> Kiosks { get; set; }
         }
     }
 }

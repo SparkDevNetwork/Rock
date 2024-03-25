@@ -48,7 +48,9 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Blocks\BlockActionContextBag.cs" />
-    <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulatorOptionsBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInKiosk\KioskConfigurationBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInKiosk\WebKioskBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulator\CheckInSimulatorOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
@@ -405,7 +407,6 @@
     <Compile Include="CheckIn\GroupOpportunityBag.cs" />
     <Compile Include="CheckIn\CheckInItemBag.cs" />
     <Compile Include="CheckIn\KioskBag.cs" />
-    <Compile Include="CheckIn\KioskConfigurationBag.cs" />
     <Compile Include="CheckIn\LocationOpportunityBag.cs" />
     <Compile Include="CheckIn\ConfigurationTemplateBag.cs" />
     <Compile Include="CheckIn\PersonBag.cs" />

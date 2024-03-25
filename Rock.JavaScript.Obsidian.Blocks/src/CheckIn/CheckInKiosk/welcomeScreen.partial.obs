@@ -22,8 +22,9 @@
 <script setup lang="ts">
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
-    import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { onMounted, PropType } from "vue";
+    import { IRockCheckInNative } from "./utils.partial";
 
     // TODO:
     // - Countdown to check-in opened screen.
@@ -32,7 +33,6 @@
     // - Check if check-in configuration has changed.
     // - Keyboard input for physical barcode scanner.
     // - "window.PerformScannedCodeSearch" function for iPad app.
-    // - Set native kiosk integer id via JavaScript.
     // - Start native camera if iPad with camera.
     // - Device Ads.
 
@@ -67,6 +67,14 @@
             }, (_errorMessage) => {
                 // Ignore it, probably a partial read.
             });
+        }
+
+        if (window["RockCheckinNative"]) {
+            const native = window["RockCheckinNative"] as IRockCheckInNative;
+
+            if (props.configuration.kiosk) {
+                native.SetKioskId(props.configuration.kiosk.id);
+            }
         }
     });
 </script>

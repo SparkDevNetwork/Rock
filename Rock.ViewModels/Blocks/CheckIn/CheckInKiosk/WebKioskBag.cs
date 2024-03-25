@@ -14,30 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System.Collections.Generic;
-
 using Rock.ViewModels.CheckIn;
-using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.CheckIn.Configuration
+namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
 {
     /// <summary>
-    /// The configuration options for the Check-in Simulator block.
+    /// Details about a single web-based kiosk device.
     /// </summary>
-    public class CheckInSimulatorOptionsBag
+    public class WebKioskBag : KioskBag
     {
         /// <summary>
-        /// Gets or sets the configuration templates that are available to
-        /// choose from.
+        /// Gets or sets the kiosk identifier. This is used by the iPad app.
         /// </summary>
-        /// <value>The configuration templates.</value>
-        public List<ConfigurationTemplateBag> Templates { get; set; }
-
-        /// <summary>
-        /// Gets or sets the kiosks that are available to choose from.
-        /// </summary>
-        /// <value>The kiosks.</value>
-        public List<ListItemBag> Kiosks { get; set; }
+        /// <value>The kiosk identifier.</value>
+        public int Id { get; set; }
     }
 }

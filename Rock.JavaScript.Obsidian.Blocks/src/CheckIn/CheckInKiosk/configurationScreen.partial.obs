@@ -135,9 +135,10 @@
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
     import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
-    import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { onConfigurationValuesChanged, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 
     type TemporaryConfig = {
         timestamp?: number;
@@ -293,7 +294,7 @@
     });
 
     /** The currently selected kiosk or undefined. */
-    const selectedKiosk = computed((): KioskBag | undefined => {
+    const selectedKiosk = computed((): WebKioskBag | undefined => {
         const campus = props.blockConfiguration.campuses
             ?.find(c => c.guid === campusGuid.value);
 

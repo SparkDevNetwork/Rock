@@ -16,9 +16,9 @@
 //
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
+using Rock.ViewModels.CheckIn;
 
-namespace Rock.ViewModels.CheckIn
+namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
 {
     /// <summary>
     /// Details about the configuration of a kiosk that will be used for check-in.
@@ -30,7 +30,7 @@ namespace Rock.ViewModels.CheckIn
         /// Gets or sets the kiosk details.
         /// </summary>
         /// <value>The kiosk details.</value>
-        public KioskBag Kiosk { get; set; }
+        public WebKioskBag Kiosk { get; set; }
 
         /// <summary>
         /// Gets or sets the check-in template.
