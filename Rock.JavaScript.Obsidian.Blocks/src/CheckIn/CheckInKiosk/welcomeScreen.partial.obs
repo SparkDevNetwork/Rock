@@ -23,8 +23,8 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { onMounted, PropType } from "vue";
-    import { IRockCheckInNative } from "./utils.partial";
+    import { onBeforeUnmount, onMounted, PropType } from "vue";
+    import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera } from "./utils.partial";
 
     // TODO:
     // - Countdown to check-in opened screen.
@@ -32,8 +32,6 @@
     // - Check-in all locations closed screen.
     // - Check if check-in configuration has changed.
     // - Keyboard input for physical barcode scanner.
-    // - "window.PerformScannedCodeSearch" function for iPad app.
-    // - Start native camera if iPad with camera.
     // - Device Ads.
 
     const props = defineProps({
@@ -47,12 +45,22 @@
         (event: "start"): void;
     }>();
 
+    function performScannedCodeSearch(code: string): void {
+        console.log("Scanned code", code);
+    }
+
     function onStartClick(): void {
         emit("start");
     }
 
     onMounted(async () => {
-        if (props.configuration.kiosk?.isCameraEnabled) {
+        const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
+
+        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk) && native) {
+            // Block configuration check for AlwaysOn or Passive.
+            native.StartCamera?.(false);
+        }
+        else if (doesThemeSupportCamera() && props.configuration.kiosk?.isCameraEnabled) {
             const scanner = new Html5Qrcode("barcode-button");
             const deviceId = (await Html5Qrcode.getCameras())[0].id;
 
@@ -63,18 +71,23 @@
                     height: 250
                 }
             }, (decodedText) => {
-                console.log("SCAN", decodedText);
+                performScannedCodeSearch(decodedText);
             }, (_errorMessage) => {
                 // Ignore it, probably a partial read.
             });
         }
 
-        if (window["RockCheckinNative"]) {
-            const native = window["RockCheckinNative"] as IRockCheckInNative;
-
-            if (props.configuration.kiosk) {
-                native.SetKioskId(props.configuration.kiosk.id);
-            }
+        // If we have a native check-in app then initialize it.
+        if (native && props.configuration.kiosk && native.SetKioskId) {
+            native.SetKioskId(props.configuration.kiosk.id);
         }
+
+        // Install the native check-in app function for code scanning.
+        window["PerformScannedCodeSearch"] = performScannedCodeSearch;
+    });
+
+    onBeforeUnmount(() => {
+        // Remove the native check-in app function for code scanning.
+        window["PerformScannedCodeSearch"] = undefined;
     });
 </script>

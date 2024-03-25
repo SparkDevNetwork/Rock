@@ -72,7 +72,14 @@ export interface IRockCheckInNative {
      *
      * @param kioskId The kiosk integer identifier.
      */
-    SetKioskId(kioskId: number): void;
+    SetKioskId?(kioskId: number): void;
+
+    /**
+     * Starts the native camera scanning feature of the application.
+     *
+     * @param isPassive True if the camera should be in passive mode.
+     */
+    StartCamera?(isPassive: boolean): void;
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -112,14 +119,15 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
 export function isIpadAppWithCamera(kiosk: KioskBag): boolean {
     // If kiosk Type is defined, honor KioskType setting, otherwise
     // use auto-detect logic.
+    const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
 
     if (kiosk.type === undefined || kiosk.type === null) {
         // Type is not defined, so autodetect.
-        return typeof window["RockCheckinNative"] !== "undefined" && typeof window["RockCheckinNative"].StartCamera !== "undefined";
+        return !!native && !!native.StartCamera;
     }
     else if (kiosk.type === KioskType.IPad) {
         // Type is defined as iPad, but double check if really is.
-        return typeof window["RockCheckinNative"] !== "undefined" && typeof window["RockCheckinNative"].StartCamera !== "undefined";
+        return !!native && !!native.StartCamera;
     }
     else {
         // Type is set, but isn't set to IPad.
