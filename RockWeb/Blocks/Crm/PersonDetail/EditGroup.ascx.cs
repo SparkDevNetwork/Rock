@@ -426,8 +426,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
 
                         // Does the family have any deceased members?
-                        var inactiveStatus = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-                        if ( _group.Members.Where( m => m.Person.RecordStatusValueId == inactiveStatus ).Any() )
+                        if ( _group.Members.Where( m => m.Person.IsDeceased ).Any() )
                         {
                             HasDeceasedMembers = true;
                         }
@@ -597,7 +596,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var inactiveStatus = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
             if ( HasDeceasedMembers && dvpRecordStatus.SelectedValueAsInt() != inactiveStatus )
             {
-                dvpRecordStatus.Warning = "Note: the status of deceased people will not be changed.";
+                dvpRecordStatus.Warning = "Note: The status of deceased people will not be changed";
             }
 
             dvpReason.Visible = dvpRecordStatus.SelectedValueAsInt() == inactiveStatus;
