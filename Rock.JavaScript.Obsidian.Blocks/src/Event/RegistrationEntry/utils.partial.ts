@@ -32,6 +32,7 @@ import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationP
 import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
 import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -148,7 +149,7 @@ export type TransactionFrequency = {
 };
 
 const transactionFrequencyOneTime: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
+    hasDefinedValueGuid(definedValueGuid: Guid): boolean {
         return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyOneTime);
     },
 
@@ -167,6 +168,7 @@ const transactionFrequencyOneTime: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
+        // Always use today's date for one-time transactions.
         return RockDateTime.now().date;
     },
 
@@ -199,7 +201,8 @@ const transactionFrequencyWeekly: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        return RockDateTime.now().date;
+        // Always use tomorrow's date for recurring transactions.
+        return RockDateTime.now().addDays(1).date;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -231,7 +234,8 @@ const transactionFrequencyBiWeekly: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        return RockDateTime.now().date;
+        // Always use tomorrow's date for recurring transactions.
+        return RockDateTime.now().addDays(1).date;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -371,7 +375,8 @@ const transactionFrequencyTwiceAMonth: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        return getNextDay(1, 15) ?? RockDateTime.now().date;
+        // Always use tomorrow's date for recurring transactions.
+        return RockDateTime.now().addDays(1).date;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -409,7 +414,8 @@ const transactionFrequencyMonthly: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        return RockDateTime.now().date;
+        // Always use tomorrow's date for recurring transactions.
+        return RockDateTime.now().addDays(1).date;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -447,7 +453,8 @@ const transactionFrequencyQuarterly: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        return RockDateTime.now().date;
+        // Always use tomorrow's date for recurring transactions.
+        return RockDateTime.now().addDays(1).date;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -485,7 +492,8 @@ const transactionFrequencyTwiceAYear: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        return RockDateTime.now().date;
+        // Always use tomorrow's date for recurring transactions.
+        return RockDateTime.now().addDays(1).date;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -521,7 +529,8 @@ const transactionFrequencyYearly: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        return RockDateTime.now().date;
+        // Always use tomorrow's date for recurring transactions.
+        return RockDateTime.now().addDays(1).date;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -550,7 +559,8 @@ export const nullTransactionFrequency: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        return RockDateTime.now().date;
+        // Always use an invalid date for null transactions to prevent them from being scheduled.
+        return RockDateTime.now().addDays(-7).date;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -582,4 +592,55 @@ export function formatCurrency(value: number, overrides?: Partial<CurrencyInfoBa
     else {
         return `${currencyBag.symbol}${asFormattedString(value, currencyBag.decimalPlaces)}`;
     }
+}
+
+export type PaymentPlanFrequency = {
+    transactionFrequency: TransactionFrequency;
+    startPaymentDate: RockDateTime;
+    paymentDeadlineDate: RockDateTime;
+    maxNumberOfPayments: number;
+    listItemBag: ListItemBag;
+};
+
+// function isListItemBagArray(value: unknown): value is ListItemBag[] {
+//     return Array.isArray(value) && !!value.length && (value[0] as ListItemBag).value !== undefined;
+// }
+
+// export function toPaymentPlanFrequencies(listItemBags: ListItemBag[], paymentDeadlineDate: RockDateTime): PaymentPlanFrequency[];
+// export function toPaymentPlanFrequencies(transactionFrequencies: TransactionFrequency[], paymentDeadlineDate: RockDateTime): PaymentPlanFrequency[];
+// export function toPaymentPlanFrequencies(frequencies: ListItemBag[] | TransactionFrequency[], paymentDeadlineDate: RockDateTime): PaymentPlanFrequency[] {
+//     let transactionFrequencies: TransactionFrequency[];
+//     if (isListItemBagArray(frequencies)) {
+//         transactionFrequencies = frequencies.filter(frequency => !!frequency.value).map(frequency => getTransactionFrequency(frequency.value ?? "")) as TransactionFrequency[];
+//     }
+//     else {
+//         transactionFrequencies = frequencies;
+//     }
+
+//     const paymentPlanFrequencies: PaymentPlanFrequency[] = transactionFrequencies.map(transactionFrequency => {
+//         const startPaymentDate = transactionFrequency.getNextTransactionDate();
+//         const maxNumberOfPayments = transactionFrequency.getMaxNumberOfTransactionsBetweenDates(startPaymentDate, paymentDeadlineDate);
+//         const listItemBag = transactionFrequency.toListItemBag();
+//         return {
+//             transactionFrequency,
+//             startPaymentDate,
+//             paymentDeadlineDate,
+//             maxNumberOfPayments,
+//             listItemBag,
+//         };
+//     });
+
+//     return paymentPlanFrequencies;
+// }
+
+export function getPaymentPlanFrequency(listItemBag: ListItemBag, paymentDeadlineDate: RockDateTime): PaymentPlanFrequency {
+    const transactionFrequency = getTransactionFrequency(listItemBag.value ?? "") ?? nullTransactionFrequency;
+    const startPaymentDate = transactionFrequency.getNextTransactionDate();
+    return {
+        listItemBag: listItemBag,
+        transactionFrequency,
+        startPaymentDate,
+        paymentDeadlineDate,
+        maxNumberOfPayments: transactionFrequency.getMaxNumberOfTransactionsBetweenDates(startPaymentDate, paymentDeadlineDate)
+    };
 }

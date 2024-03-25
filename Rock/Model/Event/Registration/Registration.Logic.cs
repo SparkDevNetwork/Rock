@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
@@ -30,6 +31,27 @@ namespace Rock.Model
 {
     public partial class Registration
     {
+        #region Properties
+        
+        /// <summary>
+        /// Gets a boolean value indicating whether a payment plan is configured.
+        /// </summary>
+        /// <value>
+        /// A boolean value indicating whether a payment plan is configured.
+        /// </value>
+        [NotMapped]
+        [LavaVisible]
+        [RockInternal( "1.16.5" )]
+        internal virtual bool IsPaymentPlanConfigured
+        {
+            get
+            {
+                return PaymentPlanFinancialScheduledTransactionId.HasValue;
+            }
+        }
+
+        #endregion
+
         #region Navigation Properties
 
         /// <summary>

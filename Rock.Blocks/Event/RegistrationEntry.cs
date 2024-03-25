@@ -922,7 +922,7 @@ namespace Rock.Blocks.Event
                 {
                     RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
                 };
-
+                // TODO JMH - not here but on the line that appies below: if there is already a payment plan, the registration is considered "paid-in-full" in the sense that no more payments can be made unless the payment plan is canceled. Should this action handle cancel and resubmission? I don't think so.
                 var registrationService = new RegistrationService( rockContext );
                 registrationService.Add( context.Registration );
                 registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registration" );
@@ -3254,6 +3254,7 @@ namespace Rock.Blocks.Event
                 IsPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed,
                 PaymentDeadlineDate = context.RegistrationSettings.PaymentDeadlineDate,
                 PaymentPlanFrequencies = GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ),
+                IsPaymentPlanConfigured = context.Registration.IsPaymentPlanConfigured,
 
                 // Currency Code
                 CurrencyInfo = new CurrencyInfoBag

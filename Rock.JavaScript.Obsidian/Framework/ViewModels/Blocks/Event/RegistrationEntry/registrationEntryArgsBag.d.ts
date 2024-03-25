@@ -30,7 +30,7 @@ import { RegistrationEntryPaymentPlanBag } from "@Obsidian/ViewModels/Blocks/Eve
 export type RegistrationEntryArgsBag = {
     /**
      * Gets or sets the amount to pay now.
-     * This is a separate amount from recurring payments in the <see cref="P:Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrationEntryArgsBag.PaymentPlan" />.
+     * This is a separate amount from recurring payments configured in the <see cref="P:Rock.ViewModels.Blocks.Event.RegistrationEntry.RegistrationEntryArgsBag.PaymentPlan" />.
      */
     amountToPayNow: number;
 

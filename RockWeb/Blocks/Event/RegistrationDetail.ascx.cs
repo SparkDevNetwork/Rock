@@ -1429,6 +1429,8 @@ namespace RockWeb.Blocks.Event
                     .Include( a => a.Group )
                     .Include( a => a.Registrants )
                     .Include( a => a.Registrants.Select( s => s.Fees ) )
+                    .Include( a => a.PaymentPlanFinancialScheduledTransaction )
+                    .Include( a => a.PaymentPlanFinancialScheduledTransaction.TransactionFrequencyValue )
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
@@ -2301,6 +2303,21 @@ namespace RockWeb.Blocks.Event
 
             rptFeeSummary.DataSource = costs;
             rptFeeSummary.DataBind();
+
+            // Set the Payment Plan
+            if ( registration.PaymentPlanFinancialScheduledTransaction == null )
+            {
+                pnlPaymentPlanSummary.Visible = false;
+            }
+            else
+            {
+                pnlPaymentPlanSummary.Visible = true;
+                lAmountDueToday.Text = "??"; // The amount due today is the one-time transaction that occurred before the scheduled payments.
+                // TODO JMH Should the payment plan FinancialScheduledTransaction.Transactions contain the one-time AmountDueToday transaction?
+                //var lastTransactionBeforePaymentPlan = registration.PaymentPlanFinancialScheduledTransaction.trans if (registration.PaymentPlanFinancialScheduledTransaction.CreatedDateTime)
+                lFrequencyPaymentAmount.Label = lFrequencyPaymentAmount.Label.Replace( "{Frequency}", registration.PaymentPlanFinancialScheduledTransaction.TransactionFrequencyValue.ToString() );
+                lFrequencyPaymentAmount.Text = $"{registration.PaymentPlanFinancialScheduledTransaction.TotalAmount.FormatAsCurrency()} x {registration.PaymentPlanFinancialScheduledTransaction.NumberOfPayments}";
+            }
 
             // Set the totals
             decimal balanceDue = registration.BalanceDue;

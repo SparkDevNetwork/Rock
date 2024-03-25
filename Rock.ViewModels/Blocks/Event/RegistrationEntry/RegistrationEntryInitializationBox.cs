@@ -471,6 +471,11 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public List<ListItemBag> PaymentPlanFrequencies { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether the payment plan has been configured.
+        /// </summary>
+        public bool IsPaymentPlanConfigured { get; set; }
+
+        /// <summary>
         /// Gets or sets the currency information.
         /// </summary>
         /// <value>

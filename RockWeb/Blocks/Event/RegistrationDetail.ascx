@@ -120,7 +120,14 @@
                                 <div class="tab-content">
                                     <div id="tabPaneAccount" runat="server" class="tab-pane fade in">
                                         <div class="row fee-totals">
-                                            <div class="col-sm-offset-8 col-sm-4 fee-totals-options">
+                                            <div class="col-sm-8 fee-totals-options">
+                                                <asp:Panel ID="pnlPaymentPlanSummary" runat="server" CssClass="well" Visible="false">
+                                                    <h4>Payment Plan</h4>
+                                                    <Rock:RockLiteral ID="lAmountDueToday" runat="server" Label="Amount Due Today" />
+                                                    <Rock:RockLiteral ID="lFrequencyPaymentAmount" runat="server" Label="{Frequency} Payment Amount" />
+                                                </asp:Panel>
+                                            </div>
+                                            <div class="col-sm-4 fee-totals-options">
                                                 <Rock:RockLiteral ID="lTotalCost" runat="server" Label="Total Cost" />
                                                 <Rock:RockLiteral ID="lPreviouslyPaid" runat="server" Label="Paid" />
                                                 <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining" />
