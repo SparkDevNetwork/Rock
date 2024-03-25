@@ -250,11 +250,32 @@
     gap: var(--item-spacing);
 }
 
-.check-in-page .welcome-screen .promotion {
+.check-in-page .welcome-screen .promotions {
     background: #e5dcd1;
     grid-row: 1/3;
     grid-column: 1/2;
     border-radius: var(--panel-border-radius);
+    position: relative;
+}
+
+.check-in-page .welcome-screen .promotion {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-size: cover;
+}
+
+.check-in-page .welcome-screen .promotion-enter-active,
+.check-in-page .welcome-screen .promotion-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.check-in-page .welcome-screen .promotion-enter-from,
+.check-in-page .welcome-screen .promotion-leave-to {
+    opacity: 0;
 }
 
 .check-in-page .welcome-screen .start-button {
@@ -338,11 +359,15 @@
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref } from "vue";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
-    import { CheckInKioskOptionsBag, Screen } from "./CheckInKiosk/utils.partial";
+    import { CheckInKioskOptionsBag, provideKioskState, Screen } from "./CheckInKiosk/utils.partial";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
+
+    const kioskState: Record<string, unknown> = {};
+
+    provideKioskState(kioskState);
 
     const configuration = ref<KioskConfigurationBag>({});
     const currentScreen = ref(Screen.Configuration);

@@ -24,6 +24,7 @@ import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configura
 import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
+import { inject, provide } from "vue";
 
 // #region Temporary Types
 
@@ -82,6 +83,30 @@ export interface IRockCheckInNative {
     StartCamera?(isPassive: boolean): void;
 }
 /* eslint-enable @typescript-eslint/naming-convention */
+
+const kioskStateKey = Symbol("KioskState");
+
+/**
+ * Makes a state object available to child components. This is essentially an
+ * in-memory cache so they can quickly restore their state. It will be lost
+ * if the page is reloaded.
+ *
+ * @param state The state object to make available to child components.
+ */
+export function provideKioskState(state: Record<string, unknown>): void {
+    provide(kioskStateKey, state);
+}
+
+/**
+ * Gets the state object for the kiosk. This is essentially an in-memory cache
+ * so child components can quickly restore their state. It will be lost if the
+ * page is reloaded. The state is not reactive.
+ *
+ * @returns The state object that can be used to store custom data.
+ */
+export function useKioskState(): Record<string, unknown> {
+    return inject<Record<string, unknown>>(kioskStateKey, {});
+}
 
 export function markdown(content: string | undefined | null): string {
     if (!content) {

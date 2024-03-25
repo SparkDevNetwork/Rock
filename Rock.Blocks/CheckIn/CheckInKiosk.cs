@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -494,6 +495,68 @@ namespace Rock.Blocks.CheckIn
             }
 
             return ActionOk( config );
+        }
+
+        /// <summary>
+        /// Gets the promotion list defined for the template and kiosk.
+        /// </summary>
+        /// <param name="templateGuid">The check-in template unique identifier.</param>
+        /// <param name="kioskGuid">The kiosk unique identifier.</param>
+        /// <returns>A list of <see cref="PromotionBag"/> objects.</returns>
+        [BlockAction]
+        public BlockActionResult GetPromotionList( Guid templateGuid, Guid kioskGuid )
+        {
+            var kiosk = DeviceCache.Get( kioskGuid, RockContext );
+            var contentChannel = new ContentChannelService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Include( cc => cc.Items )
+                .Where( cc => cc.Id == 8 )
+                .FirstOrDefault();
+
+            if ( kiosk == null || contentChannel == null )
+            {
+                return ActionOk( new List<PromotionBag>() );
+            }
+
+            contentChannel.Items.LoadAttributes( RockContext );
+
+            var now = RockDateTime.Now;
+            var campusId = kiosk.GetCampusId();
+            var campusGuid = campusId.HasValue
+                ? CampusCache.Get( campusId.Value )?.Guid ?? Guid.Empty
+                : Guid.Empty;
+
+            // Filter items by date.
+            var promotionItems = contentChannel.Items
+                .Where( item => item.StartDateTime <= now
+                    && ( !item.ExpireDateTime.HasValue || item.ExpireDateTime >= now ) );
+
+            // Filter items by approval.
+            if ( contentChannel.RequiresApproval )
+            {
+                promotionItems = promotionItems.Where( item => item.Status == ContentChannelItemStatus.Approved );
+            }
+
+            // Filter items by kiosk campus.
+            promotionItems=  promotionItems
+                .Where( item => item.GetAttributeValue( "Campuses" ).IsNullOrWhiteSpace()
+                    || item.GetAttributeValue( "Campuses" ).SplitDelimitedValues().AsGuidList().Contains( campusGuid ) );
+
+            // Order the items.
+            promotionItems = contentChannel.ItemsManuallyOrdered
+                ? contentChannel.Items.OrderBy( item => item.Order )
+                : contentChannel.Items.OrderBy( item => item.StartDateTime );
+
+            var promotions = promotionItems
+                .Select( item => new PromotionBag
+                {
+                    Url = $"/GetImage.ashx?Guid={item.GetAttributeValue( "Image" )}",
+                    Duration = item.GetAttributeValue( "DisplayDuration" ).AsIntegerOrNull() ?? 15
+                } )
+                .ToList();
+
+            return ActionOk( promotions );
         }
 
         #endregion
