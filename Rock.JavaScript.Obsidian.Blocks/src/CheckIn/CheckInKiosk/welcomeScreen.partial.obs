@@ -34,16 +34,7 @@
     // - "window.PerformScannedCodeSearch" function for iPad app.
     // - Set native kiosk integer id via JavaScript.
     // - Start native camera if iPad with camera.
-
-    // Things that can trigger a change to check-in:
-    // - Adding/Editing/Deleting Locations related to check-in.
-    // - Adding/Editing/Deleting Schedules related to check-in (named).
-    // - Adding/Editing/Deleting Group Locations related to check-in.
-    // - GroupLocation.Schedules modified. (If named schedule presumedly)
-    // - Adding/Editing/Deleting Group Types related to check-in.
-    // - Adding/Editing/Deleting Groups related to check-in.
-    // - Adding/Editing/Deleting Schedule Category Exclusions related to check-in.
-    // - Adding/Editing/Deleting binary files related to check-in.
+    // - Device Ads.
 
     const props = defineProps({
         configuration: {
