@@ -262,7 +262,7 @@
     grid-column: 2/3;
 }
 
-.check-in-page .welcome-screen .start-button .btn {
+.check-in-page .welcome-screen .start-button {
     width: 100%;
     height: 100%;
     font-size: 64px;
@@ -274,13 +274,14 @@
     grid-column: 2/3;
 }
 
-.check-in-page .welcome-screen .scan-barcode-button .btn {
+.check-in-page .welcome-screen .scan-barcode-button {
     width: 100%;
     height: 100%;
     background-color: var(--tones-light);
+    padding: 0;
 }
 
-.check-in-page .welcome-screen .scan-barcode-button .btn .title {
+.check-in-page .welcome-screen .scan-barcode-button .title {
     font-size: 64px;
 }
 

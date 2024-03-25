@@ -39,7 +39,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
-    import { KioskConfigurationBag } from "./utils.partial";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
     import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
     import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";

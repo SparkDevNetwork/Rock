@@ -4,19 +4,18 @@
         <div class="promotion">
         </div>
 
-        <div class="start-button">
-            <RockButton btnType="primary"
-                        @click="onStartClick">
-                Start
-            </RockButton>
-        </div>
+        <RockButton btnType="primary"
+                    class="start-button"
+                    @click="onStartClick">
+            Start
+        </RockButton>
 
-        <div class="scan-barcode-button">
-            <RockButton id="barcode-button" btnType="default">
-                <div class="title"><i class="fa fa-qrcode"></i></div>
-                <div class="subtitle">Scan A Barcode</div>
-            </RockButton>
-        </div>
+        <RockButton id="barcode-button"
+                    btnType="default"
+                    class="scan-barcode-button">
+            <div class="title"><i class="fa fa-qrcode"></i></div>
+            <div class="subtitle">Scan A Barcode</div>
+        </RockButton>
     </div>
 </template>
 
@@ -25,6 +24,26 @@
     import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/CheckIn/kioskConfigurationBag";
     import { onMounted, PropType } from "vue";
+
+    // TODO:
+    // - Countdown to check-in opened screen.
+    // - Check-in closed for the day screen.
+    // - Check-in all locations closed screen.
+    // - Check if check-in configuration has changed.
+    // - Keyboard input for physical barcode scanner.
+    // - "window.PerformScannedCodeSearch" function for iPad app.
+    // - Set native kiosk integer id via JavaScript.
+    // - Start native camera if iPad with camera.
+
+    // Things that can trigger a change to check-in:
+    // - Adding/Editing/Deleting Locations related to check-in.
+    // - Adding/Editing/Deleting Schedules related to check-in (named).
+    // - Adding/Editing/Deleting Group Locations related to check-in.
+    // - GroupLocation.Schedules modified. (If named schedule presumedly)
+    // - Adding/Editing/Deleting Group Types related to check-in.
+    // - Adding/Editing/Deleting Groups related to check-in.
+    // - Adding/Editing/Deleting Schedule Category Exclusions related to check-in.
+    // - Adding/Editing/Deleting binary files related to check-in.
 
     const props = defineProps({
         configuration: {
@@ -48,7 +67,6 @@
 
             scanner.start(deviceId, {
                 fps: 10,
-                aspectRatio: 4/3,
                 qrbox: {
                     width: 250,
                     height: 250
