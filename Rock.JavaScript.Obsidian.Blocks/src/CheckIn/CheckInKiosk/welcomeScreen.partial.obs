@@ -31,7 +31,6 @@
     // - Check-in closed for the day screen.
     // - Check-in all locations closed screen.
     // - Check if check-in configuration has changed.
-    // - Keyboard input for physical barcode scanner.
     // - Device Ads.
 
     const props = defineProps({
@@ -45,14 +44,59 @@
         (event: "start"): void;
     }>();
 
+    let documentKeyboardBuffer: string = "";
+    let lastDocumentKeyPressTimestamp: number = 0;
+    let isProcessingScannedCode: boolean = false;
+
     function performScannedCodeSearch(code: string): void {
+        if (isProcessingScannedCode) {
+            return;
+        }
+
+        isProcessingScannedCode = true;
         console.log("Scanned code", code);
+        isProcessingScannedCode = false;
     }
 
     function onStartClick(): void {
         emit("start");
     }
 
+    /**
+     * Handles the keypress event for the entire document.
+     *
+     * @param event The object that describes the event.
+     */
+    function onDocumentKeyPress(event: KeyboardEvent): void {
+        event.preventDefault();
+
+        // If the kiosk is not active then we don't need to scan.
+        // if (false) {
+        //     return;
+        // }
+
+        const timestamp = new Date().getTime();
+
+        // If it has been more than 500ms since the last keypress then assume
+        // a partial read happened and reset the buffer.
+        if (timestamp - lastDocumentKeyPressTimestamp > 500) {
+            documentKeyboardBuffer = "";
+        }
+
+        lastDocumentKeyPressTimestamp = timestamp;
+
+        if (event.key === "Enter") {
+            if (documentKeyboardBuffer !== "") {
+                performScannedCodeSearch(documentKeyboardBuffer);
+                documentKeyboardBuffer = "";
+            }
+        }
+        else {
+            documentKeyboardBuffer += event.key;
+        }
+    }
+
+    // Perform any initialization when this component is added to the DOM.
     onMounted(async () => {
         const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
 
@@ -84,10 +128,18 @@
 
         // Install the native check-in app function for code scanning.
         window["PerformScannedCodeSearch"] = performScannedCodeSearch;
+
+        // Install the keypress handler for a physical barcode scanner.
+        document.addEventListener("keypress", onDocumentKeyPress);
     });
 
+    // Perform any cleanup when this component is about to be removed from
+    // the DOM.
     onBeforeUnmount(() => {
         // Remove the native check-in app function for code scanning.
         window["PerformScannedCodeSearch"] = undefined;
+
+        // Remove the physical barcode scanner keypress handler.
+        document.removeEventListener("keypress", onDocumentKeyPress);
     });
 </script>
