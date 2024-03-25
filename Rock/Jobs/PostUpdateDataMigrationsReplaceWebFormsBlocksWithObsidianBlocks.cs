@@ -249,9 +249,10 @@ namespace Rock.Jobs
             var newBlockTypeAttributeKeys = AttributeCache.GetByEntityTypeQualifier( blockEntityTypeId, "BlockTypeId", newBlockTypeId.ToString(), false )
                 .Select( a => a.Key )
                 .ToHashSet( StringComparer.OrdinalIgnoreCase );
+
+            // If the new block type fails to have all the required attributes of the old block type which it is replacing, skip it.
             if ( !oldBlockTypeAttributeKeys.IsSubsetOf( newBlockTypeAttributeKeys ) )
             {
-                // If the new block type fails to have all the required attributes of the old block type which it is replacing, skip it.
                 var missingBlockAttributes = new HashSet<string>( oldBlockTypeAttributeKeys, StringComparer.OrdinalIgnoreCase );
                 missingBlockAttributes.RemoveAll( newBlockTypeAttributeKeys );
                 ErrorMessage.Add( $"The new {BlockTypeCache.Get( newBlockTypeId.Value ).Name} block does not have the attribute(s): {missingBlockAttributes.Select( a => a ).JoinStrings( ", " )} of the previous {BlockTypeCache.Get( oldBlockTypeId.Value ).Name} block. Skipping this block for now." );
