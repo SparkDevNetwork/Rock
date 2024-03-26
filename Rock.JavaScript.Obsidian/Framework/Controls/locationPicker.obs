@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <LocationItemPicker v-if="numericSelectedMode === LocationPickerMode.Named" v-model="itemValue" v-model:showPopup="popupStatus">
+    <LocationItemPicker v-if="numericSelectedMode === LocationPickerMode.Named" v-model="itemValue" v-model:showPopup="popupStatus" v-bind="fieldProps">
         <template #pickerContentSuperHeader v-if="options.length > 1">
             <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
@@ -14,7 +14,7 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </LocationItemPicker>
-    <LocationAddressPicker v-if="numericSelectedMode === LocationPickerMode.Address" v-model="addressValue" v-model:showPopup="popupStatus">
+    <LocationAddressPicker v-if="numericSelectedMode === LocationPickerMode.Address" v-model="addressValue" v-model:showPopup="popupStatus" v-bind="fieldProps">
         <template #pickerContentSuperHeader v-if="options.length > 1">
             <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
@@ -28,7 +28,7 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </LocationAddressPicker>
-    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Point" v-model="pointValue" drawingMode="Point" v-model:showPopup="popupStatus">
+    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Point" v-model="pointValue" drawingMode="Point" v-model:showPopup="popupStatus" v-bind="fieldProps">
         <template #pickerContentSuperHeader v-if="options.length > 1">
             <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
@@ -42,7 +42,7 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </GeoPicker>
-    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Polygon" v-model="fenceValue" drawingMode="Polygon" v-model:showPopup="popupStatus">
+    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Polygon" v-model="polygonValue" drawingMode="Polygon" v-model:showPopup="popupStatus" v-bind="fieldProps">
         <template #pickerContentSuperHeader v-if="options.length > 1">
             <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
@@ -67,6 +67,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { SingleLocationPickerMode, LocationPickerModeFlag, LocationPickerMode } from "@Obsidian/Enums/Controls/locationPickerMode";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 
     type SingleLocationPickerModeString = `${SingleLocationPickerMode}`;
 
@@ -83,13 +84,17 @@
         allowedPickerModes: {
             type: Number as PropType<LocationPickerModeFlag>,
             default: () => LocationPickerMode.All
-        }
+        },
+
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
         (_e: "update:modelValue", value: AddressControlBag | ListItemBag | string | undefined): void
         (_e: "update:currentPickerMode", value: SingleLocationPickerMode): void
     }>();
+
+    const fieldProps = useStandardRockFormFieldProps(props);
 
     const selectedMode = ref<SingleLocationPickerModeString>(props.currentPickerMode.toString() as SingleLocationPickerModeString);
     const numericSelectedMode = computed<SingleLocationPickerMode>(() => Number(selectedMode.value) as SingleLocationPickerMode);
@@ -131,7 +136,7 @@
     const itemValue = ref<ListItemBag | undefined>(undefined);
     const addressValue = ref<AddressControlBag>({});
     const pointValue = ref<string>("");
-    const fenceValue = ref<string>("");
+    const polygonValue = ref<string>("");
 
     const popupStatus = ref<boolean>(false);
 
@@ -146,7 +151,7 @@
             return pointValue.value;
         }
         if (numericSelectedMode.value === LocationPickerMode.Polygon) {
-            return fenceValue.value;
+            return polygonValue.value;
         }
 
         return "";
@@ -156,23 +161,79 @@
 
     watch(numericSelectedMode, () => emit("update:currentPickerMode", numericSelectedMode.value));
 
+    // If the model value changes from the outside, we need to figure out what kind of value it is,
+    // assign it to the correct internal value, and change the current picker mode to match.
     watch(() => props.modelValue, () => {
-        if (numericSelectedMode.value === LocationPickerMode.Address) {
-            addressValue.value = props.modelValue as AddressControlBag;
+        if (props.modelValue == internalValue.value) {
+            return;
         }
-        if (numericSelectedMode.value === LocationPickerMode.Named) {
-            itemValue.value = props.modelValue as ListItemBag;
+
+        // If undefined, stick with the current picker mode.
+        if (props.modelValue == undefined) {
+            if (numericSelectedMode.value === LocationPickerMode.Address) {
+                addressValue.value = {};
+            }
+            if (numericSelectedMode.value === LocationPickerMode.Named) {
+                itemValue.value = undefined;
+            }
+            if (numericSelectedMode.value === LocationPickerMode.Point) {
+                pointValue.value = "";
+            }
+            if (numericSelectedMode.value === LocationPickerMode.Polygon) {
+                polygonValue.value = "";
+            }
+            return;
         }
-        if (numericSelectedMode.value === LocationPickerMode.Point) {
-            pointValue.value = props.modelValue as string;
+
+        // If it's a string, it could be one of the 2 different geo picker types
+        if (typeof props.modelValue === "string") {
+            // If it matches a point string, set the point value
+            if ((props.modelValue.search(/^POINT *\(/) >= 0 || props.modelValue == "") && props.allowedPickerModes & LocationPickerMode.Point) {
+                pointValue.value = props.modelValue;
+                selectedMode.value = `${LocationPickerMode.Point}`;
+                return;
+            }
+            // If it's a polygon, set the fence value
+            else if ((props.modelValue.search(/^POLYGON *\(\(/) >= 0 || props.modelValue == "") && props.allowedPickerModes & LocationPickerMode.Polygon) {
+                polygonValue.value = props.modelValue;
+                selectedMode.value = `${LocationPickerMode.Polygon}`;
+                return;
+            }
         }
-        if (numericSelectedMode.value === LocationPickerMode.Polygon) {
-            fenceValue.value = props.modelValue as string;
+        // If it's an object, then it could be an address or a named location
+        else if (typeof props.modelValue === "object") {
+            // If it contains any of the properties of an AddressControlBag, then we have an address
+            if (
+                props.allowedPickerModes & LocationPickerMode.Address &&
+                (
+                    "street1" in props.modelValue ||
+                    "street2" in props.modelValue ||
+                    "city" in props.modelValue ||
+                    "state" in props.modelValue ||
+                    "postalCode" in props.modelValue ||
+                    "locality" in props.modelValue ||
+                    "country" in props.modelValue
+                )
+            ) {
+                addressValue.value = props.modelValue;
+                selectedMode.value = `${LocationPickerMode.Address}`;
+                return;
+            }
+            // If it contains a `value` property, it's a ListItemBag which means it's a named location
+            else if ("value" in props.modelValue && props.allowedPickerModes & LocationPickerMode.Named) {
+                itemValue.value = props.modelValue;
+                selectedMode.value = `${LocationPickerMode.Named}`;
+                return;
+            }
         }
+
+        // If we made it this far, it's an invalid value, so re-emit the value we already have
+        emit("update:modelValue", internalValue.value);
+        emit("update:currentPickerMode", numericSelectedMode.value);
     }, { immediate: true });
 
     watch(() => props.currentPickerMode, () => {
-        selectedMode.value = props.currentPickerMode.toString() as SingleLocationPickerModeString;
+        selectedMode.value = `${props.currentPickerMode}`;
     });
 
     watch(() => props.allowedPickerModes, () => {

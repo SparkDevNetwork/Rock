@@ -119,6 +119,7 @@
     // #region Watchers
 
     watch(() => props.modelValue, async () => {
+        console.log("Address Value Set");
         updateRefValue(controlValue, { ...props.modelValue });
         updateRefValue(pickerValue, { ...props.modelValue });
         pickerLabel.value = (await getAddressString(props.modelValue))?.data ?? "";
