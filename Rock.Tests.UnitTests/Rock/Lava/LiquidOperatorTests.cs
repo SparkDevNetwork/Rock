@@ -265,7 +265,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( typeof ( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -459,6 +459,59 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
             TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verify the "equals" comparison operator for boolean values.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "'False' == true", false )]
+        [DataRow( "'False' == false", false )]
+        [DataRow( "true == 'False'", false )]
+        [DataRow( "false == 'False'", false )]
+        [DataRow( "true == true", true )]
+        [DataRow( "false == false", true )]
+        [DataRow( "true == false", false )]
+        public void LiquidEqual_BooleanAndOtherOperandType_PerformsBooleanComparison( string expression, bool expectedResult )
+        {
+            var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
+
+            /* [2024-03-24] DJL
+
+               This test only applies to the Fluid Engine.
+               Past implementations of Lava supported implicit conversions of operands when comparing values,
+               so string values such as 'True' and 'False' would be interpreted as
+               boolean values, and the expression {% 'False' == false %} would evaluate as true.
+               The Shopify Liquid standard does not support implicit conversions, so comparisons of string and boolean values
+               will always equate to false.
+            */
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verify the "equals" comparison operator for boolean values using the DotLiquid framework.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "'False' == true", false )]
+        [DataRow( "'False' == false", true )]
+        [DataRow( "true == 'False'", false )]
+        [DataRow( "false == 'False'", true )]
+        [DataRow( "true == true", true )]
+        [DataRow( "false == false", true )]
+        [DataRow( "true == false", false )]
+        public void RockLiquidEqual_BooleanAndOtherOperandType_PerformsImplicitConversionToBoolean( string expression, bool expectedResult )
+        {
+            var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
+
+            /* [2024-03-24] DJL
+
+               This test only applies to the RockLiquid Engine.
+               Implementations of Lava using the DotLiquid framework support duck-typing and implicit conversion
+               of operands when comparing values, so string values such as 'True' and 'False' are interpreted as
+               boolean values, and the expression {% 'False' == false %} evaluates as true.
+               This does not align with the Shopify Liquid standard, but the rule is preserved for consistency.
+            */
+            TestHelper.AssertTemplateOutput( typeof( RockLiquidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
         }
 
         /// <summary>
