@@ -74,7 +74,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return config.entity?.name ?? "Queue Detail";
+        return config.entity?.name ?? "";
     });
 
     /**
