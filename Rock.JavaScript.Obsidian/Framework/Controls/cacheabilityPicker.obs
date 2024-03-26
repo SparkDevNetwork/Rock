@@ -4,7 +4,7 @@
 
     <div class="row" v-if="shouldAskForMaxAge || shouldAskForSharedMaxAge">
         <TimeIntervalPicker v-if="shouldAskForMaxAge" formGroupClasses="col-md-6" v-model="maxAge" label="Max Age" help="The maximum amount of time that the item will be cached." />
-        <TimeIntervalPicker v-if="shouldAskForSharedMaxAge" formGroupClasses="col-md-6" v-model="sharedMaxAge" label="Max Age" help="The maximum amount of time the item will be cached in a shared cache (e.g. CDN). If not provided then the Max Age is typically used." />
+        <TimeIntervalPicker v-if="shouldAskForSharedMaxAge" formGroupClasses="col-md-6" v-model="sharedMaxAge" label="Max Shared Age" help="The maximum amount of time the item will be cached in a shared cache (e.g. CDN). If not provided then the Max Age is typically used." />
     </div>
 </template>
 

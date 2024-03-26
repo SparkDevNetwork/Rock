@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
@@ -24,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,10 +35,11 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Security Role (Group)
     /// Stored as Group.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SECURITY_ROLE )]
     public class SecurityRoleFieldType : FieldType, IEntityReferenceFieldType
     {
+        private const string VALUES_PUBLIC_KEY = "values";
         #region Formatting
 
         /// <inheritdoc/>
@@ -58,6 +61,31 @@ namespace Rock.Field.Types
             }
 
             return formattedValue;
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            using ( var rockContext = new RockContext() )
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = new GroupService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( g => g.IsSecurityRole )
+                    .OrderBy( o => o.Name )
+                    .Select( o => new ListItemBag
+                    {
+                        Value = o.Guid.ToString(),
+                        Text = o.Name
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            return publicConfigurationValues;
         }
 
         #endregion

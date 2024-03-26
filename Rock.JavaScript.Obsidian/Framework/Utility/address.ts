@@ -31,3 +31,7 @@ export function getDefaultAddressControlModel(): AddressControlBag {
 export function validateAddress(address: AddressControlValidateAddressOptionsBag): Promise<HttpResult<AddressControlValidateAddressResultsBag>> {
     return post<AddressControlValidateAddressResultsBag>("/api/v2/Controls/AddressControlValidateAddress", undefined, address);
 }
+
+export function getAddressString(address: AddressControlBag): Promise<HttpResult<string>> {
+    return post<string>("/api/v2/Controls/AddressControlGetStreetAddressString", undefined, address);
+}

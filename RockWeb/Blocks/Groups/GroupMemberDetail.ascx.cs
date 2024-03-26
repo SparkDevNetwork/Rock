@@ -354,11 +354,11 @@ namespace RockWeb.Blocks.Groups
                 if ( groupMember != null )
                 {
                     // This should be replaced with a block setting when converted to Obsidian. -dsh
-                    var pageReferenceHistory = ( Dictionary<int, List<BreadCrumb>> ) System.Web.HttpContext.Current.Session["RockPageReferenceHistory"];
+                    var pageReferenceHistory = ( Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)> ) System.Web.HttpContext.Current.Session["RockPageReferenceHistory"];
 
                     var queryString = pageReferenceHistory.Values
-                        .SelectMany( h => h )
-                        .Where( bc => bc.Url.IsNotNullOrWhiteSpace() && bc.Url.StartsWith( "/" ) )
+                        .SelectMany( h => new List<BreadCrumb> { h.pageBreadCrumb }.Union( h.blockBreadCrumbs ) )
+                        .Where( bc => bc != null && bc.Url.IsNotNullOrWhiteSpace() && bc.Url.StartsWith( "/" ) )
                         .Select( bc => Uri.TryCreate( "http://ignored" + bc.Url, UriKind.Absolute, out var uri ) ? uri : null )
                         .Where( u => u != null && u.Query.IsNotNullOrWhiteSpace() && u.Query != "?" )
                         .Select( u => u.ParseQueryString() )

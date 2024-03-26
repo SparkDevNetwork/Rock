@@ -305,6 +305,12 @@ namespace Rock.Web.Cache
                     return false;
                 }
 
+                // If there are no filters to evaluate return the current authorized value.
+                if ( allEntityFilters.Count == 0 )
+                {
+                    return authorized;
+                }
+
                 foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
                 {
                     if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )

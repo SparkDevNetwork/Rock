@@ -23,22 +23,14 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.UI;
+using Rock.Security;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Core.Attributes;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-/*
- * WORK IN PROGRESS
- * 
- * This block is a work in progress, but we needed something to test field types.
- * 
- * What doesn't work:
- * Filtering
- * Reorder
- * Security
- * Grid (pagination)
- * EntityId is UNTESTED.
- * Security enforcement probably not correct.
- */
+
 namespace Rock.Blocks.Core
 {
     /// <summary>
@@ -110,9 +102,9 @@ namespace Rock.Blocks.Core
 
     #endregion
 
-    [Rock.SystemGuid.EntityTypeGuid( "A7D9C259-1CD0-42C2-B708-4D95F2469B18")]
-    [Rock.SystemGuid.BlockTypeGuid( "791DB49B-58A4-44E1-AEF5-ABFF2F37E197")]
-    public class Attributes : RockBlockType
+    [Rock.SystemGuid.EntityTypeGuid( "A7D9C259-1CD0-42C2-B708-4D95F2469B18" )]
+    [Rock.SystemGuid.BlockTypeGuid( "791DB49B-58A4-44E1-AEF5-ABFF2F37E197" )]
+    public class Attributes : RockEntityListBlockType<Model.Attribute>
     {
         public static class AttributeKey
         {
@@ -126,6 +118,13 @@ namespace Rock.Blocks.Core
             public const string HideColumnsOnGrid = "HideColumnsOnGrid";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterEntityTypeGuid = "filter-entity-type-guid";
+            public const string FilterCategories = "filter-categories";
+            public const string FilterActive = "filter-active";
+        }
+
         #region Methods
 
         /// <inheritdoc/>
@@ -133,16 +132,23 @@ namespace Rock.Blocks.Core
         {
             var entityTypeGuid = GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull();
 
-            return new
+            var box = new ListBlockBox<AttributesOptionsBag>();
+            var builder = GetGridBuilder();
+
+            box.IsAddEnabled = true;
+            box.IsDeleteEnabled = true;
+            box.ExpectedRowCount = null;
+            box.Options = new AttributesOptionsBag
             {
-                AttributeEntityTypeId = EntityTypeCache.Get<Rock.Model.Attribute>().Id,
                 EntityTypeGuid = entityTypeGuid,
                 EntityTypes = !entityTypeGuid.HasValue ? GetEntityTypes() : null,
-                Attributes = entityTypeGuid.HasValue ? GetAttributeRows( entityTypeGuid ) : new List<GridRow>(),
-                HideColumns = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).SplitDelimitedValues(),
+                HideColumns = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).SplitDelimitedValues().ToList(),
                 EnableShowInGrid = GetAttributeValue( AttributeKey.EnableShowInGrid ).AsBoolean(),
-                AllowSettingOfValues = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean()
+                AllowSettingOfValues = GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean(),
             };
+            box.GridDefinition = builder.BuildDefinition();
+
+            return box;
         }
 
         /// <summary>
@@ -173,54 +179,32 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Gets the attribute rows that will be sent to the client.
+        /// Gets the entity identifier from the block settings, accounting for 0 meaning null.
         /// </summary>
-        /// <param name="entityTypeGuid">The entity type unique identifier</param>
-        /// <returns>A list of grid row data.</returns>
-        private List<GridRow> GetAttributeRows( Guid? entityTypeGuid )
+        /// <returns>A nullable integer that will not be 0.</returns>
+        private int? GetEntityId()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var data = GetAttributeQuery( rockContext, entityTypeGuid );
+            var entityId = GetAttributeValue( AttributeKey.EntityId ).AsIntegerOrNull();
 
-                return data.Select( a => a.Id )
-                    .ToList()
-                    .Select( id => AttributeCache.Get( id ) )
-                    .Select( a => GetAttributeRow( a, rockContext ) )
-                    .ToList();
+            if ( entityId == 0 )
+            {
+                entityId = null;
             }
+
+            return entityId;
         }
 
-        /// <summary>
-        /// Gets a single data row to be displayed in the grid for the attribute.
-        /// </summary>
-        /// <param name="attribute">The attribute to be displayed.</param>
-        /// <param name="rockContext">The database context used for queries.</param>
-        /// <returns>A grid row object that represents this attribute on the grid.</returns>
-        private GridRow GetAttributeRow( AttributeCache attribute, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override IQueryable<Model.Attribute> GetListQueryable( RockContext rockContext )
         {
-            return new GridRow
+            var entityTypeGuid = GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull();
+            var isBlockSetting = entityTypeGuid.HasValue;
+
+            if ( !isBlockSetting )
             {
-                Guid = attribute.Guid,
-                Id = attribute.Id,
-                Name = attribute.Name,
-                Categories = attribute.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ),
-                IsActive = attribute.IsActive,
-                Qualifier = GetAttributeQualifier( attribute ),
-                Attribute = GetPublicAttribute( rockContext, attribute ),
-                Value = GetPublicAttributeValue( rockContext, attribute ),
-                IsDeleteEnabled = !attribute.IsSystem,
-                IsSecurityEnabled = false
-            };
-        }
+                entityTypeGuid = GetBlockPersonPreferences().GetValue( PreferenceKey.FilterEntityTypeGuid ).AsGuidOrNull();
+            }
 
-        /// <summary>
-        /// Gets the query for all attributes that will be presented in the list.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>A queryable that will enumerate to all the attributes.</returns>
-        private IQueryable<Rock.Model.Attribute> GetAttributeQuery( RockContext rockContext, Guid? entityTypeGuid )
-        {
             IQueryable<Rock.Model.Attribute> query = null;
             AttributeService attributeService = new AttributeService( rockContext );
 
@@ -260,9 +244,47 @@ namespace Rock.Blocks.Core
                 catch { }
             }
 
-            query = query.OrderBy( a => a.Order );
+            var activeFilter = GetBlockPersonPreferences().GetValue( PreferenceKey.FilterActive );
+
+            if ( activeFilter.IsNotNullOrWhiteSpace() )
+            {
+                var booleanActiveFilter = activeFilter.AsBoolean();
+                query = query.Where( a => a.IsActive == booleanActiveFilter );
+            }
 
             return query;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<Model.Attribute> GetOrderedListQueryable( IQueryable<Model.Attribute> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Order );
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<Model.Attribute> GetGridBuilder()
+        {
+            // Grid data is built later so we can't dispose of rockContext via `using`
+            var rockContext = new RockContext();
+            var builder = new GridBuilder<Model.Attribute>()
+                .WithBlock( this )
+                .AddTextField( "id", a => a.Id.ToString() )
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddField( "guid", a => a.Guid )
+                .AddField( "key", a => a.Key )
+                .AddField( "entityTypeGuid", a => EntityTypeCache.Get( a.EntityTypeId ?? 0 )?.Guid )
+                .AddTextField( "name", a => a.Name )
+                .AddField( "categories", a => a.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ) )
+                .AddField( "order", a => a.Order )
+                .AddField( "isActive", a => a.IsActive )
+                .AddField( "qualifier", a => GetAttributeQualifier( a ) )
+                .AddField( "attribute", a => GetPublicAttribute( rockContext, a ) )
+                .AddTextField( "value", a => GetPublicAttributeValue( rockContext, a ) )
+                .AddTextField( "defaultValue", a => GetPublicAttributeDefaultValue( a ) )
+                .AddField( "isDeleteEnabled", a => !a.IsSystem )
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+
+            return builder;
         }
 
         /// <summary>
@@ -270,7 +292,7 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="attribute">The attribute whose qualifier data will be formatted.</param>
         /// <returns>A string that represents the qualifier requirements.</returns>
-        private string GetAttributeQualifier( AttributeCache attribute )
+        private string GetAttributeQualifier( Model.Attribute attribute )
         {
             if ( attribute.EntityTypeId.HasValue )
             {
@@ -292,22 +314,6 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Gets the entity identifier from the block settings, accounting for 0 meaning null.
-        /// </summary>
-        /// <returns>A nullable integer that will not be 0.</returns>
-        private int? GetEntityId()
-        {
-            var entityId = GetAttributeValue( AttributeKey.EntityId ).AsIntegerOrNull();
-
-            if ( entityId == 0 )
-            {
-                entityId = null;
-            }
-
-            return entityId;
-        }
-
-        /// <summary>
         /// Gets the attribute value as a model that can be displayed on the
         /// user's device. This handles special block settings that change what
         /// value is available.
@@ -315,9 +321,10 @@ namespace Rock.Blocks.Core
         /// <param name="rockContext">The rock database context.</param>
         /// <param name="attribute">The attribute whose value will be viewed.</param>
         /// <returns>A <see cref="PublicAttributeValueViewModel"/> that represents the attribute value.</returns>
-        private PublicAttributeBag GetPublicAttribute( RockContext rockContext, AttributeCache attribute )
+        private PublicAttributeBag GetPublicAttribute( RockContext rockContext, Model.Attribute attribute )
         {
             var entityId = GetEntityId();
+            var attributeCache = AttributeCache.Get( attribute.Id );
 
             if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() ?? false )
             {
@@ -326,16 +333,16 @@ namespace Rock.Blocks.Core
 
                 if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
                 {
-                    return PublicAttributeHelper.GetPublicAttributeForView( attribute, attributeValue.Value );
+                    return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attributeValue.Value );
                 }
                 else
                 {
-                    return PublicAttributeHelper.GetPublicAttributeForView( attribute, attribute.DefaultValue );
+                    return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attribute.DefaultValue );
                 }
             }
             else
             {
-                return PublicAttributeHelper.GetPublicAttributeForView( attribute, attribute.DefaultValue );
+                return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attribute.DefaultValue );
             }
         }
 
@@ -346,52 +353,58 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="rockContext">The rock database context.</param>
         /// <param name="attribute">The attribute whose value will be viewed.</param>
-        /// <returns>A <see cref="PublicAttributeValueViewModel"/> that represents the attribute value.</returns>
-        private string GetPublicAttributeValue( RockContext rockContext, AttributeCache attribute )
+        /// <returns>A string that represents the attribute value.</returns>
+        private string GetPublicAttributeValue( RockContext rockContext, Model.Attribute attribute )
         {
             var entityId = GetEntityId();
+            var attributeCache = AttributeCache.Get( attribute.Id );
 
-            if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() ?? false )
+            if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBoolean() )
             {
                 AttributeValueService attributeValueService = new AttributeValueService( rockContext );
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
 
                 if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
                 {
-                    return PublicAttributeHelper.GetPublicValueForView( attribute, attributeValue.Value );
-                }
-                else
-                {
-                    return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
+                    return PublicAttributeHelper.GetPublicValueForView( attributeCache, attributeValue.Value );
                 }
             }
-            else
-            {
-                return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
-            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Gets the attribute's default value as a model that can be displayed on the
+        /// user's device. This handles special block settings that change what
+        /// value is available.
+        /// </summary>
+        /// <param name="attribute">The attribute whose value will be viewed.</param>
+        /// <returns>A string that represents the attribute's default value.</returns>
+        private string GetPublicAttributeDefaultValue( Model.Attribute attribute )
+        {
+            var attributeCache = AttributeCache.Get( attribute.Id );
+
+            return PublicAttributeHelper.GetPublicValueForView( attributeCache, attribute.DefaultValue );
+        }
+
+        /// <summary>
+        /// Gets a single data row to be displayed in the grid for the attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute to be displayed.</param>
+        /// <returns>A grid row object that represents this attribute on the grid.</returns>
+        private Dictionary<string, object> GetAttributeRow( Rock.Model.Attribute attribute )
+        {
+            var builder = GetGridBuilder();
+            var items = new List<Rock.Model.Attribute> { attribute };
+
+            var gridData = builder.Build( items );
+
+            return gridData.Rows[0];
         }
 
         #endregion
 
         #region Block Actions
-
-        /// <summary>
-        /// Gets the attributes for the spefified entity type unique identifier.
-        /// </summary>
-        /// <param name="entityTypeGuid">The entity type unique identifier whose attributes will be retrieved.</param>
-        /// <returns>A response that includes the attributes to be displayed.</returns>
-        [BlockAction]
-        public BlockActionResult GetAttributes( Guid entityTypeGuid )
-        {
-            var entityTypeSettingGuid = GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull();
-
-            if ( entityTypeSettingGuid.HasValue && entityTypeGuid != entityTypeSettingGuid )
-            {
-                return ActionBadRequest( "Cannot request attributes for entity type that does not match block settings." );
-            }
-
-            return ActionOk( GetAttributeRows( entityTypeGuid ) );
-        }
 
         /// <summary>
         /// Gets the attribute value representation for editing purposes.
@@ -478,7 +491,7 @@ namespace Rock.Blocks.Core
                     rockContext.SaveChanges();
                 }
 
-                return ActionOk( GetAttributeRow( attribute, rockContext ) );
+                return ActionOk( GetAttributeRow( new AttributeService( rockContext ).Get( attribute.Id ) ) );
             }
         }
 
@@ -504,7 +517,8 @@ namespace Rock.Blocks.Core
                 {
                     Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
                     EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = attribute.EntityTypeQualifierValue
+                    EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
+                    EntityTypeGuid = attribute.EntityType.Guid
                 } );
             }
         }
@@ -570,7 +584,7 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest();
                 }
 
-                return ActionOk( GetAttributeRow( AttributeCache.Get( newAttr.Id ), rockContext ) );
+                return ActionOk( GetAttributeRow( newAttr ) );
             }
         }
 
@@ -609,6 +623,34 @@ namespace Rock.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Changes the ordered position of a single item.
+        /// </summary>
+        /// <param name="key">The identifier of the item that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderItem( string key, string beforeKey )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Get the queryable and make sure it is ordered correctly.
+                var qry = GetListQueryable( rockContext );
+                qry = GetOrderedListQueryable( qry, rockContext );
+
+                // Get the entities from the database.
+                var items = GetListItems( qry, rockContext );
+
+                if ( !items.ReorderEntity( key, beforeKey ) )
+                {
+                    return ActionBadRequest( "Invalid reorder attempt." );
+                }
+
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
         #endregion
     }
 
@@ -617,6 +659,8 @@ namespace Rock.Blocks.Core
         public string EntityTypeQualifierColumn { get; set; }
 
         public string EntityTypeQualifierValue { get; set; }
+
+        public Guid EntityTypeGuid { get; set; }
 
         public PublicEditableAttributeBag Attribute { get; set; }
     }

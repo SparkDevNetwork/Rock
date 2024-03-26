@@ -1,0 +1,627 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="config === null" class="no-data-message">
+        <p>No data available. Please refresh the dataset to load the block.</p>
+        <button class="btn btn-primary" @click="hardRefreshData" :disabled="isRefreshing">
+            {{ isRefreshing ? 'Refreshing...' : 'Refresh Dataset' }}
+        </button>
+    </div>
+    <div v-else class="volunteer-generosity-analysis">
+        <Grid :definition="config.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              itemTerm="Volunteer Generosity Analysis"
+              :showExport="false"
+              :isCountMessageVisible="false"
+              :isSearchVisible="false">
+
+            <!-- Top Panel Section -->
+            <template #gridHeaderPrepend>
+                <Panel :hasTitle="false">
+                    <div class="refresh-tooltip">
+                        <button class="btn btn-xs btn-default" @click="refreshData">
+                            {{ calculateTimeDifference(lastUpdated) }}
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <span class="tooltip-text">
+                            {{ formatLastUpdated(lastUpdated) }} <br />
+                            Estimated Refresh Time: {{ estimatedRefreshTime }} seconds
+                        </span>
+                    </div>
+
+                    <div class="filter-row">
+                        <StandardFilterDaysBack :style="'width: 24vw'"
+                                                :onUpdate:modelValue="onDateRangeSelected"
+                                                v-model="selectedDateRange"
+                                                label="Attendance Date Range" />
+
+                        <DropDownList :style="'width: 24vw'"
+                                      v-model="campusValue"
+                                      :items="uniqueCampuses"
+                                      :onUpdate:modelValue="onCampusSelected"
+                                      label="Campus" />
+
+                        <DropDownList :style="'width: 24vw'"
+                                      v-model="teamValue"
+                                      :items="uniqueGroups"
+                                      :onUpdate:modelValue="onTeamSelected"
+                                      label="Team" />
+                    </div>
+                    <!-- Chart Section -->
+                    <div class="volunteer-monthly-giving-chart-container">
+                        <h3 class="w-100 flex">Volunteer Monthly Giving Rate</h3>
+                        <div class="volunteer-monthly-giving-chart">
+                            <div v-for="stat in teamDonationStats" :key="stat.month" class="volunteer-monthly-giving-bar-container">
+                                <div class="volunteer-monthly-giving-bar">
+                                    <div v-if="stat.donatedPercentage > 0" class="donated percent" :style="{ height: `${stat.donatedPercentage}%` }">
+                                        <span v-if="stat.donatedPercentage >= 20">
+                                            {{ stat.donatedPercentage.toFixed(1) }}%
+                                        </span>
+                                    </div>
+                                    <div v-if="stat.notDonatedPercentage > 0" class="not-donated percent" :style="{ height: `${stat.notDonatedPercentage}%` }">
+                                        <span v-if="stat.notDonatedPercentage >= 20">
+                                            {{ stat.notDonatedPercentage.toFixed(1) }}%
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="month-label">{{ stat.month }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </Panel>
+            </template>
+
+            <!-- Grid Section -->
+            <PersonColumn name="Name"
+                          title="Name"
+                          field="person"
+                          :filter="textValueFilter"
+                          visiblePriority="xs"
+                          width="15%" />
+
+            <TextColumn name="campus"
+                        title="Campus"
+                        field="campus"
+                        visiblePriority="xs"
+                        width="10%" />
+
+            <TextColumn name="team"
+                        title="Team"
+                        field="team"
+                        visiblePriority="xs"
+                        width="10%" />
+
+            <TextColumn name="lastAttendance"
+                        title="Last Attendance"
+                        field="lastAttendanceDate"
+                        :filter="textValueFilter"
+                        visiblePriority="xs"
+                        width="10%" />
+
+            <Column name="givingMonths"
+                    title="Giving Months"
+                    field="givingMonths"
+                    width="30%">
+                <template #format="{ row }">
+                    <div class="bar-chart">
+                        <div v-for="(bar, index) in getBarChart(row.givingMonths)" :key="index" class="bar" :class="bar.class">
+                            <div class="tooltip">{{ bar.month }}</div>
+                        </div>
+                    </div>
+                </template>
+            </Column>
+        </Grid>
+    </div>
+</template>
+
+<style scoped>
+.volunteer-generosity-analysis .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.volunteer-generosity-analysis .filter-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.volunteer-generosity-analysis .chart-row,
+.grid-row {
+    margin-bottom: 20px;
+}
+
+.filter-row .control-wrapper div {
+    width: 24vw;
+}
+
+.bar-chart {
+    display: flex;
+    align-items: end;
+    position: relative;
+    top: 14px;
+}
+
+
+.bar {
+    width: 20px;
+    margin: 0 2px;
+    position: relative;
+}
+
+.full,
+.empty,
+.fullEmpty {
+    height: 30px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transition: height 0.3s ease-out;
+}
+
+.empty,
+.fullEmpty {
+    background-color: transparent;
+    border-bottom: 3px solid var(--color-info);
+}
+
+.full {
+    background-color: var(--color-info);
+}
+
+.tooltip {
+    visibility: hidden;
+    width: 70px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    font-size: smaller;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 35px;
+    left: 50%;
+    margin-left: -35px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.bar:hover .tooltip {
+    visibility: visible;
+    opacity: 0.8;
+}
+
+
+.volunteer-monthly-giving-chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.volunteer-monthly-giving-chart {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    width: 100%;
+}
+
+.volunteer-monthly-giving-bar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 52px;
+}
+
+.volunteer-monthly-giving-bar {
+    width: 52px;
+    margin: 0 4px;
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    height: 108px;
+}
+
+.not-donated,
+.donated {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    color: white;
+    transition: height 0.3s ease-out;
+}
+
+.not-donated {
+    background-color: #E8E8E8;
+    color: black;
+}
+
+.donated {
+    background-color: var(--color-success);
+    border-top: 1px solid #098F62;
+}
+
+.month-label {
+    display: flex;
+    text-align: center;
+    font-size: 0.7em;
+    align-items: baseline;
+    margin-top: 5px;
+}
+
+.volunteer-monthly-giving-month-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.volunteer-monthly-giving-bar,
+.not-donated,
+.donated {
+    height: 108px;
+}
+
+.filter-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.filter-row > * {
+    flex: 1;
+    padding: 10px;
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.refresh-tooltip {
+    position: relative;
+    display: flex;
+    justify-content: end;
+}
+
+.refresh-tooltip .tooltip-text {
+    background-color: #000;
+    border-radius: 6px;
+    bottom: 125%;
+    color: #fff;
+    font-size: small;
+    margin-left: -110px;
+    opacity: 0.7;
+    padding: 10px;
+    position: absolute;
+    text-align: center;
+    transition: opacity .3s;
+    visibility: hidden;
+    width: 270px;
+    z-index: 1;
+}
+
+.refresh-tooltip .tooltip-text::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 69%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+.refresh-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: o.7;
+}
+
+.tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: black;
+}
+
+.grid-row,
+.volunteer-monthly-giving-chart-container {
+    width: 100%;
+}
+
+.volunteer-monthly-giving-month-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+
+.percent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.no-data-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    text-align: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, reactive, watch } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { VolunteerGenerosityAnalysisBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityAnalysisBag";
+    import { VolunteerGenerosityBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import Grid, { TextColumn, textValueFilter, Column, PersonColumn } from "@Obsidian/Controls/grid";
+    import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PreferenceKey } from "./VolunteerGenerosityAnalyisis/types.partial";
+    import Panel from "@Obsidian/Controls/panel.obs";
+
+    const config = useConfigurationValues<ListBlockBox<VolunteerGenerosityAnalysisBag>>();
+    const bag = useConfigurationValues<VolunteerGenerosityBag>();
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    let gridData: GridDataBag | undefined;
+    const { blockPreferences } = usePersonPreferences();
+
+    // #region Values
+    const selectedDateRange = ref<number>(parseInt(blockPreferences.getValue(PreferenceKey.DateRange)) || 0);
+    const campusValue = ref<string>("");
+    const teamValue = ref<string>("");
+    const teamDonationStats = ref<{ month: string; donatedPercentage: number; notDonatedPercentage: number }[]>([] as { month: string; donatedPercentage: number; notDonatedPercentage: number }[]);
+    const estimatedRefreshTime = ref<number>(0);
+    const lastUpdated = ref<string>("");
+    const dataRefreshed = ref<boolean>(false);
+    const isRefreshing = ref(false);
+    const uniqueGroups = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
+    const uniqueCampuses = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
+
+    // #endregion
+
+    // #region Functions
+
+    const fetchBlockPreferences = async(): Promise<void> => {
+        const defaultCampus = blockPreferences.getValue(PreferenceKey.Campus) || "";
+        const defaultTeam = blockPreferences.getValue(PreferenceKey.Team) || "";
+        campusValue.value = defaultCampus || "All";
+        teamValue.value = defaultTeam || "All";
+    };
+
+    /**
+     * Calculates the time difference between the last updated date and the current date
+     * @param lastUpdatedString The last updated date
+     * @returns A string representing the time difference
+     */
+    const calculateTimeDifference = (lastUpdatedString: string | number | Date): string => {
+        const lastUpdatedDate = new Date(lastUpdatedString);
+        const now = new Date();
+        const diffInSeconds = (now.getTime() - lastUpdatedDate.getTime()) / 1000;
+        const hoursAgo = Math.floor(diffInSeconds / 3600);
+        return `Data Updated: ${hoursAgo} hours ago`;
+    };
+
+    /**
+     * Calculate the donation percentages for each month
+     * @returns An array of objects representing the donation percentages
+     */
+    const calculateDonationPercentages = (): { month: string; donatedPercentage: number; notDonatedPercentage: number }[] => {
+        const donationData = last13Months.reduce((acc, month) => {
+            acc[month] = { donated: 0, total: gridData?.rows?.length || 0 };
+            return acc;
+        }, {});
+
+        gridData?.rows?.forEach(person => {
+            last13Months.forEach(month => {
+                if ((person as { givingMonths: string[] }).givingMonths.includes(month)) {
+                    donationData[month].donated++;
+                }
+            });
+        });
+
+        const donationPercentages = Object.keys(donationData).map(month => {
+            const { donated, total } = donationData[month];
+            const notDonated = total - donated;
+            return {
+                month,
+                donatedPercentage: (donated / total) * 100,
+                notDonatedPercentage: (notDonated / total) * 100
+            };
+        });
+
+        return teamDonationStats.value = donationPercentages;
+    };
+
+    /**
+     * @param lastUpdated The last updated date
+     * @returns A formatted string representing the last updated date
+     */
+    const formatLastUpdated = (lastUpdated: string | number | Date): string => {
+        const lastUpdatedDate = new Date(lastUpdated);
+        const datePart = lastUpdatedDate.toLocaleDateString("en-GB");
+        let hours = lastUpdatedDate.getHours();
+        const minutes = lastUpdatedDate.getMinutes();
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        const minutesStr = minutes < 10 ? "0" + minutes : minutes;
+        const timePart = `${hours}:${minutesStr} ${ampm}`;
+
+        return `Data last updated ${datePart} at ${timePart}`;
+    };
+
+    /**
+     * @param value The selected date range value
+     * Sets the selected date range value
+     * @returns void
+     */
+    const onDateRangeSelected = (value: number): void => {
+        selectedDateRange.value = value;
+    };
+
+    /**
+     * @param value The selected campus value
+     * Sets the selected campus value
+     * @returns void
+     */
+    const onCampusSelected = (value: string | string[]): void => {
+        if (!value || Array.isArray(value)) {
+            console.error("Unexpected value received for campus selection");
+            return;
+        }
+
+        campusValue.value = value ? (value) : "All";
+    };
+
+    /**
+     * @param value The selected team value
+     * Sets the selected team value
+     * @returns void
+     */
+    const onTeamSelected = (value: string | string[]): void => {
+        if (!value || Array.isArray(value)) {
+            console.error("Unexpected value received for team selection");
+            return;
+        }
+
+        teamValue.value = value ? (value) : "All";
+    };
+
+    /**
+     * Generate an array of the last 13 months including the current month
+     * @returns An array of strings representing the last 13 months
+    */
+    const generateLast13Months = (): string[] => {
+        const months: string[] = [];
+        const date = new Date();
+        for (let i = 12; i >= 0; i--) {
+            const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+            months.push(d.toLocaleString("default", { month: "short", year: "numeric" }));
+        }
+        return months;
+    };
+
+    /**
+     * @param givenMonthsStr A comma separated string of months and years
+     * @returns An array of objects representing the bar chart
+     */
+    const getBarChart = (givenMonthsStr): { month: string; full: string; class: string; }[] => {
+        const givenMonths = givenMonthsStr ? givenMonthsStr.split(",").map(monthYear => monthYear.trim()) : [];
+        const allEmpty = givenMonths.length === 0; // Check if all months are empty
+
+        return last13Months.map(displayedMonth => {
+            const isFull = givenMonths.includes(displayedMonth);
+            let barClass = isFull ? "full" : "empty";
+            if (allEmpty) barClass = "fullEmpty"; // Apply fullEmpty class if all months are empty
+
+            return { month: displayedMonth, full: isFull, class: barClass };
+        });
+    };
+
+    /**
+     * Calls the RefreshData Block Action to refresh the data and reload the grid
+     * @returns void
+     */
+    const refreshData = async (): Promise<void> => {
+        isRefreshing.value = true;
+
+        const result = await invokeBlockAction("RefreshData");
+        if (result.isSuccess && result.data) {
+            dataRefreshed.value = true;
+        }
+
+        isRefreshing.value = false;
+        gridDataSource.value = loadGridData() as Promise<GridDataBag>;
+
+    };
+
+    /**
+     * Calls the RefreshData Block Action to refresh the data, reload the grid, and reload the browser window
+     * @returns void
+     */
+    const hardRefreshData = async (): Promise<void> => {
+        await refreshData();
+        location.reload();
+    };
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     * @returns A promise that resolves to the grid data.
+     */
+    const loadGridData = async (): Promise<GridDataBag | undefined> => {
+        try {
+            const result = await invokeBlockAction<GridDataBag>("GetGridData", {
+                dateRange: selectedDateRange.value,
+                campus: campusValue.value,
+                team: teamValue.value,
+            });
+
+            if (result.isSuccess && result.data && result.data.rows) {
+                dataRefreshed.value = false;
+                const firstRow = result.data.rows[0];
+                lastUpdated.value = firstRow.lastUpdated as string;
+                estimatedRefreshTime.value = Number((firstRow.estimatedRefreshTime as number / 1000).toFixed(1));
+                gridData = reactive(result.data);
+                if (bag.uniqueCampuses) {
+                    uniqueCampuses.value = [{ text: "All", value: "" }, ...bag.uniqueCampuses.map(campus => ({ text: campus, value: campus }))];
+                }
+                if (bag.uniqueGroups) {
+                    uniqueGroups.value = [{ text: "All", value: "" }, ...bag.uniqueGroups.map(group => ({ text: group, value: group }))];
+                }
+
+                await fetchBlockPreferences();
+                calculateDonationPercentages();
+
+                return gridData;
+            }
+            else {
+                gridData = undefined;
+                return gridData;
+            }
+        }
+        catch (error) {
+            console.error("Error loading grid data:", error);
+            gridData = undefined;
+            return gridData;
+        }
+    };
+
+    // #endregion
+
+    // #region Watchers
+
+    watch([selectedDateRange, campusValue, teamValue, dataRefreshed], async () => {
+        blockPreferences.setValue(PreferenceKey.DateRange, selectedDateRange.value.toString());
+        blockPreferences.setValue(PreferenceKey.Campus, campusValue.value);
+        blockPreferences.setValue(PreferenceKey.Team, teamValue.value);
+        await blockPreferences.save();
+
+        gridDataSource.value = loadGridData() as Promise<GridDataBag>;
+    });
+
+    // #endregion
+
+    const last13Months = generateLast13Months();
+    gridDataSource.value = loadGridData() as Promise<GridDataBag>;
+</script>
+

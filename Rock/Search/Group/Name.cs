@@ -30,7 +30,7 @@ namespace Rock.Search.Group
     [Description("Group Name Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Group Name")]
-    [Rock.SystemGuid.EntityTypeGuid( "94825231-DC38-4DC0-A1D3-64B4AD6A87F0")]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEARCH_COMPONENT_GROUP_NAME )]
     public class Name : SearchComponent
     {
         /// <summary>

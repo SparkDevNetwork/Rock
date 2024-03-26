@@ -124,7 +124,7 @@ export class DefinedValueFieldType extends FieldTypeBase {
                     .join(", ");
             }
             catch {
-                return clientValue.value;
+                return clientValue.value ?? "";
             }
         }
         catch {

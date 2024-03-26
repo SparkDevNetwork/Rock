@@ -5,7 +5,8 @@
             <div class="col-md-6">
                 <TextBox v-model="attributeName"
                          label="Name"
-                         rules="required" />
+                         rules="required"
+                         @blur="populateAttributeKey" />
             </div>
 
             <div class="col-md-6">
@@ -218,6 +219,21 @@
     });
 
     const isFieldTypeReadOnly = computed((): boolean => !!props.modelValue?.guid);
+
+    function populateAttributeKey(): void {
+        // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+        if (attributeKey.value.trim() == "" && attributeName.value.trim() != "") {
+            let keyValue = attributeName.value.trim().replace(/[^a-zA-Z0-9_.-]/g, "");
+            let newKeyValue = keyValue;
+
+            let i = 1;
+            while (props.reservedKeyNames.includes(newKeyValue)) {
+                newKeyValue = keyValue + i++;
+            }
+
+            attributeKey.value = newKeyValue;
+        }
+    }
 
     watch([
         attributeName,

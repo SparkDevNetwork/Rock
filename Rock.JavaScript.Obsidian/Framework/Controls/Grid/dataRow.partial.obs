@@ -60,6 +60,15 @@
         monitorHeight: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * If set to true, each row with an `isActive` property set to false
+         * will be visually distinct
+         */
+        markInactiveRows: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -76,6 +85,10 @@
 
         if (props.isSelectable) {
             classValue += " grid-row-selectable";
+        }
+
+        if (props.markInactiveRows && props.row.isActive === false) {
+            classValue += " is-inactive";
         }
 
         return classValue;

@@ -442,8 +442,6 @@ namespace Rock.Blocks.Core
 
                 note.LoadAttributes( rockContext );
 
-                //var noteTypeId = note.ParentNoteId.HasValue ? note.ParentNote.NoteTypeId : note.NoteTypeId
-
                 var editBag = new NoteEditBag
                 {
                     IdKey = note.IdKey,
@@ -526,9 +524,6 @@ namespace Rock.Blocks.Core
                         {
                             return ActionBadRequest( errorMessage );
                         }
-
-                        // Set the NoteType to match the parent note.
-                        note.NoteTypeId = parentNote.NoteTypeId;
                     }
 
                     noteService.Add( note );

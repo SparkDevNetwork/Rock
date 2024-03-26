@@ -42,8 +42,7 @@
                     </div>
 
                     <div v-if="selectedSourceTypeIsDataView" class="form-group">
-                        <DataViewPicker
-                                        v-model="selectedDataView"
+                        <DataViewPicker v-model="selectedDataView"
                                         :entityTypeGuid="EntityType.Person"
                                         :disabled="isBusy"
                                         @update:modelValue="onSettingsSelectionChanged" />
@@ -561,6 +560,7 @@
         }
 
         isLoadingResources.value = true;
+        loadResourcesInfoMessage.value = "";
         loadResourcesErrorMessage.value = "";
 
         const result = await http.post<ISchedulerResource[]>(`${baseApiUrl}/GetSchedulerResources`, null, parameters);

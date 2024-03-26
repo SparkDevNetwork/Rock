@@ -57,12 +57,14 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+	<Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerDownloadItemBag.cs" />
     <Compile Include="Blocks\Cms\LibraryViewer\LibraryViewerValidationResultsBag.cs" />
+    <Compile Include="Blocks\Core\Attributes\AttributesOptionsBag.cs" />
     <Compile Include="Blocks\Core\AuditList\AuditListOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
@@ -77,6 +79,7 @@
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\ConnectionTypeList\ConnectionTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\GetAvailableCampusesBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
@@ -89,6 +92,7 @@
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\SavedAccountList\SavedAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUnassignedResourceCountBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\AssignmentOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\CurrentScheduleBag.cs" />
@@ -118,6 +122,7 @@
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateList\MergeTemplateListOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\ReportList\ReportListOptionsBag.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginMfaBag.cs" />
     <Compile Include="Blocks\Security\Login\CredentialLoginMfaBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageDetail\AppleTvPageBag.cs" />
@@ -439,6 +444,7 @@
     <Compile Include="Rest\CheckIn\SaveAttendanceResponseBag.cs" />
     <Compile Include="Rest\CheckIn\SearchForFamiliesOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\SearchForFamiliesResponseBag.cs" />
+    <Compile Include="Blocks\Reporting\VolunteerGenerosityAnalysis\VolunteerGenerosityAnalysisBag.cs" />
     <Compile Include="Controls\UniversalItemSearchPickerItemBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
