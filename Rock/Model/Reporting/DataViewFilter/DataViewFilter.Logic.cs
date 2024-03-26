@@ -111,9 +111,14 @@ namespace Rock.Model
             // First check if user is authorized for model
             bool authorized = base.IsAuthorized( action, person );
 
+            if ( !authorized )
+            {
+                return false;
+            }
+
             // If viewing, make sure user is authorized to view the component that filter is using
             // and all the child models/components
-            if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
+            if ( string.Compare( action, Authorization.VIEW, true ) == 0 )
             {
                 if ( EntityTypeId.HasValue )
                 {
@@ -124,14 +129,22 @@ namespace Rock.Model
                     }
                 }
 
-                if ( authorized )
+                if ( !authorized )
                 {
-                    foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
+                    return false;
+                }
+
+                // If there are no filters to evaluate return the current authorized value.
+                if ( allEntityFilters.Count == 0 )
+                {
+                    return authorized;
+                }
+
+                foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
+                {
+                    if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )
                     {
-                        if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }
