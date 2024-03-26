@@ -148,6 +148,7 @@
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionTypeList\ConnectionTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\GetAvailableCampusesBag.cs" />
+    <Compile Include="Blocks\Engagement\StepParticipantList\StepParticipantListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramList\StepProgramListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\AttendanceHistoryList\AttendanceHistoryListOptionsBag.cs" />
