@@ -91,9 +91,9 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
-                if ( !rockContext.Set<AnalyticsSourceZipCode>().AsQueryable().Any() )
+                if ( !rockContext.Set<AnalyticsSourcePostalCode>().AsQueryable().Any() )
                 {
-                    Rock.Model.AnalyticsSourceZipCode.GenerateAnalyticsSourceZipCodeData();
+                    Rock.Model.AnalyticsSourcePostalCode.GenerateAnalyticsSourcePostalCodeData();
                 }
             }
         }

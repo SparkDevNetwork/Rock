@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using Rock.Data;
 using Rock.Web.Cache;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -183,6 +184,26 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? TeamGroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the opened date.
+        /// </summary>
+        /// <value>
+        /// The opened date.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? OpenedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the closed date.
+        /// </summary>
+        /// <value>
+        /// The closed date.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? ClosedDate { get; set; }
 
         #endregion Entity Properties
 
