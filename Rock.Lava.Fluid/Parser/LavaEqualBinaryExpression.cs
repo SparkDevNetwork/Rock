@@ -94,31 +94,12 @@ namespace Rock.Lava.Fluid
                 }
             }
 
-            // If either value is boolean, perform a boolean comparison.
-            if ( leftValue is BooleanValue || rightValue is BooleanValue )
+            // If the left value is boolean and the right value is not, the equality comparison should be false.
+            // This fixes an issue in Fluid v2.3.1 so that it aligns with the Shopify Liquid standard.
+            // For more information, see https://github.com/sebastienros/fluid/issues/566.
+            if ( leftValue is BooleanValue && !( rightValue is BooleanValue ) )
             {
-                // If comparing with an empty string, any value will satisfy the predicate.
-                if ( leftValue.Type == FluidValues.String && leftValue.ToStringValue() == string.Empty )
-                {
-                    return FailIfEqual ? BooleanValue.True : BooleanValue.False;
-                }
-                else if ( rightValue.Type == FluidValues.String && rightValue.ToStringValue() == string.Empty )
-                {
-
-                    return FailIfEqual ? BooleanValue.True : BooleanValue.False;
-                }
-
-                var leftBoolean = leftValue.ToBooleanValue();
-                var rightBoolean = rightValue.ToBooleanValue();
-
-                if ( FailIfEqual )
-                {
-                    return leftBoolean == rightBoolean ? BooleanValue.False : BooleanValue.True;
-                }
-                else
-                {
-                    return leftBoolean == rightBoolean ? BooleanValue.True : BooleanValue.False;
-                }
+                return FailIfEqual ? BooleanValue.True : BooleanValue.False;
             }
 
             // If either value is an Enum, perform an Enum comparison.
