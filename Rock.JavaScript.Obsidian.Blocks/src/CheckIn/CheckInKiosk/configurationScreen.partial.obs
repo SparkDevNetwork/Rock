@@ -128,14 +128,13 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CheckInKioskOptionsBag, getCameraItems, getCurrentPosition, isHtmlCameraAvailable, SavedConfigurationBag } from "./utils.partial";
+    import { CheckInKioskOptionsBag, getCameraItems, getCurrentPosition, isHtmlCameraAvailable, KioskButton, SavedConfigurationBag } from "./utils.partial";
     import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { onConfigurationValuesChanged, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 
@@ -166,7 +165,7 @@
 
     const emit = defineEmits<{
         (event: "configured", value: KioskConfigurationBag): void;
-        (event: "updateActions", value: PanelAction[]): void;
+        (event: "updateActions", value: KioskButton[]): void;
     }>();
 
     const http = useHttp();
@@ -314,12 +313,14 @@
      * Updates the actions available on the screen in the footer.
      */
     function updateActions(): void {
-        const actions: PanelAction[] = [];
+        const actions: KioskButton[] = [];
 
         if (!errorMessage.value && isCustomConfigurationVisible.value) {
             actions.push({
                 type: "primary",
                 title: "Next",
+                key: "next",
+                class: "next-button",
                 disabled: !isCustomConfigurationValid.value,
                 handler: onNextClick
             });
@@ -329,6 +330,9 @@
             actions.push({
                 type: props.blockConfiguration.isManualSetupAllowed ? "default" : "primary",
                 title: "Retry",
+                key: "retry",
+                class: "retry-button",
+                disabled: false,
                 handler: attemptConfigureByGeoLocation
             });
 
@@ -336,6 +340,9 @@
                 actions.push({
                     type: "primary",
                     title: "Manual Setup",
+                    key: "manual-setup",
+                    class: "manual-setup-button",
+                    disabled: false,
                     handler: startManualSetup
                 });
             }

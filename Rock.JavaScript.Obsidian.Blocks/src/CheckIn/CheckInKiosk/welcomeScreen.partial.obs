@@ -32,10 +32,9 @@
     import { KioskStatusOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusOptionsBag";
     import { KioskStatusResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusResponseBag";
     import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera, secondsToCountdown, useKioskState } from "./utils.partial";
+    import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera, KioskButton, secondsToCountdown, useKioskState } from "./utils.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
     // TODO:
     // - Check if check-in configuration has changed.
@@ -49,7 +48,7 @@
 
     const emit = defineEmits<{
         (event: "start"): void;
-        (event: "updateActions", value: PanelAction[]): void;
+        (event: "updateActions", value: KioskButton[]): void;
     }>();
 
     const kioskState = useKioskState();
@@ -164,18 +163,24 @@
     }
 
     function updateActions(): void {
-        const actions: PanelAction[] = [];
+        const actions: KioskButton[] = [];
 
         if (isKioskClosed.value) {
             actions.push({
+                type: "danger",
                 title: "Kiosk Closed",
-                type: "danger"
+                key: "kiosk-closed",
+                class: "kiosk-closed-button",
+                disabled: false
             });
         }
         else if (isKioskNotOpen.value) {
             actions.push({
+                type: "danger",
                 title: "Kiosk Closed for Today",
-                type: "danger"
+                key: "kiosk-closed-for-today",
+                class: "kiosk-closed-for-today-button",
+                disabled: false
             });
         }
         else if (isKioskNotOpenYet.value) {
@@ -191,8 +196,11 @@
             }
 
             actions.push({
+                type: "info",
                 title: `Kiosk Will Open in ${secondsToCountdown(seconds)}`,
-                type: "warning"
+                key: "kiosk-will-open",
+                class: "kiosk-will-open-button",
+                disabled: false
             });
         }
 

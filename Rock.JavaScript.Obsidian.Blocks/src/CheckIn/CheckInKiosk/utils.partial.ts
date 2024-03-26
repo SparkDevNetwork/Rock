@@ -67,6 +67,20 @@ export enum Screen {
 
 // #endregion
 
+export type KioskButton = {
+    title: string;
+
+    key: string;
+
+    disabled: boolean;
+
+    type: "default" | "primary" | "success" | "info" | "warning" | "danger"
+
+    class?: string;
+
+    handler?: () => void | Promise<void>;
+};
+
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface IRockCheckInNative {
     /**

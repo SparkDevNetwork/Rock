@@ -373,8 +373,7 @@
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref } from "vue";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
-    import { CheckInKioskOptionsBag, provideKioskState, Screen } from "./CheckInKiosk/utils.partial";
-    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { CheckInKioskOptionsBag, KioskButton, provideKioskState, Screen } from "./CheckInKiosk/utils.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
@@ -396,7 +395,7 @@
             && currentScreen.value !== Screen.Welcome;
     });
 
-    const currentScreenActions = ref<PanelAction[]>([]);
+    const currentScreenActions = ref<KioskButton[]>([]);
 
     function navigateToScreen(screen: Screen): void {
         currentScreenActions.value = [];
@@ -408,7 +407,7 @@
         navigateToScreen(Screen.Welcome);
     }
 
-    function onUpdateActions(actions: PanelAction[], source: Screen): void {
+    function onUpdateActions(actions: KioskButton[], source: Screen): void {
         if (currentScreen.value === source) {
             currentScreenActions.value = actions;
         }
