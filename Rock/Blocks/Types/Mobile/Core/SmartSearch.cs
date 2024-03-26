@@ -4,15 +4,15 @@ using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Search;
-using Rock.ViewModels.Blocks.Cms.SiteDetail;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Rock.Blocks.Types.Mobile.Core
+namespace Rock.Blocks.Types.Mobile
 {
     /// <summary>
     /// Performs a search using any of the configured search components and displays the results.
@@ -71,20 +71,12 @@ namespace Rock.Blocks.Types.Mobile.Core
         Key = AttributeKey.AutoFocusKeyboard,
         Order = 4 )]
 
-    [BooleanField( "Show Search History",
-        Description = "Determines if search history should be stored (locally in the shell) and displayed per-component.",
-        IsRequired = false,
-        DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
-        Key = AttributeKey.ShowSearchHistory,
-        Order = 5 )]
-
     [IntegerField( "Stopped Typing Behavior Threshold",
         Description = "Changes the amount of time (in milliseconds) that a user must stop typing for the search command to execute. Set to 0 to disable entirely.",
         IsRequired = true,
         DefaultIntegerValue = 200,
         Key = AttributeKey.StoppedTypingBehaviorThreshold,
-        Order = 6 )]
+        Order = 5 )]
 
     //
     // Person-specific attributes
@@ -97,7 +89,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.ShowBirthdate,
         Category = AttributeCategory.PersonSearch,
-        Order = 7 )]
+        Order = 6 )]
 
     [BooleanField( "Show Age",
         Description = "Determines if the person's age should be displayed in the search results.",
@@ -106,7 +98,43 @@ namespace Rock.Blocks.Types.Mobile.Core
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.ShowAge,
         Category = AttributeCategory.PersonSearch,
+        Order = 7 )]
+
+    [BooleanField( "Show Spouse",
+        Description = "Determines if the person's spouse should be displayed in the search results.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.ShowSpouse,
+        Category = AttributeCategory.PersonSearch,
         Order = 8 )]
+
+    [BooleanField( "Show Phone Number",
+        Description = "Determines if the person's phone number should be displayed in the search results.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.ShowPhoneNumber,
+        Category = AttributeCategory.PersonSearch,
+        Order = 9 )]
+
+    [BooleanField( "Show Address",
+        Description = "Determines if the person's address should be displayed in the search results.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.ShowAddress,
+        Category = AttributeCategory.PersonSearch,
+        Order = 10 )]
+
+    [BooleanField( "Show Age",
+        Description = "Determines if the person's age should be displayed in the search results.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.ShowAge,
+        Category = AttributeCategory.PersonSearch,
+        Order = 11 )]
 
     [LinkedPage(
         "Person Detail Page",
@@ -114,7 +142,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         IsRequired = false,
         Key = AttributeKey.PersonDetailPage,
         Category = AttributeCategory.PersonSearch,
-        Order = 9 )]
+        Order = 12 )]
 
     [DataViewsField(
         "Person Highlight Indicators",
@@ -124,7 +152,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         EntityTypeName = "Rock.Model.Person",
         DisplayPersistedOnly = true,
         IsRequired = false,
-        Order = 10 )]
+        Order = 13 )]
 
     //
     // Group-specific attributes
@@ -136,7 +164,17 @@ namespace Rock.Blocks.Types.Mobile.Core
         IsRequired = false,
         Key = AttributeKey.GroupDetailPage,
         Category = AttributeCategory.GroupSearch,
-        Order = 11 )]
+        Order = 14 )]
+
+    [DataViewsField(
+        "Group Highlight Indicators",
+        Key = AttributeKey.GroupDataViewIcons,
+        Category = AttributeCategory.GroupSearch,
+        Description = "Select one or more Data Views for Group search result icons. Note: More selections increase processing time.",
+        EntityTypeName = "Rock.Model.Group",
+        DisplayPersistedOnly = true,
+        IsRequired = false,
+        Order = 15 )]
 
     #endregion
 
@@ -170,11 +208,6 @@ namespace Rock.Blocks.Types.Mobile.Core
         protected bool AutoFocusKeyboard => GetAttributeValue( AttributeKey.AutoFocusKeyboard ).AsBoolean();
 
         /// <summary>
-        /// Gets whether or not search history should be stored (locally in the shell) and displayed per-component.
-        /// </summary>
-        protected bool ShowSearchHistory => GetAttributeValue( AttributeKey.ShowSearchHistory ).AsBoolean();
-
-        /// <summary>
         /// Gets the amount of time (in milliseconds) that a user must stop typing for the search command to execute.
         /// </summary>
         protected int StoppedTypingBehaviorThreshold => GetAttributeValue( AttributeKey.StoppedTypingBehaviorThreshold ).AsInteger();
@@ -190,9 +223,29 @@ namespace Rock.Blocks.Types.Mobile.Core
         protected bool ShowAge => GetAttributeValue( AttributeKey.ShowAge ).AsBoolean();
 
         /// <summary>
+        /// Gets whether or not the person's spouse should be displayed in the search results for a Person search.
+        /// </summary>
+        protected bool ShowSpouse => GetAttributeValue( AttributeKey.ShowSpouse ).AsBoolean();
+
+        /// <summary>
+        /// Gets whether or not the person's phone number should be displayed in the search results for a Person search.
+        /// </summary>
+        protected bool ShowPhoneNumber => GetAttributeValue( AttributeKey.ShowPhoneNumber ).AsBoolean();
+
+        /// <summary>
+        /// Gets whether or not the person's address should be displayed in the search results for a Person search.
+        /// </summary>
+        protected bool ShowAddress => GetAttributeValue( AttributeKey.ShowAddress ).AsBoolean();
+
+        /// <summary>
         /// The data views to use for person search result icons.
         /// </summary>
-        protected List<Guid> DataViewIcons => GetAttributeValue( AttributeKey.PersonDataViewIcons )?.SplitDelimitedValues().AsGuidList();
+        protected List<Guid> PersonDataViewIcons => GetAttributeValue( AttributeKey.PersonDataViewIcons )?.SplitDelimitedValues().AsGuidList();
+
+        /// <summary>
+        /// The data views to use for group search result icons.
+        /// </summary>
+        protected List<Guid> GroupDataViewIcons => GetAttributeValue( AttributeKey.GroupDataViewIcons )?.SplitDelimitedValues().AsGuidList();
 
         #endregion
 
@@ -245,11 +298,6 @@ namespace Rock.Blocks.Types.Mobile.Core
             public const string AutoFocusKeyboard = "AutoFocusKeyboard";
 
             /// <summary>
-            /// The show search history attribute key.
-            /// </summary>
-            public const string ShowSearchHistory = "ShowSearchHistory";
-
-            /// <summary>
             /// The stopped typing behavior threshold attribute key.
             /// </summary>
             public const string StoppedTypingBehaviorThreshold = "StoppedTypingBehaviorThreshold";
@@ -265,6 +313,21 @@ namespace Rock.Blocks.Types.Mobile.Core
             public const string ShowAge = "ShowAge";
 
             /// <summary>
+            /// The show spouse attribute key.
+            /// </summary>
+            public const string ShowSpouse = "ShowSpouse";
+
+            /// <summary>
+            /// The show phone number attribute key.
+            /// </summary>
+            public const string ShowPhoneNumber = "ShowPhoneNumber";
+
+            /// <summary>
+            /// The show address attribute key.
+            /// </summary>
+            public const string ShowAddress = "ShowAddress";
+
+            /// <summary>
             /// The person detail page attribute key.
             /// </summary>
             public const string PersonDetailPage = "PersonDetailPage";
@@ -273,6 +336,11 @@ namespace Rock.Blocks.Types.Mobile.Core
             /// The person data view icons attribute key.
             /// </summary>
             public const string PersonDataViewIcons = "PersonDataViewIcons";
+
+            /// <summary>
+            /// The group data view icons attribute key.
+            /// </summary>
+            public const string GroupDataViewIcons = "GroupDataViewIcons";
 
             /// <summary>
             /// The group detail page attribute key.=
@@ -309,10 +377,12 @@ namespace Rock.Blocks.Types.Mobile.Core
                 FooterContent = FooterContent,
                 ResultSize = ResultSize,
                 AutoFocusKeyboard = AutoFocusKeyboard,
-                ShowSearchHistory = ShowSearchHistory,
                 StoppedTypingBehaviorThreshold = StoppedTypingBehaviorThreshold,
                 ShowBirthdate = ShowBirthdate,
                 ShowAge = ShowAge,
+                ShowAddress = ShowAddress,
+                ShowPhoneNumber = ShowPhoneNumber,
+                ShowSpouseName = ShowSpouse,
                 PersonDetailPage = GetAttributeValue( AttributeKey.PersonDetailPage ).AsGuidOrNull(),
                 GroupDetailPage = GetAttributeValue( AttributeKey.GroupDetailPage ).AsGuidOrNull(),
                 SearchComponents = GetComponents()
@@ -398,24 +468,6 @@ namespace Rock.Blocks.Types.Mobile.Core
             var unionBag = new SearchResultUnionItemBag();
             var dataViewService = new DataViewService( rockContext );
 
-            if ( DataViewIcons?.Any() ?? false )
-            {
-                // Populate the data view icons for the person.
-                var dataViews = dataViewService.Queryable()
-                    .Where( d => DataViewIcons.Contains( d.Guid ) )
-                    .ToList()
-                    .Where( d => d.IsAuthorized( Rock.Security.Authorization.VIEW, this.RequestContext.CurrentPerson ) )
-                    .Select( d => new DataViewIconBag
-                    {
-                        DataViewGuid = d.Guid,
-                        IconCssClass = d.IconCssClass,
-                        HighlightColor = d.HighlightColor
-                    } )
-                    .ToList();
-
-                unionBag.DataViewIcons = dataViews;
-            }
-
             results.ForEach( o =>
             {
                 if ( o is IEntity entity )
@@ -429,12 +481,14 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                     if ( entity is Person personEntity )
                     {
+                        unionBag.DataViewIcons = GetDataViewIcons( dataViewService, PersonDataViewIcons );
+
                         if ( unionBag.PersonResults == null )
                         {
                             unionBag.PersonResults = new List<PersonSearchItemResultBag>();
                         }
 
-                        var personBag = GetPersonSearchResultBag( personEntity, unionBag.DataViewIcons?.Select( dv => dv.DataViewGuid ).ToList(), dataViewService );
+                        var personBag = GetPersonSearchResultBag( personEntity, unionBag.DataViewIcons?.Select( dv => dv.DataViewGuid ).ToList() );
                         personBag.DetailKey = $"{type.Name}Guid";
                         personBag.Guid = personEntity.Guid;
 
@@ -442,12 +496,14 @@ namespace Rock.Blocks.Types.Mobile.Core
                     }
                     else if ( entity is Group groupEntity )
                     {
+                        unionBag.DataViewIcons = GetDataViewIcons( dataViewService, GroupDataViewIcons );
+
                         if ( unionBag.GroupResults == null )
                         {
                             unionBag.GroupResults = new List<GroupSearchItemResultBag>();
                         }
 
-                        var groupBag = GetGroupSearchItemResultBag( groupEntity );
+                        var groupBag = GetGroupSearchItemResultBag( groupEntity, unionBag.DataViewIcons?.Select( dv => dv.DataViewGuid ).ToList() );
                         groupBag.DetailKey = $"{type.Name}Guid";
                         groupBag.Guid = groupEntity.Guid;
 
@@ -459,39 +515,55 @@ namespace Rock.Blocks.Types.Mobile.Core
             return unionBag;
         }
 
-        private GroupSearchItemResultBag GetGroupSearchItemResultBag( Group group )
-        {
-            var itemBag = new GroupSearchItemResultBag();
-            itemBag.Name = group.Name;
-
-            return itemBag;
-        }
-
         /// <summary>
-        /// Gets the structured group name for a group.
-        /// Ex: Group Type > Sub Group > Group
+        /// Populates the data view icons for the search results.
         /// </summary>
-        /// <returns></returns>
-        private string GetStructuredGroupName( Group group )
+        /// <param name="dataViewService"></param>
+        /// <param name="dataViewIconGuids"></param>
+        private List<DataViewIconBag> GetDataViewIcons( DataViewService dataViewService, IEnumerable<Guid> dataViewIconGuids )
         {
-            var groupParentGuid = group.ParentGroup?.Guid;
+            if ( dataViewIconGuids?.Any() ?? false )
+            {
+                var dataViews = dataViewService.Queryable()
+                    .Where( d => dataViewIconGuids.Contains( d.Guid ) )
+                    .ToList()
+                    .Where( d => d.IsAuthorized( Rock.Security.Authorization.VIEW, this.RequestContext.CurrentPerson ) )
+                    .Select( d => new DataViewIconBag
+                    {
+                        DataViewGuid = d.Guid,
+                        IconCssClass = d.IconCssClass,
+                        HighlightColor = d.HighlightColor
+                    } )
+                    .ToList();
 
-            return string.Empty;
+                return dataViews;
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Gets the search result bag for a person.
         /// </summary>
-        /// <param name="person"></param>
-        /// <param name="rockContext"></param>
+        /// <param name="person">The person to return the bag for.</param>
+        /// <param name="dataViewGuids">The data views to check if the person is in.</param>
         /// <returns></returns>
-        private PersonSearchItemResultBag GetPersonSearchResultBag( Person person, List<Guid> dataViewGuids, DataViewService dataViewService )
+        private PersonSearchItemResultBag GetPersonSearchResultBag( Person person, List<Guid> dataViewGuids )
         {
             var itemBag = new PersonSearchItemResultBag();
             itemBag.NickName = person.NickName;
             itemBag.LastName = person.LastName;
             itemBag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( person.PhotoUrl );
             itemBag.Email = person.Email;
+            itemBag.Age = person.Age;
+
+            var spouse = person.GetSpouse();
+            if( spouse != null )
+            {
+                itemBag.SpouseName = spouse.FullName;
+            }
+
+            itemBag.BirthDate = person.BirthDate;
 
             var address = person.GetHomeLocation()?.GetFullStreetAddress();
 
@@ -502,14 +574,26 @@ namespace Rock.Blocks.Types.Mobile.Core
             }
 
             itemBag.PhoneNumberFormatted = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.NumberFormatted;
+            var connectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ) : null;
+
+            if( connectionStatus != null )
+            {
+                itemBag.ConnectionStatus = connectionStatus.Value;
+
+                var connectionStatusColor = connectionStatus.GetAttributeValue( "Color" );
+                itemBag.ConnectionStatusColor = connectionStatusColor.IsNotNullOrWhiteSpace() ? connectionStatusColor : "#f5f5f5";
+            }
 
             var personDataViews = new List<Guid>();
 
+            // Check if the person is in any of the provided data views.
             if( dataViewGuids != null )
             {
                 foreach ( var dataViewGuid in dataViewGuids )
                 {
-                    var recordExists = dataViewService.GetGuids( dataViewGuid ).Contains( person.Guid );
+                    var dataViewCache = DataViewCache.Get( dataViewGuid );
+                    var entityIds = dataViewCache.GetEntityIds();
+                    var recordExists = entityIds.Contains( person.Id );
 
                     if ( recordExists )
                     {
@@ -523,6 +607,71 @@ namespace Rock.Blocks.Types.Mobile.Core
             return itemBag;
         }
 
+        /// <summary>
+        /// Gets the search result bag for a group.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="dataViewGuids"></param>
+        /// <returns></returns>
+        private GroupSearchItemResultBag GetGroupSearchItemResultBag( Group group, List<Guid> dataViewGuids )
+        {
+            var itemBag = new GroupSearchItemResultBag();
+            itemBag.Name = group.Name;
+            itemBag.ParentGroupStructure = GetGroupParentStructure( group );
+            itemBag.GroupTypeName = group.GroupType.Name;
+            itemBag.GroupTypeColor = group.GroupType.GroupTypeColor;
+
+            var groupDataViews = new List<Guid>();
+
+            // Check if the person is in any of the provided data views.
+            if ( dataViewGuids != null )
+            {
+                foreach ( var dataViewGuid in dataViewGuids )
+                {
+                    var dataViewCache = DataViewCache.Get( dataViewGuid );
+                    var entityIds = dataViewCache.GetEntityIds();
+                    var recordExists = entityIds.Contains( group.Id );
+
+                    if ( recordExists )
+                    {
+                        groupDataViews.Add( dataViewGuid );
+                    }
+                }
+            }
+
+            itemBag.MatchingDataViews = groupDataViews;
+
+            return itemBag;
+        }
+
+        /// <summary>
+        /// Gets the structured group name for a group.
+        /// Ex: Group Type > Sub Group > Group
+        /// </summary>
+        /// <returns></returns>
+        private string GetGroupParentStructure( Group group )
+        {
+            if ( group == null )
+            {
+                return string.Empty;
+            }
+
+            var groupNames = new List<string>();
+            var groupIds = new List<int>();
+            var parentGroup = group.ParentGroup;
+
+            while ( parentGroup != null && !groupIds.Contains( parentGroup.Id ) )
+            {
+                groupNames.Add( parentGroup.Name );
+                groupIds.Add( parentGroup.Id );
+                parentGroup = parentGroup.ParentGroup;
+            }
+
+            groupNames.Reverse();
+
+            return string.Join( " > ", groupNames );
+        }
+
         #endregion
 
         #region Block Actions
@@ -530,7 +679,6 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <summary>
         /// Gets the search results that match the term.
         /// </summary>
-
         /// <returns>A view model that represents the results of the search.</returns>
         [BlockAction( "Search" )]
         public BlockActionResult GetSearchResults( SearchRequestBag requestBag )
@@ -575,6 +723,5 @@ namespace Rock.Blocks.Types.Mobile.Core
         }
 
         #endregion
-
     }
 }

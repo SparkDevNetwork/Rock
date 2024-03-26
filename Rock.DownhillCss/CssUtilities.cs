@@ -635,11 +635,11 @@ namespace Rock.DownhillCss
     -rock-status-bar-text: light;
 }
 
-^ContentPage {
+^Page {
     background-color: ?color-interface-softer;
 }
 
-.dark-mode ^ContentPage {
+.dark-mode ^Page {
     background-color: ?color-interface-stronger;
 }
 
