@@ -593,6 +593,7 @@ export default defineComponent({
             formSubmissionSource = new PromiseCompletionSource();
             isFormSubmitting.value = true;
             await formSubmissionSource.promise;
+            isFormSubmitting.value = false;
         };
 
         /**
@@ -642,6 +643,7 @@ export default defineComponent({
             finally {
                 if (formSubmissionSource !== null) {
                     formSubmissionSource.resolve();
+                    formSubmissionSource = null;
                 }
             }
         };
@@ -723,6 +725,7 @@ export default defineComponent({
         watch(isFormSubmitting, () => {
             if (isFormSubmitting.value === false && formSubmissionSource !== null) {
                 formSubmissionSource.resolve();
+                formSubmissionSource = null;
             }
         });
 
