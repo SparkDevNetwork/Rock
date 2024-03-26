@@ -53,23 +53,6 @@
     }>();
 
     /**
-     * Gets the CSS class name for the button based on the action details.
-     *
-     * @param action The action to use when creating the class name.
-     *
-     * @returns The CSS class name to apply to the button.
-     */
-    function getActionClass(action: KioskButton): string {
-        if (!action.title) {
-            return "";
-        }
-
-        const slug = action.title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-").toLowerCase();
-
-        return `${slug}-button`;
-    }
-
-    /**
      * Event handler for when the configure button is pressed.
      */
     function onConfigureClick(): void {

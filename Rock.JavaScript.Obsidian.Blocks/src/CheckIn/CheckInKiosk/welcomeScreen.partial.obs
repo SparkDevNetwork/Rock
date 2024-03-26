@@ -31,13 +31,10 @@
     import { KioskStatusBag } from "@Obsidian/ViewModels/CheckIn/kioskStatusBag";
     import { KioskStatusOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusOptionsBag";
     import { KioskStatusResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusResponseBag";
-    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera, KioskButton, secondsToCountdown, useKioskState } from "./utils.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-
-    // TODO:
-    // - Check if check-in configuration has changed.
 
     const props = defineProps({
         configuration: {
@@ -60,10 +57,23 @@
     let lastDocumentKeyPressTimestamp: number = 0;
     let isProcessingScannedCode: boolean = false;
 
+    /** Timer to update the countdown. */
     let kioskNotOpenYetTimer: number | undefined;
+
+    /** Timer to auto close the kiosk. */
+    let kioskOpenTimer: number | undefined;
+
+    /** Timer to periodically update the kiosk status. */
+    let updateKioskStatusTimer: number | undefined;
+    let isUpdatingKioskStatus = false;
+    let isKioskStatusUpdatePending = false;
+
+    let codeScanner: Html5Qrcode | undefined = undefined;
 
     const promotions = ref<PromotionBag[]>([]);
     const kioskStatus = ref<KioskStatusBag>();
+
+    // #region Computed Values
 
     /** The kiosk is currently active and open. */
     const isKioskOpen = computed((): boolean => {
@@ -112,6 +122,8 @@
         return classes;
     });
 
+    // #endregion
+
     // #region Functions
 
     /**
@@ -145,7 +157,19 @@
         }
     }
 
+    /**
+     * Update the kiosk status by requesting the latest information from the
+     * server. This method ensures it is only executed one at a time and will
+     * automatically re-check if it was called more than once.
+     */
     async function updateKioskStatus(): Promise<void> {
+        if (isUpdatingKioskStatus) {
+            isKioskStatusUpdatePending = true;
+            return;
+        }
+
+        isUpdatingKioskStatus = true;
+
         const request: KioskStatusOptionsBag = {
             kioskGuid: props.configuration.kiosk?.guid,
             areaGuids: props.configuration.areas?.map(a => a.guid ?? "") ?? []
@@ -160,8 +184,54 @@
         else {
             console.error(result.errorMessage ?? "Unknown error trying to update kiosk status.");
         }
+
+        isUpdatingKioskStatus = false;
+
+        // If another request to update the status came in while we were waiting
+        // for the server then queue it up.
+        if (isKioskStatusUpdatePending) {
+            isKioskStatusUpdatePending = false;
+            nextTick(() => updateKioskStatus());
+        }
+        else {
+            if (updateKioskStatusTimer !== undefined) {
+                window.clearTimeout(updateKioskStatusTimer);
+            }
+
+            // Update the status once per minute. This can probably be changed
+            // to once every 10 minutes once we have RealTime hooked up.
+            updateKioskStatusTimer = window.setTimeout(() => {
+                updateKioskStatusTimer = undefined;
+                updateKioskStatus();
+            }, 60000);
+        }
     }
 
+    /**
+     * Updates the countdown while waiting for the kiosk to open. This checks
+     * if we are now open and if so requests the latest status from the server.
+     */
+    function updateCountdown(): void {
+        if (kioskStatus.value?.nextStartDateTime) {
+            const nextStart = RockDateTime.parseISO(kioskStatus.value.nextStartDateTime)?.localDateTime;
+            const now = RockDateTime.now();
+
+            if (nextStart && nextStart.toMilliseconds() <= now.toMilliseconds()) {
+                updateKioskStatus();
+
+                if (kioskNotOpenYetTimer !== undefined) {
+                    window.clearInterval(kioskNotOpenYetTimer);
+                    kioskNotOpenYetTimer = undefined;
+                }
+            }
+        }
+
+        updateActions();
+    }
+
+    /**
+     * Updates all the actions for this screen based on current values.
+     */
     function updateActions(): void {
         const actions: KioskButton[] = [];
 
@@ -208,6 +278,45 @@
     }
 
     /**
+     * Checks if the kiosk should close based on the nextStopDateTime value
+     * and if so requests a kiosk update.
+     */
+    function checkIfKioskShouldClose(): void {
+        if (!kioskStatus.value?.nextStopDateTime) {
+            return;
+        }
+
+        const nextStop = RockDateTime.parseISO(kioskStatus.value.nextStopDateTime)?.localDateTime;
+        const now = RockDateTime.now();
+
+        if (!nextStop || now.toMilliseconds() < nextStop.toMilliseconds()) {
+            return;
+        }
+
+        updateKioskStatus();
+    }
+
+    /**
+     * Clears all timers. This should be called before the component is removed.
+     */
+    function clearAllTimers(): void {
+        if (kioskNotOpenYetTimer !== undefined) {
+            window.clearInterval(kioskNotOpenYetTimer);
+            kioskNotOpenYetTimer = undefined;
+        }
+
+        if (kioskOpenTimer !== undefined) {
+            window.clearInterval(kioskOpenTimer);
+            kioskOpenTimer = undefined;
+        }
+
+        if (updateKioskStatusTimer) {
+            window.clearTimeout(updateKioskStatusTimer);
+            updateKioskStatusTimer = undefined;
+        }
+    }
+
+    /**
      * Event handler for when the Start button is clicked.
      */
     function onStartClick(): void {
@@ -250,13 +359,27 @@
 
     // #endregion
 
+    // If the kiosk is not open yet then start a timer to update the countdown.
+    // Otherwise cancel the timer.
     watch(isKioskNotOpenYet, () => {
         if (isKioskNotOpenYet.value && kioskNotOpenYetTimer === undefined) {
-            kioskNotOpenYetTimer = window.setInterval(() => updateActions(), 1000);
+            kioskNotOpenYetTimer = window.setInterval(() => updateCountdown(), 1000);
         }
         else if (!isKioskNotOpenYet.value && kioskNotOpenYetTimer !== undefined) {
             window.clearInterval(kioskNotOpenYetTimer);
             kioskNotOpenYetTimer = undefined;
+        }
+    });
+
+    // If the kiosk is open then start a timer to check if we should close.
+    // Otherwise cancel the timer.
+    watch(isKioskOpen, () => {
+        if (isKioskOpen.value && kioskOpenTimer === undefined) {
+            kioskOpenTimer = window.setInterval(() => checkIfKioskShouldClose(), 1000);
+        }
+        else if (!isKioskOpen.value && kioskOpenTimer !== undefined) {
+            window.clearInterval(kioskOpenTimer);
+            kioskOpenTimer = undefined;
         }
     });
 
@@ -269,10 +392,10 @@
             native.StartCamera?.(false);
         }
         else if (doesThemeSupportCamera() && props.configuration.kiosk?.isCameraEnabled) {
-            const scanner = new Html5Qrcode("barcode-button");
+            codeScanner = new Html5Qrcode("barcode-button");
             const deviceId = (await Html5Qrcode.getCameras())[0].id;
 
-            scanner.start(deviceId, {
+            codeScanner.start(deviceId, {
                 fps: 10,
                 qrbox: {
                     width: 250,
@@ -308,10 +431,13 @@
         // Remove the physical barcode scanner keypress handler.
         document.removeEventListener("keypress", onDocumentKeyPress);
 
-        if (kioskNotOpenYetTimer !== undefined) {
-            clearInterval(kioskNotOpenYetTimer);
-            kioskNotOpenYetTimer = undefined;
+        // Shut down the HTML5 scanner if it is up.
+        if (codeScanner) {
+            codeScanner.stop();
+            codeScanner = undefined;
         }
+
+        clearAllTimers();
     });
 
     if (kioskState["welcome-screen-promotions"]) {
