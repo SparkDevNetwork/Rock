@@ -231,7 +231,7 @@ export function isHtmlCameraAvailable(kiosk: KioskBag | undefined): boolean {
         && kiosk.type !== null
         && kiosk.type !== undefined
         && kiosk.type !== KioskType.IPad
-        // TODO: Enable This && doesThemeSupportCamera()
+        && doesThemeSupportCamera()
         && !isIpadAppWithCamera(kiosk);
 }
 

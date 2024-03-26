@@ -12,6 +12,7 @@
         </RockButton>
 
         <RockButton v-if="isKioskOpen"
+                    ref="barcodeButtonElement"
                     id="barcode-button"
                     btnType="default"
                     class="scan-barcode-button">
@@ -72,6 +73,9 @@
 
     const promotions = ref<PromotionBag[]>([]);
     const kioskStatus = ref<KioskStatusBag>();
+
+    const barcodeButtonElement = ref<HTMLElement>();
+    const cameraDeviceId = ref<string>();
 
     // #region Computed Values
 
@@ -383,17 +387,22 @@
         }
     });
 
-    // Perform any initialization when this component is added to the DOM.
-    onMounted(async () => {
-        const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
-
-        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk) && native) {
-            // Block configuration check for AlwaysOn or Passive.
-            native.StartCamera?.(false);
+    // If HTML5 camera scanning is enabled then show it, otherwise turn off
+    // the camera.
+    watch([barcodeButtonElement, cameraDeviceId], () => {
+        // Handled already.
+        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk)) {
+            return;
         }
-        else if (doesThemeSupportCamera() && props.configuration.kiosk?.isCameraEnabled) {
+
+        const deviceId = cameraDeviceId.value;
+        const isCameraEnabled = doesThemeSupportCamera()
+            && props.configuration.kiosk?.isCameraEnabled
+            && barcodeButtonElement.value
+            && deviceId;
+
+        if (isCameraEnabled && !codeScanner) {
             codeScanner = new Html5Qrcode("barcode-button");
-            const deviceId = (await Html5Qrcode.getCameras())[0].id;
 
             codeScanner.start(deviceId, {
                 fps: 10,
@@ -406,6 +415,23 @@
             }, (_errorMessage) => {
                 // Ignore it, probably a partial read.
             });
+        }
+        else if (!isCameraEnabled && codeScanner) {
+            codeScanner.stop();
+            codeScanner = undefined;
+        }
+    });
+
+    // Perform any initialization when this component is added to the DOM.
+    onMounted(async () => {
+        const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
+
+        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk) && native) {
+            // Block configuration check for AlwaysOn or Passive.
+            native.StartCamera?.(false);
+        }
+        else if (doesThemeSupportCamera() && props.configuration.kiosk?.isCameraEnabled) {
+            cameraDeviceId.value = (await Html5Qrcode.getCameras())[0].id;
         }
 
         // If we have a native check-in app then initialize it.
