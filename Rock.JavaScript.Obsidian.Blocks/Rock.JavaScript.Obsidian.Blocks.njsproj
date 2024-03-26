@@ -50,6 +50,7 @@
     <Content Include="src\Cms\LibraryViewer\itemListSort.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemPreview.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
+    <Content Include="src\Cms\pageRouteList.obs" />
     <Content Include="src\Core\auditList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
@@ -279,6 +280,7 @@
     <Folder Include="src\Cms\LibraryViewer\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Cms\MediaFolderDetail\" />
+    <Folder Include="src\Cms\PageRouteList\" />
     <Folder Include="src\Cms\PageShortLinkDetail\" />
     <Folder Include="src\Cms\PageRouteDetail\" />
     <Folder Include="src\Cms\PersistedDatasetDetail\" />
@@ -408,6 +410,7 @@
     <TypeScriptCompile Include="src\Cms\MediaFolderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaFolderDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaFolderDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\PageRouteList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\pageShortLinkDetail.ts" />
     <TypeScriptCompile Include="src\Cms\PageShortLinkDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PageShortLinkDetail\types.partial.ts" />
