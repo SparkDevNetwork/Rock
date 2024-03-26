@@ -118,8 +118,7 @@ namespace Rock.CheckIn.v2
             else
             {
                 // Get all locations for the kiosk that are active.
-                locations = kiosk.GetAllLocationIds()
-                    .Select( id => NamedLocationCache.Get( id ) )
+                locations = kiosk.GetAllLocations()
                     .Where( nlc => nlc != null && nlc.IsActive )
                     .ToList();
             }

@@ -697,37 +697,54 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime )
         {
-            var result = new List<CheckInTimes>();
-
             if ( IsCheckInEnabled )
             {
-                var occurrences = GetICalOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ) );
-                foreach ( var occurrence in occurrences
-                    .Where( a =>
-                        a.Period != null &&
-                        a.Period.StartTime != null &&
-                        a.Period.EndTime != null )
-                    .Select( a => new
-                    {
-                        Start = a.Period.StartTime.Value,
-                        End = a.Period.EndTime.Value
-                    } ) )
-                {
-                    var checkInTimes = new CheckInTimes();
-                    checkInTimes.Start = DateTime.SpecifyKind( occurrence.Start, DateTimeKind.Local );
-                    checkInTimes.End = DateTime.SpecifyKind( occurrence.End, DateTimeKind.Local );
-                    checkInTimes.CheckInStart = checkInTimes.Start.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
-                    if ( CheckInEndOffsetMinutes.HasValue )
-                    {
-                        checkInTimes.CheckInEnd = checkInTimes.Start.AddMinutes( CheckInEndOffsetMinutes.Value );
-                    }
-                    else
-                    {
-                        checkInTimes.CheckInEnd = checkInTimes.End;
-                    }
+                return GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, iCalendarContent, () => GetICalEvent() );
+            }
 
-                    result.Add( checkInTimes );
+            return new List<CheckInTimes>();
+        }
+
+        /// <summary>
+        /// Gets the check in times.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="checkInStartOffsetMinutes">The check in start offset minutes.</param>
+        /// <param name="checkInEndOffsetMinutes">The check in end offset minutes.</param>
+        /// <param name="iCalendarContent">The raw iCal content.</param>
+        /// <param name="calendarEventFactory">The calendar event factory that will return an instance of the <see cref="CalendarEvent"/>.</param>
+        /// <returns>A list of <see cref="CheckInTimes"/> objects.</returns>
+        internal static List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime, int checkInStartOffsetMinutes, int? checkInEndOffsetMinutes, string iCalendarContent, Func<CalendarEvent> calendarEventFactory )
+        {
+            var result = new List<CheckInTimes>();
+
+            var occurrences = GetICalOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ), null, null, iCalendarContent, calendarEventFactory );
+
+            foreach ( var occurrence in occurrences
+                .Where( a =>
+                    a.Period != null &&
+                    a.Period.StartTime != null &&
+                    a.Period.EndTime != null )
+                .Select( a => new
+                {
+                    Start = a.Period.StartTime.Value,
+                    End = a.Period.EndTime.Value
+                } ) )
+            {
+                var checkInTimes = new CheckInTimes();
+                checkInTimes.Start = DateTime.SpecifyKind( occurrence.Start, DateTimeKind.Local );
+                checkInTimes.End = DateTime.SpecifyKind( occurrence.End, DateTimeKind.Local );
+                checkInTimes.CheckInStart = checkInTimes.Start.AddMinutes( 0 - checkInStartOffsetMinutes );
+                if ( checkInEndOffsetMinutes.HasValue )
+                {
+                    checkInTimes.CheckInEnd = checkInTimes.Start.AddMinutes( checkInEndOffsetMinutes.Value );
                 }
+                else
+                {
+                    checkInTimes.CheckInEnd = checkInTimes.End;
+                }
+
+                result.Add( checkInTimes );
             }
 
             return result;

@@ -1,17 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="welcome-screen">
+    <div class="welcome-screen" :class="welcomeScreenClasses">
         <div class="promotions">
             <ImageRotator :promotions="promotions" />
         </div>
 
-        <RockButton btnType="primary"
+        <RockButton v-if="isKioskOpen" btnType="primary"
                     class="start-button"
                     @click="onStartClick">
             Start
         </RockButton>
 
-        <RockButton id="barcode-button"
+        <RockButton v-if="isKioskOpen"
+                    id="barcode-button"
                     btnType="default"
                     class="scan-barcode-button">
             <div class="title"><i class="fa fa-qrcode"></i></div>
@@ -27,15 +28,17 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { PromotionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/promotionBag";
-    import { onBeforeUnmount, onMounted, PropType, ref } from "vue";
-    import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera, useKioskState } from "./utils.partial";
+    import { KioskStatusBag } from "@Obsidian/ViewModels/CheckIn/kioskStatusBag";
+    import { KioskStatusOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusOptionsBag";
+    import { KioskStatusResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusResponseBag";
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera, secondsToCountdown, useKioskState } from "./utils.partial";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
     // TODO:
-    // - Countdown to check-in opened screen.
-    // - Check-in closed for the day screen.
-    // - Check-in all locations closed screen.
     // - Check if check-in configuration has changed.
-    // - Device Ads.
 
     const props = defineProps({
         configuration: {
@@ -46,17 +49,69 @@
 
     const emit = defineEmits<{
         (event: "start"): void;
+        (event: "updateActions", value: PanelAction[]): void;
     }>();
 
     const kioskState = useKioskState();
 
     const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
 
     let documentKeyboardBuffer: string = "";
     let lastDocumentKeyPressTimestamp: number = 0;
     let isProcessingScannedCode: boolean = false;
 
+    let kioskNotOpenYetTimer: number | undefined;
+
     const promotions = ref<PromotionBag[]>([]);
+    const kioskStatus = ref<KioskStatusBag>();
+
+    /** The kiosk is currently active and open. */
+    const isKioskOpen = computed((): boolean => {
+        return kioskStatus.value?.isCheckInActive === true;
+    });
+
+    /** The kiosk is not currently active and has no open locations. */
+    const isKioskClosed = computed((): boolean => {
+        return !kioskStatus.value?.isCheckInActive
+            && !kioskStatus.value?.hasOpenLocations;
+    });
+
+    /** The kiosk is not currently active but will open later today. */
+    const isKioskNotOpenYet = computed((): boolean => {
+        return !kioskStatus.value?.isCheckInActive
+            && !!kioskStatus.value?.nextStartDateTime;
+    });
+
+    /** The kiosk is not currently active and will not open later today. */
+    const isKioskNotOpen = computed((): boolean => {
+        return !kioskStatus.value?.isCheckInActive
+            && !kioskStatus.value?.nextStartDateTime;
+    });
+
+    /** The additional CSS classes to apply to the main div. */
+    const welcomeScreenClasses = computed((): string[] => {
+        const classes: string[] = [];
+
+        if (promotions.value.length === 0) {
+            classes.push("no-promotions");
+        }
+
+        if (isKioskOpen.value) {
+            classes.push("kiosk-open");
+        }
+        else if (isKioskClosed.value) {
+            classes.push("kiosk-closed");
+        }
+        else if (isKioskNotOpenYet.value) {
+            classes.push("kiosk-not-open-yet");
+        }
+        else {
+            classes.push("kiosk-not-open");
+        }
+
+        return classes;
+    });
 
     // #region Functions
 
@@ -89,6 +144,59 @@
             promotions.value = result.data;
             kioskState["welcome-screen-promotions"] = result.data;
         }
+    }
+
+    async function updateKioskStatus(): Promise<void> {
+        const request: KioskStatusOptionsBag = {
+            kioskGuid: props.configuration.kiosk?.guid,
+            areaGuids: props.configuration.areas?.map(a => a.guid ?? "") ?? []
+        };
+
+        const result = await http.post<KioskStatusResponseBag>("/api/v2/checkin/KioskStatus", undefined, request);
+
+        if (result.isSuccess && result.data?.status) {
+            kioskStatus.value = result.data.status;
+            updateActions();
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error trying to update kiosk status.");
+        }
+    }
+
+    function updateActions(): void {
+        const actions: PanelAction[] = [];
+
+        if (isKioskClosed.value) {
+            actions.push({
+                title: "Kiosk Closed",
+                type: "danger"
+            });
+        }
+        else if (isKioskNotOpen.value) {
+            actions.push({
+                title: "Kiosk Closed for Today",
+                type: "danger"
+            });
+        }
+        else if (isKioskNotOpenYet.value) {
+            let seconds = 0;
+
+            if (kioskStatus.value?.nextStartDateTime) {
+                const nextStart = RockDateTime.parseISO(kioskStatus.value.nextStartDateTime)?.localDateTime;
+                const now = RockDateTime.now();
+
+                if (nextStart) {
+                    seconds = Math.floor((nextStart.toMilliseconds() - now.toMilliseconds()) / 1000);
+                }
+            }
+
+            actions.push({
+                title: `Kiosk Will Open in ${secondsToCountdown(seconds)}`,
+                type: "warning"
+            });
+        }
+
+        emit("updateActions", actions);
     }
 
     /**
@@ -133,6 +241,16 @@
     }
 
     // #endregion
+
+    watch(isKioskNotOpenYet, () => {
+        if (isKioskNotOpenYet.value && kioskNotOpenYetTimer === undefined) {
+            kioskNotOpenYetTimer = window.setInterval(() => updateActions(), 1000);
+        }
+        else if (!isKioskNotOpenYet.value && kioskNotOpenYetTimer !== undefined) {
+            window.clearInterval(kioskNotOpenYetTimer);
+            kioskNotOpenYetTimer = undefined;
+        }
+    });
 
     // Perform any initialization when this component is added to the DOM.
     onMounted(async () => {
@@ -181,9 +299,16 @@
 
         // Remove the physical barcode scanner keypress handler.
         document.removeEventListener("keypress", onDocumentKeyPress);
+
+        if (kioskNotOpenYetTimer !== undefined) {
+            clearInterval(kioskNotOpenYetTimer);
+            kioskNotOpenYetTimer = undefined;
+        }
     });
 
     if (kioskState["welcome-screen-promotions"]) {
         promotions.value = kioskState["welcome-screen-promotions"] as PromotionBag[];
     }
+
+    updateKioskStatus();
 </script>

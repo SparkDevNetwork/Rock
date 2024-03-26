@@ -201,12 +201,38 @@ namespace Rock.Web.Cache
         /// <param name="locationIds">The set of location identifiers.</param>
         internal void GetAllDescendantLocationIds( HashSet<int> locationIds )
         {
-            foreach ( var location in ChildLocations )
+            // Don't use ChildLocations property since it returns a List<>
+            // which causes an unnecessary allocation.
+            var childLocations = ChildLocationIds.Select( Get ).Where( l => l != null ).ToList();
+
+            foreach ( var location in childLocations )
             {
                 // Only descend if we haven't already added this location.
                 if ( locationIds.Add( location.Id ) )
                 {
                     location.GetAllDescendantLocationIds( locationIds );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all descendant location identifiers by adding them to the
+        /// HashSet.
+        /// </summary>
+        /// <param name="locationSet">The set of location identifiers.</param>
+        internal void GetAllDescendantLocationIds( Dictionary<int, NamedLocationCache> locationSet )
+        {
+            // Don't use ChildLocations property since it returns a List<>
+            // which causes an unnecessary allocation.
+            var childLocations = ChildLocationIds.Select( Get ).Where( l => l != null ).ToList();
+
+            foreach ( var location in childLocations )
+            {
+                // Only descend if we haven't already added this location.
+                if ( !locationSet.ContainsKey( location.Id ) )
+                {
+                    locationSet.Add( location.Id, location );
+                    location.GetAllDescendantLocationIds( locationSet );
                 }
             }
         }

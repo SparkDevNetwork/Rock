@@ -188,6 +188,131 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
+        /// <para>
+        /// Gets the kiosk status given the check-in areas and location information.
+        /// </para>
+        /// <para>
+        /// If you provide an array of locations they will be used, otherwise
+        /// the locations of the kiosk will be used. If you provide a kiosk
+        /// then it will be used to determine the current timestamp when
+        /// checking if locations are open or not.
+        /// </para>
+        /// </summary>
+        /// <param name="possibleAreas">The possible areas that are to be considered when generating the opportunities.</param>
+        /// <param name="kiosk">The optional kiosk to use.</param>
+        /// <param name="locations">The list of locations to use.</param>
+        /// <returns>An instance of <see cref="KioskStatusBag"/>.</returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="possibleAreas"/> is <c>null</c>.</exception>
+        /// <exception cref="System.ArgumentNullException"><paramref name="kiosk"/> - Kiosk must be specified unless locations are specified.</exception>
+        public KioskStatusBag GetKioskStatus( IReadOnlyCollection<GroupTypeCache> possibleAreas, DeviceCache kiosk, IReadOnlyCollection<NamedLocationCache> locations )
+        {
+            using ( var activity = ObservabilityHelper.StartActivity( "Get Kiosk State" ) )
+            {
+                if ( kiosk == null && locations == null )
+                {
+                    throw new ArgumentNullException( nameof( kiosk ), "Kiosk must be specified unless locations are specified." );
+                }
+
+                if ( possibleAreas == null )
+                {
+                    throw new ArgumentNullException( nameof( possibleAreas ) );
+                }
+
+                // Get the primary campus for this kiosk.
+                var kioskCampusId = kiosk?.GetCampusId();
+                var kioskCampus = kioskCampusId.HasValue ? CampusCache.Get( kioskCampusId.Value, RockContext ) : null;
+
+                // Get the current timestamp as well as today's date for filtering
+                // in later logic.
+                var now = kioskCampus?.CurrentDateTime ?? RockDateTime.Now;
+                var serverNow = RockDateTime.Now;
+                var today = now.Date;
+
+                // Get all areas that don't have exclusions for today.
+                var activeAreas = possibleAreas
+                    .Where( a => !a.GroupScheduleExclusions.Any( e => today >= e.Start && today <= e.End ) )
+                    .ToList();
+
+                // Get all area identifiers as a HashSet for faster lookups.
+                var activeAreaIds = new HashSet<int>( activeAreas.Select( a => a.Id ) );
+
+                // If they did not provide a set of locations then get them from
+                // the kiosk, including closed locations.
+                if ( locations == null )
+                {
+                    locations = kiosk.GetAllLocations().ToList();
+                }
+
+                // Get all the group locations for active locations. This also
+                // filters down to only groups in an active area.
+                var activeGroupLocations = locations
+                    .Where( l => l.IsActive )
+                    .SelectMany( l => GroupLocationCache.AllForLocationId( l.Id ).Select( gl => new
+                    {
+                        GroupLocation = gl,
+                        Location = l
+                    } ) )
+                    .DistinctBy( glc => glc.GroupLocation.Id )
+                    .Where( glc => activeAreaIds.Contains( GroupCache.Get( glc.GroupLocation.GroupId, RockContext )?.GroupTypeId ?? 0 ) )
+                    .ToList();
+
+                // Get all the schedules that are associated with these locations.
+                var schedules = activeGroupLocations
+                    .SelectMany( gl => gl.GroupLocation.ScheduleIds )
+                    .Distinct()
+                    .Select( id => NamedScheduleCache.Get( id, RockContext ) )
+                    .Where( s => s != null )
+                    .ToList();
+
+                // Find all active schedules with any check-in windows today.
+                var validCheckInSchedules = schedules.Where( s => s.IsActive )
+                    .Select( s => new
+                    {
+                        Schedule = s,
+                        CheckInTimes = s.GetCheckInTimes( now )
+                    } )
+                    .Where( s => s.CheckInTimes.Any() )
+                    .ToList();
+
+                // Determine the next time in the future (today) that check-in will
+                // open.
+                var nextStartDateTime = validCheckInSchedules
+                    .SelectMany( s => s.CheckInTimes )
+                    .Where( s => s.CheckInStart > now )
+                    .OrderBy( s => s.CheckInStart )
+                    .FirstOrDefault()
+                    ?.CheckInStart;
+
+                // Determine the next time in the future that check-in will close.
+                var nextStopDateTime = validCheckInSchedules
+                    .SelectMany( s => s.CheckInTimes )
+                    .Where( t => t.CheckInEnd > now )
+                    .OrderBy( t => t.CheckInEnd )
+                    .FirstOrDefault()
+                    ?.CheckInEnd;
+
+                // Determine if check-in is currently active at this moment.
+                var isCheckInActive = validCheckInSchedules.SelectMany( s => s.CheckInTimes )
+                    .Any( t => t.CheckInStart <= now && t.CheckInEnd > now );
+
+                // Determine if the there are any locations that are open.
+                var hasOpenLocations = activeGroupLocations.Any();
+
+                return new KioskStatusBag
+                {
+                    IsCheckInActive = isCheckInActive,
+                    HasOpenLocations = hasOpenLocations,
+                    NextStartDateTime = nextStartDateTime,
+                    NextStopDateTime = nextStopDateTime,
+                    CampusCurrentDateTime = now,
+                    ServerCurrentDateTime = serverNow,
+                    LocationGuids = locations.Select( l => l.Guid ).ToList(),
+                    ScheduleGuids = schedules.Select( s => s.Guid ).ToList()
+                };
+            }
+        }
+
+        /// <summary>
         /// Creates the check in session that will be used for the specified template.
         /// </summary>
         /// <param name="templateConfiguration">The configuration template.</param>

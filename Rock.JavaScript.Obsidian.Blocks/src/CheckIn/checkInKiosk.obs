@@ -16,7 +16,8 @@
 
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome"
                                :configuration="configuration"
-                               @start="onWelcomeStart">
+                               @start="onWelcomeStart"
+                               @updateActions="onUpdateActions($event, Screen.Welcome)">
                 </WelcomeScreen>
 
                 <SearchScreen v-if="currentScreen === Screen.Search"
@@ -304,6 +305,19 @@
 
 .check-in-page .welcome-screen .scan-barcode-button .title {
     font-size: 64px;
+}
+
+.check-in-page .welcome-screen.kiosk-closed,
+.check-in-page .welcome-screen.kiosk-not-open,
+.check-in-page .welcome-screen.kiosk-not-open-yet {
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+}
+
+.check-in-page .welcome-screen.kiosk-closed .promotions,
+.check-in-page .welcome-screen.kiosk-not-open .promotions,
+.check-in-page .welcome-screen.kiosk-not-open-yet .promotions {
+    grid-row: 1/2;
 }
 
 /*

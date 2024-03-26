@@ -69,6 +69,9 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.Schedule.CheckInEndOffsetMinutes" />
         public int? CheckInEndOffsetMinutes { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Schedule.IsCheckInEnabled" />
+        public bool IsCheckInEnabled { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.Schedule.iCalendarContent" />
         private string CalendarContent { get; set; }
 
@@ -115,6 +118,7 @@ namespace Rock.Web.Cache
             StartTimeOfDay = schedule.StartTimeOfDay;
             CheckInStartOffsetMinutes = schedule.CheckInStartOffsetMinutes;
             CheckInEndOffsetMinutes = schedule.CheckInEndOffsetMinutes;
+            IsCheckInEnabled = schedule.IsCheckInEnabled;
         }
 
         /// <summary>
@@ -210,6 +214,37 @@ namespace Rock.Web.Cache
         public bool WasScheduleOrCheckInActiveForCheckOut( DateTime time )
         {
             return IsScheduleActiveForCheckOut( time ) || WasScheduleActive( time ) || WasCheckInActive( time );
+        }
+
+        /// <summary>
+        /// Gets the check in times.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <returns>A list of <see cref="CheckInTimes"/> objects.</returns>
+        public virtual List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime )
+        {
+            if ( IsCheckInEnabled )
+            {
+                return Schedule.GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, CalendarContent, () => GetCalendarEvent() );
+            }
+
+            return new List<CheckInTimes>();
+        }
+
+        /// <summary>
+        /// Gets the next check in start time.
+        /// </summary>
+        /// <param name="beginDateTime">The begindate time.</param>
+        /// <returns>The next <see cref="DateTime"/> that check-in will be active today or <c>null</c> if it will not be active anymore.</returns>
+        public virtual DateTime? GetNextCheckInStartTime( DateTime beginDateTime )
+        {
+            var checkInTimes = GetCheckInTimes( beginDateTime );
+            if ( checkInTimes != null && checkInTimes.Any() )
+            {
+                return checkInTimes.FirstOrDefault().CheckInStart;
+            }
+
+            return null;
         }
 
         /// <inheritdoc/>

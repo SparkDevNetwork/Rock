@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -97,6 +96,42 @@ namespace Rock.Rest.v2.Controllers
             {
                 return BadRequest( ex.Message );
             }
+        }
+
+        /// <summary>
+        /// Gets current status that the check-in kiosk should be in as well
+        /// as when it should open or close.
+        /// </summary>
+        /// <param name="options">The options that describe the request.</param>
+        /// <returns>A bag that contains the status.</returns>
+        [HttpPost]
+        [Authenticate]
+        //[Secured]
+        [Route( "KioskStatus" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( KioskStatusResponseBag ) )]
+        [SystemGuid.RestActionGuid( "7fb87711-1ecf-49ca-90cb-3e2e1b02a933" )]
+        public IActionResult PostKioskStatus( [FromBody] KioskStatusOptionsBag options )
+        {
+            var director = new CheckInDirector( _rockContext );
+            var kiosk = DeviceCache.Get( options.KioskGuid, _rockContext );
+            var areas = options.AreaGuids != null
+                ? GroupTypeCache.GetMany( options.AreaGuids, _rockContext ).ToList()
+                : null;
+
+            if ( kiosk == null )
+            {
+                return BadRequest( "Kiosk was not found." );
+            }
+
+            if ( areas == null )
+            {
+                return BadRequest( "Area list cannot be null." );
+            }
+
+            return Ok( new KioskStatusResponseBag
+            {
+                Status = director.GetKioskStatus( areas, kiosk, null )
+            } );
         }
 
         /// <summary>

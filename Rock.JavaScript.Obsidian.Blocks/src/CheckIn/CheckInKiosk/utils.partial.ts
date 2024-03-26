@@ -25,6 +25,7 @@ import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 import { inject, provide } from "vue";
+import { zeroPad } from "@Obsidian/Utility/numberUtils";
 
 // #region Temporary Types
 
@@ -218,4 +219,31 @@ export function isHtmlCameraAvailable(kiosk: KioskBag | undefined): boolean {
         && kiosk.type !== KioskType.IPad
         // TODO: Enable This && doesThemeSupportCamera()
         && !isIpadAppWithCamera(kiosk);
+}
+
+/**
+ * Converts the seconds into an hour, minute, second countdown string.
+ *
+ * @param seconds The number of seconds.
+ *
+ * @returns A string in the format of "[hh:]mm:ss".
+ */
+export function secondsToCountdown(seconds: number): string {
+    let timeString: string = "";
+
+    if (seconds < 0) {
+        seconds = 0;
+    }
+
+    const hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
+
+    const minutes = Math.floor(seconds / 60);
+    seconds %= 60;
+
+    if (hours > 0) {
+        timeString = `${hours}:`;
+    }
+
+    return `${timeString}${zeroPad(minutes, 2)}:${zeroPad(seconds, 2)}`;
 }

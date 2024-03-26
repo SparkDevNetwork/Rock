@@ -1104,7 +1104,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\familyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\groupOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\kioskBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\kioskConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\kioskStatusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\locationOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\opportunityCollectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\opportunitySelectionBag.d.ts" />
@@ -1183,6 +1183,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\confirmAttendanceResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\familyMembersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\familyMembersResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\kioskStatusOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\kioskStatusResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\saveAttendanceOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\saveAttendanceResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\searchForFamiliesOptionsBag.d.ts" />

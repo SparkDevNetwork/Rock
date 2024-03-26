@@ -408,6 +408,7 @@
     <Compile Include="CheckIn\GroupOpportunityBag.cs" />
     <Compile Include="CheckIn\CheckInItemBag.cs" />
     <Compile Include="CheckIn\KioskBag.cs" />
+    <Compile Include="CheckIn\KioskStatusBag.cs" />
     <Compile Include="CheckIn\LocationOpportunityBag.cs" />
     <Compile Include="CheckIn\ConfigurationTemplateBag.cs" />
     <Compile Include="CheckIn\PersonBag.cs" />
@@ -432,6 +433,8 @@
     <Compile Include="Rest\CheckIn\FamilyMembersResponseBag.cs" />
     <Compile Include="Rest\CheckIn\AttendeeOpportunitiesResponseBag.cs" />
     <Compile Include="Rest\CheckIn\AttendeeOpportunitiesOptionsBag.cs" />
+    <Compile Include="Rest\CheckIn\KioskStatusOptionsBag.cs" />
+    <Compile Include="Rest\CheckIn\KioskStatusResponseBag.cs" />
     <Compile Include="Rest\CheckIn\SaveAttendanceOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\SaveAttendanceResponseBag.cs" />
     <Compile Include="Rest\CheckIn\SearchForFamiliesOptionsBag.cs" />

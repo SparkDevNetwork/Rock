@@ -134,7 +134,6 @@
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
-    import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { onConfigurationValuesChanged, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
