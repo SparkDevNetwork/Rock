@@ -136,15 +136,23 @@
                 type: "success",
             });
 
+            const lastRefreshLabel = persistedDatasetViewBag.value.lastRefreshDateTime
+                ? RockDateTime.parseISO(persistedDatasetViewBag.value.lastRefreshDateTime)?.toString()
+                : "Never";
+
             labels.push({
                 iconCssClass: "fa fa-refresh",
-                title: "Not Run Since: " + RockDateTime.parseISO(persistedDatasetViewBag.value.lastRefreshDateTime ?? "Never")?.toString(),
+                title: `Not Run Since: ${lastRefreshLabel}`,
                 type: "warning",
             });
 
+            const timeToRunLabel = persistedDatasetViewBag.value.timeToBuildMS
+                ? `${persistedDatasetViewBag.value.timeToBuildMS.toString()}ms`
+                : "Never";
+
             labels.push({
                 iconCssClass: "fa fa-clock",
-                title: `Time To Run: ${persistedDatasetViewBag.value.timeToBuildMS?.toString()}ms`,
+                title: `Time To Run: ${timeToRunLabel}`,
                 type: timeToBuildLabelType.value,
             });
         }
