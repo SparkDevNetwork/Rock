@@ -247,6 +247,16 @@ namespace Rock.Blocks.Types.Mobile
         /// </summary>
         protected List<Guid> GroupDataViewIcons => GetAttributeValue( AttributeKey.GroupDataViewIcons )?.SplitDelimitedValues().AsGuidList();
 
+        /// <summary>
+        /// Gets the page to link to when a person taps on a Person search result.
+        /// </summary>
+        protected Guid? PersonDetailPage => GetAttributeValue( AttributeKey.PersonDetailPage ).AsGuidOrNull();
+
+        /// <summary>
+        /// Gets the page to link to when a person taps on a Group search result.
+        /// </summary>
+        protected Guid? GroupDetailPage => GetAttributeValue( AttributeKey.GroupDetailPage ).AsGuidOrNull();
+
         #endregion
 
         #region Constants/Keys
@@ -383,8 +393,8 @@ namespace Rock.Blocks.Types.Mobile
                 ShowAddress = ShowAddress,
                 ShowPhoneNumber = ShowPhoneNumber,
                 ShowSpouseName = ShowSpouse,
-                PersonDetailPage = GetAttributeValue( AttributeKey.PersonDetailPage ).AsGuidOrNull(),
-                GroupDetailPage = GetAttributeValue( AttributeKey.GroupDetailPage ).AsGuidOrNull(),
+                PersonDetailPage = PersonDetailPage,
+                GroupDetailPage = GroupDetailPage,
                 SearchComponents = GetComponents()
             };
         }
@@ -396,7 +406,7 @@ namespace Rock.Blocks.Types.Mobile
         /// <summary>
         /// Gets the configured search components for this block.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A list of search components that the block should display.</returns>
         private IEnumerable<SearchComponentBag> GetComponents()
         {
             //
@@ -439,8 +449,8 @@ namespace Rock.Blocks.Types.Mobile
         /// <summary>
         /// Gets the template key for a search component.
         /// </summary>
-        /// <param name="guid"></param>
-        /// <returns></returns>
+        /// <param name="guid">The search component guid.</param>
+        /// <returns>A key used to identify a template on the mobile shell.</returns>
         private string GetTemplateKeyForComponent( Guid guid )
         {
             var templateKey = string.Empty;
@@ -460,9 +470,9 @@ namespace Rock.Blocks.Types.Mobile
         /// <summary>
         /// Gets the results as a <see cref="SearchResultUnionItemBag"/> object.
         /// </summary>
-        /// <param name="results"></param>
-        /// <param name="rockContext"></param>
-        /// <returns></returns>
+        /// <param name="results">A list of search results.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>A bag containing general information about the search, and search results.</returns>
         private SearchResultUnionItemBag GetSearchResultItems( List<object> results, RockContext rockContext )
         {
             var unionBag = new SearchResultUnionItemBag();
@@ -518,14 +528,14 @@ namespace Rock.Blocks.Types.Mobile
         /// <summary>
         /// Populates the data view icons for the search results.
         /// </summary>
-        /// <param name="dataViewService"></param>
-        /// <param name="dataViewIconGuids"></param>
-        private List<DataViewIconBag> GetDataViewIcons( DataViewService dataViewService, IEnumerable<Guid> dataViewIconGuids )
+        /// <param name="dataViewService">The data view service.</param>
+        /// <param name="dataViewGuids">The data views to get the information from.</param>
+        private List<DataViewIconBag> GetDataViewIcons( DataViewService dataViewService, IEnumerable<Guid> dataViewGuids )
         {
-            if ( dataViewIconGuids?.Any() ?? false )
+            if ( dataViewGuids?.Any() ?? false )
             {
                 var dataViews = dataViewService.Queryable()
-                    .Where( d => dataViewIconGuids.Contains( d.Guid ) )
+                    .Where( d => dataViewGuids.Contains( d.Guid ) )
                     .ToList()
                     .Where( d => d.IsAuthorized( Rock.Security.Authorization.VIEW, this.RequestContext.CurrentPerson ) )
                     .Select( d => new DataViewIconBag
@@ -610,8 +620,8 @@ namespace Rock.Blocks.Types.Mobile
         /// <summary>
         /// Gets the search result bag for a group.
         /// </summary>
-        /// <param name="group"></param>
-        /// <param name="dataViewGuids"></param>
+        /// <param name="group">The group to retun the bag for.</param>
+        /// <param name="dataViewGuids">The data view guids.</param>
         /// <returns></returns>
         private GroupSearchItemResultBag GetGroupSearchItemResultBag( Group group, List<Guid> dataViewGuids )
         {
