@@ -4,7 +4,11 @@ import { Screen, UnexpectedErrorMessage } from "./utils.partial";
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
+import { FamilyMembersOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersOptionsBag";
+import { FamilyMembersResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersResponseBag";
 import { HttpFunctions } from "@Obsidian/Types/Utility/http";
+import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
+import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 
 export class CheckInSession {
     // #region Fields
@@ -21,6 +25,10 @@ export class CheckInSession {
     private _families?: FamilyBag[];
 
     private _family?: FamilyBag;
+
+    private _attendees?: AttendeeBag[];
+
+    private _currentlyCheckedIn?: AttendanceBag[];
 
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -48,6 +56,14 @@ export class CheckInSession {
         return this._family;
     }
 
+    public get attendees(): AttendeeBag[] | undefined {
+        return this._attendees;
+    }
+
+    public get currentlyCheckedIn(): AttendanceBag[] | undefined {
+        return this._currentlyCheckedIn;
+    }
+
     // #endregion
 
     public constructor(configuration: KioskConfigurationBag, http: HttpFunctions) {
@@ -62,6 +78,8 @@ export class CheckInSession {
         copy._searchType = this._searchType;
         copy._families = this._families;
         copy._family = this._family;
+        copy._attendees = this._attendees;
+        copy._currentlyCheckedIn = this._currentlyCheckedIn;
 
         return copy;
     }
@@ -94,16 +112,60 @@ export class CheckInSession {
         return copy;
     }
 
-    getNextScreen(currentScreen: Screen): Screen {
+    public async withFamily(family: FamilyBag): Promise<CheckInSession> {
+        const request: FamilyMembersOptionsBag = {
+            configurationTemplateGuid: this.configuration.template?.guid,
+            kioskGuid: this.configuration.kiosk?.guid,
+            areaGuids: this.configuration.areas?.filter(a => !!a.guid).map(a => a.guid as string),
+            familyGuid: family.guid
+        };
+
+        const response = await this.http.post<FamilyMembersResponseBag>("/api/v2/checkin/FamilyMembers", undefined, request);
+
+        if (!response.isSuccess || !response.data?.people) {
+            throw new Error(response.errorMessage || UnexpectedErrorMessage);
+        }
+
+        const copy = this.clone();
+
+        copy._family = family;
+        copy._attendees = response.data.people;
+        copy._currentlyCheckedIn = response.data.currentlyCheckedInAttendances ?? [];
+
+        return copy;
+    }
+
+    public getNextScreen(currentScreen: Screen): Screen {
         if (currentScreen === Screen.Welcome) {
             if (!this.families) {
                 return Screen.Search;
             }
             else if (this.families.length === 1) {
+                // TODO: Search for family members first.
                 return Screen.PersonSelect;
             }
             else {
                 return Screen.FamilySelect;
+            }
+        }
+        else if (currentScreen === Screen.Search) {
+            if (!this.families) {
+                return Screen.Welcome;
+            }
+            else {
+                // Always show family select even if only one family.
+                return Screen.FamilySelect;
+            }
+        }
+        else if (currentScreen === Screen.FamilySelect) {
+            if (!this.family || !this._attendees) {
+                return Screen.Welcome;
+            }
+            else if (this._currentlyCheckedIn && this._currentlyCheckedIn.length > 0) {
+                return Screen.ActionSelect;
+            }
+            else {
+                return Screen.PersonSelect;
             }
         }
         else {

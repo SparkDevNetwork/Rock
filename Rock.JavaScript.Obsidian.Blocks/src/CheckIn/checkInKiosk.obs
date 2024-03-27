@@ -17,14 +17,21 @@
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome"
                                :configuration="configuration"
                                :session="currentSession"
-                               @start="onWelcomeStart"
+                               @start="onNextScreen"
                                @updateActions="onUpdateActions($event, Screen.Welcome)">
                 </WelcomeScreen>
 
                 <SearchScreen v-if="currentScreen === Screen.Search"
                               :configuration="configuration"
                               :session="currentSession"
+                              @next="onNextScreen"
                               @updateActions="onUpdateActions($event, Screen.Search)" />
+
+                <FamilySelectScreen v-if="currentScreen === Screen.FamilySelect"
+                                    :configuration="configuration"
+                                    :session="currentSession"
+                                    @next="onNextScreen"
+                                    @updateActions="onUpdateActions($event, Screen.FamilySelect)" />
             </ContentTransition>
         </section>
 
@@ -370,10 +377,12 @@
     height: 56px;
     min-width: 400px;
 }
+
 </style>
 
 <script setup lang="ts">
     import ConfigurationScreen from "./CheckInKiosk/configurationScreen.partial.obs";
+    import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
@@ -429,7 +438,7 @@
         }
     }
 
-    function onWelcomeStart(session: CheckInSession): void {
+    function onNextScreen(session: CheckInSession): void {
         const screen = session.getNextScreen(currentScreen.value);
 
         currentSession.value = session;
