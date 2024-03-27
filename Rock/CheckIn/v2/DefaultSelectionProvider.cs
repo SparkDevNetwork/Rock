@@ -93,6 +93,17 @@ namespace Rock.CheckIn.v2
 
             var selectedOpportunities = new List<OpportunitySelectionBag>();
 
+            if ( !previousCheckIns.Any() )
+            {
+                // Just try to pick anything valid.
+                if ( TryGetAnyValidSelection( person, out var opportunities ) )
+                {
+                    selectedOpportunities.Add( opportunities );
+                }
+
+                return selectedOpportunities;
+            }
+
             foreach ( var previousCheckIn in previousCheckIns )
             {
                 // First try to find a valid exact match against a previous check-in.
@@ -106,14 +117,6 @@ namespace Rock.CheckIn.v2
                 // Next, try to find a matching group and then just take the first
                 // available location and schedule.
                 if ( TryGetBestMatchingGroup( person, previousCheckIn, out opportunities ) )
-                {
-                    selectedOpportunities.Add( opportunities );
-
-                    continue;
-                }
-
-                // Finally just try to pick anything valid.
-                if ( TryGetAnyValidSelection( person, out opportunities ) )
                 {
                     selectedOpportunities.Add( opportunities );
 
