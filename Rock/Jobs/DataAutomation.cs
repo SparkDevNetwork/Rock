@@ -1252,13 +1252,13 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     dataViewRockContext.Database.CommandTimeout = commandTimeout;
-                    var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
+                    var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {
                         continue;
                     }
 
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                     {
                         DbContext = dataViewRockContext
                     };
@@ -1338,13 +1338,13 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     dataViewRockContext.Database.CommandTimeout = commandTimeout;
-                    var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
+                    var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {
                         continue;
                     }
 
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                     {
                         DbContext = dataViewRockContext
                     };
@@ -1665,13 +1665,13 @@ Update Family Status: {updateFamilyStatus}
                 return null;
             }
 
-            var dataView = new DataViewService( rockContext ).Get( dataviewId.Value );
+            var dataView = DataViewCache.Get( dataviewId.Value );
             if ( dataView == null )
             {
                 return null;
             }
 
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
             {
                 DbContext = rockContext
             };

@@ -167,8 +167,7 @@ namespace Rock.Jobs
             }
 
             // Get the dataview configured for the step type
-            var dataViewService = new DataViewService( rockContextGetList );
-            var dataview = dataViewService.Get( stepTypeView.AutoCompleteDataViewId );
+            var dataview = DataViewCache.Get( stepTypeView.AutoCompleteDataViewId );
 
             if ( dataview == null )
             {
@@ -177,7 +176,7 @@ namespace Rock.Jobs
             }
 
             // We can use the dataview to get the person alias id query
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
             {
                 DbContext = rockContextGetList,
                 DatabaseTimeoutSeconds = _sqlCommandTimeoutSeconds

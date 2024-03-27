@@ -261,7 +261,7 @@ namespace Rock.Rest.Controllers
 
                 if ( options.DataViewId.HasValue )
                 {
-                    var dataView = new DataViewService( new RockContext() ).Get( options.DataViewId.Value );
+                    var dataView = DataViewCache.Get( options.DataViewId.Value );
                     if ( dataView != null )
                     {
                         var personList = dataView.GetQuery().OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();

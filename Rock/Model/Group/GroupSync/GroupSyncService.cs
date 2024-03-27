@@ -80,17 +80,22 @@ namespace Rock.Model
                     var sync = new GroupSyncService( rockContext )
                         .Queryable()
                         .Include( s => s.Group )
-                        .Include( s => s.SyncDataView )
                         .AsNoTracking()
                         .FirstOrDefault( s => s.Id == syncId );
-
-                    if ( sync == null || sync.SyncDataView.EntityTypeId != EntityTypeCache.Get( typeof( Person ) ).Id )
+                    if ( sync == null )
                     {
-                        // invalid sync or invalid SyncDataView
+                        // invalid sync
                         continue;
                     }
 
-                    var syncContext = sync.SyncDataView.DisableUseOfReadOnlyContext
+                    var syncDataView = DataViewCache.Get( sync.SyncDataViewId );
+                    if ( syncDataView == null || syncDataView.EntityTypeId != EntityTypeCache.Get( typeof( Person ) ).Id )
+                    {
+                        // invalid SyncDataView
+                        continue;
+                    }
+
+                    var syncContext = syncDataView.DisableUseOfReadOnlyContext
                         ? rockContext
                         : rockContextReadOnly;
 
@@ -98,14 +103,14 @@ namespace Rock.Model
                     syncContext.Database.CommandTimeout = commandTimeout ?? 30;
                     syncContext.SourceOfChange = "Group Sync";
 
-                    dataViewName = sync.SyncDataView.Name;
+                    dataViewName = syncDataView.Name;
                     groupName = sync.Group.Name;
                     groupId = sync.Group.Id;
 
                     var stopwatch = Stopwatch.StartNew();
 
                     // Get the person id's from the data view (source)
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                     {
                         /*
 
@@ -122,7 +127,7 @@ namespace Rock.Model
 
                     try
                     {
-                        var dataViewQry = sync.SyncDataView.GetQuery( dataViewGetQueryArgs );
+                        var dataViewQry = syncDataView.GetQuery( dataViewGetQueryArgs );
                         sourcePersonIds = dataViewQry.Select( q => q.Id ).ToList();
                     }
                     catch ( Exception ex )
@@ -134,7 +139,7 @@ namespace Rock.Model
                     }
 
                     stopwatch.Stop();
-                    DataViewService.AddRunDataViewTransaction( sync.SyncDataView.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
+                    DataViewService.AddRunDataViewTransaction( syncDataView.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
 
                     // Get the person id's in the group (target) for the role being synced.
                     // Note: targetPersonIds must include archived group members

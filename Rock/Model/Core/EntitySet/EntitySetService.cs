@@ -430,8 +430,7 @@ namespace Rock.Model
             rockContext = rockContext ?? new RockContext();
             rockContext.Database.CommandTimeout = args.DatabaseTimeoutInSeconds;
 
-            var dataViewService = new DataViewService( rockContext );
-            var dataView = dataViewService.Queryable().AsNoTracking().FirstOrDefault( dv => dv.Id == args.DataViewId );
+            var dataView = DataViewCache.Get( args.DataViewId );
 
             var dataViewFilterOverrides = new DataViewFilterOverrides();
             dataViewFilterOverrides.ShouldUpdateStatics = false;
@@ -442,7 +441,7 @@ namespace Rock.Model
 
             // Get the list of keys in the Data View result set.
             var resultSetContext = new RockContext();
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
             {
                 DbContext = resultSetContext,
                 DataViewFilterOverrides = dataViewFilterOverrides,

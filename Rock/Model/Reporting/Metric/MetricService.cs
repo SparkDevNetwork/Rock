@@ -239,11 +239,12 @@ FROM (
                             if ( metric.SourceValueType.Guid == metricSourceValueTypeDataviewGuid )
                             {
                                 // get the metric value from the DataView
-                                if ( metric.DataView != null )
+                                var metricDataView = DataViewCache.Get( metric.DataViewId ?? 0 );
+                                if ( metricDataView != null )
                                 {
                                     bool parseCampusPartition = metricPartitions.Count == 1
                                         && metric.AutoPartitionOnPrimaryCampus
-                                        && metric.DataView.EntityTypeId == Web.Cache.EntityTypeCache.GetId( SystemGuid.EntityType.PERSON )
+                                        && metricDataView.EntityTypeId == Web.Cache.EntityTypeCache.GetId( SystemGuid.EntityType.PERSON )
                                         && metricPartitions[0].EntityTypeId == Web.Cache.EntityTypeCache.GetId( SystemGuid.EntityType.CAMPUS );
 
                                     // Dataview metrics can be partitioned by campus only and AutoPartitionOnPrimaryCampus must be selected.
@@ -254,7 +255,7 @@ FROM (
                                     }
 
                                     Stopwatch stopwatch = Stopwatch.StartNew();
-                                    var qry = metric.DataView.GetQuery();
+                                    var qry = metricDataView.GetQuery();
 
                                     if ( parseCampusPartition )
                                     {
@@ -305,7 +306,7 @@ FROM (
                                     }
 
                                     stopwatch.Stop();
-                                    DataViewService.AddRunDataViewTransaction( metric.DataView.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
+                                    DataViewService.AddRunDataViewTransaction( metricDataView.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                                 }
                             }
                             else if ( metric.SourceValueType.Guid == metricSourceValueTypeSqlGuid )

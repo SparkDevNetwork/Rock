@@ -463,8 +463,8 @@ var barChart = new Chart(barCtx, {{
                         groupAttendances = groupAttendances.Where( a => a.PersonAlias.PersonId == ppPerson.PersonId );
                         break;
                     case "dataview":
-                        var dataView = new DataViewService( rockContext ).Get( dvDataViews.SelectedValueAsInt().Value );
-                        var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                        var dataView = DataViewCache.Get( dvDataViews.SelectedValueAsInt().Value );
+                        var dataViewGetQueryArgs = new Rock.Reporting.GetQueryableOptions { DbContext = rockContext };
                         var personsFromDv = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                         var personAliasIds = personsFromDv.Select( d => d.Aliases.Where( a => a.AliasPersonId == d.Id ).Select( a => a.Id ).FirstOrDefault() ).ToList();
 

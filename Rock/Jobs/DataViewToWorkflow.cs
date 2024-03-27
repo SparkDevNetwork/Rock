@@ -75,10 +75,7 @@ namespace Rock.Jobs
                 throw new Exception( "Data view not selected" );
             }
 
-            var rockContext = new RockContext();
-            var dataViewService = new DataViewService( rockContext );
-            var dataView = dataViewService.Get( dataViewGuid.Value );
-
+            var dataView = DataViewCache.Get( dataViewGuid.Value );
             if ( dataView == null )
             {
                 throw new Exception( "Data view not found" );

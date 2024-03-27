@@ -63,8 +63,6 @@ namespace Rock.Workflow.Action.CheckIn
                 dataViewAttributeKey = AttributeCache.Get( dataViewAttributeGuid, rockContext ).Key;
             }
 
-            var dataViewService = new DataViewService( rockContext );
-
             var family = checkInState.CheckIn.CurrentFamily;
             if ( family != null )
             {
@@ -89,7 +87,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                             foreach ( var dataviewGuid in dataviewGuids.SplitDelimitedValues() )
                             {
-                                DataView dataview = dataViewService.Get( dataviewGuid.AsGuid() );
+                                var dataview = DataViewCache.Get( dataviewGuid.AsGuid() );
                                 if ( dataview == null )
                                 {
                                     continue;
@@ -115,7 +113,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 else
                                 {
                                     //Qry dataview
-                                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                                     {
                                         DatabaseTimeoutSeconds = 30
                                     };
