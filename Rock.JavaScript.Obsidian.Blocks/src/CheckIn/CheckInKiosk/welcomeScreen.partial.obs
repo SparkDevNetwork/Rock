@@ -16,7 +16,37 @@
                     id="barcode-button"
                     btnType="default"
                     class="scan-barcode-button">
-            <div class="title"><i class="fa fa-qrcode"></i></div>
+            <div class="title">
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <mask id="mask0_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
+                        <path d="M119.911 119.911V0.0893631H0.0893555V119.911H119.911Z" fill="white" stroke="white" stroke-width="0.178711" />
+                    </mask>
+                    <g mask="url(#mask0_10_348)">
+                        <path d="M91.875 4.6875H115.312V28.125" stroke="#77889A" stroke-width="7.14844" stroke-miterlimit="10" />
+                        <path d="M4.6875 28.125V4.6875H28.125" stroke="#77889A" stroke-width="7.14844" stroke-miterlimit="10" />
+                        <path d="M28.125 115.312H4.68751V91.875" stroke="#77889A" stroke-width="7.14844" stroke-miterlimit="10" />
+                        <path d="M115.312 91.875V115.312H91.875" stroke="#77889A" stroke-width="7.14844" stroke-miterlimit="10" />
+                    </g>
+                    <path d="M50.625 50.625H22.5V22.5H50.625V50.625Z" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    <path d="M97.5 50.625H69.375V22.5H97.5V50.625Z" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    <path d="M50.625 97.5H22.5V69.375H50.625V97.5Z" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    <mask id="mask1_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
+                        <path d="M119.911 119.911V0.0893631H0.0893555V119.911H119.911Z" fill="white" stroke="white" stroke-width="0.178711" />
+                    </mask>
+                    <g mask="url(#mask1_10_348)">
+                        <path d="M92.8125 69.375H102.187" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    </g>
+                    <path d="M83.4375 78.75H92.8125" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    <mask id="mask2_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
+                        <path d="M119.911 119.911V0.0893631H0.0893555V119.911H119.911Z" fill="white" stroke="white" stroke-width="0.178711" />
+                    </mask>
+                    <g mask="url(#mask2_10_348)">
+                        <path d="M92.8125 88.125H102.187" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                    </g>
+                    <path d="M92.8125 97.5H69.375V69.375H83.4375" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
+                </svg>
+
+            </div>
             <div class="subtitle">Scan A Barcode</div>
         </RockButton>
     </div>
@@ -58,9 +88,10 @@
     }>();
 
     const kioskState = useKioskState();
-
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
+
+    // #region Values
 
     let documentKeyboardBuffer: string = "";
     let lastDocumentKeyPressTimestamp: number = 0;
@@ -84,6 +115,8 @@
 
     const barcodeButtonElement = ref<HTMLElement>();
     const cameraDeviceId = ref<string>();
+
+    // #endregion
 
     // #region Computed Values
 
