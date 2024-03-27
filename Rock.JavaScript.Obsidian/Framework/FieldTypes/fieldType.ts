@@ -85,7 +85,7 @@ export abstract class FieldTypeBase implements IFieldType {
                 };
             },
 
-            template: `<div v-if="isEscaped" v-text="content"></div><div v-else v-html="content"></div>`
+            template: `<div v-else v-html="content"></div>`
         });
     }
 
