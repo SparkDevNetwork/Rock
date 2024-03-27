@@ -77,6 +77,7 @@
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
+    <Compile Include="Engagement\AchievementTypeList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
