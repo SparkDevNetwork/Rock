@@ -1,0 +1,167 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="screenElement" class="person-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle">
+            <div class="button-list">
+                <RockButton v-for="attendee in attendees"
+                            btnType="primary"
+                            class="attendee-button"
+                            :disabled="attendee.isUnavailable"
+                            @click="onAttendeeClick(attendee)">
+                    <div class="selection">
+                        <i v-if="isAttendeeSelected(attendee)" class="fa fa-check-square"></i>
+                        <i v-else class="fa fa-square-o"></i>
+                    </div>
+
+                    <div class="photo" :style="getStyleForAttendee(attendee)"></div>
+
+                    <div class="title">
+                        <div class="name">{{ attendee.person?.fullName }}</div>
+                        <div v-if="attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0" class="opportunity">
+                            <span class="group label label-info">{{ attendee.selectedOpportunities[0].group?.name }}</span>
+                            <span class="location label label-info">{{ attendee.selectedOpportunities[0].location?.name }}</span>
+                            <span class="schedule label label-info">{{ attendee.selectedOpportunities[0].schedule?.name }}</span>
+                        </div>
+                    </div>
+
+                    <div v-if="attendee.isUnavailable" class="disabled-reason">
+                        {{ attendee.unavailableMessage }}
+                    </div>
+
+                    <RockButton v-if="attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
+                                class="change-selection-button"
+                                btnType="info"
+                                @click.stop="onChangeSelection(attendee)">
+                        Change
+                    </RockButton>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, CSSProperties, PropType, ref } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { KioskButton, UnexpectedErrorMessage } from "./utils.partial";
+    import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
+    import { Guid } from "@Obsidian/Types";
+    import { areEqual } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const subtitle = ref("Select the individuals to check-in");
+    const selections = ref<Guid[]>(getDefaultSelections());
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return `${props.session.family?.name} Family`;
+    });
+
+    const attendees = computed((): AttendeeBag[] => {
+        if (!props.session.attendees) {
+            return [];
+        }
+
+        // Put unavailable items at the end, otherwise keep the existing
+        // sort order.
+        return [
+            ...props.session.attendees.filter(a => !a.isUnavailable),
+            ...props.session.attendees.filter(a => a.isUnavailable)
+        ];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getDefaultSelections(): Guid[] {
+        if (!props.session.attendees) {
+            return [];
+        }
+
+        return props.session.attendees
+            .filter(a => a.isPreSelected && !!a.person?.guid)
+            .map(a => a.person?.guid as Guid);
+    }
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        if (props.configuration.kiosk?.isRegistrationModeEnabled) {
+            actions.push({
+                type: "default",
+                title: "Edit Family",
+                key: "edit-family",
+                class: "edit-family-button",
+                disabled: false
+            });
+        }
+
+        emit("updateActions", actions);
+    }
+
+    function isAttendeeSelected(attendee: AttendeeBag): boolean {
+        return selections.value.some(s => areEqual(s, attendee.person?.guid));
+    }
+
+    function getStyleForAttendee(attendee: AttendeeBag): CSSProperties {
+        const properties: CSSProperties = {
+            backgroundImage: `url("${attendee.person?.photoUrl}")`
+        };
+
+        return properties;
+    }
+
+    /**
+     * Handles the click event for a family button.
+     *
+     * @param family The family that was selected.
+     */
+    async function onAttendeeClick(attendee: AttendeeBag): Promise<void> {
+        if (isAttendeeSelected(attendee)) {
+            selections.value = selections.value.filter(s => !areEqual(s, attendee.person?.guid));
+        }
+        else if (attendee.person?.guid) {
+            selections.value = [attendee.person?.guid, ...selections.value];
+        }
+    }
+
+    function onChangeSelection(attendee: AttendeeBag): void {
+        //
+    }
+
+    // #endregion
+
+    updateActions();
+
+    console.log(props.session.attendees);
+</script>

@@ -32,6 +32,12 @@
                                     :session="currentSession"
                                     @next="onNextScreen"
                                     @updateActions="onUpdateActions($event, Screen.FamilySelect)" />
+
+                <PersonSelectScreen v-if="currentScreen === Screen.PersonSelect"
+                                    :configuration="configuration"
+                                    :session="currentSession"
+                                    @next="onNextScreen"
+                                    @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
             </ContentTransition>
         </section>
 
@@ -58,6 +64,8 @@
     --button-border-radius: 4px;
     --vertical-padding: 8px;
     --horizontal-padding: 16px;
+    --button-vertical-padding: 16px;
+    --button-horizontal-padding: 24px;
     --item-spacing: 16px;
     --tones-darkest: #425466;
     --tones-dark: #77889a;
@@ -96,7 +104,7 @@
 
 .check-in-page .button-list .btn {
     display: flex;
-    padding: 16px 24px;
+    padding: var(--button-horizontal-padding) var(--button-vertical-padding);
     gap: var(--item-spacing);
     align-items: center;
     justify-content: center;
@@ -378,6 +386,65 @@
     min-width: 400px;
 }
 
+/**
+ * Person Select Screen.
+ */
+.check-in-page .person-select-screen .attendee-button {
+    justify-content: initial;
+    padding: 0;
+    border: 0;
+}
+
+.check-in-page .person-select-screen .attendee-button .selection {
+    font-size: 50px;
+    line-height: 1;
+    margin: var(--button-vertical-padding) 0 var(--button-horizontal-padding) var(--button-vertical-padding);
+}
+
+.check-in-page .person-select-screen .attendee-button > * {
+    margin: var(--button-vertical-padding) 0;
+}
+
+.check-in-page .person-select-screen .attendee-button > *:first-child {
+    margin-left: var(--button-horizontal-padding);
+}
+
+.check-in-page .person-select-screen .attendee-button > *:last-child {
+    margin-right: var(--button-horizontal-padding);
+}
+
+.check-in-page .person-select-screen .attendee-button .photo {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #fff;
+    border-radius: 25px;
+    background-size: cover;
+}
+
+.check-in-page .person-select-screen .attendee-button .title {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: start;
+}
+
+.check-in-page .person-select-screen .attendee-button .opportunity {
+    display: flex;
+    gap: calc(var(--item-spacing) * 0.5);
+    font-size: var(--font-size-btn-secondary);
+}
+
+.check-in-page .person-select-screen .attendee-button .unavailable-reason {
+    font-size: var(--font-size-btn-secondary);
+}
+
+.check-in-page .person-select-screen .attendee-button .change-selection-button {
+    margin: 0;
+    align-self: stretch;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding: 0 24px;
+}
 </style>
 
 <script setup lang="ts">
@@ -385,6 +452,7 @@
     import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
+    import PersonSelectScreen from "./CheckInKiosk/personSelectScreen.partial.obs";
     import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
