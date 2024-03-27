@@ -569,6 +569,20 @@ namespace Rock.Rest.v2
             var locationService = new LocationService( new RockContext() );
             editedLocation = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country.IsNotNullOrWhiteSpace() ? address.Country : defaultCountryCode, null );
 
+            if ( editedLocation == null )
+            {
+                editedLocation = new Location
+                {
+                    Street1 = address.Street1.FixCase(),
+                    Street2 = address.Street2.FixCase(),
+                    City = address.City.FixCase(),
+                    State = address.State,
+                    County = address.Locality,
+                    PostalCode = address.PostalCode,
+                    Country = address.Country
+                };
+            }
+
             return Ok( editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
         }
 
