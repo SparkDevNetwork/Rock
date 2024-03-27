@@ -36,24 +36,25 @@
     import { GroupMemberRequirementCategoryBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCategoryBag";
     import { GroupMemberRequirementErrorBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementErrorBag";
     import { Guid } from "@Obsidian/Types";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         groupGuid: {
-            type: String as PropType<Guid>
+            type: String as PropType<Guid | undefined>
         },
 
         /** The role of the group member */
         groupRoleGuid: {
-            type: String as PropType<Guid>
+            type: String as PropType<Guid | undefined>
         },
 
         groupMemberGuid: {
-            type: String as PropType<Guid>
+            type: String as PropType<Guid | undefined>
         },
 
         /** The Guid of the person who is the group member */
         personGuid: {
-            type: String as PropType<Guid>
+            type: String as PropType<Guid | undefined>
         },
 
         workflowEntryLinkedPageValue: {
@@ -79,9 +80,9 @@
      */
     async function loadRequirementCardData(): Promise<void> {
         const options: GroupMemberRequirementContainerGetDataOptionsBag = {
-            groupGuid: props.groupGuid,
-            groupRoleGuid: props.groupRoleGuid,
-            personGuid: props.personGuid
+            groupGuid: props.groupGuid || emptyGuid,
+            groupRoleGuid: props.groupRoleGuid || emptyGuid,
+            personGuid: props.personGuid || emptyGuid
         };
         const result = await http.post<GroupMemberRequirementContainerGetDataResultsBag>("/api/v2/Controls/GroupMemberRequirementContainerGetData", undefined, options);
 

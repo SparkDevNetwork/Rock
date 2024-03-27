@@ -48,6 +48,7 @@
     import { FormTemplateDetailConfiguration, TemplateDetail, TemplateEditDetail } from "./FormTemplateDetail/types.partial";
     import { provideSources } from "./FormTemplateDetail/utils.partial";
     import ViewPanel from "./FormTemplateDetail/viewPanel.partial.obs";
+    import { Guid } from "@Obsidian/Types";
 
     const config = useConfigurationValues<FormTemplateDetailConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -87,9 +88,10 @@
      * Event handler for when the individual clicks the Edit button.
      */
     async function onEditClick(): Promise<void> {
-        const result = await invokeBlockAction<TemplateEditDetail>("StartEdit", {
-            guid: config.templateGuid ?? ""
-        });
+        const request: { guid: Guid; } = {
+            guid: config.templateGuid || emptyGuid
+        };
+        const result = await invokeBlockAction<TemplateEditDetail>("StartEdit", request);
 
         if (result.isSuccess && result.data) {
             templateEditDetail.value = result.data;
@@ -116,10 +118,11 @@
      * to be submitted to the server.
      */
     async function onSubmit(): Promise<void> {
-        const result = await invokeBlockAction<TemplateDetail | string>("SaveTemplate", {
-            guid: config.templateGuid ?? "",
+        const request: { guid: Guid; template: TemplateEditDetail; } = {
+            guid: config.templateGuid || emptyGuid,
             template: templateEditDetail.value
-        });
+        };
+        const result = await invokeBlockAction<TemplateDetail | string>("SaveTemplate", request);
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {

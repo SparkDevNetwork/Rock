@@ -29,5 +29,5 @@ import { Guid } from "@Obsidian/Types";
  */
 export type CurrencyBoxGetCurrencyInfoOptionsBag = {
     /** Gets or sets the currency code unique identifier. */
-    currencyCodeGuid?: Guid | null;
+    currencyCodeGuid: Guid;
 };

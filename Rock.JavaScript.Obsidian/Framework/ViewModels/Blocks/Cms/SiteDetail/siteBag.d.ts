@@ -48,7 +48,7 @@ export type SiteBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the binary file type identifier. */
-    binaryFileTypeGuid?: Guid | null;
+    binaryFileTypeGuid: Guid;
 
     /** Gets or sets the change password page. */
     changePasswordPage?: ListItemBag | null;

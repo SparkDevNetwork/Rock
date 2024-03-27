@@ -21,11 +21,12 @@
     import StaticFormControl from "./staticFormControl.obs";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, newGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
     import { FieldTypeEditorUpdateAttributeConfigurationResultBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationResultBag";
+    import { FieldTypeEditorGetAvailableFieldTypesOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorGetAvailableFieldTypesOptionsBag";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { Guid } from "@Obsidian/Types";
@@ -215,7 +216,7 @@
         }
 
         const update: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
-            fieldTypeGuid: fieldTypeValue.value,
+            fieldTypeGuid: fieldTypeValue.value || emptyGuid,
             configurationValues: configurationValues.value,
             defaultValue: currentDefaultValue
         };
@@ -303,7 +304,8 @@
     });
 
     // Get all the available field types that the user is allowed to edit.
-    http.post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, {})
+    const options: FieldTypeEditorGetAvailableFieldTypesOptionsBag = {};
+    http.post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, options)
         .then(result => {
             if (result.isSuccess && result.data) {
                 fieldTypeOptions.value = result.data;

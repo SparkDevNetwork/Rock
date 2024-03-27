@@ -163,7 +163,7 @@ export type FamilyPreRegistrationInitializationBox = {
     familyAttributeValues?: Record<string, string> | null;
 
     /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+    familyGuid: Guid;
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;

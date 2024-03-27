@@ -388,8 +388,8 @@
      * Does the actual heavy work of fetching items from the server.
      */
     async function fetchItems(parentGuid?: Guid | null, loadFullTree = false): Promise<TreeItemBag[]> {
-        const options: Partial<AccountPickerGetChildrenOptionsBag> = {
-            parentGuid: parentGuid ?? emptyGuid,
+        const options: AccountPickerGetChildrenOptionsBag = {
+            parentGuid: parentGuid || emptyGuid,
             displayPublicName: props.displayPublicName ?? false,
             includeInactive: !props.activeOnly && includeInactive.value,
             loadFullTree,

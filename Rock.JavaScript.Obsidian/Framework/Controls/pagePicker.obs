@@ -174,7 +174,10 @@
             return;
         }
 
-        const options: PagePickerGetPageNameOptionsBag = { pageGuid, securityGrantToken: props.securityGrantToken };
+        const options: PagePickerGetPageNameOptionsBag = {
+            pageGuid: pageGuid || emptyGuid,
+            securityGrantToken: props.securityGrantToken
+        };
         const response = await http.post<string>("/api/v2/Controls/PagePickerGetPageName", {}, options);
 
         if (response.isSuccess && response.data) {
@@ -283,7 +286,7 @@
         }
 
         const options: PagePickerGetPageRoutesOptionsBag = {
-            pageGuid: (internalPageValue.value as ListItemBag).value
+            pageGuid: (internalPageValue.value as ListItemBag)?.value || emptyGuid
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/PagePickerGetPageRoutes", undefined, options);
 

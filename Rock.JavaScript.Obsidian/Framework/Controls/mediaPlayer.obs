@@ -23,7 +23,7 @@
     import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { newGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useStore } from "@Obsidian/PageState";
 
@@ -94,7 +94,7 @@
          * Overrides mediaUrl prop if both are present.
          */
         mediaElementGuid: {
-            type: String as PropType<Guid>
+            type: String as PropType<Guid | undefined>
         },
 
         /** Direct URL of a media file to play. mediaElementGuid prop will override this if present. */
@@ -281,7 +281,7 @@
     async function fetchOptions(): Promise<void> {
         const options: MediaPlayerGetPlayerOptionsOptionsBag = {
             playerOptions: basePlayerOptions.value,
-            mediaElementGuid: props.mediaElementGuid,
+            mediaElementGuid: props.mediaElementGuid || emptyGuid,
             autoResumeInDays: props.autoResumeInDays,
             combinePlayStatisticsInDays: props.combinePlayStatisticsInDays
         };

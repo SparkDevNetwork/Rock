@@ -29,6 +29,7 @@
     import GroupTypeGroupPicker from "./groupTypeGroupPicker.obs";
     import RockFormField from "./rockFormField.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { GroupAndRolePickerGetRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupAndRolePickerGetRolesOptionsBag";
     import { normalizeRules } from "@Obsidian/ValidationRules";
 
@@ -123,7 +124,7 @@
         }
 
         const options: GroupAndRolePickerGetRolesOptionsBag = {
-            groupTypeGuid: internalTypeValue.value?.value
+            groupTypeGuid: internalTypeValue.value?.value || emptyGuid
         };
 
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupAndRolePickerGetRoles", null, options);

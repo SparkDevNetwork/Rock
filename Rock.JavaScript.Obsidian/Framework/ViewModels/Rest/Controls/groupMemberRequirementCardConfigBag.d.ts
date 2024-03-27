@@ -36,13 +36,13 @@ export type GroupMemberRequirementCardConfigBag = {
     groupMemberRequirementDueDate?: string | null;
 
     /** Unique identifier for the GroupMemberRequirment */
-    groupMemberRequirementGuid?: Guid | null;
+    groupMemberRequirementGuid: Guid;
 
     /** Unique identifier for the GroupRequirment */
-    groupRequirementGuid?: Guid | null;
+    groupRequirementGuid: Guid;
 
     /** Unique identifier for the GroupRequirmentType */
-    groupRequirementTypeGuid?: Guid | null;
+    groupRequirementTypeGuid: Guid;
 
     /** Whether or not this requirement has been met */
     meetsGroupRequirement: MeetsGroupRequirement;

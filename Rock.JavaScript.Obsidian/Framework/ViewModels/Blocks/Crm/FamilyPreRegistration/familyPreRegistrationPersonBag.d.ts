@@ -60,7 +60,7 @@ export type FamilyPreRegistrationPersonBag = {
     gradeDefinedValueGuid?: Guid | null;
 
     /** Gets or sets the person unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets a value indicating whether this instance is first name read only. */
     isFirstNameReadOnly: boolean;

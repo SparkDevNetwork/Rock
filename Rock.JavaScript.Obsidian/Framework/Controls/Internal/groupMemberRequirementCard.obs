@@ -39,6 +39,7 @@
     import { GroupMemberRequirementCardRunWorkflowResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardRunWorkflowResultsBag";
     import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { Guid } from "@Obsidian/Types";
 
@@ -58,7 +59,7 @@
         },
 
         groupMemberGuid: {
-            type: String as PropType<Guid>
+            type: String as PropType<Guid | undefined>
         },
 
         groupMemberRequirementGuid: {
@@ -173,7 +174,7 @@
             const options: GroupMemberRequirementCardMarkMetManuallyOptionsBag = {
                 groupMemberRequirementGuid: props.groupMemberRequirementGuid,
                 groupRequirementGuid: props.groupRequirementGuid,
-                groupMemberGuid: props.groupMemberGuid
+                groupMemberGuid: props.groupMemberGuid || emptyGuid
             };
             const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardMarkMetManually", undefined, options);
 
@@ -195,7 +196,7 @@
                 const options: GroupMemberRequirementCardMarkMetManuallyOptionsBag = {
                     groupMemberRequirementGuid: props.groupMemberRequirementGuid,
                     groupRequirementGuid: props.groupRequirementGuid,
-                    groupMemberGuid: props.groupMemberGuid
+                    groupMemberGuid: props.groupMemberGuid || emptyGuid
                 };
                 const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardOverrideMarkMet", undefined, options);
 
@@ -224,7 +225,7 @@
             const options: GroupMemberRequirementCardRunWorkflowOptionsBag = {
                 groupMemberRequirementGuid: props.groupMemberRequirementGuid,
                 groupRequirementGuid: props.groupRequirementGuid,
-                groupMemberGuid: props.groupMemberGuid,
+                groupMemberGuid: props.groupMemberGuid || emptyGuid,
                 workflowEntryLinkedPageValue: props.workflowEntryLinkedPageValue
             };
             const result = await http.post<GroupMemberRequirementCardRunWorkflowResultsBag>(`/api/v2/Controls/GroupMemberRequirementCardRun${type}Workflow`, undefined, options);

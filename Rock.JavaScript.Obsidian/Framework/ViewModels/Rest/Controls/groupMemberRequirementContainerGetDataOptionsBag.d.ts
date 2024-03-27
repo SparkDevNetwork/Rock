@@ -29,11 +29,11 @@ import { Guid } from "@Obsidian/Types";
  */
 export type GroupMemberRequirementContainerGetDataOptionsBag = {
     /** Identifier for the Group */
-    groupGuid?: Guid | null;
+    groupGuid: Guid;
 
     /** Identifier for the GroupRole the group member plays */
-    groupRoleGuid?: Guid | null;
+    groupRoleGuid: Guid;
 
     /** Identifier for the Person who is the member */
-    personGuid?: Guid | null;
+    personGuid: Guid;
 };

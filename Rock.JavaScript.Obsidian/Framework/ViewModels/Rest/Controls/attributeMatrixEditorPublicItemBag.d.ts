@@ -34,7 +34,7 @@ export type AttributeMatrixEditorPublicItemBag = {
     editValues?: Record<string, string> | null;
 
     /** Unique identifier of the AttributeMatrixItem */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Only used on the client side as a temporary ID until the item is saved and gains a Guid. */
     key?: number | null;

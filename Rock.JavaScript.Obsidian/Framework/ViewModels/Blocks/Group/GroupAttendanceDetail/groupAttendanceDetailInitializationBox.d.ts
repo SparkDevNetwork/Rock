@@ -67,7 +67,7 @@ export type GroupAttendanceDetailInitializationBox = {
     errorMessage?: string | null;
 
     /** Gets or sets the group unique identifier. */
-    groupGuid?: Guid | null;
+    groupGuid: Guid;
 
     /** Gets or sets the group members section label. */
     groupMembersSectionLabel?: string | null;

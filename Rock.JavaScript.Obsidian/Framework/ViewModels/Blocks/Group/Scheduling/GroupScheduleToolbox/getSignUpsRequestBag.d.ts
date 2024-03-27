@@ -29,5 +29,5 @@ export type GetSignUpsRequestBag = {
     selectedGroupGuid?: Guid | null;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 };
