@@ -27,6 +27,17 @@ namespace Rock.CheckIn.v2
     /// </summary>
     internal class LocationOpportunity : LocationOpportunityBag
     {
+        /// <summary>
+        /// Gets or sets the person unique identifiers that are checked into
+        /// this location.
+        /// </summary>
+        /// <value>The current person unique identifiers.</value>
         public HashSet<Guid> CurrentPersonGuids { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this location is closed.
+        /// </summary>
+        /// <value><c>true</c> if this location is closed; otherwise, <c>false</c>.</value>
+        public bool IsClosed { get; set; }
     }
 }

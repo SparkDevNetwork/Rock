@@ -47,6 +47,7 @@ namespace Rock.CheckIn.v2
         /// </summary>
         private static readonly List<Type> _defaultLocationFilterTypes = new List<Type>
         {
+            typeof( LocationClosedOpportunityFilter ),
             typeof( ThresholdOpportunityFilter )
         };
 
@@ -98,6 +99,7 @@ namespace Rock.CheckIn.v2
         /// <param name="person">The person to use when filtering opportunities.</param>
         public virtual void FilterPersonOpportunities( Attendee person )
         {
+            // Run standard group filters.
             var groupFilters = GetGroupFilters( person );
 
             if ( groupFilters.Count > 0 )
@@ -106,6 +108,19 @@ namespace Rock.CheckIn.v2
                     .RemoveAll( g => groupFilters.Any( f => !f.IsGroupValid( g ) ) );
             }
 
+            // If this person is not already disabled and there are no groups
+            // then disable the person with appropriate reason.
+            if ( !person.IsDisabled && person.Opportunities.Groups.Count == 0 )
+            {
+                person.IsDisabled = true;
+                person.DisabledMessage = "No Matching Groups Found";
+            }
+
+            // Remove any locations that have no group referencing them.
+            var allReferencedLocationGuids = new HashSet<Guid>( person.Opportunities.Groups.SelectMany( g => g.LocationGuids ) );
+            person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationGuids.Contains( l.Guid ) );
+
+            // Run standard location filters.
             var locationFilters = GetLocationFilters(  person );
 
             if ( locationFilters.Count > 0 )
@@ -114,6 +129,19 @@ namespace Rock.CheckIn.v2
                     .RemoveAll( l => locationFilters.Any( f => !f.IsLocationValid( l ) ) );
             }
 
+            // If this person is not already disabled and there are no locations
+            // then disable the person with appropriate reason.
+            if ( !person.IsDisabled && person.Opportunities.Locations.Count == 0 )
+            {
+                person.IsDisabled = true;
+                person.DisabledMessage = "No Locations Available";
+            }
+
+            // Remove any schedules that have no group referencing them.
+            var allReferencedScheduleGuids = new HashSet<Guid>( person.Opportunities.Locations.SelectMany( l => l.ScheduleGuids ) );
+            person.Opportunities.Schedules.RemoveAll( s => !allReferencedScheduleGuids.Contains( s.Guid ) );
+
+            // Run standard schedule filters.
             var scheduleFilters = GetScheduleFilters(  person );
 
             if ( scheduleFilters.Count > 0 )

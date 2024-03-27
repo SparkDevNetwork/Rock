@@ -272,15 +272,30 @@ namespace Rock.CheckIn.v2
         /// <summary>
         /// Filters the check-in opportunities for a single person.
         /// </summary>
-        /// <param name="person">The person whose opportunities will be filtered.</param>
-        public void FilterPersonOpportunities( Attendee person )
+        /// <param name="attendee">The attendee whose opportunities will be filtered.</param>
+        public void FilterPersonOpportunities( Attendee attendee )
         {
-            using ( var activity = ObservabilityHelper.StartActivity( $"Filter Opportunities For {person.Person.NickName}" ) )
+            using ( var activity = ObservabilityHelper.StartActivity( $"Filter Opportunities For {attendee.Person.NickName}" ) )
             {
                 activity?.AddTag( "rock.checkin.opportunity_filter_provider", OpportunityFilterProvider.GetType().FullName );
 
-                OpportunityFilterProvider.FilterPersonOpportunities( person );
-                OpportunityFilterProvider.RemoveEmptyOpportunities( person );
+                OpportunityFilterProvider.FilterPersonOpportunities( attendee );
+                OpportunityFilterProvider.RemoveEmptyOpportunities( attendee );
+
+                // Do a final check to see if the attendee should be disabled.
+                if ( !attendee.IsDisabled )
+                {
+                    var noOptions = attendee.Opportunities.Groups.Count == 0
+                        || attendee.Opportunities.Locations.Count == 0
+                        || attendee.Opportunities.Schedules.Count == 0
+                        || attendee.Opportunities.Areas.Count == 0;
+
+                    if ( noOptions )
+                    {
+                        attendee.IsDisabled = true;
+                        attendee.DisabledMessage = "Not Available For Check-in";
+                    }
+                }
             }
         }
 

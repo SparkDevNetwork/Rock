@@ -118,9 +118,7 @@ namespace Rock.CheckIn.v2
             else
             {
                 // Get all locations for the kiosk that are active.
-                locations = kiosk.GetAllLocations()
-                    .Where( nlc => nlc != null && nlc.IsActive )
-                    .ToList();
+                locations = kiosk.GetAllLocations().ToList();
             }
 
             // Get all the group locations for these locations. This also
@@ -211,6 +209,7 @@ namespace Rock.CheckIn.v2
                 {
                     Guid = location.Guid,
                     Name = location.Name,
+                    IsClosed = !location.IsActive,
                     CurrentCount = attendeeGuids.Count,
                     Capacity = location.SoftRoomThreshold,
                     CurrentPersonGuids = attendeeGuids,
@@ -294,6 +293,7 @@ namespace Rock.CheckIn.v2
                     {
                         Guid = l.Guid,
                         Name = l.Name,
+                        IsClosed = l.IsClosed,
                         CurrentCount = l.CurrentCount,
                         Capacity = l.Capacity,
                         CurrentPersonGuids = new HashSet<Guid>( l.CurrentPersonGuids ),
