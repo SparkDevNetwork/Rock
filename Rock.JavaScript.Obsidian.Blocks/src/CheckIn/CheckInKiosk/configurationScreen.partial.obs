@@ -33,7 +33,7 @@
                         </RockButton>
                     </div>
 
-                    <div class="vertical-buttons">
+                    <div class="button-list">
                         <RockButton v-for="cfg in savedConfigurations"
                                     btnType="primary"
                                     class="saved-configuration-button">

@@ -81,10 +81,23 @@
     border: 0;
 }
 
-.check-in-page .vertical-buttons {
+.check-in-page .button-list {
     display: flex;
     flex-direction: column;
     gap: var(--item-spacing);
+}
+
+.check-in-page .button-list .btn {
+    display: flex;
+    padding: 16px 24px;
+    gap: var(--item-spacing);
+    align-items: center;
+    justify-content: center;
+}
+
+.check-in-page .button-list .subtitle {
+    font-size: var(--font-size-btn-secondary);
+    font-weight: 400;
 }
 
 .check-in-page .page-body .notice {
@@ -206,15 +219,8 @@
     height: 100%;
 }
 
-.check-in-page .configuration-screen .saved-configuration-button {
-    display: flex;
-    gap: var(--item-spacing);
-    align-items: center;
-}
-
-.check-in-page .configuration-screen .saved-configuration-button .subtitle {
-    font-size: var(--font-size-btn-secondary);
-    font-weight: 400;
+.check-in-page .configuration-screen .button-list .btn {
+    justify-content: initial;
 }
 
 .check-in-page .configuration-screen .saved-configurations {
