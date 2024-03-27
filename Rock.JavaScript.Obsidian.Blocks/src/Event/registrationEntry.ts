@@ -26,7 +26,7 @@ import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
 import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
 import { useStore } from "@Obsidian/PageState";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { newGuid } from "@Obsidian/Utility/guid";
+import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
 import { List } from "@Obsidian/Utility/linq";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -148,9 +148,9 @@ export default defineComponent({
         /** A method to get the args needed for persisting the session */
         const getRegistrationEntryBlockArgs: () => RegistrationEntryBlockArgs = () => {
             return {
-                registrationSessionGuid: registrationEntryState.registrationSessionGuid,
+                registrationSessionGuid: registrationEntryState.registrationSessionGuid || emptyGuid,
                 gatewayToken: registrationEntryState.gatewayToken,
-                savedAccountGuid: registrationEntryState.savedAccountGuid,
+                savedAccountGuid: registrationEntryState.savedAccountGuid || null,
                 discountCode: registrationEntryState.discountCode,
                 fieldValues: registrationEntryState.registrationFieldValues,
                 registrar: registrationEntryState.registrar,

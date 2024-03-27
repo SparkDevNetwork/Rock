@@ -8,6 +8,7 @@
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
     import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
@@ -17,7 +18,7 @@
     const props = defineProps({
         /** The unique identifier of the entity type that will be followed. */
         entityTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | undefined>,
             required: false
         },
 
@@ -83,7 +84,7 @@
         }
 
         const data: FollowingGetFollowingOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid || emptyGuid,
             entityKey: props.entityKey
         };
 
@@ -112,7 +113,7 @@
         }
 
         const data: FollowingSetFollowingOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid || emptyGuid,
             entityKey: props.entityKey,
             isFollowing: !isEntityFollowed.value
         };

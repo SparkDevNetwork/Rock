@@ -31,6 +31,7 @@
     import GroupTypePicker from "./groupTypePicker.obs";
     import RockFormField from "./rockFormField.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { GroupTypeGroupPickerGetGroupsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupTypeGroupPickerGetGroupsOptionsBag";
     import { GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupTypeGroupPickerGetGroupTypeOfGroupOptionsBag";
 
@@ -101,7 +102,7 @@
         }
 
         const options: GroupTypeGroupPickerGetGroupsOptionsBag = {
-            groupTypeGuid: internalTypeValue.value?.value
+            groupTypeGuid: internalTypeValue.value?.value || emptyGuid
         };
 
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupTypeGroupPickerGetGroups", null, options);
@@ -123,7 +124,7 @@
      */
     async function loadGroupTypeFromGroup(): Promise<void> {
         const options: GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag = {
-            groupGuid: props.modelValue?.value
+            groupGuid: props.modelValue?.value || emptyGuid
         };
 
         const result = await http.post<ListItemBag>("/api/v2/Controls/GroupTypeGroupPickerGetGroupTypeOfGroup", null, options);

@@ -53,6 +53,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -93,9 +94,10 @@
     const itemsSource = ref<(() => Promise<ListItemBag[]>) | null>(null);
 
     async function loadItems(): Promise<ListItemBag[]> {
-        const options: Partial<DefinedValuePickerGetDefinedValuesOptionsBag> = {
-            definedTypeGuid: props.definedTypeGuid,
-            securityGrantToken: securityGrantToken.value
+        const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
+            definedTypeGuid: props.definedTypeGuid || emptyGuid,
+            securityGrantToken: securityGrantToken.value,
+            includeInactive: false,
         };
         const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
         const result = await http.post<ListItemBag[]>(url, undefined, options);
@@ -136,8 +138,8 @@
             fetchError.value = false;
             saveError.value = false;
 
-            const options: Partial<DefinedValuePickerGetAttributesOptionsBag> = {
-                definedTypeGuid: props.definedTypeGuid,
+            const options: DefinedValuePickerGetAttributesOptionsBag = {
+                definedTypeGuid: props.definedTypeGuid || emptyGuid,
                 securityGrantToken: securityGrantToken.value
             };
             const url = "/api/v2/Controls/DefinedValuePickerGetAttributes";
@@ -168,8 +170,8 @@
         isLoading.value = true;
         saveError.value = false;
 
-        const options: Partial<DefinedValuePickerSaveNewValueOptionsBag> = {
-            definedTypeGuid: props.definedTypeGuid,
+        const options: DefinedValuePickerSaveNewValueOptionsBag = {
+            definedTypeGuid: props.definedTypeGuid || emptyGuid,
             securityGrantToken: securityGrantToken.value,
             value: newValue.value,
             description: newDescription.value,

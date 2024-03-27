@@ -144,6 +144,7 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -214,7 +215,7 @@
     const onSaveSearchKey = (): void => {
         isModalOpen.value = false;
         const searchType = searchKeyTypeList.value.find(x => x.value === searchKeyType.value);
-        searchKeys.value.push({ searchType: searchType, searchValue: searchKeyValue.value });
+        searchKeys.value.push({ guid: emptyGuid, searchType: searchType, searchValue: searchKeyValue.value });
 
         searchKeyValue.value = "";
         searchKeyType.value = "";

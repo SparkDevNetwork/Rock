@@ -27,7 +27,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /** A bag that contains information about a declined schedule row to be saved for the group schedule toolbox block. */
 export type SaveDeclineReasonRequestBag = {
     /** Gets or sets the attendance unique identifier. */
-    attendanceGuid?: Guid | null;
+    attendanceGuid: Guid;
 
     /** Gets or sets the decline reason. */
     declineReason?: ListItemBag | null;
@@ -36,7 +36,7 @@ export type SaveDeclineReasonRequestBag = {
     declineReasonNote?: string | null;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 
     /**
      * Gets or sets whether this schedule row was previously confirmed.

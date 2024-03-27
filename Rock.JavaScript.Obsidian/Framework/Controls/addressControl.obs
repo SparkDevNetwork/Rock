@@ -250,7 +250,7 @@
             loadingTimer = window.setTimeout(() => isLoading.value = true, 200);
         }
 
-        const options: Partial<AddressControlGetConfigurationOptionsBag> = {
+        const options: AddressControlGetConfigurationOptionsBag = {
             useCountryAbbreviation: props.useCountryAbbreviation,
             countryCode: selectedCountry
         };

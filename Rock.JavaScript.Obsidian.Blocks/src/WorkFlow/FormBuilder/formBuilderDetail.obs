@@ -497,14 +497,15 @@
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial.obs";
     import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial.obs";
     import SettingsTab from "./FormBuilderDetail/settingsTab.partial.obs";
     import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types.partial";
     import { provideFormSources } from "./FormBuilderDetail/utils.partial";
-    import { FormCompletionAction, FormGeneral } from "./Shared/types.partial";
+    import { FormCompletionAction, FormGeneral, FormSettings } from "./Shared/types.partial";
+    import { Guid } from "@Obsidian/Types";
 
     const config = useConfigurationValues<FormBuilderDetailConfiguration>();
 
@@ -682,10 +683,11 @@
             return;
         }
 
-        const result = await invokeBlockAction("SaveForm", {
-            formGuid: config.formGuid,
+        const request: { formGuid: Guid; formSettings: FormSettings; } = {
+            formGuid: config.formGuid || emptyGuid,
             formSettings: form
-        });
+        };
+        const result = await invokeBlockAction("SaveForm", request);
 
         if (!result.isSuccess) {
             alert(result.errorMessage ?? "Failed to save.");
