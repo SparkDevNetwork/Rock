@@ -16,12 +16,14 @@
 
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome"
                                :configuration="configuration"
+                               :session="currentSession"
                                @start="onWelcomeStart"
                                @updateActions="onUpdateActions($event, Screen.Welcome)">
                 </WelcomeScreen>
 
                 <SearchScreen v-if="currentScreen === Screen.Search"
                               :configuration="configuration"
+                              :session="currentSession"
                               @updateActions="onUpdateActions($event, Screen.Search)" />
             </ContentTransition>
         </section>
@@ -371,12 +373,15 @@
     import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
-    import { computed, ref } from "vue";
+    import { computed, ref, shallowRef } from "vue";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { CheckInKioskOptionsBag, KioskButton, provideKioskState, Screen } from "./CheckInKiosk/utils.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
+    import { useHttp } from "@Obsidian/Utility/http";
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
+    const http = useHttp();
 
     const kioskState: Record<string, unknown> = {};
 
@@ -384,6 +389,7 @@
 
     const configuration = ref<KioskConfigurationBag>({});
     const currentScreen = ref(Screen.Configuration);
+    const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
 
     const hasNavigation = computed((): boolean => {
         return currentScreen.value !== Screen.Configuration
@@ -397,9 +403,13 @@
 
     const currentScreenActions = ref<KioskButton[]>([]);
 
-    function navigateToScreen(screen: Screen): void {
+    function navigateToScreen(screen: Screen, preserveSession: boolean = false): void {
         currentScreenActions.value = [];
         currentScreen.value = screen;
+
+        if (!preserveSession && screen === Screen.Welcome) {
+            currentSession.value = new CheckInSession(configuration.value, http);
+        }
     }
 
     function onConfigured(value: KioskConfigurationBag): void {
@@ -413,8 +423,12 @@
         }
     }
 
-    function onWelcomeStart(): void {
-        navigateToScreen(Screen.Search);
+    function onWelcomeStart(session: CheckInSession): void {
+        const screen = session.getNextScreen(currentScreen.value);
+
+        currentSession.value = session;
+
+        navigateToScreen(screen);
     }
 
     function onHome(): void {

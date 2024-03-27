@@ -58,11 +58,17 @@ export type SavedConfigurationBag = {
 };
 
 export enum Screen {
-    Configuration = 0,
+    Configuration,
 
-    Welcome = 1,
+    Welcome,
 
-    Search = 2
+    Search,
+
+    FamilySelect,
+
+    ActionSelect,
+
+    PersonSelect,
 }
 
 // #endregion
@@ -100,6 +106,8 @@ export interface IRockCheckInNative {
 /* eslint-enable @typescript-eslint/naming-convention */
 
 const kioskStateKey = Symbol("KioskState");
+
+export const UnexpectedErrorMessage = "Unexpected error encountered, please try again or ask for assistance.";
 
 /**
  * Makes a state object available to child components. This is essentially an
@@ -260,4 +268,8 @@ export function secondsToCountdown(seconds: number): string {
     }
 
     return `${timeString}${zeroPad(minutes, 2)}:${zeroPad(seconds, 2)}`;
+}
+
+export function clone<T>(value: T): T {
+    return JSON.parse(JSON.stringify(value));
 }

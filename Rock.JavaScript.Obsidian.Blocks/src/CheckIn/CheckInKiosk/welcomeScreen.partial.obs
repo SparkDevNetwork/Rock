@@ -33,19 +33,27 @@
     import { KioskStatusOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusOptionsBag";
     import { KioskStatusResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusResponseBag";
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera, KioskButton, secondsToCountdown, useKioskState } from "./utils.partial";
+    import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera, KioskButton, secondsToCountdown, UnexpectedErrorMessage, useKioskState } from "./utils.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
 
     const props = defineProps({
         configuration: {
             type: Object as PropType<KioskConfigurationBag>,
             required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
         }
     });
 
     const emit = defineEmits<{
-        (event: "start"): void;
+        (event: "start", session: CheckInSession): void;
         (event: "updateActions", value: KioskButton[]): void;
     }>();
 
@@ -135,14 +143,38 @@
      *
      * @param code The barcode that was scanned.
      */
-    function performScannedCodeSearch(code: string): void {
+    async function performScannedCodeSearch(code: string): Promise<void> {
+        if (code.startsWith("PCL+")) {
+            // If using the HTML5 Camera, ignore PCL (Pre-Checkin Labels) QR
+            // Codes. The iPad app will print labels for PCL's itself, but
+            // HTML5 camera mode won't.
+            return;
+        }
+
         if (isProcessingScannedCode) {
             return;
         }
 
         isProcessingScannedCode = true;
-        console.log("Scanned code", code);
-        isProcessingScannedCode = false;
+
+        try {
+            let newSession = props.session.withConfiguration(props.configuration);
+
+            newSession = await newSession.searchForFamily(code, FamilySearchMode.ScannedId);
+
+            if (!newSession.families || newSession.families.length === 0) {
+                await alert("Sorry, there were not any families found with the selected identifier.");
+                return;
+            }
+
+            emit("start", newSession);
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+        finally {
+            isProcessingScannedCode = false;
+        }
     }
 
     /**
@@ -324,7 +356,7 @@
      * Event handler for when the Start button is clicked.
      */
     function onStartClick(): void {
-        emit("start");
+        emit("start", props.session);
     }
 
     /**
