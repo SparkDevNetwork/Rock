@@ -47,7 +47,7 @@
     // #region Values
 
     const title = ref("Family Selection");
-    const subtitle = ref("Select your family from the list below.");
+    const subtitle = ref("Select your family from the list below");
     let isSelectingFamily = false;
 
     // #endregion
