@@ -26,18 +26,21 @@ import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
 /** Details about a single attendee being considered for check-in. */
 export type AttendeeBag = {
-    /** Gets or sets the message describing why this person is not available. */
-    disabledMessage?: string | null;
+    /** Gets or sets a value indicating whether this attendee has multiple selections available. */
+    isMultipleSelectionsAvailable: boolean;
 
-    /** Gets or sets a value indicating whether this person is disabled. */
-    isDisabled: boolean;
-
-    /** Gets or sets a value indicating whether this instance is already selected. */
+    /** Gets or sets a value indicating whether this attendee is already selected. */
     isPreSelected: boolean;
+
+    /** Gets or sets a value indicating whether this attendee is unavailable. */
+    isUnavailable: boolean;
 
     /** Gets or sets the person represented by this item. */
     person?: PersonBag | null;
 
     /** Gets or sets the selected opportunities for this attendee. */
     selectedOpportunities?: OpportunitySelectionBag[] | null;
+
+    /** Gets or sets the message describing why this attendee is not available. */
+    unavailableMessage?: string | null;
 };

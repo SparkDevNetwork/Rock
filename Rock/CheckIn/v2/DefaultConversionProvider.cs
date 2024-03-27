@@ -221,8 +221,9 @@ namespace Rock.CheckIn.v2
             {
                 Person = attendee.Person,
                 IsPreSelected = attendee.IsPreSelected,
-                IsDisabled = attendee.IsDisabled,
-                DisabledMessage = attendee.DisabledMessage,
+                IsUnavailable = attendee.IsUnavailable,
+                IsMultipleSelectionsAvailable = attendee.IsMultipleSelectionsAvailable,
+                UnavailableMessage = attendee.UnavailableMessage,
                 SelectedOpportunities = attendee.SelectedOpportunities
             };
         }

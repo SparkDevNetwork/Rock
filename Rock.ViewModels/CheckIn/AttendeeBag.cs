@@ -30,22 +30,28 @@ namespace Rock.ViewModels.CheckIn
         public PersonBag Person { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this person is disabled.
+        /// Gets or sets a value indicating whether this attendee is unavailable.
         /// </summary>
-        /// <value><c>true</c> if this person is disabled; otherwise, <c>false</c>.</value>
-        public bool IsDisabled { get; set; }
+        /// <value><c>true</c> if this attendee is unavailable; otherwise, <c>false</c>.</value>
+        public bool IsUnavailable { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is already selected.
+        /// Gets or sets a value indicating whether this attendee is already selected.
         /// </summary>
-        /// <value><c>true</c> if this instance is already selected; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if this attendee is already selected; otherwise, <c>false</c>.</value>
         public bool IsPreSelected { get; set; }
 
         /// <summary>
-        /// Gets or sets the message describing why this person is not available.
+        /// Gets or sets a value indicating whether this attendee has multiple selections available.
         /// </summary>
-        /// <value>The disabled reason message.</value>
-        public string DisabledMessage { get; set; }
+        /// <value><c>true</c> if this attendee has multiple selections available; otherwise, <c>false</c>.</value>
+        public bool IsMultipleSelectionsAvailable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message describing why this attendee is not available.
+        /// </summary>
+        /// <value>The unavailable reason message.</value>
+        public string UnavailableMessage { get; set; }
 
         /// <summary>
         /// Gets or sets the selected opportunities for this attendee.

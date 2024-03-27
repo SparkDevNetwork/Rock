@@ -283,7 +283,7 @@ namespace Rock.CheckIn.v2
                 OpportunityFilterProvider.RemoveEmptyOpportunities( attendee );
 
                 // Do a final check to see if the attendee should be disabled.
-                if ( !attendee.IsDisabled )
+                if ( !attendee.IsUnavailable )
                 {
                     var noOptions = attendee.Opportunities.Groups.Count == 0
                         || attendee.Opportunities.Locations.Count == 0
@@ -292,8 +292,8 @@ namespace Rock.CheckIn.v2
 
                     if ( noOptions )
                     {
-                        attendee.IsDisabled = true;
-                        attendee.DisabledMessage = "Not Available For Check-in";
+                        attendee.IsUnavailable = true;
+                        attendee.UnavailableMessage = "Not Available For Check-in";
                     }
                 }
             }
@@ -353,6 +353,10 @@ namespace Rock.CheckIn.v2
                 }
 
                 attendee.IsPreSelected = TemplateConfiguration.AutoSelectDaysBack > 0 && attendee.RecentAttendances.Count > 0;
+                attendee.IsMultipleSelectionsAvailable = attendee.Opportunities.Areas.Count > 1
+                    || attendee.Opportunities.Groups.Count > 1
+                    || attendee.Opportunities.Locations.Count > 1
+                    || attendee.Opportunities.Schedules.Count > 1;
             }
         }
 

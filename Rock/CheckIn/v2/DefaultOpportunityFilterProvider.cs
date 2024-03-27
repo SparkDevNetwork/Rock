@@ -110,10 +110,10 @@ namespace Rock.CheckIn.v2
 
             // If this person is not already disabled and there are no groups
             // then disable the person with appropriate reason.
-            if ( !person.IsDisabled && person.Opportunities.Groups.Count == 0 )
+            if ( !person.IsUnavailable && person.Opportunities.Groups.Count == 0 )
             {
-                person.IsDisabled = true;
-                person.DisabledMessage = "No Matching Groups Found";
+                person.IsUnavailable = true;
+                person.UnavailableMessage = "No Matching Groups Found";
             }
 
             // Remove any locations that have no group referencing them.
@@ -131,10 +131,10 @@ namespace Rock.CheckIn.v2
 
             // If this person is not already disabled and there are no locations
             // then disable the person with appropriate reason.
-            if ( !person.IsDisabled && person.Opportunities.Locations.Count == 0 )
+            if ( !person.IsUnavailable && person.Opportunities.Locations.Count == 0 )
             {
-                person.IsDisabled = true;
-                person.DisabledMessage = "No Locations Available";
+                person.IsUnavailable = true;
+                person.UnavailableMessage = "No Locations Available";
             }
 
             // Remove any schedules that have no group referencing them.
