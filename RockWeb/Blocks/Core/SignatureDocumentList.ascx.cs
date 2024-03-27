@@ -154,9 +154,12 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                // delete the binary file associated with the Signature Document
-                var binaryFileService = new BinaryFileService( rockContext );
-                binaryFileService.Delete( document.BinaryFile );
+                // Delete the binary file associated with the Signature Document
+                if(document.BinaryFile != null)
+                {
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    binaryFileService.Delete( document.BinaryFile );
+                }
 
                 signatureDocumentService.Delete( document );
                 rockContext.SaveChanges();
@@ -244,12 +247,12 @@ namespace RockWeb.Blocks.Core
                 d.LastInviteDate,
                 d.SignedDateTime,
                 d.SignatureDocumentTemplate,
-                FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "",
-                FileGuid = d.BinaryFile.Guid,
+                FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "<i class='fa fa-exclamation-triangle text-danger' title='File deleted'></i>",
+                FileGuid = d.BinaryFile == null ? Guid.Empty : d.BinaryFile.Guid,
             } )
                 .GroupBy( d => d.SignatureDocumentTemplate ) // grouping by the signature document template to avoid duplicate checks for authorization on the same
                 .ToList()
-                .Where( d => d.Key.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                .Where( d => d.Key != null && d.Key.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 .SelectMany( d => d )
                 .ToList();
 
