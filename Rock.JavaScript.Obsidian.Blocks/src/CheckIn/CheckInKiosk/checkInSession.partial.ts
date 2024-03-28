@@ -230,55 +230,67 @@ export class CheckInSession {
      */
     public getNextScreen(currentScreen: Screen): Screen {
         if (currentScreen === Screen.Welcome) {
-            if (!this.families) {
-                return Screen.Search;
-            }
-            else if (this.families.length === 1) {
-                return Screen.PersonSelect;
-            }
-            else {
-                return Screen.FamilySelect;
-            }
+            return this.getNextScreenFromWelcome();
         }
         else if (currentScreen === Screen.Search) {
-            if (!this.families) {
-                return Screen.Welcome;
-            }
-            else {
-                // Always show family select even if only one family when
-                // coming from the search screen.
-                return Screen.FamilySelect;
-            }
+            return this.getNextScreenFromSearch();
         }
         else if (currentScreen === Screen.FamilySelect) {
-            if (!this.currentFamily || !this._attendees) {
-                return Screen.Welcome;
-            }
-            else if (this._currentlyCheckedIn && this._currentlyCheckedIn.length > 0) {
-                return Screen.ActionSelect;
-            }
-            else {
-                return Screen.PersonSelect;
-            }
+            return this.getNextScreenFromFamilySelect();
         }
         else if (currentScreen === Screen.PersonSelect) {
-            if (this.configuration.template?.kioskCheckInType == KioskCheckInMode.Family) {
-                if (this.currentAttendeeGuid) {
-                    // TODO: Go to time select (or whatever next is).
-                    return Screen.Welcome;
-                }
-                else {
-                    // TODO: Go to success screen.
-                    return Screen.Welcome;
-                }
-            }
-            else {
-                // TODO: Go to ability select (or whatever is next).
-                return Screen.Welcome;
-            }
+            return this.getNextScreenFromPersonSelect();
         }
         else {
             return Screen.Welcome;
         }
+    }
+
+    private getNextScreenFromWelcome(): Screen {
+        if (!this.families) {
+            return Screen.Search;
+        }
+        else if (this.families.length === 1) {
+            return Screen.PersonSelect;
+        }
+
+        return Screen.FamilySelect;
+    }
+
+    private getNextScreenFromSearch(): Screen {
+        if (!this.families) {
+            return Screen.Welcome;
+        }
+
+        // Always show family select even if only one family when
+        // coming from the search screen.
+        return Screen.FamilySelect;
+    }
+
+    private getNextScreenFromFamilySelect(): Screen {
+        if (!this.currentFamily || !this._attendees) {
+            return Screen.Welcome;
+        }
+        else if (this._currentlyCheckedIn && this._currentlyCheckedIn.length > 0) {
+            return Screen.ActionSelect;
+        }
+
+        return Screen.PersonSelect;
+    }
+
+    private getNextScreenFromPersonSelect(): Screen {
+        if (this.configuration.template?.kioskCheckInType == KioskCheckInMode.Family) {
+            if (this.currentAttendeeGuid) {
+                // TODO: Go to time select (or whatever next is).
+                return Screen.Welcome;
+            }
+            else {
+                // TODO: Go to success screen.
+                return Screen.Welcome;
+            }
+        }
+
+        // TODO: Go to ability select (or whatever is next).
+        return Screen.Welcome;
     }
 }
