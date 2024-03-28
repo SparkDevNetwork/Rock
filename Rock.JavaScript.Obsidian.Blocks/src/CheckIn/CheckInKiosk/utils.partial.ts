@@ -26,6 +26,8 @@ import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Check
 import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 import { inject, provide } from "vue";
 import { zeroPad } from "@Obsidian/Utility/numberUtils";
+import { Guid } from "@Obsidian/Types";
+import { areEqual } from "@Obsidian/Utility/guid";
 
 // #region Temporary Types
 
@@ -292,3 +294,16 @@ export function clone<T>(value: T): T {
 
     return JSON.parse(JSON.stringify(value));
 }
+
+export function isGuidInList(needle: Guid | Guid[] | null | undefined, haystack: Guid[] | null | undefined): boolean {
+    if (!needle || !haystack) {
+        return false;
+    }
+
+    if (Array.isArray(needle)) {
+        return haystack.some(h => needle.some(n => areEqual(h, n)));
+    }
+
+    return haystack.some(h => areEqual(h, needle));
+}
+

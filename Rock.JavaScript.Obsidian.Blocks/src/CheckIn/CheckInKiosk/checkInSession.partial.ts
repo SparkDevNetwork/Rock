@@ -1,6 +1,6 @@
 import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
 import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
-import { Screen, UnexpectedErrorMessage, clone } from "./utils.partial";
+import { Screen, UnexpectedErrorMessage, clone, isGuidInList } from "./utils.partial";
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
@@ -21,20 +21,14 @@ import { DeepReadonly } from "vue";
 import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
 import { GroupOpportunityBag } from "@Obsidian/ViewModels/CheckIn/groupOpportunityBag";
 import { LocationOpportunityBag } from "@Obsidian/ViewModels/CheckIn/locationOpportunityBag";
+import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
+import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 
 const invalidCheckInStateMessage = "Invalid check-in state.";
 
-function isGuidInList(needle: Guid | Guid[] | null | undefined, haystack: Guid[] | null | undefined): boolean {
-    if (!needle || !haystack) {
-        return false;
-    }
-
-    if (Array.isArray(needle)) {
-        return haystack.some(h => needle.some(n => areEqual(h, n)));
-    }
-
-    return haystack.some(h => areEqual(h, needle));
-}
+type SessionOpportunitySelectionBag = Omit<OpportunitySelectionBag, "schedule"> & {
+    schedules?: CheckInItemBag[] | null;
+};
 
 export class CheckInSession {
     // #region Fields
@@ -75,7 +69,7 @@ export class CheckInSession {
     private _attendeeOpportunities?: OpportunityCollectionBag;
 
     /** The currently selected opportunities for the current attendee. */
-    private _currentOpportunitySelection?: OpportunitySelectionBag;
+    private _currentOpportunitySelection?: SessionOpportunitySelectionBag;
 
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -135,7 +129,7 @@ export class CheckInSession {
         return this._attendeeOpportunities;
     }
 
-    public get currentOpportunitySelection(): DeepReadonly<OpportunitySelectionBag> | undefined {
+    public get currentOpportunitySelection(): DeepReadonly<SessionOpportunitySelectionBag> | undefined {
         return this._currentOpportunitySelection;
     }
 
@@ -298,10 +292,10 @@ export class CheckInSession {
                 }
 
                 if (this.attendeeOpportunities.schedules?.length === 1) {
-                    copy._currentOpportunitySelection.schedule = {
+                    copy._currentOpportunitySelection.schedules = [{
                         guid: this.attendeeOpportunities.schedules[0].guid,
                         name: this.attendeeOpportunities.schedules[0].name
-                    };
+                    }];
                 }
             }
         }
@@ -378,12 +372,13 @@ export class CheckInSession {
             return this._attendeeOpportunities.areas;
         }
 
-        // In family mode we need to filter the areas by the selected schedule
+        // In family mode we need to filter the areas by the selected schedules
         // which means we need to start by getting the locations that are
         // valid for that schedule.
+        const selectedScheduleGuids = selection.schedules?.map(s => s.guid);
         const validLocationGuids = this._attendeeOpportunities
             .locations
-            ?.filter(l => isGuidInList(selection.schedule?.guid, l.scheduleGuids))
+            ?.filter(l => isGuidInList(selectedScheduleGuids, l.scheduleGuids))
             .map(l => l.guid) ?? [];
 
         // Now find all groups for those locations.
@@ -439,9 +434,10 @@ export class CheckInSession {
         // In family mode we need to filter the areas by the selected schedule
         // and the selected area. Which means we need to start by getting the
         // locations that are valid for that schedule.
+        const selectedScheduleGuids = selection.schedules?.map(s => s.guid);
         const validLocationGuids = this._attendeeOpportunities
             .locations
-            ?.filter(l => isGuidInList(selection.schedule?.guid, l.scheduleGuids))
+            ?.filter(l => isGuidInList(selectedScheduleGuids, l.scheduleGuids))
             .map(l => l.guid) ?? [];
 
         // Now find all groups for those locations and the selected area.
@@ -497,12 +493,65 @@ export class CheckInSession {
                 .filter(l => isGuidInList(l.guid, group.locationGuids));
         }
 
-        // In family mode we need to filter the locations by the selected schedule
+        // In family mode we need to filter the locations by the selected schedules
         // and the selected group.
+        const selectedScheduleGuids = selection.schedules?.map(s => s.guid);
+
         return this._attendeeOpportunities
             .locations
             .filter(l => isGuidInList(l.guid, group.locationGuids))
-            .filter(l => isGuidInList(selection.schedule?.guid, l.scheduleGuids));
+            .filter(l => isGuidInList(selectedScheduleGuids, l.scheduleGuids));
+    }
+
+    public withSelectedSchedules(scheduleGuids: Guid[]): CheckInSession {
+        const schedules = this._attendeeOpportunities
+            ?.schedules
+            ?.filter(g => isGuidInList(g.guid, scheduleGuids));
+
+        if (!schedules || schedules.length === 0 || schedules.length !== scheduleGuids.length) {
+            throw new Error("Those times are not valid.");
+        }
+
+        const copy = this.clone();
+
+        if (!copy._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        copy._currentOpportunitySelection.schedules = schedules
+            .map(s => ({
+                guid: s.guid,
+                name: s.name
+            }));
+
+        return copy;
+    }
+
+    public getAvailableSchedules(): ScheduleOpportunityBag[] {
+        const selection = this._currentOpportunitySelection;
+
+        if (!this._attendeeOpportunities?.schedules || !selection) {
+            return [];
+        }
+
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            // In individual mode we need to filter the schedules by the selected
+            // location.
+            const location = this._attendeeOpportunities
+                .locations
+                ?.find(l => areEqual(l.guid, selection.location?.guid));
+
+            if (!location) {
+                return [];
+            }
+
+            return this._attendeeOpportunities
+                .schedules
+                .filter(s => isGuidInList(s.guid, location.scheduleGuids));
+        }
+
+        // In family mode we are the first step so we just show everything.
+        return this._attendeeOpportunities.schedules;
     }
 
     /**
