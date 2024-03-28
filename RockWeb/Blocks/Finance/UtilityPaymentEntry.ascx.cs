@@ -3318,7 +3318,7 @@ mission. We are so grateful for your commitment.</p>
 
                 Person BusinessOrPerson = GetPersonOrBusiness( person );
 
-                var paymentInfo = GetTxnPaymentInfo( BusinessOrPerson, out errorMessage );
+                var paymentInfo = GetTxnPaymentInfo( BusinessOrPerson, givingAsBusiness, out errorMessage );
                 if ( paymentInfo == null )
                 {
                     return false;
@@ -3385,7 +3385,7 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
-        private ReferencePaymentInfo GetTxnPaymentInfo( Person person, out string errorMessage )
+        private ReferencePaymentInfo GetTxnPaymentInfo( Person person, bool givingAsBusiness, out string errorMessage )
         {
             errorMessage = null;
 
@@ -3403,6 +3403,11 @@ mission. We are so grateful for your commitment.</p>
             {
                 paymentInfo.FirstName = person.FirstName;
                 paymentInfo.LastName = person.LastName;
+            }
+
+            if ( givingAsBusiness )
+            {
+                paymentInfo.BusinessName = txtBusinessName.Text;
             }
 
             if ( paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
