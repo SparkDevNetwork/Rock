@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using Rock.SystemGuid;
 
 namespace Rock.Plugin.HotFixes
 {
@@ -108,7 +109,7 @@ END
         /// <summary>
         /// JDR: Add Volunteer Generosity Analysis page, block, and persisted dataset
         /// JDR: Add the Volunteer Generosity Analysis block out of the box
-        /// Creating the page, block, and dataset with a set schedule.
+        /// Creating the page, block, and dataset with a set schedule. 
         /// </summary>
         private void AddVolunteerGenerosityAnalysisFeature()
         {
@@ -152,9 +153,9 @@ DECLARE @NumberOfDays INT = 90;
 DECLARE @NumberOfMonths INT = 13; 
 DECLARE @ServingAreaDefinedValueGuid UNIQUEIDENTIFIER = '36a554ce-7815-41b9-a435-93f3d52a2828';
 
-DECLARE @StartDateKey int = (SELECT TOP 1 [DateKey] FROM [AnalyticsSourceDate] WHERE [Date] = CAST(DATEADD(d, -{{ NumberOfDays }}, GETDATE()) AS date));
+DECLARE @StartDateKey int = (SELECT TOP 1 [DateKey] FROM [AnalyticsSourceDate] WHERE [Date] = CAST(DATEADD(d, -@NumberOfDays, GETDATE()) AS date));
 DECLARE @CurrentMonth date = DATEADD(m, DATEDIFF(m, 0, GETDATE()), 0);
-DECLARE @StartingDateKeyForGiving int = (SELECT [DateKey] FROM [AnalyticsSourceDate] WHERE [Date] = DATEADD(m, -{{ NumberOfMonths }}, @CurrentMonth));
+DECLARE @StartingDateKeyForGiving int = (SELECT [DateKey] FROM [AnalyticsSourceDate] WHERE [Date] = DATEADD(m, -@NumberOfMonths, @CurrentMonth));
 
 WITH AttendanceData AS (
     SELECT
@@ -349,6 +350,5 @@ BEGIN
 END
       " );
         }
-
     }
 }
