@@ -68,6 +68,10 @@
     <Compile Include="Migrations\202403222154517_Rollup_20240322.Designer.cs">
       <DependentUpon>202403222154517_Rollup_20240322.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202403282045457_CodeGenerated_20240328.cs" />
+    <Compile Include="Migrations\202403282045457_CodeGenerated_20240328.Designer.cs">
+      <DependentUpon>202403282045457_CodeGenerated_20240328.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202402151659503_Rollup_20240215.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202402151659503_Rollup_20240215.designer.cs">
       <DependentUpon>202402151659503_Rollup_20240215.cs</DependentUpon>
@@ -1996,6 +2000,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202403222154517_Rollup_20240322.resx">
       <DependentUpon>202403222154517_Rollup_20240322.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202403282045457_CodeGenerated_20240328.resx">
+      <DependentUpon>202403282045457_CodeGenerated_20240328.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202402151659503_Rollup_20240215.resx">
       <DependentUpon>202402151659503_Rollup_20240215.cs</DependentUpon>
