@@ -45,7 +45,7 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, CSSProperties, PropType, ref, watch } from "vue";
+    import { computed, CSSProperties, DeepReadonly, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
@@ -106,7 +106,7 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        return `${props.session.currentFamily?.name} Family`;
+        return props.session.currentFamily?.name ?? "";
     });
 
     const subtitle = computed((): string => {
@@ -126,7 +126,7 @@
         return props.configuration.template?.isAutoSelect === true;
     });
 
-    const attendees = computed((): AttendeeBag[] => {
+    const attendees = computed((): DeepReadonly<AttendeeBag[]> => {
         if (!props.session.attendees) {
             return [];
         }
@@ -183,11 +183,11 @@
         emit("updateActions", actions);
     }
 
-    function isAttendeeSelected(attendee: AttendeeBag): boolean {
+    function isAttendeeSelected(attendee: DeepReadonly<AttendeeBag>): boolean {
         return selections.value.some(s => areEqual(s, attendee.person?.guid));
     }
 
-    function getStyleForAttendee(attendee: AttendeeBag): CSSProperties {
+    function getStyleForAttendee(attendee: DeepReadonly<AttendeeBag>): CSSProperties {
         const properties: CSSProperties = {
             backgroundImage: `url("${attendee.person?.photoUrl}")`
         };
@@ -200,7 +200,7 @@
      *
      * @param family The family that was selected.
      */
-    async function onAttendeeClick(attendee: AttendeeBag): Promise<void> {
+    async function onAttendeeClick(attendee: DeepReadonly<AttendeeBag>): Promise<void> {
         if (isFamilyMode.value) {
             if (isAttendeeSelected(attendee)) {
                 selections.value = selections.value.filter(s => !areEqual(s, attendee.person?.guid));
@@ -223,7 +223,7 @@
         }
     }
 
-    async function onChangeSelection(attendee: AttendeeBag): Promise<void> {
+    async function onChangeSelection(attendee: DeepReadonly<AttendeeBag>): Promise<void> {
         if (!attendee.person?.guid) {
             return;
         }

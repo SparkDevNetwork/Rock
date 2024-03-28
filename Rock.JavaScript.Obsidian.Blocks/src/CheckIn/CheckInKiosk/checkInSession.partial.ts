@@ -1,6 +1,6 @@
 import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
 import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
-import { Screen, UnexpectedErrorMessage } from "./utils.partial";
+import { Screen, UnexpectedErrorMessage, clone } from "./utils.partial";
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
@@ -15,6 +15,24 @@ import { Guid } from "@Obsidian/Types";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { OpportunityCollectionBag } from "@Obsidian/ViewModels/CheckIn/opportunityCollectionBag";
 import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
+import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
+import { AbilityLevelOpportunityBag } from "@Obsidian/ViewModels/CheckIn/abilityLevelOpportunityBag";
+import { DeepReadonly } from "vue";
+import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
+
+const invalidCheckInStateMessage = "Invalid check-in state.";
+
+function isGuidInList(needle: Guid | Guid[] | null | undefined, haystack: Guid[] | null | undefined): boolean {
+    if (!needle || !haystack) {
+        return false;
+    }
+
+    if (Array.isArray(needle)) {
+        return haystack.some(h => needle.some(n => areEqual(h, n)));
+    }
+
+    return haystack.some(h => areEqual(h, needle));
+}
 
 export class CheckInSession {
     // #region Fields
@@ -54,6 +72,9 @@ export class CheckInSession {
     /** The available opportunities for the currently selected attendee. */
     private _attendeeOpportunities?: OpportunityCollectionBag;
 
+    /** The currently selected opportunities for the current attendee. */
+    private _currentOpportunitySelection?: OpportunitySelectionBag;
+
     /* eslint-enable @typescript-eslint/naming-convention */
 
     private readonly configuration: KioskConfigurationBag;
@@ -76,7 +97,7 @@ export class CheckInSession {
         return this._searchType;
     }
 
-    public get families(): FamilyBag[] | undefined {
+    public get families(): DeepReadonly<FamilyBag[]> | undefined {
         return this._families;
     }
 
@@ -84,15 +105,15 @@ export class CheckInSession {
         return this._currentFamilyGuid;
     }
 
-    public get currentFamily(): FamilyBag | undefined {
+    public get currentFamily(): DeepReadonly<FamilyBag> | undefined {
         return this._families?.find(f => areEqual(f.guid, this._currentFamilyGuid));
     }
 
-    public get attendees(): AttendeeBag[] | undefined {
+    public get attendees(): DeepReadonly<AttendeeBag[]> | undefined {
         return this._attendees;
     }
 
-    public get currentlyCheckedIn(): AttendanceBag[] | undefined {
+    public get currentlyCheckedIn(): DeepReadonly<AttendanceBag[]> | undefined {
         return this._currentlyCheckedIn;
     }
 
@@ -104,12 +125,16 @@ export class CheckInSession {
         return this._currentAttendeeGuid;
     }
 
-    public get currentAttendee(): AttendeeBag | undefined {
+    public get currentAttendee(): DeepReadonly<AttendeeBag> | undefined {
         return this._attendees?.find(f => areEqual(f.person?.guid, this._currentAttendeeGuid));
     }
 
-    public get attendeeOpportunities(): OpportunityCollectionBag | undefined {
+    public get attendeeOpportunities(): DeepReadonly<OpportunityCollectionBag> | undefined {
         return this._attendeeOpportunities;
+    }
+
+    public get currentOpportunitySelection(): DeepReadonly<OpportunitySelectionBag> | undefined {
+        return this._currentOpportunitySelection;
     }
 
     // #endregion
@@ -126,13 +151,14 @@ export class CheckInSession {
         copy._currentScreen = this._currentScreen;
         copy._searchTerm = this._searchTerm;
         copy._searchType = this._searchType;
-        copy._families = this._families;
+        copy._families = clone(this._families);
         copy._currentFamilyGuid = this._currentFamilyGuid;
-        copy._attendees = this._attendees;
-        copy._currentlyCheckedIn = this._currentlyCheckedIn;
-        copy._selectedAttendeeGuids = this._selectedAttendeeGuids;
+        copy._attendees = clone(this._attendees);
+        copy._currentlyCheckedIn = clone(this._currentlyCheckedIn);
+        copy._selectedAttendeeGuids = clone(this._selectedAttendeeGuids);
         copy._currentAttendeeGuid = this._currentAttendeeGuid;
-        copy._attendeeOpportunities = this._attendeeOpportunities;
+        copy._attendeeOpportunities = clone(this._attendeeOpportunities);
+        copy._currentOpportunitySelection = clone(this._currentOpportunitySelection);
 
         return copy;
     }
@@ -151,7 +177,7 @@ export class CheckInSession {
 
     public async withSearch(searchTerm: string, searchType: FamilySearchMode): Promise<CheckInSession> {
         if (!this.configuration.template) {
-            throw new Error("Invalid session state.");
+            throw new Error(invalidCheckInStateMessage);
         }
 
         const request: SearchForFamiliesOptionsBag = {
@@ -179,7 +205,7 @@ export class CheckInSession {
 
     public async withFamily(familyGuid: Guid): Promise<CheckInSession> {
         if (!this.configuration.template || !this.configuration.kiosk) {
-            throw new Error("Invalid session state.");
+            throw new Error(invalidCheckInStateMessage);
         }
 
         const request: FamilyMembersOptionsBag = {
@@ -214,7 +240,7 @@ export class CheckInSession {
 
     public async withAttendee(attendeeGuid: Guid): Promise<CheckInSession> {
         if (!this.configuration.template || !this.configuration.kiosk) {
-            throw new Error("Invalid session state.");
+            throw new Error(invalidCheckInStateMessage);
         }
 
         const request: AttendeeOpportunitiesOptionsBag = {
@@ -236,7 +262,115 @@ export class CheckInSession {
         copy._currentAttendeeGuid = attendeeGuid;
         copy._attendeeOpportunities = response.data.opportunities;
 
+        if (this.configuration.template.kioskCheckInType === KioskCheckInMode.Individual) {
+            copy._currentOpportunitySelection = {};
+
+            // Set default selections if any items have only one choice.
+            if (this.attendeeOpportunities) {
+                if (this.attendeeOpportunities.abilityLevels?.length === 1) {
+                    copy._currentOpportunitySelection.abilityLevel = {
+                        guid: this.attendeeOpportunities.abilityLevels[0].guid,
+                        name: this.attendeeOpportunities.abilityLevels[0].name
+                    };
+                }
+
+                if (this.attendeeOpportunities.areas?.length === 1) {
+                    copy._currentOpportunitySelection.area = {
+                        guid: this.attendeeOpportunities.areas[0].guid,
+                        name: this.attendeeOpportunities.areas[0].name
+                    };
+                }
+
+                if (this.attendeeOpportunities.groups?.length === 1) {
+                    copy._currentOpportunitySelection.group = {
+                        guid: this.attendeeOpportunities.groups[0].guid,
+                        name: this.attendeeOpportunities.groups[0].name
+                    };
+                }
+
+                if (this.attendeeOpportunities.locations?.length === 1) {
+                    copy._currentOpportunitySelection.location = {
+                        guid: this.attendeeOpportunities.locations[0].guid,
+                        name: this.attendeeOpportunities.locations[0].name
+                    };
+                }
+
+                if (this.attendeeOpportunities.schedules?.length === 1) {
+                    copy._currentOpportunitySelection.schedule = {
+                        guid: this.attendeeOpportunities.schedules[0].guid,
+                        name: this.attendeeOpportunities.schedules[0].name
+                    };
+                }
+            }
+        }
+        else {
+            // TODO: Need to probably do something different in family mode.
+            copy._currentOpportunitySelection = {};
+        }
+
         return copy;
+    }
+
+    public withSelectedAbilityLevel(abilityLevelGuid: Guid): CheckInSession {
+        const abilityLevel = this._attendeeOpportunities
+            ?.abilityLevels
+            ?.find(a => areEqual(a.guid, abilityLevelGuid));
+
+        if (!abilityLevel) {
+            throw new Error("That ability level is not valid.");
+        }
+
+        const copy = this.clone();
+
+        if (!copy._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        copy._currentOpportunitySelection.abilityLevel = {
+            guid: abilityLevel.guid,
+            name: abilityLevel.name
+        };
+
+        return copy;
+    }
+
+    public getAvailableAbilityLevels(): AbilityLevelOpportunityBag[] {
+        if (!this._attendeeOpportunities?.abilityLevels) {
+            return [];
+        }
+
+        return this._attendeeOpportunities.abilityLevels;
+    }
+
+    public getAvailableAreas(): AreaOpportunityBag[] {
+        const selection = this._currentOpportunitySelection;
+
+        if (!this._attendeeOpportunities?.areas || !selection) {
+            return [];
+        }
+
+        if (this.configuration.template?.kioskCheckInType !== KioskCheckInMode.Family) {
+            return this._attendeeOpportunities.areas;
+        }
+
+        // Family mode we need to filter the areas by the selected schedule
+        // which means we need to start by getting the locations that are
+        // valid for that schedule.
+        const validLocationGuids = this._attendeeOpportunities
+            .locations
+            ?.filter(l => isGuidInList(selection.schedule?.guid, l.scheduleGuids))
+            .map(l => l.guid) ?? [];
+
+        // Now find all groups for those locations.
+        const validAreaGuids = this._attendeeOpportunities
+            .groups
+            ?.filter(g => isGuidInList(validLocationGuids, g.locationGuids))
+            .map(g => g.areaGuid) ?? [];
+
+        // Now we can find the areas
+        return this._attendeeOpportunities
+            .areas
+            ?.filter(a => isGuidInList(a.guid, validAreaGuids));
     }
 
     /**
@@ -316,31 +450,71 @@ export class CheckInSession {
 
     private withNextScreenFromPersonSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType == KioskCheckInMode.Family) {
-            if (this.currentAttendeeGuid) {
-                if ((this._attendeeOpportunities?.schedules?.length ?? 0) > 1) {
-                    return Promise.resolve(this.withScreen(Screen.ScheduleSelect));
-                }
-                else {
-                    return this.withNextScreenFromScheduleSelect();
-                }
-            }
-            else {
+            // If we don't have an attendee then we are done.
+            if (!this.currentAttendeeGuid) {
                 return Promise.resolve(this.withScreen(Screen.Success));
             }
         }
-        else if ((this._attendeeOpportunities?.abilityLevels?.length ?? 0) > 1) {
-            return Promise.resolve(this.withScreen(Screen.AbilityLevelSelect));
+
+        const newSession = this.clone();
+
+        // We should be either family mode that is updating an attendee or
+        // individual mode with an attendee.
+        if (!newSession.currentAttendeeGuid || !newSession._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
         }
 
-        return this.withNextScreenFromAbilityLevelSelect();
+        const abilityLevels = this.getAvailableAbilityLevels();
+
+        // If an ability level is not already selected then try to select
+        // one if there is a single option to pick from.
+        if (!newSession._currentOpportunitySelection.abilityLevel) {
+            if (abilityLevels.length === 1) {
+                newSession._currentOpportunitySelection.abilityLevel = {
+                    guid: abilityLevels[0].guid,
+                    name: abilityLevels[0].name
+                };
+            }
+        }
+
+        // If we have more than 1 ability level to pick from then show the
+        // ability level screen.
+        if (abilityLevels.length > 1) {
+            return Promise.resolve(newSession.withScreen(Screen.AbilityLevelSelect));
+        }
+
+        return newSession.withNextScreenFromAbilityLevelSelect();
     }
 
     private withNextScreenFromAbilityLevelSelect(): Promise<CheckInSession> {
-        if ((this._attendeeOpportunities?.areas?.length ?? 0) > 1) {
-            return Promise.resolve(this.withScreen(Screen.AreaSelect));
+        const newSession = this.clone();
+
+        // We should be either family mode that is updating an attendee or
+        // individual mode with an attendee.
+        if (!newSession.currentAttendeeGuid || !newSession._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
         }
 
-        return this.withNextScreenFromAreaSelect();
+        const areas = this.getAvailableAreas();
+
+        // If an area is not already selected then try to select
+        // one if there is a single option to pick from.
+        if (!newSession._currentOpportunitySelection.area) {
+            if (areas.length === 1) {
+                newSession._currentOpportunitySelection.area = {
+                    guid: areas[0].guid,
+                    name: areas[0].name
+                };
+            }
+        }
+
+        // If we have more than 1 ability level to pick from then show the
+        // ability level screen.
+        if (areas.length > 1) {
+            return Promise.resolve(newSession.withScreen(Screen.AreaSelect));
+        }
+
+        return newSession.withNextScreenFromAreaSelect();
     }
 
     private withNextScreenFromAreaSelect(): Promise<CheckInSession> {

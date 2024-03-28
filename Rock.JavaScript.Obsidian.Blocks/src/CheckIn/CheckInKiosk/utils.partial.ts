@@ -283,5 +283,12 @@ export function secondsToCountdown(seconds: number): string {
 }
 
 export function clone<T>(value: T): T {
+    if (value === undefined) {
+        return undefined as T;
+    }
+    else if (value === null) {
+        return null as T;
+    }
+
     return JSON.parse(JSON.stringify(value));
 }

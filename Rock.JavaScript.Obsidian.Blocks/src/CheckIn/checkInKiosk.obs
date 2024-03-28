@@ -38,6 +38,12 @@
                                     :session="currentSession"
                                     @next="onNextScreen"
                                     @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
+
+                <AbilityLevelSelectScreen v-if="currentScreen === Screen.AbilityLevelSelect"
+                                          :configuration="configuration"
+                                          :session="currentSession"
+                                          @next="onNextScreen"
+                                          @updateActions="onUpdateActions($event, Screen.AbilityLevelSelect)" />
             </ContentTransition>
         </section>
 
@@ -59,6 +65,8 @@
     flex-direction: column;
     gap: var(--item-spacing);
     padding: 8px 16px;
+    font-size: var(--font-size-body);
+    font-weight: 400;
 
     --panel-border-radius: 16px;
     --button-border-radius: 4px;
@@ -104,10 +112,9 @@
 
 .check-in-page .button-list .btn {
     display: flex;
-    padding: var(--button-horizontal-padding) var(--button-vertical-padding);
+    padding: var(--button-horizontal-padding);
     gap: var(--item-spacing);
     align-items: center;
-    justify-content: center;
 }
 
 .check-in-page .button-list .subtitle {
@@ -119,6 +126,24 @@
     height: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
+}
+
+.check-in-page .avatar {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background-size: cover;
+}
+
+.check-in-page .attendee-banner {
+    background-color: var(--tones-light);
+    border-radius: var(--button-border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--item-spacing) * 0.5);
+    padding: 8px;
     align-items: center;
 }
 
@@ -174,13 +199,11 @@
     margin: 0 0 4px 0;
 }
 
-.check-in-page .panel-header h1 {
+.check-in-page .panel-header .title {
     text-align: center;
 }
 
-.check-in-page .panel-header h2 {
-    font-size: var(--font-size-body);
-    font-weight: 400;
+.check-in-page .panel-header .subtitle {
     text-align: center;
 }
 
@@ -232,10 +255,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-}
-
-.check-in-page .configuration-screen .button-list .btn {
-    justify-content: initial;
 }
 
 .check-in-page .configuration-screen .saved-configurations {
@@ -387,6 +406,14 @@
 }
 
 /**
+ * Family Select Screen.
+ */
+.check-in-page .family-select-screen .button-list .btn {
+    justify-content: center;
+}
+
+
+/**
  * Person Select Screen.
  */
 .check-in-page .person-select-screen .attendee-button {
@@ -448,6 +475,7 @@
 </style>
 
 <script setup lang="ts">
+    import AbilityLevelSelectScreen from "./CheckInKiosk/abilityLevelSelectScreen.partial.obs";
     import ConfigurationScreen from "./CheckInKiosk/configurationScreen.partial.obs";
     import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
