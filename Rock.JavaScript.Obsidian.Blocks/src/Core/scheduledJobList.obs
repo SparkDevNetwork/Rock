@@ -27,19 +27,19 @@
                         title="Last Successful Run"
                         field="lastSuccessfulRun"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="md" />
 
         <DateTimeColumn name="lastRunDateTime"
                         title="Last Run Date"
                         field="lastRunDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="md" />
 
         <TextColumn name="lastRunDurationSeconds"
                     title="Last Run Duration"
                     field="lastRunDurationSeconds"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <Column name="lastStatus"
                 title="Last Status"
@@ -70,13 +70,13 @@
         <BooleanColumn name="isSystem"
                        title="System"
                        field="isSystem"
-                       visiblePriority="xs"
+                       visiblePriority="md"
                        width="5%" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       visiblePriority="xs"
+                       visiblePriority="md"
                        width="5%" />
 
         <Column name="history"
