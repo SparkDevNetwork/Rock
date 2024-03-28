@@ -44,6 +44,12 @@
                                           :session="currentSession"
                                           @next="onNextScreen"
                                           @updateActions="onUpdateActions($event, Screen.AbilityLevelSelect)" />
+
+                <AreaSelectScreen v-if="currentScreen === Screen.AreaSelect"
+                                  :configuration="configuration"
+                                  :session="currentSession"
+                                  @next="onNextScreen"
+                                  @updateActions="onUpdateActions($event, Screen.AreaSelect)" />
             </ContentTransition>
         </section>
 
@@ -476,6 +482,7 @@
 
 <script setup lang="ts">
     import AbilityLevelSelectScreen from "./CheckInKiosk/abilityLevelSelectScreen.partial.obs";
+    import AreaSelectScreen from "./CheckInKiosk/areaSelectScreen.partial.obs";
     import ConfigurationScreen from "./CheckInKiosk/configurationScreen.partial.obs";
     import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";

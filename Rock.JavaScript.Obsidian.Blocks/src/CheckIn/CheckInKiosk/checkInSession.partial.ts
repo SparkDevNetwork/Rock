@@ -342,6 +342,29 @@ export class CheckInSession {
         return this._attendeeOpportunities.abilityLevels;
     }
 
+    public withSelectedArea(areaGuid: Guid): CheckInSession {
+        const area = this._attendeeOpportunities
+            ?.areas
+            ?.find(a => areEqual(a.guid, areaGuid));
+
+        if (!area) {
+            throw new Error("That area is not valid.");
+        }
+
+        const copy = this.clone();
+
+        if (!copy._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        copy._currentOpportunitySelection.area = {
+            guid: area.guid,
+            name: area.name
+        };
+
+        return copy;
+    }
+
     public getAvailableAreas(): AreaOpportunityBag[] {
         const selection = this._currentOpportunitySelection;
 
