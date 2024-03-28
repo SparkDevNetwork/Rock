@@ -20,6 +20,7 @@ import { AbilityLevelOpportunityBag } from "@Obsidian/ViewModels/CheckIn/ability
 import { DeepReadonly } from "vue";
 import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
 import { GroupOpportunityBag } from "@Obsidian/ViewModels/CheckIn/groupOpportunityBag";
+import { LocationOpportunityBag } from "@Obsidian/ViewModels/CheckIn/locationOpportunityBag";
 
 const invalidCheckInStateMessage = "Invalid check-in state.";
 
@@ -450,6 +451,60 @@ export class CheckInSession {
             .filter(g => areEqual(g.areaGuid, selection.area?.guid));
     }
 
+    public withSelectedLocation(locationGuid: Guid): CheckInSession {
+        const location = this._attendeeOpportunities
+            ?.locations
+            ?.find(g => areEqual(g.guid, locationGuid));
+
+        if (!location) {
+            throw new Error("That location is not valid.");
+        }
+
+        const copy = this.clone();
+
+        if (!copy._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        copy._currentOpportunitySelection.location = {
+            guid: location.guid,
+            name: location.name
+        };
+
+        return copy;
+    }
+
+    public getAvailableLocations(): LocationOpportunityBag[] {
+        const selection = this._currentOpportunitySelection;
+
+        if (!this._attendeeOpportunities?.locations || !selection) {
+            return [];
+        }
+
+        const group = this._attendeeOpportunities
+            .groups
+            ?.find(g => areEqual(g.guid, selection.group?.guid));
+
+        if (!group) {
+            return [];
+        }
+
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            // In individual mode we need to filter the locations by the selected
+            // group.
+            return this._attendeeOpportunities
+                .locations
+                .filter(l => isGuidInList(l.guid, group.locationGuids));
+        }
+
+        // In family mode we need to filter the locations by the selected schedule
+        // and the selected group.
+        return this._attendeeOpportunities
+            .locations
+            .filter(l => isGuidInList(l.guid, group.locationGuids))
+            .filter(l => isGuidInList(selection.schedule?.guid, l.scheduleGuids));
+    }
+
     /**
      * Moves to the next screen to display based on the current selections.
      * This may trigger automatic logic, such as moving to the next attendee
@@ -624,11 +679,33 @@ export class CheckInSession {
     }
 
     private withNextScreenFromGroupSelect(): Promise<CheckInSession> {
-        if ((this._attendeeOpportunities?.locations?.length ?? 0) > 1) {
-            return Promise.resolve(this.withScreen(Screen.LocationSelect));
+        const newSession = this.clone();
+
+        // We should be either family mode that is updating an attendee or
+        // individual mode with an attendee.
+        if (!newSession.currentAttendeeGuid || !newSession._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
         }
 
-        return this.withNextScreenFromLocationSelect();
+        const locations = this.getAvailableLocations();
+
+        // If a location is not already selected then try to select
+        // one if there is a single option to pick from.
+        if (!newSession._currentOpportunitySelection.location) {
+            if (locations.length === 1) {
+                newSession._currentOpportunitySelection.location = {
+                    guid: locations[0].guid,
+                    name: locations[0].name
+                };
+            }
+        }
+
+        // If we have more than 1 location to pick from then show the location screen.
+        if (locations.length > 1) {
+            return Promise.resolve(newSession.withScreen(Screen.LocationSelect));
+        }
+
+        return newSession.withNextScreenFromLocationSelect();
     }
 
     private withNextScreenFromLocationSelect(): Promise<CheckInSession> {

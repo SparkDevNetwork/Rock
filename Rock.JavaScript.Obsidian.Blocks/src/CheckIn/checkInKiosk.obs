@@ -56,6 +56,12 @@
                                    :session="currentSession"
                                    @next="onNextScreen"
                                    @updateActions="onUpdateActions($event, Screen.GroupSelect)" />
+
+                <LocationSelectScreen v-if="currentScreen === Screen.LocationSelect"
+                                      :configuration="configuration"
+                                      :session="currentSession"
+                                      @next="onNextScreen"
+                                      @updateActions="onUpdateActions($event, Screen.LocationSelect)" />
             </ContentTransition>
         </section>
 
@@ -492,6 +498,7 @@
     import ConfigurationScreen from "./CheckInKiosk/configurationScreen.partial.obs";
     import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import GroupSelectScreen from "./CheckInKiosk/groupSelectScreen.partial.obs";
+    import LocationSelectScreen from "./CheckInKiosk/locationSelectScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import PersonSelectScreen from "./CheckInKiosk/personSelectScreen.partial.obs";
