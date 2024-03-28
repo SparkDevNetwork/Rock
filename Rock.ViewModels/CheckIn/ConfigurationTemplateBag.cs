@@ -66,6 +66,15 @@ namespace Rock.ViewModels.CheckIn
         public FamilySearchMode FamilySearchType { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether auto-select mode is enabled
+        /// for this template. In auto-select mode all the selected information
+        /// is displayed on the person select screen with an optional button to
+        /// change those selections.
+        /// </summary>
+        /// <value><c>true</c> if this auto-select mode is enabled; otherwise, <c>false</c>.</value>
+        public bool IsAutoSelect { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether the current location occupancy
         /// counts should be displayed when selecting a location.
         /// </summary>

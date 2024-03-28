@@ -51,6 +51,14 @@ export type ConfigurationTemplateBag = {
     iconCssClass?: string | null;
 
     /**
+     * Gets or sets a value indicating whether auto-select mode is enabled
+     * for this template. In auto-select mode all the selected information
+     * is displayed on the person select screen with an optional button to
+     * change those selections.
+     */
+    isAutoSelect: boolean;
+
+    /**
      * Gets a value indicating whether the current location occupancy
      * counts should be displayed when selecting a location.
      */

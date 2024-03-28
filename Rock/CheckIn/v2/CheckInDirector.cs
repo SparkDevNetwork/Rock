@@ -484,6 +484,8 @@ namespace Rock.CheckIn.v2
                 AbilityLevelDetermination = configuration.AbilityLevelDetermination,
                 KioskCheckInType = configuration.KioskCheckInType,
                 FamilySearchType = configuration.FamilySearchType,
+                IsAutoSelect = configuration.KioskCheckInType == Enums.CheckIn.KioskCheckInMode.Family
+                    && configuration.AutoSelect == Enums.CheckIn.AutoSelectMode.PeopleAndAreaGroupLocation,
                 IsLocationCountDisplayed = configuration.IsLocationCountDisplayed,
                 IsOverrideAvailable = configuration.IsOverrideAvailable,
                 IsPhotoHidden = configuration.IsPhotoHidden,

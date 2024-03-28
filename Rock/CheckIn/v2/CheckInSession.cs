@@ -345,9 +345,12 @@ namespace Rock.CheckIn.v2
         {
             using ( var activity = ObservabilityHelper.StartActivity( $"Set Defaults for {attendee.Person.NickName}" ) )
             {
+                var isAutoSelect = TemplateConfiguration.KioskCheckInType == KioskCheckInMode.Family
+                    && TemplateConfiguration.AutoSelect == AutoSelectMode.PeopleAndAreaGroupLocation;
+
                 activity?.AddTag( "rock.checkin.selection_provider", SelectionProvider.GetType().FullName );
 
-                if ( TemplateConfiguration.AutoSelect == AutoSelectMode.PeopleAndAreaGroupLocation )
+                if ( isAutoSelect )
                 {
                     attendee.SelectedOpportunities = SelectionProvider.GetDefaultSelectionsForPerson( attendee );
                 }
