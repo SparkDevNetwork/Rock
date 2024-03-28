@@ -132,7 +132,7 @@ namespace Rock.Blocks.Reporting
             }
 
             // Filter by Date Range
-            if ( FilterDateRange.HasValue )
+            if ( FilterDateRange.HasValue && FilterDateRange.Value != 0 )
             {
                 var cutoffDate = DateTime.Today.AddDays( -FilterDateRange.Value );
                 filteredPeople = filteredPeople.Where( person =>
@@ -146,6 +146,7 @@ namespace Rock.Blocks.Reporting
 
             return filteredPeople.AsQueryable();
         }
+
         protected override GridBuilder<PersonData> GetGridBuilder()
         {
             var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
