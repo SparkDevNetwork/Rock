@@ -21,15 +21,14 @@
 // </copyright>
 //
 
-/** A bag that contains giving data for the Volunteer Generosity Analysis block. */
 export type VolunteerGivingDataBag = {
     /** Gets or sets the month. */
     month: number;
 
-    /** Gets or sets the abbreviated month name. */
+    /** Gets or sets the month name. */
     monthNameAbbreviated?: string | null;
 
-    /** Formats the date. */
+    /** Gets or sets the month formatted name. */
     monthYearFormatted?: string | null;
 
     /** Gets or sets the year. */

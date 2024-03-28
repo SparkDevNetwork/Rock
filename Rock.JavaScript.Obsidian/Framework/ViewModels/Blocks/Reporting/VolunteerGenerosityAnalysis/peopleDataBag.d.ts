@@ -21,17 +21,13 @@
 // </copyright>
 //
 
-/** A bag that contains person specific data for the Volunteer Generosity Analysis block. */
-export type PersonDtoBag = {
-    /** Gets or sets the identifier key. */
+export type PeopleDataBag = {
+    /** Gets or sets the id key. */
     idKey?: string | null;
-
     /** Gets or sets the last name. */
     lastName?: string | null;
-
-    /** Gets or sets the nick name. */
+    /** Gets or sets the nickname. */
     nickName?: string | null;
-
     /** Gets or sets the photo URL. */
     photoUrl?: string | null;
 };
