@@ -33,7 +33,7 @@ export type FamilyBag = {
     campusGuid?: Guid | null;
 
     /** Gets or sets the unique identifier of the family Group. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the family members. */
     members?: PersonBag[] | null;

@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** The summary information about a single check-in area. */
 export type ConfigurationAreaBag = {
     /** Gets or sets the unique identifier of this check-in area. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the name of this check-in area. */
     name?: string | null;

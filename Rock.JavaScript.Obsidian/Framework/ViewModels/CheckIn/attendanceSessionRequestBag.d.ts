@@ -42,7 +42,7 @@ export type AttendanceSessionRequestBag = {
     familyGuid?: Guid | null;
 
     /** Gets or sets the unique identifier of the check-in session. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets a value indicating whether this session should create

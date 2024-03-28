@@ -39,7 +39,7 @@ export type AttendanceRequestBag = {
      * Gets or sets the unique identifier of the person to create an
      * attendance record for.
      */
-    personGuid?: Guid | null;
+    personGuid: Guid;
 
     /**
      * Gets or sets the selection that identify where the person should

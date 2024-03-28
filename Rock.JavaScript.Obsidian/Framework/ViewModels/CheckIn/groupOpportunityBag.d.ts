@@ -32,10 +32,10 @@ export type GroupOpportunityBag = {
     abilityLevelGuid?: Guid | null;
 
     /** Gets or sets the area unique identifier that this group belongs to. */
-    areaGuid?: Guid | null;
+    areaGuid: Guid;
 
     /** Gets or sets the unique identifier of this item. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets the location unique identifiers. These are in proper

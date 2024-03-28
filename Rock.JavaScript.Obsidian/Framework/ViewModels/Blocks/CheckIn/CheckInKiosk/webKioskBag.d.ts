@@ -21,12 +21,13 @@
 // </copyright>
 //
 
+import { KioskType } from "@Obsidian/Enums/Core/kioskType";
 import { Guid } from "@Obsidian/Types";
 
 /** Details about a single web-based kiosk device. */
 export type WebKioskBag = {
     /** Gets or sets the unique identifier of this item. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the kiosk identifier. This is used by the iPad app. */
     id: number;
@@ -44,5 +45,5 @@ export type WebKioskBag = {
     name?: string | null;
 
     /** Gets or sets the kiosk type. */
-    type?: number | null;
+    type?: KioskType | null;
 };

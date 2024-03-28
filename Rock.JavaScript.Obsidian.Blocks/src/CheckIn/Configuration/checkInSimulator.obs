@@ -299,6 +299,10 @@
      * Executes the family search process.
      */
     async function executeFamilySearchStep(): Promise<void> {
+        if (!configuration.value.templateGuid || !configuration.value.kioskGuid) {
+            throw new Error("Invalid configuration data.");
+        }
+
         const request: SearchForFamiliesOptionsBag = {
             configurationTemplateGuid: configuration.value.templateGuid,
             kioskGuid: configuration.value.kioskGuid,
@@ -331,6 +335,10 @@
      * Executes the select family process.
      */
     async function executeSelectFamilyStep(): Promise<void> {
+        if (!configuration.value.templateGuid || !configuration.value.kioskGuid) {
+            throw new Error("Invalid configuration data.");
+        }
+
         if (!familySearchData.value || selectFamilyNumber.value > familySearchData.value.length) {
             throw new Error("Invalid family selected.");
         }
@@ -374,6 +382,10 @@
      * Executes the select attendee process.
      */
     async function executeSelectAttendeeStep(): Promise<void> {
+        if (!configuration.value.templateGuid || !configuration.value.kioskGuid) {
+            throw new Error("Invalid configuration data.");
+        }
+
         if (!selectFamilyData.value?.people || selectAttendeeNumber.value > selectFamilyData.value.people.length) {
             throw new Error("Invalid attendee selected.");
         }
@@ -419,6 +431,10 @@
      * Executes the save attendance process.
      */
     async function executeSaveAttendanceStep(): Promise<void> {
+        if (!configuration.value.templateGuid || !configuration.value.kioskGuid) {
+            throw new Error("Invalid configuration data.");
+        }
+
         if (!selectFamilyData.value?.people || selectAttendeeNumber.value > selectFamilyData.value.people.length) {
             throw new Error("Invalid attendee selected.");
         }
@@ -521,6 +537,10 @@
      * Executes the save attendance process.
      */
     async function executeConfirmAttendanceStep(): Promise<void> {
+        if (!configuration.value.templateGuid) {
+            throw new Error("Invalid configuration data.");
+        }
+
         const request: ConfirmAttendanceOptionsBag = {
             templateGuid: configuration.value.templateGuid,
             sessionGuid: sessionGuid

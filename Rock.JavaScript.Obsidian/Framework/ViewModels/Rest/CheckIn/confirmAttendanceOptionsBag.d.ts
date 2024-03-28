@@ -29,8 +29,8 @@ import { Guid } from "@Obsidian/Types";
  */
 export type ConfirmAttendanceOptionsBag = {
     /** Gets or sets the unique identifier of the session to be confirmed. */
-    sessionGuid?: Guid | null;
+    sessionGuid: Guid;
 
     /** Gets or sets the check-in configuration template unique identifier. */
-    templateGuid?: Guid | null;
+    templateGuid: Guid;
 };

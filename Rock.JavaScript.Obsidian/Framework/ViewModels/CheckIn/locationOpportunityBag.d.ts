@@ -32,7 +32,7 @@ export type LocationOpportunityBag = {
     currentCount: number;
 
     /** Gets or sets the unique identifier of this item. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the display name of this item. */
     name?: string | null;

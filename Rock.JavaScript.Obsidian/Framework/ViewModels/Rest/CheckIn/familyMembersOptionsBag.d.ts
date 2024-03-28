@@ -35,11 +35,11 @@ export type FamilyMembersOptionsBag = {
     areaGuids?: Guid[] | null;
 
     /** Gets or sets the configuration template unique identifier. */
-    configurationTemplateGuid?: Guid | null;
+    configurationTemplateGuid: Guid;
 
     /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+    familyGuid: Guid;
 
     /** Gets or sets the kiosk unique identifier. */
-    kioskGuid?: Guid | null;
+    kioskGuid: Guid;
 };

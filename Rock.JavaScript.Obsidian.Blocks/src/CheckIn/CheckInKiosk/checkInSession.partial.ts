@@ -130,6 +130,10 @@ export class CheckInSession {
     }
 
     public async withSearch(searchTerm: string, searchType: FamilySearchMode): Promise<CheckInSession> {
+        if (!this.configuration.template) {
+            throw new Error("Invalid session state.");
+        }
+
         const request: SearchForFamiliesOptionsBag = {
             configurationTemplateGuid: this.configuration.template?.guid,
             kioskGuid: this.configuration.kiosk?.guid,
@@ -154,9 +158,13 @@ export class CheckInSession {
     }
 
     public async withFamily(familyGuid: Guid): Promise<CheckInSession> {
+        if (!this.configuration.template || !this.configuration.kiosk) {
+            throw new Error("Invalid session state.");
+        }
+
         const request: FamilyMembersOptionsBag = {
-            configurationTemplateGuid: this.configuration.template?.guid,
-            kioskGuid: this.configuration.kiosk?.guid,
+            configurationTemplateGuid: this.configuration.template.guid,
+            kioskGuid: this.configuration.kiosk.guid,
             areaGuids: this.configuration.areas?.filter(a => !!a.guid).map(a => a.guid as string),
             familyGuid: familyGuid
         };
@@ -185,9 +193,13 @@ export class CheckInSession {
     }
 
     public async withAttendee(attendeeGuid: Guid): Promise<CheckInSession> {
+        if (!this.configuration.template || !this.configuration.kiosk) {
+            throw new Error("Invalid session state.");
+        }
+
         const request: AttendeeOpportunitiesOptionsBag = {
-            configurationTemplateGuid: this.configuration.template?.guid,
-            kioskGuid: this.configuration.kiosk?.guid,
+            configurationTemplateGuid: this.configuration.template.guid,
+            kioskGuid: this.configuration.kiosk.guid,
             areaGuids: this.configuration.areas?.filter(a => !!a.guid).map(a => a.guid as string),
             familyGuid: this.currentFamilyGuid,
             personGuid: attendeeGuid

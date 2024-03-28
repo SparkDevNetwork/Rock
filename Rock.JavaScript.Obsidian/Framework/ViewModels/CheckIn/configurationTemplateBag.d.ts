@@ -45,7 +45,7 @@ export type ConfigurationTemplateBag = {
      * Gets or sets the unique identifier of this check-in configuration
      * template.
      */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the icon CSS class defined on the check-in configuration. */
     iconCssClass?: string | null;

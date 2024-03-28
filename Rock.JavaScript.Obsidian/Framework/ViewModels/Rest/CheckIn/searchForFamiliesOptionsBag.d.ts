@@ -34,7 +34,7 @@ export type SearchForFamiliesOptionsBag = {
      * This identifies the configuration that should be used when
      * validating the search and compiling results.
      */
-    configurationTemplateGuid?: Guid | null;
+    configurationTemplateGuid: Guid;
 
     /** Gets or sets the optional kiosk unique identifier. */
     kioskGuid?: Guid | null;

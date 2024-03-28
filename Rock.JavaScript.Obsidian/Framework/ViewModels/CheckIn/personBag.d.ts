@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { Guid } from "@Obsidian/Types";
 
 /** A family member that identifies a single individual for check-in. */
@@ -52,7 +53,7 @@ export type PersonBag = {
      * Gets or sets the primary family unique identifier this person
      * belongs to.
      */
-    familyGuid?: Guid | null;
+    familyGuid: Guid;
 
     /** Gets or sets the first name. */
     firstName?: string | null;
@@ -61,7 +62,7 @@ export type PersonBag = {
     fullName?: string | null;
 
     /** Gets or sets the person's gender. */
-    gender: number;
+    gender: Gender;
 
     /** Gets or sets the grade formatted for display purposes. */
     gradeFormatted?: string | null;
@@ -73,7 +74,7 @@ export type PersonBag = {
     gradeOffset?: number | null;
 
     /** Gets or sets the unique identifier of the Person. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the identifier key of the Person. */
     idKey?: string | null;

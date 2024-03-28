@@ -40,7 +40,7 @@ export type AttendanceBag = {
     group?: CheckInItemBag | null;
 
     /** Gets or sets the attendance unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the last name. */
     lastName?: string | null;
@@ -52,7 +52,7 @@ export type AttendanceBag = {
     nickName?: string | null;
 
     /** Gets or sets the person unique identifier. */
-    personGuid?: Guid | null;
+    personGuid: Guid;
 
     /** Gets or sets the schedule for this attendance record. */
     schedule?: CheckInItemBag | null;

@@ -43,5 +43,5 @@ export type SaveAttendanceOptionsBag = {
     session?: AttendanceSessionRequestBag | null;
 
     /** Gets or sets the check-in configuration template unique identifier. */
-    templateGuid?: Guid | null;
+    templateGuid: Guid;
 };

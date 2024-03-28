@@ -32,5 +32,5 @@ export type KioskStatusOptionsBag = {
     areaGuids?: Guid[] | null;
 
     /** Gets or sets the kiosk unique identifier. */
-    kioskGuid?: Guid | null;
+    kioskGuid: Guid;
 };

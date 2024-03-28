@@ -29,7 +29,7 @@ export type AchievementBag = {
     endDateTime?: string | null;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets a value indicating whether this achievement is closed.

@@ -234,6 +234,10 @@
      * automatically re-check if it was called more than once.
      */
     async function updateKioskStatus(): Promise<void> {
+        if (!props.configuration.kiosk) {
+            return;
+        }
+
         if (isUpdatingKioskStatus) {
             isKioskStatusUpdatePending = true;
             return;
@@ -242,7 +246,7 @@
         isUpdatingKioskStatus = true;
 
         const request: KioskStatusOptionsBag = {
-            kioskGuid: props.configuration.kiosk?.guid,
+            kioskGuid: props.configuration.kiosk.guid,
             areaGuids: props.configuration.areas?.map(a => a.guid ?? "") ?? []
         };
 

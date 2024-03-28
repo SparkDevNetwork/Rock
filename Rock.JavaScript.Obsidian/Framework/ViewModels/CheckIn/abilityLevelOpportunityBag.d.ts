@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** Defines a single ability level that can be used during check-in. */
 export type AbilityLevelOpportunityBag = {
     /** Gets or sets the unique identifier of this item. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the display name of this item. */
     name?: string | null;

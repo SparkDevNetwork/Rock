@@ -34,7 +34,7 @@ export type FamilyMembersResponseBag = {
     currentlyCheckedInAttendances?: AttendanceBag[] | null;
 
     /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+    familyGuid: Guid;
 
     /**
      * Gets or sets the people that can be potentially checked in for
