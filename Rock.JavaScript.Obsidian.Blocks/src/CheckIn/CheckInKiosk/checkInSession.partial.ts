@@ -24,6 +24,9 @@ export class CheckInSession {
     // a better way to make these read-only and also have them show up as
     // properties when used with console.log. -DSH
 
+    /** The current screen that should be displayed for this session. */
+    private _currentScreen: Screen;
+
     /** The search term used to start this session. */
     private _searchTerm?: string;
 
@@ -60,6 +63,10 @@ export class CheckInSession {
     // #endregion
 
     // #region Field Getters
+
+    public get currentScreen(): Screen {
+        return this._currentScreen;
+    }
 
     public get searchTerm(): string | undefined {
         return this._searchTerm;
@@ -108,6 +115,7 @@ export class CheckInSession {
     // #endregion
 
     public constructor(configuration: KioskConfigurationBag, http: HttpFunctions) {
+        this._currentScreen = Screen.Welcome;
         this.configuration = configuration;
         this.http = http;
     }
@@ -115,12 +123,24 @@ export class CheckInSession {
     private clone(configuration?: KioskConfigurationBag): CheckInSession {
         const copy = new CheckInSession(configuration ?? this.configuration, this.http);
 
+        copy._currentScreen = this._currentScreen;
         copy._searchTerm = this._searchTerm;
         copy._searchType = this._searchType;
         copy._families = this._families;
         copy._currentFamilyGuid = this._currentFamilyGuid;
         copy._attendees = this._attendees;
         copy._currentlyCheckedIn = this._currentlyCheckedIn;
+        copy._selectedAttendeeGuids = this._selectedAttendeeGuids;
+        copy._currentAttendeeGuid = this._currentAttendeeGuid;
+        copy._attendeeOpportunities = this._attendeeOpportunities;
+
+        return copy;
+    }
+
+    private withScreen(screen: Screen): CheckInSession {
+        const copy = this.clone();
+
+        copy._currentScreen = screen;
 
         return copy;
     }
@@ -220,77 +240,152 @@ export class CheckInSession {
     }
 
     /**
-     * Determines the next screen to display based on the current selections.
-     * This method may be called multiple times on each screen so it should
-     * not perform any logic that would change the session data.
+     * Moves to the next screen to display based on the current selections.
+     * This may trigger automatic logic, such as moving to the next attendee
+     * in the family.
      *
-     * @param currentScreen The current screen that is displayed.
-     *
-     * @returns The next screen that should be displayed.
+     * @returns The new check-in session representing the next screen.
      */
-    public getNextScreen(currentScreen: Screen): Screen {
-        if (currentScreen === Screen.Welcome) {
-            return this.getNextScreenFromWelcome();
+    public withNextScreen(): Promise<CheckInSession> {
+        if (this.currentScreen === Screen.Welcome) {
+            return this.withNextScreenFromWelcome();
         }
-        else if (currentScreen === Screen.Search) {
-            return this.getNextScreenFromSearch();
+        else if (this.currentScreen === Screen.Search) {
+            return this.withNextScreenFromSearch();
         }
-        else if (currentScreen === Screen.FamilySelect) {
-            return this.getNextScreenFromFamilySelect();
+        else if (this.currentScreen === Screen.FamilySelect) {
+            return this.withNextScreenFromFamilySelect();
         }
-        else if (currentScreen === Screen.PersonSelect) {
-            return this.getNextScreenFromPersonSelect();
+        else if (this.currentScreen === Screen.PersonSelect) {
+            return this.withNextScreenFromPersonSelect();
+        }
+        else if (this.currentScreen === Screen.AbilityLevelSelect) {
+            return this.withNextScreenFromAbilityLevelSelect();
+        }
+        else if (this.currentScreen === Screen.AreaSelect) {
+            return this.withNextScreenFromAreaSelect();
+        }
+        else if (this.currentScreen === Screen.GroupSelect) {
+            return this.withNextScreenFromGroupSelect();
+        }
+        else if (this.currentScreen === Screen.LocationSelect) {
+            return this.withNextScreenFromLocationSelect();
+        }
+        else if (this.currentScreen === Screen.ScheduleSelect) {
+            return this.withNextScreenFromScheduleSelect();
+        }
+        else if (this.currentScreen === Screen.Success) {
+            return this.withNextScreenFromSuccess();
         }
         else {
-            return Screen.Welcome;
+            return Promise.resolve(this.withScreen(Screen.Welcome));
         }
     }
 
-    private getNextScreenFromWelcome(): Screen {
+    private withNextScreenFromWelcome(): Promise<CheckInSession> {
         if (!this.families) {
-            return Screen.Search;
+            return Promise.resolve(this.withScreen(Screen.Search));
         }
         else if (this.families.length === 1) {
-            return Screen.PersonSelect;
+            return Promise.resolve(this.withScreen(Screen.PersonSelect));
         }
 
-        return Screen.FamilySelect;
+        return Promise.resolve(this.withScreen(Screen.FamilySelect));
     }
 
-    private getNextScreenFromSearch(): Screen {
+    private withNextScreenFromSearch(): Promise<CheckInSession> {
         if (!this.families) {
-            return Screen.Welcome;
+            return Promise.resolve(this.withScreen(Screen.Welcome));
         }
 
         // Always show family select even if only one family when
         // coming from the search screen.
-        return Screen.FamilySelect;
+        return Promise.resolve(this.withScreen(Screen.FamilySelect));
     }
 
-    private getNextScreenFromFamilySelect(): Screen {
+    private withNextScreenFromFamilySelect(): Promise<CheckInSession> {
         if (!this.currentFamily || !this._attendees) {
-            return Screen.Welcome;
+            return Promise.resolve(this.withScreen(Screen.Welcome));
         }
         else if (this._currentlyCheckedIn && this._currentlyCheckedIn.length > 0) {
-            return Screen.ActionSelect;
+            return Promise.resolve(this.withScreen(Screen.ActionSelect));
         }
 
-        return Screen.PersonSelect;
+        return Promise.resolve(this.withScreen(Screen.PersonSelect));
     }
 
-    private getNextScreenFromPersonSelect(): Screen {
+    private withNextScreenFromPersonSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType == KioskCheckInMode.Family) {
             if (this.currentAttendeeGuid) {
-                // TODO: Go to time select (or whatever next is).
-                return Screen.Welcome;
+                if ((this._attendeeOpportunities?.schedules?.length ?? 0) > 1) {
+                    return Promise.resolve(this.withScreen(Screen.ScheduleSelect));
+                }
+                else {
+                    return this.withNextScreenFromScheduleSelect();
+                }
             }
             else {
-                // TODO: Go to success screen.
-                return Screen.Welcome;
+                return Promise.resolve(this.withScreen(Screen.Success));
             }
         }
+        else if ((this._attendeeOpportunities?.abilityLevels?.length ?? 0) > 1) {
+            return Promise.resolve(this.withScreen(Screen.AbilityLevelSelect));
+        }
 
-        // TODO: Go to ability select (or whatever is next).
-        return Screen.Welcome;
+        return this.withNextScreenFromAbilityLevelSelect();
+    }
+
+    private withNextScreenFromAbilityLevelSelect(): Promise<CheckInSession> {
+        if ((this._attendeeOpportunities?.areas?.length ?? 0) > 1) {
+            return Promise.resolve(this.withScreen(Screen.AreaSelect));
+        }
+
+        return this.withNextScreenFromAreaSelect();
+    }
+
+    private withNextScreenFromAreaSelect(): Promise<CheckInSession> {
+        if ((this._attendeeOpportunities?.groups?.length ?? 0) > 1) {
+            return Promise.resolve(this.withScreen(Screen.GroupSelect));
+        }
+
+        return this.withNextScreenFromGroupSelect();
+    }
+
+    private withNextScreenFromGroupSelect(): Promise<CheckInSession> {
+        if ((this._attendeeOpportunities?.locations?.length ?? 0) > 1) {
+            return Promise.resolve(this.withScreen(Screen.LocationSelect));
+        }
+
+        return this.withNextScreenFromLocationSelect();
+    }
+
+    private withNextScreenFromLocationSelect(): Promise<CheckInSession> {
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+            // TODO: Check if another person to process. This might require some logic.
+
+            return Promise.resolve(this.withScreen(Screen.Success));
+        }
+
+        if ((this._attendeeOpportunities?.schedules?.length ?? 0) > 1) {
+            return Promise.resolve(this.withScreen(Screen.ScheduleSelect));
+        }
+
+        return this.withNextScreenFromScheduleSelect();
+    }
+
+    private withNextScreenFromScheduleSelect(): Promise<CheckInSession> {
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+            if ((this._attendeeOpportunities?.abilityLevels?.length ?? 0) > 1) {
+                return Promise.resolve(this.withScreen(Screen.ScheduleSelect));
+            }
+
+            return this.withNextScreenFromAbilityLevelSelect();
+        }
+
+        return Promise.resolve(this.withScreen(Screen.Success));
+    }
+
+    private withNextScreenFromSuccess(): Promise<CheckInSession> {
+        return Promise.resolve(this.withScreen(Screen.Welcome));
     }
 }

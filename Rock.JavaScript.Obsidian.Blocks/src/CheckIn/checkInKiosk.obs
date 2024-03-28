@@ -507,11 +507,9 @@
     }
 
     function onNextScreen(session: CheckInSession): void {
-        const screen = session.getNextScreen(currentScreen.value);
-
         currentSession.value = session;
 
-        navigateToScreen(screen);
+        navigateToScreen(session.currentScreen);
     }
 
     function onHome(): void {

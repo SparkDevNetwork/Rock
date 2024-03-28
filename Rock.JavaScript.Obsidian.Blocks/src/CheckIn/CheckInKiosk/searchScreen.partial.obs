@@ -229,7 +229,7 @@
                 return;
             }
 
-            emit("next", newSession);
+            emit("next", await newSession.withNextScreen());
         }
         catch (error) {
             await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);

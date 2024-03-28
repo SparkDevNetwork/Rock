@@ -202,7 +202,7 @@
 
             newSession = await newSession.withFamily(newSession.families[0].guid);
 
-            emit("start", newSession);
+            emit("start", await newSession.withNextScreen());
         }
         catch (error) {
             await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
@@ -394,8 +394,8 @@
     /**
      * Event handler for when the Start button is clicked.
      */
-    function onStartClick(): void {
-        emit("start", props.session);
+    async function onStartClick(): Promise<void> {
+        emit("start", await props.session.withNextScreen());
     }
 
     /**

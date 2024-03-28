@@ -214,7 +214,7 @@
                 try {
                     const newSession = await props.session.withAttendee(attendee.person?.guid);
 
-                    emit("next", newSession);
+                    emit("next", await newSession.withNextScreen());
                 }
                 catch (error) {
                     await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
@@ -233,7 +233,7 @@
 
             newSession = await newSession.withAttendee(attendee.person?.guid);
 
-            emit("next", newSession);
+            emit("next", await newSession.withNextScreen());
         }
         catch (error) {
             await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);

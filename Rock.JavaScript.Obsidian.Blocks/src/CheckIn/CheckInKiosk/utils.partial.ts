@@ -69,6 +69,18 @@ export enum Screen {
     ActionSelect,
 
     PersonSelect,
+
+    AbilityLevelSelect,
+
+    AreaSelect,
+
+    GroupSelect,
+
+    LocationSelect,
+
+    ScheduleSelect,
+
+    Success,
 }
 
 // #endregion
