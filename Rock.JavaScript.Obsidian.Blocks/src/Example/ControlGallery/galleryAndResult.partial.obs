@@ -5,7 +5,7 @@
             <h4 class="mt-0">Test Control</h4>
             <slot name="default" />
 
-            <div v-if="enableReflection" class="mt-3">
+            <div v-if="enableReflection && config.showReflection" class="mt-3">
                 <div class="mb-3 galleryContent-reflectionToggle">
                     <Switch v-model="showReflection" text="Show Reflection" />
                 </div>
@@ -120,6 +120,8 @@
     import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
     import { computed, getCurrentInstance, PropType, ref } from "vue";
     import { convertComponentName } from "./utils.partial";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { ControlGalleryInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
 
     const props = defineProps({
         // The value passed into/controlled by the component, if any
@@ -155,6 +157,8 @@
             default: false
         }
     });
+
+    const config = useConfigurationValues<ControlGalleryInitializationBox>();
 
     // Calculate a header based on the name of the component, adding spaces and stripping out the "Gallery" suffix
     const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);

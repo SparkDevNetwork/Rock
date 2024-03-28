@@ -48,6 +48,7 @@
 
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
+import { onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
 import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -6268,7 +6269,7 @@ const contentDropDownPickerGallery = defineComponent({
             exampleCode: `<ContentDropDownPicker
     label="Your Custom Picker"
     @primaryButtonClicked="selectValue"
-    @clearButtonClicked="clear"S
+    @clearButtonClicked="clear"
     :innerLabel="innerLabel"
     :showClear="!!value"
     iconCssClass="fa fa-cross" >
@@ -8392,6 +8393,8 @@ export default defineComponent({
     },
 
     setup() {
+        onConfigurationValuesChanged(useReloadBlock());
+
         const currentComponent = ref<Component>(Object.values(controlGalleryComponents)[0]);
 
         function getComponentFromHash(): void {
