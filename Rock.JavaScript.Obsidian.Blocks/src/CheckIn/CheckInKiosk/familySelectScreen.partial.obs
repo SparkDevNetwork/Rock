@@ -107,10 +107,6 @@
             return;
         }
 
-        if (!family.guid) {
-            return;
-        }
-
         try {
             isSelectingFamily = true;
 

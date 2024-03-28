@@ -232,7 +232,7 @@
         }
 
         const campus = props.blockConfiguration.campuses
-            .find(c => c.guid === guid);
+            .find(c => areEqual(c.guid, guid));
 
         if (!campus?.kiosks) {
             return [];
@@ -294,7 +294,7 @@
     /** The currently selected kiosk or undefined. */
     const selectedKiosk = computed((): WebKioskBag | undefined => {
         const campus = props.blockConfiguration.campuses
-            ?.find(c => c.guid === campusGuid.value);
+            ?.find(c => areEqual(c.guid, campusGuid.value));
 
         return campus?.kiosks
             ?.find(k => areEqual(k.guid, kioskGuid.value));

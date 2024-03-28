@@ -195,7 +195,7 @@
 
             newSession = await newSession.withSearch(code, FamilySearchMode.ScannedId);
 
-            if (!newSession.families || newSession.families.length === 0 || !newSession.families[0].guid) {
+            if (!newSession.families || newSession.families.length === 0) {
                 await alert("Sorry, there were not any families found with the selected identifier.");
                 return;
             }
