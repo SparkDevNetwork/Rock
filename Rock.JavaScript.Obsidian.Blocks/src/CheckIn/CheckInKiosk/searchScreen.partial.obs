@@ -222,7 +222,7 @@
         }
 
         try {
-            const newSession = await props.session.searchForFamily(searchValue, props.configuration.template?.familySearchType ?? FamilySearchMode.NameAndPhone);
+            const newSession = await props.session.withSearch(searchValue, props.configuration.template?.familySearchType ?? FamilySearchMode.NameAndPhone);
 
             if (!newSession.families || newSession.families.length === 0) {
                 await alert("There were not any families that match the search criteria.");

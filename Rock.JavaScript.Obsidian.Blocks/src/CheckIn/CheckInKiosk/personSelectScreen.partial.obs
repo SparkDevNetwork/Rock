@@ -9,7 +9,7 @@
                             class="attendee-button"
                             :disabled="attendee.isUnavailable"
                             @click="onAttendeeClick(attendee)">
-                    <div class="selection">
+                    <div v-if="isFamilyMode" class="selection">
                         <i v-if="isAttendeeSelected(attendee)" class="fa fa-check-square"></i>
                         <i v-else class="fa fa-square-o"></i>
                     </div>
@@ -18,18 +18,19 @@
 
                     <div class="title">
                         <div class="name">{{ attendee.person?.fullName }}</div>
-                        <div v-if="attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0" class="opportunity">
+
+                        <div v-if="isFamilyMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0" class="opportunity">
                             <span class="group label label-info">{{ attendee.selectedOpportunities[0].group?.name }}</span>
                             <span class="location label label-info">{{ attendee.selectedOpportunities[0].location?.name }}</span>
                             <span class="schedule label label-info">{{ attendee.selectedOpportunities[0].schedule?.name }}</span>
                         </div>
                     </div>
 
-                    <div v-if="attendee.isUnavailable" class="disabled-reason">
+                    <div v-if="attendee.isUnavailable" class="unavailable-reason">
                         {{ attendee.unavailableMessage }}
                     </div>
 
-                    <RockButton v-if="attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
+                    <RockButton v-if="isAutoSelectMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
                                 class="change-selection-button"
                                 btnType="info"
                                 @click.stop="onChangeSelection(attendee)">
@@ -44,7 +45,7 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, CSSProperties, PropType, ref } from "vue";
+    import { computed, CSSProperties, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
@@ -52,7 +53,33 @@
     import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
     import { Guid } from "@Obsidian/Types";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
 
+    // This screen supports 3 distinct modes of operation depending on various
+    // settings:
+    //
+    // 1. Family Check-in w/o auto-select
+    //    This mode displays just the attendees, no change button and no
+    //    selected values. You don't return to this screen after leaving it. The
+    //    flow is to select the people you want to check-in and then loop
+    //    through the various opportunity selection screens until we have handled
+    //    every attendee. Then it moves to the success screen.
+    //
+    // 2. Family Check-in w/ auto-select
+    //    This mode displays the attendees as well as the current opportunity
+    //    selection(s). If other options are available then a Change button is
+    //    displayed which allows proceeding through the opportunity screens to
+    //    pick other options, after which you are returned to the person select
+    //    screen. Clicking the Next button on this screen then moves to the
+    //    success screen.
+    //
+    // 3. Individual Check-in
+    //    In this mode no check-box is displayed on the person select screen.
+    //    Also any currently selected opportunities (there should be none) are
+    //    not displayed and the Change button is not displayed either. Tapping
+    //    a name instantly moves through the process of checking in that one
+    //    person with an option at the end to return to the person select
+    //    screen.
     const props = defineProps({
         configuration: {
             type: Object as PropType<KioskConfigurationBag>,
@@ -72,7 +99,6 @@
 
     // #region Values
 
-    const subtitle = ref("Select the individuals to check-in");
     const selections = ref<Guid[]>(getDefaultSelections());
 
     // #endregion
@@ -80,7 +106,24 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        return `${props.session.family?.name} Family`;
+        return `${props.session.currentFamily?.name} Family`;
+    });
+
+    const subtitle = computed((): string => {
+        if (isFamilyMode.value) {
+            return "Select the individuals to check-in";
+        }
+        else {
+            return "Select the individual to check-in";
+        }
+    });
+
+    const isFamilyMode = computed((): boolean => {
+        return props.configuration.template?.kioskCheckInType === KioskCheckInMode.Family;
+    });
+
+    const isAutoSelectMode = computed((): boolean => {
+        return props.configuration.template?.isAutoSelect === true;
     });
 
     const attendees = computed((): AttendeeBag[] => {
@@ -126,6 +169,17 @@
             });
         }
 
+        if (isFamilyMode.value) {
+            actions.push({
+                type: "primary",
+                title: "Next",
+                key: "next",
+                class: "next-button",
+                disabled: selections.value.length > 0,
+                handler: onNextClick
+            });
+        }
+
         emit("updateActions", actions);
     }
 
@@ -147,21 +201,54 @@
      * @param family The family that was selected.
      */
     async function onAttendeeClick(attendee: AttendeeBag): Promise<void> {
-        if (isAttendeeSelected(attendee)) {
-            selections.value = selections.value.filter(s => !areEqual(s, attendee.person?.guid));
+        if (isFamilyMode.value) {
+            if (isAttendeeSelected(attendee)) {
+                selections.value = selections.value.filter(s => !areEqual(s, attendee.person?.guid));
+            }
+            else if (attendee.person?.guid) {
+                selections.value = [attendee.person?.guid, ...selections.value];
+            }
         }
-        else if (attendee.person?.guid) {
-            selections.value = [attendee.person?.guid, ...selections.value];
+        else {
+            if (attendee.person?.guid) {
+                try {
+                    const newSession = await props.session.withAttendee(attendee.person?.guid);
+
+                    emit("next", newSession);
+                }
+                catch (error) {
+                    await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+                }
+            }
         }
     }
 
-    function onChangeSelection(attendee: AttendeeBag): void {
-        //
+    async function onChangeSelection(attendee: AttendeeBag): Promise<void> {
+        if (!attendee.person?.guid) {
+            return;
+        }
+
+        try {
+            let newSession = props.session.withSelectedAttendees(selections.value);
+
+            newSession = await newSession.withAttendee(attendee.person?.guid);
+
+            emit("next", newSession);
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+    }
+
+    async function onNextClick(): Promise<void> {
+        // TODO: Perform attendance save.
     }
 
     // #endregion
 
-    updateActions();
+    watch([selections, isFamilyMode], () => {
+        updateActions();
+    });
 
-    console.log(props.session.attendees);
+    updateActions();
 </script>

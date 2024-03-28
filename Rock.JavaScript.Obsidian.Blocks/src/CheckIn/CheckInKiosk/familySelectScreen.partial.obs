@@ -107,10 +107,14 @@
             return;
         }
 
+        if (!family.guid) {
+            return;
+        }
+
         try {
             isSelectingFamily = true;
 
-            const newSession = await props.session.withFamily(family);
+            const newSession = await props.session.withFamily(family.guid);
 
             if (!newSession.attendees || newSession.attendees.length === 0) {
                 await alert("There were not any family members in this family.");

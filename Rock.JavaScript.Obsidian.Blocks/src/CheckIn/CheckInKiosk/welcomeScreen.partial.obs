@@ -193,14 +193,14 @@
         try {
             let newSession = props.session.withConfiguration(props.configuration);
 
-            newSession = await newSession.searchForFamily(code, FamilySearchMode.ScannedId);
+            newSession = await newSession.withSearch(code, FamilySearchMode.ScannedId);
 
-            if (!newSession.families || newSession.families.length === 0) {
+            if (!newSession.families || newSession.families.length === 0 || !newSession.families[0].guid) {
                 await alert("Sorry, there were not any families found with the selected identifier.");
                 return;
             }
 
-            newSession = await newSession.withFamily(newSession.families[0]);
+            newSession = await newSession.withFamily(newSession.families[0].guid);
 
             emit("start", newSession);
         }
