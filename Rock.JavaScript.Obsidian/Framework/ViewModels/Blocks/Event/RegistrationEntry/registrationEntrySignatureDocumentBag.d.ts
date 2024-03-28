@@ -21,12 +21,26 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { Guid } from "@Obsidian/Types";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/**
+ * Defines the data required to display a signature document on a single
+ * registrant form.
+ */
+export type RegistrationEntrySignatureDocumentBag = {
+    /**
+     * Gets or sets the document HTML to be displayed on the form. This should
+     * be displayed inside an IFrame element to ensure no other CSS on the
+     * page interferes.
+     */
+    documentHtml?: string | null;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the unique identifier of a previously-signed signature document that should be reused for this registrant. */
+    existingSignatureDocumentGuid?: Guid | null;
+
+    /**
+     * Gets or sets the security token that will be used to authenticate the
+     * document after it has been signed.
+     */
+    securityToken?: string | null;
 };

@@ -21,12 +21,19 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { Guid } from "@Obsidian/Types";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/** Contains the payment plan information for the Registration Entry block. */
+export type RegistrationEntryPaymentPlanBag = {
+    /** Gets or sets the amount to pay per payment. */
+    amountToPayPerPayment: number;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the number of payments. */
+    numberOfPayments: number;
+
+    /** Gets or sets the start date of the recurring payments. */
+    startDate?: string | null;
+
+    /** Gets or sets the transaction frequency unique identifier. */
+    transactionFrequencyGuid: Guid;
 };

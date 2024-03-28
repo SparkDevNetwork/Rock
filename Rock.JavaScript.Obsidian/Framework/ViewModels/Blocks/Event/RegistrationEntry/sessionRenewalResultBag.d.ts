@@ -21,12 +21,11 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+/** SessionRenewalResult */
+export type SessionRenewalResultBag = {
+    /** Gets or sets the expiration date time. */
+    expirationDateTime?: string | null;
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
-
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the spots secured. */
+    spotsSecured: number;
 };

@@ -21,12 +21,22 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { Guid } from "@Obsidian/Types";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/** RegistrationEntryBlockFeeItemViewModel */
+export type RegistrationEntryFeeItemBag = {
+    /** Gets or sets the cost. */
+    cost: number;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the count remaining. */
+    countRemaining?: number | null;
+
+    /** Gets or sets the unique identifier. */
+    guid: Guid;
+
+    /** Gets or sets the name. */
+    name?: string | null;
+
+    /** Gets or sets the remaining fee items when the registration was started. Used to calcualte items remaining as fees are added/removed across registrants during a registration. */
+    originalCountRemaining?: number | null;
 };

@@ -21,12 +21,19 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { Guid } from "@Obsidian/Types";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/** RegistrationEntryBlockFamilyMemberViewModel */
+export type RegistrationEntryFamilyMemberBag = {
+    /** Gets or sets the family unique identifier. */
+    familyGuid: Guid;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the field values. */
+    fieldValues?: Record<Guid, unknown> | null;
+
+    /** Gets or sets the full name. */
+    fullName?: string | null;
+
+    /** Gets or sets the unique identifier. */
+    guid: Guid;
 };

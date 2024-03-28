@@ -21,12 +21,22 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { Guid } from "@Obsidian/Types";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/** Registrar Info */
+export type RegistrarBag = {
+    /** Gets or sets the email. */
+    email?: string | null;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the family unique identifier. */
+    familyGuid?: Guid | null;
+
+    /** Gets or sets the last name. */
+    lastName?: string | null;
+
+    /** Gets or sets the name of the nick. */
+    nickName?: string | null;
+
+    /** Gets or sets a value indicating whether [update email]. */
+    updateEmail: boolean;
 };

@@ -21,12 +21,25 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { RegistrationCostSummaryType } from "@Obsidian/Enums/Event/registrationCostSummaryType";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/** Contains the cost summary information for the Registration Entry block. */
+export type RegistrationEntryCostSummaryBag = {
+    /** Gets or sets the cost. */
+    cost: number;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the default payment amount. */
+    defaultPaymentAmount?: number | null;
+
+    /** Gets or sets the description. */
+    description?: string | null;
+
+    /** Gets or sets the discounted cost. */
+    discountedCost: number;
+
+    /** Gets or sets the minimum payment amount. */
+    minimumPaymentAmount: number;
+
+    /** Gets or sets the cost summary type. */
+    type: RegistrationCostSummaryType;
 };

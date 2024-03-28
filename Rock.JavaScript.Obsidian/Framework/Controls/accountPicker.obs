@@ -375,8 +375,6 @@
             }
         }
 
-        //debugger;
-
         // If we're getting the root elements and we have a selected page, we also want to grab
         // all the parent pages so we can pre-load the entire hierarchy to the selected page
         if (!parentNode && !loadFullTree && internalValues.value?.length > 0) {

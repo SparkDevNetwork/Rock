@@ -21,12 +21,29 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { Guid } from "@Obsidian/Types";
+import { RegistrationEntryFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeItemBag";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/** RegistrationEntryBlockFeeViewModel */
+export type RegistrationEntryFeeBag = {
+    /** Gets or sets a value indicating whether [allow multiple]. */
+    allowMultiple: boolean;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets a value indicating whether [discount applies]. */
+    discountApplies: boolean;
+
+    /** Gets or sets the unique identifier. */
+    guid: Guid;
+
+    /** Gets or sets a value indicating whether [hide when none remaining]. */
+    hideWhenNoneRemaining: boolean;
+
+    /** Gets or sets a value indicating whether this instance is required. */
+    isRequired: boolean;
+
+    /** Gets or sets the items. */
+    items?: RegistrationEntryFeeItemBag[] | null;
+
+    /** Gets or sets the name. */
+    name?: string | null;
 };

@@ -79,6 +79,7 @@
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
     <Compile Include="Engagement\AchievementTypeList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
+    <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
@@ -86,7 +87,7 @@
     <Compile Include="Finance\BusinessContactList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
-	<Compile Include="Fundraising\FundraisingDonationList.cs" />
+    <Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Reporting\ReportList.cs" />

@@ -21,12 +21,25 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { Guid } from "@Obsidian/Types";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/** RegistrationEntryBlockLineItemViewModel */
+export type RegistrationEntryLineItemBag = {
+    /** Gets or sets the amount. */
+    amount: number;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the description. */
+    description?: string | null;
+
+    /** Gets or sets the discounted amount. */
+    discountedAmount: number;
+
+    /** Gets or sets the discount help. */
+    discountHelp?: string | null;
+
+    /** Gets or sets a value indicating whether this instance is fee. */
+    isFee: boolean;
+
+    /** Gets or sets the key. */
+    key: Guid;
 };

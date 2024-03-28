@@ -21,12 +21,17 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+/** RegistrationEntryBlockSuccessViewModel */
+export type RegistrationEntrySuccessBag = {
+    /** Gets or sets the gateway person identifier. */
+    gatewayPersonIdentifier?: string | null;
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+    /** Gets or sets the message HTML. */
+    messageHtml?: string | null;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the title HTML. */
+    titleHtml?: string | null;
+
+    /** Gets or sets the transaction code. */
+    transactionCode?: string | null;
 };

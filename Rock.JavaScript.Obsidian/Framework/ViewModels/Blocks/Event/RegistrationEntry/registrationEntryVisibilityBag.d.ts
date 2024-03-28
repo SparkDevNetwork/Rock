@@ -21,12 +21,14 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { Guid } from "@Obsidian/Types";
+import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
+/** RegistrationEntryBlockVisibilityViewModel */
+export type RegistrationEntryVisibilityBag = {
+    /** Gets or sets the compared to registration template form field unique identifier. */
+    comparedToRegistrationTemplateFormFieldGuid: Guid;
 
-    /** Gets or sets the value. */
-    value?: number | null;
+    /** Gets or sets the comparison value for this field. */
+    comparisonValue?: PublicComparisonValueBag | null;
 };

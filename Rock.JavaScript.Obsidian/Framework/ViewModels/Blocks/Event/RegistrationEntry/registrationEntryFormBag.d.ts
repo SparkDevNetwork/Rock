@@ -21,12 +21,10 @@
 // </copyright>
 //
 
-import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 
-export type TimeIntervalBag = {
-    /** Gets or sets the unit. */
-    unit: TimeIntervalUnit;
-
-    /** Gets or sets the value. */
-    value?: number | null;
+/** RegistrationEntryBlockFormViewModel */
+export type RegistrationEntryFormBag = {
+    /** Gets or sets the fields. */
+    fields?: RegistrationEntryFormFieldBag[] | null;
 };
