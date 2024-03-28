@@ -597,7 +597,7 @@ namespace RockWeb.Blocks.Groups
                 || group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
                 || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson )
                 || ( IsSignUpMode && group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) ) )
-                {
+            {
                 readOnly = false;
                 nbEditModeMessage.Text = string.Empty;
             }
@@ -1037,10 +1037,15 @@ namespace RockWeb.Blocks.Groups
             var group = groupService.GetInclude( hfGroupId.ValueAsInt(), g => g.Members );
             var groupMemberId = hfGroupMemberId.ValueAsInt();
             gmrcRequirements.SelectedGroupRoleId = ddlGroupRole.SelectedValue.AsIntegerOrNull();
-            gmrcRequirements.RequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+
+            // Don't check requirements until a person is selected.
+            if ( ppGroupMemberPerson.PersonId.HasValue )
+            {
+                gmrcRequirements.RequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+            }
 
             // Determine whether the current person is a leader of the chosen group.
-            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupMemberId.ValueAsInt() );
+            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupId.ValueAsInt() );
             var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
                 groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
 

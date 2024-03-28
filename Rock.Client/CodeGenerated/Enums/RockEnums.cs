@@ -545,6 +545,7 @@ namespace Rock.Client.Enums
         StepAdded = 0x11,
         StepStatusModify = 0x12,
         StepCampusModify = 0x13,
+        EmailUnsubscribed = 0x14,
     }
 
     /// <summary>
@@ -1116,7 +1117,7 @@ namespace Rock.Client.Enums.Crm
     public enum AgeBracket
     {
         Unknown = 0x0,
-        ZeroToTwelve = 0x1,
+        SixToTwelve = 0x1,
         ThirteenToSeventeen = 0x2,
         EighteenToTwentyFour = 0x3,
         TwentyFiveToThirtyFour = 0x4,
@@ -1124,6 +1125,7 @@ namespace Rock.Client.Enums.Crm
         FortyFiveToFiftyFour = 0x6,
         FiftyFiveToSixtyFour = 0x7,
         SixtyFiveOrOlder = 0x8,
+        ZeroToFive = 0x9,
     }
 
 }
@@ -1137,6 +1139,17 @@ namespace Rock.Client.Enums.Event
         DidNotAttend = 0x0,
         DidAttend = 0x1,
         IsPresent = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum CheckInStatus
+    {
+        Unknown = 0x0,
+        Pending = 0x1,
+        NotPresent = 0x2,
+        Present = 0x3,
+        CheckedOut = 0x4,
     }
 
     /// <summary>
@@ -1242,6 +1255,37 @@ namespace Rock.Client.Enums.Core.Grid
         EndsWith = 0x3,
         Equals = 0x4,
         DoesNotEqual = 0x5,
+    }
+
+}
+
+namespace Rock.Client.Enums.Cms
+{
+    /// <summary>
+    /// </summary>
+    public enum BotGuardianLevel
+    {
+        Disable = 0x0,
+        Enable = 0x1,
+        Inherit = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ContentCollectionFilterControl
+    {
+        Pills = 0x0,
+        Dropdown = 0x1,
+        Boolean = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ContentLibraryItemExperienceLevel
+    {
+        Foundational = 0x1,
+        Intermediate = 0x2,
+        Advanced = 0x3,
     }
 
 }
@@ -1366,28 +1410,6 @@ namespace Rock.Client.Enums.Blocks.Security.ConfirmAccount
         DeleteConfirmation = 0x2,
         ChangePassword = 0x3,
         Content = 0x4,
-    }
-
-}
-
-namespace Rock.Client.Enums.Cms
-{
-    /// <summary>
-    /// </summary>
-    public enum ContentCollectionFilterControl
-    {
-        Pills = 0x0,
-        Dropdown = 0x1,
-        Boolean = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum ContentLibraryItemExperienceLevel
-    {
-        Foundational = 0x1,
-        Intermediate = 0x2,
-        Advanced = 0x3,
     }
 
 }
@@ -1648,6 +1670,9 @@ namespace Rock.Client.Enums.Blocks.Security.ForgotUserName
         InstructionsSent = 0x0,
         EmailInvalid = 0x1,
         ChangePasswordNotSupported = 0x2,
+
+        [Obsolete( "No longer used and will be removed in the future.", false )]
+        CaptchaInvalid = 0x3,
     }
 
 }

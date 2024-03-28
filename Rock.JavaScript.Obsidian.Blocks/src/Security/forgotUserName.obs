@@ -14,21 +14,24 @@
                 <p>To create a new account with a username and password please see our <a :href="changePasswordNotSupportedWarningOptions.newAccountUrl">New Account</a> page.</p>
             </template>
 
-            <div v-else v-html="config.captions?.invalidEmailCaption"></div>
+            <div v-else v-html="warningMessage"></div>
         </NotificationBox>
 
         <RockForm @submit="onSubmitted" :hideErrors="true">
             <EmailBox v-model="email"
-                :disabled="isProcessing"
-                :isRequiredIndicatorHidden="true"
-                label="Enter your email address"
-                rules="required"></EmailBox>
+                      :disabled="isProcessing"
+                      :isRequiredIndicatorHidden="true"
+                      label="Enter your email address"
+                      rules="required"></EmailBox>
+
+            <Captcha v-if="!disableCaptchaSupport"
+                     ref="captchaElement" />
 
             <div class="actions">
                 <RockButton :autoDisable="true"
-                    :btnType="BtnType.Primary"
-                    :disabled="isProcessing"
-                    type="submit">Email me reset instructions</RockButton>
+                            :btnType="BtnType.Primary"
+                            :disabled="isProcessing"
+                            type="submit">Email me reset instructions</RockButton>
             </div>
         </RockForm>
     </template>
@@ -40,6 +43,7 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import { SendInstructionsResultType } from "@Obsidian/Enums/Blocks/Security/ForgotUserName/sendInstructionsResultType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
@@ -47,6 +51,7 @@
     import { ForgotUserNameInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/ForgotUserName/forgotUserNameInitializationBox";
     import { ForgotUserNameSendInstructionsRequestBag } from "@Obsidian/ViewModels/Blocks/Security/ForgotUserName/forgotUserNameSendInstructionsRequestBag";
     import { ForgotUserNameSendInstructionsResultBag } from "@Obsidian/ViewModels/Blocks/Security/ForgotUserName/forgotUserNameSendInstructionsResultBag";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
     const config = useConfigurationValues<ForgotUserNameInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -63,6 +68,7 @@
 
     //#region Values
 
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
     const step = ref<Step>(Step.EmailEntry);
     const email = ref<string>("");
 
@@ -74,6 +80,7 @@
     const changePasswordNotSupportedWarningOptions = ref<ChangePasswordNotSupportedWarningOptions | null>(null);
 
     const isProcessing = ref<boolean>(false);
+    const disableCaptchaSupport = ref<boolean>(config.disableCaptchaSupport);
 
     //#endregion
 
@@ -160,6 +167,11 @@
                 showWarning(config.captions?.invalidEmailCaption || "Sorry, we didn't recognize that email address. Want to try another?");
                 break;
             }
+
+            case SendInstructionsResultType.CaptchaInvalid: {
+                showWarning("There was an issue processing your request. Please try again. If the issue persists please contact us.");
+                break;
+            }
         }
     }
 
@@ -169,7 +181,14 @@
      * @param bag The request.
      */
     async function send(bag: ForgotUserNameSendInstructionsRequestBag): Promise<HttpResult<ForgotUserNameSendInstructionsResultBag>> {
-        return await invokeBlockAction<ForgotUserNameSendInstructionsResultBag>("SendInstructions", { bag });
+        const actionContext: BlockActionContextBag = {};
+
+        if (captchaElement.value) {
+            actionContext.captcha = await captchaElement.value.getToken();
+            captchaElement.value.refreshToken();
+        }
+
+        return await invokeBlockAction<ForgotUserNameSendInstructionsResultBag>("SendInstructions", { bag }, actionContext);
     }
 
     /**

@@ -180,7 +180,7 @@
     import { computed, inject, onBeforeUnmount, onMounted, PropType, ref } from "vue";
     import { ExpandedNoteBag, NoteOptions } from "./types.partial";
     import { noteOptionsSymbol, toCssClass, useEmitter } from "./utils.partial";
-    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { NoteBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteBag";
@@ -209,6 +209,7 @@
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const noteOptions = inject<NoteOptions>(noteOptionsSymbol)!;
@@ -657,6 +658,7 @@
             // Inform other components in this block that we are done with
             // our edit operation.
             emitter.emit("endEdit", subscriberKey);
+            reloadBlock();
         }
     }
 

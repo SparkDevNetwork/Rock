@@ -41,7 +41,7 @@ namespace Rock.Model
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM )]
     [ContentCollectionIndexable( typeof( Rock.Cms.ContentCollection.Indexers.ContentChannelItemIndexer ), typeof( Rock.Cms.ContentCollection.IndexDocuments.ContentChannelItemDocument ) )]
-    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable
+    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -240,6 +240,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public ContentLibraryItemExperienceLevel? ExperienceLevel { get; set; }
+
+        /// <inheritdoc/>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties
 

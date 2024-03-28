@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     group.Members.Add( groupMember );
                     _bindGroupsRockContext.SaveChanges();
 
-                    groups.Add( groupService.Get( group.Id ) );
+                    groups.Add( groupService.GetInclude( group.Id, g => g.GroupType ) );
                 }
 
                 rptrGroups.DataSource = groups;

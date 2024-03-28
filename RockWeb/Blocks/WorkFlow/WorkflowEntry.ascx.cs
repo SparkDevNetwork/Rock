@@ -171,6 +171,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string WorkflowTypeDeterminedByBlockAttribute = "WorkflowTypeDeterminedByBlockAttribute";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
             public const string SignatureDocumentHtml = "SignatureDocumentHtml";
+            public const string IsCaptchaValid = "IsCaptchaValid";
         }
 
         #region Fields
@@ -259,6 +260,12 @@ namespace RockWeb.Blocks.WorkFlow
             set { ViewState[ViewStateKey.SignatureDocumentHtml] = value; }
         }
 
+        public bool IsCaptchaValid
+        {
+            get { return ViewState[ViewStateKey.IsCaptchaValid] as bool? ?? false; }
+            set { ViewState[ViewStateKey.IsCaptchaValid] = value; }
+        }
+
         #endregion Properties
 
         #region Base Control Methods
@@ -300,7 +307,11 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
-            nbMessage.Visible = false;
+            // If PostBack is triggered by captcha leave message notification as is.
+            if ( this.Page.Request.Params["__EVENTARGUMENT"] != "TokenReceived" )
+            {
+                nbMessage.Visible = false;
+            }
 
             if ( !Page.IsPostBack )
             {
@@ -370,7 +381,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
-            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
+            if ( !disableCaptchaSupport && cpCaptcha.IsAvailable && !IsCaptchaValid )
             {
                 ShowMessage( NotificationBoxType.Validation, string.Empty, "There was an issue processing your request. Please try again. If the issue persists please contact us." );
                 return;
@@ -407,9 +418,25 @@ namespace RockWeb.Blocks.WorkFlow
                     GetWorkflowFormPersonEntryValues( personEntryRockContext );
                 }
             }
-            
+
             SetWorkflowFormAttributeValues();
             CompleteFormAction( eventArgument );
+        }
+
+        /// <summary>
+        /// Event raised after the Captcha control receives a token for a solved Captcha.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void cpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
+        {
+            if ( e.IsValid )
+            {
+                cpCaptcha.Visible = false;
+                AddSubmitButtons( _actionType?.WorkflowForm );
+            }
+
+            IsCaptchaValid = e.IsValid;
         }
 
         #endregion Events
@@ -684,7 +711,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                         // Check each active action in the activity for valid criteria and get the first one. This is to prevent a conditional action that didn't meet criteria from preventing a form from showing.
                         WorkflowAction action = actions.Where( a => a.IsCriteriaValid ).FirstOrDefault();
-                        
+
                         if ( action == null )
                         {
                             continue;
@@ -773,7 +800,7 @@ namespace RockWeb.Blocks.WorkFlow
         private IEntity GetWorkflowEntity()
         {
             IEntity iEntity = null;
-            if( _workflow.Id == 0 )
+            if ( _workflow.Id == 0 )
             {
                 // This is a new workflow, so get the EntityType and Id from the PersonId or GroupId page parameters if they exist.
                 // If this is an existing workflow the EntityType and Id are already inserted into the Workflow instance.
@@ -1008,7 +1035,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( formSection.Title.IsNotNullOrWhiteSpace() )
                 {
-                    var formSectionHeader = new HtmlGenericControl( "h1" );
+                    var formSectionHeader = new HtmlGenericControl( "h3" );
                     formSectionHeader.InnerText = formSection.Title;
                     formSectionControl.Controls.Add( formSectionHeader );
                 }
@@ -1193,9 +1220,13 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
-
-            ApplySectionVisibilityRules( formSections, formSectionControlLookup );
+            if ( setValues )
+            {
+                // Apply the field visibility rules only if the Edit Values on the FieldVisibilityWrappers are set.
+                // This solves the issue with the Attributes having a partial postback. Reason: GitHub Issue #5602.
+                FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
+                ApplySectionVisibilityRules( formSections, formSectionControlLookup );
+            }
 
             if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {
@@ -1207,52 +1238,11 @@ namespace RockWeb.Blocks.WorkFlow
                 ShowNotes( false );
             }
 
-            phActions.Controls.Clear();
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
 
-            var buttons = WorkflowActionFormUserAction.FromUriEncodedString( form.Actions );
-
-            foreach ( var button in buttons )
+            if ( disableCaptcha || IsCaptchaValid )
             {
-                // Get the button HTML. If actionParts has a guid at [1],
-                // get the buttonHtml from the DefinedValue with that Guid.
-                // Otherwise, use a default
-                string buttonHtml = string.Empty;
-                DefinedValueCache buttonDefinedValue = null;
-
-                Guid? buttonHtmlDefinedValueGuid = button.ButtonTypeGuid.AsGuidOrNull();
-                if ( buttonHtmlDefinedValueGuid.HasValue )
-                {
-                    buttonDefinedValue = DefinedValueCache.Get( buttonHtmlDefinedValueGuid.Value );
-                }
-
-                if ( buttonDefinedValue != null )
-                {
-                    buttonHtml = buttonDefinedValue.GetAttributeValue( "ButtonHTML" );
-                }
-
-                if ( buttonHtml.IsNullOrWhiteSpace() )
-                {
-                    buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
-                }
-
-                var buttonMergeFields = new Dictionary<string, object>();
-                var buttonText = button.ActionName.EncodeHtml();
-                buttonMergeFields.Add( "ButtonText", buttonText );
-
-                string buttonClickScript = string.Format(
-                    "handleWorkflowActionButtonClick('{0}', {1});",
-                    BlockValidationGroup,
-                    button.CausesValidation.ToJavaScriptValue() );
-
-                buttonMergeFields.Add( "ButtonClick", buttonClickScript );
-
-                var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName );
-                buttonMergeFields.Add( "ButtonLink", buttonLinkScript );
-
-                buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
-
-                phActions.Controls.Add( new LiteralControl( buttonHtml ) );
-                phActions.Controls.Add( new LiteralControl( " " ) );
+                AddSubmitButtons( form );
             }
         }
 
@@ -1587,6 +1577,11 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( formPersonEntrySettings.HideIfCurrentPersonKnown )
                 {
+                    if ( CurrentPerson.PrimaryFamily == null )
+                    {
+                        CurrentPerson.PrimaryFamily = GetFamily( CurrentPerson, personEntryRockContext );
+                    }
+
                     SavePersonEntryToAttributeValues( existingPersonId.Value, existingPersonSpouseId, CurrentPerson.PrimaryFamily );
                     return;
                 }
@@ -1630,7 +1625,7 @@ namespace RockWeb.Blocks.WorkFlow
             int? personEntryPersonSpouseId = null;
 
             var personService = new PersonService( personEntryRockContext );
-            var primaryFamily = personService.GetSelect( personEntryPersonId, s => s.PrimaryFamily );
+            var primaryFamily = personService.GetSelect( personEntryPersonId, s => s.PrimaryFamily ) ?? GetFamily( personEntryPerson, personEntryRockContext );
 
             if ( pePerson2.Visible )
             {
@@ -1660,7 +1655,7 @@ namespace RockWeb.Blocks.WorkFlow
                      *  After further discussion we would be defaulting the marital status, if not provided, to married
 
                      */
-                    if( dvpMaritalStatus.SelectedDefinedValueId.HasValue )
+                    if ( dvpMaritalStatus.SelectedDefinedValueId.HasValue )
                     {
                         personEntryPersonSpouse.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
                         personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
@@ -1727,6 +1722,66 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             personEntryRockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Assigns the person to a family group, If there is no existing family a new one is created.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="personEntryRockContext">The person entry rock context.</param>
+        /// <returns></returns>
+        private Group GetFamily( Person person, RockContext personEntryRockContext )
+        {
+            Group family = null;
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            var groupService = new GroupService( personEntryRockContext );
+            var groupMemberService = new GroupMemberService( personEntryRockContext );
+
+            if ( person.PrimaryFamilyId.HasValue )
+            {
+                family = groupService.Get( person.PrimaryFamilyId.Value );
+            }
+
+            if ( family == null )
+            {
+                family = groupMemberService.Queryable()
+                    .Where( gm => gm.PersonId == person.Id && gm.GroupTypeId == familyGroupType.Id )
+                    .Select( gm => gm.Group )
+                    .FirstOrDefault();
+            }
+
+            if ( family == null )
+            {
+                // Create new context so we don't inadvertently save any changes being tracked by the personEntryRockContext
+                using ( var newFamilyRockContext = new RockContext() )
+                {
+                    family = new Rock.Model.Group
+                    {
+                        Name = person.LastName,
+                        GroupTypeId = familyGroupType.Id,
+                        CampusId = person.PrimaryCampusId
+                    };
+
+                    newFamilyRockContext.Groups.Add( family );
+
+                    var adultRoleId = familyGroupType.Roles.Find( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                    var familyMember = new GroupMember
+                    {
+                        PersonId = person.Id,
+                        GroupRoleId = familyGroupType.DefaultGroupRoleId ?? adultRoleId,
+                        GroupMemberStatus = GroupMemberStatus.Active
+                    };
+
+                    family.Members.Add( familyMember );
+
+                    newFamilyRockContext.SaveChanges();
+                }
+
+                // Reload family with the personEntryRockContext so any changes to the family is tracked by it.
+                family = groupService.Get( family.Id );
+            }
+
+            return family;
         }
 
         /// <summary>
@@ -2436,7 +2491,12 @@ namespace RockWeb.Blocks.WorkFlow
             if ( formNotificationEmailDestination == FormNotificationEmailDestination.EmailAddress
                 && notificationEmailSettings.EmailAddress.IsNotNullOrWhiteSpace() )
             {
-                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( notificationEmailSettings.EmailAddress, workflowMergeFields ) );
+                string[] recipientEmailAddresses = notificationEmailSettings.EmailAddress.Replace( ";", "," ).Split( ',' );
+
+                foreach ( var eachRcipient in recipientEmailAddresses )
+                {
+                    recipients.Add( RockEmailMessageRecipient.CreateAnonymous( eachRcipient, workflowMergeFields ) );
+                }
             }
             else if ( formNotificationEmailDestination == FormNotificationEmailDestination.SpecificIndividual
                 && notificationEmailSettings.RecipientAliasId.HasValue )
@@ -2610,6 +2670,66 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     RockPage.PageIcon = blockTitleIconCssClass;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adds the Submit button to the WorkflowEntry form
+        /// </summary>
+        /// <param name="form"></param>
+        private void AddSubmitButtons( WorkflowActionFormCache form )
+        {
+            if ( form == null )
+            {
+                return;
+            }
+
+            phActions.Controls.Clear();
+
+            var buttons = WorkflowActionFormUserAction.FromUriEncodedString( form.Actions );
+
+            foreach ( var button in buttons )
+            {
+                // Get the button HTML. If actionParts has a guid at [1],
+                // get the buttonHtml from the DefinedValue with that Guid.
+                // Otherwise, use a default
+                string buttonHtml = string.Empty;
+                DefinedValueCache buttonDefinedValue = null;
+
+                Guid? buttonHtmlDefinedValueGuid = button.ButtonTypeGuid.AsGuidOrNull();
+                if ( buttonHtmlDefinedValueGuid.HasValue )
+                {
+                    buttonDefinedValue = DefinedValueCache.Get( buttonHtmlDefinedValueGuid.Value );
+                }
+
+                if ( buttonDefinedValue != null )
+                {
+                    buttonHtml = buttonDefinedValue.GetAttributeValue( "ButtonHTML" );
+                }
+
+                if ( buttonHtml.IsNullOrWhiteSpace() )
+                {
+                    buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
+                }
+
+                var buttonMergeFields = new Dictionary<string, object>();
+                var buttonText = button.ActionName.EncodeHtml();
+                buttonMergeFields.Add( "ButtonText", buttonText );
+
+                string buttonClickScript = string.Format(
+                    "handleWorkflowActionButtonClick('{0}', {1});",
+                    BlockValidationGroup,
+                    button.CausesValidation.ToJavaScriptValue() );
+
+                buttonMergeFields.Add( "ButtonClick", buttonClickScript );
+
+                var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName );
+                buttonMergeFields.Add( "ButtonLink", buttonLinkScript );
+
+                buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
+
+                phActions.Controls.Add( new LiteralControl( buttonHtml ) );
+                phActions.Controls.Add( new LiteralControl( " " ) );
             }
         }
 

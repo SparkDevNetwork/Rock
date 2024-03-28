@@ -474,6 +474,7 @@
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\Login\loginMethod.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Security\Login\passwordlessLoginStep.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\blockLocation.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Cms\botGuardianLevel.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentChannelDateType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentChannelItemStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentCollectionFilterControl.ts" />
@@ -551,6 +552,7 @@
     <TypeScriptCompile Include="Framework\Enums\Engagement\streakStructureType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\attendanceGraphBy.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\attendanceStatus.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Event\checkInStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperienceApprovalStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperienceCampusBehavior.ts" />
     <TypeScriptCompile Include="Framework\Enums\Event\interactiveExperiencePushNotificationType.ts" />
@@ -721,6 +723,7 @@
     <TypeScriptCompile Include="Framework\Utility\form.ts" />
     <TypeScriptCompile Include="Framework\Utility\util.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonType.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockActionContextBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
@@ -1083,6 +1086,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\noteMentionItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\phoneNumberBoxWithSmsControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheability.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\rockCacheabilityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
@@ -1144,6 +1148,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusAccountAmountPickerGetAccountsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusAccountAmountPickerGetAccountsResultItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\campusPickerGetCampusesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\captchaControlConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\captchaControlTokenValidateTokenResultBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\captchaControlValidateTokenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerGetTreeResultsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categorizedValuePickerNodeBag.d.ts" />
@@ -1241,6 +1248,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressLogBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressStatusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\taskActivityProgressUpdateBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\timeIntervalBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\treeItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\validPropertiesBox.d.ts" />
     <TypeScriptCompile Include="System\core.ts" />

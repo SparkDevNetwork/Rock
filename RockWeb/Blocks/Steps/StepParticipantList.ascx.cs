@@ -417,7 +417,7 @@ namespace RockWeb.Blocks.Steps
             else if ( e.Key == FilterKey.Campus )
             {
                 var campus = CampusCache.Get( e.Value.ToIntSafe() );
-                var campusContext = ContextEntity<Campus>();
+                var campusContext = GetCampusContextOrNull();
 
                 if ( campus != null && campusContext == null )
                 {
@@ -833,11 +833,22 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void ConditionallyHideCampusFilter()
         {
-            var campusContext = ContextEntity<Campus>();
+            var campusContext = GetCampusContextOrNull();
             if ( campusContext != null )
             {
                 cpCampusFilter.Visible = false;
             }
+        }
+
+        /// <summary>
+        /// Gets the campus context, returns null if there is only no more than one active campus.
+        /// This is to prevent to filtering out of Steps that are associated with currently inactive
+        /// campuses or no campus at all.
+        /// </summary>
+        /// <returns></returns>
+        private Campus GetCampusContextOrNull()
+        {
+            return ( CampusCache.All( false ).Count > 1 ) ? ContextEntity<Campus>() : null;
         }
 
         /// <summary>
@@ -1041,7 +1052,7 @@ namespace RockWeb.Blocks.Steps
                 qry = qry.Where( m => m.Note.Contains( note ) );
             }
 
-            var campusContext = ContextEntity<Campus>();
+            var campusContext = GetCampusContextOrNull();
             var campusId = campusContext == null ? cpCampusFilter.SelectedCampusId : campusContext.Id;
             if ( campusId != null )
             {

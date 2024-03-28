@@ -95,6 +95,7 @@ namespace Rock.Model
         /// The code.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string DiscountCode { get; set; }
 
         /// <summary>
@@ -131,6 +132,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is temporary; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsTemporary { get; set; }
 
         /// <summary>
@@ -181,6 +183,15 @@ namespace Rock.Model
         [DataMember]
         [FieldType(Rock.SystemGuid.FieldType.CAMPUS)]
         public int? CampusId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/> identifier.
+        /// </value>
+        [DataMember]
+        public int? PaymentPlanFinancialScheduledTransactionId { get; set; }
 
         #endregion Entity Properties
 
@@ -245,6 +256,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/>.
+        /// </summary>
+        /// <value>
+        /// The payment plan <see cref="Rock.Model.FinancialScheduledTransaction"/>.
+        /// </value>
+        [DataMember]
+        public virtual FinancialScheduledTransaction PaymentPlanFinancialScheduledTransaction { get; set; }
 
         #endregion Navigation Properties
     }

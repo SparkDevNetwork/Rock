@@ -33,7 +33,7 @@
                                         <ItemTemplate>
                                             <div class="row row-no-gutters row-eq-height row-checkin-item">
                                                 <asp:Panel ID="pnlPersonButton" runat="server" CssClass="col-xs-12 checkin-person">
-                                                    <a data-person-id='<%# Eval("Person.Id") %>' class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("PreSelected") ) %>">
+                                                    <a data-person-id='<%# Eval("Person.Id") %>' class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("PreSelected") ) %> <%# GetDisabledClass( (bool)Eval("AnyPossibleSchedules") ) %>">
                                                         <div class="row">
                                                             <div class="checkbox-container">
                                                                 <i class='fa fa-3x <%# GetCheckboxClass( (bool)Eval("PreSelected") ) %>'></i>
@@ -91,7 +91,7 @@
                         <div class="scroller">
 
                             <div class="control-group checkin-body-container">
-                                <label class="control-label"><asp:Literal ID="lCaption2" runat="server" /></label>
+                                <label class="control-label">Select Options</label>
                                 <div class="controls checkin-option-list">
                                     <asp:Repeater ID="rOptions" runat="server">
                                         <ItemTemplate>

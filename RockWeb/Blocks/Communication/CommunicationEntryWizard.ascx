@@ -269,7 +269,8 @@
                                             label=" "
                                             Checked="false"
                                             FormGroupCssClass="custom-switch-centered hide-label-sm"
-                                            Text="Bulk" />
+                                            Text="Bulk"
+                                            Visible="false" />
                                     </div>
                                 </div>
 

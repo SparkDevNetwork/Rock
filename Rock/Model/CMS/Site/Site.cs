@@ -24,6 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
@@ -531,6 +532,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool EnablePersonalization { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Bot Guardian Level for the Site.
+        /// </summary>
+        [DataMember]
+        public BotGuardianLevel BotGuardianLevel { get; set; } = BotGuardianLevel.Disable;
 
         #endregion
 

@@ -244,6 +244,8 @@ namespace Rock.Jobs
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
 
+            RunCleanupTask( "primary family", () => UpdateMissingPrimaryFamily() );
+
             RunCleanupTask( "attendance label data", () => AttendanceDataCleanup() );
 
             // Search for locations with no country and assign USA or Canada if it match any of the country's states
@@ -1232,6 +1234,12 @@ namespace Rock.Jobs
                     cacheExpirationDate,
                     args.CacheMaximumFilesToRemove,
                     compareFileDateModified: true );
+            }
+
+            // If the Avatar Cache folder happens to be missing, create it.
+            if ( !Directory.Exists( avatarCachePath ) )
+            {
+                Directory.CreateDirectory( avatarCachePath );
             }
 
             if ( validationMessages.Any() )
@@ -2835,7 +2843,7 @@ SELECT @@ROWCOUNT
         /// </summary>
         private int CalculateAgeAndAgeBracketOnAnalyticsSourceDate()
         {
-            const string UpdateAgeAndAgeBracketSql = @"
+            var UpdateAgeAndAgeBracketSql = $@"
 DECLARE @Today DATE = GETDATE()
 BEGIN 
 	UPDATE A
@@ -2845,43 +2853,64 @@ BEGIN
 		ELSE 0
 	END,
 	[AgeBracket] = CASE
-		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+        -- When the age is between 0 and 5 then use the ZeroToFive value.
+		WHEN (DATEDIFF(YEAR, A.[Date], @Today) - 
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
-			ELSE 0
-		END
-		BETWEEN 0 AND 12 THEN 1
-		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			    ELSE 0
+		    END)
+		BETWEEN 0 AND 5 THEN {Rock.Enums.Crm.AgeBracket.ZeroToFive.ConvertToInt()}
+        -- When the age is between 6 and 12 then use the SixToTwelve value.
+		WHEN (DATEDIFF(YEAR, A.[Date], @Today) - 
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
-			ELSE 0
-		END BETWEEN 13 AND 17 THEN 2
-		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			    ELSE 0
+		    END)
+        BETWEEN 6 AND 12 THEN {Rock.Enums.Crm.AgeBracket.SixToTwelve.ConvertToInt()}
+        -- When the age is between 13 and 17 then use the ThirteenToSeventeen value.
+		WHEN (DATEDIFF(YEAR, A.[Date], @Today) - 
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
-			ELSE 0
-		END BETWEEN 18 AND 24 THEN 3
-		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			    ELSE 0
+		    END)
+        BETWEEN 13 AND 17 THEN {Rock.Enums.Crm.AgeBracket.ThirteenToSeventeen.ConvertToInt()}
+        -- When the age is between 18 and 24 then use the EighteenToTwentyFour value.
+		WHEN (DATEDIFF(YEAR, A.[Date], @Today) - 
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
-			ELSE 0
-		END BETWEEN 25 AND 34 THEN 4
-		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			    ELSE 0
+		    END)
+        BETWEEN 18 AND 24 THEN {Rock.Enums.Crm.AgeBracket.EighteenToTwentyFour.ConvertToInt()}
+        -- When the age is between 25 and 34 then use the TwentyFiveToThirtyFour value.
+		WHEN (DATEDIFF(YEAR, A.[Date], @Today) - 
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
-			ELSE 0
-		END BETWEEN 35 AND 44 THEN 5
-		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			    ELSE 0
+		    END)
+        BETWEEN 25 AND 34 THEN {Rock.Enums.Crm.AgeBracket.TwentyFiveToThirtyFour.ConvertToInt()}
+        -- When the age is between 35 and 44 then use the ThirtyFiveToFortyFour value.
+		WHEN (DATEDIFF(YEAR, A.[Date], @Today) - 
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
-			ELSE 0
-		END BETWEEN 45 AND 54 THEN 6
-		WHEN DATEDIFF(YEAR, A.[Date], @Today) - 
+			    ELSE 0
+		    END)
+        BETWEEN 35 AND 44 THEN {Rock.Enums.Crm.AgeBracket.ThirtyFiveToFortyFour.ConvertToInt()}
+        -- When the age is between 45 and 54 then use the FortyFiveToFiftyFour value.
+		WHEN (DATEDIFF(YEAR, A.[Date], @Today) - 
 			CASE 
 				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
-			ELSE 0
-		END BETWEEN 55 AND 64 THEN 7
-		ELSE 8
+			    ELSE 0
+		    END)
+        BETWEEN 45 AND 54 THEN {Rock.Enums.Crm.AgeBracket.FortyFiveToFiftyFour.ConvertToInt()}
+        -- When the age is between 55 and 64 then use the FiftyFiveToSixtyFour value.
+		WHEN (DATEDIFF(YEAR, A.[Date], @Today) - 
+			CASE 
+				WHEN DATEADD(YY, DATEDIFF(yy, A.[Date], @Today), A.[Date]) > @Today THEN 1
+			    ELSE 0
+		    END)
+        BETWEEN 55 AND 64 THEN {Rock.Enums.Crm.AgeBracket.FiftyFiveToSixtyFour.ConvertToInt()}
+        -- When the age is greater than 65 then use the SixtyFiveOrOlder value.
+		ELSE {Rock.Enums.Crm.AgeBracket.SixtyFiveOrOlder.ConvertToInt()}
 	END
 	FROM AnalyticsSourceDate A
 	INNER JOIN AnalyticsSourceDate B
@@ -3079,6 +3108,59 @@ END
                 rockContext.Database.CommandTimeout = commandTimeout;
                 int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Updates the PrimaryFamily for persons without a PrimaryFamily.
+        /// </summary>
+        /// <returns></returns>
+        private int UpdateMissingPrimaryFamily()
+       {
+            using ( var rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupService = new GroupService( rockContext );
+                var persons = personService.Queryable( new Rock.Model.PersonService.PersonQueryOptions()
+                {
+                    IncludeRestUsers = false
+                } )
+                    .Where( p => !p.PrimaryFamilyId.HasValue )
+                    .Select( p => new { p.Id, p.LastName, p.RecordTypeValueId } )
+                    .ToList();
+
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                var businessRecord = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS );
+
+                foreach ( var person in persons )
+                {
+                    var groupMember = groupMemberService.Queryable().FirstOrDefault( gm => gm.PersonId == person.Id && gm.GroupTypeId == familyGroupType.Id );
+
+                    if ( groupMember == null )
+                    {
+                        var groupName = person.RecordTypeValueId == businessRecord.Id ? $"{person.LastName} Business" : $"{person.LastName} Family";
+                        var group = new Group
+                        {
+                            Name = groupName.Trim(),
+                            GroupTypeId = familyGroupType.Id
+                        };
+                        groupService.Add( group );
+
+                        groupMember = new GroupMember
+                        {
+                            PersonId = person.Id,
+                            GroupRoleId = familyGroupType.DefaultGroupRoleId.Value
+                        };
+                        group.Members.Add( groupMember );
+
+                        rockContext.SaveChanges();
+                    }
+
+                    PersonService.UpdatePrimaryFamily( person.Id, rockContext );
+                }
+
+                return persons.Count;
             }
         }
 

@@ -525,7 +525,18 @@ namespace Rock.Lava.Fluid
                     }
                 }
 
-                var trim = context.Scanner.ReadChar( '-' );
+                bool trim;
+                if ( _format == LavaTagFormatSpecifier.BlockComment
+                    || _format == LavaTagFormatSpecifier.InlineComment )
+                {
+                    // Lava Comments do not support the optional Liquid whitespace trim character '-'.
+                    trim = false;
+                }
+                else
+                {
+                    trim = context.Scanner.ReadChar( '-' );
+                }
+
                 if ( p.PreviousTextSpanStatement != null )
                 {
                     if ( trim )
@@ -581,7 +592,6 @@ namespace Rock.Lava.Fluid
             private readonly LavaTagFormatSpecifier _format;
             private char _tagChar1;
             private char _tagChar2;
-            private bool _autoTrim = false;
 
             public LavaTagEndParser( LavaTagFormatSpecifier format )
             {
@@ -598,9 +608,6 @@ namespace Rock.Lava.Fluid
                 {
                     _tagChar1 = '-';
                     _tagChar2 = '/';
-
-                    // Always trim whitespace around comments.
-                    _autoTrim = true;
                 }
                 else if ( _format == LavaTagFormatSpecifier.InlineComment )
                 {
@@ -675,7 +682,7 @@ namespace Rock.Lava.Fluid
                     }
 
                     // Find an explicit tag close token.
-                    trim = _autoTrim || context.Scanner.ReadChar( '-' );
+                    trim = context.Scanner.ReadChar( '-' );
 
                     var endTagFound = context.Scanner.ReadChar( _tagChar1 )
                         && ( _tagChar2 == '\0' || context.Scanner.ReadChar( _tagChar2 ) );
@@ -723,7 +730,16 @@ namespace Rock.Lava.Fluid
                 else
                 {
                     // Find the tag close token.
-                    trim = _autoTrim || context.Scanner.ReadChar( '-' );
+                    if ( _format == LavaTagFormatSpecifier.BlockComment
+                         || _format == LavaTagFormatSpecifier.InlineComment )
+                    {
+                        // Comment tokens do not support the leading/trailing whitespace trim character.
+                        trim = false;
+                    }
+                    else
+                    {
+                         trim = context.Scanner.ReadChar( '-' );
+                    }
 
                     var endTagFound = context.Scanner.ReadChar( _tagChar1 )
                         && ( _tagChar2 == '\0' || context.Scanner.ReadChar( _tagChar2 ) );

@@ -26,14 +26,6 @@ namespace Rock.ViewModels.Blocks.Core.ScheduleDetail
     public class ScheduleDetailOptionsBag
     {
         /// <summary>
-        /// Gets or sets the next occurrence.
-        /// </summary>
-        /// <value>
-        /// The next occurrence.
-        /// </value>
-        public DateTimeOffset? NextOccurrence { get; set; }
-
-        /// <summary>
         /// Gets or sets the exclusions.
         /// </summary>
         /// <value>

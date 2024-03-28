@@ -23,6 +23,7 @@ using Rock.Field.Types;
 using Rock.Web.Cache;
 using Rock.Model;
 using System.Collections.Generic;
+using Rock.Attribute;
 
 namespace Rock.Web.UI.Controls
 {
@@ -228,7 +229,8 @@ namespace Rock.Web.UI.Controls
         /// <returns>
         /// <c>true</c> if the content is valid; otherwise, <c>false</c>.
         /// </returns>
-        internal bool Validate( out List<string> messages )
+        [RockInternal( "1.16.3" )]
+        public bool Validate( out List<string> messages )
         {
             messages = new List<string>();
 

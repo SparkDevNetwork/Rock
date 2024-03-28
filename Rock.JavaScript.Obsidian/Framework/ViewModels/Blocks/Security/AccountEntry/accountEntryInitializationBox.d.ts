@@ -42,6 +42,9 @@ export type AccountEntryInitializationBox = {
     /** The caption when a confirmation email was sent to a selected, duplicate person. */
     confirmationSentCaption?: string | null;
 
+    /** If set to true if the Captcha verification step should not be performed. */
+    disableCaptchaSupport: boolean;
+
     /** The email address of the registering user. */
     email?: string | null;
 

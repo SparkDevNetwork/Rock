@@ -10,7 +10,12 @@
                           :disabled="isRegistering || isNavigating"
                           @checkUsernameAvailability="onCheckUsernameAvailability"
                           @error="showError"
-                          @register="onRegister" />
+                          @register="onRegister">
+            <template #captcha>
+                <Captcha v-if="!disableCaptchaSupport"
+                         ref="captchaElement" />
+            </template>
+        </RegistrationStep>
 
         <DuplicatePersonSelectionStep v-else-if="step.isDuplicatePersonSelection"
                                       v-model="selectedDuplicatePerson"
@@ -18,21 +23,36 @@
                                       :options="duplicatePersonSelectionStepOptions"
                                       @movePrevious="onDuplicatePersonSelectionStepMovePrevious()"
                                       @personSelected="onDuplicatePersonSelected"
-                                      @noPersonSelected="onNoDuplicatePersonSelected" />
+                                      @noPersonSelected="onNoDuplicatePersonSelected">
+            <template #captcha>
+                <Captcha v-if="!disableCaptchaSupport"
+                         ref="captchaElement" />
+            </template>
+        </DuplicatePersonSelectionStep>
 
         <PasswordlessConfirmationSentStep v-else-if="step.isPasswordlessConfirmationSent"
                                           v-model="passwordlessConfirmationCode"
                                           :disabled="isRegistering || isNavigating"
                                           :options="passwordlessConfirmationSentStepOptions"
                                           @movePrevious="onPasswordlessConfirmationSentStepMovePrevious()"
-                                          @submit="onPasswordlessConfirmationSubmitted" />
+                                          @submit="onPasswordlessConfirmationSubmitted">
+            <template #captcha>
+                <Captcha v-if="!disableCaptchaSupport"
+                         ref="captchaElement" />
+            </template>
+        </PasswordlessConfirmationSentStep>
 
         <ExistingAccountStep v-else-if="step.isExistingAccount"
                              :disabled="isSendingForgotUsername || isRegistering || isNavigating"
                              :options="existingAccountStepOptions"
                              @movePrevious="onMovePrevious()"
                              @emailUsername="onEmailUsername"
-                             @sendToLogin="onSendToLogin" />
+                             @sendToLogin="onSendToLogin">
+            <template #captcha>
+                <Captcha v-if="!disableCaptchaSupport"
+                         ref="captchaElement" />
+            </template>
+        </ExistingAccountStep>
 
         <ConfirmationSentStep v-else-if="step.isConfirmationSent"
                               :options="confirmationSentStepOptions" />
@@ -46,6 +66,7 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import CompletedStep from "./AccountEntry/completedStep.partial.obs";
     import ConfirmationSentStep from "./AccountEntry/confirmationSentStep.partial.obs";
     import DuplicatePersonSelectionStep from "./AccountEntry/duplicatePersonSelectionStep.partial.obs";
@@ -68,6 +89,7 @@
     import { AccountEntryPasswordlessConfirmationSentStepBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPasswordlessConfirmationSentStepBag";
     import { AccountEntryRegisterRequestBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterRequestBox";
     import { AccountEntryRegisterResponseBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterResponseBox";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
     const config = useConfigurationValues<AccountEntryInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -78,6 +100,9 @@
     //#region Values
 
     const errorMessage = ref<string | null>();
+
+    const disableCaptchaSupport = ref(config.disableCaptchaSupport);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
 
     const stepStack = ref<AccountEntryStep[]>([]);
     const accountEntryStep = computed<AccountEntryStep | null | undefined>(() => stepStack.value.length ? stepStack.value[stepStack.value.length - 1] : config.accountEntryRegisterStepBox?.step || null);
@@ -319,7 +344,14 @@
             clearError();
             isUsernameAvailable.value = null;
 
-            const response = await invokeBlockAction<AccountEntryRegisterResponseBox>("Register", { box: registrationInfo.value });
+            const actionContext: BlockActionContextBag = {};
+
+            if (captchaElement.value) {
+                actionContext.captcha = await captchaElement.value.getToken();
+                captchaElement.value.refreshToken();
+            }
+
+            const response = await invokeBlockAction<AccountEntryRegisterResponseBox>("Register", { box: registrationInfo.value }, actionContext);
 
             if (response?.data?.step || response?.data?.step === AccountEntryStep.Registration) {
                 displayStep(response.data);

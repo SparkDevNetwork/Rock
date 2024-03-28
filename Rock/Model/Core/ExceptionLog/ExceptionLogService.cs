@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Rock.Data;
 
@@ -259,30 +260,59 @@ namespace Rock.Model
 
             if ( logToFile )
             {
-                try
+                // Construct the log message.
+                var sbLogMessage = new StringBuilder();
+                var when = RockDateTime.Now.ToString();
+                while ( ex != null )
                 {
-                    string directory = AppDomain.CurrentDomain.BaseDirectory;
-                    directory = Path.Combine( directory, "App_Data", "Logs" );
+                    sbLogMessage.Append( string.Format( "{0},{1},\"{2}\",\"{3}\"\r\n", when, ex.GetType(), ex.Message, ex.StackTrace ) );
+                    ex = ex.InnerException;
+                }
 
-                    if ( !Directory.Exists( directory ) )
+                // Write to the log file, after ensuring that this thread has exclusive access.
+                var canWriteToLogFile = _logWriterWaitHandle.WaitOne( 1000 );
+                var writeToTrace = !canWriteToLogFile;
+                if ( canWriteToLogFile )
+                {
+                    try
                     {
-                        Directory.CreateDirectory( directory );
+                        // Write the error to the log file.
+                        var directory = AppDomain.CurrentDomain.BaseDirectory;
+                        directory = Path.Combine( directory, "App_Data", "Logs" );
+
+                        if ( !Directory.Exists( directory ) )
+                        {
+                            Directory.CreateDirectory( directory );
+                        }
+
+                        var filePath = Path.Combine( directory, "RockExceptions.csv" );
+                        File.AppendAllText( filePath, sbLogMessage.ToString() );
                     }
-
-                    string filePath = Path.Combine( directory, "RockExceptions.csv" );
-                    string when = RockDateTime.Now.ToString();
-                    while ( ex != null )
+                    catch ( Exception exLog )
                     {
-                        File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\",\"{3}\"\r\n", when, ex.GetType(), ex.Message, ex.StackTrace ) );
-                        ex = ex.InnerException;
+                        sbLogMessage.Insert( 0, $"** Error Logging Failed.\n{exLog}\nThe Exception that could not be logged is:\n" );
+                        writeToTrace = true;
+                    }
+                    finally
+                    {
+                        _logWriterWaitHandle.Set();
                     }
                 }
-                catch
+                else
                 {
-                    // failed to write to database and also failed to write to log file, so there is nowhere to log this error
+                    sbLogMessage.AppendLine( "** Error Logging Failed. The log file is in use by another process." );
+                }
+
+                // If error logging has failed, write the error to Trace output.
+                if ( writeToTrace )
+                {
+                    DebugHelper.Log( sbLogMessage.ToString() );
                 }
             }
         }
+
+        // A mutex to synchronise log file write operations for this Rock instance.
+        private static EventWaitHandle _logWriterWaitHandle = new EventWaitHandle( true, EventResetMode.AutoReset, $"ROCK_EXCEPTION_LOG_{Guid.NewGuid()}" );
 
         #endregion Operations
 

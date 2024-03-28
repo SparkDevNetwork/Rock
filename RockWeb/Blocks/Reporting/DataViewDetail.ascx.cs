@@ -292,6 +292,8 @@ $(document).ready(function() {
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
             dataView.IncludeDeceased = tglIncludeDeceased.Checked;
             dataView.DisableUseOfReadOnlyContext = cbDisableUseOfReadOnlyContext.Checked;
+            dataView.IconCssClass = tbIconCssClass.Text;
+            dataView.HighlightColor = cpIconColor.Text;
 
             // If the switch is set to "Persistence Schedule", and the Persistence Type radio button list is set to "Interval" then use the schedule interval picker,
             // otherwise set the value as null so that a "Schedule" Persistence Type selection will clear out the interval value.
@@ -783,6 +785,8 @@ $(document).ready(function() {
 
             tbName.Text = dataView.Name;
             tbDescription.Text = dataView.Description;
+            tbIconCssClass.Text = dataView.IconCssClass;
+            cpIconColor.Text = dataView.HighlightColor;
 
             if ( dataView.EntityTypeId.HasValue )
             {

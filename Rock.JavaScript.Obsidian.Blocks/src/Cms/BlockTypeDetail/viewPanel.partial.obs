@@ -96,6 +96,16 @@
             valueBuilder.addHtmlValue(pagesStr, "<span class='text-muted'><em>No pages are currently using this block</em></muted>");
         }
 
+        if(props.modelValue.layouts && props.modelValue.layouts.length > 0) {
+            const layouts = props.modelValue.layouts.map(l => `<li>${l}</li>`).join("");
+            valueBuilder.addHtmlValue("Layouts that use this block type", `<ul>${layouts}</ul>`);
+        }
+
+        if(props.modelValue.sites && props.modelValue.sites.length > 0) {
+            const sites = props.modelValue.sites.map(s => `<li>${s}</li>`).join("");
+            valueBuilder.addHtmlValue("Sites that use this block type", `<ul>${sites}</ul>`);
+        }
+
         return valueBuilder.build();
     });
 

@@ -21,6 +21,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -41,6 +42,13 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField("Show Right Pane", "Determines whether the right pane in the embedded report should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowRightPane" )]
     [BooleanField("Show Navigation Pane", "Determines whether the navigation pane in the embedded report should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowNavPane" )]
     [BooleanField("Show Fullsize Button", "Determines whether the fullsize button should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowFullsizeBtn" )]
+    [CodeEditorField( "URL Append Lava Template",
+        Description = "The Lava Template for the Append Url",
+        IsRequired = false,
+        Order = 6,
+        Category = "CustomSetting",
+        Key = "UrlAppendLavaTemplate") ]
+
     [Rock.SystemGuid.BlockTypeGuid( "76A64656-7BAB-4ADC-82DD-9CD207F548F9" )]
     public partial class PowerBiReportViewer : Rock.Web.UI.RockBlockCustomSettings
     {
@@ -116,6 +124,7 @@ namespace RockWeb.Blocks.Reporting
             cbSettingPowerBIFullsizeBtn.Checked = GetAttributeValue( "ShowFullsizeBtn" ).AsBoolean();
             cbSettingPowerBIRightPane.Checked = GetAttributeValue( "ShowRightPane" ).AsBoolean();
             cbSettingPowerBINavPane.Checked = GetAttributeValue( "ShowNavPane" ).AsBoolean();
+            ceAppendUrlTemplate.Text = GetAttributeValue( "UrlAppendLavaTemplate" );
 
             upnlContent.Update();
             mdEdit.Show();
@@ -134,6 +143,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "ShowFullsizeBtn", cbSettingPowerBIFullsizeBtn.Checked.ToString() );
             SetAttributeValue( "ShowRightPane", cbSettingPowerBIRightPane.Checked.ToString() );
             SetAttributeValue( "ShowNavPane", cbSettingPowerBINavPane.Checked.ToString() );
+            SetAttributeValue( "UrlAppendLavaTemplate", ceAppendUrlTemplate.Text );
             SaveAttributeValues();
 
             mdEdit.Hide();
@@ -221,10 +231,24 @@ namespace RockWeb.Blocks.Reporting
             fullsizer.Visible = GetAttributeValue( "ShowFullsizeBtn" ).AsBoolean();
 
             string reportUrl = GetAttributeValue( "ReportUrl" );
+            string urlAppendTemplate = GetAttributeValue( "UrlAppendLavaTemplate" );
             bool showRightPane = GetAttributeValue( "ShowRightPane" ).AsBoolean();
             bool showNavPane = GetAttributeValue( "ShowNavPane" ).AsBoolean();
 
             nbError.Text = string.Empty;
+
+            // Process the Url Append Template
+            if ( urlAppendTemplate.IsNotNullOrWhiteSpace() )
+            {
+                var mergeFields = LavaHelper.GetCommonMergeFields( null);
+                urlAppendTemplate = urlAppendTemplate.ResolveMergeFields( mergeFields ).Trim();
+
+                // Check if there was a Lava error. If so ignore the template
+                if ( urlAppendTemplate.Contains( "Lava Error:" ) )
+                {
+                    urlAppendTemplate = string.Empty;
+                }
+            }
 
             if ( reportUrl.IsNullOrWhiteSpace() )
             {
@@ -234,7 +258,7 @@ namespace RockWeb.Blocks.Reporting
                 return;
             }
 
-            hfReportEmbedUrl.Value = reportUrl +
+            hfReportEmbedUrl.Value = reportUrl + urlAppendTemplate +
                 ( showRightPane ? "" : "&filterPaneEnabled=false" ) +
                 ( showNavPane ? "" : "&navContentPaneEnabled=false" );
 

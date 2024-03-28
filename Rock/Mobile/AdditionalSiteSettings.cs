@@ -375,5 +375,20 @@ namespace Rock.Mobile
         /// </summary>
         /// <value>The auth0 client identifier.</value>
         public string Auth0ClientId { get; set; }
+
+        /// <summary>
+        /// The Entra client identifier.
+        /// </summary>
+        public string EntraClientId { get; set; }
+
+        /// <summary>
+        /// The Entra tenant identifier.
+        /// </summary>
+        public string EntraTenantId { get; set; }
+
+        /// <summary>
+        /// The entra authentication component.
+        /// </summary>
+        public Guid? EntraAuthenticationComponent { get; set; }
     }
 }

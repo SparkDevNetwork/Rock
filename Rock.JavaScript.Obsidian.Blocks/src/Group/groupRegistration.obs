@@ -89,8 +89,8 @@ async function onSave(): Promise<void> {
             window.location.href = makeUrlRedirectSafe(result.data);
         }
     }
- else {
-        errorMessage.value = result.data ?? "Unknown error while trying to save group.";
+    else {
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save group.";
     }
 }
 

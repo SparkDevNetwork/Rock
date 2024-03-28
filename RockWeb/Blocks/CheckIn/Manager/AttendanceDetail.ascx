@@ -47,13 +47,14 @@
             </div>
 
             <div class="actions">
-                <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                <asp:LinkButton ID="btnEdit" runat="server" CausesValidation="false" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
             </div>
         </div>
 
         <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Edit Attendance" SaveButtonText="Save" OnSaveClick="mdMovePerson_SaveClick">
             <Content>
+                <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <asp:Panel ID="pnlCheckInCheckOutEdit" runat="server" class="row" Visible="false">
                      <div class="col-md-6">
                          <Rock:DateTimePicker ID="dtpStart" runat="server" SourceTypeName="Rock.Model.Attendance" PropertyName="StartDateTime" Required="false" Label="Check-in Date/Time" />

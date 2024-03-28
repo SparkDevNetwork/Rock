@@ -87,6 +87,13 @@ namespace RockWeb.Blocks.Security
         Key = AttributeKey.CreateCommunicationRecord,
         Order = 5 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "02B3D7D1-23CE-4154-B602-F4A15B321757" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
@@ -97,7 +104,8 @@ namespace RockWeb.Blocks.Security
             public const string SuccessCaption = "SuccessCaption";
             public const string ConfirmationPage = "ConfirmationPage";
             public const string EmailTemplate = "EmailTemplate";
-            public const string CreateCommunicationRecord = "CreateCommunicationRecord";
+            public const string CreateCommunicationRecord = "CreateCommunicationRecord"; 
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
         #region Base Control Methods
 
@@ -112,6 +120,8 @@ namespace RockWeb.Blocks.Security
             pnlEntry.Visible = true;
             pnlWarning.Visible = false;
             pnlSuccess.Visible = false;
+
+            cpCaptcha.Visible = !( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable );
 
             if ( !Page.IsPostBack )
             {
@@ -132,6 +142,14 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
+            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
+            {
+                lWarning.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
+                pnlWarning.Visible = true;
+                return;
+            }
+
             var url = LinkedPageUrl( AttributeKey.ConfirmationPage );
             if ( string.IsNullOrWhiteSpace( url ) )
             {

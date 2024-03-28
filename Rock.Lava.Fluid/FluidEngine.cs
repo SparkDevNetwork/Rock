@@ -767,5 +767,17 @@ namespace Rock.Lava.Fluid
 
             return left.Equals( right );
         }
+
+        /// <inheritdoc />
+        public override List<string> GetRegisteredFilterNames()
+        {
+            var templateOptions = GetTemplateOptions();
+
+            var filterNames = templateOptions.Filters
+                .Select( f => f.Key )
+                .OrderBy( f => f )
+                .ToList();
+            return filterNames;
+        }
     }
 }

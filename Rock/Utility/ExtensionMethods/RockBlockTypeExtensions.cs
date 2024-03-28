@@ -25,7 +25,7 @@ namespace Rock
     /// <summary>
     /// Extension methods for <see cref="RockBlockType"/>
     /// </summary>
-    internal static class RockBlockTypeExtensions
+    public static class RockBlockTypeExtensions
     {
         /// <summary>
         /// Builds and returns the URL for a linked <see cref="Rock.Model.Page"/>

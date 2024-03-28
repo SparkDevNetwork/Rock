@@ -23,7 +23,6 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -219,7 +218,8 @@ namespace Rock.Web.UI.Controls
                     Controls.Add( _lbManualRequirement );
                 }
 
-                if ( groupRequirement.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
+                // This _canOverride is determined by the GroupMemberRequirementContainer when it creates a GroupMemberRequirementCard.
+                if ( _canOverride )
                 {
                     _lbMarkAsMet = new LinkButton
                     {

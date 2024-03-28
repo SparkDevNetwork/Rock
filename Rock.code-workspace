@@ -8,7 +8,11 @@
 				"port": 9222,
 				"type": "chrome",
 				"url": "http://localhost:6229",
-				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			},
 			{
 				"name": "Debug Framework (Attach to existing Chrome)",
@@ -16,7 +20,11 @@
 				"port": 9222,
 				"type": "chrome",
 				"urlFilter": "http://localhost:6229*",
-				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/"
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			},
 			{
 				"name": "Debug Blocks",
@@ -24,7 +32,11 @@
 				"port": 9222,
 				"type": "chrome",
 				"url": "http://localhost:6229",
-				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			},
 			{
 				"name": "Debug Blocks (Attach to existing Chrome)",
@@ -32,7 +44,11 @@
 				"port": 9222,
 				"type": "chrome",
 				"urlFilter": "http://localhost:6229*",
-				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/"
+				"webRoot": "${workspaceFolder:Rock.JavaScript.Obsidian.Blocks}/dist/",
+				"resolveSourceMapLocations": [
+					"!**/node_modules/**",
+					"!**/scripts/**"
+				]
 			}
 		]
 	},
@@ -75,7 +91,7 @@
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,
 		"editor.codeActionsOnSave": {
-			"source.fixAll.eslint": true
+			"source.fixAll.eslint": "explicit"
 		},
 		"eslint.validate": [
 			"javascript",

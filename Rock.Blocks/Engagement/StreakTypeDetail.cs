@@ -14,6 +14,11 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -24,11 +29,8 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StreakTypeDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 
 namespace Rock.Blocks.Engagement
 {
@@ -41,7 +43,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Engagement" )]
     [Description( "Displays the details of a particular streak type." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -70,7 +72,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "8a8c5bea-6293-4ac0-8c2e-d89f541043aa" )]
     [Rock.SystemGuid.BlockTypeGuid( "a83a1f49-10a6-4362-acc3-8027224a2120" )]
-    public class StreakTypeDetail : RockDetailBlockType
+    public class StreakTypeDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -99,6 +101,7 @@ namespace Rock.Blocks.Engagement
         private static class PageParameterKey
         {
             public const string StreakTypeId = "StreakTypeId";
+            public const string StreakId = "StreakId";
         }
 
         private static class NavigationUrlKey
@@ -122,11 +125,39 @@ namespace Rock.Blocks.Engagement
 
                 SetBoxInitialEntityState( box, rockContext );
 
-                box.NavigationUrls = GetBoxNavigationUrls( box.Entity.IdKey );
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StreakType>();
+                if ( box?.Entity != null )
+                {
+                    box.NavigationUrls = GetBoxNavigationUrls( box.Entity.IdKey );
+                    box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                    box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StreakType>();
+                }
 
                 return box;
+            }
+        }
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var streakId = pageReference.GetPageParameter( PageParameterKey.StreakId );
+                var streakTypeId = new StreakService( new RockContext() ).Get( streakId )?.StreakTypeId.ToString();
+                if ( streakTypeId == null )
+                {
+                    streakTypeId = pageReference.GetPageParameter( PageParameterKey.StreakTypeId );
+                }
+                var streakType = StreakTypeCache.Get( streakTypeId, true );
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( streakType?.Name ?? "New Streak Type", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+                };
             }
         }
 
@@ -165,7 +196,7 @@ namespace Rock.Blocks.Engagement
         {
             errorMessage = null;
 
-            return true;
+            return streakType.IsValid;
         }
 
         /// <summary>
@@ -231,7 +262,7 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            return new StreakTypeBag
+            var bag = new StreakTypeBag
             {
                 IdKey = entity.IdKey,
                 Description = entity.Description,
@@ -242,8 +273,11 @@ namespace Rock.Blocks.Engagement
                 RequiresEnrollment = entity.RequiresEnrollment,
                 StartDate = entity.StartDate,
                 FirstDayOfWeek = ( int ) ( entity.FirstDayOfWeek ?? 0 ),
-                IncludeChildAccounts = entity.StructureSettings.IncludeChildAccounts
+                IncludeChildAccounts = entity.StructureSettings.IncludeChildAccounts,
+                StructureType = entity.StructureType
             };
+            bag.StructureEntity = GetStructureEntityIdListItemBag( entity, rockContext, bag );
+            return bag;
         }
 
         /// <summary>
@@ -291,10 +325,6 @@ namespace Rock.Blocks.Engagement
             }
 
             var bag = GetCommonEntityBag( entity, rockContext );
-
-            bag.StructureType = entity.StructureType;
-            bag.StructureEntity = GetStructureEntityIdListItemBag( entity, rockContext, bag );
-
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
             return bag;
@@ -363,11 +393,24 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Entity.RequiresEnrollment ),
                 () => entity.RequiresEnrollment = box.Entity.RequiresEnrollment );
 
-            box.IfValidProperty( nameof( box.Entity.StartDate ),
-                () => entity.StartDate = box.Entity.StartDate );
+            if ( entity.Id == 0 )
+            {
+                // Update of Start Date and Occurrence Frequency should be permitted only when creating a new streak type.
 
-            box.IfValidProperty( nameof( box.Entity.OccurrenceFrequency ),
-                () => entity.OccurrenceFrequency = box.Entity.OccurrenceFrequency );
+                box.IfValidProperty( nameof( box.Entity.OccurrenceFrequency ),
+                    () => entity.OccurrenceFrequency = box.Entity.OccurrenceFrequency );
+
+                if ( entity.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+                {
+                    box.IfValidProperty( nameof( box.Entity.StartDate ),
+                        () => entity.StartDate = box.Entity?.StartDate ?? RockDateTime.Today );
+                }
+                else
+                {
+                    box.IfValidProperty( nameof( box.Entity.StartDate ),
+                        () => entity.StartDate = ( box.Entity?.StartDate ?? RockDateTime.Today ).SundayDate() );
+                }
+            }
 
             if ( entity.OccurrenceFrequency == StreakOccurrenceFrequency.Weekly )
             {
@@ -441,7 +484,20 @@ namespace Rock.Blocks.Engagement
         /// <returns>The <see cref="StreakType"/> to be viewed or edited on the page.</returns>
         private StreakType GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<StreakType, StreakTypeService>( rockContext, PageParameterKey.StreakTypeId );
+            var streak = GetInitialEntity<Streak, StreakService>( rockContext, PageParameterKey.StreakId );
+            var streakType = streak?.StreakType;
+            if ( streakType == null && streak != null && streak.Id != 0 )
+            {
+                streakType = new StreakTypeService( rockContext ).Get( streak.StreakTypeId );
+            }
+
+            // If no streak type was found in the streak with the id passed in by the StreakId page parameter,
+            // try to get the same from the StreakTypeId page parameter key
+            if ( streakType == null )
+            {
+                return GetInitialEntity<StreakType, StreakTypeService>( rockContext, PageParameterKey.StreakTypeId );
+            }
+            return streakType;
         }
 
         /// <summary>
@@ -453,7 +509,7 @@ namespace Rock.Blocks.Engagement
             var queryParams = new Dictionary<string, string>
             {
                 [PageParameterKey.StreakTypeId] = IdHasher.Instance.GetId( idKey ).ToStringSafe()
-        };
+            };
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
@@ -639,6 +695,11 @@ namespace Rock.Blocks.Engagement
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
                 {
                     return ActionBadRequest( errorMessage );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    return ActionForbidden( "You are not authorized to delete this item." );
                 }
 
                 entityService.Delete( entity );

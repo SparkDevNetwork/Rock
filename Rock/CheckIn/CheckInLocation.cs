@@ -211,6 +211,11 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets whether this location has any schedules.
+        /// </summary>
+        public bool AnySchedules => this.Schedules?.Any() == true;
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

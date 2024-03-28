@@ -22,7 +22,7 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks
 {
-    internal static class IValidPropertiesBoxExtensions
+    public static class IValidPropertiesBoxExtensions
     {
         public static bool IsValidProperty( this IValidPropertiesBox box, string propertyName )
         {

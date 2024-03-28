@@ -27,6 +27,7 @@ using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 using Rock.Lava.RockLiquid;
+using System.Linq.Expressions;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -441,6 +442,44 @@ BD8F1DCA377B95D905033E5FFC41CFCF8D4C11AE14A9BC964DFBD4BCEEB618F9795BE7F71295D3B7
             };
 
             TestHelper.AssertTemplateOutput( expectedOutputs,
+                template,
+                options );
+        }
+
+        #endregion
+
+        #region FilterUnfollowed
+
+        [TestMethod]
+        public void FilterUnfollowed_ForEntityCollectionWithFollowedAndUnfollowed_ReturnsOnlyUnfollowed()
+        {
+            var values = AddPersonTedDeckerToMergeDictionary();
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "rockentity", MergeFields = values };
+
+            var template = @"
+{%- person where:'Guid == ""<benJonesGuid>"" || Guid == ""<billMarbleGuid>"" || Guid == ""<alishaMarbleGuid>""' iterator:'People' -%}
+  {%- assign followedItems = People | AppendFollowing | FilterUnfollowed | Sort:'FullName' -%}
+<ul>
+  {%- for item in followedItems -%}
+    <li>{{ item.FullName }} - {{ item.IsFollowing }}</li>
+  {%- endfor -%}
+</ul>
+{%- endperson -%}
+";
+            template = template.Replace( "<benJonesGuid>", TestGuids.TestPeople.BenJones )
+                .Replace( "<billMarbleGuid>", TestGuids.TestPeople.BillMarble )
+                .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
+
+            // Alisha Marble should be excluded because she is not followed by Ted.
+            var matches = new List<LavaTestOutputMatchRequirement>()
+            {
+                new LavaTestOutputMatchRequirement("<li>Alisha Marble - false</li>", LavaTestOutputMatchTypeSpecifier.Contains ),
+                new LavaTestOutputMatchRequirement("<li>Ben Jones - true</li>", LavaTestOutputMatchTypeSpecifier.DoesNotContain ),
+                new LavaTestOutputMatchRequirement("<li>Bill Marble - true</li>", LavaTestOutputMatchTypeSpecifier.DoesNotContain ),
+            };
+
+            TestHelper.AssertTemplateOutput( matches,
                 template,
                 options );
         }

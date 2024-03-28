@@ -194,7 +194,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Code Sent Screen Subtitle",
         Description = "The text to display at the top of the Code Sent screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
-        DefaultValue = "You should be recieving a verification code from us shortly. When it arrives type or paste it below.",
+        DefaultValue = "You should be receiving a verification code from us shortly. When it arrives type or paste it below.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CodeSentScreenSubtitle,
         Order = 3 )]

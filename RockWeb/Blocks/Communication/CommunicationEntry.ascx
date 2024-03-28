@@ -50,7 +50,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="pull-right">
-                                <Rock:RockCheckBox ID="cbBulk" runat="server" Text="Bulk Communication" CssClass="js-bulk-option"
+                                <Rock:RockCheckBox ID="cbBulk" runat="server" Text="Bulk Communication" CssClass="js-bulk-option" Visible="false"
                                   Help="Select this option if you are sending this email to a group of people.  This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." />
                             </div>
                         </div>

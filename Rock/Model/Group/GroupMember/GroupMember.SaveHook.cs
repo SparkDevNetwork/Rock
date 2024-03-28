@@ -289,10 +289,8 @@ namespace Rock.Model
 
                         if ( changes.Any() )
                         {
-                            Task.Run( async () =>
+                            Task.Run( () =>
                             {
-                                // Wait 1 second to allow all post save actions to complete
-                                await Task.Delay( 1000 );
                                 try
                                 {
                                     using ( var insertRockContext = new RockContext() )
@@ -320,10 +318,8 @@ namespace Rock.Model
 
                         if ( groupMemberChanges.Any() )
                         {
-                            Task.Run( async () =>
+                            Task.Run( () =>
                             {
-                                // Wait 1 second to allow all post save actions to complete
-                                await Task.Delay( 1000 );
                                 try
                                 {
                                     using ( var insertRockContext = new RockContext() )
@@ -399,11 +395,19 @@ namespace Rock.Model
 
                 // process universal search indexing if required
                 var groupType = GroupTypeCache.Get( this.Entity.GroupTypeId );
-                if ( groupType != null && groupType.IsIndexEnabled && this.Entity.Group.IsActive )
+                if ( groupType != null && groupType.IsIndexEnabled )
                 {
-                    var GroupEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP );
-                    var groupIndexTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = GroupEntityTypeId.Value, EntityId = this.Entity.GroupId } );
-                    groupIndexTransaction.Enqueue();
+                    var group = this.Entity.Group;
+                    if ( group == null )
+                    {
+                        group = new GroupService( this.RockContext ).Get( this.Entity.GroupId );
+                    }
+                    if ( group?.IsActive ?? false )
+                    {
+                        var GroupEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.GROUP );
+                        var groupIndexTransaction = new IndexEntityTransaction( new EntityIndexInfo() { EntityTypeId = GroupEntityTypeId.Value, EntityId = this.Entity.GroupId } );
+                        groupIndexTransaction.Enqueue();
+                    }
                 }
 
                 SendUpdateGroupMemberMessage();
