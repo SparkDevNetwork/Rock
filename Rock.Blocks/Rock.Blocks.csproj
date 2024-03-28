@@ -99,7 +99,6 @@
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
-    <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
@@ -111,7 +110,6 @@
     <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
 	<Compile Include="Cms\PageRouteList.cs" />
-    <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
     <Compile Include="Cms\SiteList.cs" />

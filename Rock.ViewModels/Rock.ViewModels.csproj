@@ -75,7 +75,6 @@
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
-    <Compile Include="Blocks\Engagement\ConnectionTypeList\ConnectionTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceActiveList\RegistrationInstanceListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
@@ -167,7 +166,6 @@
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountList\FinancialAccountListOptionsBag.cs" />
-    <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\GetAvailableCampusesBag.cs" />
     <Compile Include="Blocks\Finance\BusinessContactList\BusinessContactBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
