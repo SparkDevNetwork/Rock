@@ -27,20 +27,26 @@
  */
 export type FieldTypeEditorUpdateAttributeConfigurationResultBag = {
     /**
+     * Gets or sets the configuration options that describe the current
+     * selections when editing a field type.
+     */
+    adminConfigurationValues?: Record<string, string> | null;
+
+    /**
      * Gets or sets the configuration properties that contain information
      * describing a field type edit operation.
      */
     configurationProperties?: Record<string, string> | null;
 
     /**
-     * Gets or sets the configuration options that describe the current
-     * selections when editing a field type.
-     */
-    configurationValues?: Record<string, string> | null;
-
-    /**
      * Gets or sets the default attribute value view model that corresponds
-     * to the current Rock.ViewModels.Controls.FieldTypeEditorUpdateAttributeConfigurationResultBag.ConfigurationValues.
+     * to the current Rock.ViewModels.Controls.FieldTypeEditorUpdateAttributeConfigurationResultBag.EditConfigurationValues.
      */
     defaultValue?: string | null;
+
+    /**
+     * Gets or sets the configuration values that describe the field
+     * when it is in edit mode (such as the default control).
+     */
+    editConfigurationValues?: Record<string, string> | null;
 };

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Enums.Controls;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Controls
@@ -30,7 +31,7 @@ namespace Rock.ViewModels.Controls
         /// <value>
         /// The type of the rock cacheability.
         /// </value>
-        public int RockCacheabilityType { get; set; }
+        public RockCacheabilityType RockCacheabilityType { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum age.

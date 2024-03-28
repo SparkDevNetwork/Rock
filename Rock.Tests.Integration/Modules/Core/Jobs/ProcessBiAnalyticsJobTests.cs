@@ -15,13 +15,16 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Core.Jobs
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     [TestClass]
-    public class ProcessBiAnalyticsJobTests
+    public class ProcessBiAnalyticsJobTests : DatabaseTestsBase
     {
         [TestMethod]
         public void ProcessBiAnalytics_WithTestParameters_CanExecute()

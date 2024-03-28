@@ -33,7 +33,7 @@ namespace Rock.Chart
     ///
     /// NOTE: For future development, this factory should be superseded by new factories that are style-specific - ChartJsLineChartDataFactory and ChartJsBarChartDataFactory.
     /// Each chart style may need to process specific data types in a different way.
-    /// Refer to the ChartJsPieChartDataFactory for an example of the preferred implementation - it handles category and time series
+    /// Refer to the ChartJsPieChartDataFactory for an example of the preferred implementation - it handles both category and time series data.
     /// </remarks>
     public class ChartJsTimeSeriesDataFactory<TDataPoint> : ChartJsDataFactory
             where TDataPoint : IChartJsTimeSeriesDataPoint

@@ -73,12 +73,11 @@ namespace Rock.Drawing
         /// Returns a Image Sharp Person Image from a BinaryFile ID.
         /// </summary>
         /// <param name="photoId"></param>
-        /// <returns>null if the image could not be retrieved for any reason, or if the requested image file is not of type PERSON_IMAGE.</returns>
+        /// <returns>null if the image could not be retrieved for any reason.</returns>
         public static Image GetPersonImageFromBinaryFileService( int photoId )
         {
             var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
 
-            // This will only return a file of type PERSON_IMAGE.
             if ( binaryFile == null )
             {
                 return null;

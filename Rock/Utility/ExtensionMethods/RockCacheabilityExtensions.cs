@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Enums.Controls;
 using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -38,7 +39,7 @@ namespace Rock
             var cacheabilitybag = new RockCacheabilityBag()
             {
                 MaxAge = rockCacheability.MaxAge.ToTimeIntervalBag(),
-                RockCacheabilityType = rockCacheability.RockCacheablityType.ConvertToInt(),
+                RockCacheabilityType = ( RockCacheabilityType ) rockCacheability.RockCacheablityType,
                 SharedMaxAge = rockCacheability.SharedMaxAge.ToTimeIntervalBag()
             };
 

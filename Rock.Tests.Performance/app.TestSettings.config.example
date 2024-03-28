@@ -1,12 +1,6 @@
 <?xml version="1.0"?>
 <appSettings>
-  <!-- Test Database Configuration -->
   <add key="SampleDataUrl" value="http://storage.rockrms.com/sampledata/sampledata_1_14_1.xml" />
-  <add key="DatabaseCreatorKey" value="RockPerformanceTestProject" />
-  <!-- The DatabaseRefreshStrategy setting determines if the test database is replaced for each test run.
-         * "never" prevents an existing database from being replaced. 
-         * "verified" (recommended) only replaces an existing database if the DatabaseCreatorKey matches this configuration.
-         * "force" always overwrites the existing database - use with caution!
-    -->
-  <add key="DatabaseRefreshStrategy" value="verified" />
+  <add key="PasswordKey" value="D42E08ECDE448643C528C899F90BADC9411AE07F74F9BA00A81BA06FD17E3D6BA22C4AE6947DD9686A35E8538D72B471F14CDB31BD50B9F5B2A1C26E290E5FC2" />
+  <add key="DataEncryptionKey" value="v8Hw27G0dXAhjo9HCzi5MFMwJZznhunhivaillaPjpzc3czzTBkkCz+PzaRyCq61Rsvn7oq2G5zMHoixGT0lvc2uuuoHRIduOZJ0uxTGLa48ZWfJ2iBY8lSgwFmRgYEEOSZZQyA0nGSwJlgNicJRCfArC8IikRMKRWQCzenaLjA=" />
 </appSettings>

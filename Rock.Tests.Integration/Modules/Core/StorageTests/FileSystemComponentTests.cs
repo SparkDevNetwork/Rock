@@ -17,16 +17,19 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Web;
+
 using Http.TestLibrary;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Storage
+namespace Rock.Tests.Integration.Modules.Core.StorageTests
 {
     /// <summary>
     /// This class tests the FileSystem storage component. It currently requires
@@ -38,9 +41,8 @@ namespace Rock.Tests.Integration.Core.Storage
     /// https://stackoverflow.com/questions/3738819/do-mstest-deployment-items-only-work-when-present-in-the-project-test-settings-f?rq=1
     /// </remarks>
     [TestClass]
-    [DeploymentItem( @"app.ConnectionStrings.config" )]
     [DeploymentItem( @"TestData\", "TestData" )]
-    public class FileSystemComponentTests
+    public class FileSystemComponentTests : DatabaseTestsBase
     {
         private static string webContentFolder = string.Empty;
         private static string appDataTempFolder = string.Empty;
@@ -349,20 +351,6 @@ namespace Rock.Tests.Integration.Core.Storage
         }
 
         #region Utility Methods to help us fake the HttpContext
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        /// Gets or sets the test context.
-        /// </summary>
-        /// <value>
-        /// The test context.
-        /// </value>
-        public TestContext TestContext
-        {
-            get { return testContextInstance; }
-            set { testContextInstance = value; }
-        }
 
         /// <summary>
         /// Ensures the path and file exists for the upcoming test.

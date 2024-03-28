@@ -1,0 +1,55 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <CurrencyBox label="Currency" v-model="value" :currencyCodeDefinedValueGuid="currency.value ?? undefined" :minimumValue="numericMinimumValue" :maximumValue="numericMaximumValue" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <DefinedValuePicker definedTypeGuid="B9F3D359-4365-4594-BCEE-D23FA824FB81" label="Currency" v-model="currency" />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Minimum Value" v-model="minimumValue" help="The effect of this is no noticeable in this gallery, but it affects validation." />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Maximum Value" v-model="maximumValue" help="The effect of this is no noticeable in this gallery, but it affects validation." />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const value = ref(1.23);
+    const currency = ref<ListItemBag>({
+        text: "USD",
+        value: "0BD42A7E-9C7E-417C-AFFE-51102B1E4B43"
+    });
+
+    const minimumValue = ref("");
+    const maximumValue = ref("");
+    const numericMinimumValue = computed(() => toNumberOrNull(minimumValue.value));
+    const numericMaximumValue = computed(() => toNumberOrNull(maximumValue.value));
+
+    const importCode = getSfcControlImportPath("currencyBox");
+    const exampleCode = computed(() => {
+        const currencyProp = ` currencyCodeDefinedValueGuid="${currency.value.value}"`;
+        const minValProp = numericMinimumValue.value != null ? ` :minimumValue="${numericMinimumValue.value}"` : "";
+        const maxValProp = numericMaximumValue.value != null ? ` :maximumValue="${numericMaximumValue.value}"` : "";
+        return `<CurrencyBox label="Currency" v-model="value"${currencyProp}${minValProp}${maxValProp} />`;
+    });
+</script>

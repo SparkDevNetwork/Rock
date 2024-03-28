@@ -73,7 +73,7 @@ export abstract class FieldTypeBase implements IFieldType {
         return `${escapeHtml(this.getCondensedTextValue(value, configurationValues))}`;
     }
 
-    public getFormattedComponent(): Component {
+    public getFormattedComponent(_configurationValues: Record<string, string>): Component {
         return defineComponent({
             name: "FieldType.Formatted",
             props: getFieldEditorProps(),
@@ -87,7 +87,7 @@ export abstract class FieldTypeBase implements IFieldType {
         });
     }
 
-    public getCondensedFormattedComponent(): Component {
+    public getCondensedFormattedComponent(_configurationValues: Record<string, string>): Component {
         return defineComponent({
             name: "FieldType.CondensedFormatted",
             props: getFieldEditorProps(),
@@ -101,7 +101,7 @@ export abstract class FieldTypeBase implements IFieldType {
         });
     }
 
-    public getEditComponent(): Component {
+    public getEditComponent(_configurationValues: Record<string, string>): Component {
         return TextEditComponent;
     }
 
@@ -109,20 +109,20 @@ export abstract class FieldTypeBase implements IFieldType {
         return unsupportedFieldTypeConfigurationComponent;
     }
 
-    public hasDefaultComponent(): boolean {
+    public hasDefaultComponent(_configurationValues: Record<string, string>): boolean {
         return true;
     }
 
-    public isFilterable(): boolean {
+    public isFilterable(_configurationValues: Record<string, string>): boolean {
         return true;
     }
 
-    public getSupportedComparisonTypes(): ComparisonType {
+    public getSupportedComparisonTypes(_configurationValues: Record<string, string>): ComparisonType {
         return ComparisonType.EqualTo | ComparisonType.NotEqualTo;
     }
 
-    public getFilterComponent(): Component | null {
-        return getStandardFilterComponent(this.getSupportedComparisonTypes(), this.getEditComponent());
+    public getFilterComponent(configurationValues: Record<string, string>): Component | null {
+        return getStandardFilterComponent(this.getSupportedComparisonTypes(configurationValues), this.getEditComponent(configurationValues));
     }
 
     public getFilterValueDescription(value: ComparisonValue, configurationValues: Record<string, string>): string {
@@ -140,7 +140,7 @@ export abstract class FieldTypeBase implements IFieldType {
             // If the field type supports IsBlank and we have a blank value and
             // the selected comparison type is EqualTo or NotEqualTo then perform
             // special wrapping around the blank value.
-            if (this.getSupportedComparisonTypes() & ComparisonType.IsBlank && (value.comparisonType === ComparisonType.EqualTo || value.comparisonType === ComparisonType.NotEqualTo)) {
+            if (this.getSupportedComparisonTypes(configurationValues) & ComparisonType.IsBlank && (value.comparisonType === ComparisonType.EqualTo || value.comparisonType === ComparisonType.NotEqualTo)) {
                 return `${getComparisonName(value.comparisonType)} ''`;
             }
 
@@ -157,7 +157,7 @@ export abstract class FieldTypeBase implements IFieldType {
         return text ? `'${text}'` : text;
     }
 
-    public doesValueMatchFilter(value: string, filterValue: ComparisonValue, _configurationValues: Record<string, string>): boolean {
+    public doesValueMatchFilter(value: string, filterValue: ComparisonValue, configurationValues: Record<string, string>): boolean {
         if (!filterValue.comparisonType) {
             return false;
         }
@@ -171,7 +171,7 @@ export abstract class FieldTypeBase implements IFieldType {
             else if (filterValue.comparisonType === ComparisonType.IsNotBlank) {
                 return (value ?? "") !== "";
             }
-            else if (this.getSupportedComparisonTypes() & ComparisonType.IsBlank) {
+            else if (this.getSupportedComparisonTypes(configurationValues) & ComparisonType.IsBlank) {
                 // If this filter supports an IsBlank comparison type then
                 // translate "EqualTo" and "NotEqualTo" to be "IsBlank" and
                 // "IsNotBlank" respectively.

@@ -1,14 +1,18 @@
-﻿using Rock.Data;
+﻿using System.Collections.Generic;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 using Rock.Workflow.Action;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Core.Workflows
+namespace Rock.Tests.Integration.Modules.Core.Workflow.Action
 {
-    public class BackgroundCheckRequestTests
+    [TestClass]
+    public class BackgroundCheckRequestTests : DatabaseTestsBase
     {
         [TestMethod]
         public void CanBeInstantiated()
@@ -24,7 +28,6 @@ namespace Rock.Tests.Integration.Core.Workflows
         }
 
         [TestMethod]
-        [Ignore( "new way of mocking RockContext")]
         public void ReturnsFalse()
         {
             var BackgroundAction = new BackgroundCheckRequest();
@@ -44,14 +47,6 @@ namespace Rock.Tests.Integration.Core.Workflows
         }
 
         [TestMethod]
-        [Ignore( "need way of mocking" )]
-        public void CallsLoadAttributesOnActionType()
-        {
-
-        }
-
-        [TestMethod]
-        [Ignore( "new way of mocking RockContext" )]
         public void InvalidProviderGuidError()
         {
             var BackgroundAction = new BackgroundCheckRequest();

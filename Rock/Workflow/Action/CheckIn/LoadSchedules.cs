@@ -145,13 +145,23 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="checkInState">State of the check in.</param>
         private void LoadPersonSchedules( CheckInPerson person, List<PersonAttendanceScheduled> attendanceScheduledLookup, Dictionary<int, KioskGroupType> kioskGroupTypeLookup, bool loadSelectedOnly, bool remove, CheckInState checkInState )
         {
-            var personGroups = person.GetGroupTypes( loadSelectedOnly ).SelectMany( gt => gt.GetGroups( loadSelectedOnly ) ).ToList();
+            var personGroups = person
+                .GetGroupTypes( loadSelectedOnly )
+                .SelectMany( gt => gt.GetGroups( loadSelectedOnly ), ( gt, g ) => new
+                {
+                    GroupType = gt,
+                    Group = g
+                } )
+                .ToList();
 
             var anyAvailableGroups = false;
             var anyAvailableSchedules = false;
 
-            foreach ( var group in personGroups )
+            foreach ( var groupWithType in personGroups )
             {
+                var groupType = groupWithType.GroupType;
+                var group = groupWithType.Group;
+
                 var kioskGroup = kioskGroupTypeLookup.GetValueOrNull( group.Group.GroupTypeId )?.KioskGroups?.Where( g => g.Group.Id == group.Group.Id && g.IsCheckInActive )
                                 .FirstOrDefault();
 
@@ -162,7 +172,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                 anyAvailableGroups = true;
 
-                var groupType = GroupTypeCache.Get( group.Group.GroupTypeId );
+                var groupTypeCache = GroupTypeCache.Get( group.Group.GroupTypeId );
 
                 foreach ( var location in group.GetLocations( loadSelectedOnly ) )
                 {
@@ -181,7 +191,7 @@ namespace Rock.Workflow.Action.CheckIn
                         var attendanceRecordRequiredForCheckIn = group.Group.AttendanceRecordRequiredForCheckIn;
 
                         // if the groupType currently doesn't have scheduling enabled, ignore the group's AttendanceRecordRequiredForCheckIn setting, and just have it be ScheduleNotRequired
-                        if ( groupType.IsSchedulingEnabled == false )
+                        if ( groupTypeCache.IsSchedulingEnabled == false )
                         {
                             attendanceRecordRequiredForCheckIn = AttendanceRecordRequiredForCheckIn.ScheduleNotRequired;
                         }
@@ -215,6 +225,13 @@ namespace Rock.Workflow.Action.CheckIn
                         }
 
                         location.PreSelected = preSelectForOccurrence;
+
+                        // If this location was pre-selected, also pre-select its group and group type.
+                        if ( preSelectForOccurrence )
+                        {
+                            group.PreSelected = true;
+                            groupType.PreSelected = true;
+                        }
 
                         if ( excludeSchedule && remove )
                         {

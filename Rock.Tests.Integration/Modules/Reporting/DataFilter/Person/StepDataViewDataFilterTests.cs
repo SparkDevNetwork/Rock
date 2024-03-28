@@ -22,7 +22,7 @@ using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Reporting.DataFilter
+namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
 {
     /// <summary>
     /// Test DataFilter: Person/Related Data View/Step Data View.  
@@ -112,7 +112,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             var predicate = settingsFilter.GetExpression( typeof( Rock.Model.Person ), personService, parameterExpression, settings.ToSelectionString() );
 
-            var personQuery = GetFilteredEntityQuery<Person>( dataContext, predicate, parameterExpression );
+            var personQuery = GetFilteredEntityQuery<Rock.Model.Person>( dataContext, predicate, parameterExpression );
 
             return personQuery;
         }

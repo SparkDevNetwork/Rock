@@ -143,28 +143,28 @@ namespace Rock.Jobs
             {
                 InitializeFromJobContext( context );
 
-                activity?.AddTag( "rock-otel-type", "rock-job" );
-                activity?.AddTag( "rock-job-id", ServiceJob.Id );
-                activity?.AddTag( "rock-job-type", GetType().FullName.Replace( "Rock.Jobs.", "" ) );
-                activity?.AddTag( "rock-job-description", ServiceJob.Description );
+                activity?.AddTag( "rock.otel_type", "rock-job" );
+                activity?.AddTag( "rock.job.id", ServiceJob.Id );
+                activity?.AddTag( "rock.job.type", GetType().FullName.Replace( "Rock.Jobs.", "" ) );
+                activity?.AddTag( "rock.job.description", ServiceJob.Description );
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
 
                 try
                 {
                     Execute();
-                    activity?.AddTag( "rock-job-result", "Success" );
+                    activity?.AddTag( "rock.job.result", "Success" );
                 }
                 catch
                 {
-                    activity?.AddTag( "rock-job-result", "Failed" );
+                    activity?.AddTag( "rock.job.result", "Failed" );
                     // the exception needs to be thrown so that the Scheduler catches it and passes it to the <see cref="Rock.Jobs.RockJobListener.JobWasExecuted" /> for logging to the front end
                     throw;
                 }
                 finally
                 {
-                    activity?.AddTag( "rock-job-duration", sw.Elapsed.TotalSeconds );
-                    activity?.AddTag( "rock-job-message", Result );
+                    activity?.AddTag( "rock.job.duration", sw.Elapsed.TotalSeconds );
+                    activity?.AddTag( "rock.job.message", Result );
                 }
             }
         }

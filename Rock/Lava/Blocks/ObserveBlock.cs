@@ -97,7 +97,7 @@ namespace Rock.Lava.Blocks
                         continue;
                     }
 
-                    activity.AddTag( setting.Key, setting.Value );
+                    activity?.AddTag( setting.Key, setting.Value );
                 }
 
                 // Run and return the Lava

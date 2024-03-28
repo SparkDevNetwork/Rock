@@ -1181,6 +1181,70 @@ namespace Rock.Client.Enums.Event
 
 }
 
+namespace Rock.Client.Enums.Core
+{
+    /// <summary>
+    /// </summary>
+    public enum BenchmarkRepititionMode
+    {
+        Normal = 0x0,
+        Fast = 0x1,
+        Extended = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ColorRecipe
+    {
+        Primary = 0x0,
+        Darkest = 0x1,
+        Dark = 0x2,
+        Medium = 0x3,
+        Light = 0x4,
+        Lightest = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ColorScheme
+    {
+        Light = 0x0,
+        Dark = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum KeyboardInputMode
+    {
+        Default = 0x0,
+        Email = 0x1,
+        Numeric = 0x2,
+        Decimal = 0x3,
+        Telephone = 0x4,
+        Text = 0x5,
+        Url = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NoteFormatType
+    {
+        Unknown = 0x0,
+        Unstructured = 0x1,
+        Structured = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NotificationMessageActionType
+    {
+        Invalid = 0x0,
+        ShowMessage = 0x1,
+        LinkToPage = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Core.Grid
 {
     /// <summary>
@@ -1317,61 +1381,6 @@ namespace Rock.Client.Enums.AI
 
 }
 
-namespace Rock.Client.Enums.Core
-{
-    /// <summary>
-    /// </summary>
-    public enum ColorRecipe
-    {
-        Primary = 0x0,
-        Darkest = 0x1,
-        Dark = 0x2,
-        Medium = 0x3,
-        Light = 0x4,
-        Lightest = 0x5,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum ColorScheme
-    {
-        Light = 0x0,
-        Dark = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum KeyboardInputMode
-    {
-        Default = 0x0,
-        Email = 0x1,
-        Numeric = 0x2,
-        Decimal = 0x3,
-        Telephone = 0x4,
-        Text = 0x5,
-        Url = 0x6,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum NoteFormatType
-    {
-        Unknown = 0x0,
-        Unstructured = 0x1,
-        Structured = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum NotificationMessageActionType
-    {
-        Invalid = 0x0,
-        ShowMessage = 0x1,
-        LinkToPage = 0x2,
-    }
-
-}
-
 namespace Rock.Client.Enums.Communication
 {
     /// <summary>
@@ -1453,6 +1462,15 @@ namespace Rock.Client.Enums.Controls
 
     /// <summary>
     /// </summary>
+    public enum DetailPanelMode
+    {
+        View = 0x0,
+        Edit = 0x1,
+        Add = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum MediaSelectorMode
     {
         Image = 0x0,
@@ -1480,6 +1498,16 @@ namespace Rock.Client.Enums.Controls
 
     /// <summary>
     /// </summary>
+    public enum RockCacheabilityType
+    {
+        Public = 0x0,
+        Private = 0x1,
+        NoCache = 0x2,
+        NoStore = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     [Flags]
     public enum SlidingDateRangeType
     {
@@ -1501,6 +1529,15 @@ namespace Rock.Client.Enums.Controls
         Week = 0x2,
         Month = 0x3,
         Year = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UniversalItemValuePickerDisplayStyle
+    {
+        Auto = 0x0,
+        List = 0x1,
+        Condensed = 0x2,
     }
 
 }

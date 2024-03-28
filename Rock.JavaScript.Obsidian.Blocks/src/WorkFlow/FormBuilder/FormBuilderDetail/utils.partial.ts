@@ -87,7 +87,7 @@ export function getFilterRuleDescription(rule: FieldFilterRuleBag, sources: Fiel
     const ruleSource = sources.filter(s => areEqual(s.guid, rule.attributeGuid));
 
     if (ruleField.length === 1 && ruleSource.length === 1 && ruleSource[0].attribute) {
-        const fieldType = getFieldType(ruleField[0].fieldTypeGuid);
+        const fieldType = getFieldType(ruleField[0].universalFieldTypeGuid ?? ruleField[0].fieldTypeGuid);
 
         if (fieldType) {
             const descr = fieldType.getFilterValueDescription({

@@ -16,18 +16,35 @@
 //
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
 {
     [TestClass]
     public class NumericFilterTests : LavaUnitTestBase
     {
-        /// <summary>
-        /// Input integer "1" should produce formatted output "1st".
-        /// </summary>
+        [TestMethod]
+        public void Abs_DocumentationExample_ProducesExpectedOutput()
+        {
+            var inputTemplate = @"
+{% assign myNumber = '50' %}
+{% assign guess1 = 18 %}
+{% assign guess2 = 63 %}
+{% assign guess3 = 50.5 %}
+Guess My Number - Results Summary<br>
+Guess 1 was {{ myNumber | Minus:guess1 | Abs }} from the target number.<br>
+Guess 2 was {{ myNumber | Minus:guess2 | Abs }} from the target number.<br>
+Guess 3 was {{ myNumber | Minus:guess3 | Abs }} from the target number!<br>
+";
+            var expectedOutput = @"
+Guess My Number - Results Summary<br>
+Guess 1 was 32 from the target number.<br>
+Guess 2 was 13 from the target number.<br>
+Guess 3 was 0.5 from the target number!<br>
+";
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, ignoreWhitespace:true );
+        }
+
         [TestMethod]
         public void Abs_NumericInput_ProducesAbsoluteValue()
         {

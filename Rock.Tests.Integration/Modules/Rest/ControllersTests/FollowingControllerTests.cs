@@ -17,17 +17,21 @@
 using System;
 using System.Net.Http;
 using System.Web.Http;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Rest.Controllers;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.RestApi
+namespace Rock.Tests.Integration.Modules.Rest.ControllersTests
 {
     [TestClass]
-    public class FollowingControllerTests
+    public class FollowingControllerTests : DatabaseTestsBase
     {
         [TestMethod]
+        [IsolatedTestDatabase]
         public void Follow_AddFollowForCurrentUser_AddsFollowing()
         {
             var personType = EntityTypeCache.Get( typeof( Rock.Model.Person ) );

@@ -33,10 +33,15 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// The unique identifier of the field type used to render the edit
-        /// control of this field.
+        /// The unique identifier of the field type used to identify this field.
         /// </summary>
         public Guid FieldTypeGuid { get; set; }
+
+        /// <summary>
+        /// The unique identifier of the field type used to render the edit
+        /// control of this field if it is a universal type.
+        /// </summary>
+        public Guid? UniversalFieldTypeGuid { get; set; }
 
         /// <summary>
         /// The display name of this field.
@@ -81,6 +86,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// The configuration values that have been set for this field.
         /// </summary>
         public Dictionary<string, string> ConfigurationValues { get; set; }
+
+        /// <summary>
+        /// The configuration values for the field's edit mode.
+        /// </summary>
+        public Dictionary<string, string> EditConfigurationValues { get; set; }
 
         /// <summary>
         /// The rule that controls when this field is visible.

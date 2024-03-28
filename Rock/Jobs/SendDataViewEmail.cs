@@ -83,7 +83,7 @@ namespace Rock.Jobs
                 if ( sqlTimeoutException != null )
                 {
                     var exceptionMessage = $"The dataview did not complete in a timely manner. You can try again or adjust the timeout setting of this job.";
-                    dataViewException = new RockDataViewFilterExpressionException( dataView.DataViewFilter, exceptionMessage, sqlTimeoutException );
+                    dataViewException = new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) dataView.DataViewFilter, exceptionMessage, sqlTimeoutException );
                 }
 
                 HttpContext context2 = HttpContext.Current;

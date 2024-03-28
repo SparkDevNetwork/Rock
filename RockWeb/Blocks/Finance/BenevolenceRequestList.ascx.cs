@@ -577,7 +577,7 @@ namespace RockWeb.Blocks.Finance
 
             cblBenevolenceType.Items.Clear();
 
-            cblBenevolenceType.DataSource = new RockContext().BenevolenceTypes
+            cblBenevolenceType.DataSource = new BenevolenceTypeService( new RockContext() ).Queryable()
                 .ToList();
             cblBenevolenceType.DataTextField = "Name";
             cblBenevolenceType.DataValueField = "Id";

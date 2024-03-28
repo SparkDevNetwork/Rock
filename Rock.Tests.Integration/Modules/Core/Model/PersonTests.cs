@@ -15,15 +15,18 @@
 // </copyright>
 //
 using System;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class PersonTests
+    public class PersonTests : DatabaseTestsBase
     {
         /// <summary>
         /// Runs before any tests in this class are executed.
@@ -32,14 +35,6 @@ namespace Rock.Tests.Integration.Crm
         public static void ClassInitialize( TestContext testContext )
         {
             GlobalAttributesCache globalAttributes = GlobalAttributesCache.Get();
-        }
-
-        /// <summary>
-        /// Runs before each test in this class is executed.
-        /// </summary>
-        [TestInitialize]
-        public void TestInitialize()
-        {
         }
 
         [TestMethod]

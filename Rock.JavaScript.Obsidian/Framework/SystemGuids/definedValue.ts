@@ -238,6 +238,8 @@ export const DefinedValue = {
     InteractionchanneltypeCommunication: "55004F5C-A8ED-7CB7-47EE-5988E9F8E0A8",
     /** Interaction Channel Type: Content Channel */
     InteractionchanneltypeContentchannel: "F1A19D09-E010-EEB3-465A-940A6F023CEB",
+    /** Interaction Channel Type: Interaction Intents */
+    InteractionchanneltypeInteractionIntents: "A64DA89B-F634-4D58-ADC7-32243F84224B",
     /** Interaction Channel Type: System Events */
     InteractionchanneltypeSystemEvents: "5919214F-9C59-4913-BE4E-0DFB6A05F528",
     /** Interaction Channel Type: UrlShortener */

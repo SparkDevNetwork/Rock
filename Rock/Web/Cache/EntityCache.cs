@@ -334,6 +334,11 @@ namespace Rock.Web.Cache
         /// <returns>An enumeration of the cached objects.</returns>
         internal static IEnumerable<T> GetMany( ICollection<int> ids, RockContext rockContext = null )
         {
+            if ( ids == null )
+            {
+                return new List<T>();
+            }
+
             var cachedItems = new List<T>();
             var idsToLoad = new List<int>();
 

@@ -16,18 +16,24 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Text.RegularExpressions;
 using Ical.Net;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
+
 using TimeZoneConverter;
 
-namespace Rock.Tests.Integration.Events
+using EventsDataManager = Rock.Tests.Integration.Events.EventsDataManager;
+
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     /// <summary>
     /// Tests related to Calendar Events.
@@ -36,12 +42,19 @@ namespace Rock.Tests.Integration.Events
     /// These tests require a database populated with standard Rock sample data.
     /// </remarks>
     [TestClass]
-    public class EventTests
+    [TestCategory("Core.Events.CalendarFeed")]
+    public class EventTests : DatabaseTestsBase
     {
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
             EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            TestConfigurationHelper.SetRockDateTimeToLocalTimezone();
         }
 
         #region EventItemService Tests
@@ -312,6 +325,7 @@ namespace Rock.Tests.Integration.Events
         private const string testEventOccurrence11Guid = "C4D3D174-66BB-40D2-8BF5-5B8827C46538";
         private const string Event1CalendarPublicGuid = "804C870D-1D38-461F-AEBA-6027A0913BF0";
         private const string Event1CalendarInternalGuid = "938C9782-6D79-4C90-A090-72A2F6C3B6A1";
+        private const string EventCalendarTestGuid = "AD1FA999-C74E-423A-81FE-CB788A2CFA90";
 
         /// <summary>
         /// Retrieving events for a calendar feed from a Rock server having a Rock time that differs from the system local time
@@ -468,7 +482,7 @@ namespace Rock.Tests.Integration.Events
             args.CalendarId = calendar.Id;
 
             args.StartDate = startDate ?? RockDateTime.New( 2010, 1, 1 ).Value;
-            args.EndDate = endDate ?? DateTime.MaxValue;
+            args.EndDate = endDate ?? args.StartDate.AddYears( 10 );
 
             if ( !string.IsNullOrWhiteSpace( campusName ) )
             {
@@ -507,9 +521,10 @@ namespace Rock.Tests.Integration.Events
 
             // Create a new Rock Schedule for an all-day event on specific days:
             // tomorrow and the following 2 days.
-            var day1Date = RockDateTime.Now.Date.AddDays( 1 );
-            var day2Date = RockDateTime.Now.Date.AddDays( 2 );
-            var day3Date = RockDateTime.Now.Date.AddDays( 3 );
+            var dateNow = RockDateTime.Now.Date;
+            var day1Date = new DateTime( dateNow.Year, dateNow.Month, 1 );
+            var day2Date = day1Date.AddDays( 3 );
+            var day3Date = day1Date.AddDays( 6 );
 
             var scheduleDays = scheduleService.Get( testScheduleGuid );
             if ( scheduleDays == null )
@@ -540,17 +555,19 @@ namespace Rock.Tests.Integration.Events
 
             testEvent1 = new EventItem();
             testEvent1.Guid = testEvent1Guid.AsGuid();
-            testEvent1.Name = "Test Event (Specific Dates)";
+            testEvent1.Name = $"Specific Days ({day1Date.Day},{day2Date.Day},{day3Date.Day})";
             testEvent1.IsApproved = true;
             eventItemService.Add( testEvent1 );
 
-            var EventCalendarPublicId = EventCalendarCache.All().First( x => x.Name == "Public" ).Id;
-            var EventCalendarInternalId = EventCalendarCache.All().First( x => x.Name == "Internal" ).Id;
+            var calendarService = new EventCalendarService( rockContext );
+            var calendar = new EventCalendar();
+            calendar.Name = "Feed Test";
+            calendar.Guid = EventCalendarTestGuid.AsGuid();
+            calendarService.Add( calendar );
+            rockContext.SaveChanges();
 
-            var testEvent1CalendarInternal = new EventCalendarItem { EventCalendarId = EventCalendarInternalId, Guid = Event1CalendarInternalGuid.AsGuid() };
-            var testEvent1CalendarPublic = new EventCalendarItem { EventCalendarId = EventCalendarPublicId, Guid = Event1CalendarPublicGuid.AsGuid() };
+            var testEvent1CalendarInternal = new EventCalendarItem { EventCalendarId = calendar.Id, Guid = Event1CalendarInternalGuid.AsGuid() };
             testEvent1.EventCalendarItems.Add( testEvent1CalendarInternal );
-            testEvent1.EventCalendarItems.Add( testEvent1CalendarPublic );
 
             var testOccurrence11 = new EventItemOccurrence();
 
@@ -562,23 +579,43 @@ namespace Rock.Tests.Integration.Events
 
             rockContext.SaveChanges();
 
-            var calendarService = new EventCalendarService( rockContext );
-
-            // Set RockDateTime to the local timezone, assuming that this corresponds to the timezone of the event data in the current dastabase.
+            // Set RockDateTime to the local timezone, assuming that this corresponds to the timezone of the event data in the current database.
             TestConfigurationHelper.SetRockDateTimeToLocalTimezone();
 
             // Get the calendar feed for the Internal calendar that includes the Test Event.
-            var args = GetCalendarEventFeedArgumentsForTest( "Internal" );
+            var args = GetCalendarEventFeedArgumentsForTest( calendar.Name );
             args.StartDate = day1Date;
             args.EndDate = day1Date.AddMonths( 3 );
             var calendarString1 = calendarService.CreateICalendar( args );
 
-            // Verify that the Calendar feed content has the necessary format to be compatible with importing to Microsoft Outlook.
-            var rdateText = "*RDATE;TZID=*:<date2>T000000,<date3>T000000*"
-                .Replace( "<date2>", day2Date.ToString( "yyyyMMdd" ) )
-                .Replace( "<date3>", day3Date.ToString( "yyyyMMdd" ) );
-            Assert.That.MatchesWildcard( rdateText, calendarString1 );
-            Assert.That.MatchesWildcard( $"*RRULE:FREQ=DAILY;COUNT=1*", calendarString1 );
+            // Verify that the Calendar feed content has the necessary elements.
+            // 1. The calendar must contain an RRULE to establish the link between the event instances.
+            var ruleText = "*RRULE:FREQ=DAILY;COUNT=3*";
+            Assert.That.MatchesWildcard( ruleText, calendarString1 );
+
+            // 2. The calendar must contain a rescheduled event for each day in the recurrence pattern.
+            for ( int i = 0; i < specificDates.Count; i++ )
+            {
+                var recurrenceIdText = "*RECURRENCE-ID;TZID=*;VALUE=DATE:<date>*"
+                    .Replace( "<date>", day1Date.AddDays( i ).ToString( "yyyyMMdd" ) );
+                Assert.That.MatchesWildcard( recurrenceIdText, calendarString1 );
+            }
+
+            // 3. The rescheduled events must have a higher SEQUENCE number than the initial event.
+            var sequenceMatches = Regex.Matches( calendarString1, @"^SEQUENCE:(\d*)\s*$", RegexOptions.Multiline );
+            var sequence1 = -1;
+            foreach ( Match sequenceMatch in sequenceMatches )
+            {
+                if ( sequence1 == -1 )
+                {
+                    sequence1 = sequenceMatch.Groups[1].Value.AsInteger();
+                }
+                else
+                {
+                    var sequenceN = sequenceMatch.Groups[1].Value.AsInteger();
+                    Assert.That.IsTrue( sequenceN > sequence1, $"SEQUENCE is invalid. [Expected: >{sequenceN}, Actual: {sequence1}]" );
+                }
+            }
         }
 
         /// <summary>
@@ -646,7 +683,8 @@ namespace Rock.Tests.Integration.Events
             // Modify the EventItem.
             var updateArgs = new EventsDataManager.UpdateEventItemActionArgs
             {
-                Properties = new EventsDataManager.EventItemInfo { EventName = $"{eventName} [Updated]" }
+                Properties = new EventsDataManager.EventItemInfo { EventName = $"{eventName} [Updated]" },
+                UpdateTargetIdentifier = testEventGuid
             };
             EventsDataManager.Instance.UpdateEventItem( updateArgs );
 
@@ -654,7 +692,7 @@ namespace Rock.Tests.Integration.Events
             var calendarString2 = calendarService.CreateICalendar( args );
 
             var calendarEvent2 = CalendarCollection.Load( calendarString2 )?.FirstOrDefault()?.Events
-                .FirstOrDefault( e => e.Summary == eventName );
+                .FirstOrDefault( e => e.Summary == $"{eventName} [Updated]" );
 
             Assert.IsNotNull( calendarEvent2, "Expected Event not found." );
             Assert.IsTrue( calendarEvent2.Sequence > calendarEvent1.Sequence, $"Event2 Sequence number is not greater than Event 1. [Event1={calendarEvent1.Sequence}, Event2={calendarEvent2.Sequence}]" );
@@ -867,6 +905,5 @@ namespace Rock.Tests.Integration.Events
         }
 
         #endregion
-
     }
 }

@@ -34,6 +34,9 @@ export type SnippetTypeBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets a value indicating whether the current user has the administrate permission. */
+    canAdministrate: boolean;
+
     /** Gets or sets the description. */
     description?: string | null;
 

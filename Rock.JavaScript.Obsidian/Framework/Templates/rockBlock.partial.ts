@@ -22,7 +22,7 @@ import { Component, computed, defineComponent, nextTick, onErrorCaptured, onMoun
 import { useStore } from "@Obsidian/PageState";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { createInvokeBlockAction, provideBlockGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock } from "@Obsidian/Utility/block";
+import { createInvokeBlockAction, provideBlockGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock, provideStaticContent } from "@Obsidian/Utility/block";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
@@ -131,6 +131,10 @@ export default defineComponent({
         startTimeMs: {
             type: Number as PropType<number>,
             required: true
+        },
+        staticContent: {
+            type: String as PropType<string>,
+            required: false
         }
     },
 
@@ -344,6 +348,7 @@ export default defineComponent({
         provideReloadBlock(reloadBlock);
         providePersonPreferences(getPreferenceProvider());
         const configurationValuesChanged = provideConfigurationValuesChanged();
+        provideStaticContent(props.staticContent);
 
         if (props.config.blockGuid) {
             provideBlockGuid(props.config.blockGuid);

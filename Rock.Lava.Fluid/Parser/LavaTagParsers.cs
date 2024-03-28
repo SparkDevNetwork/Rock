@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Fluid.Parser;
 using Parlot;
 using Parlot.Fluent;
@@ -186,17 +187,30 @@ namespace Rock.Lava.Fluid
         }
 
         /// <summary>
+        /// Wraps a custom Lava Parser so that is can be included in a standard Fluid parser chain.
+        /// </summary>
+        /// <param name="lavaTagParser"></param>
+        /// <returns></returns>
+        internal static Parser<TagResult> AsFluidTagResultParser( this Parser<LavaDocumentToken> lavaTagParser )
+        {
+            return new LavaDocumentElementResultParser( lavaTagParser );
+        }
+
+        /// <summary>
         /// An extension method that wraps a custom Lava Parser so that is can be included in a standard Fluid parser chain.
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
+        [Obsolete( "Use the AsFluidTagResultParser extension method instead." )]
+        [RockObsolete("1.17")]
         public static Parser<TagResult> LavaTagResultToFluidTagResultParser( Parser<LavaTagResult> lavaTagParser )
         {
             return new LavaTagResultParser( lavaTagParser );
         }
 
         /// <summary>
-        /// Converts a LavaTagResult to a Fluid TagResult for use with a Fluid Parser chain.
+        /// Converts a parser that returns a LavaTagResult to a parser that returns a Fluid TagResult
+        /// so that it can form part of a Fluid Parser chain.
         /// </summary>
         internal class LavaTagResultParser : Parser<TagResult>
         {
@@ -224,6 +238,41 @@ namespace Rock.Lava.Fluid
                 }
 
                 result = new ParseResult<TagResult>( lavaParseResult.Start, lavaParseResult.End, lavaParseResult.Value.TagResult );
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Converts a parser that returns a LavaDocumentToken to a parser that returns a Fluid TagResult
+        /// so that it can form part of a Fluid Parser chain.
+        /// </summary>
+        internal class LavaDocumentElementResultParser : Parser<TagResult>
+        {
+            private Parser<LavaDocumentToken> _tagParser;
+
+            public LavaDocumentElementResultParser( Parser<LavaDocumentToken> tagParser )
+            {
+                _tagParser = tagParser;
+            }
+
+            public override bool Parse( ParseContext context, ref ParseResult<TagResult> result )
+            {
+                if ( _tagParser == null )
+                {
+                    return false;
+                }
+
+                var lavaParseResult = new ParseResult<LavaDocumentToken>();
+
+                var isValid = _tagParser.Parse( context, ref lavaParseResult );
+
+                if ( !isValid )
+                {
+                    return false;
+                }
+
+                result = new ParseResult<TagResult>( lavaParseResult.Start, lavaParseResult.End, TagResult.TagOpen );
 
                 return true;
             }
@@ -481,31 +530,27 @@ namespace Rock.Lava.Fluid
 
                 LavaTagResult lavaTagResult;
 
-                // If we are processing the content of a {% liquid %} tag and scanning for a standard Liquid open tag or a Lava shortcode,
-                // the existence of these tokens is implied so return a matched tag result.
+                var parseTag = true;
                 if ( p.InsideLiquidTag
                      && ( _format == LavaTagFormatSpecifier.LiquidTag || _format == LavaTagFormatSpecifier.LavaShortcode ) )
                 {
-                    lavaTagResult = new LavaTagResult()
-                    {
-                        TagResult = TagResult.TagOpen,
-                        Text = new TextSpan( context.Scanner.Buffer, start.Offset, context.Scanner.Cursor.Offset - start.Offset ),
-                        TagFormat = _format
-                    };
-
-                    result.Set( start.Offset, context.Scanner.Cursor.Offset, lavaTagResult );
-                    return true;
+                    // When processing a {% liquid/lava %} tag, each new line represents a new implied start tag
+                    // so we do not need to parse for it.
+                    parseTag = false;
                 }
 
-                // Find the tag start token.
-                var startTagFound = context.Scanner.ReadChar( _tagChar1 )
-                    && context.Scanner.ReadChar( _tagChar2 )
-                    && ( _tagChar3 == '\0' || context.Scanner.ReadChar( _tagChar3 ) );
-                if ( !startTagFound )
+                if ( parseTag )
                 {
-                    // Return the scanner to the start position.
-                    context.Scanner.Cursor.ResetPosition( start );
-                    return false;
+                    // Find the tag start token.
+                    var startTagFound = context.Scanner.ReadChar( _tagChar1 )
+                        && context.Scanner.ReadChar( _tagChar2 )
+                        && ( _tagChar3 == '\0' || context.Scanner.ReadChar( _tagChar3 ) );
+                    if ( !startTagFound )
+                    {
+                        // Return the scanner to the start position.
+                        context.Scanner.Cursor.ResetPosition( start );
+                        return false;
+                    }
                 }
 
                 //  If this is a comment tag, ignore it if it is preceded by an unmatched quote.
@@ -525,16 +570,19 @@ namespace Rock.Lava.Fluid
                     }
                 }
 
-                bool trim;
-                if ( _format == LavaTagFormatSpecifier.BlockComment
+                var trim = false;
+                if ( parseTag )
+                {
+                    if ( _format == LavaTagFormatSpecifier.BlockComment
                     || _format == LavaTagFormatSpecifier.InlineComment )
-                {
-                    // Lava Comments do not support the optional Liquid whitespace trim character '-'.
-                    trim = false;
-                }
-                else
-                {
-                    trim = context.Scanner.ReadChar( '-' );
+                    {
+                        // Lava Comments do not support the optional Liquid whitespace trim character '-'.
+                        trim = false;
+                    }
+                    else
+                    {
+                        trim = context.Scanner.ReadChar( '-' );
+                    }
                 }
 
                 if ( p.PreviousTextSpanStatement != null )

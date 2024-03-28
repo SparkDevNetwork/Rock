@@ -271,10 +271,20 @@ export function defaultControlCompareValue(value: string, itemValue: string): bo
     return value === itemValue;
 }
 
-
+/**
+ * Determins whether or not a given string contains any HTML tags in.
+ *
+ * @param value The string potentially containing HTML
+ *
+ * @returns true if it contains HTML, otherwise false
+ */
+export function containsHtmlTag(value: string): boolean {
+    return /<[/0-9a-zA-Z]/.test(value);
+}
 
 export default {
     asCommaAnd,
+    containsHtmlTag,
     escapeHtml,
     splitCamelCase,
     isNullOrWhiteSpace,

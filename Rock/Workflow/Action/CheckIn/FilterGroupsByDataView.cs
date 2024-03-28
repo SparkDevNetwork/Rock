@@ -98,7 +98,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 if ( dataview.IsPersisted() && dataview.PersistedLastRefreshDateTime.HasValue )
                                 {
                                     //Get record from persisted.
-                                    var persistedValuesQuery = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == dataview.Id );
+                                    var persistedValuesQuery = rockContext.Set<DataViewPersistedValue>().Where( a => a.DataViewId == dataview.Id );
                                     if ( !persistedValuesQuery.Any( v => v.EntityId == person.Person.Id ) )
                                     {
                                         if ( remove )

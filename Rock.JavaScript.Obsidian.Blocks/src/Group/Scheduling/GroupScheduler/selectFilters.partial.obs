@@ -6,7 +6,7 @@
            :isSaveButtonDisabled="isBusy"
            @save="onSave">
 
-        <div class="new-group-scheduler">
+        <div class="group-scheduler-v2">
             <NotificationBox :alertType="AlertType.Info">
                 Select the filter options below to limit what is shown on the group scheduler.
             </NotificationBox>

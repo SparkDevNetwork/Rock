@@ -302,6 +302,9 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.MimeType ),
                 () => entity.MimeType = box.Entity.MimeType );
 
+            box.IfValidProperty( nameof( box.Entity.File ),
+                () => SaveFile( box.Entity, rockContext, entity ) );
+
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
@@ -333,7 +336,7 @@ namespace Rock.Blocks.Core
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [AttributeKey.EditLabelPage] =  this.GetLinkedPageUrl( AttributeKey.EditLabelPage, new Dictionary<string, string> { { "BinaryFileId", PageParameter( PageParameterKey.BinaryFileId ) } } )
+                [AttributeKey.EditLabelPage] =  this.GetLinkedPageUrl( AttributeKey.EditLabelPage, new Dictionary<string, string> { { "BinaryFileId", "((Key))" } } )
             };
         }
 
@@ -549,38 +552,6 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( validationMessage );
                 }
 
-                var binaryFileId = box.Entity.File.GetEntityId<BinaryFile>( rockContext );
-                if ( binaryFileId.HasValue && entity.Id != binaryFileId.Value )
-                {
-                    var uploadedBinaryFile = entityService.Get( binaryFileId.Value );
-                    if ( uploadedBinaryFile != null )
-                    {
-                        entity.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
-                        entity.FileSize = uploadedBinaryFile.FileSize;
-                        var memoryStream = new MemoryStream();
-
-                        // If this is a label file then we need to cleanup some settings that most templates will use by default
-                        if ( IsLabelFile( box.Entity ) )
-                        {
-                            // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
-                            string label = uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty );
-
-                            // Use UTF-8 instead of ASCII
-                            label = label.Replace( "^CI0", "^CI28" );
-
-                            var writer = new StreamWriter( memoryStream );
-                            writer.Write( label );
-                            writer.Flush();
-                        }
-                        else
-                        {
-                            uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
-                        }
-
-                        entity.ContentStream = memoryStream;
-                    }
-                }
-
                 entity.IsTemporary = false;
 
                 rockContext.WrapTransaction( () =>
@@ -608,6 +579,42 @@ namespace Rock.Blocks.Core
                 {
                     [PageParameterKey.BinaryFileId] = entity.IdKey
                 } ) );
+            }
+        }
+
+        private void SaveFile( BinaryFileBag bag, RockContext rockContext, BinaryFile entity )
+        {
+            var entityService = new BinaryFileService( rockContext );
+            var binaryFileId = bag.File.GetEntityId<BinaryFile>( rockContext );
+            if ( binaryFileId.HasValue && entity.Id != binaryFileId.Value )
+            {
+                var uploadedBinaryFile = entityService.Get( binaryFileId.Value );
+                if ( uploadedBinaryFile != null )
+                {
+                    entity.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
+                    entity.FileSize = uploadedBinaryFile.FileSize;
+                    var memoryStream = new MemoryStream();
+
+                    // If this is a label file then we need to cleanup some settings that most templates will use by default
+                    if ( IsLabelFile( bag ) )
+                    {
+                        // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
+                        string label = uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty );
+
+                        // Use UTF-8 instead of ASCII
+                        label = label.Replace( "^CI0", "^CI28" );
+
+                        var writer = new StreamWriter( memoryStream );
+                        writer.Write( label );
+                        writer.Flush();
+                    }
+                    else
+                    {
+                        uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
+                    }
+
+                    entity.ContentStream = memoryStream;
+                }
             }
         }
 
@@ -687,7 +694,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Reruns the workflow.
         /// </summary>
-        /// <param name="idKey">The identifier key.</param>
+        /// <param name="bag">The binary file bag.</param>
         /// <returns></returns>
         [BlockAction]
         public BlockActionResult RerunWorkflow( BinaryFileBag bag )

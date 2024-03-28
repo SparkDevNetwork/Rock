@@ -727,7 +727,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                         return ActionForbidden( "Not authorized to add note." );
                     }
 
-                    note = rockContext.Notes.Create();
+                    note = rockContext.Set<Note>().Create();
                     note.IsSystem = false;
                     note.EntityId = entity.Id;
                     note.ParentNoteId = parentNote?.Id;

@@ -17,6 +17,7 @@
 using System;
 using System.Reflection;
 
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -62,7 +63,7 @@ namespace Rock.Attribute
             var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
             FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
 
-            if ( string.IsNullOrWhiteSpace( Name ) )
+            if ( string.IsNullOrWhiteSpace( Name ) && RockInstanceConfig.DatabaseIsAvailable )
             {
                 var entityType = EntityTypeCache.Get( new Guid( entityTypeGuid ) );
                 name = ( entityType != null ? entityType.Name : "Entity" ) + " Attribute";
@@ -100,7 +101,7 @@ namespace Rock.Attribute
             var entityTypeQualifierColumnConfigValue = new Field.ConfigurationValue( entityTypeQualifierColumn );
             FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, entityTypeQualifierColumnConfigValue );
 
-            if ( entityTypeQualifierColumn.EndsWith( "Id" ) && entityTypeQualifierValue.AsGuid() != Guid.Empty )
+            if ( entityTypeQualifierColumn.EndsWith( "Id" ) && entityTypeQualifierValue.AsGuid() != Guid.Empty && RockInstanceConfig.DatabaseIsAvailable )
             {
                 EntityTypeCache itemEntityType = EntityTypeCache.Get( "Rock.Model." + entityTypeQualifierColumn.Left( entityTypeQualifierColumn.Length - 2 ) );
                 if ( itemEntityType.AssemblyName != null )
@@ -132,7 +133,7 @@ namespace Rock.Attribute
                 FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, entityTypeQualifierValueConfigValue );
             }
 
-            if ( string.IsNullOrWhiteSpace( Name ) )
+            if ( string.IsNullOrWhiteSpace( Name ) && RockInstanceConfig.DatabaseIsAvailable )
             {
                 var entityType = EntityTypeCache.Get( new Guid( entityTypeGuid ) );
                 name = ( entityType != null ? entityType.Name : "Entity" ) + " Attribute";
@@ -213,7 +214,7 @@ namespace Rock.Attribute
             // Set EntityTypeQualifierColumn value.
             FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
 
-            if ( !string.IsNullOrEmpty( entityTypeQualifierColumn ) && entityTypeQualifierColumn.EndsWith( "Id" ) && entityTypeQualifierValue.AsGuid() != Guid.Empty )
+            if ( !string.IsNullOrEmpty( entityTypeQualifierColumn ) && entityTypeQualifierColumn.EndsWith( "Id" ) && entityTypeQualifierValue.AsGuid() != Guid.Empty && RockInstanceConfig.DatabaseIsAvailable )
             {
                 // If this is a Guid, but the Column value is an Id, fetch the Id from the Guid and then set the Id as the EntityTypeQualifierValue value.
                 EntityTypeCache itemEntityType = EntityTypeCache.Get( "Rock.Model." + entityTypeQualifierColumn.Left( entityTypeQualifierColumn.Length - 2 ) );

@@ -16,6 +16,9 @@
                             <b class="fa fa-caret-down"></b>
                         </a>
 
+                        <!-- This helps trigger the resize when embedded in auto-resizing controls such as modals. -->
+                        <div v-if="internalShowPopup" class="hidden"></div>
+
                         <Fullscreen v-show="internalShowPopup" v-if="internalShowPopup || !forceContentReloadOnOpen" v-model="internalIsFullscreen" class="picker-menu" :class="internalIsFullscreen ? 'is-fullscreen' : 'dropdown-menu'" :style="pickerMenuStyles">
                             <!-- Optional "super header" area for things such as a means to switch between picker types -->
                             <div class="picker-mode-options" v-if="$slots.pickerContentSuperHeader">

@@ -4,15 +4,16 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Financial;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Settings.Giving;
 
-namespace Rock.Tests.Integration.Core.Jobs
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     /// <summary>
     /// 
     /// </summary>
     [TestClass]
-    public class GivingJourneyHelperTests
+    public class GivingJourneyHelperTests : DatabaseTestsBase
     {
         /// <summary>
         /// </summary>

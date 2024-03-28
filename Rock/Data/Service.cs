@@ -637,6 +637,11 @@ namespace Rock.Data
         {
             try
             {
+                if ( publicKey.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
                 string[] idParts = publicKey.Split( '>' );
                 if ( idParts.Length == 2 )
                 {

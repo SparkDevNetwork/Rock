@@ -20,34 +20,38 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+
 using Http.TestLibrary;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Controllers;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Performance.Rest.ControllersTests
+namespace Rock.Tests.Performance.Modules.Crm.Person
 {
     [TestClass]
-    public class PersonPickerControllerTests
+    public class PersonPickerControllerTests : DatabaseTestsBase
     {
         private static List<string> _nameSearchStrings = new List<string>
             {
                 // Search strings for Sample Database.
-                //"Decker", "Greggs", "Jackson", "Jones", "Lowe", "Marble", "Miller", "Peterson", "Simmons", "Tucker", "Webb"
+                "Decker", "Greggs", "Jackson", "Jones", "Lowe", "Marble", "Miller", "Peterson", "Simmons", "Tucker", "Webb"
 
                 // Search strings for Spark Site.
-                "Leigh", "Airdo", "Cummings", "Drotning", "Edmiston", "Hazelbaker", "Kishor", "Pena", "Peterson", "Zimmerman"
+                //"Leigh", "Airdo", "Cummings", "Drotning", "Edmiston", "Hazelbaker", "Kishor", "Pena", "Peterson", "Zimmerman"
             };
         private static List<string> _addressSearchStrings = new List<string>
             {
                 // Search strings for Sample Database.
-                //"18th", "30th", "Bloomfield", "Harmont", "Shangri La", "Lupine", "Eugie", "Curnow", "33rd"
+                "18th", "30th", "Bloomfield", "Harmont", "Shangri La", "Lupine", "Eugie", "Curnow", "33rd"
 
                 // Search strings for Spark Database.
-                "18th", "30th", "Main", "Street", "Route", "Drive", "Box", "Walnut", "33rd"
+                //"18th", "30th", "Main", "Street", "Route", "Drive", "Box", "Walnut", "33rd"
                 //"24654 N Lake Pleasant Pkwy # 103-218"
             };
 

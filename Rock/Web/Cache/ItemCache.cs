@@ -353,7 +353,6 @@ namespace Rock.Web.Cache
             RockCacheManager<List<string>>.Instance.Remove( AllKey, _AllRegion );
         }
 
-
         /// <summary>
         /// Method that is called by the framework immediately after being added to cache
         /// </summary>

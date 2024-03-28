@@ -100,7 +100,7 @@ ORDER BY d.[Date];",
         Order = 7 )]
     [CustomDropdownListField( "Legend Position",
         Description = "Select the position of the Legend (corner)",
-        ListSource = "ne,nw,se,sw",
+        ListSource = "n,ne,e,se,s,sw,w,nw",
         IsRequired = false,
         DefaultValue = "ne",
         Order = 8 )]

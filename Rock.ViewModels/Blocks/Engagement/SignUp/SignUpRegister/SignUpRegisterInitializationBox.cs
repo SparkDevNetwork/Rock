@@ -15,9 +15,10 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using Rock.Enums.Blocks.Engagement.SignUp;
 using Rock.ViewModels.Utility;
+
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
 {
@@ -84,5 +85,21 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
         /// The list of existing or possible registrants, including the registrar.
         /// </value>
         public List<SignUpRegistrantBag> Registrants { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrant member attributes.
+        /// </summary>
+        /// <value>
+        /// The registrant member attributes.
+        /// </value>
+        public Dictionary<string, PublicAttributeBag> MemberAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrant member opportunity attributes.
+        /// </summary>
+        /// <value>
+        /// The registrant member opportunity attributes.
+        /// </value>
+        public Dictionary<string, PublicAttributeBag> MemberOpportunityAttributes { get; set; }
     }
 }

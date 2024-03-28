@@ -415,9 +415,10 @@ namespace RockWeb.Blocks.Finance
             int workflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
             var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId );
 
-            var findWorkFlow = rockContext.BenevolenceWorkflows?.FirstOrDefault( w => w.BenevolenceTypeId == benevolenceTypeIdPageParameter
-           & w.TriggerType == triggerType
-           & w.WorkflowTypeId == workflowTypeId );
+            var findWorkFlow = new BenevolenceWorkflowService( rockContext ).Queryable()
+                .FirstOrDefault( w => w.BenevolenceTypeId == benevolenceTypeIdPageParameter
+                    && w.TriggerType == triggerType
+                    && w.WorkflowTypeId == workflowTypeId );
 
             var existingWorkflow = findWorkFlow != null && findWorkFlow.QualifierValue.Md5Hash() == workflowQualifier.Md5Hash();
 

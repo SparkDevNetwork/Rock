@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Engagement.Streaks
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     /// <summary>
     /// Tests for StreakTypeService that use the database
     /// </summary>
     [TestClass]
-    public class StreakTypeServiceTests
+    public class StreakTypeServiceTests : DatabaseTestsBase
     {
         private const string StreakTypeGuidString = "93050DB0-82FC-4EBE-9AB8-8BB8BADFB2F0";
         private const string EmptyStreakTypeGuidString = "84161DB0-82FC-4EBE-9AB8-8BB8BADFB2A2";

@@ -381,7 +381,7 @@ namespace Rock.Jobs
             else
             {
                 interactionSessionsWithNullDurationLastCalculatedDateTimeQuery = new InteractionSessionService( rockContext )
-                    .Queryable().Where( s => s.DurationLastCalculatedDateTime == null );
+                    .Queryable().Where( s => s.DurationLastCalculatedDateTime == null && s.Interactions.Any() );
             }
 
             List<InteractionSession> interactionSessionsWithNullDurationLastCalculatedDateTime;

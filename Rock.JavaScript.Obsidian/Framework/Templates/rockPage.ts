@@ -83,8 +83,9 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
         errorMessage = `${e}`;
     }
 
-    const name = `Root${config.blockFileUrl.replace(/\//g, ".")}`;
     const startTimeMs = RockDateTime.now().toMilliseconds();
+    const name = `Root${config.blockFileUrl.replace(/\//g, ".")}`;
+    const staticContent = rootElement.innerHTML;
 
     const app = createApp({
         name,
@@ -148,6 +149,7 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                 config: config,
                 blockComponent: blockComponent ? markRaw(blockComponent) : null,
                 startTimeMs,
+                staticContent,
                 errorMessage
             };
         },
@@ -160,7 +162,7 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
     <br />
     {{errorMessage}}
 </div>
-<RockBlock v-else :config="config" :blockComponent="blockComponent" :startTimeMs="startTimeMs" />`
+<RockBlock v-else :config="config" :blockComponent="blockComponent" :startTimeMs="startTimeMs" :staticContent="staticContent" />`
     });
 
     app.component("v-style", developerStyle);

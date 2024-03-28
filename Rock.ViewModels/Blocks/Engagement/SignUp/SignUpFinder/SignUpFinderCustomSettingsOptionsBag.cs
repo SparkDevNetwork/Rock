@@ -41,5 +41,13 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpFinder
         /// The available group attributes for an individual to filter the results by.
         /// </value>
         public List<ListItemBag> AvailableDisplayAttributeFilters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the available campuses for an individual to filter the results by.
+        /// </summary>
+        /// <value>
+        /// The available campuses for an individual to filter the results by.
+        /// </value>
+        public List<ListItemBag> AvailableCampuses { get; set; }
     }
 }

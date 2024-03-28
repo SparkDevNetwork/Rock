@@ -15,16 +15,16 @@
 // </copyright>
 
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Field;
-using Rock.Field.Types;
-using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Core.Field.Types
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Field.Types;
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.Tests.Integration.Modules.Core.Field.Types
 {
     [TestClass]
-    public class MergeTemplateFieldTypeTests
+    public class MergeTemplateFieldTypeTests : DatabaseTestsBase
     {
         /// <summary>
         /// Given an empty string value return an empty string.
