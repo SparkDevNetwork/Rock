@@ -40,6 +40,9 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         public List<GroupData> GroupData { get; set; } = new List<GroupData>();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class PersonData
     {
         /// <summary>
@@ -72,6 +75,9 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         public string LastAttendanceDate { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class GivingDataItem
     {
         /// <summary>
@@ -84,6 +90,9 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         public List<MonthlyGivingData> Donations { get; set; } = new List<MonthlyGivingData>();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class MonthlyGivingData
     {
         /// <summary>
@@ -104,6 +113,9 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         public string Month { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class GroupData
     {
         /// <summary>

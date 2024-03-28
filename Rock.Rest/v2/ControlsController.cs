@@ -554,7 +554,7 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Validates the given address and returns the string representation of the address
         /// </summary>
-        /// <param name="options">Address details to validate</param>
+        /// <param name="address">Address details to validate</param>
         /// <returns>Validation information and a single string representation of the address</returns>
         [HttpPost]
         [System.Web.Http.Route( "AddressControlGetStreetAddressString" )]

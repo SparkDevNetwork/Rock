@@ -439,7 +439,7 @@ namespace Rock.SystemGuid
         public const string MOBILE_CORE_SEARCH_BLOCK_TYPE = "F81015CD-EBA9-4358-B930-4F1AB29AF879";
 
         /// <summary>
-        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Core.SmartSearch" />.
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.SmartSearch" />.
         /// </summary>
         public const string MOBILE_CORE_SEARCH_V2_BLOCK_TYPE = "45BE4816-3F5B-4AD1-BA89-819325D7E8CF";
 
