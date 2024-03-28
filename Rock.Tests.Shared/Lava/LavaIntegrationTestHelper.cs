@@ -826,7 +826,8 @@ namespace Rock.Tests.Shared.Lava
         /// <summary>
         /// Process the specified input template and verify against the expected output.
         /// </summary>
-        /// <param name="expectedOutput"></param>
+        /// <param name="engine"></param>
+        /// <param name="expectedOutputs"></param>
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( ILavaEngine engine, IEnumerable<string> expectedOutputs, string inputTemplate, LavaTestRenderOptions options = null )
         {
@@ -847,8 +848,22 @@ namespace Rock.Tests.Shared.Lava
         /// <summary>
         /// Process the specified input template and verify against the expected output.
         /// </summary>
-        /// <param name="expectedOutput"></param>
+        /// <param name="matchRequirement"></param>
         /// <param name="inputTemplate"></param>
+        /// <param name="options"></param>
+        public void AssertTemplateOutput( LavaTestOutputMatchRequirement matchRequirement, string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            AssertTemplateOutput( new List<LavaTestOutputMatchRequirement> { matchRequirement },
+                inputTemplate,
+                options );
+        }
+
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="matchRequirements"></param>
+        /// <param name="inputTemplate"></param>
+        /// <param name="options"></param>
         public void AssertTemplateOutput( IEnumerable<LavaTestOutputMatchRequirement> matchRequirements, string inputTemplate, LavaTestRenderOptions options = null )
         {
             var engines = options?.LavaEngineTypes ?? new List<Type>();
@@ -861,7 +876,6 @@ namespace Rock.Tests.Shared.Lava
             {
                 AssertTemplateOutput( engine, matchRequirements, inputTemplate, options );
             } );
-
         }
 
         /// <summary>

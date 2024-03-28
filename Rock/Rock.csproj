@@ -772,6 +772,7 @@
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionTypeList.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Search.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\SmartSearch.cs" />
     <Compile Include="Blocks\Types\Mobile\Crm\GroupMembers.cs" />
     <Compile Include="Blocks\Types\Mobile\Crm\PersonProfile.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperienceOccurrences.cs" />
@@ -1265,6 +1266,7 @@
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
+	<Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
@@ -1955,6 +1957,7 @@
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\IdHasher.cs" />
+    <Compile Include="Utility\IWebHostEnvironment.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />

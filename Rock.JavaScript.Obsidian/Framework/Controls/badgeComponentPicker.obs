@@ -59,7 +59,7 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<BadgeComponentPickerGetBadgeComponentsOptionsBag> = {
+        const options: BadgeComponentPickerGetBadgeComponentsOptionsBag = {
             entityTypeGuid: props.entityTypeGuid
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/BadgeComponentPickerGetBadgeComponents", undefined, options);

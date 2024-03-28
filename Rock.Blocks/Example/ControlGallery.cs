@@ -16,8 +16,10 @@
 //
 
 using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Model;
+using Rock.ViewModels.Blocks.Example.ControlGallery;
 
 namespace Rock.Blocks.Example
 {
@@ -32,11 +34,32 @@ namespace Rock.Blocks.Example
     [IconCssClass( "fa fa-flask" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [BooleanField( "Show Reflection",
+        Description = "When enabled, a Show Reflection option will be enabled that will add a second control to demonstrate two-way databinding.  This is typically only useful to developers when they are developing a new control.",
+        DefaultValue = "false",
+        Order = 0,
+        Key = AttributeKey.ShowReflection )]
+
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EXAMPLE_CONTROL_GALLERY )]
-    [Rock.SystemGuid.BlockTypeGuid( "6FAB07FF-D4C6-412B-B13F-7B881ECBFAD0")]
+    [Rock.SystemGuid.BlockTypeGuid( "6FAB07FF-D4C6-412B-B13F-7B881ECBFAD0" )]
     public class ControlGallery : RockBlockType
     {
+        public static class AttributeKey
+        {
+            public const string ShowReflection = "ShowReflection";
+        }
+
         /// <inheritdoc/>
         public override string ObsidianFileUrl => base.ObsidianFileUrl.ReplaceIfEndsWith( ".obs", string.Empty );
+
+        /// <inheritdoc/>
+        public override object GetObsidianBlockInitialization()
+        {
+            var box = new ControlGalleryInitializationBox();
+
+            box.ShowReflection = GetAttributeValue( AttributeKey.ShowReflection ).AsBoolean();
+
+            return box;
+        }
     }
 }

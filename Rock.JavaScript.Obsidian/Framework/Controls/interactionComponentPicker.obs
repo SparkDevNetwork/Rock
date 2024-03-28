@@ -60,8 +60,7 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<InteractionComponentPickerGetInteractionComponentsOptionsBag> =
-        {
+        const options: InteractionComponentPickerGetInteractionComponentsOptionsBag = {
             interactionChannelGuid: props.interactionChannelGuid,
         };
         const result = await http.post<ListItemBag[]>(

@@ -222,12 +222,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Issues\AccentedNameSearchTests.cs" />
     <Compile Include="Issues\Issue1808.cs" />
     <Compile Include="Issues\Issues_v16.cs" />
     <Compile Include="Issues\Issues_v15.cs" />
     <Compile Include="Modules\Core\Field.Types\PhoneNumberFieldTypeTests.cs" />
     <Compile Include="Modules\Core\AttributeMatrixTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />
+    <Compile Include="Modules\Core\Lava\Filters\PersonalizationFilterTests.cs" />
     <Compile Include="Modules\Core\MergeTemplateTests.cs" />
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
@@ -260,12 +262,15 @@
     <Compile Include="Modules\Reporting\DataFilter\Person\LocationDataFilterTests.cs" />
     <Compile Include="Modules\Web\Controls\AddressControlTests.cs" />
     <Compile Include="Modules\Web\Utilities\SystemConfigurationTests.cs" />
+    <Compile Include="TestData\Cms\PersonalizationDataManager.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
+    <Compile Include="TestData\Core\PersistedDatasetDataManager.cs" />
     <Compile Include="TestData\Core\SecurityDataManager.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Organization.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Core.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
+    <Compile Include="TestData\Crm\PersonDataManager.cs" />
     <Compile Include="TestData\Crm\TestDataHelper.Crm.SampleData.cs" />
     <Compile Include="TestData\Engagement\PrayerFeatureDataHelper.cs" />
     <Compile Include="TestData\Core\RandomizedDataHelper.cs" />
@@ -484,7 +489,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Constants\" />
+    <Folder Include="Features\" />
+    <Folder Include="Jobs\" />
+    <Folder Include="Modules\Crm\Steps\" />
+  </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CreateDefaultConfigFiles" BeforeTargets="PrepareForBuild">

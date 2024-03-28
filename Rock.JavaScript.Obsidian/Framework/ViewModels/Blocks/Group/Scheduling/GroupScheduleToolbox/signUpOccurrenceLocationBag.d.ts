@@ -29,7 +29,7 @@ export type SignUpOccurrenceLocationBag = {
     isAtMaximumCapacity: boolean;
 
     /** Gets or sets the occurrence location unique identifier. */
-    locationGuid?: Guid | null;
+    locationGuid: Guid;
 
     /** Gets or sets the occurrence location name. */
     locationName?: string | null;

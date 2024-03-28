@@ -87,6 +87,8 @@ export const FieldType = {
     Component: "A7486B0E-4CA2-4E00-A987-5544C7DABA76",
     /** Components field type */
     Components: "039E2E97-3682-4B29-8748-7132287A2059",
+    /** Conditional Scale Field Type */
+    ConditionalScale: "E73B9F41-8325-4229-8EA5-75180066680C",
     /** Connection Activity Type field type */
     ConnectionActivityType: "39356C8F-B69E-4744-906C-0A182671B9F8",
     /** Connection Opportunity field type */

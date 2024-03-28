@@ -20,38 +20,56 @@ using System;
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {
     /// <summary>
-    /// 
+    /// The step status details for the Step Program Detail workflow trigger grid.
     /// </summary>
     public class StepStatusBag
     {
         /// <summary>
-        /// The Id of the Step Status
+        /// Gets or sets the Step Status identifier.
         /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         public int Id { get; set; }
 
         /// <summary>
-        /// The name of the Step Status
+        /// Gets or sets the name.
         /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Is Step Status Active
+        /// Gets or sets a value indicating whether this status is active.
         /// </summary>
+        /// <value>
+        ///   <c>true</c> if the status is active; otherwise, <c>false</c>.
+        /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets a value indicating whether this status is complete.
         /// </summary>
+        /// <value>
+        ///   <c>true</c> if this status is complete; otherwise, <c>false</c>.
+        /// </value>
         public bool IsCompleteStatus { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the color of the status.
         /// </summary>
+        /// <value>
+        /// The color of the status.
+        /// </value>
         public string StatusColor { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the unique identifier.
         /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
         public Guid? Guid { get; set; }
     }
 }

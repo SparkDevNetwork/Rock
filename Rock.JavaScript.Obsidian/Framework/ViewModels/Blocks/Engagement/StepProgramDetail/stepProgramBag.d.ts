@@ -28,12 +28,16 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
+/** Describes the step program to be displayed to the user */
 export type StepProgramBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets a value indicating whether the current user has the can administrate authorization. */
+    canAdministrate: boolean;
 
     /** Gets or sets the Rock.Model.Category. */
     category?: ListItemBag | null;

@@ -99,8 +99,8 @@
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
-    <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
+    <Compile Include="Core\ScheduledJobHistoryList.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
@@ -109,6 +109,8 @@
     <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
+	<Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Core\AuditList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Communication\CommunicationList.cs" />
@@ -131,6 +133,7 @@
     <Compile Include="Core\EventList.cs" />
     <Compile Include="Core\FollowingSuggestionTypeList.cs" />
     <Compile Include="Core\LocationList.cs" />
+    <Compile Include="Core\DefinedValueList.cs" />
     <Compile Include="Core\Notes.cs" />
     <Compile Include="Core\NoteTypeList.cs" />
     <Compile Include="Core\NoteWatchDetail.cs" />
@@ -151,8 +154,12 @@
     <Compile Include="Engagement\AchievementAttemptList.cs" />
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
+    <Compile Include="Engagement\AchievementTypeList.cs" />
+    <Compile Include="Engagement\ConnectionTypeList.cs" />
+    <Compile Include="Engagement\StepParticipantList.cs" />
     <Compile Include="Engagement\StepProgramList.cs" />
     <Compile Include="CheckIn\AttendanceHistoryList.cs" />
+    <Compile Include="Engagement\StreakTypeList.cs" />
     <Compile Include="Event\EventCalendarItemList.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
@@ -164,6 +171,8 @@
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialGatewayList.cs" />
+    <Compile Include="Finance\BusinessContactList.cs" />
+    <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Finance\FinancialStatementTemplateDetail.cs" />
@@ -178,9 +187,13 @@
     <Compile Include="Group\GroupRequirementTypeDetail.cs" />
     <Compile Include="Reporting\PersistedDataViewList.cs" />
     <Compile Include="Reporting\InteractionDetail.cs" />
+	<Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
     <Compile Include="Reporting\MetricValueDetail.cs" />
     <Compile Include="Reporting\InteractionComponentDetail.cs" />
+    <Compile Include="Reporting\MergeTemplateList.cs" />
+    <Compile Include="Reporting\ReportList.cs" />
+    <Compile Include="Reporting\VolunteerGenerosityAnalysis.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Engagement\StepTypeDetail.cs" />
     <Compile Include="Tv\AppleTvAppDetail.cs" />

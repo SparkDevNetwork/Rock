@@ -33,10 +33,10 @@ export type GroupMemberRequirementCardGetConfigOptionsBag = {
     canOverride: boolean;
 
     /** Identifier for the GroupRequirement */
-    groupMemberRequirementGuid?: Guid | null;
+    groupMemberRequirementGuid: Guid;
 
     /** Identifier for the GroupRequirement */
-    groupRequirementGuid?: Guid | null;
+    groupRequirementGuid: Guid;
 
     /** Requirement status: met, not met, met but has a warning, etc. */
     meetsGroupRequirement: MeetsGroupRequirement;

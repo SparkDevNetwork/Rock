@@ -42,7 +42,7 @@ export type MediaPlayerGetPlayerOptionsOptionsBag = {
     combinePlayStatisticsInDays: number;
 
     /** Identifier for the Media Element to play */
-    mediaElementGuid?: Guid | null;
+    mediaElementGuid: Guid;
 
     /** The initial set of options to pass to the media player */
     playerOptions?: MediaPlayerOptionsBag | null;

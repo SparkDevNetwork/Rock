@@ -1,0 +1,337 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :itemTerm="itemTerm"
+          :entityTypeGuid="EntityType.Step"
+          stickyHeader
+          liveUpdates
+          :showCommunicate="true"
+          :showPersonMerge="true"
+          :showBulkUpdate="true"
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn />
+
+        <Column name="person"
+                title="Name"
+                :filter="pickExistingValueFilter"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
+                     ref="popOverEl"
+                     :personid="`${row.personIdKey}`"
+                     :data-original="`${photoUrl(row)}&w=50`"
+                     :style="`background-image: url( ${photoUrl(row)} );
+                        background-size: cover;
+                        background-repeat: no-repeat;`">
+                </div>
+                <span class="mr-1">{{ `${row.fullName ?? ""}` }}</span>
+                <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
+                <span v-if="config.options?.isNoteColumnVisible && row.note" class='js-member-note' data-toggle='tooltip' data-placement='top' :title='`${row.note}`'>
+                    <i class='fa fa-file-text-o text-info'></i>
+                </span>
+            </template>
+        </Column>
+
+        <DateColumn v-if="config.options?.isDateStartedColumnVisible"
+                    name="dateStarted"
+                    title="Date Started"
+                    field="dateStarted"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="dateCompleted"
+                    title="Date Completed"
+                    field="dateCompleted"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn v-if="config.options?.isCampusColumnVisible"
+                    name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="stepStatus"
+                title="Status"
+                :filter="textValueFilter"
+                :filterValue="getStepStatusFilterValue"
+                visiblePriority="xs">
+
+            <template #format="{ row }">
+                <span class="label label-default" :style="`background-color: ${stepStatusBackgroundColors[row.stepStatus]};color:#fff;`">
+                    {{ row.stepStatus }}
+                </span>
+            </template>
+        </Column>
+
+        <TextColumn v-if="config.options?.isNoteColumnVisible"
+                    name="note"
+                    title="Note"
+                    field="note"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <ButtonColumn v-if="config.options?.personProfilePageUrl" name="user" iconClass="fa fa-user" @click="onPersonClick" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :stepStatusItems="config.options?.stepStatusItems ?? []" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, pickExistingValueFilter, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { StepParticipantListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepParticipantList/stepParticipantListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./StepParticipantList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./StepParticipantList/gridSettingsModal.partial.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+
+    const config = useConfigurationValues<ListBlockBox<StepParticipantListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const popOverEl = ref<HTMLElement | null>(null);
+    const http = useHttp();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        dateCompletedLower: preferences.getValue(PreferenceKey.FilterDateCompletedLower),
+        dateCompletedUpper: preferences.getValue(PreferenceKey.FilterDateCompletedUpper),
+        campus: JSON.parse(preferences.getValue(PreferenceKey.FilterCampus) || "{}"),
+        dateStartedLower: preferences.getValue(PreferenceKey.FilterDateStartedLower),
+        dateStartedUpper: preferences.getValue(PreferenceKey.FilterDateStartedUpper),
+        firstName: preferences.getValue(PreferenceKey.FilterFirstName),
+        lastName: preferences.getValue(PreferenceKey.FilterLastName),
+        note: preferences.getValue(PreferenceKey.FilterNote),
+        stepStatus: JSON.parse(preferences.getValue(PreferenceKey.FilterStepStatus) || "[]"),
+    });
+    const stepStatusBackgroundColors = config.options?.stepStatusBackgroundColors ?? {};
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The item term, derived from the name of the current step type.
+     */
+    const itemTerm = computed((): string => {
+        return config.options?.stepType?.text ? `${config.options.stepType.text} Step Participants` : "Step Participants";
+    });
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateCompletedLower
+            || !!gridSettings.value.dateCompletedUpper
+            || !!gridSettings.value.dateStartedLower
+            || !!gridSettings.value.dateStartedUpper
+            || !!gridSettings.value.firstName
+            || !!gridSettings.value.lastName
+            || (config.options?.isCampusColumnVisible && !!gridSettings.value.campus?.value)
+            || !!gridSettings.value.note
+            || gridSettings.value.stepStatus.length > 0;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the step status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getStepStatusFilterValue(row: Record<string, unknown>): string {
+        return row["stepStatus"] as string;
+    }
+
+    /**
+     * Gets the URL for the avatar of the name column.
+     */
+    function photoUrl(row: Record<string, unknown>): string {
+        if (!row["person"]) {
+            return "";
+        }
+
+        const value = row["person"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.photoUrl ?? "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete step.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onPersonClick(key: string): void {
+        if (config.options?.personProfilePageUrl) {
+            const personIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.personIdKey as string;
+            if (personIdKey) {
+                window.location.href = config.options.personProfilePageUrl.replace("((Key))", personIdKey);
+            }
+        }
+    }
+
+    /**
+     * Called when the Person button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(popOverEl, (element) => {
+        var $ = window["$"];
+
+        if (element) {
+            $(element).popover({
+                placement: "right",
+                trigger: "manual",
+                delay: 500,
+                html: true,
+                content: function () {
+                    let personId = $(this).attr("personid");
+                    let dataUrl = "/api/People/PopupHtml/" + personId + "/false";
+
+                    let content = document.getElementById(personId) ?? document.createElement("div");
+                    content.setAttribute("id", personId);
+                    // Dummy height and width for popover since content will originally be empty.
+                    content.style.width = "300px";
+                    content.style.height = "200px";
+                    content.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>'
+
+                    http.get<any>(dataUrl).then(response => {
+                        // Let browser handle height and width.
+                        content.style.width = "";
+                        content.style.height = "";
+                        content.style.display = "block";
+                        content.innerHTML = response.data.PickerItemDetailsHtml;
+                    });
+
+                    // Return empty div to be updated whrn response from server is received.
+                    return content;
+                }
+            }).on("mouseenter", (e: Event) => {
+                var target = e.target;
+                $(target).popover("show");
+                $(target).siblings(".popover").on("mouseleave", () => {
+                    $(target).popover("hide");
+                });
+            }).on("mouseleave", (e: Event) => {
+                var target = e.target;
+                setTimeout(() => {
+                    if (!$(".popover:hover").length) {
+                        $(target).popover("hide");
+                    }
+                }, 100);
+            });
+        }
+
+    });
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateCompletedLower, gridSettings.value.dateCompletedLower ?? "");
+        preferences.setValue(PreferenceKey.FilterDateCompletedUpper, gridSettings.value.dateCompletedUpper ?? "");
+        preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(gridSettings.value.campus));
+        preferences.setValue(PreferenceKey.FilterDateStartedLower, gridSettings.value.dateStartedLower ?? "");
+        preferences.setValue(PreferenceKey.FilterDateStartedUpper, gridSettings.value.dateStartedUpper ?? "");
+        preferences.setValue(PreferenceKey.FilterFirstName, gridSettings.value.firstName ?? "");
+        preferences.setValue(PreferenceKey.FilterLastName, gridSettings.value.lastName ?? "");
+        preferences.setValue(PreferenceKey.FilterNote, gridSettings.value.note ?? "");
+        preferences.setValue(PreferenceKey.FilterStepStatus, JSON.stringify(gridSettings.value.stepStatus));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

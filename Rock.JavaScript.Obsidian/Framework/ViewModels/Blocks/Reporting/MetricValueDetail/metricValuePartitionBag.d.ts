@@ -29,7 +29,7 @@ export type MetricValuePartitionBag = {
     attribute?: PublicAttributeBag | null;
 
     /** Gets or sets the metric partition unique identifier. */
-    metricPartitionGuid?: Guid | null;
+    metricPartitionGuid: Guid;
 
     /** Gets or sets the saved entity value. */
     value?: string | null;

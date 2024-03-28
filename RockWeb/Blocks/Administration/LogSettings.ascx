@@ -91,6 +91,11 @@
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpAdvanced" runat="server" Title="Advanced">
+                        <Rock:ValueList ID="vlCustomCategories"
+                            runat="server"
+                            Label="Custom Categories"
+                            Help="Enter any custom categories that should be included in the logged results." />
+
                         <Rock:CodeEditor ID="ceCustomConfiguration"
                             runat="server"
                             Label="Custom Configuration"

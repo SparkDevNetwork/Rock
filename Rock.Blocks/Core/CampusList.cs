@@ -152,37 +152,34 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new CampusService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new CampusService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{Campus.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${Campus.FriendlyTypeName}." );
-                }
-
-                // Don't allow deleting the last campus.
-                if ( !entityService.Queryable().Where( c => c.Id != entity.Id ).Any() )
-                {
-                    return ActionBadRequest( $"{entity.Name} is the only campus and cannot be deleted (Rock requires at least one campus)." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{Campus.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${Campus.FriendlyTypeName}." );
+            }
+
+            // Don't allow deleting the last campus.
+            if ( !entityService.Queryable().Where( c => c.Id != entity.Id ).Any() )
+            {
+                return ActionBadRequest( $"{entity.Name} is the only campus and cannot be deleted (Rock requires at least one campus)." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -194,24 +191,21 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
             {
-                // Get the queryable and make sure it is ordered correctly.
-                var qry = GetListQueryable( rockContext );
-                qry = GetOrderedListQueryable( qry, rockContext );
-
-                // Get the entities from the database.
-                var items = GetListItems( qry, rockContext );
-
-                if ( !items.ReorderEntity( key, beforeKey ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( "Invalid reorder attempt." );
             }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

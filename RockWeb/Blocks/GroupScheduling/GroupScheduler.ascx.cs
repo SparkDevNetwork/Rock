@@ -2062,35 +2062,26 @@ btnCopyToClipboard.ClientID );
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 
-            // Take note of how many communications we expect to send.
-            var toSendCount = sendConfirmationAttendancesQuery.Count();
-
             // Make sure we save changes after calling the following method, to mark successful sends in the database
             // and prevent duplicate sends the next time this method is called.
             var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, true );
             rockContext.SaveChanges();
 
-            var sentCount = sendMessageResult.MessagesSent;
-            var failedToSendCount = toSendCount - sentCount;
+            // Check to see if any group types are missing a system communication so we can alert the current person.
+            var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
+                .Where( a =>
+                    a.Occurrence.Group.GroupType != null
+                    && !a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue
+                )
+                .Select( a => a.Occurrence.Group.GroupType.Name )
+                .Distinct()
+                .ToList();
 
-            if ( failedToSendCount > 0 )
+            if ( groupTypeNamesWithoutSystemCommunication.Any() )
             {
-                // Check to see if any un-sent attendances belong to a group type without a system communication specified.
-                var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
-                    .Where( a =>
-                        a.Occurrence.Group.GroupType != null
-                        && !a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue
-                    )
-                    .Select( a => a.Occurrence.Group.GroupType.Name )
-                    .Distinct()
-                    .ToList();
-
-                if ( groupTypeNamesWithoutSystemCommunication.Any() )
-                {
-                    sendMessageResult.Warnings.InsertRange( 0, groupTypeNamesWithoutSystemCommunication.Select( name =>
-                        $@"Group Type ""{name}"" does not have a ""Schedule Confirmation Communication"" specified."
-                    ) );
-                }
+                sendMessageResult.Warnings.InsertRange( 0, groupTypeNamesWithoutSystemCommunication.Select( name =>
+                    $@"Group Type ""{name}"" does not have a ""Schedule Confirmation Communication"" specified."
+                ) );
             }
 
             var summaryMessageBuilder = new StringBuilder();
@@ -2135,26 +2126,17 @@ btnCopyToClipboard.ClientID );
                 summaryMessageBuilder.Append( htmlWarningsSb.ToString() );
             }
 
-            if ( toSendCount == 0 )
+            var sentCount = sendMessageResult.MessagesSent;
+            if ( sentCount > 0 )
+            {
+                summaryMessageBuilder.Append( $"<p>Successfully sent {sentCount} {"confirmation".PluralizeIf( sentCount > 1 )}.</p>" );
+            }
+            else if (
+                !sendMessageResult.Errors.Any()
+                && !sendMessageResult.Warnings.Any()
+                && !sendConfirmationAttendancesQuery.Any() )
             {
                 summaryMessageBuilder.Append( "<p>Everybody has already been sent a confirmation. No additional confirmations sent.</p>" );
-            }
-            else
-            {
-                if ( sentCount > 0 )
-                {
-                    summaryMessageBuilder.Append( $"<p>Successfully sent {sentCount} {"confirmation".PluralizeIf( sentCount > 1 )}.</p>" );
-                }
-
-                if ( failedToSendCount > 0 )
-                {
-                    if ( alertType != ModalAlertType.Alert )
-                    {
-                        alertType = ModalAlertType.Warning;
-                    }
-
-                    summaryMessageBuilder.Append( $"<p>Failed to send {failedToSendCount} {"confirmation".PluralizeIf( failedToSendCount > 1 )}.</p>" );
-                }
             }
 
             maSendNowResults.Show( summaryMessageBuilder.ToString(), alertType );

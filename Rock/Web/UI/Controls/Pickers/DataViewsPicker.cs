@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
@@ -22,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -95,28 +98,18 @@ namespace Rock.Web.UI.Controls
 
             var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
 
-            using ( var rockContext = new RockContext() )
-            {
-                var allEntityFilters = new DataViewFilterService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( f => f.EntityTypeId == _entityTypeId )
-                    .ToList();
+            var allEntityFilters = DataViewFilterCache.All().Where( df => df.EntityTypeId == _entityTypeId ).ToList();
 
-                foreach ( var dataView in new DataViewService( rockContext )
-                    .GetByEntityTypeId( _entityTypeId.Value )
-                    .Include( "EntityType" )
-                    .Include( "Category" )
-                    .Include( "DataViewFilter" )
-                    .Where( d => DisplayPersistedOnly == false || (d.PersistedScheduleIntervalMinutes.HasValue || d.PersistedScheduleId.HasValue) ) // if display persisted only is set to true, fetch only persisted data views
-                    .AsNoTracking() )
-                {
-                    if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson )
-                        && dataView.DataViewFilter != null
-                        && dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
-                    {
-                        this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
-                    }
-                }
+            foreach ( var dataView in DataViewCache.All()
+                .Where( d => d.EntityTypeId == _entityTypeId
+                    && ( !DisplayPersistedOnly || ( d.PersistedScheduleIntervalMinutes.HasValue || d.PersistedScheduleId.HasValue ) )
+                    && d.IsAuthorized( Authorization.VIEW, currentPerson )
+                    && d.DataViewFilter != null
+                    && d.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
+                .OrderBy( d => d.Name )
+                .ToList() )
+            {
+                this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
             }
         }
     }

@@ -15,7 +15,7 @@
                 <slot name="prepend" :isInputGroupSupported="true" />
                 <div :class="controlContainerClass">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-                    <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" :placeholder="placeholder" v-bind="field"></textarea>
+                    <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" :class="formControlClass" :placeholder="placeholder" v-bind="field"></textarea>
                     <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" :autocomplete="disableAutocomplete ? null : 'off'" />
                     <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>

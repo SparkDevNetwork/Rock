@@ -1769,9 +1769,6 @@ namespace Rock.Blocks.Group.Scheduling
                         .Where( a => attendanceOccurrenceIds.Contains( a.OccurrenceId ) )
                         .Where( a => a.ScheduleConfirmationSent != true );
 
-                    // Take note of how many communications we expect to send.
-                    response.CommunicationsToSendCount = sendConfirmationAttendancesQuery.Count();
-
                     // Make sure we save changes after calling the following method, to mark successful sends in the database
                     // and prevent duplicate sends the next time this method is called.
                     var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, true );
@@ -1781,24 +1778,28 @@ namespace Rock.Blocks.Group.Scheduling
                     response.Warnings = sendMessageResult.Warnings;
                     response.CommunicationsSentCount = sendMessageResult.MessagesSent;
 
-                    if ( response.CommunicationsSentCount < response.CommunicationsToSendCount )
-                    {
-                        // Check to see if any un-sent attendances belong to a group type without a system communication specified.
-                        var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
-                            .Where( a =>
-                                a.Occurrence.Group.GroupType != null
-                                && !a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue
-                            )
-                            .Select( a => a.Occurrence.Group.GroupType.Name )
-                            .Distinct()
-                            .ToList();
+                    // Check to see if any group types are missing a system communication so we can alert the current person.
+                    var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
+                        .Where( a =>
+                            a.Occurrence.Group.GroupType != null
+                            && !a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue
+                        )
+                        .Select( a => a.Occurrence.Group.GroupType.Name )
+                        .Distinct()
+                        .ToList();
 
-                        if ( groupTypeNamesWithoutSystemCommunication.Any() )
-                        {
-                            response.Warnings.InsertRange( 0, groupTypeNamesWithoutSystemCommunication.Select( name =>
-                                $@"Group Type ""{name}"" does not have a ""Schedule Confirmation Communication"" specified."
-                            ) );
-                        }
+                    if ( groupTypeNamesWithoutSystemCommunication.Any() )
+                    {
+                        response.Warnings.InsertRange( 0, groupTypeNamesWithoutSystemCommunication.Select( name =>
+                            $@"Group Type ""{name}"" does not have a ""Schedule Confirmation Communication"" specified."
+                        ) );
+                    }
+
+                    if ( response.CommunicationsSentCount == 0
+                        && !response.Errors.Any()
+                        && !response.Warnings.Any() )
+                    {
+                        response.AnyCommunicationsToSend = sendConfirmationAttendancesQuery.Any();
                     }
                 }
             }

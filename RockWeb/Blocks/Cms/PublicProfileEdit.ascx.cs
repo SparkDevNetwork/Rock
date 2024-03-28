@@ -238,20 +238,14 @@ namespace RockWeb.Blocks.Cms
         DefaultValue = "Campus",
         Order = 25 )]
 
-    [BooleanField(
-        "Require Gender",
-        Key = AttributeKey.RequireGender,
-        Description = "Controls whether or not the gender field is required.",
-        IsRequired = true,
-        DefaultBooleanValue = true,
+    [CustomDropdownListField(
+        "Gender",
+        Key = AttributeKey.Gender,
+        Description = "How should Gender be displayed?",
+        ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
+        IsRequired = false,
+        DefaultValue = "Required",
         Order = 26 )]
-
-    [BooleanField(
-        "Show Gender",
-        Key = AttributeKey.ShowGender,
-        Description = "Whether gender is shown or not.",
-        DefaultBooleanValue = true,
-        Order = 27 )]
 
     [CustomDropdownListField(
         "Race",
@@ -294,7 +288,6 @@ namespace RockWeb.Blocks.Cms
             public const string ShowSuffix = "ShowSuffix";
             public const string ShowNickName = "ShowNickName";
             public const string DisplayMode = "DisplayMode";
-            public const string ShowGender = "ShowGender";
             public const string ShowFamilyMembers = "ShowFamilyMembers";
             public const string ShowAddresses = "ShowAddresses";
             public const string AddressTypeValueGuid = "AddressType";
@@ -314,10 +307,10 @@ namespace RockWeb.Blocks.Cms
             public const string PersonAttributesChildren = "PersonAttributes(children)";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
-            public const string RequireGender = "RequireGender";
             public const string ViewTemplate = "ViewTemplate";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
+            public const string Gender = "Gender";
         }
 
         private static class PageParametersName
@@ -694,8 +687,7 @@ namespace RockWeb.Blocks.Cms
             pnlAddress.Visible = showAddresses;
             mergeFields.Add( MergeFieldKey.ShowAddresses, showAddresses );
 
-            var showGender = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean();
-            rblGender.Visible = showGender;
+            var showGender = GetAttributeValue( AttributeKey.Gender ) != "Hide";
             mergeFields.Add( MergeFieldKey.ShowGender, showGender );
 
             var showTitle = GetAttributeValue( AttributeKey.ShowTitle ).AsBoolean();
@@ -804,6 +796,9 @@ namespace RockWeb.Blocks.Cms
 
             epEthnicity.Visible = GetAttributeValue( AttributeKey.EthnicityOption ) != "Hide";
             epEthnicity.Required = GetAttributeValue( AttributeKey.EthnicityOption ) == "Required";
+
+            ddlGender.Visible = GetAttributeValue( AttributeKey.Gender ) != "Hide";
+            ddlGender.Required = GetAttributeValue( AttributeKey.Gender ) == "Required";
 
             // There's no need to show the Cancel button when the DisplayMode is EditOnly.
             if ( _displayMode == DisplayMode.EditOnly )
@@ -931,7 +926,7 @@ namespace RockWeb.Blocks.Cms
                     groupMember.Person.NickName = tbNickName.Text;
                     groupMember.Person.LastName = tbLastName.Text;
                     groupMember.Person.SuffixValueId = dvpSuffix.SelectedValueAsId();
-                    groupMember.Person.Gender = rblGender.SelectedValueAsEnum<Gender>();
+                    groupMember.Person.Gender =  ddlGender.SelectedValue.IsNotNullOrWhiteSpace() ? ddlGender.SelectedValueAsEnum<Gender>() : Gender.Unknown;
                     DateTime? birthdate = bpBirthDay.SelectedDate;
                     if ( birthdate.HasValue )
                     {
@@ -1049,7 +1044,7 @@ namespace RockWeb.Blocks.Cms
                         person.GraduationYear = graduationYear;
                     }
 
-                    person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
+                    person.Gender = ddlGender.SelectedValue.IsNotNullOrWhiteSpace() ? ddlGender.SelectedValueAsEnum<Gender>() : Gender.Unknown;
 
                     // update campus
                     // bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
@@ -1504,19 +1499,7 @@ namespace RockWeb.Blocks.Cms
             bpBirthDay.SelectedDate = person.BirthDate;
             rpRace.SetValue( person.RaceValueId );
             epEthnicity.SetValue( person.EthnicityValueId );
-
-            // Setup the gender radio button list according to the required field
-            var genderRequired = GetAttributeValue( AttributeKey.RequireGender ).AsBooleanOrNull() ?? true;
-            if ( !genderRequired )
-            {
-                rblGender.Items.Add( new ListItem( "Unknown", "Unknown" ) );
-            }
-
-            // Add this check to handle if the gender requirement became required after an "Unknown" value was already set
-            if ( rblGender.Items.FindByValue( person.Gender.ConvertToString() ) != null )
-            {
-                rblGender.SelectedValue = person.Gender.ConvertToString();
-            }
+            ddlGender.SelectedValue = person.Gender == Gender.Unknown ? string.Empty : person.Gender.ConvertToString();
 
             if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )
             {

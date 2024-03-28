@@ -162,7 +162,6 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
-    <Compile Include="App_Start\IWebHostEnvironment.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationSegmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessagesController.CodeGenerated.cs" />

@@ -25,6 +25,7 @@
     import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleResultsBag";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -38,7 +39,7 @@
 
         /** If you specify the group type, the group type picker will be hidden and we'll just show roles for this type */
         groupTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 
@@ -128,7 +129,7 @@
         }
 
         const options: GroupRolePickerGetGroupRolesOptionsBag = {
-            groupTypeGuid: groupTypeGuidValue.value,
+            groupTypeGuid: groupTypeGuidValue.value || emptyGuid,
             excludeGroupRoles: props.excludeGroupRoles
         };
 
@@ -150,8 +151,13 @@
      * Gets all the data needed to fill in the pickers when we're given a value to start
      */
     async function loadRoleOptionsFromValue(): Promise<void> {
+        if (!props.modelValue?.value) {
+            loadedRoleItems.value = [];
+            return;
+        }
+
         const options: GroupRolePickerGetAllForGroupRoleOptionsBag = {
-            groupRoleGuid: props.modelValue?.value,
+            groupRoleGuid: props.modelValue.value || emptyGuid,
             excludeGroupRoles: props.excludeGroupRoles
         };
 

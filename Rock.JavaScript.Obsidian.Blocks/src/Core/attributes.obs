@@ -97,7 +97,7 @@
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { normalize as normalizeGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, normalize as normalizeGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
@@ -106,14 +106,7 @@
     import { PreferenceKey } from "./Attributes/types.partial";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-
-    type BlockConfiguration = {
-        entityTypeGuid?: Guid;
-        entityTypes?: ListItemBag[];
-        hideColumns: string[];
-        enableShowInGrid: boolean;
-        allowSettingOfValues: boolean;
-    };
+    import { AttributesOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/Attributes/attributesOptionsBag";
 
     type EditAttribute = {
         entityTypeQualifierColumn?: string | null;
@@ -145,18 +138,18 @@
         rows?: GridRow[];
     }
 
-    const config = useConfigurationValues<ListBlockBox<BlockConfiguration>>();
+    const config = useConfigurationValues<ListBlockBox<AttributesOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
 
     /** True if the entity type picker should be visible on the page. */
-    const showEntityTypePicker = computed(() => !config.options?.entityTypeGuid);
+    const showEntityTypePicker = computed(() => !config?.options?.entityTypeGuid);
 
     /** The list of entity types to show in the entity type picker. */
-    const entityTypeOptions = computed(() => config.options?.entityTypes ?? []);
+    const entityTypeOptions = computed(() => config?.options?.entityTypes ?? []);
 
     /** True if the entity type qualifier text boxes should be shown. */
-    const showEntityTypeQualifier = computed(() => !config.options?.entityTypeGuid);
+    const showEntityTypeQualifier = computed(() => !config?.options?.entityTypeGuid);
 
     // #region Attribute Editing
 
@@ -189,7 +182,7 @@
      */
     const onEditAttribute = async (guid: Guid): Promise<void> => {
         const result = await invokeBlockAction<EditAttribute>("GetEditAttribute", {
-            attributeGuid: guid
+            attributeGuid: guid || emptyGuid
         });
 
         if (!result.isSuccess || !result.data) {
@@ -278,7 +271,7 @@
      */
     const onDeleteAttribute = async (key: Guid): Promise<void> => {
         const result = await invokeBlockAction<GridRow>("DeleteAttribute", {
-            attributeGuid: key
+            attributeGuid: key || emptyGuid
         });
 
         if (!result.isSuccess) {
@@ -302,7 +295,12 @@
 
     /** The current attribute value in an editable format. */
     const editAttributeValue = ref("");
-    const editAttribute = ref<PublicAttributeBag>({} as PublicAttributeBag);
+    const editAttribute = ref<PublicAttributeBag>({
+        attributeGuid: emptyGuid,
+        fieldTypeGuid: emptyGuid,
+        isRequired: false,
+        order: 0,
+    });
 
     /** True if the edit attribute value modal should be visible. */
     const showEditAttributeValueModal = ref<boolean>(false);
@@ -322,12 +320,12 @@
      * @param row The row that initiated the action.
      */
     async function onEditAttributeValue(key: Guid): Promise<void> {
-        if (!config.options?.allowSettingOfValues) {
+        if (!config?.options?.allowSettingOfValues) {
             return;
         }
 
         const result = await invokeBlockAction<{ attribute: PublicAttributeBag, value: string }>("GetEditAttributeValue", {
-            attributeGuid: key
+            attributeGuid: key || emptyGuid
         });
 
         if (!result.isSuccess || !result.data) {
@@ -361,7 +359,7 @@
      */
     async function saveEditAttributeValue(): Promise<void> {
         const result = await invokeBlockAction<GridRow>("SaveEditAttributeValue", {
-            attributeGuid: editAttribute.value?.attributeGuid,
+            attributeGuid: editAttribute.value?.attributeGuid || emptyGuid,
             value: editAttributeValue.value
         });
 
@@ -378,7 +376,12 @@
             }
         }
 
-        editAttribute.value = {} as PublicAttributeBag;
+        editAttribute.value = {
+            attributeGuid: emptyGuid,
+            fieldTypeGuid: emptyGuid,
+            isRequired: false,
+            order: 0
+        };
         editAttributeValue.value = "";
         showEditAttributeValueModal.value = false;
     }
@@ -392,10 +395,10 @@
     const activeFilter = ref(preferences.getValue(PreferenceKey.FilterActive));
 
     /** The currently selected entity type by the user. */
-    const entityTypeGuid = computed(() => config.options?.entityTypeGuid || entityTypeGuidFilter.value);
+    const entityTypeGuid = computed(() => config?.options?.entityTypeGuid || entityTypeGuidFilter.value);
 
     /** True if we have a valid entity type selected or via configuration. */
-    const entityTypeSelectionIsValid = computed(() => !!config.options?.entityTypeGuid || entityTypeGuidFilter.value !== "");
+    const entityTypeSelectionIsValid = computed(() => !!config?.options?.entityTypeGuid || entityTypeGuidFilter.value !== "");
 
     /** Whether or not the modal for editing filters should be shown */
     const showFilterModal = ref(false);

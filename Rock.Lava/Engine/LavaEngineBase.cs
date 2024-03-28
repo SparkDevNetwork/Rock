@@ -906,18 +906,28 @@ namespace Rock.Lava
             // Process the exception according to the specified exception strategy.
             exceptionStrategy = exceptionStrategy ?? this.ExceptionHandlingStrategy;
 
-            if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
+            if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.RenderDiagnosticOutput )
+            {
+                // Render a detailed error message to final output.
+                if ( ex is LavaException le )
+                {
+                    message = le.GetDiagnosticMessage();
+                }
+                else
+                {
+                    message = $"Lava Error: {ex.Message}";
+                }
+            }
+
+            else if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
             {
                 // [2021-06-04] DL
                 // Some Lava custom components have been designed to throw base Exceptions that contain important configuration instructions.
                 // However, there is currently no reliable method of identifying which exceptions in the stack offer an appropriate level of detail for display.
-                // To accomodate this design, we will display the message associated with the highest level Exception that is not a LavaException.
+                // To accommodate this design, we will display the message associated with the highest level Exception that is not a LavaException.
                 // In the future, this behavior could be more reliably implemented by defining a LavaConfigurationException that identifies
                 // an error message as being suitable for display in the render output.
-                var outputEx = ex;
-
-                // Get an error message that is suitable for rendering to final output.
-                if ( outputEx is LavaException le )
+                if ( ex is LavaException le )
                 {
                     message = le.GetUserMessage();
                 }
@@ -972,6 +982,10 @@ namespace Rock.Lava
             if ( ex is LavaRenderException lre )
             {
                 return lre;
+            }
+            if ( ex is LavaElementRenderException lere )
+            {
+                return lere;
             }
             // If this is a parse exception, there is no need to include a subsequent render exception.
             if ( ex is LavaParseException lpe )

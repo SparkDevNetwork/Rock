@@ -26,8 +26,8 @@ import { Guid } from "@Obsidian/Types";
 /** A bag that contains the update attendance occurence type request information. */
 export type GroupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag = {
     /** Gets or sets the attendance occurrence unique identifier. */
-    attendanceOccurrenceGuid?: Guid | null;
+    attendanceOccurrenceGuid: Guid;
 
     /** Gets or sets the attendance occurrence type unique identifier. */
-    attendanceOccurrenceTypeGuid?: Guid | null;
+    attendanceOccurrenceTypeGuid: Guid;
 };

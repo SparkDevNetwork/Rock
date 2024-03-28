@@ -44,7 +44,7 @@ export type GroupSchedulerOccurrenceBag = {
     groupName?: string | null;
 
     /** Gets the unique identifier for this group scheduler occurrence. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets whether scheduling is enabled for this occurrence. */
     isSchedulingEnabled: boolean;

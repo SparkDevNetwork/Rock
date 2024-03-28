@@ -76,29 +76,27 @@ export abstract class FieldTypeBase implements IFieldType {
     public getFormattedComponent(_configurationValues: Record<string, string>): Component {
         return defineComponent({
             name: "FieldType.Formatted",
-            props: {...getFieldEditorProps(), isEscaped: Boolean },
+            props: { ...getFieldEditorProps(), isEscaped: Boolean },
             setup: (props) => {
                 return {
                     content: computed(() => {
                         return this.getHtmlValue(props.modelValue ?? "", props.configurationValues, props.isEscaped);
-                        // return props.isEscaped ? escapeHtml(html) : html;
                     })
                 };
             },
 
-            template: `<div v-if="isEscaped" v-text="content"></div><div v-else v-html="content"></div>`
+            template: `<div v-html="content"></div>`
         });
     }
 
     public getCondensedFormattedComponent(_configurationValues: Record<string, string>): Component {
         return defineComponent({
             name: "FieldType.CondensedFormatted",
-            props: {...getFieldEditorProps(), isEscaped: Boolean },
+            props: { ...getFieldEditorProps(), isEscaped: Boolean },
             setup: (props) => {
                 return {
                     content: computed(() => {
                         return this.getCondensedHtmlValue(props.modelValue ?? "", props.configurationValues, props.isEscaped);
-                        // return props.isEscaped ? escapeHtml(html) : html;
                     })
                 };
             },

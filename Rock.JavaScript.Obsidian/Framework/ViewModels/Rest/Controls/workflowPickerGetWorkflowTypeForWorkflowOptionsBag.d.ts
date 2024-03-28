@@ -32,5 +32,5 @@ export type WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag = {
     securityGrantToken?: string | null;
 
     /** The GUID of the workflow type that this workflow is part of. */
-    workflowGuid?: Guid | null;
+    workflowGuid: Guid;
 };

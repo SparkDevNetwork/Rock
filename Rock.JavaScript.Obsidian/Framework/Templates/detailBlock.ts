@@ -35,6 +35,7 @@ import { alert, confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
 import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -471,7 +472,7 @@ export default defineComponent({
             }
 
             const data: FollowingGetFollowingOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid,
+                entityTypeGuid: props.entityTypeGuid || emptyGuid,
                 entityKey: props.entityKey
             };
 
@@ -593,6 +594,7 @@ export default defineComponent({
             formSubmissionSource = new PromiseCompletionSource();
             isFormSubmitting.value = true;
             await formSubmissionSource.promise;
+            isFormSubmitting.value = false;
         };
 
         /**
@@ -642,6 +644,7 @@ export default defineComponent({
             finally {
                 if (formSubmissionSource !== null) {
                     formSubmissionSource.resolve();
+                    formSubmissionSource = null;
                 }
             }
         };
@@ -696,7 +699,7 @@ export default defineComponent({
             }
 
             const data: FollowingSetFollowingOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid,
+                entityTypeGuid: props.entityTypeGuid || emptyGuid,
                 entityKey: props.entityKey,
                 isFollowing: !isEntityFollowed.value
             };
@@ -723,6 +726,7 @@ export default defineComponent({
         watch(isFormSubmitting, () => {
             if (isFormSubmitting.value === false && formSubmissionSource !== null) {
                 formSubmissionSource.resolve();
+                formSubmissionSource = null;
             }
         });
 

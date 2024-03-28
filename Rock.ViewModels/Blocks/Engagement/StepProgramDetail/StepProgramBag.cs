@@ -22,8 +22,9 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {
     /// <summary>
-    /// 
+    /// Describes the step program to be displayed to the user
     /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class StepProgramBag : EntityBagBase
     {
         /// <summary>
@@ -122,5 +123,13 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// The step flow page URL.
         /// </value>
         public string StepFlowPageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current user has the can administrate authorization.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the current user has the can administrate authorization; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanAdministrate { get; set; }
     }
 }

@@ -34,6 +34,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { updateRefValue } from "@Obsidian/Utility/component";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     export type ValueItem = {
         value: string;
@@ -61,7 +62,7 @@
         },
 
         definedTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | undefined>,
             required: false
         }
     });
@@ -132,9 +133,10 @@
     };
 
     async function loadDefinedValues(): Promise<void> {
-        const options: Partial<DefinedValuePickerGetDefinedValuesOptionsBag> = {
-            definedTypeGuid: props.definedTypeGuid,
-            securityGrantToken: securityGrantToken.value
+        const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
+            definedTypeGuid: props.definedTypeGuid || emptyGuid,
+            securityGrantToken: securityGrantToken.value,
+            includeInactive: false,
         };
         const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
         const result = await http.post<ListItemBag[]>(url, undefined, options);

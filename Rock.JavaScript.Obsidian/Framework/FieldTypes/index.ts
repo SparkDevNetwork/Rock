@@ -98,6 +98,9 @@ registerFieldType(FieldTypeGuids.Color, new ColorFieldType());
 import { ColorSelectorFieldType } from "./colorSelectorField.partial";
 registerFieldType(FieldTypeGuids.ColorSelector, new ColorSelectorFieldType());
 
+import { ConditionalScaleFieldType } from "./conditionalScaleField.partial";
+registerFieldType(FieldTypeGuids.ConditionalScale, new ConditionalScaleFieldType());
+
 import { ConnectionOpportunityFieldType } from "./connectionOpportunityField.partial";
 registerFieldType(FieldTypeGuids.ConnectionOpportunity, new ConnectionOpportunityFieldType());
 
@@ -283,6 +286,9 @@ registerFieldType(FieldTypeGuids.Lava, new LavaFieldType());
 
 import { LavaCommandsFieldType } from "./lavaCommandsField.partial";
 registerFieldType(FieldTypeGuids.LavaCommands, new LavaCommandsFieldType());
+
+import { LocationFieldType } from "./locationField.partial";
+registerFieldType(FieldTypeGuids.Location, new LocationFieldType());
 
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());

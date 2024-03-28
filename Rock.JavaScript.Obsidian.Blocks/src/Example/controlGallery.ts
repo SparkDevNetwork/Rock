@@ -48,6 +48,7 @@
 
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
+import { onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
 import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -261,6 +262,7 @@ import SecurityButtonGallery from "./ControlGallery/securityButtonGallery.partia
 import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partial.obs";
 import JsonFieldsBuilderGallery from "./ControlGallery/jsonFieldsBuilderGallery.partial.obs";
 import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
+import TextBoxGallery from "./ControlGallery/textBoxGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -1286,36 +1288,6 @@ const datePartsPickerGallery = defineComponent({
     <template #settings>
         <Toggle label="Show Year" v-model="showYear" />
         <p class="mt-4 mb-4">The <a href="#BirthdayPickerGallery">Birthday Picker</a> simply wraps this control and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a textbox */
-const textBoxGallery = defineComponent({
-    name: "TextBoxGallery",
-    components: {
-        GalleryAndResult,
-        TextBox
-    },
-    data() {
-        return {
-            text: "Some two-way bound text",
-            importCode: getControlImportPath("textBox"),
-            exampleCode: `<TextBox label="Text 1" v-model="text" :maxLength="50" showCountDown />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="text"
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <TextBox label="Text 1" v-model="text" :maxLength="50" showCountDown />
-    <TextBox label="Text 2" v-model="text" />
-    <TextBox label="Memo" v-model="text" textMode="MultiLine" :rows="10" :maxLength="100" showCountDown />
-
-    <template #settings>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
@@ -6297,7 +6269,7 @@ const contentDropDownPickerGallery = defineComponent({
             exampleCode: `<ContentDropDownPicker
     label="Your Custom Picker"
     @primaryButtonClicked="selectValue"
-    @clearButtonClicked="clear"S
+    @clearButtonClicked="clear"
     :innerLabel="innerLabel"
     :showClear="!!value"
     iconCssClass="fa fa-cross" >
@@ -6593,25 +6565,62 @@ const locationPickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
-        LocationPicker
+        LocationPicker,
+        CheckBoxList
     },
     setup() {
+        const options = [{
+            text: "Location",
+            value: "2"
+        }, {
+            text: "Address",
+            value: "1"
+        }, {
+            text: "Point",
+            value: "4"
+        }, {
+            text: "Geo-fence",
+            value: "8"
+        }];
+
+        const selectedOptions = ref(["1","2","4","8"]);
+
+        const selectedAsNumber = computed(() => {
+            if (selectedOptions.value.length === 0) {
+                return undefined;
+            }
+
+            return selectedOptions.value.reduce((total, option) => {
+                return total + parseInt(option, 10);
+            }, 0);
+        });
+
         return {
-            value: ref(null),
+            value: ref(undefined),
+            currentPickerMode: ref(2),
+            options,
+            selectedOptions,
+            selectedAsNumber,
             importCode: getSfcControlImportPath("locationPicker"),
-            exampleCode: `<LocationPicker label="Location" v-model="value" :multiple="false" />`
+            exampleCode: `<LocationPicker label="Location" v-model="value" />`
         };
     },
     template: `
 <GalleryAndResult
-    :value="value"
+    :value="{value, currentPickerMode}"
     :importCode="importCode"
     :exampleCode="exampleCode"
+    hasMultipleValues
     enableReflection >
 
-    <LocationPicker label="Location" v-model="value" :multiple="multiple" />
+    <LocationPicker label="Location" v-model="value" v-model:currentPickerMode="currentPickerMode" :allowedPickerModes="selectedAsNumber" />
 
     <template #settings>
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBoxList v-model="selectedOptions" :items="options" label="Allowed Modes" horizontal />
+            </div>
+        </div>
         <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
     </template>
 </GalleryAndResult>`
@@ -7948,7 +7957,6 @@ const controlGalleryComponents: Record<string, Component> = [
     attributeValuesContainerGallery,
     badgeListGallery,
     fieldFilterEditorGallery,
-    textBoxGallery,
     datePickerGallery,
     dateRangePickerGallery,
     dateTimePickerGallery,
@@ -8121,7 +8129,7 @@ const controlGalleryComponents: Record<string, Component> = [
     MarkdownEditorGallery,
     JsonFieldsBuilderGallery,
     HtmlEditorGallery,
-]
+    TextBoxGallery,]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
         a.name = upperCaseFirstCharacter((a.__name ?? a.name).replace(/\.partial$/, ""));
@@ -8385,6 +8393,8 @@ export default defineComponent({
     },
 
     setup() {
+        onConfigurationValuesChanged(useReloadBlock());
+
         const currentComponent = ref<Component>(Object.values(controlGalleryComponents)[0]);
 
         function getComponentFromHash(): void {

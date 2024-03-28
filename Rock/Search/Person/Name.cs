@@ -21,7 +21,6 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Enums;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -34,7 +33,7 @@ namespace Rock.Search.Person
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Name")]
     [BooleanField("Allow Search by Only First Name", "By default, when searching with only one name (without a space or comma), only people with a matching Last Names will be included.  Select this option to also include people with a matching First Name", false, "", 4, "FirstNameSearch")]
-    [Rock.SystemGuid.EntityTypeGuid( "3B1D679A-290F-4A53-8E11-159BF0517A19")]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEARCH_COMPONENT_PERSON_NAME )]
     public class Name : SearchComponent
     {
 
@@ -96,30 +95,38 @@ namespace Rock.Search.Person
             IQueryable<string> resultQry;
 
             var disableCampusLabel = CampusCache.All( false ).Count() == 1;
-
-            // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection
-            if ( reversed )
+            if ( disableCampusLabel )
             {
-                if ( disableCampusLabel )
+                if ( reversed )
                 {
                     resultQry = qry.Select( p => p.LastName + ", " + p.NickName ).Distinct();
                 }
                 else
                 {
-                    resultQry = qry.Select( p => p.PrimaryCampus == null ? p.LastName + ", " + p.NickName : p.LastName + ", " + p.NickName + "                                             <span class='search-accessory label label-default pull-right'>" + (p.PrimaryCampus.ShortCode != "" ? p.PrimaryCampus.ShortCode : p.PrimaryCampus.Name) + "</span>" ).Distinct();
+                    resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
                 }
-                
             }
             else
             {
-                if ( disableCampusLabel )
+                // Materialize the list before formatting the final output, because the Person Name fields and Campus fields use
+                // a different database collation that can't be handled in Entity Framework 6.
+                // When upgrading to EF Core, use EF.Functions.Collate() to address this issue in a more efficient way.
+                var resultItems = qry.Select( p => new { p.LastName, p.NickName, CampusShortCode = p.PrimaryCampus.ShortCode, CampusName = p.PrimaryCampus.Name } )
+                    .Distinct()
+                    .Take( 50 )
+                    .ToList();
+
+                // Note: extra spaces intentional with the label span to keep the markup from showing in the search input on selection.
+                if ( reversed )
                 {
-                    resultQry = qry.Select( p => p.NickName + " " + p.LastName ).Distinct();
+                    resultQry = resultItems.Select( p => p.CampusShortCode == null ? p.LastName + ", " + p.NickName : p.LastName + ", " + p.NickName + "                                             <span class='search-accessory label label-default pull-right'>" + ( p.CampusShortCode != "" ? p.CampusShortCode : p.CampusName ) + "</span>" )
+                        .AsQueryable();
                 }
                 else
                 {
-                    resultQry = qry.Select( p => p.PrimaryCampus == null ? p.NickName + " " + p.LastName : p.NickName + " " + p.LastName + "                                               <span class='search-accessory label label-default pull-right'>" + (p.PrimaryCampus.ShortCode != "" ? p.PrimaryCampus.ShortCode : p.PrimaryCampus.Name) + "</span>" ).Distinct();
-                }  
+                    resultQry = resultItems.Select( p => p.CampusShortCode == null ? p.NickName + " " + p.LastName : p.NickName + " " + p.LastName + "                                             <span class='search-accessory label label-default pull-right'>" + ( p.CampusShortCode != "" ? p.CampusShortCode : p.CampusName ) + "</span>" )
+                        .AsQueryable();
+                }
             }
 
             return resultQry;

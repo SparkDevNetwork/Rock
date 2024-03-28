@@ -170,6 +170,10 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 
             if ( !string.IsNullOrEmpty( msg ) )
             {
+                var newConfigText = configText.Replace( filterGroupList, expectedFilterNames.AsDelimited( "|" ) );
+
+                msg += $"Updated File Content:\n{newConfigText}";
+
                 Assert.Fail( msg );
             }
         }

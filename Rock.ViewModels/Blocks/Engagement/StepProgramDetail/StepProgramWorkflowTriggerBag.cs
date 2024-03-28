@@ -22,7 +22,7 @@ using System;
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {
     /// <summary>
-    /// 
+    /// The workflow trigger details for the Step Program Detail workflow trigger grid.
     /// </summary>
     public class StepProgramWorkflowTriggerBag
     {

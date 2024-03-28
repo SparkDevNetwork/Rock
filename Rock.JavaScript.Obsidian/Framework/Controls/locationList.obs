@@ -60,6 +60,7 @@
     import { validateAddress } from "@Obsidian/Utility/address";
     import { FormError } from "@Obsidian/Utility/form";
     import RockValidation from "./rockValidation.obs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -109,18 +110,12 @@
     const itemsSource = ref<(() => Promise<ListItemBag[]>) | null>(null);
 
     async function loadItems(): Promise<ListItemBag[]> {
-        const options: Partial<LocationListGetLocationsOptionsBag> = {
+        const options: LocationListGetLocationsOptionsBag = {
             showCityState: props.showCityState,
-            securityGrantToken: securityGrantToken.value
+            securityGrantToken: securityGrantToken.value,
+            locationTypeValueGuid: props.locationTypeValueGuid || emptyGuid,
+            parentLocationGuid: props.parentLocationGuid || emptyGuid,
         };
-
-        if (props.parentLocationGuid) {
-            options.parentLocationGuid = props.parentLocationGuid;
-        }
-
-        if (props.locationTypeValueGuid) {
-            options.locationTypeValueGuid = props.locationTypeValueGuid;
-        }
 
         //var locationTypeValueGuid = "C0D7AE35-7901-4396-870E-3AAF472AAE88";
         const url = "/api/v2/Controls/LocationListGetLocations";
@@ -217,23 +212,17 @@
         isValidating.value = false;
         isLoading.value = true;
 
-        const options: Partial<LocationListSaveNewLocationOptionsBag> = {
+        const options: LocationListSaveNewLocationOptionsBag = {
             securityGrantToken: securityGrantToken.value,
             name: newLocationName.value,
             showCityState: props.showCityState,
-            attributeValues: attributeValues.value
+            attributeValues: attributeValues.value,
+            locationTypeValueGuid: props.locationTypeValueGuid || emptyGuid,
+            parentLocationGuid: props.parentLocationGuid || emptyGuid,
         };
 
         if (newLocationAddress.value.street1 || props.isAddressRequired) {
             options.address = newLocationAddress.value;
-        }
-
-        if (props.parentLocationGuid) {
-            options.parentLocationGuid = props.parentLocationGuid;
-        }
-
-        if (props.locationTypeValueGuid) {
-            options.locationTypeValueGuid = props.locationTypeValueGuid;
         }
 
         const url = "/api/v2/Controls/LocationListSaveNewLocation";

@@ -30,19 +30,7 @@ using Rock.ViewModels.Blocks.Core.Attributes;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-/*
- * WORK IN PROGRESS
- * 
- * This block is a work in progress, but we needed something to test field types.
- * 
- * What doesn't work:
- * Filtering
- * Reorder
- * Security
- * Grid (pagination)
- * EntityId is UNTESTED.
- * Security enforcement probably not correct.
- */
+
 namespace Rock.Blocks.Core
 {
     /// <summary>

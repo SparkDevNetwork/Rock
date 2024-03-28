@@ -20,6 +20,7 @@ import { CommunicationPreference, CommunicationPreferenceDescription } from "@Ob
 import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { getDay, getMonth, getYear } from "@Obsidian/Utility/dateKey";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
@@ -37,6 +38,7 @@ export function convertPersonToPersonRequest(person: FamilyPreRegistrationPerson
         ...person,
 
         // Overwrite required fields.
+        guid: person?.guid || emptyGuid,
         attributeValues: person?.attributeValues || defaults.attributeValues,
         communicationPreference: person?.communicationPreference ?? defaults.communicationPreference,
         email: person?.email || defaults.email,
@@ -70,6 +72,7 @@ export function convertPersonToChildRequest(person: FamilyPreRegistrationPersonB
  */
 export function createPersonRequest(): PersonRequestBag {
     return {
+        guid: emptyGuid,
         attributeValues: {},
         communicationPreference: CommunicationPreference.None,
         email: "",
@@ -80,7 +83,7 @@ export function createPersonRequest(): PersonRequestBag {
         lastName: "",
         mobilePhone: "",
         mobilePhoneCountryCode: "",
-        isMessagingEnabled: false
+        isMessagingEnabled: false,
     };
 }
 
@@ -129,10 +132,11 @@ export function createPersonViewModel(person: Ref<PersonRequestBag>): PersonRequ
  */
 export function createChildRequest(): ChildRequestBag {
     return {
+        guid: emptyGuid,
         attributeValues: {},
         communicationPreference: CommunicationPreference.None,
         email: "",
-        familyRoleGuid: "",
+        familyRoleGuid: emptyGuid,
         firstName: "",
         gender: Gender.Unknown,
         isFirstNameReadOnly: false,
@@ -140,7 +144,7 @@ export function createChildRequest(): ChildRequestBag {
         lastName: "",
         mobilePhone: "",
         mobilePhoneCountryCode: "",
-        isMessagingEnabled: false
+        isMessagingEnabled: false,
     };
 }
 

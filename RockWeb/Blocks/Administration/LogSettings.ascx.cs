@@ -83,11 +83,15 @@ namespace RockWeb.Blocks.Administration
             }
 
             nbLoggingMessage.Visible = true;
+            var categories = rlbCategoriesToLog.SelectedValues
+                .Union( vlCustomCategories.Value.Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+                .Distinct()
+                .ToList();
 
             var logConfig = new RockLogSystemSettings
             {
                 StandardLogLevel = rblVerbosityLevel.SelectedValue.ConvertToEnum<LogLevel>( LogLevel.None ),
-                StandardCategories = rlbCategoriesToLog.SelectedValues,
+                StandardCategories = categories,
                 IsLocalLoggingEnabled = cbLogToLocal.Checked,
                 IsObservabilityLoggingEnabled = cbLogToObservability.Checked,
                 AdvancedSettings = ceCustomConfiguration.Text,
@@ -146,16 +150,11 @@ namespace RockWeb.Blocks.Administration
 
             var rockConfig = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
 
+            var allCategories = rockConfig?.StandardCategories ?? new List<string>();
+            var standardCategories = RockLogger.GetStandardCategories();
+            var categories = allCategories.Where( c => standardCategories.Contains( c ) ).ToList();
+            var customCategories = allCategories.Where( c => !standardCategories.Contains( c ) ).ToList();
             var selectedCategories = rockConfig?.StandardCategories ?? new List<string>();
-            var categories = new List<string>( RockLogger.GetStandardCategories() );
-
-            foreach ( var category in selectedCategories )
-            {
-                if ( !categories.Contains( category ) )
-                {
-                    categories.Add( category );
-                }
-            }
 
             rlbCategoriesToLog.DataSource = categories;
             rlbCategoriesToLog.DataBind();
@@ -175,6 +174,7 @@ namespace RockWeb.Blocks.Administration
 
             wpLocalSettings.Visible = cbLogToLocal.Checked;
 
+            vlCustomCategories.Value = customCategories.JoinStrings( "|" );
             ceCustomConfiguration.Text = rockConfig.AdvancedSettings;
         }
 

@@ -16,15 +16,20 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Spatial;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Blocks.Reporting.ServiceMetricsEntry;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -44,16 +49,27 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a location value
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LOCATION )]
     public class LocationFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
-        private const string ALLOWED_PICKER_MODES = "allowedPickerModes";
         private const string CURRENT_PICKER_MODE = "currentPickerMode";
 
-        #endregion Configuration
+        /// <summary>
+        /// A class that has all of the configuration keys for Location List Field Type.
+        /// </summary>
+        public static class ConfigurationKey
+        {
+            /// <summary>
+            /// The location type
+            /// </summary>
+            public const string AllowedPickerMode = "allowedPickerModes";
+        }
+
+
+        #endregion
 
         #region Formatting
 
@@ -92,7 +108,134 @@ namespace Rock.Field.Types
 
         #endregion
 
-        #region Edit ControL
+        #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var locationValue = publicValue.FromJsonOrNull<ListItemBag>();
+            var addressValue = publicValue.FromJsonOrNull<AddressControlBag>();
+
+            if ( locationValue != null && locationValue.Value.IsNotNullOrWhiteSpace() )
+            {
+                return locationValue.Value;
+            }
+            else if ( addressValue != null )
+            {
+                // Check if we have any values.
+                if ( string.IsNullOrWhiteSpace( addressValue.Street1 )
+                     && string.IsNullOrWhiteSpace( addressValue.Street2 )
+                     && string.IsNullOrWhiteSpace( addressValue.City )
+                     && string.IsNullOrWhiteSpace( addressValue.PostalCode ) )
+                {
+                    return string.Empty;
+                }
+
+                var globalAttributesCache = GlobalAttributesCache.Get();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    try
+                    {
+                        var locationService = new LocationService( rockContext );
+                        var location = locationService.Get( addressValue.Street1,
+                            addressValue.Street2,
+                            addressValue.City,
+                            addressValue.State,
+                            addressValue.PostalCode,
+                            addressValue.Country.IfEmpty( globalAttributesCache.OrganizationCountry ) );
+
+                        if ( location == null )
+                        {
+                            return string.Empty;
+                        }
+
+                        return location.Guid.ToString();
+                    }
+                    catch ( Exception )
+                    {
+                        return addressValue.ToJson() ?? string.Empty;
+                    }
+                }
+            }
+            else if(publicValue.IsNotNullOrWhiteSpace())
+            {
+                if ( publicValue.Contains( "POINT" ) || publicValue.Contains( "POLYGON" ) )
+                {
+                    DbGeography geoPoint = DbGeography.FromText( publicValue.FromJsonOrNull<string>() );
+                    var location = new LocationService( new RockContext() ).GetByGeoPoint( geoPoint );
+                    return location.Guid.ToString();
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( Guid.TryParse( privateValue, out Guid guid ) )
+            {
+                var location = new LocationService( new RockContext() ).Get( guid );
+                if ( location != null )
+                {
+                    if ( location.IsNamedLocation )
+                    {
+                        return new ListItemBag()
+                        {
+                            Value = location.Guid.ToString(),
+                            Text = location.Name,
+                        }.ToCamelCaseJson( false, true );
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( location.GetFullStreetAddress().Replace( ",", string.Empty ) ) )
+                    {
+                        return new AddressControlBag
+                        {
+                            Street1 = location.Street1,
+                            Street2 = location.Street2,
+                            City = location.City,
+                            State = location.State,
+                            PostalCode = location.PostalCode,
+                            Country = location.Country
+                        }.ToCamelCaseJson( false, true );
+                    }
+                    else if ( location.GeoPoint != null )
+                    {
+                        return location.GeoPoint.AsText().ToJson();
+                    }
+                    else if ( location.GeoFence != null )
+                    {
+                        return location.GeoFence.AsText().ToJson();
+                    }
+                }
+                else
+                {
+                    var partialAddress = privateValue.FromJsonOrNull<AddressControlBag>();
+                    if ( partialAddress != null )
+                    {
+                        return partialAddress.ToCamelCaseJson( false, true );
+                    }
+                    else
+                    {
+                        var globalAttributesCache = GlobalAttributesCache.Get();
+
+                        return new AddressControlBag
+                        {
+                            State = globalAttributesCache.OrganizationState,
+                            Country = globalAttributesCache.OrganizationCountry
+                        }.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 
@@ -235,7 +378,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( ALLOWED_PICKER_MODES );
+            configKeys.Add( ConfigurationKey.AllowedPickerMode );
             configKeys.Add( CURRENT_PICKER_MODE );
 
             return configKeys;
@@ -297,14 +440,14 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( ALLOWED_PICKER_MODES, new ConfigurationValue( "Available Location Types", "Select the location types that can be used by the Location Picker.", string.Empty ) );
+            configurationValues.Add( ConfigurationKey.AllowedPickerMode, new ConfigurationValue( "Available Location Types", "Select the location types that can be used by the Location Picker.", string.Empty ) );
             configurationValues.Add( CURRENT_PICKER_MODE, new ConfigurationValue( "Default Location Type", "Select the location type that is initially displayed.", string.Empty ) );
 
             if ( controls != null && controls.Count == 2 )
             {
                 if ( controls[0] != null && controls[0] is RockCheckBoxList )
                 {
-                    configurationValues[ALLOWED_PICKER_MODES].Value = ( ( RockCheckBoxList ) controls[0] ).SelectedValues.AsDelimited( "," );
+                    configurationValues[ConfigurationKey.AllowedPickerMode].Value = ( ( RockCheckBoxList ) controls[0] ).SelectedValues.AsDelimited( "," );
                 }
 
                 if ( controls[1] != null && controls[1] is RockRadioButtonList )
@@ -325,9 +468,9 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Count == 2 )
             {
-                if ( controls[0] != null && controls[0] is RockCheckBoxList && configurationValues.ContainsKey( ALLOWED_PICKER_MODES ) )
+                if ( controls[0] != null && controls[0] is RockCheckBoxList && configurationValues.ContainsKey( ConfigurationKey.AllowedPickerMode ) )
                 {
-                    var selectedValues = configurationValues[ALLOWED_PICKER_MODES].Value?.Split( ',' );
+                    var selectedValues = configurationValues[ConfigurationKey.AllowedPickerMode].Value?.Split( ',' );
                     if ( selectedValues != null )
                     {
                         ( ( RockCheckBoxList ) controls[0] ).Items.Cast<ListItem>().ToList().ForEach( li => li.Selected = selectedValues.Any( v => v == li.Value ) );
@@ -384,9 +527,9 @@ namespace Rock.Field.Types
             var currentPickerMode = configurationValues.ContainsKey( CURRENT_PICKER_MODE ) ? configurationValues[CURRENT_PICKER_MODE].Value.ConvertToEnumOrNull<LocationPickerMode>() ?? LocationPickerMode.Address : LocationPickerMode.Address;
 
             string[] allowedPickerModesConfig = null;
-            if ( configurationValues.ContainsKey(ALLOWED_PICKER_MODES) && configurationValues[ALLOWED_PICKER_MODES].Value.IsNotNullOrWhiteSpace() )
+            if ( configurationValues.ContainsKey( ConfigurationKey.AllowedPickerMode ) && configurationValues[ConfigurationKey.AllowedPickerMode].Value.IsNotNullOrWhiteSpace() )
             {
-                allowedPickerModesConfig = configurationValues[ALLOWED_PICKER_MODES].Value.Split( ',' );
+                allowedPickerModesConfig = configurationValues[ConfigurationKey.AllowedPickerMode].Value.Split( ',' );
             }
 
             if ( allowedPickerModesConfig != null && allowedPickerModesConfig.Any() )

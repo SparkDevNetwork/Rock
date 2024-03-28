@@ -58,6 +58,19 @@ namespace Rock.Data
         /// <param name="guid">The GUID.</param>
         /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
         /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
+        public void AddOrUpdateEntityType( string name, string guid, bool isEntity, bool isSecured )
+        {
+            UpdateEntityType( name, guid, isEntity, isSecured );
+        }
+
+        /// <summary>
+        /// Important: This method should be considered obsolete. Use AddOrUpdateEntityType instead.
+        /// Updates the EntityType by name (if it exists); otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
         public void UpdateEntityType( string name, string guid, bool isEntity, bool isSecured )
         {
             Migration.Sql( string.Format( @"
@@ -3524,34 +3537,35 @@ END" );
         }
 
         /// <summary>
-        /// This is a quick fix method. DO NOT USE
+        /// This is a quick fix method. DO NOT USE.
+        /// This job is being used by the Chop/Swap Job. TO BE DELETED once all the migrations are done.
         /// </summary>
-        /// <param name="attributeGuid"></param>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
+        /// <param name="newBlockAttributeGuid"></param>
+        /// <param name="attributeQualifierKey"></param>
+        /// <param name="attributeQualifierValue"></param>
         /// <param name="guid"></param>
-        internal void AddAttributeQualifierForSQL( string attributeGuid, string key, string value, string guid )
+        internal void AddAttributeQualifierForSQL( string newBlockAttributeGuid, string attributeQualifierKey, string attributeQualifierValue, string guid )
         {
-            value = value?.Replace( "'", "''" ) ?? "";
+            attributeQualifierValue = attributeQualifierValue?.Replace( "'", "''" ) ?? "";
             string sql = $@"
-                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
+                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{newBlockAttributeGuid}')
 
                 IF NOT EXISTS(SELECT * FROM [AttributeQualifier] WHERE [Guid] = '{guid}')
                 BEGIN
 	                -- It's possible that the qualifier exists with a different GUID so also check for AttributeId and Key
-	                DECLARE @guid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [AttributeQualifier] WHERE AttributeId = @AttributeId AND [Key] = '{key}')
+	                DECLARE @guid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [AttributeQualifier] WHERE AttributeId = @AttributeId AND [Key] = '{attributeQualifierKey}')
 	                IF @guid IS NOT NULL
 	                BEGIN
-		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{value}' WHERE [Guid] = @guid
+		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{attributeQualifierValue}' WHERE [Guid] = @guid
 	                END
 	                ELSE BEGIN
 		                INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
-		                VALUES(1, @AttributeId, '{key}', '{value}', '{guid}')
+		                VALUES(1, @AttributeId, '{attributeQualifierKey}', '{attributeQualifierValue}', '{guid}')
 	                END
                 END
                 ELSE
                 BEGIN
-                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{key}', [Value] = '{value}' WHERE [Guid] = '{guid}'
+                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{attributeQualifierKey}', [Value] = '{attributeQualifierValue}' WHERE [Guid] = '{guid}'
                 END";
 
             Migration.Sql( sql );
@@ -8539,6 +8553,8 @@ END
         /// <param name="blockTypeReplacements">A key value pair of the webforms block type GUID to be replaced with the corresponding obsidian block type GUID</param>
         /// <param name="migrationStrategy">The Migration Strategy to be used to replace the block. It can be either "Chop" or "Swap"</param>
         /// <param name="jobGuid">The GUID of the job</param>
+        [RockObsolete( "1.16.5" )]
+        [Obsolete( "Use ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid, Dictionary<string, string> blockAttributeKeysToIgnore = null ) instead.", false )]
         public void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid )
         {
             if ( name.Length > 31 )
@@ -8564,6 +8580,45 @@ END
             AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "MigrationStrategy", migrationStrategy );
         }
 
+        /// <summary>
+        /// Creates a Service Job to Replace webforms blocks with corresponding obsidian blocks.
+        /// </summary>
+        /// <param name="name">The name of the Job. For instance the list of block types it would be replacing. Restricted to 31 characters due to DB constraints.
+        /// In the front end the name would be prefixed with : "Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks -"
+        /// </param>
+        /// <param name="blockTypeReplacements">A key value pair of the webforms block type GUID to be replaced with the corresponding obsidian block type GUID</param>
+        /// <param name="migrationStrategy">The Migration Strategy to be used to replace the block. It can be either "Chop" or "Swap"</param>
+        /// <param name="jobGuid">The GUID of the job</param>
+        /// <param name="blockAttributeKeysToIgnore">An optional dictionary of attribute keys to be ignored for the blocktypes being Chopped or Swapped.</param>
+        internal void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid, Dictionary<string, string> blockAttributeKeysToIgnore = null )
+        {
+            if ( name.Length > 31 )
+            {
+                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 31 characters.", "name" );
+            }
+
+            // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
+            AddPostUpdateServiceJob( name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - {name}",
+                description: "This job will replace the  WebForms blocks with their Obsidian blocks on all sites, pages, and layouts.",
+                jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid );
+
+            // Adding the Attributes for the Job in case they happen to not be present in the database before
+
+            // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Block Type Guid Replacement Pairs
+            AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.KEY_VALUE_LIST, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Block Type Guid Replacement Pairs", "Block Type Guid Replacement Pairs", "The key-value pairs of replacement BlockType.Guid values, where the key is the existing BlockType.Guid and the value is the new BlockType.Guid. Blocks of BlockType.Guid == key will be replaced by blocks of BlockType.Guid == value in all sites, pages, and layouts.", 1, "", "CDDB8075-E559-499F-B12F-B8DC8CCD73B5", "BlockTypeGuidReplacementPairs" );
+
+            // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Migration 
+            AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.SINGLE_SELECT, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Migration Strategy", "Migration Strategy", "Determines if the blocks should be chopped instead of swapped. By default,the old blocks are swapped with the new ones.", 2, "Swap", "FA99E828-2388-4CDF-B69B-DBC36332D6A4", "MigrationStrategy" );
+
+            // Attribute: Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks: Block Attribute Keys To Ignore
+            AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", Rock.SystemGuid.FieldType.KEY_VALUE_LIST, "Class", "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", "Webform BlockType Attribute Keys To Ignore During Validation", "Webform BlockType Attribute Keys To Ignore During Validation", "A Guid [key] of the old Webform BlockType and the [value] as a comma delimited list of BlockType Attribute keys to ignore when validating the Obsidian and Webforms blocks have the same keys.", 3, "", "D5122332-BA5E-4919-BCE0-5F8EF301B43C", "BlockAttributeKeysToIgnore" );
+
+            // Adding the values to the Attributes for the job
+            AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "BlockTypeGuidReplacementPairs", SerializeDictionary( blockTypeReplacements ) );
+            AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "MigrationStrategy", migrationStrategy );
+            AddOrUpdatePostUpdateJobAttributeValue( jobGuid, "BlockAttributeKeysToIgnore", SerializeDictionary( blockAttributeKeysToIgnore ) );
+        }
+
         private string SerializeDictionary( Dictionary<string, string> dictionary )
         {
             const string keyValueSeparator = "^";
@@ -8585,6 +8640,222 @@ END
             return sb.ToString();
         }
 
+        #endregion
+
+        #region Persisted Datasets
+
+        /// <summary>
+        /// Adds a new persisted dataset with an associated schedule.
+        /// </summary>
+        /// <param name="scheduleGuid">The unique identifier of the schedule.</param>
+        /// <param name="scheduleName">The name of the schedule.</param>
+        /// <param name="scheduleDescription">The description of the schedule.</param>
+        /// <param name="iCalendarContent">The iCalendar content of the schedule.</param>
+        /// <param name="effectiveStartDate">The effective start date of the schedule.</param>
+        /// <param name="isScheduleActive">Indicates if the schedule is active.</param>
+        /// <param name="datasetGuid">The unique identifier of the persisted dataset.</param>
+        /// <param name="datasetAccessKey">The access key of the persisted dataset.</param>
+        /// <param name="datasetName">The name of the persisted dataset.</param>
+        /// <param name="datasetDescription">The description of the persisted dataset.</param>
+        /// <param name="allowManualRefresh">Indicates if manual refresh is allowed for the persisted dataset.</param>
+        /// <param name="resultFormat">Indicated the Result Format of the persisted dataset.</param>
+        /// <param name="buildScript">The build script of the persisted dataset.</param>
+        /// <param name="buildScriptType">The build script type of the persisted dataset.</param>
+        /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
+        /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
+        /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
+        public void AddPersistedDatasetWithSchedule(
+            string scheduleGuid,
+            string scheduleName,
+            string scheduleDescription,
+            string iCalendarContent,
+            DateTime effectiveStartDate,
+            bool isScheduleActive,
+            string datasetGuid,
+            string datasetAccessKey,
+            string datasetName,
+            string datasetDescription,
+            bool allowManualRefresh,
+            int resultFormat,
+            string buildScript,
+            int buildScriptType,
+            bool isDatasetSystem,
+            bool isDatasetActive,
+            string enabledLavaCommands )
+        {
+            Migration.Sql( string.Format( @"
+        DECLARE @ScheduleId INT;
+
+        INSERT INTO [Schedule] (
+            [Name],
+            [Description],
+            [iCalendarContent],
+            [EffectiveStartDate],
+            [IsActive],
+            [Guid]
+        )
+        VALUES (
+            '{0}',
+            '{1}',
+            '{2}',
+            '{3}',
+            {4},
+            '{5}'
+        );
+
+        SET @ScheduleId = SCOPE_IDENTITY();
+
+        INSERT INTO [PersistedDataset] (
+            [AccessKey],
+            [Name],
+            [Description],
+            [AllowManualRefresh],
+            [ResultFormat],
+            [BuildScript],
+            [BuildScriptType],
+            [IsSystem],
+            [IsActive],
+            [EnabledLavaCommands],
+            [PersistedScheduleId],
+            [Guid]
+        )
+        VALUES (
+            '{6}',
+            '{7}',
+            '{8}',
+            {9},
+            {10},
+            '{11}',
+            {12},
+            {13},
+            {14},
+            '{15}',
+            @ScheduleId,
+            '{16}'
+        );",
+                scheduleName,
+                scheduleDescription,
+                iCalendarContent,
+                effectiveStartDate,
+                isScheduleActive ? 1 : 0,
+                scheduleGuid,
+                datasetAccessKey,
+                datasetName.Replace( "'", "''" ),
+                datasetDescription.Replace( "'", "''" ),
+                allowManualRefresh ? 1 : 0,
+                resultFormat,
+                buildScript.Replace( "'", "''" ),
+                buildScriptType,
+                isDatasetSystem ? 1 : 0,
+                isDatasetActive ? 1 : 0,
+                enabledLavaCommands,
+                datasetGuid ) );
+        }
+
+        /// <summary>
+        /// Adds a new persisted dataset with a refresh interval.
+        /// </summary>
+        /// <param name="datasetGuid">The unique identifier of the persisted dataset.</param>
+        /// <param name="datasetAccessKey">The access key of the persisted dataset.</param>
+        /// <param name="datasetName">The name of the persisted dataset.</param>
+        /// <param name="datasetDescription">The description of the persisted dataset.</param>
+        /// <param name="allowManualRefresh">Indicates if manual refresh is allowed for the persisted dataset.</param>
+        /// <param name="buildScript">The build script of the persisted dataset.</param>
+        /// <param name="resultFormat"></param>
+        /// <param name="buildScriptType">The build script type of the persisted dataset.</param>
+        /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
+        /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
+        /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
+        /// <param name="refreshIntervalMinutes">The refresh interval in minutes for the persisted dataset.</param>
+        public void AddPersistedDatasetWithRefreshInterval(
+            string datasetGuid,
+            string datasetAccessKey,
+            string datasetName,
+            string datasetDescription,
+            bool allowManualRefresh,
+            int resultFormat,
+            string buildScript,
+            int buildScriptType,
+            bool isDatasetSystem,
+            bool isDatasetActive,
+            string enabledLavaCommands,
+            int refreshIntervalMinutes )
+        {
+            Migration.Sql( string.Format( @"
+        INSERT INTO [PersistedDataset] (
+            [AccessKey],
+            [Name],
+            [Description],
+            [AllowManualRefresh],
+            [ResultFormat],
+            [BuildScript],
+            [BuildScriptType],
+            [IsSystem],
+            [IsActive],
+            [EnabledLavaCommands],
+            [PersistedScheduleId],
+            [Guid]
+        )
+        VALUES (
+            '{0}',
+            '{1}',
+            '{2}',
+            {3},
+            {4},
+            '{5}',
+            {6},
+            {7},
+            {8},
+            '{9}',
+            {10},
+            '{11}'
+        );",
+                datasetAccessKey,
+                datasetName.Replace( "'", "''" ),
+                datasetDescription.Replace( "'", "''" ),
+                allowManualRefresh ? 1 : 0,
+                resultFormat,
+                buildScript.Replace( "'", "''" ),
+                buildScriptType,
+                isDatasetSystem ? 1 : 0,
+                isDatasetActive ? 1 : 0,
+                enabledLavaCommands,
+                refreshIntervalMinutes,
+                datasetGuid ) );
+        }
+
+        /// <summary>
+        /// Deletes a persisted dataset and its associated schedule.
+        /// </summary>
+        /// <param name="datasetGuid">The unique identifier of the persisted dataset.</param>
+        public void DeletePersistedDatasetWithSchedule( string datasetGuid )
+        {
+            Migration.Sql( string.Format( @"
+        DECLARE @ScheduleId INT;
+
+        SELECT @ScheduleId = [PersistedScheduleId]
+        FROM [PersistedDataset]
+        WHERE [Guid] = '{0}';
+
+        DELETE FROM [PersistedDataset]
+        WHERE [Guid] = '{0}';
+
+        DELETE FROM [Schedule]
+        WHERE [Id] = @ScheduleId;",
+                datasetGuid ) );
+        }
+
+        /// <summary>
+        /// Deletes a persisted dataset.
+        /// </summary>
+        /// <param name="datasetGuid">The unique identifier of the persisted dataset.</param>
+        public void DeletePersistedDataset( string datasetGuid )
+        {
+            Migration.Sql( string.Format( @"
+        DELETE FROM [PersistedDataset]
+        WHERE [Guid] = '{0}';",
+                datasetGuid ) );
+        }
         #endregion
 
         /// <summary>

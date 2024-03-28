@@ -32,10 +32,10 @@ export type SaveSchedulePreferenceRequestBag = {
     scheduleStartDate?: string | null;
 
     /** Gets or sets the selected group unique identifier. */
-    selectedGroupGuid?: Guid | null;
+    selectedGroupGuid: Guid;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 
     /** Gets or sets the selected schedule template unique identifier. */
     selectedScheduleTemplateGuid?: Guid | null;

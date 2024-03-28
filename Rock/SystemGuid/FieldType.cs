@@ -184,6 +184,11 @@ namespace Rock.SystemGuid
         public const string COMPONENTS = "039E2E97-3682-4B29-8748-7132287A2059";
 
         /// <summary>
+        /// Conditional Scale Field Type
+        /// </summary>
+        public const string CONDITIONAL_SCALE = "E73B9F41-8325-4229-8EA5-75180066680C";
+
+        /// <summary>
         /// Connection Activity Type field type
         /// </summary>
         public const string CONNECTION_ACTIVITY_TYPE = "39356C8F-B69E-4744-906C-0A182671B9F8";

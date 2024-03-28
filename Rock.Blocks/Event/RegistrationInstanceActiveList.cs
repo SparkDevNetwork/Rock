@@ -125,10 +125,7 @@ namespace Rock.Blocks.Event
                     .Where( i =>
                         ( i.StartDateTime <= RockDateTime.Now || !i.StartDateTime.HasValue ) &&
                         ( i.EndDateTime > RockDateTime.Now || !i.EndDateTime.HasValue ) &&
-                        i.IsActive )
-                    .AsEnumerable()
-                    .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
-                    .AsQueryable();
+                        i.IsActive );
 
             return qry;
         }
@@ -137,6 +134,19 @@ namespace Rock.Blocks.Event
         protected override IQueryable<RegistrationInstance> GetOrderedListQueryable( IQueryable<RegistrationInstance> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( i => i.StartDateTime );
+        }
+
+        /// <inheritdoc/>
+        protected override List<RegistrationInstance> GetListItems( IQueryable<RegistrationInstance> queryable, RockContext rockContext )
+        {
+            var listItems = base.GetListItems( queryable, rockContext );
+
+            var securedAttendanceItems = listItems
+                .AsEnumerable()
+                .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
+            
+            return listItems;
         }
 
         /// <inheritdoc/>

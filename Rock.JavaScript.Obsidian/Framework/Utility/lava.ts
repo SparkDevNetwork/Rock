@@ -21,7 +21,7 @@ const engine = new Liquid({
     cache: true
 });
 
-const hasLavaCommandFieldsRegex: RegExp = /(?<=\{%).+(?<=%\})/;
+const hasLavaCommandFieldsRegex: RegExp = /\{%.+%\}/;
 
 export function resolveMergeFields(template: string, mergeFields: Record<string, unknown>): string {
     const tpl = engine.parse(template);

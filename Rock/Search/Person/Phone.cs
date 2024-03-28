@@ -30,9 +30,9 @@ namespace Rock.Search.Person
     /// Searches for people with matching phones
     /// </summary>
     [Description( "Person Phone Search" )]
-    [Export(typeof(SearchComponent))]
-    [ExportMetadata("ComponentName", "Person Phone")]
-    [Rock.SystemGuid.EntityTypeGuid( "5F92ECC3-4EBD-4C41-A691-C03F1DA4F7BF")]
+    [Export( typeof( SearchComponent ) )]
+    [ExportMetadata( "ComponentName", "Person Phone" )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEARCH_COMPONENT_PERSON_PHONE )]
     public class Phone : SearchComponent
     {
 

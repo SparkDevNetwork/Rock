@@ -40,7 +40,7 @@ export type ScheduleRowBag = {
      * If confirmation status is "Unavailable," this value represents a person schedule exclusion entity.
      * Otherwise, this value represents an attendance entity.
      */
-    entityGuid?: Guid | null;
+    entityGuid: Guid;
 
     /** Gets or sets the name of the family member to whom this row belongs, if it doesn't belong to the current person. */
     familyMemberName?: string | null;

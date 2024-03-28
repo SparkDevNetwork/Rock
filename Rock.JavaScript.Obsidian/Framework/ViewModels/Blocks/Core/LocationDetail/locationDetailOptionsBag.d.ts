@@ -36,7 +36,7 @@ export type LocationDetailOptionsBag = {
     hasPersonId: boolean;
 
     /** Gets or sets the map style unique identifier. */
-    mapStyleGuid?: Guid | null;
+    mapStyleGuid: Guid;
 
     /** Gets or sets the panel title. */
     panelTitle?: string | null;

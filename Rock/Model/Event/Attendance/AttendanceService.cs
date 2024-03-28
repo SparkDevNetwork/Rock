@@ -1155,6 +1155,24 @@ namespace Rock.Model
                 mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
                 mergeFields.Add( "Attendances", attendances );
 
+                /*
+                    3/26/2024 - JPH
+
+                    The "Person" merge field needs to be added for SMS Communication records to be created.
+                    https://github.com/SparkDevNetwork/Rock/blob/7335d99c676ece80658f10a6844a57ecfa8cefa3/Rock/Communication/Transport/Twilio.cs#L411-L414
+
+                    It would ultimately be better to ensure this merge field exists within the `SendMessage(...)`
+                    method of the `CommunicationHelper` so Communication records would be created for all SMS
+                    messages sent via that helper. However, we're going to play it safe for now, for fear of
+                    polluting the Communication history blocks with potentially-many SMS messages that aren't
+                    currently being written to the Communication table; for now, this change will only affect
+                    Group Scheduler confirmation and reminder SMS messages.
+
+                    Reason: Group Scheduling SMS Confirmations Not Showing In Communication History.
+                    https://github.com/SparkDevNetwork/Rock/issues/5799
+                 */
+                mergeFields.Add( "Person", recipient );
+
                 var forceCommunicationType = CommunicationType.RecipientPreference;
                 var validSmsTemplateExists = communicationMessage.SMSMessage.IsNotNullOrWhiteSpace() && communicationMessage.SmsFromSystemPhoneNumberId != null;
                 var individualHasValidSmsNumber = recipient.PhoneNumbers.Any( ph => ph.IsMessagingEnabled );

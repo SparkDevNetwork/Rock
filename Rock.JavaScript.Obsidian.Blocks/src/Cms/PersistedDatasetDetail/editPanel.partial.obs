@@ -37,7 +37,7 @@
                     label="Build Script"
                     help="Lava Template to use for building JSON that will be used as the cached dataset object."
                     theme="rock"
-                    mode="text"
+                    mode="lava"
                     :editorHeight="200"
                     :disabled="isSystem" />
 
@@ -309,11 +309,16 @@
     watch([...propRefs, selectedNamedSchedule], emitUpdate);
 
     watch(() => isPersistenceEnabled.value, handlePersistenceToggle);
+
     watch(() => intervalMinutes.value, () => {
         if (typeOfPersistence.value === "Interval") {
             refreshIntervalMinutes.value = intervalMinutes.value;
             emitUpdate();
         }
+    });
+
+    watch(() => typeOfInterval.value, () => {
+        emitUpdate();
     });
     // #endregion
 
@@ -324,10 +329,7 @@
 .sliderButtons {
     display: flex;
     justify-content: flex-end;
-    /* Align items to the end of the flex container */
     align-items: center;
-    /* Vertically center items */
     margin-top: 10px;
-    /* Add some space above the buttons */
 }
 </style>

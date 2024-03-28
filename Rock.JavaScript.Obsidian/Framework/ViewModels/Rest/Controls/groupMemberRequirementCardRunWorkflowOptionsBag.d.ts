@@ -29,13 +29,13 @@ import { Guid } from "@Obsidian/Types";
  */
 export type GroupMemberRequirementCardRunWorkflowOptionsBag = {
     /** Identifier for the GroupMember */
-    groupMemberGuid?: Guid | null;
+    groupMemberGuid: Guid;
 
     /** Identifier for the GroupMemberRequirement */
-    groupMemberRequirementGuid?: Guid | null;
+    groupMemberRequirementGuid: Guid;
 
     /** Identifier for the GroupRequirement */
-    groupRequirementGuid?: Guid | null;
+    groupRequirementGuid: Guid;
 
     /** A URL or page identifier for the page where the workflow should be run */
     workflowEntryLinkedPageValue?: string | null;

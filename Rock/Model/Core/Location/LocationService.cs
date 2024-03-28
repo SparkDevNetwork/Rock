@@ -157,8 +157,7 @@ namespace Rock.Model
                  && string.IsNullOrWhiteSpace( city )
                  && string.IsNullOrWhiteSpace( state )
                  && string.IsNullOrWhiteSpace( locality )
-                 && string.IsNullOrWhiteSpace( postalCode )
-                 && string.IsNullOrWhiteSpace( country ) )
+                 && string.IsNullOrWhiteSpace( postalCode ) )
             {
                 return null;
             }

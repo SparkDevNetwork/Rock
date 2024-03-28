@@ -263,7 +263,7 @@
     import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { debounce } from "@Obsidian/Utility/util";
 
@@ -372,11 +372,6 @@
             return;
         }
 
-        const bag: GroupAttendanceDetailAddPersonRequestBag = {
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
-            personAliasGuid: personAliasGuid
-        };
-
         if (!attendanceOccurrenceGuid.value) {
             // Create a new occurrence if it hasn't been saved yet.
             await getOrCreateAttendanceOccurrence({
@@ -385,11 +380,16 @@
                 scheduleGuid: scheduleGuid.value,
 
                 // This will ensure the expected attendance is updated on the existing or newly created occurrence.
-                addedPersonAliasGuid: bag.personAliasGuid,
+                addedPersonAliasGuid: personAliasGuid,
             });
         }
         else {
-            var result = await invokeBlockAction<GroupAttendanceDetailAddPersonResponseBag>("AddPerson", { bag });
+            const bag: GroupAttendanceDetailAddPersonRequestBag = {
+                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
+                personAliasGuid: personAliasGuid || emptyGuid
+            };
+
+            const result = await invokeBlockAction<GroupAttendanceDetailAddPersonResponseBag>("AddPerson", { bag });
 
             if (result?.data?.attendance) {
                 // Add the attendance to the array so it can be seen in the attendances list.
@@ -417,7 +417,7 @@
      */
     async function onAttendanceChanged(attendance: GroupAttendanceDetailAttendanceBag): Promise<void> {
         await autoMarkAttendance({
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
             personAliasId: attendance.personAliasId,
             didAttend: attendance.didAttend
         });
@@ -449,7 +449,7 @@
     async function onAttendanceOccurrenceTypeChanged(newAttendanceOccurrenceType: Guid): Promise<void> {
         attendanceOccurrenceTypeGuid.value = newAttendanceOccurrenceType;
         await autoUpdateAttendanceOccurrenceType({
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
             attendanceOccurrenceTypeGuid: newAttendanceOccurrenceType
         });
     }
@@ -499,7 +499,7 @@
                     }
 
                     await autoUpdateDidNotOccur({
-                        attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+                        attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
                         didNotOccur: newDidNotOccur
                     });
                 }
@@ -508,7 +508,7 @@
         else {
             didNotOccur.value = newDidNotOccur;
             autoUpdateDidNotOccur({
-                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
                 didNotOccur: newDidNotOccur
             }).then(() => {/* do nothing */ });
         }
@@ -700,7 +700,10 @@
     async function getGroupAttendanceTopic(groupGuid: Guid, attendanceOccurrenceGuid: Guid): Promise<GroupAttendanceTopic> {
         const topic = await getTopic("Rock.RealTime.Topics.EntityUpdatedTopic");
 
-        await invokeBlockAction("SubscribeToRealTime", { connectionId: topic.connectionId, groupGuid });
+        await invokeBlockAction("SubscribeToRealTime", {
+            connectionId: topic.connectionId,
+            groupGuid: groupGuid || emptyGuid
+        });
 
         // Associate the AttendanceOccurrence and Group unique identifiers to the topic so we don't have to keep passing them around.
         Object.defineProperty(topic, "attendanceOccurrenceGuid", {
@@ -767,7 +770,8 @@
      * Updates the DidAttend value of a single Attendance.
      */
     async function markAttendance(bag: GroupAttendanceDetailMarkAttendanceRequestBag): Promise<void> {
-        if (!attendanceOccurrenceGuid.value) {
+        const occurenceGuid = attendanceOccurrenceGuid.value;
+        if (!occurenceGuid) {
             // Create a new occurrence if it hasn't been saved yet.
             await getOrCreateAttendanceOccurrence({
                 attendanceOccurrenceDate: attendanceForDateIsoString.value,
@@ -781,7 +785,10 @@
                 // Otherwise, if another device already created the occurrence,
                 // then only attendances with a true/false didAttend value
                 // will be updated, while those with null didAttend values will be ignored.
-                updatedAttendances: attendances.value,
+                updatedAttendances: attendances.value.map(attendance => ({
+                    ...attendance,
+                    attendanceOccurrenceGuid: emptyGuid,
+                })),
             });
         }
         else if (attendances.value.some(a => (a.didAttend ?? null) === null)) {
@@ -793,7 +800,10 @@
                 scheduleGuid: scheduleGuid.value,
 
                 // Pass the attendance that changed and any new people (didAttend is null).
-                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || ((attendance.didAttend ?? null) === null))
+                updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || ((attendance.didAttend ?? null) === null)).map(attendance => ({
+                    ...attendance,
+                    attendanceOccurrenceGuid: occurenceGuid,
+                }))
             });
         }
         else {
@@ -823,7 +833,7 @@
 
             const bag: GroupAttendanceDetailPrintRosterRequestBag = {
                 attendanceOccurrenceDate: attendanceForDateIsoString.value,
-                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
+                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
                 locationGuid: locationGuid.value,
                 scheduleGuid: scheduleGuid.value
             };
@@ -908,11 +918,6 @@
      * Saves the AttendanceOccurrence notes.
      */
     async function updateNotes(): Promise<void> {
-        const bag: GroupAttendanceDetailUpdateNotesRequestBag = {
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
-            notes: notes.value
-        };
-
         if (!attendanceOccurrenceGuid.value) {
             // Create a new occurrence if it hasn't been saved yet.
             await getOrCreateAttendanceOccurrence({
@@ -921,10 +926,15 @@
                 scheduleGuid: scheduleGuid.value,
 
                 // This will ensure the updated notes are set on the existing or newly created occurrence.
-                updatedNotes: bag.notes,
+                updatedNotes: notes.value,
             });
         }
         else {
+            const bag: GroupAttendanceDetailUpdateNotesRequestBag = {
+                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
+                notes: notes.value
+            };
+
             await invokeBlockAction<void>("UpdateNotes", { bag });
         }
     }

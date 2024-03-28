@@ -38,7 +38,7 @@ export type ContentChannelItemListOptionsBag = {
 
     isManuallyOrdered: boolean;
 
-    libraryLicenseGuid?: Guid | null;
+    libraryLicenseGuid: Guid;
 
     libraryLicenseName?: string | null;
 
