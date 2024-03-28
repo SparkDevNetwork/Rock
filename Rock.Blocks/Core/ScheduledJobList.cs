@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -279,7 +280,7 @@ namespace Rock.Blocks.Core
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult RunNow( string key )
+        public async Task<BlockActionResult> RunNow( string key )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -288,15 +289,9 @@ namespace Rock.Blocks.Core
 
                 if ( entity != null )
                 {
-                    System.Threading.Tasks.Task.Run( () =>
-                    {
-                        // TODO: Add nuget package for System.Diagnostics.DiagnosticSource.dll
-                        // System.Diagnostics.Activity.Current = null;
-                        new ProcessRunJobNow.Message { JobId = entity.Id }.Send();
-                    } );
                     new ProcessRunJobNow.Message { JobId = entity.Id }.Send();
                     // wait a split second for the job to start so that the grid will show the status (if it changed)
-                    System.Threading.Tasks.Task.Delay( 250 ).Wait();
+                    await Task.Delay( 250 );
                 }
 
                 return ActionOk();
