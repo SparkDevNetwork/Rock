@@ -164,6 +164,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_152_REPLACE_WEB_FORMS_BLOCKS_WITH_OBSIDIAN_BLOCKS = "4232194C-90AE-4B44-93E7-1E5DE984A9E1";
 
         /// <summary>
+        /// The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket.
+        /// </summary>
+        public const string DATA_MIGRATIONS_154_UPDATE_AGE_BRACKET_VALUES = "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1";
+
+        /// <summary>
         /// The Job to run Post v16.0 Move Person Preferences.
         /// </summary>
         public const string DATA_MIGRATIONS_160_MOVE_PERSON_PREFERENCES = "C8591D15-9D37-49D3-8DF8-1DB72EE42D29";
@@ -297,6 +302,11 @@ namespace Rock.SystemGuid
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
 
         /// <summary>
+        /// The <see cref="Rock.Jobs.UpdateAnalyticsSourceZipCode" /> job.
+        /// </summary>
+        public const string UPDATE_ANALYTICS_SOURCE_ZIPCODE = "29731D97-699D-4D34-A9F4-50C7C33D5C48";
+
+        /// <summary>
         /// The Post Update Data Migration Job to swap the Notes Block
         /// </summary>
         public const string DATA_MIGRATIONS_SWAP_NOTES_BLOCK = "8390C1AC-88D6-474A-AC05-8FFBD358F75D";
@@ -331,5 +341,20 @@ namespace Rock.SystemGuid
         /// The post update data migration job to chop the Login and Account Entry blocks.
         /// </summary>
         public const string DATA_MIGRATIONS_161_CHOP_SECURITY_BLOCKS = "A65D26C1-229E-4198-B388-E269C3534BC0";
+
+        /// <summary>
+        /// The post update data migration job to chop the Email Preference Entry block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_162_CHOP_EMAIL_PREFERENCE_ENTRY = "AE07C80A-80A4-48FD-908C-56DDB1CAA322";
+
+        /// <summary>
+        /// The post update data migration job to remove legacy preference attributes.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES = "46d98280-7611-4588-831d-6924e2be9da6";
+
+        /// <summary>
+        /// The <see cref="Rock.Jobs.UpdatePersistedDatasets" /> job.
+        /// </summary>
+        public const string UPDATE_PERSISTED_DATASETS = "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA";
     }
 }

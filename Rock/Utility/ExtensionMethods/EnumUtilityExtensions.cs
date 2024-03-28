@@ -18,6 +18,8 @@ using Rock.Utility;
 using Rock.ViewModels.Utility;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 
@@ -66,7 +68,7 @@ namespace Rock
         /// </summary>
         /// <param name="enumType">The type of the enum to be converted to ListItemBag</param>
         /// <returns>An array of ListItemBag</returns>
-        internal static List<ListItemBag> ToEnumListItemBag( this Type enumType )
+        public static List<ListItemBag> ToEnumListItemBag( this Type enumType )
         {
             var listItemBag = new List<ListItemBag>();
             foreach ( Enum enumValue in Enum.GetValues(enumType))
@@ -78,5 +80,29 @@ namespace Rock
 
             return listItemBag.ToList();
         }
+
+        /// <summary>
+        /// Converts the IEnumerable <see cref="int"/> to a dbo.EntityIdList <see cref="SqlParameter"/> populated with values.
+        /// </summary>
+        /// <param name="entityIds">An The enumerable of int to convert.</param>
+        /// <param name="parameterName">The name of the Sql Parameter to be set.</param>
+        /// <returns>A SqlParameter of Type dbo.EntityIdList whose values are those of this enumerable.</returns>
+        public static SqlParameter ConvertToEntityIdListParameter( this IEnumerable<int> entityIds, string parameterName )
+        {
+            var dataTable = new DataTable();
+            dataTable.Columns.Add( "EntityId", typeof( int ) );
+
+            foreach ( var value in entityIds )
+            {
+                dataTable.Rows.Add( value );
+            }
+
+            return new SqlParameter( parameterName, SqlDbType.Structured )
+            {
+                TypeName = "dbo.EntityIdList",
+                Value = dataTable
+            };
+        }
+
     }
 }

@@ -29,7 +29,7 @@ namespace Rock
     /// <summary>
     /// Extension methods for <see cref="SecurityGrant"/>.
     /// </summary>
-    internal static class SecurityGrantExtensions
+    public static class SecurityGrantExtensions
     {
         /// <summary>
         /// Adds the security grant rules required for the attributes to function properly.

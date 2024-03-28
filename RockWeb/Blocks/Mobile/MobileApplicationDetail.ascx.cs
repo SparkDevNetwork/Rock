@@ -493,6 +493,13 @@ namespace RockWeb.Blocks.Mobile
             cbCompressUpdatePackages.Checked = additionalSettings.IsPackageCompressionEnabled;
             tbAuth0ClientDomain.Text = additionalSettings.Auth0Domain;
             tbAuth0ClientId.Text = additionalSettings.Auth0ClientId;
+            tbEntraClientId.Text = additionalSettings.EntraClientId;
+            tbEntraTenantId.Text = additionalSettings.EntraTenantId;
+
+            if( additionalSettings.EntraAuthenticationComponent != null )
+            {
+                compEntraAuthComponent.SetValue( additionalSettings.EntraAuthenticationComponent.ToString() );
+            }
 
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
             ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
@@ -1004,6 +1011,13 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.HomepageRoutingLogic = ceEditHomepageRoutingLogic.Text;
             additionalSettings.Auth0ClientId = tbAuth0ClientId.Text;
             additionalSettings.Auth0Domain = tbAuth0ClientDomain.Text;
+            additionalSettings.EntraClientId = tbEntraClientId.Text;
+            additionalSettings.EntraTenantId = tbEntraTenantId.Text;
+
+            if( compEntraAuthComponent.SelectedValue.IsNotNullOrWhiteSpace() )
+            {
+                additionalSettings.EntraAuthenticationComponent = compEntraAuthComponent.SelectedValueAsGuid().Value;
+            }
 
             //
             // Save the image.

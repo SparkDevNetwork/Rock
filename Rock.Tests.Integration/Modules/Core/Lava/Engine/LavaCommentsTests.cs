@@ -345,6 +345,18 @@ Line 1<br>
         }
 
         [TestMethod]
+        public void ShorthandLineComment_WithLeadingWhiteSpace_RendersLineWithWhiteSpace()
+        {
+            var input = "Line 1\n   //-\nLine 2";
+            var expectedOutput = "Line 1\n   \nLine 2";
+
+            var renderOptions = new LavaTestRenderOptions { IgnoreWhiteSpace = false };
+            var result = TestHelper.GetTemplateRenderResult( typeof( FluidEngine ), input, options: renderOptions );
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input, options: renderOptions );
+        }
+
+        [TestMethod]
         public void ShorthandBlockComment_AsFinalElement_RendersCorrectLineContent()
         {
             // Input template terminating with a comment, no new line character.

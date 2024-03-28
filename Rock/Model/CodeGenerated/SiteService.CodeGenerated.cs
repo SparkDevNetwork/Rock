@@ -162,6 +162,7 @@ namespace Rock.Model
             target.AdditionalSettings = source.AdditionalSettings;
             target.AllowedFrameDomains = source.AllowedFrameDomains;
             target.AllowIndexing = source.AllowIndexing;
+            target.BotGuardianLevel = source.BotGuardianLevel;
             target.ChangePasswordPageId = source.ChangePasswordPageId;
             target.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             target.CommunicationPageId = source.CommunicationPageId;

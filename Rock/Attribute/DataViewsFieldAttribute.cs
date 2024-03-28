@@ -24,6 +24,7 @@ namespace Rock.Attribute
     public class DataViewsFieldAttribute : FieldAttribute
     {
         private const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
+        private const string DISPLAY_PERSISTED_ONLY_KEY = "displayPersistedOnly";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataViewFieldAttribute" /> class.
@@ -39,7 +40,39 @@ namespace Rock.Attribute
         public DataViewsFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string entityTypeName = "", string category = "", int order = 0, string key = null ) :
             base( name, description, required, defaultValue, category, order, key, typeof( DataViewsFieldType ).FullName )
         {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
+            EntityTypeName = entityTypeName;
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the <see cref="Rock.Model.EntityType"/>.
+        /// </summary>
+        public string EntityTypeName
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY ) ?? string.Empty;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets whether to show only <see cref="Rock.Model.DataView"/>s which are persisted.
+        /// </summary>
+        public bool DisplayPersistedOnly
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( DISPLAY_PERSISTED_ONLY_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( DISPLAY_PERSISTED_ONLY_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
         }
     }
 }

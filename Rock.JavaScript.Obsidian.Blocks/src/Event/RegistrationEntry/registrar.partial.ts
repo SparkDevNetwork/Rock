@@ -112,7 +112,7 @@ export default defineComponent({
                 const registrant = this.registrationEntryState.registrants[ i ];
                 const info = getRegistrantBasicInfo(registrant, this.viewModel.registrantForms);
 
-                if (!usedFamilyGuids[ registrant.familyGuid ] && info?.firstName && info?.lastName) {
+                if (registrant.familyGuid && !usedFamilyGuids[ registrant.familyGuid ] && info?.firstName && info?.lastName) {
                     options.push({
                         text: `${info.firstName} ${info.lastName}`,
                         value: registrant.familyGuid

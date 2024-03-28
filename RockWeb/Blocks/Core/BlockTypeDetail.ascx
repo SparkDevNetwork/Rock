@@ -23,6 +23,8 @@
                             <asp:Literal ID="lReadonlySummary" runat="server" />
                             <Rock:RockLiteral ID="lblStatus" runat="server" Label="Status" />
                             <Rock:RockLiteral ID="lPages" runat="server" Label="Pages that use this block type" />
+                            <Rock:RockLiteral ID="lLayout" runat="server" Label="Layouts that use this block type" Visible="False" />
+                            <Rock:RockLiteral ID="lSites" runat="server" Label="Sites that use this block type" Visible="False" />
                         </div>
                         <asp:Panel ID="pnlBlockTypeAttributesGrid" runat="server">
                             <div class="col-md-6">

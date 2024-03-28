@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
 using Rock.Extension;
+using Rock.Web.Cache;
 
 namespace Rock.Storage.AssetStorage
 {
@@ -73,5 +74,23 @@ namespace Rock.Storage.AssetStorage
         /// </value>
         [ImportMany( typeof( AssetStorageComponent ) )]
         protected override IEnumerable<Lazy<AssetStorageComponent, IComponentData>> MEFComponents { get; set; }
+
+        /// <inheritdoc/>
+        public override void Refresh()
+        {
+            base.Refresh();
+
+            // Load all the Attributes to the Asset Storage Provider so that they may not be loaded every time by the Detail Block in the remote device.
+            var assetStorageProviderEntityType = EntityTypeCache.Get( "Rock.Model.AssetStorageProvider" );
+            foreach ( var component in MEFComponents )
+            {
+                var providerComponentEntityType = component.Value.EntityType;
+                Rock.Attribute.Helper.UpdateAttributes(
+                    providerComponentEntityType.GetEntityType(),
+                    assetStorageProviderEntityType.Id,
+                    "EntityTypeId",
+                    providerComponentEntityType.Id.ToString() );
+            }
+        }
     }
 }

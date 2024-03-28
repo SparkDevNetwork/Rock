@@ -3,7 +3,11 @@
     <fieldset>
         <div class="row">
             <div class="col-md-6">
-                <TextBox v-model="name"
+                <DefinedValuePicker v-if="shouldGetNameFromDefinedType"
+                        v-model="definedValueName"
+                        label="Name"
+                        :definedTypeGuid="props.options.batchNameDefinedTypeGuid ?? ''" />
+                <TextBox v-else v-model="name"
                          label="Name"
                          rules="required"
                          :disabled="isStatusClosed" />
@@ -43,7 +47,11 @@
             </div>
         </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+        <div class="row">
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" />
+            </div>
+        </div>
     </fieldset>
 </template>
 
@@ -56,6 +64,7 @@
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -93,6 +102,7 @@
     const controlItemCount = propertyRef(props.modelValue.controlItemCount ?? null, "ControlItemCount");
     const accountingSystemCode = propertyRef(props.modelValue.accountingSystemCode ?? "", "AccountingCode");
     const note = propertyRef(props.modelValue.note ?? "", "Note");
+    const definedValueName = ref<ListItemBag | null>(null);
 
     const batchStatusOptions: ListItemBag[] = [
                 { text: "Pending", value: "0" },
@@ -108,6 +118,7 @@
 
     // #region Computed Values
     const isStatusClosed = computed((): boolean => props.modelValue.status == 2);
+    const shouldGetNameFromDefinedType = computed((): boolean => props.modelValue.id == 0 && props.options.batchNameDefinedTypeGuid != "");
 
     // #endregion
 
@@ -120,10 +131,15 @@
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
-    watch(() => props.modelValue, () => {
+    watch([() => props.modelValue, () => definedValueName], () => {
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(name, props.modelValue.name ?? "");
+        if(definedValueName.value != null) {
+            updateRefValue(name, definedValueName.value.text ?? "");
+        }
+        else {
+            updateRefValue(name, props.modelValue.name ?? "");
+        }
         updateRefValue(status, props.modelValue.status?.toString() ?? "1");
         updateRefValue(campus, props.modelValue.campus ?? {});
         updateRefValue(batchEndDateTime, props.modelValue.batchEndDateTime ?? "");

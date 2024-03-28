@@ -137,6 +137,7 @@
     <Compile Include="Rock\Lava\LavaTypeAttributesTests.cs" />
     <Compile Include="Rock\Lava\RenderTests.cs" />
     <Compile Include="Rock\Model\ConnectionRequestTest.cs" />
+    <Compile Include="Rock\Model\EntityExtensionMethodTests.cs" />
     <Compile Include="Rock\Model\PersonTest.cs" />
     <Compile Include="Rock\Observability\ObservabilityHelperTests.cs" />
     <Compile Include="Rock\Security\EncryptionTests.cs" />

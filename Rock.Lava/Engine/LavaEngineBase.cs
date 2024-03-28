@@ -765,6 +765,9 @@ namespace Rock.Lava
             return tags;
         }
 
+        /// <inheritdoc/>
+        public abstract List<string> GetRegisteredFilterNames();
+
         #region Tags
 
         private Dictionary<string, ILavaElementInfo> _lavaElements = new Dictionary<string, ILavaElementInfo>( StringComparer.OrdinalIgnoreCase );

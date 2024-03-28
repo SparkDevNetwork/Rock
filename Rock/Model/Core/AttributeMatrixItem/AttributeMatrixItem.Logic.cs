@@ -16,8 +16,8 @@
 //
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.SqlServer;
 using System.Linq;
-
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -40,7 +40,7 @@ namespace Rock.Model
         protected override void BuildHistoryItems( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
             /*
-             * 12/18/2019 BJW
+             * 18-Dec-2019 BJW
              *
              * We want to log the history of attribute values within a person matrix. Most of this logging occurs from
              * the attribute value model. However, when a matrix item (row in the table) is deleted, the pre-save event
@@ -57,45 +57,58 @@ namespace Rock.Model
                 return;
             }
 
+            // Get the AttributeMatrix associated with this AttributeMatrixItem.
             var rockContext = new RockContext();
-            var matrixId = AttributeMatrixId != default ?
-                AttributeMatrixId :
-                entry.OriginalValues[ nameof( this.AttributeMatrixId )].ToStringSafe().AsIntegerOrNull();
+
+            int? matrixId = AttributeMatrixId;
+            if ( matrixId == default
+                 && state == EntityState.Added )
+            {
+                matrixId = entry.OriginalValues[nameof( this.AttributeMatrixId )].ToStringSafe().AsIntegerOrNull();
+            }
 
             var matrix = AttributeMatrix;
-
             if ( matrix == null && matrixId.HasValue )
             {
                 var matrixService = new AttributeMatrixService( rockContext );
-                matrix = matrixService.Queryable().AsNoTracking().FirstOrDefault( am => am.Id == matrixId );
+                matrix = matrixService.Queryable()
+                    .AsNoTracking()
+                    .FirstOrDefault( am => am.Id == matrixId );
             }
-
             if ( matrix == null )
             {
                 return;
             }
 
-            // The root attribute matrix attribute value is linked to the matrix by the guid as the attribute value
+            // Get the target entity for the AttributeMatrix.
+            // The AttributeMatrix is linked to the target entity via a Guid reference stored in an Attribute of the target entity.
             var matrixGuidString = matrix.Guid.ToString();
             var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
             var attributeValueService = new AttributeValueService( rockContext );
-            var rootAttributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                av.Value.Equals( matrixGuidString, System.StringComparison.OrdinalIgnoreCase )
-                && av.Attribute.EntityTypeId == personEntityTypeId );
 
-            if ( rootAttributeValue?.EntityId == null )
+            // The most efficient method of finding the Attribute Value that holds a reference to this AttributeMatrix
+            // is by searching the ValueChecksum index. After locating the candidate records matching the checksum,
+            // filter the matches to verify the actual value, just in case we have a checksum collision.
+            // Finally, verify that the target entity is a Person - if not, history is ignored.
+            var matrixAttributeValue = attributeValueService.Queryable()
+                .AsNoTracking()
+                .FirstOrDefault( av => av.ValueChecksum == SqlFunctions.Checksum( matrixGuidString )
+                    && av.Value.Equals( matrixGuidString, System.StringComparison.OrdinalIgnoreCase )
+                    && av.Attribute.EntityTypeId == personEntityTypeId );
+
+            if ( matrixAttributeValue?.EntityId == null )
             {
                 return;
             }
 
-            var rootAttributeCache = AttributeCache.Get( rootAttributeValue.AttributeId );
-
-            if ( rootAttributeCache == null )
+            // Get the Attribute associated with the matrix value, and then locate the specific target entity to which the AttributeMatrix is attached.
+            var matrixAttributeCache = AttributeCache.Get( matrixAttributeValue.AttributeId );
+            if ( matrixAttributeCache == null )
             {
                 return;
             }
 
-            // Evaluate the history changes
+            // Evaluate the history changes.
             var historyChangeList = new History.HistoryChangeList();
 
             if ( AttributeValues == null || !AttributeValues.Any() )
@@ -103,7 +116,7 @@ namespace Rock.Model
                 this.LoadAttributes();
             }
 
-            var isDelete = state == EntityState.Deleted;
+            var isDelete = ( state == EntityState.Deleted );
 
             foreach ( var attributeValue in AttributeValues.Values )
             {
@@ -118,17 +131,18 @@ namespace Rock.Model
                 historyChangeList.AddChange(
                     isDelete ? History.HistoryVerb.Delete : History.HistoryVerb.Add,
                     History.HistoryChangeType.Record,
-                    $"{rootAttributeCache.Name} Item" );
+                    $"{matrixAttributeCache.Name} Item" );
             }
 
+            // Add the History items to the Person Demographic category.
             HistoryItems = HistoryService.GetChanges(
                 typeof( Person ),
                 SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                rootAttributeValue.EntityId.Value,
+                matrixAttributeValue.EntityId.GetValueOrDefault(),
                 historyChangeList,
-                rootAttributeCache.Name,
+                matrixAttributeCache.Name,
                 typeof( Attribute ),
-                rootAttributeCache.Id,
+                matrixAttributeCache.Id,
                 dbContext.GetCurrentPersonAlias()?.Id,
                 dbContext.SourceOfChange );
         }

@@ -414,6 +414,16 @@ namespace Rock.Model
         /// The gateway person identifier.
         /// </value>
         public string GatewayPersonIdentifier { get; set; }
+
+        private readonly List<int> _personIdsRegisteredWithinThisSession = new List<int>();
+
+        /// <summary>
+        /// Gets the identifiers of the people who have been registered within a registration session.
+        /// </summary>
+        /// <value>
+        /// The identifiers of the people who have been registered within a registration session.
+        /// </value>
+        public List<int> PersonIdsRegisteredWithinThisSession => _personIdsRegisteredWithinThisSession;
     }
 
     /// <summary>

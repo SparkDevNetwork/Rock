@@ -177,7 +177,7 @@ export type RegistrantInfo = {
     isOnWaitList: boolean;
 
     /** The family guid that this person is to be a part of */
-    familyGuid: Guid;
+    familyGuid: Guid | null;
 
     /** If the person were an existing person, this is his/her guid */
     personGuid: Guid | null;

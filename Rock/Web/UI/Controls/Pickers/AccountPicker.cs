@@ -56,6 +56,7 @@ namespace Rock.Web.UI.Controls
         public AccountPicker() : base()
         {
             //Assembly.GetCallingAssembly()
+            this.ShowSelectChildren = true;
         }
         #endregion Constructors
 

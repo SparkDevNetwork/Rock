@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
 
+        <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
+
         <asp:Panel ID="pnlWorkflowList" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">

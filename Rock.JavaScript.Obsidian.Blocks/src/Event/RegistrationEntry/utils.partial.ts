@@ -48,8 +48,8 @@ export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null,
         familyGuid = forcedFamilyGuid;
     }
 
-    // If the family is not specified, then assume the person is in their own family
-    if (!familyGuid) {
+    // If the family is not specified, then assume the person is in their own family.
+    if (!familyGuid && viewModel.registrantsSameFamily === RegistrantsSameFamily.No) {
         familyGuid = newGuid();
     }
 

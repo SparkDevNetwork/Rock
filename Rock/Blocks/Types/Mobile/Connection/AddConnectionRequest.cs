@@ -281,11 +281,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             // build the connector view model
             var connectorList = connectorGroupService.Queryable()
                 .Where( a => a.ConnectionOpportunityId == connectionOpportunityId
-                    && ( !campusGuid.HasValue || a.ConnectorGroup.Campus.Guid == campusGuid ) )
+                    && ( !campusGuid.HasValue || ( a.ConnectorGroup.Campus != null && a.ConnectorGroup.Campus.Guid == campusGuid ) ) )
                 .AsEnumerable()
 
                 // First select the members along with the connector group CampusId.
-                .SelectMany( a => a.ConnectorGroup.Members.Select( m => new { Member = m, CampusIdKey = a.ConnectorGroup.Campus.IdKey } ) )
+                .SelectMany( a => a.ConnectorGroup.Members.Select( m => new { Member = m, CampusIdKey = a.ConnectorGroup.Campus?.IdKey } ) )
                 .Where( m => m.Member.GroupMemberStatus == GroupMemberStatus.Active )
                 .AsEnumerable()
                 .Select( m => new ConnectorBag
@@ -328,6 +328,36 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 .OrderBy( c => c.LastName )
                 .ThenBy( c => c.FirstName )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets a list of default connectors for the specified connection opportunity.
+        /// This list is comprised of the campus id and the default connector person id.
+        /// </summary>
+        /// <param name="opportunity"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        private List<ListItemViewModel> GetDefaultConnectorsForOpportunity( ConnectionOpportunity opportunity, RockContext rockContext )
+        {
+            var defaultConnectors = new List<ListItemViewModel>();
+
+            var personService = new PersonService( rockContext );
+
+            foreach( var campus in CampusCache.All() )
+            {
+                var defaultConnector = opportunity.GetDefaultConnectorPersonId( campus.Id );
+
+                if ( defaultConnector.HasValue )
+                {
+                    defaultConnectors.Add( new ListItemViewModel
+                    {
+                        Text = campus.IdKey,
+                        Value = personService.Get( defaultConnector.Value ).IdKey
+                    } );
+                }
+            }
+
+            return defaultConnectors;
         }
 
         /// <summary>
@@ -706,6 +736,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 var placementGroups = GetPlacementGroups( connectionRequest, rockContext );
                 var attributes = GetPublicEditableAttributeValues( connectionRequest );
+                var defaultConnectors = GetDefaultConnectorsForOpportunity( opportunity, rockContext );
 
                 return ActionOk( new GetConnectionRequestDataResponseBag
                 {

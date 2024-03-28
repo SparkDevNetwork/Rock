@@ -116,6 +116,7 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
             target.CheckedOutByPersonAliasId = source.CheckedOutByPersonAliasId;
+            target.CheckInStatus = source.CheckInStatus;
             target.DeclineReasonValueId = source.DeclineReasonValueId;
             target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;

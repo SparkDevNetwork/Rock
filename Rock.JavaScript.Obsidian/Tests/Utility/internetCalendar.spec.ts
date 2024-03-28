@@ -463,6 +463,147 @@ END:VEVENT`;
         expect(lines[6]).toBe("UID:123af714-192f-4539-9f96-7c1d899cdc5a");
         expect(lines[7]).toBe("END:VEVENT");
     });
+
+    it("Parses specific dates in period format when value type not specified", () => {
+        const ical = `BEGIN:VEVENT
+DTEND:20240108T000001
+DTSTAMP:20240110T160949
+DTSTART:20240108T000000
+RDATE:20240117/P1D,20240118/P1D
+SEQUENCE:0
+UID:b07576b4-9766-4bc8-ade0-cab82c20c88e
+END:VEVENT`;
+
+        const event = new Event(ical);
+
+        expect(event.toFriendlyText()).toBe("Multiple dates between 1/8/2024 12:00 AM and 1/18/2024 12:00 AM");
+
+        const startDateTime = RockDateTime.fromParts(2024, 1, 1);
+        const endDateTime = RockDateTime.fromParts(2024, 12, 31);
+
+        const dates: RockDateTime[] = event.getDates(startDateTime, endDateTime);
+
+        expect(dates.length).toBe(3);
+
+        expect(dates[0].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 8, 0, 0, 0).toASPString("r"));
+        expect(dates[1].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 17, 0, 0, 0).toASPString("r"));
+        expect(dates[2].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 18, 0, 0, 0).toASPString("r"));
+    });
+
+    it("Parses specific dates in date format when value type not specified", () => {
+        const ical = `BEGIN:VEVENT
+DTEND:20240108T000001
+DTSTAMP:20240110T160949
+DTSTART:20240108T000000
+RDATE:20240117
+SEQUENCE:0
+UID:b07576b4-9766-4bc8-ade0-cab82c20c88e
+END:VEVENT`;
+
+        const event = new Event(ical);
+
+        expect(event.toFriendlyText()).toBe("Multiple dates between 1/8/2024 12:00 AM and 1/17/2024 12:00 AM");
+
+        const startDateTime = RockDateTime.fromParts(2024, 1, 1);
+        const endDateTime = RockDateTime.fromParts(2024, 12, 31);
+
+        const dates: RockDateTime[] = event.getDates(startDateTime, endDateTime);
+
+        expect(dates.length).toBe(2);
+
+        expect(dates[0].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 8, 0, 0, 0).toASPString("r"));
+        expect(dates[1].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 17, 0, 0, 0).toASPString("r"));
+    });
+
+    it("Parses specific dates in date format when value type not specified", () => {
+        const ical = `BEGIN:VEVENT
+DTEND:20240108T000001
+DTSTAMP:20240110T160949
+DTSTART:20240108T000000
+RDATE:20240201/20240202,
+SEQUENCE:0
+UID:b07576b4-9766-4bc8-ade0-cab82c20c88e
+END:VEVENT`;
+
+        const event = new Event(ical);
+        const startDateTime = RockDateTime.fromParts(2024, 1, 1);
+        const endDateTime = RockDateTime.fromParts(2024, 12, 31);
+
+        const dates: RockDateTime[] = event.getDates(startDateTime, endDateTime);
+
+        expect(dates.length).toBe(3);
+
+        expect(dates[0].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 8, 0, 0, 0).toASPString("r"));
+        expect(dates[1].toASPString("r")).toBe(RockDateTime.fromParts(2024, 2, 1, 0, 0, 0).toASPString("r"));
+        expect(dates[2].toASPString("r")).toBe(RockDateTime.fromParts(2024, 2, 2, 0, 0, 0).toASPString("r"));
+    });
+
+    it("Parses specific dates in date time format when value type is not specified", () => {
+        const ical = `BEGIN:VEVENT
+DTEND:20240108T000001
+DTSTAMP:20240110T160949
+DTSTART:20240108T000000
+RDATE:20240110T160949,
+SEQUENCE:0
+UID:b07576b4-9766-4bc8-ade0-cab82c20c88e
+END:VEVENT`;
+
+        const event = new Event(ical);
+        const startDateTime = RockDateTime.fromParts(2024, 1, 1);
+        const endDateTime = RockDateTime.fromParts(2024, 12, 31);
+
+        const dates: RockDateTime[] = event.getDates(startDateTime, endDateTime);
+
+        expect(dates.length).toBe(2);
+
+        expect(dates[0].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 8, 0, 0, 0).toASPString("r"));
+        expect(dates[1].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 10, 16, 9, 49).toASPString("r"));
+    });
+
+    it("Parses specific dates in date time in UTC format when value type is not specified", () => {
+        const ical = `BEGIN:VEVENT
+DTEND:20240108T000001
+DTSTAMP:20240110T160949
+DTSTART:20240108T000000
+RDATE:20240310T160949Z,
+SEQUENCE:0
+UID:b07576b4-9766-4bc8-ade0-cab82c20c88e
+END:VEVENT`;
+
+        const event = new Event(ical);
+        const startDateTime = RockDateTime.fromParts(2024, 1, 1);
+        const endDateTime = RockDateTime.fromParts(2024, 12, 31);
+
+        const dates: RockDateTime[] = event.getDates(startDateTime, endDateTime);
+
+        expect(dates.length).toBe(2);
+
+        expect(dates[0].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 8, 0, 0, 0).toASPString("r"));
+        expect(dates[1].toASPString("r")).toBe(RockDateTime.fromParts(2024, 3, 10, 16, 9, 49).toASPString("r"));
+    });
+
+    it("Parses specific dates in date format when value type not specified", () => {
+        const ical = `BEGIN:VEVENT
+DTEND:20240108T000001
+DTSTAMP:20240110T160949
+DTSTART:20240108T000000
+RDATE:20240201/P2D,
+SEQUENCE:0
+UID:b07576b4-9766-4bc8-ade0-cab82c20c88e
+END:VEVENT`;
+
+        const event = new Event(ical);
+        const startDateTime = RockDateTime.fromParts(2024, 1, 1);
+        const endDateTime = RockDateTime.fromParts(2024, 12, 31);
+
+        const dates: RockDateTime[] = event.getDates(startDateTime, endDateTime);
+
+        expect(dates.length).toBe(3);
+
+        expect(dates[0].toASPString("r")).toBe(RockDateTime.fromParts(2024, 1, 8, 0, 0, 0).toASPString("r"));
+        expect(dates[1].toASPString("r")).toBe(RockDateTime.fromParts(2024, 2, 1, 0, 0, 0).toASPString("r"));
+        expect(dates[2].toASPString("r")).toBe(RockDateTime.fromParts(2024, 2, 2, 0, 0, 0).toASPString("r"));
+    });
 });
 
 describe("Calendar", () => {

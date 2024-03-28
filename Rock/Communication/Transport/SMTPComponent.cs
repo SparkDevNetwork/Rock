@@ -242,7 +242,9 @@ namespace Rock.Communication.Transport
                 }
             }
 
+            // Headers
             AddAdditionalHeaders( mailMessage, rockEmailMessage.MessageMetaData );
+            AddAdditionalHeaders( mailMessage, rockEmailMessage.EmailHeaders );
 
             return mailMessage;
         }

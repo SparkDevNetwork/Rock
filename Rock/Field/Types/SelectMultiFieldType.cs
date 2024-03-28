@@ -584,7 +584,18 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 List<string> values = new List<string>();
-                values.AddRange( value.Split( ',' ) );
+
+                /*
+                     01/23/2024 - NA
+
+                     Because the "value" used here could be coming from a Lava "| Attribute: <key>" filter, it is possibly
+                     going to be the "FormattedValue" -- which would be comma-space delmited (", ").  That has been the
+                     case since v8.
+                     (see https://github.com/SparkDevNetwork/Rock/commit/8f0a49f5e668a39e88891d76585c197c73bf24a0#diff-9cebf8ebf183910a1dfc469e485ed5f53ea3cbda27b6c1baf38cea7e36a85d14R155)
+
+                     Reason: Fix issue #5706
+                */
+                values.AddRange( value.Split( ',' ).Select( s => s.Trim() ) );
 
                 if ( control != null && control is ListControl )
                 {

@@ -10,8 +10,8 @@
         </div>
 
         <!-- This causes a break on extra small and small devices. -->
-        <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none"></div>
-        <div class="flex-grow-1 d-md-none" style="min-width: 1px;"></div>
+        <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none grid-header-separator"></div>
+        <div class="flex-grow-1 d-md-none grid-header-fill" style="min-width: 1px;"></div>
 
         <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchVisible }">
             <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">

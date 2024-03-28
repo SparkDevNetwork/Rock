@@ -46,6 +46,8 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { PersistedDatasetBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetBag";
     import { PersistedDatasetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetDetailOptionsBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleBag";
 
     const config = useConfigurationValues<DetailBlockBox<PersistedDatasetBag, PersistedDatasetDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -74,7 +76,12 @@
         "isActive",
         "memoryCacheDurationHours",
         "name",
-        "refreshIntervalHours"
+        "refreshIntervalHours",
+        "persistedScheduleId",
+        "refreshInterval",
+        "persistedScheduleIntervalType",
+        "persistedScheduleType",
+        "persistedSchedule"
     ];
 
     // #endregion
@@ -95,6 +102,23 @@
         return persistedDatasetViewBag.value?.idKey ?? "";
     });
 
+    // Determine what label type to display based on the timeToBuildMS value
+    const timeToBuildLabelType = computed((): string => {
+        if (persistedDatasetViewBag.value?.timeToBuildMS) {
+            if (persistedDatasetViewBag.value.timeToBuildMS < 400) {
+                return "success";
+            }
+            else if (persistedDatasetViewBag.value.timeToBuildMS < 1000) {
+                return "warning";
+            }
+            else {
+                return "danger";
+            }
+        }
+
+        return "info";
+    });
+
     /**
      * Additional labels to display in the block panel.
      */
@@ -109,7 +133,19 @@
             labels.push({
                 iconCssClass: "fa fa-lightbulb",
                 title: "Active",
-                type: "success"
+                type: "success",
+            });
+
+            labels.push({
+                iconCssClass: "fa fa-refresh",
+                title: "Not Run Since: " + RockDateTime.parseISO(persistedDatasetViewBag.value.lastRefreshDateTime ?? "Never")?.toString(),
+                type: "warning",
+            });
+
+            labels.push({
+                iconCssClass: "fa fa-clock",
+                title: `Time To Run: ${persistedDatasetViewBag.value.timeToBuildMS?.toString()}ms`,
+                type: timeToBuildLabelType.value,
             });
         }
         else {
@@ -130,6 +166,11 @@
     const options = computed((): PersistedDatasetDetailOptionsBag => {
         return config.options ?? {};
     });
+
+    // #endregion
+
+    // #region Watchers
+
 
     // #endregion
 
@@ -193,7 +234,6 @@
 
         if (result.isSuccess && result.data && result.data.entity) {
             persistedDatasetEditBag.value = result.data.entity;
-
             return true;
         }
         else {
@@ -204,6 +244,7 @@
     /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
+     * Also handles saving the entity's schedule if it has one, and then it creates the schedule in the backend and saves the persisted dataset with a persistedScheduleId that is retreived from the Schedule entity after creating a new schedule.
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
@@ -216,14 +257,21 @@
             validProperties: validProperties
         };
 
+        // Prepare the schedule data as a string
+        const scheduleData: ScheduleBag = {
+            iCalendarContent: persistedDatasetEditBag.value?.persistedSchedule,
+            autoInactivateWhenComplete: false,
+            isActive: true,
+        };
+
         const result = await invokeBlockAction<PersistedDatasetBag | string>("Save", {
-            box: data
+            box: data,
+            scheduleBag: scheduleData,
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                persistedDatasetViewBag.value = result.data;
-
+                persistedDatasetEditBag.value = result.data;
                 return true;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {

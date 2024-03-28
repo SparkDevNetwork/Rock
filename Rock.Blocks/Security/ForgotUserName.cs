@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -92,6 +93,13 @@ namespace Rock.Blocks.Security
         Key = AttributeKey.CreateCommunicationRecord,
         Order = 5 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "5BBEE600-781E-4480-8144-36F8D01C7F09" )]
@@ -108,6 +116,7 @@ namespace Rock.Blocks.Security
             public const string ConfirmationPage = "ConfirmationPage";
             public const string EmailTemplate = "EmailTemplate";
             public const string CreateCommunicationRecord = "CreateCommunicationRecord";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         private static class NavigationUrlKey
@@ -131,6 +140,8 @@ namespace Rock.Blocks.Security
 
         private string SuccessCaption => GetAttributeValue( AttributeKey.SuccessCaption );
 
+        private bool DisableCaptchaSupport => GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
         #endregion
 
         #region Public Methods
@@ -148,7 +159,8 @@ namespace Rock.Blocks.Security
                 },
                 ErrorMessage = null,
                 NavigationUrls = GetBoxNavigationUrls(),
-                SecurityGrantToken = null
+                SecurityGrantToken = null,
+                DisableCaptchaSupport = this.DisableCaptchaSupport
             };
         }
 
@@ -163,6 +175,13 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult SendInstructions( ForgotUserNameSendInstructionsRequestBag bag )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             var url = this.ConfirmationPageUrl;
 
             if ( string.IsNullOrWhiteSpace( url ) )

@@ -117,6 +117,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ContentChannelItem target, ContentChannelItem source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             target.ApprovedDateTime = source.ApprovedDateTime;
             target.Content = source.Content;

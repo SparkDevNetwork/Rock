@@ -258,7 +258,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the type of the i entity for entity.
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// identifier specified.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="id">The identifier.</param>
@@ -277,7 +278,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the type of the i entity for entity.
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// unique identifier specified.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="guid">The unique identifier.</param>
@@ -290,6 +292,30 @@ namespace Rock
             {
                 System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
                 return getMethod.Invoke( serviceInstance, new object[] { guid } ) as Rock.Data.IEntity;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// public key specified.
+        /// <para>
+        /// Note that this key is NOT the hashed IEntity.IdKey, but rather the "Id>Guid" format used in some
+        /// legacy areas of Rock, such as the identifiers encrypted within context cookies.
+        /// </para>
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="publicKey">The public key.</param>
+        /// <returns></returns>
+        internal static Rock.Data.IEntity GetIEntityForEntityTypeAndPublicKey( Type entityType, string publicKey )
+        {
+            var dbContext = Reflection.GetDbContextForEntityType( entityType );
+            Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByPublicKey", new Type[] { typeof( string ) } );
+                return getMethod.Invoke( serviceInstance, new object[] { publicKey } ) as Rock.Data.IEntity;
             }
 
             return null;

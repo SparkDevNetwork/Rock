@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 namespace Rock.Enums.Crm
 {
     /// <summary>
@@ -25,46 +27,62 @@ namespace Rock.Enums.Crm
         /// <summary>
         /// Unknown Age range
         /// </summary>
+        [Description( "Unknown" )]
         Unknown = 0,
 
         /// <summary>
-        /// Age range 0 - 12
+        /// Age range 0 - 5
         /// </summary>
-        ZeroToTwelve = 1,
+        /// 0 - 12 was later split into 0-5 and 6-12 hence the irregular enum value.
+        [Description( "0 - 5" )]
+        ZeroToFive = 9,
+
+        /// <summary>
+        /// Age range 6 - 12
+        /// </summary>
+        [Description( "6 - 12" )]
+        SixToTwelve = 1,
 
         /// <summary>
         /// Age range 13 - 17
         /// </summary>
+        [Description( "13 - 17" )]
         ThirteenToSeventeen = 2,
 
         /// <summary>
         /// Age range 18 - 24
         /// </summary>
+        [Description( "18 - 24" )]
         EighteenToTwentyFour = 3,
 
         /// <summary>
         /// Age range 25 - 34
         /// </summary>
+        [Description( "25 - 34" )]
         TwentyFiveToThirtyFour = 4,
 
         /// <summary>
         /// Age range 35 - 44
         /// </summary>
+        [Description( "35 - 44" )]
         ThirtyFiveToFortyFour = 5,
 
         /// <summary>
         /// Age range 45 - 54
         /// </summary>
+        [Description( "40 - 54" )]
         FortyFiveToFiftyFour = 6,
 
         /// <summary>
         /// Age range 55 - 64
         /// </summary>
+        [Description( "55 - 64" )]
         FiftyFiveToSixtyFour = 7,
 
         /// <summary>
         /// Age range 65+
         /// </summary>
+        [Description( "65+" )]
         SixtyFiveOrOlder = 8
     }
 }

@@ -44,6 +44,9 @@ namespace Rock.Client
         public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
+        public Rock.Client.Enums.Cms.BotGuardianLevel BotGuardianLevel { get; set; }
+
+        /// <summary />
         public int? ChangePasswordPageId { get; set; }
 
         /// <summary />
@@ -213,6 +216,7 @@ namespace Rock.Client
             this.AdditionalSettings = source.AdditionalSettings;
             this.AllowedFrameDomains = source.AllowedFrameDomains;
             this.AllowIndexing = source.AllowIndexing;
+            this.BotGuardianLevel = source.BotGuardianLevel;
             this.ChangePasswordPageId = source.ChangePasswordPageId;
             this.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             this.CommunicationPageId = source.CommunicationPageId;

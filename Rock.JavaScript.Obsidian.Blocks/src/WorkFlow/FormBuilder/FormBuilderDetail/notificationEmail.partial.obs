@@ -21,6 +21,7 @@
                 <div class="col-md-4">
                     <EmailBox v-model="emailAddress"
                               label="Recipients"
+                              help="You can specify multiple email addresses by separating them with a comma."
                               rules="required"
                               allowMultiple />
                 </div>

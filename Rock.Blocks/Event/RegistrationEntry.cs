@@ -1054,7 +1054,7 @@ namespace Rock.Blocks.Event
             {
                 if ( context.Registration.ConfirmationEmail.IsNotNullOrWhiteSpace() )
                 {
-                    var isEmailDifferent = !context.Registration.ConfirmationEmail.Trim().Equals( registrar.Email.Trim(), StringComparison.OrdinalIgnoreCase );
+                    var isEmailDifferent = !context.Registration.ConfirmationEmail.Trim().Equals( registrar.Email?.Trim(), StringComparison.OrdinalIgnoreCase );
 
                     var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
@@ -1147,6 +1147,11 @@ namespace Rock.Blocks.Event
             {
                 // Get each registrant
                 var index = 0;
+
+                // Keep track of the registered person IDs to prevent mistakenly merging different
+                // people (i.e. twins who share an email address) into the same person record
+                // based on an over-confident PersonService.FindPerson(...) match result.
+                context.PersonIdsRegisteredWithinThisSession.Clear();
 
                 foreach ( var registrantInfo in args.Registrants )
                 {
@@ -2017,6 +2022,25 @@ namespace Rock.Blocks.Event
                 var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
                 person = personService.FindPerson( personQuery, true );
 
+                if ( person != null && context.PersonIdsRegisteredWithinThisSession.Contains( person.Id ) )
+                {
+                    /*
+                        1/8/2024 - JPH
+
+                        We've seen scenarios in which different people (i.e. twins who share an email address) are
+                        mistakenly merged into a single person record because of the way our FindPerson(...) method
+                        works. Rock is correctly attempting to prevent the creation of duplicate person records,
+                        but we need to handle this unique scenario by instead keeping track of the person IDs that
+                        have already been tied to a registrant record within this specific registration session,
+                        and if the FindPerson(...) method returns the same person more than once, we'll force Rock
+                        to create a new person record, at the risk of creating duplicate people. This risk is more
+                        tolerable than the risk of failing to save a Person altogether, as in the twin example above.
+
+                        Reason: Attempt to prevent merging different people based on an over-confident match result.
+                    */
+                    person = null;
+                }
+
                 // Try to find a matching person based on name within same family as registrar
                 if ( person == null && registrar != null && registrantInfo.FamilyGuid == registrarFamilyGuid )
                 {
@@ -2389,6 +2413,9 @@ namespace Rock.Blocks.Event
 
             // Save the person ( and family if needed )
             SavePerson( rockContext, context.RegistrationSettings, person, registrantInfo.FamilyGuid ?? Guid.NewGuid(), campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateExistingCampus );
+
+            // Take note of this registered person identifier.
+            context.PersonIdsRegisteredWithinThisSession.Add( person.Id );
 
             // Load the person's attributes
             person.LoadAttributes();
@@ -3502,12 +3529,17 @@ namespace Rock.Blocks.Event
 
             transaction.Summary = context.Registration.GetSummary();
 
-            var transactionDetail = transaction.TransactionDetails?.FirstOrDefault() ?? new FinancialTransactionDetail();
+            var transactionDetail = transaction.TransactionDetails.FirstOrDefault();
+            if ( transactionDetail == null )
+            {
+                transactionDetail = new FinancialTransactionDetail();
+                transaction.TransactionDetails.Add( transactionDetail );
+            }
+
             transactionDetail.Amount = amount;
             transactionDetail.AccountId = context.RegistrationSettings.FinancialAccountId ?? transactionDetail.AccountId;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = context.Registration.Id;
-            transaction.TransactionDetails.Add( transactionDetail );
 
             var batchChanges = new History.HistoryChangeList();
 
@@ -4068,8 +4100,25 @@ namespace Rock.Blocks.Event
         {
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
+            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
 
-            return registrationService.GetRegistrationContext( registrationInstanceId, PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull(), out errorMessage );
+            // If the URL does not have a registrationId then check if there
+            // is a registration session. Some redirect gateways drop the
+            // RegistrationId parameter from the return URL. So we'll try
+            // to get it from the session if we have one.
+            if ( !registrationId.HasValue )
+            {
+                var sessionGuid = GetRegistrationSessionPageParameter( null );
+
+                if ( sessionGuid.HasValue )
+                {
+                    var session = new RegistrationSessionService( rockContext ).Get( sessionGuid.Value );
+
+                    registrationId = session?.RegistrationId;
+                }
+            }
+
+            return registrationService.GetRegistrationContext( registrationInstanceId, registrationId, out errorMessage );
         }
 
         /// <summary>
@@ -4130,7 +4179,7 @@ namespace Rock.Blocks.Event
                         var parameters = new Dictionary<string, string>();
                         parameters.Add( "RegistrationId", item.RegistrationId.ToString() );
                         parameters.Add( "RegistrationRegistrantId", item.Id.ToString() );
-                        newRegistration.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
+                        item.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
                     }
 
                     if ( settings.WorkflowTypeIds.Any() )
@@ -4552,7 +4601,7 @@ namespace Rock.Blocks.Event
 
             public Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
-            public Dictionary<string, string> AttributeValueDefaults => throw new NotImplementedException();
+            public Dictionary<string, string> AttributeValueDefaults => null;
 
             public string GetAttributeValue( string key )
             {

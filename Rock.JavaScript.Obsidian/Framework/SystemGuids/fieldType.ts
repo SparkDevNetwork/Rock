@@ -235,6 +235,8 @@ export const FieldType = {
     PersonBadges: "3F1AE891-7DC8-46D2-865D-11543B34FB60",
     /** Phone Number field type */
     PhoneNumber: "6B1908EC-12A2-463A-A7BD-970CE0FAF097",
+    /** Prayer Request field type */
+    PrayerRequest: "E34A29A4-3787-4CF5-9C17-08EFB9E2FD23",
     /** Range Slider field type */
     RangeSlider: "C8B6C51A-DD7C-4B75-8604-F0580697088E",
     /** Rating field type */

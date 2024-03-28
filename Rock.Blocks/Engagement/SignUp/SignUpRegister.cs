@@ -826,14 +826,18 @@ namespace Rock.Blocks.Engagement.SignUp
                     //      c) If they aren't already registered for this project occurrence, add them to the `registrantsToRegister` list (if there are no unmet Group
                     //         requirements), so we can create missing GroupMember and GroupMemberAssignment records.
                     //      d) If we create and register a new Person record for this registrant, add them to the `communicationUpdates` collection so we can ensure
-                    //         we have their communication preferences saved; otherwise, Anonymous mode cannot be used to update existing Person communication preferences
-                    //         or records, as it's too risky. Someone could maliciously - or even accidentally - update records that don't belong to them.
+                    //         we have their communication preferences saved.
+                    //      e) If we find an existing Person record, we can only update their [Mobile]PhoneNumber.IsMessagingEnabled bit if:
+                    //              i) The provided mobile phone number matches exactly AND
+                    //             ii) They didn't provide an email address OR the provided email address matches exactly.
+                    //         otherwise, Anonymous mode cannot be used to update existing Person records, as it's too risky. Someone could maliciously - or even
+                    //         accidentally - update records that don't belong to them.
 
                     existingProjectMember = null;
                     existingRegistration = null;
 
                     // Note that this query and lookup will only use arguments that are defined, so it's safe to pass nulls, Etc. into this constructor.
-                    var personQuery = new PersonService.PersonMatchQuery( registrant.FirstName, registrant.LastName, registrant.Email, registrant.MobilePhoneNumber );
+                    var personQuery = new PersonService.PersonMatchQuery( registrant.FirstName?.Trim(), registrant.LastName?.Trim(), registrant.Email?.Trim(), registrant.MobilePhoneNumber?.Trim() );
                     var person = _personService.FindPerson( personQuery, updatePrimaryEmail: false );
 
                     var wasFirstNameProvided = !string.IsNullOrWhiteSpace( registrant.FirstName );
@@ -841,45 +845,41 @@ namespace Rock.Blocks.Engagement.SignUp
                     var wasEmailProvided = !string.IsNullOrWhiteSpace( registrant.Email );
                     var wasMobilePhoneProvided = !string.IsNullOrWhiteSpace( registrant.MobilePhoneNumber );
 
-                    var firstNameUpper = registrant.FirstName?.ToUpper();
-                    var lastNameUpper = registrant.LastName?.ToUpper();
-                    var emailUpper = registrant.Email?.ToUpper();
+                    var registrantFirstNameUpper = registrant.FirstName?.Trim().ToUpper();
+                    var registrantLastNameUpper = registrant.LastName?.Trim().ToUpper();
+                    var registrantEmailUpper = registrant.Email?.Trim().ToUpper();
+                    var registrantCleanMobilePhoneNumber = wasMobilePhoneProvided
+                        ? PhoneNumber.CleanNumber( registrant.MobilePhoneNumber )
+                        : null;
 
-                    // It's possible that this lookup has returned a Person who doesn't match exactly. In this case, we'll create a new (possibly duplicate) Person, to be safe.
-                    if ( person != null &&
-                        (
-                            ( wasFirstNameProvided &&
-                                (
-                                    // Provided FirstName should match either the stored FirstName or NickName.
-                                    !new List<string>
-                                    {
-                                        person.FirstName.ToUpper(),
-                                        person.NickName.ToUpper()
-                                    }.Contains( firstNameUpper )
-                                )
-                            )
-                            || ( wasLastNameProvided && person.LastName.ToUpper() != lastNameUpper )
-                            || ( wasEmailProvided && person.Email.ToUpper() != emailUpper )
-                        )
-                    )
+                    // In the event that someone provides both an email address and a mobile phone number, they must both match.
+                    // Otherwise, we're going to create a new Person record to play it safe; better to have duplicates to merge
+                    // than to allow someone to maliciously/accidentally overwrite a Person's existing communication records.
+                    if ( person != null && wasEmailProvided && wasMobilePhoneProvided )
                     {
-                        // One of the string comparisons failed; create a new Person.
-                        person = null;
-                    }
-
-                    // Make sure the provided mobile phone number matches.
-                    if ( person != null && wasMobilePhoneProvided )
-                    {
-                        var mobilePhone = person.GetPhoneNumber( MobilePhoneDefinedValueCache.Guid );
-                        if ( mobilePhone == null || PhoneNumber.CleanNumber( mobilePhone.Number ) != PhoneNumber.CleanNumber( registrant.MobilePhoneNumber ) )
+                        if ( person.Email?.Trim().ToUpper() != registrantEmailUpper )
                         {
-                            // Number doesn't match; create a new Person.
+                            // Email doesn't match; create a new Person.
                             person = null;
+                        }
+                        else
+                        {
+                            var mobilePhoneNumber = person.GetPhoneNumber( MobilePhoneDefinedValueCache.Guid );
+                            if ( mobilePhoneNumber == null || PhoneNumber.CleanNumber( mobilePhoneNumber.Number ) != registrantCleanMobilePhoneNumber )
+                            {
+                                // Number doesn't match; create a new Person.
+                                person = null;
+                            }
                         }
                     }
 
-                    // Final attempt to prevent a duplicate person: look in the registrar's family members to find a match.
-                    if ( person == null && wasFirstNameProvided && registrarPerson != null )
+                    // Final attempt to prevent a duplicate person: If we didn't find a Person and neither email address
+                    // nor mobile phone number were provided, look in the registrar's family members to find a match.
+                    if ( person == null
+                        && registrarPerson != null
+                        && wasFirstNameProvided
+                        && !wasEmailProvided
+                        && !wasMobilePhoneProvided )
                     {
                         if ( familyMemberPeople == null )
                         {
@@ -892,18 +892,18 @@ namespace Rock.Blocks.Engagement.SignUp
                         person = familyMemberPeople
                             .FirstOrDefault( p =>
                                 (
-                                    p.FirstName.ToUpper() == firstNameUpper
-                                    || p.NickName.ToUpper() == firstNameUpper
+                                    p.FirstName?.Trim().ToUpper() == registrantFirstNameUpper
+                                    || p.NickName?.Trim().ToUpper() == registrantFirstNameUpper
                                 ) && (
                                     !wasLastNameProvided
-                                    || p.LastName.ToUpper() == lastNameUpper
+                                    || p.LastName?.Trim().ToUpper() == registrantLastNameUpper
                                 )
                             );
                     }
 
                     if ( person == null )
                     {
-                        // For new people only: set `Person.CommunicationPreference` (and `GroupMember.CommunicationPreference`) only if we can
+                        // For new people: set `Person.CommunicationPreference` (and `GroupMember.CommunicationPreference`) only if we can
                         // confidently determine the preference, based on the provided values:
                         //  1) If both `registrant.Email` and `registrant.MobilePhoneNumber` are defined, we don't know which they'd prefer.
                         //  2) If only `registrant.Email` is defined, the preference is `CommunicationType.Email`.
@@ -920,9 +920,9 @@ namespace Rock.Blocks.Engagement.SignUp
 
                         person = new Person
                         {
-                            FirstName = registrant.FirstName,
-                            LastName = registrant.LastName,
-                            Email = registrant.Email,
+                            FirstName = registrant.FirstName?.Trim(),
+                            LastName = registrant.LastName?.Trim(),
+                            Email = registrant.Email?.Trim(),
                             RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                             CommunicationPreference = communicationPreference
                         };
@@ -967,6 +967,32 @@ namespace Rock.Blocks.Engagement.SignUp
 
                         existingRegistration = registrationData.ExistingRegistrations
                             .FirstOrDefault( gma => gma.GroupMember.Person.IdKey == registrant.PersonIdKey );
+
+                        // We can only update an existing Person's [Mobile]PhoneNumber.IsMessagingEnabled bit if:
+                        //  1) The provided mobile phone number matches exactly AND
+                        //  2) They didn't provide an email address OR the provided email address matches exactly.
+                        var mobilePhoneNumber = person.GetPhoneNumber( MobilePhoneDefinedValueCache.Guid );
+                        if ( mobilePhoneNumber != null
+                            && PhoneNumber.CleanNumber( mobilePhoneNumber.Number ) == registrantCleanMobilePhoneNumber
+                            && (
+                                !wasEmailProvided
+                                || person.Email?.Trim().ToUpper() == registrantEmailUpper
+                            )
+                        )
+                        {
+                            // Note that we're only updating the IsMessagingEnabled bit from the provided registrant's
+                            // AllowSms value; the rest of the values will simply be copied back from the existing mobile
+                            // phone number, to ensure this anonymous form cannot be used to hijack an existing Person's
+                            // communication records.
+                            person.UpdatePhoneNumber(
+                                MobilePhoneDefinedValueCache.Id,
+                                mobilePhoneNumber.CountryCode,
+                                mobilePhoneNumber.Number,
+                                registrant.AllowSms,
+                                mobilePhoneNumber.IsUnlisted,
+                                rockContext
+                            );
+                        }
                     }
 
                     // If the individual performing this registration request is not logged in, set the "registrar" to the first Person registered.

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,18 +15,13 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
-using Rock.Tasks;
-using Rock.Transactions;
-using Rock.Web.Cache;
+using Rock.Enums.Event;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -303,6 +298,13 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? CheckedOutByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check in status of this attendance record.
+        /// </summary>
+        /// <value>The check in status.</value>
+        [DataMember]
+        public CheckInStatus CheckInStatus { get; set; } = CheckInStatus.Unknown;
 
         #endregion
 

@@ -279,7 +279,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Register a Lava Tag elemennt.
+        /// Register a Lava Tag element.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="factoryMethod"></param>

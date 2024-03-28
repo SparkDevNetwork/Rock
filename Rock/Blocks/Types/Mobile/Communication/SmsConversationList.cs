@@ -56,7 +56,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         Order = 1 )]
 
     [BooleanField( "Hide personal SMS numbers",
-        Description = "Only SMS Numbers that are not associated with a person. The numbers without an Assigned To Person value.",
+        Description = "When enabled, only SMS Numbers that are not 'Assigned to a person' will be shown.",
         DefaultBooleanValue = false,
         Key = AttributeKey.HidePersonalSmsNumbers,
         Order = 2 )]

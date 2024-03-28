@@ -94,6 +94,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public DateTime? PaymentDeadlineDate { get; set; }
+
+        /// <summary />
         public string RegistrationInstructions { get; set; }
 
         /// <summary />
@@ -175,6 +178,7 @@ namespace Rock.Client
             this.MinimumInitialPayment = source.MinimumInitialPayment;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PaymentDeadlineDate = source.PaymentDeadlineDate;
             this.RegistrationInstructions = source.RegistrationInstructions;
             this.RegistrationMeteringThreshold = source.RegistrationMeteringThreshold;
             this.RegistrationTemplateId = source.RegistrationTemplateId;

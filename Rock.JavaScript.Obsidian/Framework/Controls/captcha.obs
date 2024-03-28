@@ -1,0 +1,227 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-bind="fieldProps" :rules="computedRules" name="captchaContent" :modelValue="internalValue">
+        <div class="control-wrapper">
+            <div :id="turnstileBoxId"></div>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, onMounted, onUnmounted, ref, } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ValidationResult, containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { CaptchaControlConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlConfigurationBag";
+    import { CaptchaControlTokenValidateTokenResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlTokenValidateTokenResultBag";
+    import { CaptchaControlValidateTokenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlValidateTokenOptionsBag";
+    import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+
+    interface ITurnstile {
+        render(elementQuery: string, options: unknown): string;
+        reset(widgetId: string): void;
+        remove(widgetId: string): void;
+    }
+
+    const props = defineProps({
+        /**
+         * If enabled, then validation with the server will be performed. This
+         * only validates the token, it does not provide a secure way to submit
+         * data and know it is not from a bot. When the validation has completed
+         * the `tokenValidated` event will be emitted.
+         */
+        performValidation: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "tokenValidated", isValid: boolean): void
+    }>();
+
+    defineExpose({
+        getToken,
+        refreshToken
+    });
+
+    // #region Values
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+    const internalValue = ref("");
+    const http = useHttp();
+    const widgetId = ref("");
+    const turnstileBoxId = `turnstile-box-${newGuid()}`;
+    let turnstile: ITurnstile | undefined;
+
+    let captchaPromiseSource = new PromiseCompletionSource<string | undefined>();
+
+    // #endregion
+
+    // #region Computed
+
+    const computedRules = computed(() => {
+        const rules = normalizeRules(props.rules);
+
+        if (containsRequiredRule(rules)) {
+            rules.push(requiredValidator);
+        }
+
+        return rules;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Get the control configuration from the server.
+     */
+    async function getConfiguration(): Promise<CaptchaControlConfigurationBag | undefined> {
+        try {
+            const result = await http.post<CaptchaControlConfigurationBag>("/api/v2/Controls/CaptchaControlGetConfiguration");
+
+            if (result.isSuccess && result.data) {
+                return result.data;
+            }
+            else {
+                console.error(result.errorMessage ?? "Unknown error while loading captcha configuration.");
+            }
+        }
+        catch (error) {
+            console.error("Unknown error while loading captcha configuration.");
+        }
+    }
+
+    /**
+     * Get validate the token with the server. This function is not currently
+     * used but is being left behind for later use by the captcha field type.
+     */
+    async function validateToken(token: string): Promise<CaptchaControlTokenValidateTokenResultBag | undefined> {
+        const options: CaptchaControlValidateTokenOptionsBag = {
+            token: token
+        };
+
+        try {
+            const result = await http.post<CaptchaControlTokenValidateTokenResultBag>("/api/v2/Controls/CaptchaControlValidateToken", undefined, options);
+
+            if (result.isSuccess && result.data) {
+                return result.data;
+            }
+            else {
+                console.error(result.errorMessage ?? "Unknown error while validating token.");
+            }
+        }
+        catch (error) {
+            console.error("Unknown error while validating token.");
+        }
+    }
+
+    /**
+     * Gets a promise that will be resolved once the token becomes available.
+     * The returned token can only be used once, so if you need to make another
+     * call to validate the token you should call `refreshToken()` after calling
+     * this method.
+     */
+    function getToken(): Promise<string | undefined> {
+        return captchaPromiseSource.promise;
+    }
+
+    /**
+     * Begins refreshing the token so it can be used again.
+     */
+    function refreshToken(): void {
+        if (widgetId.value && turnstile) {
+            captchaPromiseSource.resolve(undefined);
+            captchaPromiseSource = new PromiseCompletionSource<string | undefined>();
+            internalValue.value = "";
+            turnstile.reset(widgetId.value);
+        }
+    }
+
+    /**
+    * Renders the captcha control in the selected element after the turnstile script has been injected.
+    */
+    function renderCaptchaControl(siteKey: string): void {
+        if (turnstile) {
+            widgetId.value = turnstile.render(`#${turnstileBoxId}`, {
+                sitekey: siteKey,
+                "callback": callback,
+                "error-callback": errorCallback,
+                "expired-callback": expiredCallback
+            });
+        }
+    }
+
+    /**
+     * Callback function invoked upon success of the challenge. The callback is passed a token that can be validated.
+     */
+    async function callback(response: string): Promise<void> {
+        if (props.performValidation) {
+            const result = await validateToken(response);
+
+            emit("tokenValidated", result?.isTokenValid ?? false);
+            internalValue.value = result?.isTokenValid ? response : "";
+        }
+        else {
+            captchaPromiseSource.resolve(response);
+            internalValue.value = response;
+        }
+    }
+
+    /**
+     * Callback function invoked when there is an error (e.g. network error or the challenge failed).
+     * The callback is passed a error code detailing the nature of the error https://developers.cloudflare.com/turnstile/reference/client-side-errors/
+     */
+    function errorCallback(error: string): void {
+        console.error("Captcha challenge failed.", error);
+        internalValue.value = "";
+        captchaPromiseSource.reject("Captcha challenge failed.");
+    }
+
+    /**
+    * Callback function invoked when the token expires and does not reset the widget.
+    */
+    function expiredCallback(): void {
+        refreshToken();
+    }
+
+    /**
+     * Ensures that the Captcha was solved and verified successfully.
+     */
+    function requiredValidator(value: unknown): ValidationResult {
+        const invalidMessage = "is required";
+
+        if (!value) {
+            return invalidMessage;
+        }
+
+        return true;
+    }
+
+    // #endregion
+
+    onMounted(async () => {
+        const config = await getConfiguration();
+        if (config?.siteKey) {
+            await loadJavaScriptAsync("https://challenges.cloudflare.com/turnstile/v0/api.js", () => !!window["turnstile"]);
+            turnstile = window["turnstile"];
+            renderCaptchaControl(config.siteKey);
+        }
+        else {
+            // If captcha is not enabled globally then resolve to an empty string.
+            captchaPromiseSource.resolve("");
+        }
+    });
+
+    onUnmounted(() => {
+        if (widgetId.value && turnstile) {
+            turnstile.remove(widgetId.value);
+        }
+    });
+</script>

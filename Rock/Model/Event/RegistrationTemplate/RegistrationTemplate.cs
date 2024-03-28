@@ -584,13 +584,41 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets a value indicating whether [show SMS opt in].
-        /// When enabled a checkbox will be shown next ot each mobile phone number for registrants allowing the registrar to enable SMS messaging for this number.
+        /// When enabled a checkbox will be shown next to each mobile phone number for registrants allowing the registrar to enable SMS messaging for this number.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show SMS opt in]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool ShowSmsOptIn { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPaymentPlanAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment plan frequency value identifiers (separated by commas) from which a registrant can select.
+        /// </summary>
+        /// <value>
+        /// The payment plan frequency value identifiers.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string PaymentPlanFrequencyValueIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection status value identifier.
+        /// </summary>
+        /// <value>
+        /// The connection status value identifier.
+        /// </value>
+        [DataMember]
+        public int? ConnectionStatusValueId { get; set; }
 
         #endregion Entity Properties
 
@@ -748,6 +776,15 @@ namespace Rock.Model
         }
 
         private Dictionary<string, string> _supportedActions;
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the connection status.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> object representing the connection status.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue ConnectionStatusValue { get; set; }
 
         #endregion Navigation Properties
 

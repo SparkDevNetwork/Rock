@@ -37,14 +37,14 @@ namespace Rock.Model
         /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
         public static UserLogin GetCurrentUser( bool userIsOnline )
         {
-            var rockContext = new RockContext();
-
             string userName = UserLogin.GetCurrentUserName();
 
             if ( userName.IsNullOrWhiteSpace() )
             {
                 return null;
             }
+
+            var rockContext = new RockContext();
 
             if ( userName.StartsWith( "rckipid=" ) )
             {

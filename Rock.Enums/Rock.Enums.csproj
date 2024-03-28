@@ -64,6 +64,7 @@
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
     <Compile Include="Cms\BlockLocation.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
+    <Compile Include="Cms\BotGuardianLevel.cs" />
     <Compile Include="Cms\ContentChannelDateType.cs" />
     <Compile Include="Cms\ContentChannelItemStatus.cs" />
     <Compile Include="Cms\ContentCollectionFilterControl.cs" />
@@ -133,6 +134,7 @@
     <Compile Include="EnumDomainAttribute.cs" />
     <Compile Include="Event\AttendanceGraphBy.cs" />
     <Compile Include="Event\AttendanceStatus.cs" />
+    <Compile Include="Event\CheckInStatus.cs" />
     <Compile Include="Event\InteractiveExperienceApprovalStatus.cs" />
     <Compile Include="Event\InteractiveExperienceCampusBehavior.cs" />
     <Compile Include="Event\InteractiveExperiencePushNotificationType.cs" />

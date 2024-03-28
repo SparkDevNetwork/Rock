@@ -11,7 +11,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Prayer Request"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"

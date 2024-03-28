@@ -97,6 +97,15 @@ namespace RockWeb.Blocks.Crm
         DefaultBooleanValue = false,
         Order = 7 )]
 
+    [DataViewsField(
+        "Highlight Indicators",
+        Key = AttributeKey.DataViewIcons,
+        Description = "Select one or more Data Views for Person search result icons. Note: More selections increase processing time.",
+        EntityTypeName = "Rock.Model.Person",
+        DisplayPersistedOnly = true,
+        IsRequired = false,
+        Order = 8 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "764D3E67-2D01-437A-9F45-9F8C97878434" )]
@@ -113,11 +122,13 @@ namespace RockWeb.Blocks.Crm
             public const string ShowSpouse = "ShowSpouse";
             public const string ShowEnvelopeNumber = "ShowEnvelopeNumber";
             public const string ShowPerformance = "ShowPerformance";
+            public const string DataViewIcons = "DataViewIcons";
         }
         #endregion Attribute Keys
 
         #region Fields
 
+        private List<Guid> _dataViewGuids = new List<Guid>();
         private List<Guid> _phoneTypeGuids = new List<Guid>();
         private bool _showSpouse = false;
         private DefinedValueCache _inactiveStatus = null;
@@ -148,6 +159,7 @@ namespace RockWeb.Blocks.Crm
                 gPeople.Actions.AddCustomActionControl( _lPerf );
             }
 
+            _dataViewGuids = GetAttributeValue( AttributeKey.DataViewIcons ).SplitDelimitedValues().AsGuidList();
             _phoneTypeGuids = GetAttributeValue( AttributeKey.PhoneNumberTypes ).SplitDelimitedValues().AsGuidList();
             _showSpouse = GetAttributeValue( AttributeKey.ShowSpouse ).AsBoolean();
 
@@ -333,6 +345,30 @@ namespace RockWeb.Blocks.Crm
                     else
                     {
                         lPerson.Text = string.Format( "{0}", person.LastName );
+                    }
+
+                    if ( _dataViewGuids.Any() && person.DataViewIcons.Any() )
+                    {
+                        var lIcons = e.Row.FindControl( "lIcons" ) as Literal;
+
+                        var iconsHtml = new StringBuilder();
+                        
+                        foreach ( var icon in person.DataViewIcons )
+                        {
+                            var tooltip = string.Format( "{0} meets the conditions of the {1} data view.", person.NickName, icon.DataViewName );
+
+                            if (!string.IsNullOrWhiteSpace(icon.IconCssClass))
+                            {
+                                iconsHtml.AppendLine( string.Format("<i style=\"color:{0}\" class=\"fa-3x fa-fw {1}\" data-toggle=\"tooltip\" title=\"{2}\"></i>", icon.HighlightColor, icon.IconCssClass, tooltip ));
+                            }
+                            else
+                            {
+                                // Add a placeholder so that all (potential) icons align.
+                                iconsHtml.AppendLine( "<span style=\"display:block;\" class=\"fa-3x fa-fw\">&nbsp;</span>" );
+                            }
+                        }
+
+                        lIcons.Text = iconsHtml.ToString();
                     }
                 }
             }
@@ -541,6 +577,78 @@ namespace RockWeb.Blocks.Crm
                     TopSignalIconCssClass = p.TopSignalIconCssClass
                 } ).ToList();
 
+                if ( _dataViewGuids.Any() )
+                {
+                    var dataViewService = new DataViewService( rockContext );
+
+                    // First get the full DataView so we can verify access (by calling .ToList()).
+                    // Then select just the values necessary for the DataViewIconResult.
+                    var dataViews = dataViewService.Queryable()
+                        .Where( d => _dataViewGuids.Contains( d.Guid ) )
+                        .ToList()
+                        .Where( d => d.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                        .Select( d => new DataViewIconResult
+                        {
+                            DataViewId = d.Id,
+                            DataViewName = d.Name,
+                            IconCssClass = d.IconCssClass,
+                            HighlightColor = d.HighlightColor
+                        } )
+                        .ToList();
+
+                    var icons = new List<DataViewIconResult> ();
+
+                    var dataViewIds = dataViews.Select( d => d.DataViewId ).ToList();
+
+                    // Get the persisted values for the PersonIds and DataViewIds.
+                    var persistedValues = dataViewService.GetDataViewPersistedValuesForIds( personIdList, dataViewIds );
+
+                    // Because we want all icons to be in the same "column"
+                    // if a person is missing an icon we need a placeholder to take up that space.
+                    // Join all persons to all data views (e.g. CROSS APPLY)
+                    // then GroupJoin w/ DefaultIfEmpty (e.g. LEFT JOIN) to the persisted values
+                    // If the persisted value exists then add the icon class and color.
+                    var leftJoinResult =
+                        // Create a list of all persons with all dataviews.
+                        personList.Join(
+                        dataViews,
+                        p => 1,
+                        dv => 1,
+                        ( p, dv ) => new
+                        {
+                            PersonId = p.Id,
+                            DataViewId = dv.DataViewId,
+                            DataViewName = dv.DataViewName,
+                            IconCssClass = dv.IconCssClass,
+                            HighlightColor = dv.HighlightColor
+                        } )
+
+                        // Now add the IconCssClass and HighlightColor only to those with a persisted value.
+                        // Include the PersistedValue Total count for ordering (e.g. to remove gaps between icons when no results were in a DataView).
+                        .GroupJoin(
+                            persistedValues,
+                            src => src.DataViewId,
+                            pv => pv.DataViewId,
+                            ( src, pv ) => new
+                            {
+                                PersonId = src.PersonId,
+                                CountInDataView = pv.Count(),
+                                Icon = new DataViewIconResult
+                                {
+                                    DataViewId = src.DataViewId,
+                                    DataViewName = src.DataViewName,
+                                    IconCssClass = pv.DefaultIfEmpty().Any( p => p?.DataViewId == src.DataViewId && p?.EntityId == src.PersonId ) ? src.IconCssClass : string.Empty,
+                                    HighlightColor = pv.DefaultIfEmpty().Any( p => p?.DataViewId == src.DataViewId && p?.EntityId == src.PersonId ) ? src.HighlightColor : string.Empty
+                                }
+                            }
+                         );
+
+                    // Add the complete list of icons for every person.
+                    foreach (var person in personList)
+                    {
+                        person.DataViewIcons = leftJoinResult.Where( l => l.PersonId == person.Id ).OrderByDescending( i => i.CountInDataView ).Select(l => l.Icon ).ToList();
+                    }
+                }
 
                 if ( type.ToLower() == "name" )
                 {
@@ -586,6 +694,7 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
     }
+
     #region result models
     public class PersonSearchResult
     {
@@ -900,6 +1009,11 @@ namespace RockWeb.Blocks.Crm
         /// </value>
         public string TopSignalIconCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the complete list of persisted DataViews where there's
+        /// an IconCssClass and this Person is one of the records returned by the DataView.
+        /// </summary>
+        public List<DataViewIconResult> DataViewIcons { get; set; }
     }
 
     /// <summary>
@@ -938,6 +1052,36 @@ namespace RockWeb.Blocks.Crm
         }
     }
 
+    /// <summary>
+    /// Minimal icon information for a persisted DataView which defines an IconCssClass and (optionally) HighlightColor.
+    /// </summary>
+    public class DataViewIconResult
+    {
+        /// <summary>
+        /// Gets or sets the IconCssClass defined by DataView.
+        /// </summary>
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Highlight color to be used by the Icon as defined by the DataView.
+        /// </summary>
+        public string HighlightColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the DataView where the Icon and Highlight Color come from.
+        /// </summary>
+        public int DataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the DataView where the Icon and Highlight Color come from.
+        /// </summary>
+        public string DataViewName { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format( IconCssClass.Length > 0 ? IconCssClass : string.Empty );
+        }
+    }
     #endregion
 
 }

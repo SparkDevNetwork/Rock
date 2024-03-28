@@ -107,7 +107,7 @@ namespace Rock.ClientService.Core.Category.Options
         /// specify their own IconCssClass value.
         /// </summary>
         /// <value>The default icon CSS class.</value>
-        public string DefaultIconCssClass { get; set; } = "fa fa-list-ol";
+        public string DefaultIconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether inactive items should be

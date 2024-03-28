@@ -31,9 +31,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Blocks;
-using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Utility.CaptchaApi;
+using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.v2
@@ -165,6 +166,20 @@ namespace Rock.Rest.v2
                     return new StatusCodeResult( HttpStatusCode.Unauthorized, controller );
                 }
 
+                // Check if we need to apply rate limiting to this request.
+                if ( pageCache.IsRateLimited )
+                {
+                    var canProcess = RateLimiterCache.CanProcessPage( pageCache.Id,
+                        controller.RockRequestContext.ClientInformation.IpAddress,
+                        TimeSpan.FromSeconds( pageCache.RateLimitPeriod.Value ),
+                        pageCache.RateLimitRequestPerPeriod.Value );
+
+                    if ( !canProcess )
+                    {
+                        return new StatusCodeResult( ( HttpStatusCode ) 429, controller );
+                    }
+                }
+
                 //
                 // Get the class that handles the logic for the block.
                 //
@@ -198,15 +213,34 @@ namespace Rock.Rest.v2
                         {
                             if ( kvp.Key == "__context" )
                             {
+                                var actionContext = kvp.Value.ToObject<BlockActionContextBag>();
+
                                 // If we are given any page parameters then
                                 // override the query string parameters. This
                                 // is what allows mobile and obsidian blocks to
                                 // pass in the original page parameters.
-                                if ( kvp.Value["pageParameters"] != null )
+                                if ( actionContext?.PageParameters != null )
                                 {
-                                    var pageParameters = kvp.Value["pageParameters"].ToObject<Dictionary<string, string>>();
+                                    rockBlock.RequestContext.SetPageParameters( actionContext.PageParameters );
+                                }
 
-                                    rockBlock.RequestContext.SetPageParameters( pageParameters );
+                                /*
+                                    02/22/2024 - JSC
+
+                                    It's important that we perform the captcha
+                                    validation even when the actionContext.Captcha
+                                    is whitespace. Null indicates the captcha is
+                                    not in use by the block, but an empty string
+                                    indicates that the global configuration is missing.
+                                    In the latter case we still need to return true
+                                    so captcha doesn't fail when it's not configured.
+                                */
+                                if ( actionContext?.Captcha != null )
+                                {
+                                    var api = new CloudflareApi();
+                                    var ipAddress = rockBlock.RequestContext.ClientInformation.IpAddress;
+
+                                    rockBlock.RequestContext.IsCaptchaValid = await api.IsTurnstileTokenValidAsync( actionContext.Captcha, ipAddress );
                                 }
                             }
                             else
