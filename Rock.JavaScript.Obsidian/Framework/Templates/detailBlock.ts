@@ -35,6 +35,7 @@ import { alert, confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
 import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -471,7 +472,7 @@ export default defineComponent({
             }
 
             const data: FollowingGetFollowingOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid,
+                entityTypeGuid: props.entityTypeGuid || emptyGuid,
                 entityKey: props.entityKey
             };
 
@@ -698,7 +699,7 @@ export default defineComponent({
             }
 
             const data: FollowingSetFollowingOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid,
+                entityTypeGuid: props.entityTypeGuid || emptyGuid,
                 entityKey: props.entityKey,
                 isFollowing: !isEntityFollowed.value
             };

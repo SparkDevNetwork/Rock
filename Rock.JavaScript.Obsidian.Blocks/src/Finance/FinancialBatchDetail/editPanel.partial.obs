@@ -65,6 +65,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { BatchStatus } from "@Obsidian/Enums/Finance/batchStatus";
     import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -157,7 +158,7 @@
             ...props.modelValue,
             attributeValues: attributeValues.value,
             name: name.value,
-            status: toNumber(status.value),
+            status: toNumber(status.value) as BatchStatus,
             batchStartDateTime: batchStartDateTime.value,
             batchEndDateTime: batchEndDateTime.value,
             campus: campus.value,

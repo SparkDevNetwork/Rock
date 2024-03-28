@@ -33,7 +33,6 @@
     import RockFormField from "./rockFormField.obs";
     import CodeEditor from "./codeEditor.obs";
     import { Guid } from "@Obsidian/Types";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { BlockTemplatePickerGetBlockTemplatesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/blockTemplatePickerGetBlockTemplatesOptionsBag";
     import { BlockTemplatePickerGetBlockTemplatesResultsBag } from "@Obsidian/ViewModels/Rest/Controls/blockTemplatePickerGetBlockTemplatesResultsBag";
 

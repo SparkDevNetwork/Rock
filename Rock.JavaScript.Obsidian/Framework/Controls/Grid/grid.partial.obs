@@ -613,7 +613,7 @@
          * The unique identifier of the entity type that the rows represent.
          */
         entityTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | undefined>,
             required: false
         },
 

@@ -30,6 +30,7 @@
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockFormField from "./rockFormField.obs";
     import { Guid } from "@Obsidian/Types";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { ContentChannelItemPickerGetContentChannelItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetContentChannelItemsOptionsBag";
     import { ContentChannelItemPickerGetAllForContentChannelItemOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemOptionsBag";
     import { ContentChannelItemPickerGetAllForContentChannelItemResultsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemResultsBag";
@@ -46,7 +47,7 @@
 
         /** If you specify the channel, the channel picker will be hidden and we'll just show CC Items for this type */
         contentChannelGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 
@@ -128,7 +129,7 @@
         }
 
         const options: ContentChannelItemPickerGetContentChannelItemsOptionsBag = {
-            contentChannelGuid: contentChannelGuidValue.value,
+            contentChannelGuid: contentChannelGuidValue.value || emptyGuid,
             excludeContentChannelItems: props.excludeContentChannelItems
         };
 
@@ -151,7 +152,7 @@
      */
     async function loadContentChannelItemOptionsFromValue(): Promise<void> {
         const options: ContentChannelItemPickerGetAllForContentChannelItemOptionsBag = {
-            contentChannelItemGuid: props.modelValue?.value,
+            contentChannelItemGuid: props.modelValue?.value || emptyGuid,
             excludeContentChannelItems: props.excludeContentChannelItems
         };
 

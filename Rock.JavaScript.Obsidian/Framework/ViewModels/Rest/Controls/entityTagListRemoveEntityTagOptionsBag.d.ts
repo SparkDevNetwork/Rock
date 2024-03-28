@@ -35,7 +35,7 @@ export type EntityTagListRemoveEntityTagOptionsBag = {
     entityKey?: string | null;
 
     /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
+    entityTypeGuid: Guid;
 
     /**
      * Gets or sets the security grant token to use when performing

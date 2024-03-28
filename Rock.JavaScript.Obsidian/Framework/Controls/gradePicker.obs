@@ -63,7 +63,7 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<GradePickerGetGradesOptionsBag> = {
+        const options: GradePickerGetGradesOptionsBag = {
             useAbbreviation: props.useAbbreviation,
             useGuidAsValue: props.useGuidAsValue
         };

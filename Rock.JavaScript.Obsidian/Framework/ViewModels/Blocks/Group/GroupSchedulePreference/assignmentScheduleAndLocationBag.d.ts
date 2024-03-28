@@ -27,7 +27,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /** Gets or sets a class representing data to pass cleanly into mobile. */
 export type AssignmentScheduleAndLocationBag = {
     /** Gets or sets a guid representing the group member assignment ID. */
-    groupMemberAssignmentGuid?: Guid | null;
+    groupMemberAssignmentGuid: Guid;
 
     /** Gets or sets a list of location keys and values. */
     locationListItem?: ListItemBag | null;

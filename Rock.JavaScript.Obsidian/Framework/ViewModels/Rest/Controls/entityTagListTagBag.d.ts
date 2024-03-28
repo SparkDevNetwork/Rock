@@ -33,7 +33,7 @@ export type EntityTagListTagBag = {
     category?: ListItemBag | null;
 
     /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
+    entityTypeGuid: Guid;
 
     /** Gets or sets the icon CSS class to display with tag. */
     iconCssClass?: string | null;

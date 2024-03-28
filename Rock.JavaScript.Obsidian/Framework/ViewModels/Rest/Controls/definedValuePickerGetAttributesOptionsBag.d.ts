@@ -29,7 +29,7 @@ import { Guid } from "@Obsidian/Types";
  */
 export type DefinedValuePickerGetAttributesOptionsBag = {
     /** Gets or sets the unique identifier of the defined type to get attributes of. */
-    definedTypeGuid?: Guid | null;
+    definedTypeGuid: Guid;
 
     /**
      * Gets or sets the security grant token to use when performing

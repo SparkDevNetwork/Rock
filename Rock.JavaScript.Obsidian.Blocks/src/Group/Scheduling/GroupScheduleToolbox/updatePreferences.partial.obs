@@ -108,6 +108,7 @@
     import { SchedulePreferencesBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/schedulePreferencesBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -239,8 +240,8 @@
         blockActionErrorMessage.value = "";
 
         const bag: GetSchedulePreferencesRequestBag = {
-            selectedPersonGuid: selectedPersonGuid.value,
-            selectedGroupGuid: groupGuid
+            selectedPersonGuid: selectedPersonGuid.value || emptyGuid,
+            selectedGroupGuid: groupGuid || null
         };
 
         const result = await invokeBlockAction<SchedulePreferencesBag>("GetSchedulePreferences", { bag });
@@ -308,10 +309,10 @@
         blockActionErrorMessage.value = "";
 
         const bag: SaveSchedulePreferenceRequestBag = {
-            selectedPersonGuid: selectedPersonGuid.value,
-            selectedGroupGuid: selectedGroupGuid.value,
+            selectedPersonGuid: selectedPersonGuid.value || emptyGuid,
+            selectedGroupGuid: selectedGroupGuid.value || emptyGuid,
             scheduleReminderEmailOffsetDays: scheduleReminderEmailOffsetDays.value,
-            selectedScheduleTemplateGuid: selectedScheduleTemplateGuid.value,
+            selectedScheduleTemplateGuid: selectedScheduleTemplateGuid.value || null,
             scheduleStartDate: scheduleStartDate.value
         };
 
@@ -334,8 +335,8 @@
         }
 
         getAssignmentOptionsRequest.value = {
-            selectedPersonGuid: selectedPersonGuid.value,
-            selectedGroupGuid: selectedGroupGuid.value
+            selectedPersonGuid: selectedPersonGuid.value || emptyGuid,
+            selectedGroupGuid: selectedGroupGuid.value || emptyGuid
         };
 
         if (typeof editAssignmentGuid === "string") {
@@ -368,8 +369,8 @@
         blockActionErrorMessage.value = "";
 
         const bag: DeleteAssignmentRequestBag = {
-            selectedPersonGuid: selectedPersonGuid.value,
-            deleteAssignmentGuid: deleteAssignmentGuid
+            selectedPersonGuid: selectedPersonGuid.value || emptyGuid,
+            deleteAssignmentGuid: deleteAssignmentGuid || emptyGuid
         };
 
         const result = await invokeBlockAction("DeleteAssignment", { bag });

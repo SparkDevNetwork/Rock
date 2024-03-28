@@ -307,6 +307,8 @@ namespace Rock.Obsidian.UI
                 return;
             }
 
+            System.Diagnostics.Activity.Current?.AddTag( "rock.grid.custom_column", true );
+
             for ( int i = 0; i < additionalColumns.ColumnsConfig.Count; i++ )
             {
                 var column = additionalColumns.ColumnsConfig[i];

@@ -99,6 +99,7 @@
     import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
     import { ScheduleRowBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/scheduleRowBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -177,7 +178,9 @@
         isLoadingCurrentSchedule.value = true;
         blockActionErrorMessage.value = "";
 
-        const result = await invokeBlockAction<CurrentScheduleBag>("GetCurrentSchedule", { selectedPersonGuid: selectedPersonGuid.value });
+        const result = await invokeBlockAction<CurrentScheduleBag>("GetCurrentSchedule", {
+            selectedPersonGuid: selectedPersonGuid.value || emptyGuid
+        });
         isLoadingCurrentSchedule.value = false;
 
         if (!result.isSuccess) {

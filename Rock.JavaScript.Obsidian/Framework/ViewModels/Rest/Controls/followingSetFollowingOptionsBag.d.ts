@@ -35,7 +35,7 @@ export type FollowingSetFollowingOptionsBag = {
     entityKey?: string | null;
 
     /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
+    entityTypeGuid: Guid;
 
     /** Gets or sets a value indicating whether the entity should be followed. */
     isFollowing: boolean;

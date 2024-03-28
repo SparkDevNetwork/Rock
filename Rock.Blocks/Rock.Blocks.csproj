@@ -66,7 +66,7 @@
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
-	<Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
@@ -80,13 +80,16 @@
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
+    <Compile Include="Engagement\AchievementTypeList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
+    <Compile Include="Finance\BusinessContactList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
+	<Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Reporting\ReportList.cs" />

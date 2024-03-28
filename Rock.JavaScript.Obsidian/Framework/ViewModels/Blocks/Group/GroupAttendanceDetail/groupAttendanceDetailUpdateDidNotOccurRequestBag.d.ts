@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** A bag that contains the update did not occur request information. */
 export type GroupAttendanceDetailUpdateDidNotOccurRequestBag = {
     /** Gets or sets the attendance occurrence unique identifier. */
-    attendanceOccurrenceGuid?: Guid | null;
+    attendanceOccurrenceGuid: Guid;
 
     /** Gets or sets a value indicating whether the attendance occurrence occurred. */
     didNotOccur: boolean;

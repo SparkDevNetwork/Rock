@@ -29,10 +29,10 @@ import { Guid } from "@Obsidian/Types";
  */
 export type LocationListGetLocationsOptionsBag = {
     /** GUID of the Location Type that the locations need to be */
-    locationTypeValueGuid?: Guid | null;
+    locationTypeValueGuid: Guid;
 
     /** Guid of the location the results should be children of */
-    parentLocationGuid?: Guid | null;
+    parentLocationGuid: Guid;
 
     /** The security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;

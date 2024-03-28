@@ -201,10 +201,10 @@
         saveSignUpErrorMessage.value = "";
 
         const bag: SaveSignUpRequestBag = {
-            selectedPersonGuid: selectedPersonGuid.value,
-            selectedGroupGuid: selectedGroup?.value?.guid,
-            selectedScheduleGuid: signUpOccurrence.value?.scheduleGuid,
-            selectedLocationGuid: selectedLocationGuid.value,
+            selectedPersonGuid: selectedPersonGuid.value || emptyGuid,
+            selectedGroupGuid: selectedGroup?.value?.guid || emptyGuid,
+            selectedScheduleGuid: signUpOccurrence.value?.scheduleGuid || emptyGuid,
+            selectedLocationGuid: selectedLocationGuid.value || emptyGuid,
             occurrenceDateTime: signUpOccurrence.value?.occurrenceDateTime,
             isSigningUp: isChecked.value
         };

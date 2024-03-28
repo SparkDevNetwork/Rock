@@ -23,6 +23,8 @@ import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import { ConfigurationValueKey, GroupAndRoleValue } from "./groupAndRoleField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 
 const http = useHttp();
 
@@ -74,8 +76,8 @@ export const EditComponent = defineComponent({
 
             if (groupTypeGuid) {
 
-                const options = {
-                    groupTypeGuid: groupTypeGuid,
+                const options: GroupRolePickerGetGroupRolesOptionsBag = {
+                    groupTypeGuid: groupTypeGuid || emptyGuid,
                 };
 
                 const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupRoles", null, options);

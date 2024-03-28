@@ -33,6 +33,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/registrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
 
     const props = defineProps({
@@ -106,7 +107,7 @@
 
     async function getTemplateFromInstance(): Promise<void> {
         const options: RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag = {
-            registrationInstanceGuid: props.modelValue?.value,
+            registrationInstanceGuid: props.modelValue?.value || emptyGuid,
             securityGrantToken: securityGrantToken.value
         };
 

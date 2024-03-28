@@ -57,7 +57,7 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<StepTypePickerGetStepTypesOptionsBag> = {
+        const options: StepTypePickerGetStepTypesOptionsBag = {
             stepProgramGuid: props.stepProgramGuid
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/StepTypePickerGetStepTypes", undefined, options);

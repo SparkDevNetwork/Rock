@@ -139,8 +139,7 @@
      * Loads the items from the server.
      */
     async function loadOptions(): Promise<ListItemBag[]> {
-        const options: Partial<CampusPickerGetCampusesOptionsBag> = {
-        };
+        const options: CampusPickerGetCampusesOptionsBag = {};
         const result = await http.post<CampusPickerItemBag[]>("/api/v2/Controls/CampusPickerGetCampuses", undefined, options);
 
         if (result.isSuccess && result.data) {

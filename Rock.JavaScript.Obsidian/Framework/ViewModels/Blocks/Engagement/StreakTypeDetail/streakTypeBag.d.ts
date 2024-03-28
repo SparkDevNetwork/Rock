@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { StreakOccurrenceFrequency } from "@Obsidian/Enums/Engagement/streakOccurrenceFrequency";
+import { StreakStructureType } from "@Obsidian/Enums/Engagement/streakStructureType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -62,7 +64,7 @@ export type StreakTypeBag = {
     name?: string | null;
 
     /** Gets or sets the timespan that each map bit represents (Rock.Model.StreakOccurrenceFrequency). */
-    occurrenceFrequency: number;
+    occurrenceFrequency: StreakOccurrenceFrequency;
 
     /**
      * Gets or sets a flag indicating if this streak type requires explicit enrollment. If not set, a person can be
@@ -89,7 +91,7 @@ export type StreakTypeBag = {
     structureEntity?: ListItemBag | null;
 
     /** Gets or sets the attendance association */
-    structureType?: number | null;
+    structureType?: StreakStructureType | null;
 
     /** The text display of structure type in view mode in the frontend */
     structureTypeDisplay?: string | null;

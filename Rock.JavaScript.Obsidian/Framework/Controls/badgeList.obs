@@ -6,13 +6,14 @@
 </template>
 
 <script setup lang="ts">
+    import { nextTick, PropType, ref, watch } from "vue";
     import { Guid } from "@Obsidian/Types";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { popover } from "@Obsidian/Utility/popover";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { BadgeListGetBadgesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/badgeListGetBadgesOptionsBag";
     import { RenderedBadgeBag } from "@Obsidian/ViewModels/Crm/renderedBadgeBag";
-    import { nextTick, PropType, ref, watch } from "vue";
 
     const props = defineProps({
         /** The unique identifier of the type of entity to be rendered. */
@@ -51,7 +52,7 @@
     async function loadBadges(): Promise<void> {
         const data: BadgeListGetBadgesOptionsBag = {
             badgeTypeGuids: props.badgeTypeGuids,
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid: props.entityTypeGuid || emptyGuid,
             entityKey: props.entityKey
         };
 

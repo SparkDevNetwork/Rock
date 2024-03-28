@@ -26,6 +26,7 @@
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import RockButton from "./rockButton.obs";
     import DropDownList from "./dropDownList.obs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -60,8 +61,8 @@
 
     async function loadTree(): Promise<void> {
         error.value = false;
-        const options: Partial<CategorizedValuePickerGetTreeOptionsBag> = {
-            definedTypeGuid: props.definedTypeGuid,
+        const options: CategorizedValuePickerGetTreeOptionsBag = {
+            definedTypeGuid: props.definedTypeGuid || emptyGuid,
             onlyIncludeGuids: props.onlyIncludeGuids
         };
         const result = await http.post<CategorizedValuePickerGetTreeResultsBag>("/api/v2/Controls/CategorizedValuePickerGetTree", undefined, options);

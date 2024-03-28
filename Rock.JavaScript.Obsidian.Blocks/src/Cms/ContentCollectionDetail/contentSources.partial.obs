@@ -119,7 +119,7 @@
     import { ContentSourceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentSourceBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import Source from "./source.partial.obs";
     import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
 
@@ -266,7 +266,9 @@
         sourceEditBag.value = {
             entityTypeGuid: EntityType.EventCalendar,
             occurrencesToShow: 0,
-            itemCount: 0
+            itemCount: 0,
+            guid: emptyGuid,
+            entityGuid: emptyGuid
         };
 
         sourceCustomFields.value = [];
@@ -315,7 +317,9 @@
         sourceEditBag.value = {
             entityTypeGuid: EntityType.ContentChannel,
             occurrencesToShow: 0,
-            itemCount: 0
+            itemCount: 0,
+            guid: emptyGuid,
+            entityGuid: emptyGuid
         };
 
         sourceCustomFields.value = [];
@@ -330,9 +334,9 @@
         }
 
         const bag: ContentSourceBag = {
-            guid: sourceEditBag.value?.guid,
-            entityTypeGuid: sourceEditBag.value.entityTypeGuid,
-            entityGuid: sourceSelectedEntity.value,
+            guid: sourceEditBag.value?.guid || emptyGuid,
+            entityTypeGuid: sourceEditBag.value.entityTypeGuid || emptyGuid,
+            entityGuid: sourceSelectedEntity.value || emptyGuid,
             attributes: sourceSelectedEntityAttributes.value.map(a => ({ value: a })),
             occurrencesToShow: sourceSelectedEntityOccurrences.value ?? 0,
             customFields: sourceCustomFields.value,

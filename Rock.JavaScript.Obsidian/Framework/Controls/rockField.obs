@@ -8,7 +8,7 @@
                 </label>
                 <div class="control-wrapper">
                     <div class="form-control-static">
-                        <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+                        <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" />
                     </div>
                 </div>
             </div>

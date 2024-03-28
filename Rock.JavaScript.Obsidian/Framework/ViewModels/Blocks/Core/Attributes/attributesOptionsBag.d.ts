@@ -20,6 +20,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

@@ -12,6 +12,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -20,7 +21,7 @@
         },
 
         workflowTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 
@@ -64,9 +65,9 @@
             return [];
         }
 
-        const options: Partial<WorkflowPickerGetWorkflowsOptionsBag> = {
-            workflowTypeGuid: props.workflowTypeGuid,
-            securityGrantToken: securityGrantToken.value
+        const options: WorkflowPickerGetWorkflowsOptionsBag = {
+            workflowTypeGuid: props.workflowTypeGuid || emptyGuid,
+            securityGrantToken: securityGrantToken.value,
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/WorkflowPickerGetWorkflows", undefined, options);
 

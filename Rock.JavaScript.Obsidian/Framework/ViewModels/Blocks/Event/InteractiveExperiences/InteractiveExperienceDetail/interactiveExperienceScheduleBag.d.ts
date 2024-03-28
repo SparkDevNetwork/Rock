@@ -48,7 +48,7 @@ export type InteractiveExperienceScheduleBag = {
     group?: ListItemBag | null;
 
     /** Gets or sets the unique identifier of this schedule. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the schedule. */
     schedule?: ListItemBag | null;

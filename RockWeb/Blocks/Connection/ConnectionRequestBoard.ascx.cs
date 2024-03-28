@@ -2672,6 +2672,13 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRequestModalViewModeActivities_RowSelected( object sender, RowEventArgs e )
         {
+            var viewModel = GetActivityViewModelQuery().FirstOrDefault( a => a.Id == e.RowKeyId );
+
+            if ( viewModel?.CanEdit != true )
+            {
+                return;
+            }
+
             CurrentActivityId = e.RowKeyId;
             RequestModalViewModeSubMode = RequestModalViewModeSubMode_AddEditActivity;
             ShowRequestModal();

@@ -270,7 +270,7 @@
 
     /** Loads the items from the server. */
     async function loadAccountOptions(): Promise<ListItemBag[]> {
-        const options: Partial<CampusAccountAmountPickerGetAccountsOptionsBag> = {
+        const options: CampusAccountAmountPickerGetAccountsOptionsBag = {
             selectableAccountGuids: props.selectableAccountGuids,
             orderBySelectableAccountsIndex: props.orderBySelectableAccountsIndex,
             accountHeaderTemplate: props.accountHeaderTemplate,

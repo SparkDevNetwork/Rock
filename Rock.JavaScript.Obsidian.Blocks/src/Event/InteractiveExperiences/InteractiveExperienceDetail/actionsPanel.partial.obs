@@ -177,7 +177,7 @@
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, newGuid } from "@Obsidian/Utility/guid";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { InteractiveExperienceActionBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionBag";
     import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
@@ -454,7 +454,7 @@
 
         const result = await invokeBlockAction<void>("DeleteAction", {
             idKey: props.interactiveExperienceIdKey,
-            actionGuid: action.guid
+            actionGuid: action.guid || emptyGuid
         });
 
         if (!result.isSuccess) {
@@ -486,7 +486,7 @@
 
         const result = await invokeBlockAction<void>("ReorderAction", {
             idKey: props.interactiveExperienceIdKey,
-            actionGuid: action.guid,
+            actionGuid: action.guid || emptyGuid,
             beforeActionGuid: beforeAction?.guid ?? null
         });
 

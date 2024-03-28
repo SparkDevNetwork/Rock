@@ -38,8 +38,8 @@ export type PerformScheduleRowActionRequestBag = {
      * If action type is "Delete," this value represents a person schedule exclusion entity.
      * Otherwise, this value represents an attendance entity.
      */
-    entityGuid?: Guid | null;
+    entityGuid: Guid;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 };

@@ -22,6 +22,7 @@
 //
 
 import { AttendanceStatus } from "@Obsidian/Enums/Event/attendanceStatus";
+import { RSVP } from "@Obsidian/Enums/Event/rSVP";
 import { Guid } from "@Obsidian/Types";
 
 /**
@@ -30,7 +31,7 @@ import { Guid } from "@Obsidian/Types";
  */
 export type AttendanceUpdatedMessageBag = {
     /** Gets or sets the attendance unique identifier. */
-    attendanceGuid?: Guid | null;
+    attendanceGuid: Guid;
 
     /** Gets or sets the unique identifier of the group the person attended. */
     groupGuid?: Guid | null;
@@ -45,19 +46,19 @@ export type AttendanceUpdatedMessageBag = {
     locationGuid?: Guid | null;
 
     /** Gets or sets the occurrence unique identifier. */
-    occurrenceGuid?: Guid | null;
+    occurrenceGuid: Guid;
 
     /** Gets or sets the full name of the person this attendance record is for. */
     personFullName?: string | null;
 
     /** Gets or sets the unique identifier of the person that attended. */
-    personGuid?: Guid | null;
+    personGuid: Guid;
 
     /** Gets or sets the photo URL of the person this attendance record is for. */
     personPhotoUrl?: string | null;
 
     /** Gets or sets the RSVP state of this attendance record. */
-    rSVP: number;
+    rSVP: RSVP;
 
     /**
      * Gets or sets the attendance status which indicates if the persent

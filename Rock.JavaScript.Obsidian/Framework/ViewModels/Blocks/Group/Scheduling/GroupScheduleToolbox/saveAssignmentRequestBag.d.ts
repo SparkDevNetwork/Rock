@@ -32,14 +32,14 @@ export type SaveAssignmentRequestBag = {
     editAssignmentGuid?: Guid | null;
 
     /** Gets or sets the selected group unique identifier. */
-    selectedGroupGuid?: Guid | null;
+    selectedGroupGuid: Guid;
 
     /** Gets or sets the selected location unique identifier, if any. */
     selectedLocationGuid?: Guid | null;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 
     /** Gets or sets the selected schedule unique identifier. */
-    selectedScheduleGuid?: Guid | null;
+    selectedScheduleGuid: Guid;
 };

@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** Gets or sets a class representing the schedule sign up information. */
 export type PersonScheduleSignupDataBag = {
     /** Gets or sets a Guid representing the GroupId of the attendance. */
-    groupGuid?: Guid | null;
+    groupGuid: Guid;
 
     /** Gets or sets a string representing the group name. */
     groupName?: string | null;
@@ -35,7 +35,7 @@ export type PersonScheduleSignupDataBag = {
     groupOrder: number;
 
     /** Gets or sets a Guid representing the default LocationId */
-    locationGuid?: Guid | null;
+    locationGuid: Guid;
 
     /** Gets or sets a string representing the location name. */
     locationName?: string | null;
@@ -53,7 +53,7 @@ export type PersonScheduleSignupDataBag = {
     scheduledDateTime?: string | null;
 
     /** Gets or sets a Guid representing the default ScheduleId */
-    scheduleGuid?: Guid | null;
+    scheduleGuid: Guid;
 
     /** Gets or sets a string representing the schedule name. */
     scheduleName?: string | null;

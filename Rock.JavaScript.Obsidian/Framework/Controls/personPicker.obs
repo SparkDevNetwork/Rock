@@ -99,8 +99,9 @@
     import RockButton from "./rockButton.obs";
     import Tag from "./Internal/tag.obs";
     import { nextTick } from "vue";
-    import { useHttp } from "@Obsidian/Utility/http";
     import { useStore } from "@Obsidian/PageState";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
     import { sleep } from "@Obsidian/Utility/promiseUtils";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { EntityTagListTagBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListTagBag";
@@ -254,7 +255,7 @@
             return;
         }
 
-        const options: Partial<PersonPickerSearchOptionsBag> = {
+        const options: PersonPickerSearchOptionsBag = {
             name: name,
             address: address || undefined,
             email: email || undefined,
@@ -335,6 +336,7 @@
 
         if (result.connectionStatus) {
             tags.push({
+                entityTypeGuid: emptyGuid,
                 isPersonal: false,
                 name: result.connectionStatus,
                 backgroundColor: result.connectionStatusColor || "#fff"
@@ -343,6 +345,7 @@
 
         if (result.campusShortCode) {
             tags.push({
+                entityTypeGuid: emptyGuid,
                 isPersonal: false,
                 name: result.campusShortCode,
                 backgroundColor: "#fff"

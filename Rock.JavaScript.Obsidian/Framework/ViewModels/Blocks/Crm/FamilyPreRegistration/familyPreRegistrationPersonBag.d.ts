@@ -22,6 +22,7 @@
 //
 
 import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { Guid } from "@Obsidian/Types";
 import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -53,13 +54,13 @@ export type FamilyPreRegistrationPersonBag = {
     firstName?: string | null;
 
     /** Gets or sets the gender. */
-    gender: number;
+    gender: Gender;
 
     /** Gets or sets the grade defined value unique identifier. */
     gradeDefinedValueGuid?: Guid | null;
 
     /** Gets or sets the person unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets a value indicating whether this instance is first name read only. */
     isFirstNameReadOnly: boolean;
