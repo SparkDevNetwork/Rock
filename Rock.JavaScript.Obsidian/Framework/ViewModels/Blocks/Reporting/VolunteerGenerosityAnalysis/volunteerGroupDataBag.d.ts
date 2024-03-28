@@ -23,16 +23,15 @@
 
 import { VolunteerGivingDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGivingDataBag";
 
-/** A bag that contains group and campus specific data for the Volunteer Generosity Analysis block. */
 export type VolunteerGroupDataBag = {
-    /** Gets or sets the campus identifier. */
+    /** Gets or sets the campus id. */
     campusId: number;
 
     /** Gets or sets the giving data. */
     givingData?: VolunteerGivingDataBag[] | null;
 
-    /** Gets or sets the group identifier. */
-    groupId: number;
+    /** Gets or sets the group id. */
+    groupId?: string | null;
 
     /** Gets or sets the group name. */
     groupName?: string | null;
@@ -40,6 +39,6 @@ export type VolunteerGroupDataBag = {
     /** Gets or sets the last attendance date. */
     lastAttendanceDate?: string | null;
 
-    /** Gets or sets the campus shortcode name. */
+    /** Gets or sets the campus name. */
     shortCode?: string | null;
 };

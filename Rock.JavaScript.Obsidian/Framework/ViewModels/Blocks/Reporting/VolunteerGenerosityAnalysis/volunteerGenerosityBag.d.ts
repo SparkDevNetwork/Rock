@@ -28,4 +28,8 @@ export type VolunteerGenerosityBag = {
 
     /** Gets or sets the list of unique groups. */
     uniqueGroups?: string[] | null;
+    /** Gets or sets the last updated date. */
+    lastUpdated?: string | null;
+    /** Gets or sets the estimated refresh time. */
+    estimatedRefreshTime?: number | null;
 };

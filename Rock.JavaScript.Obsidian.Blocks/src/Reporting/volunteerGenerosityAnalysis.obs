@@ -365,6 +365,7 @@
 }
 </style>
 
+
 <script setup lang="ts">
     import { ref, reactive, watch } from "vue";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
@@ -425,32 +426,63 @@
      * Calculate the donation percentages for each month
      * @returns An array of objects representing the donation percentages
      */
-    const calculateDonationPercentages = (): { month: string; donatedPercentage: number; notDonatedPercentage: number }[] => {
-        const donationData = last13Months.reduce((acc, month) => {
-            acc[month] = { donated: 0, total: gridData?.rows?.length || 0 };
-            return acc;
-        }, {});
+     const calculateDonationPercentages = async () => {
+    if (!gridData || !gridData.rows) {
+        return;
+    }
 
-        gridData?.rows?.forEach(person => {
-            last13Months.forEach(month => {
-                if ((person as { givingMonths: string[] }).givingMonths.includes(month)) {
-                    donationData[month].donated++;
+    // Step 1: Extract unique GivingIds and initialize donation data structure
+    const householdData: Record<string, { donated: Record<string, boolean>; lastAttendanceDate: string }> = {};
+
+    gridData.rows.forEach(row => {
+        if (row.person && typeof row.person === "object") {
+            const { givingId, lastAttendanceDate } = row.person as { givingId: string; lastAttendanceDate: string };
+            if (givingId) {
+                if (!householdData[givingId]) {
+                    householdData[givingId] = { donated: {}, lastAttendanceDate };
                 }
-            });
-        });
+                if (typeof row.givingMonths === "string") {
+                    row.givingMonths.split(",").forEach(monthYear => {
+                        const month = monthYear.trim();
+                        householdData[givingId].donated[month] = true;
+                    });
+                }
+            }
+        }
+    });
 
-        const donationPercentages = Object.keys(donationData).map(month => {
-            const { donated, total } = donationData[month];
-            const notDonated = total - donated;
-            return {
-                month,
-                donatedPercentage: (donated / total) * 100,
-                notDonatedPercentage: (notDonated / total) * 100
-            };
-        });
+    const totalHouseholds = Object.keys(householdData).length;
 
-        return teamDonationStats.value = donationPercentages;
-    };
+    const donationData: Record<string, { donated: number; total: number }> = {};
+
+    // Initialize donation data for each month
+    last13Months.forEach(month => {
+        donationData[month] = { donated: 0, total: totalHouseholds };
+    });
+
+    // Step 2: Update donation data based on the household data
+    Object.values(householdData).forEach(household => {
+        last13Months.forEach(month => {
+            if (household.donated[month]) {
+                donationData[month].donated++;
+            }
+        });
+    });
+
+    // Compute donation percentages
+    const donationPercentages = last13Months.map(month => {
+        const { donated, total } = donationData[month];
+        const notDonated = total - donated;
+        return {
+            month,
+            donatedPercentage: (donated / total) * 100,
+            notDonatedPercentage: (notDonated / total) * 100,
+        };
+    });
+
+    teamDonationStats.value = donationPercentages;
+};
+
 
     /**
      * @param lastUpdated The last updated date
@@ -578,9 +610,6 @@
 
             if (result.isSuccess && result.data && result.data.rows) {
                 dataRefreshed.value = false;
-                const firstRow = result.data.rows[0];
-                lastUpdated.value = firstRow.lastUpdated as string;
-                estimatedRefreshTime.value = Number((firstRow.estimatedRefreshTime as number / 1000).toFixed(1));
                 gridData = reactive(result.data);
                 if (bag.uniqueCampuses) {
                     uniqueCampuses.value = [{ text: "All", value: "" }, ...bag.uniqueCampuses.map(campus => ({ text: campus, value: campus }))];
@@ -588,9 +617,15 @@
                 if (bag.uniqueGroups) {
                     uniqueGroups.value = [{ text: "All", value: "" }, ...bag.uniqueGroups.map(group => ({ text: group, value: group }))];
                 }
+                if (bag.lastUpdated) {
+                    lastUpdated.value = bag.lastUpdated;
+                }
+                if (bag.estimatedRefreshTime) {
+                    estimatedRefreshTime.value = bag.estimatedRefreshTime;
+                }
 
                 await fetchBlockPreferences();
-                calculateDonationPercentages();
+                await calculateDonationPercentages();
 
                 return gridData;
             }
