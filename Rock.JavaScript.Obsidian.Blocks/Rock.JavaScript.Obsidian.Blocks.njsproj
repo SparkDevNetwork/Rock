@@ -122,6 +122,7 @@
     <Content Include="src\Finance\financialGatewayDetail.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
+    <Content Include="src\Fundraising\fundraisingDonationList.obs" />
     <Content Include="src\Finance\savedAccountList.obs" />
     <Content Include="src\Finance\businessContactList.obs" />
     <Content Include="src\Group\Scheduling\groupScheduler.obs" />
@@ -328,6 +329,8 @@
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
+    <Folder Include="src\Fundraising\" />
+    <Folder Include="src\Fundraising\FundraisingDonationList\" />
     <Folder Include="src\Finance\BusinessContactList\" />
     <Folder Include="src\Finance\SavedAccountList\" />
     <Folder Include="src\Group\Scheduling\" />
@@ -490,6 +493,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Fundraising\FundraisingDonationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\SavedAccountList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessContactList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />

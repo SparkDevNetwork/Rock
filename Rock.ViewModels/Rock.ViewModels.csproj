@@ -90,6 +90,7 @@
     <Compile Include="Blocks\Finance\FinancialGatewayDetail\FinancialGatewayDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionDetailOptionsBag.cs" />
+	<Compile Include="Blocks\Fundraising\FundraisingDonationList\FundraisingDonationListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BusinessContactList\BusinessContactListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\SavedAccountList\SavedAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUnassignedResourceCountBag.cs" />
