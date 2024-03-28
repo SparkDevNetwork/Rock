@@ -19,6 +19,7 @@ import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunit
 import { AbilityLevelOpportunityBag } from "@Obsidian/ViewModels/CheckIn/abilityLevelOpportunityBag";
 import { DeepReadonly } from "vue";
 import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
+import { GroupOpportunityBag } from "@Obsidian/ViewModels/CheckIn/groupOpportunityBag";
 
 const invalidCheckInStateMessage = "Invalid check-in state.";
 
@@ -372,11 +373,11 @@ export class CheckInSession {
             return [];
         }
 
-        if (this.configuration.template?.kioskCheckInType !== KioskCheckInMode.Family) {
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
             return this._attendeeOpportunities.areas;
         }
 
-        // Family mode we need to filter the areas by the selected schedule
+        // In family mode we need to filter the areas by the selected schedule
         // which means we need to start by getting the locations that are
         // valid for that schedule.
         const validLocationGuids = this._attendeeOpportunities
@@ -393,7 +394,60 @@ export class CheckInSession {
         // Now we can find the areas
         return this._attendeeOpportunities
             .areas
-            ?.filter(a => isGuidInList(a.guid, validAreaGuids));
+            .filter(a => isGuidInList(a.guid, validAreaGuids));
+    }
+
+    public withSelectedGroup(groupGuid: Guid): CheckInSession {
+        const group = this._attendeeOpportunities
+            ?.groups
+            ?.find(g => areEqual(g.guid, groupGuid));
+
+        if (!group) {
+            throw new Error("That group is not valid.");
+        }
+
+        const copy = this.clone();
+
+        if (!copy._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        copy._currentOpportunitySelection.group = {
+            guid: group.guid,
+            name: group.name
+        };
+
+        return copy;
+    }
+
+    public getAvailableGroups(): GroupOpportunityBag[] {
+        const selection = this._currentOpportunitySelection;
+
+        if (!this._attendeeOpportunities?.groups || !selection) {
+            return [];
+        }
+
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            // In individual mode we need to filter the groups by the selected
+            // area.
+            return this._attendeeOpportunities
+                .groups
+                .filter(g => areEqual(g.areaGuid, selection.area?.guid));
+        }
+
+        // In family mode we need to filter the areas by the selected schedule
+        // and the selected area. Which means we need to start by getting the
+        // locations that are valid for that schedule.
+        const validLocationGuids = this._attendeeOpportunities
+            .locations
+            ?.filter(l => isGuidInList(selection.schedule?.guid, l.scheduleGuids))
+            .map(l => l.guid) ?? [];
+
+        // Now find all groups for those locations and the selected area.
+        return this._attendeeOpportunities
+            .groups
+            .filter(g => isGuidInList(validLocationGuids, g.locationGuids))
+            .filter(g => areEqual(g.areaGuid, selection.area?.guid));
     }
 
     /**
@@ -531,8 +585,7 @@ export class CheckInSession {
             }
         }
 
-        // If we have more than 1 ability level to pick from then show the
-        // ability level screen.
+        // If we have more than 1 area to pick from then show the area screen.
         if (areas.length > 1) {
             return Promise.resolve(newSession.withScreen(Screen.AreaSelect));
         }
@@ -541,11 +594,33 @@ export class CheckInSession {
     }
 
     private withNextScreenFromAreaSelect(): Promise<CheckInSession> {
-        if ((this._attendeeOpportunities?.groups?.length ?? 0) > 1) {
-            return Promise.resolve(this.withScreen(Screen.GroupSelect));
+        const newSession = this.clone();
+
+        // We should be either family mode that is updating an attendee or
+        // individual mode with an attendee.
+        if (!newSession.currentAttendeeGuid || !newSession._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
         }
 
-        return this.withNextScreenFromGroupSelect();
+        const groups = this.getAvailableGroups();
+
+        // If a group is not already selected then try to select
+        // one if there is a single option to pick from.
+        if (!newSession._currentOpportunitySelection.group) {
+            if (groups.length === 1) {
+                newSession._currentOpportunitySelection.group = {
+                    guid: groups[0].guid,
+                    name: groups[0].name
+                };
+            }
+        }
+
+        // If we have more than 1 group to pick from then show the group screen.
+        if (groups.length > 1) {
+            return Promise.resolve(newSession.withScreen(Screen.GroupSelect));
+        }
+
+        return newSession.withNextScreenFromGroupSelect();
     }
 
     private withNextScreenFromGroupSelect(): Promise<CheckInSession> {
