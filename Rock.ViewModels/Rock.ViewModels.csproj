@@ -135,6 +135,7 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpOccurrenceBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpOccurrenceLocationBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpsBag.cs" />
+    <Compile Include="Blocks\Prayer\PrayerRequestList\PrayerRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
