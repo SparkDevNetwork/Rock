@@ -1,6 +1,24 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
 import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
 import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
-import { Screen, UnexpectedErrorMessage, clone, isGuidInList } from "./utils.partial";
+import { UnexpectedErrorMessage, clone, isGuidInList } from "./utils.partial";
+import { Screen, SessionOpportunitySelectionBag } from "./types.partial";
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
@@ -15,21 +33,24 @@ import { Guid } from "@Obsidian/Types";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { OpportunityCollectionBag } from "@Obsidian/ViewModels/CheckIn/opportunityCollectionBag";
 import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
-import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 import { AbilityLevelOpportunityBag } from "@Obsidian/ViewModels/CheckIn/abilityLevelOpportunityBag";
 import { DeepReadonly } from "vue";
 import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
 import { GroupOpportunityBag } from "@Obsidian/ViewModels/CheckIn/groupOpportunityBag";
 import { LocationOpportunityBag } from "@Obsidian/ViewModels/CheckIn/locationOpportunityBag";
 import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
-import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 
+/**
+ * The error message to throw if the check-in state is not valid for the
+ * requested action. This is displayed in the UI.
+ */
 const invalidCheckInStateMessage = "Invalid check-in state.";
 
-type SessionOpportunitySelectionBag = Omit<OpportunitySelectionBag, "schedule"> & {
-    schedules?: CheckInItemBag[] | null;
-};
-
+/**
+ * Handles the heavy logic for a single check-in session. A session begins when
+ * a search operation is initiated and ends when the welcome screen is displayed.
+ * So a session can handle a single person check-in or a whole family check-in.
+ */
 export class CheckInSession {
     // #region Fields
 
@@ -73,74 +94,113 @@ export class CheckInSession {
 
     /* eslint-enable @typescript-eslint/naming-convention */
 
+    /** The kiosk configuration that this session will conform to. */
     private readonly configuration: KioskConfigurationBag;
 
+    /** The object to use when making HTTP requests to the server. */
     private readonly http: HttpFunctions;
 
     // #endregion
 
     // #region Field Getters
 
+    /** The current screen that should be displayed for this session. */
     public get currentScreen(): Screen {
         return this._currentScreen;
     }
 
+    /** The search term used to start this session. */
     public get searchTerm(): string | undefined {
         return this._searchTerm;
     }
 
+    /** The search type used to start this session. */
     public get searchType(): FamilySearchMode | undefined {
         return this._searchType;
     }
 
+    /** The families that were matched by the search term for this session. */
     public get families(): DeepReadonly<FamilyBag[]> | undefined {
         return this._families;
     }
 
+    /** The currently selected family unique identifier. */
     public get currentFamilyGuid(): Guid | undefined {
         return this._currentFamilyGuid;
     }
 
+    /** The current family that is being worked with for this session. */
     public get currentFamily(): DeepReadonly<FamilyBag> | undefined {
         return this._families?.find(f => areEqual(f.guid, this._currentFamilyGuid));
     }
 
-    public get attendees(): DeepReadonly<AttendeeBag[]> | undefined {
-        return this._attendees;
-    }
-
+    /** The currently checked in attendance records. */
     public get currentlyCheckedIn(): DeepReadonly<AttendanceBag[]> | undefined {
         return this._currentlyCheckedIn;
     }
 
+    /** The potential attendees that can be checked in. */
+    public get attendees(): DeepReadonly<AttendeeBag[]> | undefined {
+        return this._attendees;
+    }
+
+    /** The attendee unique identifiers that were selected to be checked in. */
     public get selectedAttendeeGuids(): Guid[] | undefined {
         return this._selectedAttendeeGuids;
     }
 
+    /** The currently selected attendee unique identifier. */
     public get currentAttendeeGuid(): Guid | undefined {
         return this._currentAttendeeGuid;
     }
 
+    /** The current attendee that is being worked with while making selections. */
     public get currentAttendee(): DeepReadonly<AttendeeBag> | undefined {
         return this._attendees?.find(f => areEqual(f.person?.guid, this._currentAttendeeGuid));
     }
 
+    /** The available opportunities for the currently selected attendee. */
     public get attendeeOpportunities(): DeepReadonly<OpportunityCollectionBag> | undefined {
         return this._attendeeOpportunities;
     }
 
+    /** The currently selected opportunities for the current attendee. */
     public get currentOpportunitySelection(): DeepReadonly<SessionOpportunitySelectionBag> | undefined {
         return this._currentOpportunitySelection;
     }
 
     // #endregion
 
+    // #region Constructors
+
+    /**
+     * Creates a new check-in session object that can be used to process a
+     * single individual check-in or a whole family check-in depending on the
+     * kiosk configuration.
+     *
+     * @param configuration The kiosk configured that this session will conform to.
+     * @param http The object that provides HTTP access to the server.
+     */
     public constructor(configuration: KioskConfigurationBag, http: HttpFunctions) {
         this._currentScreen = Screen.Welcome;
         this.configuration = configuration;
         this.http = http;
     }
 
+    // #endregion
+
+    // #region Private Support Functions
+
+    /**
+     * Creates a new session object that is identical to the original. This is
+     * designed to make them identical but separate, meaning you can make any
+     * change you want to the new one and it won't affect the old one. This means
+     * all array and object properties are also cloned.
+     *
+     * @param configuration The optional configuration to use when creating the session.
+     *
+     * @returns A new session object that is identical to the original.
+     */
     private clone(configuration?: KioskConfigurationBag): CheckInSession {
         const copy = new CheckInSession(configuration ?? this.configuration, this.http);
 
@@ -159,6 +219,12 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new check-in session object that will display the specified
+     * screen.
+     *
+     * @returns A cloned check-in session object.
+     */
     private withScreen(screen: Screen): CheckInSession {
         const copy = this.clone();
 
@@ -166,6 +232,10 @@ export class CheckInSession {
 
         return copy;
     }
+
+    // #endregion
+
+    // #region Public Selection Functions
 
     public withConfiguration(configuration: KioskConfigurationBag): CheckInSession {
         return this.clone(configuration);
@@ -330,14 +400,6 @@ export class CheckInSession {
         return copy;
     }
 
-    public getAvailableAbilityLevels(): AbilityLevelOpportunityBag[] {
-        if (!this._attendeeOpportunities?.abilityLevels) {
-            return [];
-        }
-
-        return this._attendeeOpportunities.abilityLevels;
-    }
-
     public withSelectedArea(areaGuid: Guid): CheckInSession {
         const area = this._attendeeOpportunities
             ?.areas
@@ -359,6 +421,88 @@ export class CheckInSession {
         };
 
         return copy;
+    }
+
+    public withSelectedGroup(groupGuid: Guid): CheckInSession {
+        const group = this._attendeeOpportunities
+            ?.groups
+            ?.find(g => areEqual(g.guid, groupGuid));
+
+        if (!group) {
+            throw new Error("That group is not valid.");
+        }
+
+        const copy = this.clone();
+
+        if (!copy._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        copy._currentOpportunitySelection.group = {
+            guid: group.guid,
+            name: group.name
+        };
+
+        return copy;
+    }
+
+    public withSelectedLocation(locationGuid: Guid): CheckInSession {
+        const location = this._attendeeOpportunities
+            ?.locations
+            ?.find(g => areEqual(g.guid, locationGuid));
+
+        if (!location) {
+            throw new Error("That location is not valid.");
+        }
+
+        const copy = this.clone();
+
+        if (!copy._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        copy._currentOpportunitySelection.location = {
+            guid: location.guid,
+            name: location.name
+        };
+
+        return copy;
+    }
+
+    public withSelectedSchedules(scheduleGuids: Guid[]): CheckInSession {
+        const schedules = this._attendeeOpportunities
+            ?.schedules
+            ?.filter(g => isGuidInList(g.guid, scheduleGuids));
+
+        if (!schedules || schedules.length === 0 || schedules.length !== scheduleGuids.length) {
+            throw new Error("Those times are not valid.");
+        }
+
+        const copy = this.clone();
+
+        if (!copy._currentOpportunitySelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        copy._currentOpportunitySelection.schedules = schedules
+            .map(s => ({
+                guid: s.guid,
+                name: s.name
+            }));
+
+        return copy;
+    }
+
+    // #endregion
+
+    // #region Public Functions
+
+    public getAvailableAbilityLevels(): AbilityLevelOpportunityBag[] {
+        if (!this._attendeeOpportunities?.abilityLevels) {
+            return [];
+        }
+
+        return this._attendeeOpportunities.abilityLevels;
     }
 
     public getAvailableAreas(): AreaOpportunityBag[] {
@@ -393,29 +537,6 @@ export class CheckInSession {
             .filter(a => isGuidInList(a.guid, validAreaGuids));
     }
 
-    public withSelectedGroup(groupGuid: Guid): CheckInSession {
-        const group = this._attendeeOpportunities
-            ?.groups
-            ?.find(g => areEqual(g.guid, groupGuid));
-
-        if (!group) {
-            throw new Error("That group is not valid.");
-        }
-
-        const copy = this.clone();
-
-        if (!copy._currentOpportunitySelection) {
-            throw new Error(invalidCheckInStateMessage);
-        }
-
-        copy._currentOpportunitySelection.group = {
-            guid: group.guid,
-            name: group.name
-        };
-
-        return copy;
-    }
-
     public getAvailableGroups(): GroupOpportunityBag[] {
         const selection = this._currentOpportunitySelection;
 
@@ -445,29 +566,6 @@ export class CheckInSession {
             .groups
             .filter(g => isGuidInList(validLocationGuids, g.locationGuids))
             .filter(g => areEqual(g.areaGuid, selection.area?.guid));
-    }
-
-    public withSelectedLocation(locationGuid: Guid): CheckInSession {
-        const location = this._attendeeOpportunities
-            ?.locations
-            ?.find(g => areEqual(g.guid, locationGuid));
-
-        if (!location) {
-            throw new Error("That location is not valid.");
-        }
-
-        const copy = this.clone();
-
-        if (!copy._currentOpportunitySelection) {
-            throw new Error(invalidCheckInStateMessage);
-        }
-
-        copy._currentOpportunitySelection.location = {
-            guid: location.guid,
-            name: location.name
-        };
-
-        return copy;
     }
 
     public getAvailableLocations(): LocationOpportunityBag[] {
@@ -503,30 +601,6 @@ export class CheckInSession {
             .filter(l => isGuidInList(selectedScheduleGuids, l.scheduleGuids));
     }
 
-    public withSelectedSchedules(scheduleGuids: Guid[]): CheckInSession {
-        const schedules = this._attendeeOpportunities
-            ?.schedules
-            ?.filter(g => isGuidInList(g.guid, scheduleGuids));
-
-        if (!schedules || schedules.length === 0 || schedules.length !== scheduleGuids.length) {
-            throw new Error("Those times are not valid.");
-        }
-
-        const copy = this.clone();
-
-        if (!copy._currentOpportunitySelection) {
-            throw new Error(invalidCheckInStateMessage);
-        }
-
-        copy._currentOpportunitySelection.schedules = schedules
-            .map(s => ({
-                guid: s.guid,
-                name: s.name
-            }));
-
-        return copy;
-    }
-
     public getAvailableSchedules(): ScheduleOpportunityBag[] {
         const selection = this._currentOpportunitySelection;
 
@@ -553,6 +627,10 @@ export class CheckInSession {
         // In family mode we are the first step so we just show everything.
         return this._attendeeOpportunities.schedules;
     }
+
+    // #endregion
+
+    // #region Screen Switch Functions
 
     /**
      * Moves to the next screen to display based on the current selections.
@@ -786,4 +864,6 @@ export class CheckInSession {
     private withNextScreenFromSuccess(): Promise<CheckInSession> {
         return Promise.resolve(this.withScreen(Screen.Welcome));
     }
+
+    // #endregion
 }

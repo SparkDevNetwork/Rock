@@ -16,6 +16,7 @@
                             :btnType="action.type"
                             :class="action.class"
                             :disabled="action.disabled"
+                            autoDisable
                             @click="onActionClick(action)">
                     {{ action.title }}
                 </RockButton>
@@ -29,7 +30,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { PropType } from "vue";
-    import { KioskButton } from "./utils.partial";
+    import { KioskButton } from "./types.partial";
 
     const props = defineProps({
         /** The text to display in the footer. */

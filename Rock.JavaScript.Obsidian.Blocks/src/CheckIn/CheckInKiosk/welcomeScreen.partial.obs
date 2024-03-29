@@ -63,7 +63,8 @@
     import { KioskStatusOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusOptionsBag";
     import { KioskStatusResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusResponseBag";
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import { doesThemeSupportCamera, IRockCheckInNative, isIpadAppWithCamera, KioskButton, secondsToCountdown, UnexpectedErrorMessage, useKioskState } from "./utils.partial";
+    import { doesThemeSupportCamera, isIpadAppWithCamera, secondsToCountdown, UnexpectedErrorMessage, useKioskState } from "./utils.partial";
+    import { IRockCheckInNative, KioskButton } from "./types.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";

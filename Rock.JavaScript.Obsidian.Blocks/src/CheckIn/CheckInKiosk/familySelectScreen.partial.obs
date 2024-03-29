@@ -23,7 +23,8 @@
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
-    import { KioskButton, UnexpectedErrorMessage } from "./utils.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { KioskButton } from "./types.partial";
     import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
     import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
 

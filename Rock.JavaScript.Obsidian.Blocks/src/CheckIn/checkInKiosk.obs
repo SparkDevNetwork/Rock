@@ -514,7 +514,8 @@
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref, shallowRef } from "vue";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
-    import { CheckInKioskOptionsBag, KioskButton, provideKioskState, Screen } from "./CheckInKiosk/utils.partial";
+    import { provideKioskState } from "./CheckInKiosk/utils.partial";
+    import { CheckInKioskOptionsBag, KioskButton, Screen } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
     import { useHttp } from "@Obsidian/Utility/http";
@@ -545,9 +546,19 @@
     function navigateToScreen(screen: Screen, preserveSession: boolean = false): void {
         currentScreenActions.value = [];
         currentScreen.value = screen;
+        console.log("navigateToScreen", screen);
 
         if (!preserveSession && screen === Screen.Welcome) {
             currentSession.value = new CheckInSession(configuration.value, http);
+        }
+        else if (screen === Screen.Success) {
+            const selections = currentSession.value.currentOpportunitySelection;
+
+            if (selections && selections.schedules) {
+                for (const sched of selections.schedules) {
+                    console.log(`${sched.name} : ${selections.abilityLevel?.name} : ${selections.area?.name} : ${selections.group?.name} : ${selections.location?.name}`);
+                }
+            }
         }
     }
 

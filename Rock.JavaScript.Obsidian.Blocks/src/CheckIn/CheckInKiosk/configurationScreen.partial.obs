@@ -128,7 +128,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CheckInKioskOptionsBag, getCameraItems, getCurrentPosition, isHtmlCameraAvailable, KioskButton, SavedConfigurationBag } from "./utils.partial";
+    import { getCameraItems, getCurrentPosition, isHtmlCameraAvailable } from "./utils.partial";
     import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
@@ -137,6 +137,7 @@
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { onConfigurationValuesChanged, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
+    import { CheckInKioskOptionsBag, KioskButton, SavedConfigurationBag } from "./types.partial";
 
     type TemporaryConfig = {
         timestamp?: number;

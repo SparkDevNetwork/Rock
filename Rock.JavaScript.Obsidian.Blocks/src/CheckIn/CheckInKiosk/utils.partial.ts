@@ -18,109 +18,21 @@
 import { parse } from "@Obsidian/Libs/marked";
 import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
 import { KioskType } from "@Obsidian/Enums/Core/kioskType";
-import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
 import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
-import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 import { inject, provide } from "vue";
 import { zeroPad } from "@Obsidian/Utility/numberUtils";
 import { Guid } from "@Obsidian/Types";
 import { areEqual } from "@Obsidian/Utility/guid";
+import { IRockCheckInNative } from "./types.partial";
 
-// #region Temporary Types
-
-export type CampusBag = CheckInItemBag & {
-    kiosks?: WebKioskBag[] | null;
-};
-
-export type CheckInKioskOptionsBag = {
-    kioskConfiguration?: KioskConfigurationBag | null;
-
-    isManualSetupAllowed: boolean;
-
-    isConfigureByLocationEnabled: boolean;
-
-    geoLocationCacheInMinutes: number;
-
-    campuses?: CampusBag[] | null;
-
-    currentTheme?: string | null;
-
-    templates?: ConfigurationTemplateBag[] | null;
-
-    themes?: ListItemBag[] | null;
-};
-
-export type SavedConfigurationBag = {
-    name?: string | null;
-
-    description?: string | null;
-};
-
-export enum Screen {
-    Configuration,
-
-    Welcome,
-
-    Search,
-
-    FamilySelect,
-
-    ActionSelect,
-
-    PersonSelect,
-
-    AbilityLevelSelect,
-
-    AreaSelect,
-
-    GroupSelect,
-
-    LocationSelect,
-
-    ScheduleSelect,
-
-    Success,
-}
-
-// #endregion
-
-export type KioskButton = {
-    title: string;
-
-    key: string;
-
-    disabled: boolean;
-
-    type: "default" | "primary" | "success" | "info" | "warning" | "danger"
-
-    class?: string;
-
-    handler?: () => void | Promise<void>;
-};
-
-/* eslint-disable @typescript-eslint/naming-convention */
-export interface IRockCheckInNative {
-    /**
-     * Sets the kiosk identifier for the native application.
-     *
-     * @param kioskId The kiosk integer identifier.
-     */
-    SetKioskId?(kioskId: number): void;
-
-    /**
-     * Starts the native camera scanning feature of the application.
-     *
-     * @param isPassive True if the camera should be in passive mode.
-     */
-    StartCamera?(isPassive: boolean): void;
-}
-/* eslint-enable @typescript-eslint/naming-convention */
-
+/** The unique key for the kiosk state in Vue. */
 const kioskStateKey = Symbol("KioskState");
 
+/**
+ * The message to display when an error is returned by the server without an
+ * error message included.
+ */
 export const UnexpectedErrorMessage = "Unexpected error encountered, please try again or ask for assistance.";
 
 /**
@@ -145,6 +57,13 @@ export function useKioskState(): Record<string, unknown> {
     return inject<Record<string, unknown>>(kioskStateKey, {});
 }
 
+/**
+ * Converts a string of Markdown into HTML.
+ *
+ * @param content The markdown content to be converted to HTML.
+ *
+ * @returns A string that represents the HTML.
+ */
 export function markdown(content: string | undefined | null): string {
     if (!content) {
         return "";
@@ -284,6 +203,14 @@ export function secondsToCountdown(seconds: number): string {
     return `${timeString}${zeroPad(minutes, 2)}:${zeroPad(seconds, 2)}`;
 }
 
+/**
+ * Clones an object by converting it to JSON and back. This will work with
+ * nulls, undefined values, numbers, strings, arrays and objects.
+ *
+ * @param value The value to be cloned.
+ *
+ * @returns A new object with the same content as the original.
+ */
 export function clone<T>(value: T): T {
     if (value === undefined) {
         return undefined as T;
@@ -295,6 +222,16 @@ export function clone<T>(value: T): T {
     return JSON.parse(JSON.stringify(value));
 }
 
+/**
+ * Determines if the needle is in the haystack of guids. If needle is a single
+ * value then the haystack is searched for that one value. If needle is an array
+ * of values then only one of those values must exist in the haystack.
+ *
+ * @param needle The guid or guids to be searched for.
+ * @param haystack The array of guids to be searched in.
+ *
+ * @returns true if needle was found in the haystack.
+ */
 export function isGuidInList(needle: Guid | Guid[] | null | undefined, haystack: Guid[] | null | undefined): boolean {
     if (!needle || !haystack) {
         return false;
@@ -306,4 +243,3 @@ export function isGuidInList(needle: Guid | Guid[] | null | undefined, haystack:
 
     return haystack.some(h => areEqual(h, needle));
 }
-
