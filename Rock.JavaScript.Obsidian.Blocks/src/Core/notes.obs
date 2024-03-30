@@ -306,6 +306,12 @@
             isPinned: false
         };
 
+        // Do not show the note type selector for child notes.
+        // const noteOptions.noteComponent .noteComponent.props.
+        // const parentNote = Note.ke notes.find(n => n.idKey === note.parentNoteIdKey);
+        // const notes = reactive(getExpandedNotes().filter(n => !n.parentNoteIdKey));
+        // noteOptions.noteTypes = config.noteTypes?.filter(nt => !nt.userSelectable) ?? [];
+
         // Hide the UI for adding a new note.
         isAddNoteVisible.value = false;
     }
@@ -317,6 +323,9 @@
         // If we are in always show "add" configuration state then show the
         // add note UI again.
         isAddNoteVisible.value = config.addAlwaysVisible;
+
+        // Repopulate the note type selector.
+        noteOptions.noteTypes = config.noteTypes?.filter(nt => nt.userSelectable) ?? [];
     }
 
     // #endregion

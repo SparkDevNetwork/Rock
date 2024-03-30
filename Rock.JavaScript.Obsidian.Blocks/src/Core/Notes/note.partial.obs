@@ -443,6 +443,41 @@
         return datetime?.toASPString("MMMM d, yyyy, h:mm tt");
     }
 
+     /**
+     * Gets the note type that is appropriate for the current note.
+     * A top-level note defaults to the first selectable type, whereas a child note
+     * must have the same type as the parent note.
+     *
+     * @param parentNoteTypeIdKey The note type of the parent note, or `null`
+     * if this is a top-level note.
+     *
+     * @returns The identifier of the note type that should be assigned to the
+     * current note.
+     */
+    function getNoteTypeForCurrentNote(parentNoteTypeIdKey: string | undefined | null): string | null | undefined {
+        const noteTypeIdKey = parentNoteTypeIdKey ?? noteOptions.selectableNoteTypes[0].idKey;
+        return noteTypeIdKey;
+    }
+
+     /**
+     * Configures the available note types for the current note.
+     * A top-level note can have any selectable type, whereas a child note
+     * must have the same type as the parent.
+     *
+     * @param requiredNoteTypeIdKey The required note type, or `null`
+     * if the note type is user-selectable.
+     */
+    function configureAvailableNoteTypes(requiredNoteTypeIdKey: string | undefined | null): void {
+        // If a note type is not required, use the default configuration.
+        if (requiredNoteTypeIdKey === null) {
+            return;
+        }
+
+        // Restrict the note type selection to the required note type.
+        // The note type selector will not be displayed to the user.
+        noteOptions.noteTypes = noteOptions.selectableNoteTypes.filter(t => t.idKey === requiredNoteTypeIdKey);
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -468,6 +503,10 @@
         // Inform other components on this block that we are beginning an
         // edit operation.
         emitter.emit("beginEdit", subscriberKey);
+
+        // If this is a child note, the note type cannot be modified.
+        const noteTypeIdKey = props.note.parentNoteIdKey === null ? null : props.note.noteTypeIdKey;
+        configureAvailableNoteTypes(noteTypeIdKey);
 
         editNoteBag.value = result.data;
         isAddNoteVisible.value = false;
@@ -520,9 +559,13 @@
         // edit operation.
         emitter.emit("beginEdit", subscriberKey);
 
+        // Get the note type of the current note, and ensure that the reply has the same note type.
+        const noteTypeIdKey = getNoteTypeForCurrentNote(props.note.noteTypeIdKey);
+        configureAvailableNoteTypes(noteTypeIdKey);
+
         // Initialize the UI to display a blank note.
         editNoteBag.value = {
-            noteTypeIdKey: noteOptions.selectableNoteTypes[0].idKey,
+            noteTypeIdKey: noteTypeIdKey,
             text: "",
             isAlert: false,
             isPrivate: false,
