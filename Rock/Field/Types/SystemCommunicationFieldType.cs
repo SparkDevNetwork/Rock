@@ -36,6 +36,12 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SYSTEM_COMMUNICATION )]
     public class SystemCommunicationFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+        #region Configuration
+
+        private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -141,6 +147,77 @@ namespace Rock.Field.Types
 #if WEBFORMS
 
         /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( INCLUDE_INACTIVE_KEY );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            // Add checkbox for deciding if the list should include inactive items
+            var cbIncludeInactive = new RockCheckBox();
+            cbIncludeInactive.AutoPostBack = true;
+            cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
+            cbIncludeInactive.Label = "Include Inactive";
+            cbIncludeInactive.Text = "Yes";
+            cbIncludeInactive.Help = "When set, inactive campuses will be included in the list.";
+
+            var controls = base.ConfigurationControls();
+            controls.Add( cbIncludeInactive );
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", "When set, inactive system communications will be included in the list.", string.Empty ) );
+
+            if ( controls != null )
+            {
+                CheckBox cbIncludeInactive = controls.Count > 0 ? controls[0] as CheckBox : null;
+
+                if ( cbIncludeInactive != null )
+                {
+                    configurationValues[INCLUDE_INACTIVE_KEY].Value = cbIncludeInactive.Checked.ToString();
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && configurationValues != null )
+            {
+                CheckBox cbIncludeInactive = controls.Count > 0 ? controls[0] as CheckBox : null;
+
+                if ( cbIncludeInactive != null )
+                {
+                    cbIncludeInactive.Checked = configurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -165,9 +242,11 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id };
+            var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
 
-            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+            var editControl = new RockDropDownList { ID = id, EnhanceForLongLists = true };
+
+            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().Where( v => ( includeInactive || v.IsActive == true ) ).OrderBy( e => e.Title );
 
             // add a blank for the first option
             editControl.Items.Add( new ListItem() );

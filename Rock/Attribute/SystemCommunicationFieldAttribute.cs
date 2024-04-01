@@ -24,6 +24,8 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class SystemCommunicationFieldAttribute : FieldAttribute
     {
+        private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemCommunicationFieldAttribute"/> class.
         /// </summary>
@@ -37,6 +39,28 @@ namespace Rock.Attribute
         public SystemCommunicationFieldAttribute( string name, string description = "", bool required = true, string defaultSystemCommunicationGuid = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultSystemCommunicationGuid, category, order, key, typeof( Rock.Field.Types.SystemCommunicationFieldType ).FullName )
         {
+
+            var includeInactiveConfigValue = new Field.ConfigurationValue( "False" );
+            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemCommunicationFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultSystemCommunicationGuid">The default System Communication unique identifier.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <param name="category">The name of the category to which this item is assigned.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public SystemCommunicationFieldAttribute( string name, string description = "", bool required = true, string defaultSystemCommunicationGuid = "", bool includeInactive = false, string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultSystemCommunicationGuid, category, order, key, typeof( Rock.Field.Types.SystemCommunicationFieldType ).FullName )
+        {
+            var includeInactiveConfigValue = new Field.ConfigurationValue( includeInactive.ToString() );
+            FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
         }
 
         /// <summary>
