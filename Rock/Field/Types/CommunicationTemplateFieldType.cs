@@ -66,7 +66,7 @@ namespace Rock.Field.Types
             {
                 bool includeInactive = configuration.ContainsKey( INCLUDE_INACTIVE_KEY ) && configuration[INCLUDE_INACTIVE_KEY].AsBoolean();
 
-                var templates = new CommunicationTemplateService( rockContext ).Queryable().Where( c => ( !c.IsActive || includeInactive ) ).OrderBy( t => t.Name ).Select( a => new ListItemBag()
+                var templates = new CommunicationTemplateService( rockContext ).Queryable().Where( c => ( c.IsActive || includeInactive ) ).OrderBy( t => t.Name ).Select( a => new ListItemBag()
                 {
                     Value = a.Guid.ToString(),
                     Text = a.Name

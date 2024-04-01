@@ -60,7 +60,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-    <DropDownList v-model="internalValue" :items="options" :showBlankItem="true" />
+    <DropDownList v-model="internalValue" :items="options" :showBlankItem="true" :enhanceForLongLists="true" />
 `
 });
 
