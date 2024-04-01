@@ -441,7 +441,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.SmartSearch" />.
         /// </summary>
-        public const string MOBILE_CORE_SEARCH_V2_BLOCK_TYPE = "45BE4816-3F5B-4AD1-BA89-819325D7E8CF";
+        public const string MOBILE_CORE_SMART_SEARCH_BLOCK_TYPE = "45BE4816-3F5B-4AD1-BA89-819325D7E8CF";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList
