@@ -65,6 +65,9 @@ registerFieldType(FieldTypeGuids.ConnectionTypes, new ConnectionTypesField());
 import { CommunicationPreferenceField } from "./communicationPreferenceField.partial";
 registerFieldType(FieldTypeGuids.CommunicationPreferenceType, new CommunicationPreferenceField());
 
+import { CommunicationTemplateFieldType } from "./communicationTemplateField.partial";
+registerFieldType(FieldTypeGuids.CommunicationTemplate, new CommunicationTemplateFieldType());
+
 import { CurrencyFieldType } from "./currencyField.partial";
 registerFieldType(FieldTypeGuids.Currency, new CurrencyFieldType());
 
@@ -211,6 +214,9 @@ registerFieldType(FieldTypeGuids.SocialMediaAccount, new SocialMediaAccountField
 
 import { SSNFieldType } from "./ssnField.partial";
 registerFieldType(FieldTypeGuids.Ssn, new SSNFieldType());
+
+import { SystemCommunicationFieldType } from "./systemCommunicationField.partial";
+registerFieldType(FieldTypeGuids.SystemCommunication, new SystemCommunicationFieldType());
 
 import { TextFieldType } from "./textField.partial";
 registerFieldType(FieldTypeGuids.Text, new TextFieldType());
