@@ -36,7 +36,7 @@
             </div>
 
             <div class="col-md-3">
-                <Toggle v-model="isApproved"
+                < v-model="isApproved"
                           trueText="Approved"
                           falseText="Pending"
                           btnSize="xs"
@@ -77,7 +77,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import  from "@Obsidian/Controls/toggle.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

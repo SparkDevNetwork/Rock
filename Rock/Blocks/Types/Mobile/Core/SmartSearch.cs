@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Core
 {
     /// <summary>
     /// Performs a search using any of the configured search components and displays the results.
@@ -46,8 +46,8 @@ namespace Rock.Blocks.Types.Mobile
     [IconCssClass( "fa fa-search" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
-    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_SEARCH_V2_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CORE_SEARCH_V2 )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_SMART_SEARCH_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CORE_SMART_SEARCH )]
 
     #region Block Attributes
 

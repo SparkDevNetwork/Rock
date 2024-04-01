@@ -166,6 +166,7 @@
     <Compile Include="Finance\BusinessList.cs" />
     <Compile Include="Finance\FinancialAccountDetail.cs" />
     <Compile Include="Finance\FinancialAccountList.cs" />
+    <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
@@ -187,7 +188,7 @@
     <Compile Include="Group\GroupRequirementTypeDetail.cs" />
     <Compile Include="Reporting\PersistedDataViewList.cs" />
     <Compile Include="Reporting\InteractionDetail.cs" />
-	<Compile Include="Fundraising\FundraisingDonationList.cs" />
+    <Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
     <Compile Include="Reporting\MetricValueDetail.cs" />
     <Compile Include="Reporting\InteractionComponentDetail.cs" />
