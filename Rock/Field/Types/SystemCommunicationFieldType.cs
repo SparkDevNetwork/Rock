@@ -73,14 +73,32 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The default implementation GetPublicEditValue calls GetTextValue which in this case has been overridden to return the
+            // name of the System Communication, but what we actually need when editing is the saved Guid for the dropdown clientside,
+            // so the private value(guid) is returned.
+            return privateValue;
+        }
+
+        /// <inheritdoc />
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
             using ( var rockContext = new RockContext() )
             {
-                var contentChannels = new SystemCommunicationService( rockContext ).Queryable()
+                bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
+
+                var systemCommunications = new SystemCommunicationService( rockContext ).Queryable()
                     .AsNoTracking()
+                    .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive ) )
                     .OrderBy( d => d.Title )
                     .Select( sc => new ListItemBag()
                     {
@@ -88,7 +106,7 @@ namespace Rock.Field.Types
                         Value = sc.Guid.ToString()
                     } ).ToList();
 
-                configurationValues[CLIENT_VALUES] = contentChannels.ToCamelCaseJson( false, true );
+                configurationValues[CLIENT_VALUES] = systemCommunications.ToCamelCaseJson( false, true );
             }
 
             return configurationValues;
@@ -281,7 +299,7 @@ namespace Rock.Field.Types
 
             var editControl = new RockDropDownList { ID = id, EnhanceForLongLists = true };
 
-            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().Where( v => ( includeInactive || v.IsActive == true ) ).OrderBy( e => e.Title );
+            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().Where( v => ( !v.IsActive.HasValue || v.IsActive.Value || includeInactive ) ).OrderBy( e => e.Title );
 
             // add a blank for the first option
             editControl.Items.Add( new ListItem() );
