@@ -4,20 +4,20 @@
         <div class="row">
             <div class="col-md-6">
                 <PersonPicker v-model="requestedByPersonAlias"
-                          label="Requested By"
-                          @update:modelValue="updatePersonName($event)" />
+                              label="Requested By"
+                              @update:modelValue="updatePersonName($event)" />
                 <TextBox v-model="firstName"
-                          label="First Name"
-                          rules="required" />
+                         label="First Name"
+                         rules="required" />
                 <TextBox v-model="lastName"
-                          label="Last Name"
-                          :rules="isLastNameRequired" />
+                         label="Last Name"
+                         :rules="isLastNameRequired" />
                 <EmailBox v-model="email"
                           label="Email" />
                 <DatePicker v-model="expirationDate"
-                          label="Expiration Date" />
+                            label="Expiration Date" />
                 <CampusPicker label="Campus" v-model="campus"
-                          :rules="isCampusRequired" />
+                              :rules="isCampusRequired" />
             </div>
 
             <div class="col-md-3">
@@ -25,41 +25,41 @@
                           label="Active" />
                 <div v-if="props.modelValue?.flagCount">
                     <span ref="flagCountRef" class="label label-warning" tabindex="-1" data-toggle="tooltip"
-                        data-placement="auto" data-container="body" data-html="true"
-                        data-original-title="re-approve the request to clear the flags">
+                          data-placement="auto" data-container="body" data-html="true"
+                          data-original-title="re-approve the request to clear the flags">
                         <i class="fa fa-flag"></i> flagged {{ props.modelValue?.flagCount }} times
                     </span>
                 </div>
                 <CheckBoxList label="Options"
-                          v-model="optionsListValue"
-                          :items="optionsList" />
+                              v-model="optionsListValue"
+                              :items="optionsList" />
             </div>
 
             <div class="col-md-3">
-                < v-model="isApproved"
-                          trueText="Approved"
-                          falseText="Pending"
-                          btnSize="xs"
-                          onButtonActiveCssClass="btn-success"
-                          offButtonActiveCssClass="btn-warning"
-                          label="Status" />
+                <Toggle v-model="isApproved"
+                        trueText="Approved"
+                        falseText="Pending"
+                        btnSize="xs"
+                        onButtonActiveCssClass="btn-success"
+                        offButtonActiveCssClass="btn-warning"
+                        label="Status" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
                 <CategoryPicker v-model="category"
-                        label="Category"
-                        :entityTypeGuid="prayerRequestEntityTypeGuid"
-                        rules="required"
-                        autoExpand />
+                                label="Category"
+                                :entityTypeGuid="prayerRequestEntityTypeGuid"
+                                rules="required"
+                                autoExpand />
                 <TextBox v-model="request"
-                          label="Request"
-                          textMode="multiline"
-                          rules="required" />
+                         label="Request"
+                         textMode="multiline"
+                         rules="required" />
                 <TextBox v-model="answer"
-                          textMode="multiline"
-                          label="Answer" />
+                         textMode="multiline"
+                         label="Answer" />
             </div>
         </div>
 
@@ -77,7 +77,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
-    import  from "@Obsidian/Controls/toggle.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -126,10 +126,10 @@
     const allowComments = propertyRef(props.modelValue.allowComments, "AllowComments");
 
     const optionsList: ListItemBag[] = [
-                { text: "Public", value: "isPublic" },
-                { text: "Urgent", value: "isUrgent" },
-                { text: "Allow Comments", value: "allowComments" }
-            ];
+        { text: "Public", value: "isPublic" },
+        { text: "Urgent", value: "isUrgent" },
+        { text: "Allow Comments", value: "allowComments" }
+    ];
 
     const prayerRequestEntityTypeGuid = EntityType.PrayerRequest;
 
@@ -166,8 +166,8 @@
         }
     });
 
-    const isLastNameRequired = computed(() => props.options.isLastNameRequired ? "required": "");
-    const isCampusRequired = computed(() => props.options.isCampusRequired ? "required": "");
+    const isLastNameRequired = computed(() => props.options.isLastNameRequired ? "required" : "");
+    const isCampusRequired = computed(() => props.options.isCampusRequired ? "required" : "");
 
     // #endregion
 
@@ -197,7 +197,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(requestedByPersonAlias, props.modelValue.requestedByPersonAlias ?? undefined);
-        updateRefValue(isApproved, props.modelValue.isApproved?? false);
+        updateRefValue(isApproved, props.modelValue.isApproved ?? false);
         updateRefValue(firstName, props.modelValue.firstName ?? "");
         updateRefValue(lastName, props.modelValue.lastName ?? "");
         updateRefValue(email, props.modelValue.email ?? "");
@@ -242,7 +242,7 @@
     // enable the tooltips for the badges
     const flagCountRef = ref<HTMLElement | null>(null);
     onMounted(() => {
-        if(flagCountRef?.value) {
+        if (flagCountRef?.value) {
             tooltip(flagCountRef.value);
         }
     });
