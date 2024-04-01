@@ -592,7 +592,7 @@ namespace RockWeb.Blocks.Connection
                 AvailableAttributes = ( ViewState[ViewStateKey.AvailableAttributeIds] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
             }
 
-            BindBoardOrGrid();
+            AddDynamicControls();
         }
 
         /// <summary>
