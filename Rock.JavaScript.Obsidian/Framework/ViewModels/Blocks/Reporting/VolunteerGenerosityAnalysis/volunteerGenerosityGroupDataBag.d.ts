@@ -21,16 +21,16 @@
 // </copyright>
 //
 
-export type VolunteerGivingDataBag = {
-    /** Gets or sets the month. */
-    month: number;
+export type VolunteerGenerosityGroupDataBag = {
+    /** Gets or sets the campus identifier. */
+    campusId: number;
 
-    /** Gets or sets the month name. */
-    monthNameAbbreviated?: string | null;
+    /** Gets or sets the campus name. */
+    campusShortCode?: string | null;
 
-    /** Gets or sets the month formatted name. */
-    monthYearFormatted?: string | null;
+    /** Gets or sets the group identifier. */
+    groupId?: string | null;
 
-    /** Gets or sets the year. */
-    year: number;
+    /** Gets or sets the group name. */
+    groupName?: string | null;
 };

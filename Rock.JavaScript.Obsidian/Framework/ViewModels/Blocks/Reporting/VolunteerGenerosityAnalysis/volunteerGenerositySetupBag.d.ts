@@ -21,10 +21,16 @@
 // </copyright>
 //
 
-import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
+export type VolunteerGenerositySetupBag = {
+    /** Gets or sets the estimated refresh time of the persisted dataset.  */
+    estimatedRefreshTime: number;
 
-/** A bag that contains all data for the Volunteer Generosity Analysis block. */
-export type VolunteerGenerosityAnalysisBag = {
-    /** Gets or sets the analysis data. */
-    analysisData?: VolunteerGenerosityDataBag[] | null;
+    /** Gets or sets the last updated date time.  */
+    lastUpdated?: string | null;
+
+    /** Gets or sets the list of unique campuses. */
+    uniqueCampuses?: string[] | null;
+
+    /** Gets or sets the list of unique groups  */
+    uniqueGroups?: string[] | null;
 };

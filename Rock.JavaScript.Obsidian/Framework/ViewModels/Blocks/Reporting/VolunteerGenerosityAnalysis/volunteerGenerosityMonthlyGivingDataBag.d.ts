@@ -21,13 +21,16 @@
 // </copyright>
 //
 
-export type PeopleDataBag = {
-    /** Gets or sets the id key. */
-    idKey?: string | null;
-    /** Gets or sets the last name. */
-    lastName?: string | null;
-    /** Gets or sets the nickname. */
-    nickName?: string | null;
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
+export type VolunteerGenerosityMonthlyGivingDataBag = {
+    /** Gets or sets the group identifier. */
+    groupId?: string | null;
+
+    /** Gets or sets the month. */
+    month?: string | null;
+
+    /** Gets or sets themonth abrreviated name. */
+    monthNameAbbreviated?: string | null;
+
+    /** Gets or sets the year. */
+    year?: string | null;
 };

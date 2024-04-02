@@ -21,35 +21,18 @@
 // </copyright>
 //
 
-import { PeopleDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/peopleDataBag";
-import { VolunteerGroupDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGroupDataBag";
+import { VolunteerGenerosityGivingDataItemBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityGivingDataItemBag";
+import { VolunteerGenerosityGroupDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityGroupDataBag";
+import { VolunteerGenerosityPersonDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityPersonDataBag";
 
 /** A bag that contains all data for the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityDataBag = {
-    /** Gets or sets the estimated refresh time. */
-    estimatedRefreshTime: number;
+    /** Gets or sets the giving data. */
+    givingData?: VolunteerGenerosityGivingDataItemBag[] | null;
 
-    /** Gets or sets the giving id. */
-    givingId?: string | null;
+    /** Gets or sets the group data. */
+    groupData?: VolunteerGenerosityGroupDataBag[] | null;
 
-    /** Gets or sets the groups. */
-    groups?: VolunteerGroupDataBag[] | null;
-
-    /** Gets or sets the last name. */
-    lastName?: string | null;
-
-    /** Gets or sets the last updated date. */
-    lastUpdated?: string | null;
-
-    /** Gets or sets the nick name. */
-    nickName?: string | null;
-
-    /** Gets or sets the person data. */
-    person?: PeopleDataBag | null;
-
-    /** Gets or sets the person ID. */
-    personId: number;
-
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
+    /** Gets or sets the people data. */
+    peopleData?: VolunteerGenerosityPersonDataBag[] | null;
 };

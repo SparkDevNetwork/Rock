@@ -17,7 +17,7 @@ namespace Rock.Blocks.Reporting
     [Rock.SystemGuid.BlockTypeGuid( "586A26F1-8A9C-4AB4-B788-9B44895B9D40" )]
     [Rock.SystemGuid.EntityTypeGuid( "4C55BFE1-7E97-4CFB-BCB7-2015AA25D9B9" )]
 
-    public class VolunteerGenerosityAnalysis : RockListBlockType<PersonData>
+    public class VolunteerGenerosityAnalysis : RockListBlockType<VolunteerGenerosityPersonDataBag>
     {
         #region Keys
 
@@ -63,16 +63,16 @@ namespace Rock.Blocks.Reporting
                 {
                     try
                     {
+                        var lastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToString( "yyy-MM-dd HH:mm:ss" ) : "N/A";
+                        var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0;
                         var dataBag = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityDataBag>();
 
                         if ( dataBag != null )
                         {
                             var uniqueCampuses = dataBag.GroupData.Select( g => g.CampusShortCode ).Distinct().ToList();
                             var uniqueGroups = dataBag.GroupData.Select( g => g.GroupName ).Distinct().ToList();
-                            var lastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToString( "yyyy-MM-dd" ) : "N/A";
-                            var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? dataset.TimeToBuildMS : 0;
 
-                            var bag = new
+                            var bag = new VolunteerGenerositySetupBag
                             {
                                 UniqueCampuses = uniqueCampuses,
                                 UniqueGroups = uniqueGroups,
@@ -93,23 +93,23 @@ namespace Rock.Blocks.Reporting
             }
         }
 
-        protected override IQueryable<PersonData> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<VolunteerGenerosityPersonDataBag> GetListQueryable( RockContext rockContext )
         {
             var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
             var dataset = PersistedDatasetCache.Get( datasetGuid );
 
             if ( dataset == null || string.IsNullOrWhiteSpace( dataset.ResultData ) )
             {
-                return Enumerable.Empty<PersonData>().AsQueryable();
+                return Enumerable.Empty<VolunteerGenerosityPersonDataBag>().AsQueryable();
             }
 
             var dataBag = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityDataBag>();
             if ( dataBag == null )
             {
-                return Enumerable.Empty<PersonData>().AsQueryable();
+                return Enumerable.Empty<VolunteerGenerosityPersonDataBag>().AsQueryable();
             }
 
-            IEnumerable<PersonData> filteredPeople = dataBag.PeopleData;
+            IEnumerable<VolunteerGenerosityPersonDataBag> filteredPeople = dataBag.PeopleData;
 
             // Filter by Campus
             if ( !string.IsNullOrWhiteSpace( FilterCampus ) && FilterCampus != "All" )
@@ -147,7 +147,7 @@ namespace Rock.Blocks.Reporting
             return filteredPeople.AsQueryable();
         }
 
-        protected override GridBuilder<PersonData> GetGridBuilder()
+        protected override GridBuilder<VolunteerGenerosityPersonDataBag> GetGridBuilder()
         {
             var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
             var dataset = PersistedDatasetCache.Get( datasetGuid );
@@ -158,15 +158,15 @@ namespace Rock.Blocks.Reporting
                 dataBag = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityDataBag>();
             }
 
-            return new GridBuilder<PersonData>()
+            return new GridBuilder<VolunteerGenerosityPersonDataBag>()
                 .AddField( "id", d => d.PersonId )
-                .AddTextField( "campus", d =>
-                {
-                    var firstGroup = d.GroupIds
-                        .Select( groupId => dataBag?.GroupData.FirstOrDefault( g => g.GroupId == groupId ) )
-                        .FirstOrDefault();
-                    return firstGroup?.CampusShortCode ?? string.Empty;
-                } )
+                 .AddTextField( "campus", d =>
+                 {
+                     var firstGroup = d.GroupIds
+                         .Select( groupId => dataBag?.GroupData.FirstOrDefault( g => g.GroupId == groupId ) )
+                         .FirstOrDefault();
+                     return firstGroup?.CampusShortCode ?? string.Empty;
+                 } )
                 .AddTextField( "lastAttendanceDate", d =>
                 {
                     DateTime lastAttendanceDate;
@@ -174,12 +174,12 @@ namespace Rock.Blocks.Reporting
                     {
                         return lastAttendanceDate.ToString( "M/d/yyyy" );
                     }
-                    return "N/A"; 
+                    return "N/A";
                 } )
                 .AddTextField( "team", d =>
                 {
                     var firstGroup = d.GroupIds
-                        .Select( groupId => dataBag?.GroupData.FirstOrDefault( g => g.GroupId == groupId ) )
+                        .Select( groupId => dataBag?.GroupData.FirstOrDefault( g => g.GroupId.ToString() == groupId ) )
                         .FirstOrDefault();
                     return firstGroup?.GroupName ?? string.Empty;
                 } )
@@ -188,8 +188,6 @@ namespace Rock.Blocks.Reporting
                     var givingDataItem = dataBag?.GivingData.FirstOrDefault( g => g.GivingId == d.GivingId );
                     return string.Join( ", ", givingDataItem?.Donations.Select( gd => $"{gd.MonthNameAbbreviated} {gd.Year}" ) );
                 } )
-                .AddTextField( "lastUpdated", d => "N/A" ) 
-                .AddTextField( "estimatedRefreshTime", d => "N/A" )
                 .AddField( "person", d => d );
         }
 
@@ -213,7 +211,10 @@ namespace Rock.Blocks.Reporting
 
                 PersistedDatasetCache.UpdateCachedEntity( dataset.Id, System.Data.Entity.EntityState.Modified );
 
-                return ActionOk();
+                var lastUpdated = DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
+                var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0; // Convert to seconds and round to 2 decimal places
+
+                return ActionOk( new { LastUpdated = lastUpdated, EstimatedRefreshTime = estimatedRefreshTime } );
             }
         }
 
