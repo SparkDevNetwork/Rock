@@ -68,6 +68,7 @@
     <Content Include="src\Core\InteractionChannelDetail\viewPanel.partial.obs" />
     <Content Include="src\Core\suggestionDetail.obs" />
     <Content Include="src\Core\SuggestionDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\restControllerList.obs" />
     <Content Include="src\Core\scheduleDetail.obs" />
     <Content Include="src\Core\ScheduleDetail\editPanel.partial.obs" />
     <Content Include="src\Core\ScheduleDetail\viewPanel.partial.obs" />
@@ -318,6 +319,7 @@
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
     <Folder Include="src\Core\SuggestionDetail\" />
+    <Folder Include="src\Core\RestControllerList\" />
     <Folder Include="src\Core\ScheduleDetail\" />
     <Folder Include="src\Core\TaggedItemDetail\" />
     <Folder Include="src\Crm\DocumentTypeDetail\" />
@@ -472,6 +474,7 @@
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SuggestionDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\RestControllerList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\ScheduleDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\TaggedItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\DocumentTypeDetail\types.partial.ts" />
