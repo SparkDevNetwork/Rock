@@ -215,8 +215,7 @@ export const EditComponent = defineComponent({
     <RockFormField v-model="internalValue"
                 formGroupClasses="rock-defined-value"
                 name="definedvalue"
-                #default="{uniqueId}"
-                :rules="computedRules">
+                #default="{uniqueId}">
         <div :id="uniqueId">
             <DropDownList v-if="!isMultiple" :multiple="isMultiple" v-model="internalValue" :items="options">
                 <template #inputGroupAppend v-if="allowAdd">

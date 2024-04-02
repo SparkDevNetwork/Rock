@@ -1,12 +1,12 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
-import RegistrationEntry from "../../src/Event/registrationEntry";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
 import * as http from "@Obsidian/Utility/http";
-import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
 
-function getConfigurationValues(): RegistrationEntryBlockViewModel {
+function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
     // modifies the configuration values which is non-standard.
     return JSON.parse(JSON.stringify(configurationValues));
@@ -109,7 +109,7 @@ describe("Issue 5607", () => {
 /**
  * Configuration values returned by the block to replicate this issue.
  */
-const configurationValues: RegistrationEntryBlockViewModel = {
+const configurationValues: RegistrationEntryInitializationBox = {
     "allowRegistrationUpdates": true,
     "timeoutMinutes": null,
     "session": {
@@ -135,8 +135,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountAmount": 0.0,
         "discountPercentage": 0.0,
         "discountMaxRegistrants": 0,
-        "previouslyPaid": 0.0,
-        "savedAccountGuid": null
+        "previouslyPaid": 0.0
     },
     "isUnauthorized": false,
     "instructionsHtml": "",
@@ -418,7 +417,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         }
     ],
     "hideProgressBar": false,
-    "showSmsOptIn": false
+    "showSmsOptIn": false,
+    "disableCaptchaSupport": true
 };
 
 const addressControlConfiguration = {

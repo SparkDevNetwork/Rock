@@ -4,13 +4,13 @@
     <NotificationBox v-else alertType="danger">Could not load the control for person field {{ fieldType }}.</NotificationBox>
 </template>
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, PropType, watch } from "vue";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
@@ -56,7 +56,7 @@
                 return EmailBox;
 
             case RegistrationPersonFieldType.Gender:
-                return GenderDropDownList;
+                return GenderPicker;
 
             case RegistrationPersonFieldType.Birthdate:
                 return BirthdayPicker;
@@ -188,25 +188,35 @@
 
     // #endregion
 
-    // Set the default value if needed
-    if (!(props.field.guid in props.fieldValues)) {
-        let defaultValue: unknown = "";
+    /**
+     * Sets the default value if it doesn't exist on fieldValues already.
+     */
+    function setDefaultValueIfNeeded(): void {
+        if (!(props.field.guid in props.fieldValues)) {
+            let defaultValue: unknown = "";
 
-        switch (props.field.personFieldType) {
-            case RegistrationPersonFieldType.Birthdate:
-                defaultValue = undefined;
-                break;
+            switch (props.field.personFieldType) {
+                case RegistrationPersonFieldType.Birthdate:
+                    defaultValue = undefined;
+                    break;
 
-            case RegistrationPersonFieldType.AnniversaryDate:
-                defaultValue = undefined;
-                break;
+                case RegistrationPersonFieldType.AnniversaryDate:
+                    defaultValue = undefined;
+                    break;
 
-            case RegistrationPersonFieldType.Address:
-                // Address Control now handles the default value itself.
-                defaultValue = {};
-                break;
+                case RegistrationPersonFieldType.Address:
+                    // Address Control now handles the default value itself.
+                    defaultValue = {};
+                    break;
+            }
+
+            props.fieldValues[props.field.guid] = defaultValue;
         }
-
-        props.fieldValues[props.field.guid] = defaultValue;
     }
+
+    setDefaultValueIfNeeded();
+
+    // Fix issue with TextBox being passed an undefined value instead of an
+    // empty string.
+    watch(() => props.fieldValues, () => setDefaultValueIfNeeded(), { deep: true });
 </script>

@@ -1,10 +1,10 @@
-import RegistrationEntry from "../../src/Event/registrationEntry";
-import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { Guid } from "@Obsidian/Types";
 
-function getConfigurationValues(): RegistrationEntryBlockViewModel {
+function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
     // modifies the configuration values which is non-standard.
     return JSON.parse(JSON.stringify(configurationValues));
@@ -146,7 +146,7 @@ describe("Issue 5547", () => {
 /**
  * Configuration values returned by the block to replicate this issue.
  */
-const configurationValues: RegistrationEntryBlockViewModel = {
+const configurationValues: RegistrationEntryInitializationBox = {
     "currentPersonFamilyGuid": "8611f5e6-c63f-4c2a-ae5c-859cdb350cd0",
     "allowRegistrationUpdates": true,
     "timeoutMinutes": null,
@@ -177,7 +177,6 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountAmount": 0.0,
         "discountPercentage": 0.0,
         "previouslyPaid": 0.0,
-        "savedAccountGuid": null,
         "discountMaxRegistrants": 0
     },
     "isUnauthorized": false,

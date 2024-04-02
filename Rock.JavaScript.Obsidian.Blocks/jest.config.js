@@ -35,7 +35,7 @@ module.exports = {
             }
         ]
     },
-    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"],
+    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts", "obs"],
     moduleNameMapper: {
         "^vue$": __dirname + "/node_modules/vue/index",
         ...pathsToModuleNameMapper(paths, { prefix: __dirname })

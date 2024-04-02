@@ -126,9 +126,9 @@
     <RockLabel :for="uniqueId" :help="help" v-if="!disableLabel">
         {{label}} <slot name="besideLabel" />
     </RockLabel>
-    <slot v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
+    <slot v-bind="{field: $attrs, uniqueId, fieldLabel}" />
 </div>
-<slot v-else v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
+<slot v-else v-bind="{field: $attrs, uniqueId, fieldLabel}" />
 <slot name="post" />
 `
     });
