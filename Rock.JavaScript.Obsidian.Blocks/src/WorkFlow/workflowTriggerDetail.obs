@@ -12,7 +12,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
+                 entityTypeName="WorkflowTrigger"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -87,7 +87,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return config.entity?.idKey ? "Edit Workflow Trigger" : "Add Workflow Trigger";
+        return config.entity?.workflowName ?? "";
     });
 
     /**

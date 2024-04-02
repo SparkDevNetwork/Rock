@@ -18,7 +18,7 @@
             <template #gridHeaderPrepend>
                 <Panel :hasTitle="false">
                     <div class="refresh-tooltip">
-                        <button class="btn btn-xs btn-default" @click="refreshData">
+                        <button class="btn btn-xs btn-default" @click.prevent="refreshData">
                             {{ calculateTimeDifference(lastUpdated) }}
                             <i class="fas fa-sync-alt"></i>
                         </button>
@@ -83,13 +83,22 @@
                         title="Campus"
                         field="campus"
                         visiblePriority="xs"
-                        width="10%" />
+                        width="10%">
+                <template #format="{ row }">
+                    {{ decodeHtml(row.campus) }}
+                </template>
+            </TextColumn>
 
             <TextColumn name="team"
                         title="Team"
                         field="team"
                         visiblePriority="xs"
-                        width="10%" />
+                        width="10%">
+                <template #format="{ row }">
+                    {{ decodeHtml(row.team) }}
+                </template>
+            </TextColumn>
+
 
             <TextColumn name="lastAttendance"
                         title="Last Attendance"
@@ -365,12 +374,11 @@
 }
 </style>
 
-
 <script setup lang="ts">
     import { ref, reactive, watch } from "vue";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
-    import { VolunteerGenerosityAnalysisBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityAnalysisBag";
-    import { VolunteerGenerosityBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityBag";
+    import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
+    import { VolunteerGenerositySetupBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerositySetupBag";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import Grid, { TextColumn, textValueFilter, Column, PersonColumn } from "@Obsidian/Controls/grid";
     import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
@@ -379,8 +387,8 @@
     import { PreferenceKey } from "./VolunteerGenerosityAnalyisis/types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
 
-    const config = useConfigurationValues<ListBlockBox<VolunteerGenerosityAnalysisBag>>();
-    const bag = useConfigurationValues<VolunteerGenerosityBag>();
+    const config = useConfigurationValues<ListBlockBox<VolunteerGenerosityDataBag>>();
+    const bag = useConfigurationValues<VolunteerGenerositySetupBag>();
     const gridDataSource = ref<Promise<GridDataBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     let gridData: GridDataBag | undefined;
@@ -391,8 +399,8 @@
     const campusValue = ref<string>("");
     const teamValue = ref<string>("");
     const teamDonationStats = ref<{ month: string; donatedPercentage: number; notDonatedPercentage: number }[]>([] as { month: string; donatedPercentage: number; notDonatedPercentage: number }[]);
-    const estimatedRefreshTime = ref<number>(0);
-    const lastUpdated = ref<string>("");
+    const lastUpdated = ref(bag.lastUpdated || "N/A");
+    const estimatedRefreshTime = ref(bag.estimatedRefreshTime || 0);
     const dataRefreshed = ref<boolean>(false);
     const isRefreshing = ref(false);
     const uniqueGroups = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
@@ -402,7 +410,7 @@
 
     // #region Functions
 
-    const fetchBlockPreferences = async(): Promise<void> => {
+    const fetchBlockPreferences = async (): Promise<void> => {
         const defaultCampus = blockPreferences.getValue(PreferenceKey.Campus) || "";
         const defaultTeam = blockPreferences.getValue(PreferenceKey.Team) || "";
         campusValue.value = defaultCampus || "All";
@@ -417,80 +425,77 @@
     const calculateTimeDifference = (lastUpdatedString: string | number | Date): string => {
         const lastUpdatedDate = new Date(lastUpdatedString);
         const now = new Date();
-        const diffInSeconds = (now.getTime() - lastUpdatedDate.getTime()) / 1000;
-        const hoursAgo = Math.floor(diffInSeconds / 3600);
-        return `Data Updated: ${hoursAgo} hours ago`;
+        let diffInSeconds = Math.floor((now.getTime() - lastUpdatedDate.getTime()) / 1000);
+        let timeDiffStr = "Data Updated: ";
+
+        if (diffInSeconds < 60) {
+            timeDiffStr += `${diffInSeconds} seconds ago`;
+        }
+ else if (diffInSeconds < 3600) { // Less than 1 hour
+            const minutes = Math.floor(diffInSeconds / 60);
+            timeDiffStr += `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+        }
+ else if (diffInSeconds < 86400) { // Less than 1 day
+            const hours = Math.floor(diffInSeconds / 3600);
+            timeDiffStr += `${hours} hour${hours > 1 ? "s" : ""} ago`;
+        }
+ else {
+            const days = Math.floor(diffInSeconds / 86400);
+            timeDiffStr += `${days} day${days > 1 ? "s" : ""} ago`;
+        }
+
+        return timeDiffStr;
     };
 
     /**
      * Calculate the donation percentages for each month
      * @returns An array of objects representing the donation percentages
      */
-     const calculateDonationPercentages = async () => {
-    if (!gridData || !gridData.rows) {
-        return;
-    }
+    const calculateDonationPercentages = (): { month: string; donatedPercentage: number; notDonatedPercentage: number }[] => {
+        const donationData = last13Months.reduce((acc, month) => {
+            acc[month] = { donated: 0, total: gridData?.rows?.length || 0 };
+            return acc;
+        }, {});
 
-    // Step 1: Extract unique GivingIds and initialize donation data structure
-    const householdData: Record<string, { donated: Record<string, boolean>; lastAttendanceDate: string }> = {};
-
-    gridData.rows.forEach(row => {
-        if (row.person && typeof row.person === "object") {
-            const { givingId, lastAttendanceDate } = row.person as { givingId: string; lastAttendanceDate: string };
-            if (givingId) {
-                if (!householdData[givingId]) {
-                    householdData[givingId] = { donated: {}, lastAttendanceDate };
+        gridData?.rows?.forEach(person => {
+            last13Months.forEach(month => {
+                if ((person as { givingMonths: string[] }).givingMonths.includes(month)) {
+                    donationData[month].donated++;
                 }
-                if (typeof row.givingMonths === "string") {
-                    row.givingMonths.split(",").forEach(monthYear => {
-                        const month = monthYear.trim();
-                        householdData[givingId].donated[month] = true;
-                    });
-                }
-            }
-        }
-    });
-
-    const totalHouseholds = Object.keys(householdData).length;
-
-    const donationData: Record<string, { donated: number; total: number }> = {};
-
-    // Initialize donation data for each month
-    last13Months.forEach(month => {
-        donationData[month] = { donated: 0, total: totalHouseholds };
-    });
-
-    // Step 2: Update donation data based on the household data
-    Object.values(householdData).forEach(household => {
-        last13Months.forEach(month => {
-            if (household.donated[month]) {
-                donationData[month].donated++;
-            }
+            });
         });
-    });
 
-    // Compute donation percentages
-    const donationPercentages = last13Months.map(month => {
-        const { donated, total } = donationData[month];
-        const notDonated = total - donated;
-        return {
-            month,
-            donatedPercentage: (donated / total) * 100,
-            notDonatedPercentage: (notDonated / total) * 100,
-        };
-    });
+        const donationPercentages = Object.keys(donationData).map(month => {
+            const { donated, total } = donationData[month];
+            const notDonated = total - donated;
+            return {
+                month,
+                donatedPercentage: (donated / total) * 100,
+                notDonatedPercentage: (notDonated / total) * 100
+            };
+        });
 
-    teamDonationStats.value = donationPercentages;
-};
+        return teamDonationStats.value = donationPercentages;
+    };
 
+    /**
+     * Decodes HTML entities in a string
+     * @param html The HTML string to decode
+     * @returns A decoded string
+     */
+    const decodeHtml = (html: string): string => {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = html;
+        return txt.value;
+    };
 
     /**
      * @param lastUpdated The last updated date
      * @returns A formatted string representing the last updated date
      */
-    const formatLastUpdated = (lastUpdated: string | number | Date): string => {
+    const formatLastUpdated = (lastUpdated): string => {
         const lastUpdatedDate = new Date(lastUpdated);
-        const datePart = lastUpdatedDate.toLocaleDateString("en-GB");
+        const datePart = lastUpdatedDate.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" });
         let hours = lastUpdatedDate.getHours();
         const minutes = lastUpdatedDate.getMinutes();
         const ampm = hours >= 12 ? "PM" : "AM";
@@ -499,8 +504,9 @@
         const minutesStr = minutes < 10 ? "0" + minutes : minutes;
         const timePart = `${hours}:${minutesStr} ${ampm}`;
 
-        return `Data last updated ${datePart} at ${timePart}`;
+        return `Data last updated on ${datePart} at ${timePart}`;
     };
+
 
     /**
      * @param value The selected date range value
@@ -580,11 +586,13 @@
         const result = await invokeBlockAction("RefreshData");
         if (result.isSuccess && result.data) {
             dataRefreshed.value = true;
+            lastUpdated.value = (result.data as { lastUpdated: string }).lastUpdated;
+            estimatedRefreshTime.value = (result.data as { estimatedRefreshTime: number }).estimatedRefreshTime;
+            console.log("Data refreshed successfully", lastUpdated.value, estimatedRefreshTime.value);
         }
 
         isRefreshing.value = false;
         gridDataSource.value = loadGridData() as Promise<GridDataBag>;
-
     };
 
     /**
@@ -612,20 +620,14 @@
                 dataRefreshed.value = false;
                 gridData = reactive(result.data);
                 if (bag.uniqueCampuses) {
-                    uniqueCampuses.value = [{ text: "All", value: "" }, ...bag.uniqueCampuses.map(campus => ({ text: campus, value: campus }))];
+                    uniqueCampuses.value = [{ text: "All", value: "" }, ...bag.uniqueCampuses.map(campus => ({ text: decodeHtml(campus), value: campus }))];
                 }
                 if (bag.uniqueGroups) {
-                    uniqueGroups.value = [{ text: "All", value: "" }, ...bag.uniqueGroups.map(group => ({ text: group, value: group }))];
-                }
-                if (bag.lastUpdated) {
-                    lastUpdated.value = bag.lastUpdated;
-                }
-                if (bag.estimatedRefreshTime) {
-                    estimatedRefreshTime.value = bag.estimatedRefreshTime;
+                    uniqueGroups.value = [{ text: "All", value: "" }, ...bag.uniqueGroups.map(group => ({ text: decodeHtml(group), value: group }))];
                 }
 
                 await fetchBlockPreferences();
-                await calculateDonationPercentages();
+                calculateDonationPercentages();
 
                 return gridData;
             }

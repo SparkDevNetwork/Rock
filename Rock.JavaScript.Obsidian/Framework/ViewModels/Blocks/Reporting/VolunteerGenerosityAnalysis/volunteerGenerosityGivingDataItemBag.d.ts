@@ -21,24 +21,12 @@
 // </copyright>
 //
 
-import { VolunteerGivingDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGivingDataBag";
+import { VolunteerGenerosityMonthlyGivingDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityMonthlyGivingDataBag";
 
-export type VolunteerGroupDataBag = {
-    /** Gets or sets the campus id. */
-    campusId: number;
+export type VolunteerGenerosityGivingDataItemBag = {
+    /** Gets or sets the giving amount. */
+    donations?: VolunteerGenerosityMonthlyGivingDataBag[] | null;
 
-    /** Gets or sets the giving data. */
-    givingData?: VolunteerGivingDataBag[] | null;
-
-    /** Gets or sets the group id. */
-    groupId?: string | null;
-
-    /** Gets or sets the group name. */
-    groupName?: string | null;
-
-    /** Gets or sets the last attendance date. */
-    lastAttendanceDate?: string | null;
-
-    /** Gets or sets the campus name. */
-    shortCode?: string | null;
+    /** Gets or sets the giving identifier. */
+    givingId?: string | null;
 };

@@ -21,14 +21,18 @@
 // </copyright>
 //
 
+import { VolunteerGenerosityGivingDataItemBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityGivingDataItemBag";
+import { VolunteerGenerosityGroupDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityGroupDataBag";
+import { VolunteerGenerosityPersonDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityPersonDataBag";
+
 /** A bag that contains all data for the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityDataBag = {
     /** Gets or sets the giving data. */
-    givingData?: unknown[] | null;
+    givingData?: VolunteerGenerosityGivingDataItemBag[] | null;
 
     /** Gets or sets the group data. */
-    groupData?: unknown[] | null;
+    groupData?: VolunteerGenerosityGroupDataBag[] | null;
 
     /** Gets or sets the people data. */
-    peopleData?: unknown[] | null;
+    peopleData?: VolunteerGenerosityPersonDataBag[] | null;
 };

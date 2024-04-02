@@ -168,7 +168,7 @@
     });
 
     const isAddingSource = computed((): boolean => {
-        return !sourceEditBag.value?.guid;
+        return areEqual(sourceEditBag.value?.guid, emptyGuid);
     });
 
     const isSourceModalCalendar = computed((): boolean => {

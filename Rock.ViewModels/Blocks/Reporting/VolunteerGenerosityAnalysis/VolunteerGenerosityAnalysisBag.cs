@@ -29,21 +29,21 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// <summary>
         /// Gets or sets the people data.
         /// </summary>
-        public List<PersonData> PeopleData { get; set; } = new List<PersonData>();
+        public List<VolunteerGenerosityPersonDataBag> PeopleData { get; set; } = new List<VolunteerGenerosityPersonDataBag>();
         /// <summary>
         /// Gets or sets the giving data.
         /// </summary>
-        public List<GivingDataItem> GivingData { get; set; } = new List<GivingDataItem>();
+        public List<VolunteerGenerosityGivingDataItemBag> GivingData { get; set; } = new List<VolunteerGenerosityGivingDataItemBag>();
         /// <summary>
         /// Gets or sets the group data.
         /// </summary>
-        public List<GroupData> GroupData { get; set; } = new List<GroupData>();
+        public List<VolunteerGenerosityGroupDataBag> GroupData { get; set; } = new List<VolunteerGenerosityGroupDataBag>();
     }
 
     /// <summary>
-    /// 
+    /// A bag that contains all data for a person in the Volunteer Generosity Analysis block.
     /// </summary>
-    public class PersonData
+    public class VolunteerGenerosityPersonDataBag
     {
         /// <summary>
         /// Gets or sets the person identifier.
@@ -76,9 +76,9 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
     }
 
     /// <summary>
-    /// 
+    /// A bag that contains all data for a giving item in the Volunteer Generosity Analysis block.
     /// </summary>
-    public class GivingDataItem
+    public class VolunteerGenerosityGivingDataItemBag
     {
         /// <summary>
         /// Gets or sets the giving identifier.
@@ -87,13 +87,13 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// <summary>
         /// Gets or sets the giving amount.
         /// </summary>
-        public List<MonthlyGivingData> Donations { get; set; } = new List<MonthlyGivingData>();
+        public List<VolunteerGenerosityMonthlyGivingDataBag> Donations { get; set; } = new List<VolunteerGenerosityMonthlyGivingDataBag>();
     }
 
     /// <summary>
-    /// 
+    /// A bag that contains all data for a monthly giving item in the Volunteer Generosity Analysis block.
     /// </summary>
-    public class MonthlyGivingData
+    public class VolunteerGenerosityMonthlyGivingDataBag
     {
         /// <summary>
         /// Gets or sets the group identifier.
@@ -114,9 +114,9 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
     }
 
     /// <summary>
-    /// 
+    /// A bag that contains all data for a group in the Volunteer Generosity Analysis block.
     /// </summary>
-    public class GroupData
+    public class VolunteerGenerosityGroupDataBag
     {
         /// <summary>
         /// Gets or sets the group identifier.
@@ -134,6 +134,29 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// Gets or sets the campus name.
         /// </summary>
         public string CampusShortCode { get; set; }
+    }
+
+    /// <summary>
+    /// A bag that contains all data for the Volunteer Generosity Analysis block.
+    /// </summary>
+    public class VolunteerGenerositySetupBag
+    {
+        /// <summary>
+        /// Gets or sets the list of unique campuses.
+        /// </summary>
+        public List<string> UniqueCampuses { get; set; }
+        /// <summary>
+        /// Gets or sets the list of unique groups 
+        /// </summary>
+        public List<string> UniqueGroups { get; set; }
+        /// <summary>
+        /// Gets or sets the last updated date time. 
+        /// </summary>
+        public string LastUpdated { get; set; }
+        /// <summary>
+        /// Gets or sets the estimated refresh time of the persisted dataset. 
+        /// </summary>
+        public double EstimatedRefreshTime { get; set; }
     }
 }
 

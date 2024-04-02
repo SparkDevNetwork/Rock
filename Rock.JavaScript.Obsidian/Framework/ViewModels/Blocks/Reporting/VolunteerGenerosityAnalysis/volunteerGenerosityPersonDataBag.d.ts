@@ -21,15 +21,25 @@
 // </copyright>
 //
 
-/** A bag that contains the list of unique campuses and groups for the Volunteer Generosity Analysis block.  */
-export type VolunteerGenerosityBag = {
-    /** Gets or sets the list of unique campuses. */
-    uniqueCampuses?: string[] | null;
+export type VolunteerGenerosityPersonDataBag = {
+    /** Gets or sets the giving identifier. */
+    givingId?: string | null;
 
-    /** Gets or sets the list of unique groups. */
-    uniqueGroups?: string[] | null;
-    /** Gets or sets the last updated date. */
-    lastUpdated?: string | null;
-    /** Gets or sets the estimated refresh time. */
-    estimatedRefreshTime?: number | null;
+    /** Gets or sets the group identifier. */
+    groupIds?: string[] | null;
+
+    /** Gets or sets the last attendance date. */
+    lastAttendanceDate?: string | null;
+
+    /** Gets or sets the last name. */
+    lastName?: string | null;
+
+    /** Gets or sets the nick name. */
+    nickName?: string | null;
+
+    /** Gets or sets the person identifier. */
+    personId: number;
+
+    /** Gets or sets the photo URL. */
+    photoUrl?: string | null;
 };
