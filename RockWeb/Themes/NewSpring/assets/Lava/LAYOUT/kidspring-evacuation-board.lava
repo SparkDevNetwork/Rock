@@ -6,7 +6,7 @@
 //- Set these page parameters up to pass through to SQL
 {% assign date = 'Now' | Date %}
 {% assign dateKey = 'Now' | Date:'yyyyMMdd' %}
-{% assign dateKey = '20240310' %}
+//- {% assign dateKey = '20240310' %}
 
 {% assign campusGuid = Context.Campus.Guid %}
 {% assign scheduleId = Context.Schedule.Id %}
