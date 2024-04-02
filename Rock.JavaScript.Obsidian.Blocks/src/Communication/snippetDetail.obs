@@ -10,7 +10,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="entityTypeName"
+                 entityTypeName="Snippet"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -88,10 +88,6 @@
      */
     const panelName = computed((): string => {
         return snippetViewBag.value?.name ?? "";
-    });
-
-    const entityTypeName = computed((): string => {
-        return snippetViewBag.value?.name ?? "New Snippet";
     });
 
     /**

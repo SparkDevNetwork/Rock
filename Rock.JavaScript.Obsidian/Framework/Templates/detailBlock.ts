@@ -35,6 +35,7 @@ import { alert, confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
 import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 
 /** Provides a pattern for entity detail blocks. */
@@ -284,17 +285,22 @@ export default defineComponent({
             }
 
             switch (internalMode.value) {
-                // If we are in view mode then display either the entity name or
-                // the entity type name.
+                // If we are in view mode then we should be display the entity name.
+                // If not, fall back on the entity type name.
                 case DetailPanelMode.View:
-                    return props.name ?? props.entityTypeName;
+                    return props.name ?? splitCase(props.entityTypeName);
 
-                // If we are in edit or add mode then display just the entity type
-                // name. An icon will be shown before the text.
-                case DetailPanelMode.Edit:
+                // If we are in Add mode then display "Add {Entity Type Name}"
                 case DetailPanelMode.Add:
+                    return `Add ${splitCase(props.entityTypeName)}`;
+
+                // If we are in edit mode then we should be displaying the entity name.
+                // If not, fall back on the entity type name.
+                case DetailPanelMode.Edit:
+                    return props.name ?? splitCase(props.entityTypeName);
+
                 default:
-                    return props.entityTypeName;
+                    return splitCase(props.entityTypeName);
             }
         });
 
