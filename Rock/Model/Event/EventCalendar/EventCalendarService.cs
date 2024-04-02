@@ -182,6 +182,7 @@ namespace Rock.Model
             var events = new List<CalendarEvent>();
 
             var eventStartTime = new TimeSpan( iCalEvent.DtStart.Hour, iCalEvent.DtStart.Minute, iCalEvent.DtStart.Second );
+            var hasDuration = iCalEvent.Duration.TotalMilliseconds > 0;
 
             var specificDatePeriodList = iCalEvent.RecurrenceDates.FirstOrDefault();
             if ( specificDatePeriodList.Count == 0 )
@@ -190,7 +191,7 @@ namespace Rock.Model
             }
 
             var firstDateTime = ConvertToCalDateTime( specificDatePeriodList?.First(), eventStartTime );
-            var recurrenceDates = ConvertPeriodListElementsToDateType( specificDatePeriodList, timeZoneId, eventStartTime );
+            var recurrenceDates = ConvertPeriodListElementsToDateType( specificDatePeriodList, timeZoneId, eventStartTime, iCalEvent.Duration );
             var totalDateCount = recurrenceDates.Count;
 
             int dateNo = 0;
@@ -227,6 +228,15 @@ namespace Rock.Model
                 SetCalendarEventDetailsFromRockEvent( iEvent, timeZoneId, occurrence, lavaTemplate, setEventDescription );
 
                 iEvent.DtStart = ConvertToCalDateTime( recurrenceDate.StartTime, timeZoneId );
+
+                // Reset the All Day event flag, because it is reset by iCal.Net when the DtStart property is assigned.
+                iEvent.IsAllDay = iCalEvent.IsAllDay;
+
+                // Set the EndDateTime, unless this is flagged as an All Day event.
+                if ( !iEvent.IsAllDay && recurrenceDate.EndTime != null )
+                {
+                    iEvent.DtEnd = ConvertToCalDateTime( recurrenceDate.EndTime, timeZoneId );
+                }
                 iEvent.RecurrenceDates = null;
 
                 iEvent.Sequence = sequenceNo;
@@ -235,7 +245,8 @@ namespace Rock.Model
                 // The time component must be omitted, or Google Calendar will fail to match the rescheduled event correctly.
                 var recurrencePatternDate = firstDateTime.AddDays( totalDateCount - 1 ).AddDays( -1 * dateNo );
                 recurrenceId = ConvertToCalDateTime( recurrencePatternDate, null );
-                recurrenceId.HasTime = false;
+
+                recurrenceId.HasTime = hasDuration;
 
                 iEvent.RecurrenceId = recurrenceId;
 
@@ -334,27 +345,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Convert the elements of a PeriodList from the iCalendar PERIOD type to the DATE type.
+        /// Convert the elements of an iCal.PeriodList to ensure they use the CalDateTime type.
         /// </summary>
-        /// <param name="periodLists"></param>
+        /// <param name="periodList"></param>
         /// <param name="tzId"></param>
         /// <param name="eventStartTime"></param>
+        /// <param name="eventDuration"></param>
         /// <returns></returns>
-        private IList<PeriodList> ConvertPeriodListElementsToDateType( IList<PeriodList> periodLists, string tzId, TimeSpan eventStartTime )
+        private PeriodList ConvertPeriodListElementsToDateType( PeriodList periodList, string tzId, TimeSpan eventStartTime, TimeSpan? eventDuration )
         {
-            var newDatesList = new List<PeriodList>();
-
-            foreach ( var periodList in periodLists )
+            if ( eventDuration?.TotalMilliseconds < 1 )
             {
-                var newPeriodList = ConvertPeriodListElementsToDateType( periodList, tzId, eventStartTime );
-                newDatesList.Add( newPeriodList );
+                eventDuration = null;
             }
 
-            return newDatesList;
-        }
-
-        private PeriodList ConvertPeriodListElementsToDateType( PeriodList periodList, string tzId, TimeSpan eventStartTime )
-        {
             // It's important to create and return a new PeriodList object here rather than simply removing elements of the existing collection,
             // because iCal.Net has some issues with synchronising changes to PeriodList elements that cause problems downstream.
             var newPeriodList = new PeriodList() { TzId = tzId };
@@ -362,7 +366,15 @@ namespace Rock.Model
             {
                 var newDateTime = ConvertToCalDateTime( period, eventStartTime );
 
-                var newPeriod = new Period( newDateTime );
+                Period newPeriod;
+                if ( eventDuration != null )
+                {
+                    newPeriod = new Period( newDateTime, eventDuration.Value );
+                }
+                else
+                {
+                    newPeriod = new Period( newDateTime );
+                }
 
                 newPeriodList.Add( newPeriod );
             }
