@@ -7,11 +7,10 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="UserLogin"
+                 entityTypeName="RESTKey"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
@@ -80,7 +79,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return restKeyViewBag.value?.idKey ? "Edit REST Key" : "Add REST Key";
+        return restKeyViewBag.value?.name ?? "";
     });
 
     /**
