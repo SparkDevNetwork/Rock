@@ -56,7 +56,7 @@ namespace Rock.Migrations
         /// </summary>
         private void PasswordlessAuthentication_UpdateExistingBlockTypes()
         {
-            Sql( "UPDATE BlockType SET [Path] = '~/Blocks/Security/LoginLegacy.ascx', [Name] = 'Login (Legacy)' WHERE [Guid] = '7B83D513-1178-429E-93FF-E76430E038E4'" );
+            Sql( "UPDATE BlockType SET [Path] = '~/Blocks/Security/Login.ascx', [Name] = 'Login (Legacy)' WHERE [Guid] = '7B83D513-1178-429E-93FF-E76430E038E4'" );
             Sql( "UPDATE BlockType SET [Path] = '~/Blocks/Security/AccountEntryLegacy.ascx', [Name] = 'Account Entry (Legacy)' WHERE [Guid] = '99362B60-71A5-44C6-BCFE-DDA9B00CC7F3'" );
         }
 
