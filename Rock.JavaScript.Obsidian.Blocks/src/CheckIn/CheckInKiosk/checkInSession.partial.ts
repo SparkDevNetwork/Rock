@@ -16,29 +16,29 @@
 //
 
 import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
-import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
-import { UnexpectedErrorMessage, clone, isGuidInList } from "./utils.partial";
-import { Screen, SessionOpportunitySelectionBag } from "./types.partial";
-import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
-import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
-import { FamilyMembersOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersOptionsBag";
-import { FamilyMembersResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersResponseBag";
-import { AttendeeOpportunitiesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesOptionsBag";
-import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
-import { HttpFunctions } from "@Obsidian/Types/Utility/http";
-import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
-import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-import { Guid } from "@Obsidian/Types";
-import { areEqual } from "@Obsidian/Utility/guid";
-import { OpportunityCollectionBag } from "@Obsidian/ViewModels/CheckIn/opportunityCollectionBag";
 import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
+import { Guid } from "@Obsidian/Types";
+import { HttpFunctions } from "@Obsidian/Types/Utility/http";
+import { areEqual } from "@Obsidian/Utility/guid";
+import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { AbilityLevelOpportunityBag } from "@Obsidian/ViewModels/CheckIn/abilityLevelOpportunityBag";
-import { DeepReadonly } from "vue";
 import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
+import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
+import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
+import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
 import { GroupOpportunityBag } from "@Obsidian/ViewModels/CheckIn/groupOpportunityBag";
 import { LocationOpportunityBag } from "@Obsidian/ViewModels/CheckIn/locationOpportunityBag";
+import { OpportunityCollectionBag } from "@Obsidian/ViewModels/CheckIn/opportunityCollectionBag";
 import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
+import { AttendeeOpportunitiesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesOptionsBag";
+import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
+import { FamilyMembersOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersOptionsBag";
+import { FamilyMembersResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersResponseBag";
+import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
+import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
+import { DeepReadonly } from "vue";
+import { Screen, SessionOpportunitySelectionBag } from "./types.partial";
+import { UnexpectedErrorMessage, clone, isGuidInList } from "./utils.partial";
 
 /**
  * The error message to throw if the check-in state is not valid for the
@@ -237,11 +237,26 @@ export class CheckInSession {
 
     // #region Public Selection Functions
 
+    /**
+     * Creates a new session with the kiosk configuration options.
+     *
+     * @param configuration The new configuration that should be applied to the session.
+     *
+     * @returns A new CheckInSession object.
+     */
     public withConfiguration(configuration: KioskConfigurationBag): CheckInSession {
         return this.clone(configuration);
     }
 
-    public async withSearch(searchTerm: string, searchType: FamilySearchMode): Promise<CheckInSession> {
+    /**
+     * Creates a new session by performing a family search.
+     *
+     * @param searchTerm The term to use when searching for families.
+     * @param searchType The type of the search term.
+     *
+     * @returns A new CheckInSession object.
+     */
+    public async withFamilySearch(searchTerm: string, searchType: FamilySearchMode): Promise<CheckInSession> {
         if (!this.configuration.template) {
             throw new Error(invalidCheckInStateMessage);
         }
@@ -269,6 +284,14 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the specified family. This will load
+     * the family members for the selected family.
+     *
+     * @param familyGuid The family identifier to be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
     public async withFamily(familyGuid: Guid): Promise<CheckInSession> {
         if (!this.configuration.template || !this.configuration.kiosk) {
             throw new Error(invalidCheckInStateMessage);
@@ -296,6 +319,14 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the attendees that should be processed
+     * in family check-in mode.
+     *
+     * @param attendeeGuids The attendee identifiers that should be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
     public withSelectedAttendees(attendeeGuids: Guid[]): CheckInSession {
         const copy = this.clone();
 
@@ -304,6 +335,15 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the attendee that should be processed
+     * for opportunity selection screens. This will load the the opporunity
+     * options from the server.
+     *
+     * @param attendeeGuid The attendee identifier to be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
     public async withAttendee(attendeeGuid: Guid): Promise<CheckInSession> {
         if (!this.configuration.template || !this.configuration.kiosk) {
             throw new Error(invalidCheckInStateMessage);
@@ -377,6 +417,14 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the ability level for the currently
+     * selected attendee.
+     *
+     * @param abilityLevelGuid The ability level identifier to be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
     public withSelectedAbilityLevel(abilityLevelGuid: Guid): CheckInSession {
         const abilityLevel = this._attendeeOpportunities
             ?.abilityLevels
@@ -400,6 +448,14 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the area for the currently selected
+     * attendee.
+     *
+     * @param areaGuid The area identifier to be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
     public withSelectedArea(areaGuid: Guid): CheckInSession {
         const area = this._attendeeOpportunities
             ?.areas
@@ -423,6 +479,14 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the group for the currently
+     * selected attendee.
+     *
+     * @param groupGuid The group identifier to be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
     public withSelectedGroup(groupGuid: Guid): CheckInSession {
         const group = this._attendeeOpportunities
             ?.groups
@@ -446,6 +510,14 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the location for the currently
+     * selected attendee.
+     *
+     * @param locationGuid The location identifier to be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
     public withSelectedLocation(locationGuid: Guid): CheckInSession {
         const location = this._attendeeOpportunities
             ?.locations
@@ -469,6 +541,14 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the schedules for the currently
+     * selected attendee.
+     *
+     * @param scheduleGuids The schedule identifiers to be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
     public withSelectedSchedules(scheduleGuids: Guid[]): CheckInSession {
         const schedules = this._attendeeOpportunities
             ?.schedules
@@ -497,6 +577,12 @@ export class CheckInSession {
 
     // #region Public Functions
 
+    /**
+     * Gets the ability level opportunities that are available for selection
+     * on the currently selected attendee.
+     *
+     * @returns An array of ability level opportunities.
+     */
     public getAvailableAbilityLevels(): AbilityLevelOpportunityBag[] {
         if (!this._attendeeOpportunities?.abilityLevels) {
             return [];
@@ -505,6 +591,12 @@ export class CheckInSession {
         return this._attendeeOpportunities.abilityLevels;
     }
 
+    /**
+     * Gets the area opportunities that are available for selection on the
+     * currently selected attendee.
+     *
+     * @returns An array of area opportunities.
+     */
     public getAvailableAreas(): AreaOpportunityBag[] {
         const selection = this._currentOpportunitySelection;
 
@@ -537,6 +629,12 @@ export class CheckInSession {
             .filter(a => isGuidInList(a.guid, validAreaGuids));
     }
 
+    /**
+     * Gets the group opportunities that are available for selection on the
+     * currently selected attendee.
+     *
+     * @returns An array of group opportunities.
+     */
     public getAvailableGroups(): GroupOpportunityBag[] {
         const selection = this._currentOpportunitySelection;
 
@@ -568,6 +666,12 @@ export class CheckInSession {
             .filter(g => areEqual(g.areaGuid, selection.area?.guid));
     }
 
+    /**
+     * Gets the location opportunities that are available for selection on the
+     * currently selected attendee.
+     *
+     * @returns An array of location opportunities.
+     */
     public getAvailableLocations(): LocationOpportunityBag[] {
         const selection = this._currentOpportunitySelection;
 
@@ -601,6 +705,12 @@ export class CheckInSession {
             .filter(l => isGuidInList(selectedScheduleGuids, l.scheduleGuids));
     }
 
+    /**
+     * Gets the schedule opportunities that are available for selection on the
+     * currently selected attendee.
+     *
+     * @returns An array of schedule opportunities.
+     */
     public getAvailableSchedules(): ScheduleOpportunityBag[] {
         const selection = this._currentOpportunitySelection;
 
@@ -633,11 +743,10 @@ export class CheckInSession {
     // #region Screen Switch Functions
 
     /**
-     * Moves to the next screen to display based on the current selections.
-     * This may trigger automatic logic, such as moving to the next attendee
-     * in the family.
+     * Creates a new session that has been updated to reflect the next screen
+     * after the current screen.
      *
-     * @returns The new check-in session representing the next screen.
+     * @returns A new CheckInSession object.
      */
     public withNextScreen(): Promise<CheckInSession> {
         if (this.currentScreen === Screen.Welcome) {
@@ -675,6 +784,12 @@ export class CheckInSession {
         }
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the welcome screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromWelcome(): Promise<CheckInSession> {
         if (!this.families) {
             return Promise.resolve(this.withScreen(Screen.Search));
@@ -686,6 +801,12 @@ export class CheckInSession {
         return Promise.resolve(this.withScreen(Screen.FamilySelect));
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the search screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromSearch(): Promise<CheckInSession> {
         if (!this.families) {
             return Promise.resolve(this.withScreen(Screen.Welcome));
@@ -696,6 +817,12 @@ export class CheckInSession {
         return Promise.resolve(this.withScreen(Screen.FamilySelect));
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the family select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromFamilySelect(): Promise<CheckInSession> {
         if (!this.currentFamily || !this._attendees) {
             return Promise.resolve(this.withScreen(Screen.Welcome));
@@ -707,6 +834,12 @@ export class CheckInSession {
         return Promise.resolve(this.withScreen(Screen.PersonSelect));
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the person select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromPersonSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType == KioskCheckInMode.Family) {
             // If we don't have an attendee then we are done.
@@ -745,6 +878,12 @@ export class CheckInSession {
         return newSession.withNextScreenFromAbilityLevelSelect();
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the ability level select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromAbilityLevelSelect(): Promise<CheckInSession> {
         const newSession = this.clone();
 
@@ -775,6 +914,12 @@ export class CheckInSession {
         return newSession.withNextScreenFromAreaSelect();
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the area select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromAreaSelect(): Promise<CheckInSession> {
         const newSession = this.clone();
 
@@ -805,6 +950,12 @@ export class CheckInSession {
         return newSession.withNextScreenFromGroupSelect();
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the groups elect screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromGroupSelect(): Promise<CheckInSession> {
         const newSession = this.clone();
 
@@ -835,6 +986,12 @@ export class CheckInSession {
         return newSession.withNextScreenFromLocationSelect();
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the location select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromLocationSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
             // TODO: Check if another person to process. This might require some logic.
@@ -849,6 +1006,12 @@ export class CheckInSession {
         return this.withNextScreenFromScheduleSelect();
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the schedule select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromScheduleSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
             if ((this._attendeeOpportunities?.abilityLevels?.length ?? 0) > 1) {
@@ -861,6 +1024,12 @@ export class CheckInSession {
         return Promise.resolve(this.withScreen(Screen.Success));
     }
 
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the success screen.
+     *
+     * @returns A new CheckInSession object.
+     */
     private withNextScreenFromSuccess(): Promise<CheckInSession> {
         return Promise.resolve(this.withScreen(Screen.Welcome));
     }

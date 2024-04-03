@@ -193,7 +193,7 @@
         try {
             let newSession = props.session.withConfiguration(props.configuration);
 
-            newSession = await newSession.withSearch(code, FamilySearchMode.ScannedId);
+            newSession = await newSession.withFamilySearch(code, FamilySearchMode.ScannedId);
 
             if (!newSession.families || newSession.families.length === 0) {
                 await alert("Sorry, there were not any families found with the selected identifier.");
