@@ -8,8 +8,8 @@
                             btnType="primary"
                             class="family-button"
                             @click="onFamilyClick(family)">
-                    <div class="title">{{ family.name }}</div>
-                    <div class="subtitle">{{ getFamilyMemberNames(family) }}</div>
+                    <span class="title">{{ family.name }}</span>
+                    <span class="subtitle">{{ getFamilyMemberNames(family) }}</span>
                 </RockButton>
             </div>
         </MainPanel>

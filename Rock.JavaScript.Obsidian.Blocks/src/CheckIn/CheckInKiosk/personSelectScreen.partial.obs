@@ -9,33 +9,32 @@
                             class="attendee-button"
                             :disabled="attendee.isUnavailable"
                             @click="onAttendeeClick(attendee)">
-                    <div v-if="isFamilyMode" class="selection">
+                    <span v-if="isFamilyMode" class="selection">
                         <i v-if="isAttendeeSelected(attendee)" class="fa fa-check-square"></i>
                         <i v-else class="fa fa-square-o"></i>
-                    </div>
+                    </span>
 
-                    <div class="photo" :style="getStyleForAttendee(attendee)"></div>
+                    <span class="photo" :style="getStyleForAttendee(attendee)"></span>
 
-                    <div class="title">
-                        <div class="name">{{ attendee.person?.fullName }}</div>
+                    <span class="title">
+                        <span class="name">{{ attendee.person?.fullName }}</span>
 
-                        <div v-if="isFamilyMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0" class="opportunity">
+                        <span v-if="isFamilyMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0" class="opportunity">
                             <span class="group label label-info">{{ attendee.selectedOpportunities[0].group?.name }}</span>
                             <span class="location label label-info">{{ attendee.selectedOpportunities[0].location?.name }}</span>
                             <span class="schedule label label-info">{{ attendee.selectedOpportunities[0].schedule?.name }}</span>
-                        </div>
-                    </div>
+                        </span>
+                    </span>
 
-                    <div v-if="attendee.isUnavailable" class="unavailable-reason">
+                    <span v-if="attendee.isUnavailable" class="unavailable-reason">
                         {{ attendee.unavailableMessage }}
-                    </div>
+                    </span>
 
-                    <RockButton v-if="isAutoSelectMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
-                                class="change-selection-button"
-                                btnType="info"
+                    <span v-if="isAutoSelectMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
+                                class="btn btn-info change-selection-button"
                                 @click.stop="onChangeSelection(attendee)">
                         Change
-                    </RockButton>
+                    </span>
                 </RockButton>
             </div>
         </MainPanel>

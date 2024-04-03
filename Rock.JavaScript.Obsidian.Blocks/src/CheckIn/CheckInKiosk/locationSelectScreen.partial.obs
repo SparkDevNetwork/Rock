@@ -9,7 +9,7 @@
                             btnType="primary"
                             class="location-button"
                             @click="onLocationClick(location)">
-                    <div class="title">{{ location.name }}</div>
+                    {{ location.name }}
                 </RockButton>
             </div>
         </MainPanel>

@@ -9,7 +9,7 @@
                             btnType="primary"
                             class="group-button"
                             @click="onGroupClick(group)">
-                    <div class="title">{{ group.name }}</div>
+                    {{ group.name }}
                 </RockButton>
             </div>
         </MainPanel>

@@ -9,7 +9,7 @@
                             btnType="primary"
                             class="ability-level-button"
                             @click="onAbilityLevelClick(abilityLevel)">
-                    <div class="title">{{ abilityLevel.name }}</div>
+                    <span class="title">{{ abilityLevel.name }}</span>
                 </RockButton>
             </div>
         </MainPanel>

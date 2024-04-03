@@ -9,7 +9,7 @@
                             btnType="primary"
                             class="area-button"
                             @click="onAreaClick(area)">
-                    <div class="title">{{ area.name }}</div>
+                    <span class="title">{{ area.name }}</span>
                 </RockButton>
             </div>
         </MainPanel>

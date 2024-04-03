@@ -37,8 +37,8 @@
                         <RockButton v-for="cfg in savedConfigurations"
                                     btnType="primary"
                                     class="saved-configuration-button">
-                            <div class="title">{{ cfg.name }}</div>
-                            <div class="subtitle">{{ cfg.description }}</div>
+                            <span class="title">{{ cfg.name }}</span>
+                            <span class="subtitle">{{ cfg.description }}</span>
                         </RockButton>
                     </div>
                 </div>

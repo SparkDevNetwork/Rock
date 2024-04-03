@@ -9,12 +9,12 @@
                             btnType="primary"
                             class="schedule-button"
                             @click="onScheduleClick(schedule)">
-                    <div class="selection">
+                    <span class="selection">
                         <i v-if="isSelected(schedule)" class="fa fa-check-square"></i>
                         <i v-else class="fa fa-square-o"></i>
-                    </div>
+                    </span>
 
-                    <div class="title">{{ schedule.name }}</div>
+                    <span class="title">{{ schedule.name }}</span>
                 </RockButton>
             </div>
         </MainPanel>

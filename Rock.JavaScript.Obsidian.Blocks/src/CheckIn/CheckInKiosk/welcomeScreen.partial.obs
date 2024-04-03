@@ -16,7 +16,7 @@
                     id="barcode-button"
                     btnType="default"
                     class="scan-barcode-button">
-            <div class="title">
+            <span class="title">
                 <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <mask id="mask0_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
                         <path d="M119.911 119.911V0.0893631H0.0893555V119.911H119.911Z" fill="white" stroke="white" stroke-width="0.178711" />
@@ -45,9 +45,8 @@
                     </g>
                     <path d="M92.8125 97.5H69.375V69.375H83.4375" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
                 </svg>
-
-            </div>
-            <div class="subtitle">Scan A Barcode</div>
+            </span>
+            <span class="subtitle">Scan A Barcode</span>
         </RockButton>
     </div>
 </template>
