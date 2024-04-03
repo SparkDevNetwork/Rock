@@ -480,7 +480,7 @@ namespace Rock.Model
                 throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", actionType.EntityType ) );
             }
 
-            using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW ACTION {ActionTypeCache.Name}" ) )
+            using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW: Action '{ActionTypeCache.Name}'" ) )
             {
                 diagnosticActivity?.AddTag( "rock.workflow.actiontype.id", ActionTypeId );
                 diagnosticActivity?.AddTag( "rock.workflow.actiontype.name", ActionTypeCache?.Name ?? string.Empty );
