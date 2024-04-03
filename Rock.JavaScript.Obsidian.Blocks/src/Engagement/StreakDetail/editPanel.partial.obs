@@ -8,7 +8,7 @@
         </div>
         <div class="row">
             <div class="col-sm-6 col-md-4">
-                <PersonPicker v-if="isCreatingStreak" v-model="personAlias"
+                <PersonPicker v-if="isAddMode" v-model="personAlias"
                               label="Person"
                               rules="required" />
                 <template v-else>
@@ -67,7 +67,7 @@
     const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAliasId");
     const location = propertyRef(props.modelValue.location ?? undefined, "LocationId");
     const enrollmentDate = propertyRef(props.modelValue.enrollmentDate ?? undefined, "EnrollmentDate");
-    const isCreatingStreak = props.modelValue?.personAlias == null;
+    const isAddMode = props.modelValue?.isAddMode ?? false;
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().

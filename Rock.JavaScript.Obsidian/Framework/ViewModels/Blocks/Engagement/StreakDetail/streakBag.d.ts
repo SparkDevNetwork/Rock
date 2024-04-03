@@ -66,4 +66,7 @@ export type StreakBag = {
 
     /** Gets or sets the Rock.Model.StreakType. */
     streakType?: ListItemBag | null;
+
+    /** Is Add Mode */
+    isAddMode?: boolean | null;
 };

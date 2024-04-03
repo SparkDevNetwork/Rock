@@ -132,6 +132,9 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
+        if(panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
         return [
                 {
                     iconCssClass: "fa fa-refresh",
