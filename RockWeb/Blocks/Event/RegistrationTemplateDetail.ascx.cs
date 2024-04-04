@@ -3436,6 +3436,11 @@ The logged-in person's information will be used to complete the registrar inform
 
             gRegistrationAttributes.DataSource = RegistrationAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gRegistrationAttributes.DataBind();
+
+            // When the registration attributes are bound to the grid, they're also added to the attribute cache.
+            // Since the attributes are not complete yet, they can cause issues. This removes all attributes with
+            // an ID of 0 from the attribute cache.
+            AttributeCache.Remove( 0 );
         }
 
         /// <summary>
