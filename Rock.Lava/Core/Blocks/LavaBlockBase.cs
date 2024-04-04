@@ -188,6 +188,12 @@ namespace Rock.Lava
             }
             catch ( Exception ex )
             {
+                // Re-throw the LavaInterruptionException so the Lava engine can catch it.
+                if ( ex is LavaInterruptException )
+                {
+                    throw ( LavaInterruptException ) ex;
+                }
+                
                 // Throw a user-friendly error message that is suitable for rendering to output.
                 throw new Exception( $"(Block: {this.InternalElementName}) {ex.Message}", ex );
             }
