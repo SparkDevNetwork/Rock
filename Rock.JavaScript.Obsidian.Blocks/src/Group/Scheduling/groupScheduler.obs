@@ -736,7 +736,7 @@
      * @param unassignedResourceCountGuid The targeted "unassigned resource count" unique identifier.
      * @param assignedCount The count of resources that have been assigned.
      */
-    function reportAssignedResources(unassignedResourceCountGuid: string | null | undefined, assignedCount: number): void {
+    function reportAssignedResources(unassignedResourceCountGuid: Guid | null | undefined, assignedCount: number): void {
         if (!unassignedResourceCountGuid || assignedCount <= 0 || !unassignedResourceCounts.value?.length) {
             return;
         }

@@ -95,7 +95,7 @@
     import Tag from "./Internal/tag.obs";
     import type { SelectHandler } from "ant-design-vue/lib/vc-select/Select.d";
     import type { SelectOption } from "@Obsidian/Types/Controls/autocomplete.d";
-    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /** The unique identifier of the entity type described by entityKey. */
@@ -184,11 +184,11 @@
      */
     async function getTagByName(name: string): Promise<EntityTagListTagBag | null> {
         const data: EntityTagListGetAvailableTagsOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid || emptyGuid,
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid) ?? emptyGuid,
             entityKey: props.entityKey,
             entityQualifierColumn: props.entityQualifierColumn,
             entityQualifierValue: props.entityQualifierValue,
-            categoryGuid: props.categoryGuid,
+            categoryGuid: toGuidOrNull(props.categoryGuid),
             name: name,
             showInactiveTags: props.showInactiveTags,
             securityGrantToken: securityToken.value
@@ -222,8 +222,8 @@
      */
     async function createPersonalTag(name: string): Promise<EntityTagListTagBag | null> {
         const data: EntityTagListCreatePersonalTagOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid || emptyGuid,
-            categoryGuid: props.categoryGuid,
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid) ?? emptyGuid,
+            categoryGuid: toGuidOrNull(props.categoryGuid),
             entityQualifierColumn: props.entityQualifierColumn,
             entityQualifierValue: props.entityQualifierValue,
             name: name,
@@ -248,7 +248,7 @@
      */
     async function addTag(tagKey: string): Promise<void> {
         const data: EntityTagListAddEntityTagOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid || emptyGuid,
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid) ?? emptyGuid,
             entityKey: props.entityKey,
             tagKey: tagKey,
             securityGrantToken: securityToken.value
@@ -282,7 +282,7 @@
         }
 
         const data: EntityTagListRemoveEntityTagOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid || emptyGuid,
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid) ?? emptyGuid,
             entityKey: props.entityKey,
             tagKey: tagKey,
             securityGrantToken: securityToken.value
@@ -339,15 +339,19 @@
      * Start loading existing tags for the entity described in our properties.
      */
     async function loadExistingTags(): Promise<void> {
-        if (props.entityTypeGuid && props.entityKey) {
+        const entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
+
+        if (entityTypeGuid
+            && !areEqual(entityTypeGuid, emptyGuid)
+            && props.entityKey) {
             const currentRequestTime = Date.now();
             lastLoadCallTime = currentRequestTime;
             let tags: EntityTagListTagBag[] = [];
 
             const data: EntityTagListGetEntityTagsOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid || emptyGuid,
+                entityTypeGuid,
                 entityKey: props.entityKey,
-                categoryGuid: props.categoryGuid,
+                categoryGuid: toGuidOrNull(props.categoryGuid),
                 entityQualifierColumn: props.entityQualifierColumn,
                 entityQualifierValue: props.entityQualifierValue,
                 showInactiveTags: props.showInactiveTags,
@@ -385,7 +389,7 @@
     function createClientTag(tagName: string, tagId: string | null = null): EntityTagListTagBag {
         const newTag: EntityTagListTagBag = {
             name: tagName,
-            entityTypeGuid: props.entityTypeGuid || emptyGuid,
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid) ?? emptyGuid,
             isPersonal: true,
             idKey: tagId || newGuid()
         };
@@ -399,9 +403,9 @@
     async function saveTagValues(): Promise<void> {
         const data: EntityTagListSaveTagValuesOptionsBag = {
             tags: currentTags.value,
-            entityTypeGuid: props.entityTypeGuid || emptyGuid,
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid) ?? emptyGuid,
             entityKey: props.entityKey,
-            categoryGuid: props.categoryGuid,
+            categoryGuid: toGuidOrNull(props.categoryGuid),
             entityQualifierColumn: props.entityQualifierColumn,
             entityQualifierValue: props.entityQualifierValue,
             showInactiveTags: props.showInactiveTags,
@@ -464,7 +468,7 @@
         lastSearchCallTime = currentRequestTime;
 
         const data: EntityTagListGetAvailableTagsOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid || emptyGuid,
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid) ?? emptyGuid,
             entityKey: props.entityKey,
             entityQualifierColumn: props.entityQualifierColumn,
             entityQualifierValue: props.entityQualifierValue,

@@ -151,6 +151,7 @@
     import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
     import { GroupSchedulerResourceSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerResourceSettingsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
@@ -549,7 +550,7 @@
                 return;
             }
 
-            parameters.ResourceGroupGuid = selectedAlternateGroup.value.value;
+            parameters.ResourceGroupGuid = toGuidOrNull(selectedAlternateGroup.value.value);
         }
         else if (selectedSourceTypeIsParentGroup.value) {
             if (!parentGroupId.value) {
@@ -567,7 +568,7 @@
                 return;
             }
 
-            parameters.ResourceDataViewGuid = selectedDataView.value.value;
+            parameters.ResourceDataViewGuid = toGuidOrNull(selectedDataView.value.value);
         }
 
         isLoadingResources.value = true;
@@ -603,8 +604,8 @@
         const bag: GroupSchedulerApplyResourceSettingsBag = {
             groupId: groupId.value,
             resourceListSourceType: selectedSourceType.value,
-            resourceAlternateGroupGuid: selectedAlternateGroup.value?.value,
-            resourceDataViewGuid: selectedDataView.value?.value
+            resourceAlternateGroupGuid: toGuidOrNull(selectedAlternateGroup.value?.value),
+            resourceDataViewGuid: toGuidOrNull(selectedDataView.value?.value)
         };
 
         const result = await invokeBlockAction<GroupSchedulerResourceSettingsBag>("ApplyResourceSettings", { bag });

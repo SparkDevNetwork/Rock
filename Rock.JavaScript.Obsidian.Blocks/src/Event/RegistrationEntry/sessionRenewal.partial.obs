@@ -59,6 +59,8 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { pluralConditional } from "@Obsidian/Utility/stringUtils";
     import { SessionRenewalResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/sessionRenewalResultBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         isSessionExpired: {
@@ -140,9 +142,13 @@
         isLoading.value = true;
 
         try {
-            const response = await invokeBlockAction<SessionRenewalResultBag>("TryToRenewSession", {
-                registrationSessionGuid: registrationEntryState.registrationSessionGuid
-            });
+            const request: {
+                registrationSessionGuid: Guid;
+            } = {
+                registrationSessionGuid: toGuidOrNull(registrationEntryState.registrationSessionGuid) ?? emptyGuid
+            };
+
+            const response = await invokeBlockAction<SessionRenewalResultBag>("TryToRenewSession", request);
 
             if (response.isSuccess && response.data) {
                 const asDate = RockDateTime.parseISO(response.data.expirationDateTime ?? "");

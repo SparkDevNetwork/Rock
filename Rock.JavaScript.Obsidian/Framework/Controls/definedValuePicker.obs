@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <template v-if="allowAdd && isShowingAddForm">
-        <DefinedValueEditor :definedTypeGuid="definedTypeGuid" :label="label" :help="help" @save="selectNewValue" @cancel="hideAddForm" />
+        <DefinedValueEditor :definedTypeGuid="toGuidOrNull(definedTypeGuid) ?? emptyGuid" :label="label" :help="help" @save="selectNewValue" @cancel="hideAddForm" />
     </template>
 
     <template v-else>
@@ -30,7 +30,7 @@
     import RockButton from "./rockButton.obs";
     import DefinedValueEditor from "./Internal/definedValueEditor.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -71,7 +71,7 @@
 
     async function loadItems(): Promise<ListItemBag[]> {
         const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
-            definedTypeGuid: props.definedTypeGuid || emptyGuid,
+            definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value,
             includeInactive: false,
         };

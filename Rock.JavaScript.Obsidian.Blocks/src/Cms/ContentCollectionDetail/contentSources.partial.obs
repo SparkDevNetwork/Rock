@@ -30,14 +30,14 @@
         <div v-else class="row">
             <div class="col-md-6">
                 <DropDownList v-if="isAddingSource"
-                              v-model="sourceSelectedEntity"
+                              v-model="sourceSelectedEntityGuidOrEmptyString"
                               :label="sourceModalEntityTitle"
                               :items="sourceEntityItems"
                               rules="required" />
             </div>
         </div>
 
-        <div class="row" v-if="sourceSelectedEntity">
+        <div class="row" v-if="sourceSelectedEntityGuidOrEmptyString">
             <div class="col-md-6">
                 <CheckBoxList v-model="sourceSelectedEntityAttributes"
                               label="Attributes to Include"
@@ -119,9 +119,10 @@
     import { ContentSourceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentCollectionDetail/contentSourceBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import Source from "./source.partial.obs";
     import { ContentCollectionCustomFieldBag } from "@Obsidian/ViewModels/Cms/contentCollectionCustomFieldBag";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         /** The collection that contains the sources to display. */
@@ -146,7 +147,7 @@
     const addSourceMenuRef = ref<HTMLElement | null>(null);
     const sourceEditBag = ref<ContentSourceBag | null>(null);
     const isSourceModalOpen = ref(false);
-    const sourceSelectedEntity = ref("");
+    const sourceSelectedEntityGuidOrEmptyString = ref<string>("");
     const sourceSelectedEntityAttributes = ref<string[]>([]);
     const sourceEntityItems = ref<ListItemBag[]>([]);
     const sourceEntityAttributeTable = ref<Record<string, ListItemBag[]>>({});
@@ -189,7 +190,7 @@
     });
 
     const sourceEntityAttributeItems = computed((): ListItemBag[] => {
-        return (sourceEntityAttributeTable.value[sourceSelectedEntity.value] ?? [])
+        return (sourceEntityAttributeTable.value[sourceSelectedEntityGuidOrEmptyString.value] ?? [])
             .map(li => {
                 return {
                     value: li.value,
@@ -246,7 +247,7 @@
         }
 
         // Set initial values to unselected.
-        sourceSelectedEntity.value = "";
+        sourceSelectedEntityGuidOrEmptyString.value = "";
         sourceSelectedEntityAttributes.value = [];
         sourceSelectedEntityOccurrences.value = null;
 
@@ -259,7 +260,7 @@
             }));
 
         sourceEntityAttributeTable.value = result.data.reduce((table, c) => {
-            table[c.guid ?? ""] = c.attributes ?? [];
+            table[c.guid] = c.attributes ?? [];
             return table;
         }, {} as Record<string, ListItemBag[]>);
 
@@ -292,7 +293,7 @@
         }
 
         // Set initial values to unselected.
-        sourceSelectedEntity.value = "";
+        sourceSelectedEntityGuidOrEmptyString.value = "";
         sourceSelectedEntityAttributes.value = [];
         sourceSelectedEntityOccurrences.value = null;
 
@@ -310,7 +311,7 @@
             }));
 
         sourceEntityAttributeTable.value = result.data.reduce((table, c) => {
-            table[c.guid ?? ""] = c.attributes ?? [];
+            table[c.guid] = c.attributes ?? [];
             return table;
         }, {} as Record<string, ListItemBag[]>);
 
@@ -334,9 +335,9 @@
         }
 
         const bag: ContentSourceBag = {
-            guid: sourceEditBag.value?.guid || emptyGuid,
-            entityTypeGuid: sourceEditBag.value.entityTypeGuid || emptyGuid,
-            entityGuid: sourceSelectedEntity.value || emptyGuid,
+            guid: toGuidOrNull(sourceEditBag.value.guid) ?? emptyGuid,
+            entityTypeGuid: toGuidOrNull(sourceEditBag.value.entityTypeGuid) ?? emptyGuid,
+            entityGuid: toGuidOrNull(sourceSelectedEntityGuidOrEmptyString.value) ?? emptyGuid,
             attributes: sourceSelectedEntityAttributes.value.map(a => ({ value: a })),
             occurrencesToShow: sourceSelectedEntityOccurrences.value ?? 0,
             customFields: sourceCustomFields.value,
@@ -370,9 +371,12 @@
             return;
         }
 
-        const data = {
+        const data: {
+            key?: string | null | undefined;
+            sourceGuid: Guid;
+        } = {
             key: props.modelValue?.idKey,
-            sourceGuid: source.guid
+            sourceGuid: toGuidOrNull(source.guid) ?? emptyGuid
         };
 
         const result = await invokeBlockAction<DetailBlockBox<ContentCollectionBag, ContentCollectionDetailOptionsBag>>("DeleteCollectionSource", data);
@@ -422,12 +426,12 @@
         }
 
         // Set initial selections in the UI.
-        sourceSelectedEntity.value = source.entityGuid ?? "";
+        sourceSelectedEntityGuidOrEmptyString.value = source.entityGuid;
         sourceSelectedEntityAttributes.value = source.attributes?.map(v => v.value ?? "") ?? [];
         sourceSelectedEntityOccurrences.value = source.occurrencesToShow > 0 ? source.occurrencesToShow : null;
 
         sourceEntityAttributeTable.value = availableContent.reduce((table, c) => {
-            table[c.guid ?? ""] = c.attributes ?? [];
+            table[c.guid] = c.attributes ?? [];
             return table;
         }, {} as Record<string, ListItemBag[]>);
 
@@ -446,10 +450,10 @@
      * @param beforeValue The value it was placed before or null if end of list.
      */
     async function onSourceReorder(value: ContentSourceBag, beforeValue: ContentSourceBag | null): Promise<void> {
-        const data = {
+        const data: { key?: string | null | undefined; guid: Guid; beforeGuid?: Guid | null | undefined; } = {
             key: props.modelValue?.idKey,
-            guid: value.guid,
-            beforeGuid: beforeValue?.guid ?? null
+            guid: toGuidOrNull(value?.guid) ?? emptyGuid,
+            beforeGuid: toGuidOrNull(beforeValue?.guid),
         };
 
         const result = await invokeBlockAction("ReorderSource", data);

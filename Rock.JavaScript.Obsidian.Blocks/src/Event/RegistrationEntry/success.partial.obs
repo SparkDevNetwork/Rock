@@ -19,6 +19,7 @@
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
     import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm.obs";
     import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
 
@@ -36,7 +37,7 @@
 
     /** The financial gateway record's guid */
     const gatewayGuid = computed<Guid | null>(() => {
-        return registrationEntryState.viewModel.gatewayGuid ?? null;
+        return toGuidOrNull(registrationEntryState.viewModel.gatewayGuid);
     });
 
     /** The transaction code that can be used to create a saved account */

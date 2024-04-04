@@ -99,8 +99,9 @@
     import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
     import { ScheduleRowBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/scheduleRowBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -143,7 +144,8 @@
     const addToCalendarButton = ref<HTMLElement | null>(null);
     const copyCalendarLinkButton = ref<HTMLElement | null>(null);
 
-    const selectedPersonGuid = inject(SelectedPersonGuid, ref(""));
+    /** The selected person guid (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
 
     const isLoadingCurrentSchedule = useVModelPassthrough(props, "isLoadingCurrentSchedule", emit);
     const blockActionErrorMessage = ref("");
@@ -178,9 +180,13 @@
         isLoadingCurrentSchedule.value = true;
         blockActionErrorMessage.value = "";
 
-        const result = await invokeBlockAction<CurrentScheduleBag>("GetCurrentSchedule", {
-            selectedPersonGuid: selectedPersonGuid.value || emptyGuid
-        });
+        const request: {
+            selectedPersonGuid: Guid;
+        } = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction<CurrentScheduleBag>("GetCurrentSchedule", request);
         isLoadingCurrentSchedule.value = false;
 
         if (!result.isSuccess) {
@@ -303,8 +309,8 @@
 
     // #region Watchers
 
-    watch(selectedPersonGuid, () => {
-        if (selectedPersonGuid.value) {
+    watch(selectedPersonGuidOrEmptyString, () => {
+        if (selectedPersonGuidOrEmptyString.value) {
             getCurrentSchedule();
         }
     });

@@ -87,7 +87,8 @@
     import { PrayerRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestBag";
     import { PrayerRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailOptionsBag";
     import { PrayerRequestDetailAddPersonResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailAddPersonResponseBag";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -181,9 +182,13 @@
      * Event handler for the "Add Person As" person being selected.
      */
     async function updatePersonName(personPickerSelection: ListItemBag | undefined): Promise<void> {
-        var result = await invokeBlockAction<PrayerRequestDetailAddPersonResponseBag>("GetPersonName", {
-            personAliasGuid: (personPickerSelection as ListItemBag)?.value || emptyGuid
-        });
+        const request: {
+            personAliasGuid: Guid;
+        } = {
+            personAliasGuid: toGuidOrNull((personPickerSelection as ListItemBag)?.value) ?? emptyGuid,
+        };
+
+        const result = await invokeBlockAction<PrayerRequestDetailAddPersonResponseBag>("GetPersonName", request);
         firstName.value = result?.data?.nickName ?? "";
         lastName.value = result?.data?.lastName ?? "";
         email.value = result?.data?.email ?? "";

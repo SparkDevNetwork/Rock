@@ -64,7 +64,7 @@
 
                 <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="interactionComponentInteractionChannel" showBlankItem />
 
-                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntity" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" showBlankItem />
+                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntity" :interactionChannelGuid="toGuidOrNull(interactionComponentInteractionChannel?.value)" showBlankItem />
 
                 <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == StreakStructureType.InteractionMedium" v-model="structureEntity" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
 
@@ -117,6 +117,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { StreakOccurrenceFrequency, StreakOccurrenceFrequencyDescription } from "@Obsidian/Enums/Engagement/streakOccurrenceFrequency";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -150,7 +151,7 @@
     const structureType = propertyRef(props.modelValue?.structureType?.toString() ?? "None", "StructureType");
     const structureEntity = propertyRef(props.modelValue?.structureEntity ?? {}, "StructureEntity");
     const includeChildAccounts = propertyRef(props.modelValue?.includeChildAccounts ?? {}, "IncludeChildAccounts");
-    const interactionComponentInteractionChannel = ref(props.modelValue?.interactionComponentInteractionChannel);
+    const interactionComponentInteractionChannel = ref<ListItemBag | null | undefined>(props.modelValue?.interactionComponentInteractionChannel);
     const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
     const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
 

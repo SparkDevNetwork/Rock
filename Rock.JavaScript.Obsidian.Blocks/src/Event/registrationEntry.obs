@@ -107,7 +107,7 @@
     }
     else if (config.session && !config.startAtBeginning) {
         // This is an existing registration, start at the summary
-        initialStep = steps.review; // TODO JMH Here.
+        initialStep = steps.review;
     }
     else if (config.maxRegistrants === 1 && isNullOrWhiteSpace(config.instructionsHtml)) {
         // There is no need to show the number of registrants selector or instructions. Start at the second page.

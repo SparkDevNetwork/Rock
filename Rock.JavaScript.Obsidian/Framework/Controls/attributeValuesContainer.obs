@@ -13,7 +13,7 @@
 
             <TabbedContent v-else-if="actuallyDisplayAsTabs" :tabs="attributeCategoryNames">
                 <template #tabpane="{ item }">
-                    <div v-for="a in getCategoryAttributes(item)" :key="a.attributeGuid!">
+                    <div v-for="a in getCategoryAttributes(item)" :key="a.attributeGuid">
                         <RockField :isEditMode="isEditMode"
                                    :attribute="a"
                                    :modelValue="values[a.key!]"
@@ -26,12 +26,12 @@
 
             <template v-else>
                 <div v-for="cat in attributeCategories" key="cat.guid">
-                    <h4 v-if="showCategoryLabel && cat.guid == emptyGuid && !isEditMode">{{ defaultCategoryHeading }}</h4>
-                    <h4 v-else-if="showCategoryLabel && cat.guid != emptyGuid">{{ cat.name }}</h4>
+                    <h4 v-if="showCategoryLabel && areEqual(cat.guid, emptyGuid) && !isEditMode">{{ defaultCategoryHeading }}</h4>
+                    <h4 v-else-if="showCategoryLabel && !areEqual(cat.guid, emptyGuid)">{{ cat.name }}</h4>
 
                     <div :class="{ 'attribute-value-container-display': true, 'row': numberOfColumns > 1 }">
-                        <ItemsWithPreAndPostHtml :items="prePostHtmlItems[cat.guid!]" v-if="isEditMode && showPrePostHtml">
-                            <template v-slot:[a.attributeGuid!] v-for="a in cat.attributes" :key="a.attributeGuid ?? ''">
+                        <ItemsWithPreAndPostHtml :items="prePostHtmlItems[cat.guid]" v-if="isEditMode && showPrePostHtml">
+                            <template v-slot:[a.attributeGuid] v-for="a in cat.attributes" :key="a.attributeGuid">
                                 <RockField :isEditMode="isEditMode"
                                            :attribute="a"
                                            :modelValue="values[a.key!]"
@@ -68,7 +68,7 @@
     import TabbedContent from "./tabbedContent.obs";
     import RockField from "./rockField.obs";
     import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import ItemsWithPreAndPostHtml from "./itemsWithPreAndPostHtml.obs";
     import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
     import { Guid } from "@Obsidian/Types";
@@ -175,10 +175,16 @@
             }
 
             if (attr.categories && attr.categories.length > 0) {
-                const categories = [...attr.categories] as PublicAttributeCategoryBag[]; // copy, so sort doesn't cause updates
+                // Copy so sort doesn't cause updates.
+                const categories: PublicAttributeCategoryBag[] = [
+                    ...attr.categories,
+                ];
 
                 categories.sort((a, b) => a.order - b.order).forEach((cat, i) => {
-                    const newCat: CategorizedAttributes = { attributes: [], ...cat }; // copy and convert to CategorizedAttributes
+                    const newCat: CategorizedAttributes = {
+                        attributes: [],
+                        ...cat
+                    }; // copy and convert to CategorizedAttributes
 
                     // Make sure we only have 1 copy of any category in the list
                     if (!categoryList.some(oldCat => oldCat.guid == newCat.guid)) {
@@ -259,7 +265,7 @@
         const items: Record<Guid, ItemWithPreAndPostHtml[]> = {};
 
         attributeCategories.value.forEach((ac) => {
-            items[ac.guid ?? emptyGuid] = items[ac.guid ?? emptyGuid] || [];
+            items[ac.guid] = items[ac.guid] || [];
 
             ac.attributes.forEach(attr => {
                 let preHtml = attr.preHtml ?? "";
@@ -270,8 +276,8 @@
                     postHtml += "</div>";
                 }
 
-                items[ac.guid ?? emptyGuid].push({
-                    slotName: attr.attributeGuid ?? "",
+                items[ac.guid].push({
+                    slotName: attr.attributeGuid,
                     preHtml,
                     postHtml
                 });

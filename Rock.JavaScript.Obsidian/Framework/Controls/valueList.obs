@@ -34,7 +34,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     export type ValueItem = {
         value: string;
@@ -134,7 +134,7 @@
 
     async function loadDefinedValues(): Promise<void> {
         const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
-            definedTypeGuid: props.definedTypeGuid || emptyGuid,
+            definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value,
             includeInactive: false,
         };
