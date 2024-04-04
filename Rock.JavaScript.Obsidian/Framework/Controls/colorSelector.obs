@@ -33,11 +33,9 @@
     import { computed, PropType, ref } from "vue";
     import RockFormField from "./rockFormField.obs";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
-    import { Guid } from "@Obsidian/Types";
     import { standardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
     import { normalizeRules } from "@Obsidian/ValidationRules";
-    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     type ColorItem = {
         hasValue: boolean;
@@ -231,8 +229,8 @@
     }
 
     /** Returns a unique ID for an item. */
-    function uniqueIdForItem(uniqueId: Guid, item: ColorItem): string {
-        return `${toGuidOrNull(uniqueId) ?? emptyGuid}-${(item.rawColor).replace("#", "").replace(" ", "-")}`;
+    function uniqueIdForItem(uniqueId: string, item: ColorItem): string {
+        return `${uniqueId}-${(item.rawColor).replace("#", "").replace(" ", "-")}`;
     }
 
     /** Validates a hex color value. */

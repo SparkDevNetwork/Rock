@@ -29,12 +29,10 @@
 </template>
 
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
@@ -120,10 +118,10 @@
         return item.category === "disabled" || props.disabled;
     }
 
-    const getItemUniqueId = (uniqueId: Guid, item: ListItemBag): string => {
+    const getItemUniqueId = (uniqueId: string, item: ListItemBag): string => {
         const key = (item.value ?? "").replace(" ", "-");
 
-        return `${toGuidOrNull(uniqueId) ?? emptyGuid}-${key}`;
+        return `${uniqueId}-${key}`;
     };
 
     const syncInternalValue = (): void => {
