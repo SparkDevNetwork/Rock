@@ -149,6 +149,8 @@ namespace Rock.Utility.SparkDataApi
         /// <returns></returns>
         public static string ScrubWhiteSpaceAndPunctuation( this string input )
         {
+            input = input ?? string.Empty;
+
             // Substitute any whitespace (including multiple characters) for a single space.
             var output = Regex.Replace( input, @"\s+", " " );
 
@@ -156,10 +158,10 @@ namespace Rock.Utility.SparkDataApi
             output = output.Trim();
 
             // Replace special dashes with a standard hyphen.
-            output = Regex.Replace( output, @"\p{Pd}", " -" );
+            output = Regex.Replace( output, @"\p{Pd}", "-" );
 
-            // Replace backslahses with a forward slash.
-            output = Regex.Replace( output, @"\\", " /" );
+            // Replace backslashes with a forward slash.
+            output = Regex.Replace( output, @"\\", "/" );
 
             return output;
         }
