@@ -84,16 +84,17 @@ export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null,
 }
 
 export function getRegistrantBasicInfo(registrant: RegistrantBag, registrantForms: RegistrationEntryFormBag[]): RegistrantBasicInfo {
+    // TODO Should Guids here be enforced?
     const fields = registrantForms?.reduce((acc, f) => acc.concat(f.fields ?? []), [] as RegistrationEntryFormFieldBag[]) || [];
 
-    const firstNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
-    const lastNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
-    const emailGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.Email && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
+    const firstNameGuidOrEmptyString = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
+    const lastNameGuidOrEmptyString = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
+    const emailGuidOrEmptyString = fields.find(f => f.personFieldType === RegistrationPersonFieldType.Email && f.fieldSource === RegistrationFieldSource.PersonField)?.guid || "";
 
     return {
-        firstName: (registrant?.fieldValues?.[firstNameGuid] || "") as string,
-        lastName: (registrant?.fieldValues?.[lastNameGuid] || "") as string,
-        email: (registrant?.fieldValues?.[emailGuid] || "") as string,
+        firstName: (registrant?.fieldValues?.[firstNameGuidOrEmptyString] || "") as string,
+        lastName: (registrant?.fieldValues?.[lastNameGuidOrEmptyString] || "") as string,
+        email: (registrant?.fieldValues?.[emailGuidOrEmptyString] || "") as string,
         guid: registrant?.guid || ""
     };
 }

@@ -4,12 +4,12 @@
                    formGroupClasses="color-selector"
                    :label="label"
                    name="color-selector"
-                   :rules="internalRules" >
-        <template #default="{uniqueId}">
+                   :rules="internalRules">
+        <template #default="{ uniqueId }">
             <div class="control-wrapper">
                 <div class="color-selector-items" ref="colorSelectorElement">
                     <div v-for="item in internalItemsForDisplay" :class="['color-selector-item-container form-control-group', isChecked(item) ? 'checked' : '']">
-                        <label :class="['color-selector-item', isChecked(item) ?  'checked' : '', isCamouflaged(item) ? getCamouflagedClass(item) : '']"
+                        <label :class="['color-selector-item', isChecked(item) ? 'checked' : '', isCamouflaged(item) ? getCamouflagedClass(item) : '']"
                                :for="uniqueIdForItem(uniqueId, item)"
                                :style="{ backgroundColor: item.isValidHexValue ? item.rawColor : undefined }">
                             <input v-model="internalValue"
@@ -37,6 +37,7 @@
     import { standardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
     import { normalizeRules } from "@Obsidian/ValidationRules";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     type ColorItem = {
         hasValue: boolean;
@@ -231,7 +232,7 @@
 
     /** Returns a unique ID for an item. */
     function uniqueIdForItem(uniqueId: Guid, item: ColorItem): string {
-        return `${uniqueId}-${(item.rawColor).replace("#", "").replace(" ", "-")}`;
+        return `${toGuidOrNull(uniqueId) ?? emptyGuid}-${(item.rawColor).replace("#", "").replace(" ", "-")}`;
     }
 
     /** Validates a hex color value. */

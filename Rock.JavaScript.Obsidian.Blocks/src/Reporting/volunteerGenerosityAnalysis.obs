@@ -431,15 +431,15 @@
         if (diffInSeconds < 60) {
             timeDiffStr += `${diffInSeconds} seconds ago`;
         }
- else if (diffInSeconds < 3600) { // Less than 1 hour
+        else if (diffInSeconds < 3600) { // Less than 1 hour
             const minutes = Math.floor(diffInSeconds / 60);
             timeDiffStr += `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
         }
- else if (diffInSeconds < 86400) { // Less than 1 day
+        else if (diffInSeconds < 86400) { // Less than 1 day
             const hours = Math.floor(diffInSeconds / 3600);
             timeDiffStr += `${hours} hour${hours > 1 ? "s" : ""} ago`;
         }
- else {
+        else {
             const days = Math.floor(diffInSeconds / 86400);
             timeDiffStr += `${days} day${days > 1 ? "s" : ""} ago`;
         }

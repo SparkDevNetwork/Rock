@@ -6,7 +6,7 @@
                 <DefinedValuePicker v-if="shouldGetNameFromDefinedType"
                         v-model="definedValueName"
                         label="Name"
-                        :definedTypeGuid="props.options.batchNameDefinedTypeGuid ?? ''" />
+                        :definedTypeGuid="toGuidOrNull(props.options.batchNameDefinedTypeGuid) ?? emptyGuid" />
                 <TextBox v-else v-model="name"
                          label="Name"
                          rules="required"
@@ -72,6 +72,7 @@
     import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
     import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -119,7 +120,7 @@
 
     // #region Computed Values
     const isStatusClosed = computed((): boolean => props.modelValue.status == 2);
-    const shouldGetNameFromDefinedType = computed((): boolean => props.modelValue.id == 0 && props.options.batchNameDefinedTypeGuid != "");
+    const shouldGetNameFromDefinedType = computed((): boolean => props.modelValue.id == 0 && !!toGuidOrNull(props.options.batchNameDefinedTypeGuid));
 
     // #endregion
 

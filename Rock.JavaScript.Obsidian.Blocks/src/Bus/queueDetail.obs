@@ -9,7 +9,7 @@
                  :name="panelName"
                  :labels="blockLabels"
                  entityTypeName="Queue"
-                 entityTypeGuid=""
+                 :entityTypeGuid="emptyGuid"
                  :entityKey="entityKey"
                  :isAuditHidden="true"
                  :isBadgesVisible="true"
@@ -44,6 +44,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { QueueBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueBag";
     import { QueueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueDetail/queueDetailOptionsBag";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<DetailBlockBox<QueueBag, QueueDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();

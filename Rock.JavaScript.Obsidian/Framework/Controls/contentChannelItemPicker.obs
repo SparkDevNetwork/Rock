@@ -30,7 +30,7 @@
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockFormField from "./rockFormField.obs";
     import { Guid } from "@Obsidian/Types";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ContentChannelItemPickerGetContentChannelItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetContentChannelItemsOptionsBag";
     import { ContentChannelItemPickerGetAllForContentChannelItemOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemOptionsBag";
     import { ContentChannelItemPickerGetAllForContentChannelItemResultsBag } from "@Obsidian/ViewModels/Rest/Controls/contentChannelItemPickerGetAllForContentChannelItemResultsBag";
@@ -42,7 +42,7 @@
         },
 
         excludeContentChannelItems: {
-            type: Array as PropType<Guid[]>
+            type: Array as PropType<Guid[] | undefined>
         },
 
         /** If you specify the channel, the channel picker will be hidden and we'll just show CC Items for this type */
@@ -74,8 +74,8 @@
 
     // #region Computed
 
-    const contentChannelGuidValue = computed(() => {
-        return props.contentChannelGuid || internalChannelValue.value?.value || null;
+    const contentChannelGuidValue = computed<Guid | null>(() => {
+        return toGuidOrNull(props.contentChannelGuid) ?? toGuidOrNull(internalChannelValue.value?.value);
     });
 
     // #endregion
@@ -124,12 +124,14 @@
      * Loads the content channel items from the server.
      */
     async function loadContentChannelItemOptions(): Promise<ListItemBag[]> {
-        if (!contentChannelGuidValue.value) {
+        const contentChannelGuid = toGuidOrNull(contentChannelGuidValue.value);
+
+        if (!contentChannelGuid || areEqual(contentChannelGuid, emptyGuid)) {
             return [];
         }
 
         const options: ContentChannelItemPickerGetContentChannelItemsOptionsBag = {
-            contentChannelGuid: contentChannelGuidValue.value || emptyGuid,
+            contentChannelGuid,
             excludeContentChannelItems: props.excludeContentChannelItems
         };
 
@@ -152,7 +154,7 @@
      */
     async function loadContentChannelItemOptionsFromValue(): Promise<void> {
         const options: ContentChannelItemPickerGetAllForContentChannelItemOptionsBag = {
-            contentChannelItemGuid: props.modelValue?.value || emptyGuid,
+            contentChannelItemGuid: toGuidOrNull(props.modelValue?.value) || emptyGuid,
             excludeContentChannelItems: props.excludeContentChannelItems
         };
 
@@ -206,5 +208,5 @@
         loadContentChannelItemOptions();
     }
 
-                            // #endregion
+    // #endregion
 </script>

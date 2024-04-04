@@ -45,8 +45,8 @@
     import { SaveFinancialAccountFormSaveAccountOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountOptionsBag";
     import { SaveFinancialAccountFormSaveAccountResultBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountResultBag";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const store = useStore();
 
@@ -112,7 +112,7 @@
         isLoading.value = true;
 
         const options: SaveFinancialAccountFormSaveAccountOptionsBag = {
-            gatewayGuid: props.gatewayGuid || emptyGuid,
+            gatewayGuid: toGuidOrNull(props.gatewayGuid) ?? emptyGuid,
             password: password.value,
             savedAccountName: savedAccountName.value,
             transactionCode: props.transactionCode,

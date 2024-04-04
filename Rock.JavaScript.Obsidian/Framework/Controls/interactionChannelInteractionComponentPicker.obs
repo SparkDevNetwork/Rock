@@ -33,7 +33,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
 
     const props = defineProps({
@@ -66,8 +66,8 @@
     const securityGrantToken = useSecurityGrantToken();
     const http = useHttp();
 
-    const internalChannelGuid = computed(() => {
-        return (props.defaultInteractionChannelGuid || internalChannelValue.value?.value) ?? "";
+    const internalChannelGuid = computed<Guid | null>(() => {
+        return toGuidOrNull(props.defaultInteractionChannelGuid) ?? toGuidOrNull(internalChannelValue.value?.value);
     });
     let skipWatcher = false;
 
@@ -106,7 +106,7 @@
 
     async function getChannelFromComponent(): Promise<void> {
         const options: InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag = {
-            interactionComponentGuid: props.modelValue?.value || emptyGuid,
+            interactionComponentGuid: toGuidOrNull(props.modelValue?.value) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value
         };
 

@@ -53,7 +53,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -68,7 +68,7 @@
         },
 
         definedTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null | undefined>,
             required: false
         },
 
@@ -95,7 +95,7 @@
 
     async function loadItems(): Promise<ListItemBag[]> {
         const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
-            definedTypeGuid: props.definedTypeGuid || emptyGuid,
+            definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value,
             includeInactive: false,
         };
@@ -139,7 +139,7 @@
             saveError.value = false;
 
             const options: DefinedValuePickerGetAttributesOptionsBag = {
-                definedTypeGuid: props.definedTypeGuid || emptyGuid,
+                definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
                 securityGrantToken: securityGrantToken.value
             };
             const url = "/api/v2/Controls/DefinedValuePickerGetAttributes";
@@ -171,7 +171,7 @@
         saveError.value = false;
 
         const options: DefinedValuePickerSaveNewValueOptionsBag = {
-            definedTypeGuid: props.definedTypeGuid || emptyGuid,
+            definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value,
             value: newValue.value,
             description: newDescription.value,

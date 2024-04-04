@@ -85,6 +85,7 @@
     import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
     import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const http = useHttp();
     const baseApiUrl = "/api/Attendances";
@@ -137,7 +138,7 @@
     });
 
     const unassignedResourceCountGuid = computed((): Guid | null | undefined => {
-        return props.unassignedResourceCount?.guid;
+        return toGuidOrNull(props.unassignedResourceCount?.guid);
     });
 
     const occurrenceDate = computed((): string => {

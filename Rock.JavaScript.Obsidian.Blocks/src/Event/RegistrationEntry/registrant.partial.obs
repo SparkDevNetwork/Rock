@@ -77,7 +77,7 @@
     import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import StringFilter from "@Obsidian/Utility/stringUtils";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
     import { RegistrationEntryFamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFamilyMemberBag";
@@ -88,6 +88,7 @@
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
     import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
+    import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
 
     const props = defineProps({
         currentRegistrant: {
@@ -407,10 +408,14 @@
             isNextDisabled.value = true;
 
             try {
-                const result = await invokeBlockAction("GetSignatureDocumentData", {
+                const request: {
+                    args: RegistrationEntryArgsBag;
+                    registrantGuid: Guid;
+                } = {
                     args: getRegistrationEntryBlockArgs(),
-                    registrantGuid: props.currentRegistrant.guid
-                });
+                    registrantGuid: toGuidOrNull(props.currentRegistrant.guid) ?? emptyGuid
+                };
+                const result = await invokeBlockAction("GetSignatureDocumentData", request);
 
                 if (result.isSuccess && result.data) {
                     const data = (result.data as Record<string, string>);
@@ -496,13 +501,21 @@
         // Send all the signed document information to the server. This will
         // prepare the final signed document data that will be later sent
         // when we complete the registration.
-        const result = await invokeBlockAction<string>("SignDocument", {
+        const request: {
+            args: RegistrationEntryArgsBag | null | undefined;
+            registrantGuid: Guid;
+            documentHtml: string | null | undefined;
+            securityToken: string | null | undefined;
+            signature: ElectronicSignatureValue | null | undefined;
+        } = {
             args: getRegistrationEntryBlockArgs(),
-            registrantGuid: props.currentRegistrant.guid,
+            registrantGuid: toGuidOrNull(props.currentRegistrant.guid) ?? emptyGuid,
             documentHtml: signatureSource.value,
             securityToken: signatureToken.value,
             signature: signatureData.value
-        });
+        };
+
+        const result = await invokeBlockAction<string>("SignDocument", request);
 
         if (result.isSuccess && result.data) {
             // Store the signed document data on the registrant.
@@ -564,11 +577,17 @@
     }
 
     async function getFieldValues(): Promise<void> {
-        const result = await invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", {
+        const request: {
+            args: RegistrationEntryArgsBag | null | undefined;
+            forms: RegistrationEntryFormBag[] | null | undefined;
+            registrantGuid: Guid;
+        } = {
             args: getRegistrationEntryBlockArgs(),
             forms: viewModel.value.registrantForms,
-            registrantGuid: props.currentRegistrant.guid
-        });
+            registrantGuid: toGuidOrNull(props.currentRegistrant.guid) ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", request);
 
         if (result.isSuccess && result.data && viewModel.value.registrantForms) {
             if (!props.currentRegistrant.fieldValues) {
@@ -624,7 +643,7 @@
             guid = guid[0];
         }
 
-        if (guid !== props.currentRegistrant.personGuid) {
+        if (!areEqual(guid, props.currentRegistrant.personGuid)) {
             props.currentRegistrant.personGuid = guid;
 
             if (familyMember.value) {

@@ -47,7 +47,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import * as Dialogs from "@Obsidian/Utility/dialogs";
 
@@ -74,7 +74,7 @@
          * List of GUIDs of pages to hide from the list
          */
         hidePageGuids: {
-            type: Array as PropType<Guid[]>,
+            type: Array as PropType<Guid[] | undefined>,
             required: false
         },
 
@@ -177,7 +177,7 @@
         }
 
         const options: PagePickerGetPageNameOptionsBag = {
-            pageGuid: pageGuid || emptyGuid,
+            pageGuid: toGuidOrNull(pageGuid) ?? emptyGuid,
             securityGrantToken: props.securityGrantToken
         };
         const response = await http.post<string>("/api/v2/Controls/PagePickerGetPageName", {}, options);
@@ -288,7 +288,7 @@
         }
 
         const options: PagePickerGetPageRoutesOptionsBag = {
-            pageGuid: (internalPageValue.value as ListItemBag)?.value || emptyGuid
+            pageGuid: toGuidOrNull((internalPageValue.value as ListItemBag)?.value) ?? emptyGuid,
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/PagePickerGetPageRoutes", undefined, options);
 

@@ -34,6 +34,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
     import { updateRefValue } from "@Obsidian/Utility/component";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
@@ -122,7 +123,7 @@
     const getItemUniqueId = (uniqueId: Guid, item: ListItemBag): string => {
         const key = (item.value ?? "").replace(" ", "-");
 
-        return `${uniqueId}-${key}`;
+        return `${toGuidOrNull(uniqueId) ?? emptyGuid}-${key}`;
     };
 
     const syncInternalValue = (): void => {

@@ -23,6 +23,8 @@ import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ConfigurationValueKey } from "./groupMemberField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
+import { Guid } from "@Obsidian/Types";
 
 export const EditComponent = defineComponent({
     name: "GroupMemberField.Edit",
@@ -40,8 +42,9 @@ export const EditComponent = defineComponent({
             internalValue.value = JSON.parse(props.modelValue || "{}");
         }, { immediate: true });
 
-        const groupValue = computed((): ListItemBag => {
-            return JSON.parse(props.configurationValues[ConfigurationValueKey.Group] || "{}");
+        const groupGuid = computed<Guid | null>(() => {
+            const groupListItemBag: ListItemBag | null = JSON.parse(props.configurationValues[ConfigurationValueKey.Group] || "{}") as ListItemBag;
+            return toGuidOrNull(groupListItemBag?.value);
         });
 
         const allowMultipleValues = computed((): boolean => {
@@ -58,7 +61,7 @@ export const EditComponent = defineComponent({
 
         return {
             internalValue,
-            groupValue,
+            groupGuid,
             allowMultipleValues,
             enhanceForLongLists
         };
@@ -66,7 +69,7 @@ export const EditComponent = defineComponent({
 
     template: `
     <GroupMemberPicker v-model="internalValue"
-        :groupGuid="groupValue.value"
+        :groupGuid="groupGuid"
         :multiple="allowMultipleValues"
         :enhanceForLongLists="enhanceForLongLists"
         showBlankItem="true"/>

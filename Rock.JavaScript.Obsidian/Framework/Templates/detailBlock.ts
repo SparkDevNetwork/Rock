@@ -36,7 +36,7 @@ import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
-import { emptyGuid } from "@Obsidian/Utility/guid";
+import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -471,14 +471,18 @@ export default defineComponent({
          * this detail block.
          */
         const getEntityFollowedState = async (): Promise<void> => {
+            const entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
+
             // If we don't have an entity then mark the state as "unknown".
-            if (!props.entityTypeGuid || !props.entityKey) {
+            if (!entityTypeGuid
+                || areEqual(props.entityTypeGuid, emptyGuid)
+                || !props.entityKey) {
                 isEntityFollowed.value = null;
                 return;
             }
 
             const data: FollowingGetFollowingOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid || emptyGuid,
+                entityTypeGuid,
                 entityKey: props.entityKey
             };
 
@@ -699,13 +703,18 @@ export default defineComponent({
          * toggle the followed state of the entity.
          */
         const onFollowClick = async (): Promise<void> => {
+            const entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
+
             // Shouldn't really happen, but just make sure we have everything.
-            if (isEntityFollowed.value === null || !props.entityTypeGuid || !props.entityKey) {
+            if (isEntityFollowed.value === null
+                || !entityTypeGuid
+                || areEqual(entityTypeGuid, emptyGuid)
+                || !props.entityKey) {
                 return;
             }
 
             const data: FollowingSetFollowingOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid || emptyGuid,
+                entityTypeGuid,
                 entityKey: props.entityKey,
                 isFollowing: !isEntityFollowed.value
             };

@@ -35,6 +35,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -83,7 +84,7 @@
     const valueForItem = (item: ListItemBag): string => item.value ?? "";
     const textForItem = (item: ListItemBag): string => item.text ?? "";
 
-    const uniqueIdForItem = (uniqueId: Guid, item: ListItemBag): string => `${uniqueId}-${(item.value ?? "").replace(" ", "-")}`;
+    const uniqueIdForItem = (uniqueId: Guid, item: ListItemBag): string => `${toGuidOrNull(uniqueId) ?? emptyGuid}-${(item.value ?? "").replace(" ", "-")}`;
 
     const containerClasses = computed(() => {
         const classes: string[] = [];

@@ -21,7 +21,9 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+    import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
 
     type CheckDiscountCodeResult = {
         discountCode: string;
@@ -80,12 +82,19 @@ import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/
     async function tryDiscountCode(isAutoApply: boolean): Promise<void> {
         loading.value = true;
         try {
-            const result = await invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", {
+            const request: {
+                code: string | null | undefined;
+                registrantCount: number;
+                registrationGuid: Guid | null | undefined;
+                isAutoApply: boolean;
+            } = {
                 code: discountCodeInput.value,
                 registrantCount: registrationEntryState.registrants.length,
-                registrationGuid: config.value.session?.registrationGuid ?? null,
+                registrationGuid: toGuidOrNull(config.value.session?.registrationGuid),
                 isAutoApply: isAutoApply ?? false
-            });
+            };
+
+            const result = await invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", request);
 
             if (result.isError || !result.data) {
                 if (!isAutoApply) {

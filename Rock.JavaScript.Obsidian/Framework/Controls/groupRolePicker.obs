@@ -27,7 +27,7 @@
     import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleOptionsBag";
     import { GroupRolePickerGetAllForGroupRoleResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetAllForGroupRoleResultsBag";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -36,7 +36,7 @@
         },
 
         excludeGroupRoles: {
-            type: Array as PropType<Guid[]>
+            type: Array as PropType<Guid[] | undefined>
         },
 
         /** If you specify the group type, the group type picker will be hidden and we'll just show roles for this type */
@@ -67,8 +67,8 @@
 
     // #region Computed
 
-    const groupTypeGuidValue = computed(() => {
-        return props.groupTypeGuid || internalTypeValue.value?.value || null;
+    const groupTypeGuidValue = computed<Guid | null>(() => {
+        return toGuidOrNull(props.groupTypeGuid) ?? toGuidOrNull(internalTypeValue.value?.value);
     });
     const roleLabel = computed(() => {
         // If group type is given, use the label prop
@@ -126,12 +126,14 @@
      * Loads the group role items from the server.
      */
     async function loadRoleOptions(): Promise<ListItemBag[]> {
-        if (!groupTypeGuidValue.value) {
+        const groupTypeGuid = toGuidOrNull(groupTypeGuidValue.value);
+
+        if (!groupTypeGuid || areEqual(groupTypeGuid, emptyGuid)) {
             return [];
         }
 
         const options: GroupRolePickerGetGroupRolesOptionsBag = {
-            groupTypeGuid: groupTypeGuidValue.value || emptyGuid,
+            groupTypeGuid,
             excludeGroupRoles: props.excludeGroupRoles
         };
 
@@ -153,13 +155,15 @@
      * Gets all the data needed to fill in the pickers when we're given a value to start
      */
     async function loadRoleOptionsFromValue(): Promise<void> {
-        if (!props.modelValue?.value) {
+        const groupRoleGuid = toGuidOrNull(props.modelValue?.value);
+
+        if (!groupRoleGuid || areEqual(groupRoleGuid, emptyGuid)) {
             loadedRoleItems.value = [];
             return;
         }
 
         const options: GroupRolePickerGetAllForGroupRoleOptionsBag = {
-            groupRoleGuid: props.modelValue.value || emptyGuid,
+            groupRoleGuid,
             excludeGroupRoles: props.excludeGroupRoles
         };
 

@@ -30,6 +30,7 @@
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -62,7 +63,7 @@
 
     const internalValue = ref([...props.modelValue]);
     const formFieldProps = useStandardRockFormFieldProps(props);
-    const uniqueIdForItem = (uniqueId: Guid, item: KeyValueItem): string => `${uniqueId}-${(item.key ?? "").replace(" ", "-")}`;
+    const uniqueIdForItem = (uniqueId: Guid, item: KeyValueItem): string => `${toGuidOrNull(uniqueId) ?? emptyGuid}-${(item.key ?? "").replace(" ", "-")}`;
 
     const valueForItem = (item: KeyValueItem): string => item.value ?? "";
     const cssClasses = (value: string[], item: KeyValueItem): string => {
