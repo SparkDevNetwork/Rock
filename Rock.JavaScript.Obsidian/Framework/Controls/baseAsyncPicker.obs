@@ -90,7 +90,7 @@
      */
     function modelValueToInternalValue(value: ListItemBag | ListItemBag[] | undefined | null, isMultiple: boolean): string | string[] {
         if (value === undefined || value === null) {
-            if (isMultiple && !isRadioButtonListStyle.value) {
+            if (isMultiple && !isRadioButtonListStyle?.value) {
                 return [];
             }
             else {
@@ -100,7 +100,7 @@
         else if (Array.isArray(value)) {
             const valuesAsStrings = value.map(v => v.value ?? "");
 
-            if (isMultiple && !isRadioButtonListStyle.value) {
+            if (isMultiple && !isRadioButtonListStyle?.value) {
                 return valuesAsStrings;
             }
             else {
