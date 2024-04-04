@@ -139,6 +139,7 @@
     <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeDetailOptionsBag.cs" />
+	<Compile Include="Blocks\Core\ScheduledJobList\ScheduledJobListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
     <Compile Include="Blocks\Cms\LavaShortcodeDetail\LavaShortcodeBag.cs" />
