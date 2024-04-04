@@ -22,11 +22,11 @@
         <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource" :disabled="disabled">
             <template #inputGroupAppend v-if="allowAdd">
                 <span class="input-group-btn">
-                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    <RockButton @click="showAddForm" :disabled="!isAddAllowed" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
                 </span>
             </template>
             <template #append="{ isInputGroupSupported }" v-if="allowAdd">
-                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :btnType="BtnType.Link">Add Item</RockButton>
+                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :disabled="!isAddAllowed" :btnType="BtnType.Link">Add Item</RockButton>
             </template>
         </BaseAsyncPicker>
     </template>
@@ -41,7 +41,7 @@
     import { DefinedValuePickerSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerSaveNewValueOptionsBag";
     import { DefinedValuePickerGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetAttributesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockLabel from "./rockLabel.obs";
     import RockForm from "./rockForm.obs";
@@ -128,8 +128,13 @@
     const fetchError = ref<false | string>(false);
     const saveError = ref<false | string>(false);
 
+    const isAddAllowed = computed<boolean>(() => {
+        // Only allow adding if the defined type guid is valid.
+        return props.allowAdd && !!toGuidOrNull(props.definedTypeGuid);
+    });
+
     async function showAddForm(): Promise<void> {
-        if (!props.allowAdd) return;
+        if (!isAddAllowed.value) return;
 
         isShowingAddForm.value = true;
 
