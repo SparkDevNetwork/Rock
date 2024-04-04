@@ -4388,10 +4388,14 @@ const stepProgramStepTypePickerGallery = defineComponent({
         CheckBox,
     },
     setup() {
+        const defaultProgram = ref<ListItemBag>({});
+        const defaultProgramGuid = computed<Guid | null>(() => toGuidOrNull(defaultProgram.value?.value));
+
         return {
             value: ref({}),
             stepProgram: ref({}),
-            defaultProgramGuid: ref<Guid | null>(null),
+            defaultProgram,
+            defaultProgramGuid,
             required: ref(false),
             disabled: ref(false),
             importCode: getSfcControlImportPath("stepProgramStepTypePicker"),
@@ -4416,7 +4420,7 @@ const stepProgramStepTypePickerGallery = defineComponent({
     <template #settings>
         <div class="row">
             <div class="col-md-4">
-                <StepProgramPicker label="Default Step Program" v-model="defaultProgramGuid" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+                <StepProgramPicker label="Default Step Program" v-model="defaultProgram" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
@@ -4439,10 +4443,14 @@ const stepProgramStepStatusPickerGallery = defineComponent({
         CheckBox,
     },
     setup() {
+        const defaultProgram = ref<ListItemBag>({});
+        const defaultProgramGuid = computed<Guid | null>(() => toGuidOrNull(defaultProgram.value?.value));
+
         return {
-            value: ref({}),
-            stepProgram: ref({}),
-            defaultProgramGuid: ref<Guid | null>(null),
+            value: ref<ListItemBag>({}),
+            stepProgram: ref<ListItemBag>({}),
+            defaultProgram,
+            defaultProgramGuid,
             required: ref(false),
             disabled: ref(false),
             importCode: getSfcControlImportPath("stepProgramStepStatusPicker"),
@@ -4467,7 +4475,7 @@ const stepProgramStepStatusPickerGallery = defineComponent({
     <template #settings>
         <div class="row">
             <div class="col-md-4">
-                <StepProgramPicker label="Default Step Program" v-model="defaultProgramGuid" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+                <StepProgramPicker label="Default Step Program" v-model="defaultProgram" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
@@ -4494,6 +4502,9 @@ const stepStatusPickerGallery = defineComponent({
         NumberBox
     },
     setup() {
+        const stepProgram = ref<ListItemBag>({});
+        const stepProgramGuid = computed<Guid | null>(() => toGuidOrNull(stepProgram.value?.value));
+
         return {
             columnCount: ref(0),
             displayStyle: ref(PickerDisplayStyle.Auto),
@@ -4501,7 +4512,8 @@ const stepStatusPickerGallery = defineComponent({
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            stepProgramGuid: ref<Guid | null>(null),
+            stepProgram,
+            stepProgramGuid,
             value: ref({}),
             importCode: getSfcControlImportPath("stepStatusPicker"),
             exampleCode: `<StepStatusPicker label="Step Status" v-model="value" />`
@@ -4541,7 +4553,7 @@ const stepStatusPickerGallery = defineComponent({
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
             <div class="col-md-4">
-                <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
+                <StepProgramPicker label="Step Program" v-model="stepProgram" />
             </div>
         </div>
     </template>
@@ -4562,6 +4574,9 @@ const stepTypePickerGallery = defineComponent({
         NumberBox
     },
     setup() {
+        const stepProgram = ref<ListItemBag>({});
+        const stepProgramGuid = computed<Guid | null>(() => toGuidOrNull(stepProgram.value?.value));
+
         return {
             columnCount: ref(0),
             displayStyle: ref(PickerDisplayStyle.Auto),
@@ -4569,7 +4584,8 @@ const stepTypePickerGallery = defineComponent({
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            stepProgramGuid: ref<Guid | null>(null),
+            stepProgram,
+            stepProgramGuid,
             value: ref({}),
             importCode: getSfcControlImportPath("stepTypePicker"),
             exampleCode: `<StepTypePicker label="Step Type" v-model="value" />`
@@ -4609,7 +4625,7 @@ const stepTypePickerGallery = defineComponent({
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
             <div class="col-md-4">
-                <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
+                <StepProgramPicker label="Step Program" v-model="stepProgram" />
             </div>
         </div>
     </template>
