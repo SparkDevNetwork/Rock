@@ -19,7 +19,7 @@ import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
 import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
 import { Guid } from "@Obsidian/Types";
 import { HttpFunctions } from "@Obsidian/Types/Utility/http";
-import { areEqual } from "@Obsidian/Utility/guid";
+import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { AbilityLevelOpportunityBag } from "@Obsidian/ViewModels/CheckIn/abilityLevelOpportunityBag";
 import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
@@ -34,11 +34,15 @@ import { AttendeeOpportunitiesOptionsBag } from "@Obsidian/ViewModels/Rest/Check
 import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
 import { FamilyMembersOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersOptionsBag";
 import { FamilyMembersResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersResponseBag";
+import { SaveAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceOptionsBag";
+import { SaveAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceResponseBag";
 import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
 import { DeepReadonly } from "vue";
 import { Screen, SessionOpportunitySelectionBag } from "./types.partial";
 import { UnexpectedErrorMessage, clone, isGuidInList } from "./utils.partial";
+import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceRequestBag";
+import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
 
 /**
  * The error message to throw if the check-in state is not valid for the
@@ -92,7 +96,17 @@ export class CheckInSession {
     /** The currently selected opportunities for the current attendee. */
     private _currentOpportunitySelection?: SessionOpportunitySelectionBag;
 
+    /** The attendance records that have been sent to the server and saved. */
+    private _attendances: RecordedAttendanceBag[] = [];
+
     /* eslint-enable @typescript-eslint/naming-convention */
+
+    /**
+     * The unique identifer for this check-in session. This is used to link
+     * all attendance records together since we might save them at different
+     * times.
+     */
+    private readonly sessionGuid: Guid;
 
     /** The kiosk configuration that this session will conform to. */
     private readonly configuration: KioskConfigurationBag;
@@ -169,6 +183,11 @@ export class CheckInSession {
         return this._currentOpportunitySelection;
     }
 
+    /** The attendance records that have been saved during this session. */
+    public get attendances(): DeepReadonly<RecordedAttendanceBag[]> | undefined {
+        return this._attendances;
+    }
+
     // #endregion
 
     // #region Constructors
@@ -180,11 +199,13 @@ export class CheckInSession {
      *
      * @param configuration The kiosk configured that this session will conform to.
      * @param http The object that provides HTTP access to the server.
+     * @param sessionGuid The session unique identifier, if not specified then one will be generated.
      */
-    public constructor(configuration: KioskConfigurationBag, http: HttpFunctions) {
+    public constructor(configuration: KioskConfigurationBag, http: HttpFunctions, sessionGuid?: Guid) {
         this._currentScreen = Screen.Welcome;
         this.configuration = configuration;
         this.http = http;
+        this.sessionGuid = sessionGuid ?? newGuid();
     }
 
     // #endregion
@@ -202,7 +223,7 @@ export class CheckInSession {
      * @returns A new session object that is identical to the original.
      */
     private clone(configuration?: KioskConfigurationBag): CheckInSession {
-        const copy = new CheckInSession(configuration ?? this.configuration, this.http);
+        const copy = new CheckInSession(configuration ?? this.configuration, this.http, this.sessionGuid);
 
         copy._currentScreen = this._currentScreen;
         copy._searchTerm = this._searchTerm;
@@ -215,6 +236,7 @@ export class CheckInSession {
         copy._currentAttendeeGuid = this._currentAttendeeGuid;
         copy._attendeeOpportunities = clone(this._attendeeOpportunities);
         copy._currentOpportunitySelection = clone(this._currentOpportunitySelection);
+        copy._attendances = clone(this._attendances);
 
         return copy;
     }
@@ -231,6 +253,84 @@ export class CheckInSession {
         copy._currentScreen = screen;
 
         return copy;
+    }
+
+    /**
+     * Saves the attendance record(s) for the current attendee and then returns
+     * a new session object that contains the attendance results.
+     *
+     * @param isPending True if the attendance should be saved as pending.
+     * @returns A new CheckInSession object.
+     */
+    private async withSaveAttendance(isPending: boolean): Promise<CheckInSession> {
+        const selections = this._currentOpportunitySelection;
+
+        // Verify we have a valid configuration template.
+        if (!this.configuration.template || !selections) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        // We need a valid search type and attendee.
+        if (this.searchType === undefined || !this.currentAttendeeGuid) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        // Verify that we have everything selected.
+        if (!selections || !selections.area || !selections.group || !selections.location || !selections.schedules) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        // Also make sure we have at least one schedule selected.
+        if (selections.schedules.length === 0) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        const attendanceRequests: AttendanceRequestBag[] = [];
+
+        // Build the attendance requests to cover all selections for this
+        // attendee. Because multiple services can be selected we might have
+        // multiple attendance records for a single attendee.
+        for (const schedule of selections.schedules) {
+            const attendance: AttendanceRequestBag = {
+                personGuid: this.currentAttendeeGuid,
+                selection: {
+                    abilityLevel: selections.abilityLevel,
+                    area: selections.area,
+                    group: selections.group,
+                    location: selections.location,
+                    schedule: schedule
+                }
+            };
+
+            attendanceRequests.push(attendance);
+        }
+
+        // Build the API request options.
+        const request: SaveAttendanceOptionsBag = {
+            kioskGuid: this.configuration.kiosk?.guid,
+            templateGuid: this.configuration.template.guid,
+            session: {
+                guid: this.sessionGuid,
+                isPending: isPending,
+                searchMode: this.searchType,
+                searchTerm: this.searchTerm,
+                familyGuid: this.currentFamilyGuid
+            },
+            requests: attendanceRequests
+        };
+
+        const response = await this.http.post<SaveAttendanceResponseBag>("/api/v2/checkin/SaveAttendance", undefined, request);
+
+        if (!response.isSuccess || !response.data?.attendances) {
+            throw new Error(response.errorMessage || UnexpectedErrorMessage);
+        }
+
+        const clone = this.clone();
+
+        clone._attendances.push(...response.data.attendances);
+        console.log("success", response.data.attendances);
+
+        return clone;
     }
 
     // #endregion
@@ -1012,16 +1112,19 @@ export class CheckInSession {
      *
      * @returns A new CheckInSession object.
      */
-    private withNextScreenFromScheduleSelect(): Promise<CheckInSession> {
+    private async withNextScreenFromScheduleSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
             if ((this._attendeeOpportunities?.abilityLevels?.length ?? 0) > 1) {
-                return Promise.resolve(this.withScreen(Screen.ScheduleSelect));
+                return await this.withScreen(Screen.ScheduleSelect);
             }
 
-            return this.withNextScreenFromAbilityLevelSelect();
+            return await this.withNextScreenFromAbilityLevelSelect();
         }
 
-        return Promise.resolve(this.withScreen(Screen.Success));
+        // Individual check-in. Perform a full save of the attendance.
+        const clone = await this.withSaveAttendance(false);
+
+        return clone.withScreen(Screen.Success);
     }
 
     /**

@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="location-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle">
+            <div class="attendance-cards" style="display: flex; gap: var(--item-spacing); justify-content: center; flex-wrap: wrap;">
+                <AttendanceCard v-for="attendance in props.session.attendances"
+                    :attendance="attendance" />
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AttendanceCard from "./attendanceCard.partial.obs";
+    import MainPanel from "./mainPanel.partial.obs";
+    import { computed, PropType, ref } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { KioskButton } from "./types.partial";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const title = ref("Check-in Complete");
+    const subtitle = ref("Below are the details of your check-in.");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    // #endregion
+
+    updateActions();
+</script>

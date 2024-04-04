@@ -68,6 +68,11 @@
                                       :session="currentSession"
                                       @next="onNextScreen"
                                       @updateActions="onUpdateActions($event, Screen.ScheduleSelect)" />
+
+                <SuccessScreen v-if="currentScreen === Screen.Success"
+                               :configuration="configuration"
+                               :session="currentSession"
+                               @updateActions="onUpdateActions($event, Screen.Success)" />
             </ContentTransition>
         </section>
 
@@ -513,6 +518,7 @@
     import PersonSelectScreen from "./CheckInKiosk/personSelectScreen.partial.obs";
     import ScheduleSelectScreen from "./CheckInKiosk/scheduleSelectScreen.partial.obs";
     import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
+    import SuccessScreen from "./CheckInKiosk/successScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref, shallowRef } from "vue";

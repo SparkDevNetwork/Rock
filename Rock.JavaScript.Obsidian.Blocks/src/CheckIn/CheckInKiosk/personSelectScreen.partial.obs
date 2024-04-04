@@ -213,7 +213,6 @@
             if (attendee.person?.guid) {
                 try {
                     const newSession = await props.session.withAttendee(attendee.person?.guid);
-                    console.log(newSession.attendeeOpportunities);
 
                     emit("next", await newSession.withNextScreen());
                 }
