@@ -69,6 +69,7 @@
     <Content Include="src\Core\scheduledJobList.obs" />
     <Content Include="src\Core\suggestionDetail.obs" />
     <Content Include="src\Core\SuggestionDetail\editPanel.partial.obs" />
+    <Content Include="src\Core\restActionList.obs" />
     <Content Include="src\Core\restControllerList.obs" />
     <Content Include="src\Core\scheduleDetail.obs" />
     <Content Include="src\Core\ScheduleDetail\editPanel.partial.obs" />
@@ -320,6 +321,7 @@
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
     <Folder Include="src\Core\SuggestionDetail\" />
+    <Folder Include="src\Core\RestActionList\" />
     <Folder Include="src\Core\RestControllerList\" />
     <Folder Include="src\Core\ScheduledJobList\" />
     <Folder Include="src\Core\ScheduleDetail\" />
