@@ -32,34 +32,10 @@ namespace Rock.ViewModels.CheckIn
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the person unique identifier.
+        /// Gets or sets the person this attendance record is for.
         /// </summary>
-        /// <value>The person unique identifier.</value>
-        public Guid PersonGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the nick.
-        /// </summary>
-        /// <value>The name of the nick.</value>
-        public string NickName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the first name.
-        /// </summary>
-        /// <value>The first name.</value>
-        public string FirstName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last name.
-        /// </summary>
-        /// <value>The last name.</value>
-        public string LastName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the full name.
-        /// </summary>
-        /// <value>The full name.</value>
-        public string FullName { get; set; }
+        /// <value>The person this attendance record is for.</value>
+        public PersonBag Person { get; set; }
 
         /// <summary>
         /// Gets or sets the check-in status.

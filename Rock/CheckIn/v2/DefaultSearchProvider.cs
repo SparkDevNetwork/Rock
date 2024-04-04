@@ -218,25 +218,10 @@ namespace Rock.CheckIn.v2
                             .ThenBy( member => member.Person.BirthDay )
                             .ThenBy( member => member.Person.Gender )
                             .ThenBy( member => member.Person.NickName )
-                            .Select( member => new PersonBag
+                            .Select( member => new FamilyMemberBag
                             {
-                                Guid = member.Person.Guid,
-                                IdKey = member.Person.IdKey,
+                                Person = Session.ConversionProvider.GetPersonBag( member.Person ),
                                 FamilyGuid = member.GroupGuid,
-                                FirstName = member.Person.FirstName,
-                                NickName = member.Person.NickName,
-                                LastName = member.Person.LastName,
-                                FullName = member.Person.FullName,
-                                PhotoUrl = member.Person.PhotoUrl,
-                                BirthYear = member.Person.BirthYear,
-                                BirthMonth = member.Person.BirthMonth,
-                                BirthDay = member.Person.BirthDay,
-                                BirthDate = member.Person.BirthYear.HasValue ? member.Person.BirthDate : null,
-                                Age = member.Person.Age,
-                                AgePrecise = member.Person.AgePrecise,
-                                GradeOffset = member.Person.GradeOffset,
-                                GradeFormatted = member.Person.GradeFormatted,
-                                Gender = member.Person.Gender,
                                 RoleOrder = member.RoleOrder
                             } )
                             .ToList()

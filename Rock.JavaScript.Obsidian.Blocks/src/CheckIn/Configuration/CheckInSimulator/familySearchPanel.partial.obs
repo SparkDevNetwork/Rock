@@ -26,7 +26,7 @@
         <div class="col-md-8">
             <ol v-if="families">
                 <li v-for="item in families" :key="item.guid ?? undefined">
-                    {{ item.name }} ({{ item.members?.map(m => m.nickName).join(", ") }})
+                    {{ item.name }} ({{ item.members?.map(m => m.person?.nickName).join(", ") }})
                 </li>
             </ol>
         </div>

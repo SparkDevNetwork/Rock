@@ -47,6 +47,6 @@ namespace Rock.ViewModels.CheckIn
         /// Gets or sets the family members.
         /// </summary>
         /// <value>The family members.</value>
-        public List<PersonBag> Members { get; set; }
+        public List<FamilyMemberBag> Members { get; set; }
     }
 }

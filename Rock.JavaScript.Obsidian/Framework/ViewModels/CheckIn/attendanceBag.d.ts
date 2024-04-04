@@ -24,17 +24,12 @@
 import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
 import { Guid } from "@Obsidian/Types";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
 /** A single attendance record used by the check-in system. */
 export type AttendanceBag = {
     /** Gets or sets the area for this attendance record. */
     area?: CheckInItemBag | null;
-
-    /** Gets or sets the first name. */
-    firstName?: string | null;
-
-    /** Gets or sets the full name. */
-    fullName?: string | null;
 
     /** Gets or sets the group for this attendance record. */
     group?: CheckInItemBag | null;
@@ -42,17 +37,11 @@ export type AttendanceBag = {
     /** Gets or sets the attendance unique identifier. */
     guid: Guid;
 
-    /** Gets or sets the last name. */
-    lastName?: string | null;
-
     /** Gets or sets the location for this attendance record. */
     location?: CheckInItemBag | null;
 
-    /** Gets or sets the name of the nick. */
-    nickName?: string | null;
-
-    /** Gets or sets the person unique identifier. */
-    personGuid: Guid;
+    /** Gets or sets the person this attendance record is for. */
+    person?: PersonBag | null;
 
     /** Gets or sets the schedule for this attendance record. */
     schedule?: CheckInItemBag | null;

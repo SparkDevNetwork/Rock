@@ -32,13 +32,6 @@ namespace Rock.ViewModels.CheckIn
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary family unique identifier this person
-        /// belongs to.
-        /// </summary>
-        /// <value>The family unique identifier.</value>
-        public Guid FamilyGuid { get; set; }
-
-        /// <summary>
         /// Gets or sets the identifier key of the Person.
         /// </summary>
         /// <value>The identifier key of the Person.</value>
@@ -131,11 +124,5 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value>The photo URL.</value>
         public string PhotoUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group role order.
-        /// </summary>
-        /// <value>The group role order.</value>
-        public int RoleOrder { get; set; }
     }
 }

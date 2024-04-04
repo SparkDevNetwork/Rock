@@ -1125,6 +1125,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\configurationAreaBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\configurationTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\familyBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\familyMemberBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\groupOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\kioskBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\kioskStatusBag.d.ts" />

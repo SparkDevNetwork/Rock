@@ -22,22 +22,27 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { FamilyMemberBag } from "@Obsidian/ViewModels/CheckIn/familyMemberBag";
+import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
 /**
- * A search result item representing a single family in check-in
- * family search.
+ * A single member of a family. A family member may not belong to the actual
+ * family as they may be assocaited via a "can check-in" relationship. This
+ * can be determined by the Rock.ViewModels.CheckIn.FamilyMemberBag.FamilyGuid value being different
+ * from the guid on the family object.
  */
-export type FamilyBag = {
-    /** Gets or sets the family campus unique identifier. */
-    campusGuid?: Guid | null;
+export type FamilyMemberBag = {
+    /**
+     * Gets or sets the primary family unique identifier this person
+     * belongs to.
+     */
+    familyGuid: Guid;
 
-    /** Gets or sets the unique identifier of the family Group. */
-    guid: Guid;
+    /** Gets or sets the person that represents this family member. */
+    person?: PersonBag | null;
 
-    /** Gets or sets the family members. */
-    members?: FamilyMemberBag[] | null;
-
-    /** Gets or sets the name of the family. */
-    name?: string | null;
+    /**
+     * Gets or sets the group role order. This can be used to order parents
+     * above children.
+     */
+    roleOrder: number;
 };

@@ -469,7 +469,7 @@ namespace Rock.Rest.v2.Controllers
                 else if ( benchmark == "getFamilyMemberBags" )
                 {
                     IEnumerable<GroupMember> familyMembers;
-                    PersonBag familyMemberBag;
+                    FamilyMemberBag familyMemberBag;
 
                     using ( var rockContext = new RockContext() )
                     {
@@ -483,7 +483,7 @@ namespace Rock.Rest.v2.Controllers
                             .Include( fm => fm.GroupRole )
                             .ToList();
 
-                        familyMemberBag = session.GetPersonBags( options.FamilyGuid, familyMembers ).First( fm => fm.FirstName == "Noah" );
+                        familyMemberBag = session.GetFamilyMemberBags( options.FamilyGuid, familyMembers ).First( fm => fm.Person.FirstName == "Noah" );
                     }
 
                     var result = bench.Benchmark( () =>
@@ -493,7 +493,7 @@ namespace Rock.Rest.v2.Controllers
                             var director = new CheckInDirector( rockContext );
                             var session = director.CreateSession( configuration );
 
-                            var bags = session.GetPersonBags( options.FamilyGuid, familyMembers );
+                            var bags = session.GetFamilyMemberBags( options.FamilyGuid, familyMembers );
                         }
                     } );
 
@@ -534,7 +534,7 @@ namespace Rock.Rest.v2.Controllers
                 else if ( benchmark == "filterOpportunities" )
                 {
                     OpportunityCollection mainOpportunities;
-                    PersonBag familyMemberBag;
+                    FamilyMemberBag familyMemberBag;
 
                     using ( var rockContext = new RockContext() )
                     {
@@ -542,7 +542,7 @@ namespace Rock.Rest.v2.Controllers
                         var session = director.CreateSession( configuration );
                         var familyMembersQry = session.GetGroupMembersQueryForFamily( options.FamilyGuid );
 
-                        familyMemberBag = session.GetPersonBags( options.FamilyGuid, familyMembersQry ).First( fm => fm.FirstName == "Noah" );
+                        familyMemberBag = session.GetFamilyMemberBags( options.FamilyGuid, familyMembersQry ).First( fm => fm.Person.FirstName == "Noah" );
                         mainOpportunities = director.GetAllOpportunities( areas, kiosk, null );
                     }
 
@@ -555,7 +555,7 @@ namespace Rock.Rest.v2.Controllers
 
                             var person = new Attendee
                             {
-                                Person = familyMemberBag,
+                                Person = familyMemberBag.Person,
                                 Opportunities = mainOpportunities.Clone()
                             };
 

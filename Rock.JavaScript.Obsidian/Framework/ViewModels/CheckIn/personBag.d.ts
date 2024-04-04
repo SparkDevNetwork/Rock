@@ -49,12 +49,6 @@ export type PersonBag = {
     /** Gets or sets the birth year. */
     birthYear?: number | null;
 
-    /**
-     * Gets or sets the primary family unique identifier this person
-     * belongs to.
-     */
-    familyGuid: Guid;
-
     /** Gets or sets the first name. */
     firstName?: string | null;
 
@@ -87,7 +81,4 @@ export type PersonBag = {
 
     /** Gets or sets the photo URL. */
     photoUrl?: string | null;
-
-    /** Gets or sets the group role order. */
-    roleOrder: number;
 };

@@ -68,10 +68,10 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="familyGuid">The primary family unique identifier, this is used to resolve duplicates where a family member is also marked as can check-in.</param>
         /// <param name="groupMembers">The <see cref="GroupMember"/> objects to be converted to bags.</param>
-        /// <returns>A collection of <see cref="PersonBag"/> objects.</returns>
-        public List<PersonBag> GetFamilyMemberBags( Guid familyGuid, IEnumerable<GroupMember> groupMembers )
+        /// <returns>A collection of <see cref="FamilyMemberBag"/> objects.</returns>
+        public List<FamilyMemberBag> GetFamilyMemberBags( Guid familyGuid, IEnumerable<GroupMember> groupMembers )
         {
-            var familyMembers = new List<PersonBag>();
+            var familyMembers = new List<FamilyMemberBag>();
 
             // Get the group members along with the person record in memory.
             // Then sort by those that match the correct family first so that
@@ -107,37 +107,48 @@ namespace Rock.CheckIn.v2
             foreach ( var member in members )
             {
                 // Skip any duplicates.
-                if ( familyMembers.Any( fm => fm.Guid == member.Person.Guid ) )
+                if ( familyMembers.Any( fm => fm.Person.Guid == member.Person.Guid ) )
                 {
                     continue;
                 }
 
-                var familyMember = new PersonBag
+                familyMembers.Add( new FamilyMemberBag
                 {
-                    Guid = member.Person.Guid,
-                    IdKey = member.Person.IdKey,
+                    Person = GetPersonBag( member.Person ),
                     FamilyGuid = member.GroupGuid ?? Guid.Empty,
-                    FirstName = member.Person.FirstName,
-                    NickName = member.Person.NickName,
-                    LastName = member.Person.LastName,
-                    FullName = member.Person.FullName,
-                    PhotoUrl = member.Person.PhotoUrl,
-                    BirthYear = member.Person.BirthYear,
-                    BirthMonth = member.Person.BirthMonth,
-                    BirthDay = member.Person.BirthDay,
-                    BirthDate = member.Person.BirthYear.HasValue ? member.Person.BirthDate : null,
-                    Age = member.Person.Age,
-                    AgePrecise = member.Person.AgePrecise,
-                    GradeOffset = member.Person.GradeOffset,
-                    GradeFormatted = member.Person.GradeFormatted,
-                    Gender = member.Person.Gender,
                     RoleOrder = member.RoleOrder
-                };
-
-                familyMembers.Add( familyMember );
+                } );
             }
 
             return familyMembers;
+        }
+
+        /// <summary>
+        /// Gets the person bag represented by the person object.
+        /// </summary>
+        /// <param name="person">The person object.</param>
+        /// <returns>A new instance of <see cref="PersonBag"/> that represents the person.</returns>
+        public virtual PersonBag GetPersonBag( Person person )
+        {
+            return new PersonBag
+            {
+                Guid = person.Guid,
+                IdKey = person.IdKey,
+                FirstName = person.FirstName,
+                NickName = person.NickName,
+                LastName = person.LastName,
+                FullName = person.FullName,
+                PhotoUrl = person.PhotoUrl,
+                BirthYear = person.BirthYear,
+                BirthMonth = person.BirthMonth,
+                BirthDay = person.BirthDay,
+                BirthDate = person.BirthYear.HasValue ? person.BirthDate : null,
+                Age = person.Age,
+                AgePrecise = person.AgePrecise,
+                GradeOffset = person.GradeOffset,
+                GradeFormatted = person.GradeFormatted,
+                Gender = person.Gender
+            };
         }
 
         /// <summary>
@@ -174,19 +185,9 @@ namespace Rock.CheckIn.v2
         /// <param name="attendance">The source attendance record.</param>
         /// <param name="attendee">The attendee information for the attendance record.</param>
         /// <returns>A new instance of <see cref="AttendanceBag"/>.</returns>
-        public virtual AttendanceBag GetAttendanceBag( RecentAttendance attendance, Attendee attendee )
+        public AttendanceBag GetAttendanceBag( RecentAttendance attendance, Attendee attendee )
         {
-            var bag = new AttendanceBag
-            {
-                NickName = attendee.Person.NickName,
-                FirstName = attendee.Person.FirstName,
-                LastName = attendee.Person.LastName,
-                FullName = attendee.Person.FullName
-            };
-
-            UpdateAttendanceBag( bag, attendance );
-
-            return bag;
+            return GetAttendanceBag( attendance, attendee.Person );
         }
 
         /// <summary>
@@ -195,19 +196,69 @@ namespace Rock.CheckIn.v2
         /// <param name="attendance">The source attendance record.</param>
         /// <param name="person">The Person information for the attendance record.</param>
         /// <returns>A new instance of <see cref="AttendanceBag"/>.</returns>
-        public virtual AttendanceBag GetAttendanceBag( RecentAttendance attendance, Person person)
+        public AttendanceBag GetAttendanceBag( RecentAttendance attendance, Person person )
         {
-            var bag = new AttendanceBag
+            return GetAttendanceBag( attendance, GetPersonBag( person ) );
+        }
+
+        /// <summary>
+        /// Gets the attendance bag with the details from the <see cref="RecentAttendance"/>
+        /// record.
+        /// </summary>
+        /// <param name="attendance">The recent attendance record.</param>
+        /// <param name="person">The person the attendance record is for.</param>
+        /// <returns>A new instance of <see cref="AttendanceBag"/>.</returns>
+        public virtual AttendanceBag GetAttendanceBag( RecentAttendance attendance, PersonBag person )
+        {
+            var attendanceBag = new AttendanceBag
             {
-                NickName = person.NickName,
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                FullName = person.FullName
+                Guid = attendance.AttendanceGuid,
+                Person = person,
+                Status = attendance.Status
             };
 
-            UpdateAttendanceBag( bag, attendance );
+            var area = GroupTypeCache.Get( attendance.GroupTypeGuid, Session.RockContext );
+            var group = GroupCache.Get( attendance.GroupGuid, Session.RockContext );
+            var location = NamedLocationCache.Get( attendance.LocationGuid, Session.RockContext );
+            var schedule = NamedScheduleCache.Get( attendance.ScheduleGuid, Session.RockContext );
 
-            return bag;
+            if ( area != null )
+            {
+                attendanceBag.Area = new CheckInItemBag
+                {
+                    Guid = area.Guid,
+                    Name = area.Name
+                };
+            }
+
+            if ( group != null )
+            {
+                attendanceBag.Group = new CheckInItemBag
+                {
+                    Guid = group.Guid,
+                    Name = group.Name
+                };
+            }
+
+            if ( location != null )
+            {
+                attendanceBag.Location = new CheckInItemBag
+                {
+                    Guid = location.Guid,
+                    Name = location.Name
+                };
+            }
+
+            if ( schedule != null )
+            {
+                attendanceBag.Schedule = new CheckInItemBag
+                {
+                    Guid = schedule.Guid,
+                    Name = schedule.Name
+                };
+            }
+
+            return attendanceBag;
         }
 
         /// <summary>
@@ -348,60 +399,6 @@ namespace Rock.CheckIn.v2
                 StartDateTime = achievementAttempt.AchievementAttemptStartDateTime.ToRockDateTimeOffset(),
                 EndDateTime = achievementAttempt.AchievementAttemptEndDateTime?.ToRockDateTimeOffset()
             };
-        }
-
-        /// <summary>
-        /// Updates the attendance bag with the details from the <see cref="RecentAttendance"/>
-        /// record.
-        /// </summary>
-        /// <param name="attendanceBag">The attendance bag to be updated.</param>
-        /// <param name="attendance">The recent attendance record.</param>
-        protected void UpdateAttendanceBag( AttendanceBag attendanceBag, RecentAttendance attendance )
-        {
-            attendanceBag.Guid = attendance.AttendanceGuid;
-            attendanceBag.PersonGuid = attendance.PersonGuid;
-            attendanceBag.Status = attendance.Status;
-
-            var area = GroupTypeCache.Get( attendance.GroupTypeGuid, Session.RockContext );
-            var group = GroupCache.Get( attendance.GroupGuid, Session.RockContext );
-            var location = NamedLocationCache.Get( attendance.LocationGuid, Session.RockContext );
-            var schedule = NamedScheduleCache.Get( attendance.ScheduleGuid, Session.RockContext );
-
-            if ( area != null )
-            {
-                attendanceBag.Area = new CheckInItemBag
-                {
-                    Guid = area.Guid,
-                    Name = area.Name
-                };
-            }
-
-            if ( group != null )
-            {
-                attendanceBag.Group = new CheckInItemBag
-                {
-                    Guid = group.Guid,
-                    Name = group.Name
-                };
-            }
-
-            if ( location != null )
-            {
-                attendanceBag.Location = new CheckInItemBag
-                {
-                    Guid = location.Guid,
-                    Name = location.Name
-                };
-            }
-
-            if ( schedule != null )
-            {
-                attendanceBag.Schedule = new CheckInItemBag
-                {
-                    Guid = schedule.Guid,
-                    Name = schedule.Name
-                };
-            }
         }
 
         #endregion

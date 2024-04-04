@@ -187,9 +187,9 @@ namespace Rock.CheckIn.v2
         {
             var opportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
             var groupMemberQry = GetGroupMembersQueryForFamily( familyGuid );
-            var people = GetPersonBags( familyGuid, groupMemberQry );
+            var members = GetFamilyMemberBags( familyGuid, groupMemberQry );
 
-            LoadAttendees( people, opportunities );
+            LoadAttendees( members.Select( fm => fm.Person ).ToList(), opportunities );
             PrepareAttendees();
         }
 
@@ -207,9 +207,9 @@ namespace Rock.CheckIn.v2
         {
             var checkInOpportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
             var familyMembersQry = GetGroupMemberQueryForPerson( personGuid, familyGuid );
-            var people = GetPersonBags( Guid.Empty, familyMembersQry );
+            var members = GetFamilyMemberBags( Guid.Empty, familyMembersQry );
 
-            LoadAttendees( people, checkInOpportunities );
+            LoadAttendees( members.Select( fm => fm.Person ).ToList(), checkInOpportunities );
             PrepareAttendees();
         }
 
@@ -258,8 +258,8 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="familyGuid">The primary family unique identifier, this is used to resolve duplicates where a family member is also marked as can check-in.</param>
         /// <param name="groupMembers">The <see cref="GroupMember"/> objects to be converted to bags.</param>
-        /// <returns>A collection of <see cref="PersonBag"/> objects.</returns>
-        public List<PersonBag> GetPersonBags( Guid familyGuid, IEnumerable<GroupMember> groupMembers )
+        /// <returns>A collection of <see cref="FamilyMemberBag"/> objects.</returns>
+        public List<FamilyMemberBag> GetFamilyMemberBags( Guid familyGuid, IEnumerable<GroupMember> groupMembers )
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Person Bags" ) )
             {

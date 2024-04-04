@@ -91,8 +91,8 @@
         }
 
         const names = family.members
-            .filter(m => !!m.nickName)
-            .map(m => m.nickName as string);
+            .filter(m => !!m.person?.nickName)
+            .map(m => m.person?.nickName as string);
 
         return asCommaAnd(names, "&");
     }

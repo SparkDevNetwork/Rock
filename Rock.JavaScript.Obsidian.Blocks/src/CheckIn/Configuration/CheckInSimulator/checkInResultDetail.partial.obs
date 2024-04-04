@@ -12,7 +12,7 @@
 
         <ul>
             <li v-for="item in result.attendances">
-                {{ item.attendance?.fullName }}
+                {{ item.attendance?.person?.fullName }}
                 <ul>
                     <li>Status: {{ getCheckInStatus(item.attendance?.status) }}</li>
                     <li>Area: {{ item.attendance?.area?.name }}</li>

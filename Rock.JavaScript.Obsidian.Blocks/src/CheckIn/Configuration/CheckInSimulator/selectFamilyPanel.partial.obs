@@ -28,7 +28,7 @@
 
                 <ol>
                     <li v-for="item in family.currentlyCheckedInAttendances" :key="item.guid!">
-                        {{ item.fullName }} (Group="{{ item.group!.name }}"; Location="{{ item.location!.name }}"; Schedule="{{ item.schedule!.name }}")
+                        {{ item.person?.fullName }} (Group="{{ item.group!.name }}"; Location="{{ item.location!.name }}"; Schedule="{{ item.schedule!.name }}")
                     </li>
                 </ol>
             </div>
