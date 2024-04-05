@@ -4004,8 +4004,7 @@ const groupMemberPickerGallery = defineComponent({
         DropDownList,
         GroupMemberPicker,
         NumberUpDown,
-        TextBox,
-        NumberBox
+        TextBox
     },
     setup() {
         return {
@@ -4055,7 +4054,7 @@ const groupMemberPickerGallery = defineComponent({
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
             <div class="col-md-4">
-                <NumberBox label="Group ID" v-model="groupGuid" />
+                <TextBox label="Group GUID" v-model="groupGuid" />
             </div>
         </div>
     </template>
