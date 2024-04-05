@@ -65,6 +65,22 @@ namespace Rock.CheckIn.v2
         public DateTime? MaximumBirthdate { get; }
 
         /// <summary>
+        /// Gets the minimum birth month requirement or <c>null</c> if there
+        /// is no minimum. The person's birth month (1=January) must be greater
+        /// than or equal to this value.
+        /// </summary>
+        /// <value>The minimum birth month requirement.</value>
+        public int? MinimumBirthMonth { get; }
+
+        /// <summary>
+        /// Gets the maximum birth month requirement or <c>null</c> if there
+        /// is no maximum. The person's birth month (1=January) must be less
+        /// than or equal to this value.
+        /// </summary>
+        /// <value>The maximum grade offset requirement.</value>
+        public int? MaximumBirthMonth { get; }
+
+        /// <summary>
         /// Gets the minimum grade offset requirement or <c>null</c> if there
         /// is no minimum. The person's grade offset must be greater than or
         /// equal to this value.
@@ -108,6 +124,7 @@ namespace Rock.CheckIn.v2
             (MinimumAge, MaximumAge) = GetAgeRange( groupCache );
             (MinimumBirthdate, MaximumBirthdate) = GetBirthdateRange( groupCache );
             (MinimumGradeOffset, MaximumGradeOffset) = GetGradeOffsetRange( groupCache );
+            (MinimumBirthMonth, MaximumBirthMonth) = GetBirthMonthRange( groupCache );
             Gender = groupCache.GetAttributeValue( "Gender" ).ConvertToEnumOrNull<Gender>();
             DataViewGuids = groupCache.GetAttributeValue( "DataView" ).SplitDelimitedValues().AsGuidList();
         }
@@ -151,6 +168,24 @@ namespace Rock.CheckIn.v2
             }
 
             return (birthdateRangePair[0].AsDateTime(), birthdateRangePair[1].AsDateTime());
+        }
+
+        /// <summary>
+        /// Gets the birth month range specified by the group attribute value.
+        /// </summary>
+        /// <param name="groupCache">The group cache.</param>
+        /// <returns>A tuple that contains the minimum and maximum values.</returns>
+        private static (int? MinimumBirthdate, int? MaximumBirthdate) GetBirthMonthRange( IHasAttributes groupCache )
+        {
+            var birthMonthRange = groupCache.GetAttributeValue( "BirthMonthRange" ).ToStringSafe();
+            var birthMonthRangePair = birthMonthRange.Split( new char[] { ',' }, StringSplitOptions.None );
+
+            if ( birthMonthRangePair.Length != 2 )
+            {
+                return (null, null);
+            }
+
+            return (birthMonthRangePair[0].AsIntegerOrNull(), birthMonthRangePair[1].AsIntegerOrNull());
         }
 
         /// <summary>
