@@ -4,7 +4,7 @@
 
         <h1>{{ businessName }}</h1>
 
-        <EntityTagList :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :categoryGuid="tagCategoryGuid" />
+        <EntityTagList :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :categoryGuid="tagCategoryGuid ?? undefined" />
 
         <div class="row">
             <div class="col-md-6">
@@ -31,6 +31,8 @@
     import { BusinessDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/businessDetailOptionsBag";
     import EntityTagList from "@Obsidian/Controls/tagList.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -50,7 +52,7 @@
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const businessName = ref(props.modelValue?.businessName ?? "");
     const entityKey = ref(props.modelValue?.idKey ?? "");
-    const tagCategoryGuid = ref(props.options?.tagCategoryGuid ?? "");
+    const tagCategoryGuid = ref<Guid | null>(toGuidOrNull(props.options?.tagCategoryGuid));
 
     // #endregion
 

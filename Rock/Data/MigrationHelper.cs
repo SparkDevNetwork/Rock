@@ -8761,6 +8761,7 @@ END
         /// <param name="datasetDescription">The description of the persisted dataset.</param>
         /// <param name="allowManualRefresh">Indicates if manual refresh is allowed for the persisted dataset.</param>
         /// <param name="buildScript">The build script of the persisted dataset.</param>
+        /// <param name="resultFormat"></param>
         /// <param name="buildScriptType">The build script type of the persisted dataset.</param>
         /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
         /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>

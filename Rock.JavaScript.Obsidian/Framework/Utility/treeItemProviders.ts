@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { emptyGuid } from "./guid";
+import { emptyGuid, toGuidOrNull } from "./guid";
 import { post } from "./http";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
@@ -181,7 +181,7 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
      */
     private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
         const options: LocationItemPickerGetActiveChildrenOptionsBag = {
-            guid: parentGuid || emptyGuid,
+            guid: toGuidOrNull(parentGuid) ?? emptyGuid,
             rootLocationGuid: emptyGuid,
             securityGrantToken: this.securityGrantToken
         };
@@ -374,7 +374,7 @@ export class PageTreeItemProvider implements ITreeItemProvider {
         let result: TreeItemBag[];
 
         const options: PagePickerGetChildrenOptionsBag = {
-            guid: parentGuid || emptyGuid,
+            guid: toGuidOrNull(parentGuid) ?? emptyGuid,
             rootPageGuid: null,
             hidePageGuids: this.hidePageGuids ?? [],
             securityGrantToken: this.securityGrantToken

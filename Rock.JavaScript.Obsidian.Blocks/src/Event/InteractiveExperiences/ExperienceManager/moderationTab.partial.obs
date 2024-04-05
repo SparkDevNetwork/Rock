@@ -260,7 +260,9 @@
         // Clear the array.
         occurrenceAnswers.slice();
 
-        const response = await invokeBlockAction<ExperienceAnswerBag[]>("GetExperienceAnswers", { occurrenceKey: props.configuration.occurrenceIdKey });
+        const response = await invokeBlockAction<ExperienceAnswerBag[]>("GetExperienceAnswers", {
+            occurrenceKey: props.configuration.occurrenceIdKey
+        });
 
         if (response.isSuccess && response.data) {
             for (const answer of response.data) {

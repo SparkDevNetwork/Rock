@@ -31,6 +31,7 @@
     import { computed, PropType, provide } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const textField = getFieldType(FieldType.Text);
 
@@ -74,7 +75,7 @@
     }>();
 
     const field = computed(() => {
-        const fieldType = getFieldType(props.attribute.fieldTypeGuid ?? "");
+        const fieldType = getFieldType(toGuidOrNull(props.attribute.fieldTypeGuid) ?? emptyGuid);
 
         return fieldType ?? textField;
     });

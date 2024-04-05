@@ -20,6 +20,7 @@
 import { InjectionKey, Ref } from "vue";
 import { ResourceListSourceType } from "@Obsidian/Enums/Blocks/Group/Scheduling/resourceListSourceType";
 import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
+import { Guid } from "@Obsidian/Types";
 
 /**
  * Information about a scheduler resource assignment for the group scheduler.
@@ -181,7 +182,7 @@ export interface ISchedulerResourceParameters {
     ResourceGroupId?: number | null,
 
     /** The resource group guid. */
-    ResourceGroupGuid?: string | null,
+    ResourceGroupGuid?: Guid | null,
 
     /** If we just need the data for a specific person. */
     LimitToPersonId?: number | null,
@@ -196,7 +197,7 @@ export interface ISchedulerResourceParameters {
     ResourceDataViewId?: number | null,
 
     /** The resource data view guid. */
-    ResourceDataViewGuid?: string | null,
+    ResourceDataViewGuid?: Guid | null,
 
     /** The resource additional person IDs. */
     ResourceAdditionalPersonIds?: number[] | null
@@ -244,7 +245,7 @@ export const UnassignedResourceCounts: InjectionKey<Ref<GroupSchedulerUnassigned
 /**
  * An injection key to provide a function that can be used to report unassigned resources as assigned.
  */
-export const ReportAssignedResources: InjectionKey<(unassignedResourceCountGuid: string | null | undefined, assignedCount: number) => void> = Symbol("report-assigned-resources");
+export const ReportAssignedResources: InjectionKey<(unassignedResourceCountGuid: Guid | null | undefined, assignedCount: number) => void> = Symbol("report-assigned-resources");
 
 /**
  * An injection key to provide an occurrence date.

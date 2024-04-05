@@ -14,7 +14,7 @@
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { Guid } from "@Obsidian/Types";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /** The currently selected campus value(s). */
@@ -65,13 +65,15 @@
      * Loads the items from the server.
      */
     async function loadOptions(): Promise<ListItemBag[]> {
-        if (!props.registrationTemplateGuid) {
+        const registrationTemplateGuid = toGuidOrNull(props.registrationTemplateGuid);
+
+        if (!registrationTemplateGuid || areEqual(registrationTemplateGuid, emptyGuid)) {
             loadedItems.value = [];
             return [];
         }
 
         const options: RegistrationInstancePickerGetRegistrationInstancesOptionsBag = {
-            registrationTemplateGuid: props.registrationTemplateGuid || emptyGuid,
+            registrationTemplateGuid,
             securityGrantToken: securityGrantToken.value
         };
 
@@ -95,5 +97,5 @@
 
     watch(() => props.registrationTemplateGuid, () => loadedItems.value = null);
 
-        // #endregion
+    // #endregion
 </script>

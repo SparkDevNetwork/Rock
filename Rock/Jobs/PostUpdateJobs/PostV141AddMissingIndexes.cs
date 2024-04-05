@@ -102,9 +102,19 @@ ORDER BY TABLE_NAME
 
             */
 
+            /* 2024-03-22 DJL
+
+            Tables that store historical data should only have a Guid index if it is necessary to improve the performance for a
+            specific use case. These tables have a large number of records that are rarely accessed individually, and adding a
+            unique index reduces the performance of the frequent insert operations.
+
+            The History.Guid index has been removed because performance analysis showed that it was not accessed in normal operating conditions,
+            yet it comprised approximately 3.5% of the total database size.
+
+            */
+
             AddMissingUniqueGuidIndexOnTableIfNotExists( jobMigration, migrationHelper, "Attendance" );
             AddMissingUniqueGuidIndexOnTableIfNotExists( jobMigration, migrationHelper, "AuditDetail" );
-            AddMissingUniqueGuidIndexOnTableIfNotExists( jobMigration, migrationHelper, "History" );
             AddMissingUniqueGuidIndexOnTableIfNotExists( jobMigration, migrationHelper, "PersonDuplicate" );
 
             /* 10-28-2022 MDP

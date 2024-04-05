@@ -564,6 +564,22 @@ namespace RockWeb.Blocks.Crm
                 document.Description = tbDescription.Text;
                 document.SetBinaryFile( fuUploader.BinaryFileId.Value, rockContext );
 
+                var isValid = document.IsValid;
+
+                // if the document IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of document didn't pass.
+                // So, make sure a message is displayed in the validation summary
+                cvDocuement.IsValid = document.IsValid;
+
+                if ( !cvDocuement.IsValid )
+                {
+                    cvDocuement.ErrorMessage = document.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                    return;
+                }
+                if ( !isValid )
+                {
+                    return;
+                }
+
                 rockContext.SaveChanges();
 
                 // Make sure the associated BinaryFile is using the Document Entity for security.

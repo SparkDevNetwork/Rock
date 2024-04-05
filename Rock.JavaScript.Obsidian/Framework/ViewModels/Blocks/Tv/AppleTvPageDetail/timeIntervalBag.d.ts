@@ -21,9 +21,11 @@
 // </copyright>
 //
 
+import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+
 export type TimeIntervalBag = {
     /** Gets or sets the unit. */
-    unit: number;
+    unit: TimeIntervalUnit;
 
     /** Gets or sets the value. */
     value?: number | null;

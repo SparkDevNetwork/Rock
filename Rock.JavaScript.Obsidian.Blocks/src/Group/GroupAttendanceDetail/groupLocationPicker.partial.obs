@@ -1,9 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <BaseAsyncPicker v-if="!isHidden"
-        v-model="internalValue"
-        v-bind="standardProps"
-        :items="actualItems" />
+                     v-model="internalValue"
+                     v-bind="standardProps"
+                     :items="actualItems" />
 </template>
 
 <script setup lang="ts">
@@ -14,6 +14,7 @@
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { GroupAttendanceDetailGetGroupLocationsRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailGetGroupLocationsRequestBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -69,7 +70,7 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const bag: GroupAttendanceDetailGetGroupLocationsRequestBag = {
-            groupGuid: props.groupGuid
+            groupGuid: toGuidOrNull(props.groupGuid)
         };
 
         const result = await invokeBlockAction<ListItemBag[]>("GetGroupLocations", { bag });

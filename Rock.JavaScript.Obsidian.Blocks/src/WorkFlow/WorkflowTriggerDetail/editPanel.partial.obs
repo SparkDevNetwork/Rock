@@ -85,7 +85,7 @@
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { Guid } from "@Obsidian/Types";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -151,12 +151,16 @@
     });
 
     watch(() => entityType.value, async () => {
-        if (!entityType.value.value) {
+        const entityTypeGuid = toGuidOrNull(entityType.value.value);
+
+        if (!entityTypeGuid || areEqual(entityTypeGuid, emptyGuid)) {
             return;
         }
 
-        const request: { entityTypeGuid: Guid; } = {
-            entityTypeGuid: entityType.value.value || emptyGuid
+        const request: {
+            entityTypeGuid: Guid;
+        } = {
+            entityTypeGuid
         };
         const result = await invokeBlockAction<ListItemBag[]>("GetQualifierColumns", request);
 

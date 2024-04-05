@@ -8,7 +8,7 @@
                     <template v-for="propertyName in propertyNames">
                         <!-- Implement <template v-slot="header-<propertyName>"></template> in parent to override the individual header cell templates. -->
                         <slot :name="getHeaderSlotName(propertyName)" :propertyName="propertyName">
-                            <th>{{ toTitleCase(splitCamelCase(propertyName)) }}</th>
+                            <th>{{ toTitleCase(splitCase(propertyName)) }}</th>
                         </slot>
                     </template>
                 </tr>
@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-    import { splitCamelCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { splitCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { computed, PropType } from "vue";
 
     const props = defineProps({

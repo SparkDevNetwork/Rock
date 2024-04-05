@@ -44,6 +44,8 @@
     import { PageRouteBag } from "@Obsidian/ViewModels/Blocks/Cms/PageRouteDetail/pageRouteBag";
     import { PageRouteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageRouteDetail/pageRouteDetailOptionsBag";
     import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -96,9 +98,13 @@
             return;
         }
 
-        const response = await invokeBlockAction<{ siteName: string }>("GetSiteName", {
-            guid: value.page.value
-        });
+        const request: {
+            guid?: Guid | null | undefined;
+        } = {
+            guid: toGuidOrNull(value.page.value)
+        };
+
+        const response = await invokeBlockAction<{ siteName: string }>("GetSiteName", request);
 
         if (response.isSuccess && response.data) {
             site.value = response.data.siteName;

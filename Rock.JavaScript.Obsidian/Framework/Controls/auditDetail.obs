@@ -30,7 +30,7 @@
             </dl>
             <dl v-else-if="showGuid">
                 <dt @click.stop="onIdClick" class="clickable">Guid</dt>
-                <dd>{{ guid }}</dd>
+                <dd>{{ guidText }}</dd>
             </dl>
             <dl v-else>
                 <dt @click.stop="onIdClick" class="clickable">Id Key</dt>
@@ -47,7 +47,7 @@
     import { Guid } from "@Obsidian/Types";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /**
@@ -83,7 +83,8 @@
 
     const idKey = computed(() => auditBag.value?.idKey ?? "");
 
-    const guid = computed(() => auditBag.value?.guid ?? "");
+    /** The guid as a string (nullish guid values are displayed as empty string) */
+    const guidText = computed(() => auditBag.value?.guid ?? "");
 
     const createdByPersonId = computed(() => auditBag.value?.createdByPersonId);
 
@@ -110,13 +111,17 @@
     }
 
     async function loadAuditBag(): Promise<void> {
-        if (!props.entityTypeGuid || !props.entityKey) {
+        const entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
+
+        if (!entityTypeGuid
+            || areEqual(entityTypeGuid, emptyGuid)
+            || !props.entityKey) {
             auditBag.value = null;
             return;
         }
 
         const data: AuditDetailGetAuditDetailsOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid || emptyGuid,
+            entityTypeGuid,
             entityKey: props.entityKey,
             securityGrantToken: securityGrantToken.value
         };

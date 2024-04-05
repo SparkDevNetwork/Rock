@@ -98,6 +98,8 @@
     import { ServiceMetricsEntryMetricItemBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntryMetricItemBag";
     import { ServiceMetricsEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/ServiceMetricsEntry/serviceMetricsEntrySaveRequestBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<ServiceMetricsEntryInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -107,9 +109,9 @@
 
     const blockError = ref<string | null | undefined>(config.errorMessage);
     const errorMessage = ref<string>("");
-    const campusGuid = ref<string | null | undefined>(config.campusGuid);
+    const campusGuid = ref<Guid | null | undefined>(toGuidOrNull(config.campusGuid));
     const weekendDate = ref<string | null | undefined>(config.weekendDate);
-    const scheduleGuid = ref<string | null | undefined>(config.scheduleGuid);
+    const scheduleGuid = ref<Guid | null | undefined>(toGuidOrNull(config.scheduleGuid));
     const stepperController = ref<StepperController>();
     const areMetricParametersSet = ref<boolean>(false);
     const campuses = ref<ListItemBag[]>([]);
@@ -132,12 +134,13 @@
 
     //#region Computed Values
 
+    /** The selected campus guid (or empty string if none selected). */
     const campusGuidOrEmptyString = computed({
         get(): string {
             return campusGuid.value ?? "";
         },
         set(newValue: string) {
-            campusGuid.value = newValue;
+            campusGuid.value = toGuidOrNull(newValue);
         }
     });
 
@@ -150,12 +153,13 @@
         }
     });
 
+    /** The selected schedule guid (or empty string if none selected). */
     const scheduleGuidOrEmptyString = computed({
         get(): string {
             return scheduleGuid.value ?? "";
         },
         set(newValue: string) {
-            scheduleGuid.value = newValue;
+            scheduleGuid.value = toGuidOrNull(newValue);
         }
     });
 
@@ -245,7 +249,7 @@
             isLoadingServiceTimes.value = true;
 
             const bag: ServiceMetricsEntryGetServiceTimesRequestBag = {
-                campusGuid: campusGuid.value,
+                campusGuid: toGuidOrNull(campusGuid.value),
                 weekendDate: weekendDate.value
             };
 
@@ -294,9 +298,9 @@
             errorMessage.value = "";
 
             const bag: ServiceMetricsEntrySaveRequestBag = {
-                campusGuid: campusGuid.value,
+                campusGuid: toGuidOrNull(campusGuid.value),
                 note: notes.value,
-                scheduleGuid: scheduleGuid.value,
+                scheduleGuid: toGuidOrNull(scheduleGuid.value),
                 weekendDate: weekendDate.value,
                 items: metricItems.value
             };
@@ -357,8 +361,8 @@
             errorMessage.value = "";
 
             const bag: ServiceMetricsEntryGetMetricsRequestBag = {
-                campusGuid: campusGuid.value,
-                scheduleGuid: scheduleGuid.value,
+                campusGuid: toGuidOrNull(campusGuid.value),
+                scheduleGuid: toGuidOrNull(scheduleGuid.value),
                 weekendDate: weekendDate.value
             };
 

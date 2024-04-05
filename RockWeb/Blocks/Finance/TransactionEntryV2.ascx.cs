@@ -2801,6 +2801,7 @@ mission. We are so grateful for your commitment.</p>
             if ( transactionAlreadyExists )
             {
                 ShowTransactionSummary();
+                return;
             }
 
             bool givingAsBusiness = this.GivingAsBusiness();

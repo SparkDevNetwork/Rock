@@ -80,7 +80,7 @@
 
                                 <div v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.Readonly">
                                     <RockLabel>Schedule</RockLabel>
-                                    <div>{{ config.scheduleLabel }}</div>
+                                    <div v-html="config.scheduleLabel"></div>
                                 </div>
                             </template>
                         </div>
@@ -263,7 +263,7 @@
     import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
-    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { debounce } from "@Obsidian/Utility/util";
 
@@ -311,7 +311,7 @@
     const scheduleGuid = ref<Guid | undefined | null>(config.value.scheduleGuid);
     const didNotOccur = ref<boolean>(config.value.isDidNotMeetChecked);
     const isSavingDidNotOccur = ref<boolean>(false);
-    const campusGuid = ref<string | null | undefined>();
+    const campusGuid = ref<Guid | null | undefined>();
     const notes = ref<string>(config.value.notes ?? "");
     const topic = ref<GroupAttendanceTopic | null>();
     const isNotesShown = ref<boolean>(false);
@@ -365,14 +365,16 @@
      * Event handler for the "Add Person As" person being selected.
      */
     async function onAddPerson(personPickerSelection: ListItemBag | undefined): Promise<void> {
-        const personAliasGuid = (personPickerSelection as ListItemBag)?.value;
+        const personAliasGuid = toGuidOrNull((personPickerSelection as ListItemBag)?.value);
 
-        if (!personAliasGuid) {
+        if (!personAliasGuid || areEqual(personAliasGuid, emptyGuid)) {
             // No person selected.
             return;
         }
 
-        if (!attendanceOccurrenceGuid.value) {
+        const occurrenceGuid = toGuidOrNull(attendanceOccurrenceGuid.value);
+
+        if (!occurrenceGuid || areEqual(occurrenceGuid, emptyGuid)) {
             // Create a new occurrence if it hasn't been saved yet.
             await getOrCreateAttendanceOccurrence({
                 attendanceOccurrenceDate: attendanceForDateIsoString.value,
@@ -385,8 +387,8 @@
         }
         else {
             const bag: GroupAttendanceDetailAddPersonRequestBag = {
-                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
-                personAliasGuid: personAliasGuid || emptyGuid
+                attendanceOccurrenceGuid: occurrenceGuid,
+                personAliasGuid,
             };
 
             const result = await invokeBlockAction<GroupAttendanceDetailAddPersonResponseBag>("AddPerson", { bag });
@@ -417,7 +419,7 @@
      */
     async function onAttendanceChanged(attendance: GroupAttendanceDetailAttendanceBag): Promise<void> {
         await autoMarkAttendance({
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
+            attendanceOccurrenceGuid: toGuidOrNull(attendanceOccurrenceGuid.value) ?? emptyGuid,
             personAliasId: attendance.personAliasId,
             didAttend: attendance.didAttend
         });
@@ -447,9 +449,10 @@
      * Event handler for the Attendance Occurrence Type being changed.
      */
     async function onAttendanceOccurrenceTypeChanged(newAttendanceOccurrenceType: Guid): Promise<void> {
+        newAttendanceOccurrenceType = toGuidOrNull(newAttendanceOccurrenceType) ?? emptyGuid;
         attendanceOccurrenceTypeGuid.value = newAttendanceOccurrenceType;
         await autoUpdateAttendanceOccurrenceType({
-            attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
+            attendanceOccurrenceGuid: toGuidOrNull(attendanceOccurrenceGuid.value) ?? emptyGuid,
             attendanceOccurrenceTypeGuid: newAttendanceOccurrenceType
         });
     }
@@ -499,7 +502,7 @@
                     }
 
                     await autoUpdateDidNotOccur({
-                        attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
+                        attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
                         didNotOccur: newDidNotOccur
                     });
                 }
@@ -508,7 +511,7 @@
         else {
             didNotOccur.value = newDidNotOccur;
             autoUpdateDidNotOccur({
-                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
+                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value ?? emptyGuid,
                 didNotOccur: newDidNotOccur
             }).then(() => {/* do nothing */ });
         }
@@ -534,7 +537,7 @@
      * Event handler for the location picker being changed.
      */
     async function onGroupLocationPickerChanged(locationPickerSelection: NullableListItemBags): Promise<void> {
-        locationGuid.value = (locationPickerSelection as ListItemBag)?.value;
+        locationGuid.value = toGuidOrNull((locationPickerSelection as ListItemBag)?.value);
 
         // Clear the selected schedule whenever the location changes.
         scheduleGuid.value = null;
@@ -621,8 +624,10 @@
             attendance.didAttend = message.status === AttendanceStatus.DidAttend;
         }
         else {
+            const attendanceGuid = toGuidOrNull(message.attendanceGuid);
+
             const bag: GroupAttendanceDetailGetAttendanceRequestBag = {
-                attendanceGuid: message.attendanceGuid
+                attendanceGuid: attendanceGuid ?? emptyGuid
             };
 
             // Attendance was added outside of this browser so add it here (it could have been added by an individual on another device).
@@ -700,10 +705,15 @@
     async function getGroupAttendanceTopic(groupGuid: Guid, attendanceOccurrenceGuid: Guid): Promise<GroupAttendanceTopic> {
         const topic = await getTopic("Rock.RealTime.Topics.EntityUpdatedTopic");
 
-        await invokeBlockAction("SubscribeToRealTime", {
+        const request: {
+            connectionId?: string | null | undefined;
+            groupGuid: Guid;
+        } = {
             connectionId: topic.connectionId,
-            groupGuid: groupGuid || emptyGuid
-        });
+            groupGuid: toGuidOrNull(groupGuid) ?? emptyGuid
+        };
+
+        await invokeBlockAction("SubscribeToRealTime", request);
 
         // Associate the AttendanceOccurrence and Group unique identifiers to the topic so we don't have to keep passing them around.
         Object.defineProperty(topic, "attendanceOccurrenceGuid", {
@@ -770,13 +780,16 @@
      * Updates the DidAttend value of a single Attendance.
      */
     async function markAttendance(bag: GroupAttendanceDetailMarkAttendanceRequestBag): Promise<void> {
-        const occurenceGuid = attendanceOccurrenceGuid.value;
+        const occurenceGuid = toGuidOrNull(attendanceOccurrenceGuid.value);
+        const locationGuidOrNull = toGuidOrNull(locationGuid.value);
+        const scheduleGuidOrNull = toGuidOrNull(scheduleGuid.value);
+
         if (!occurenceGuid) {
             // Create a new occurrence if it hasn't been saved yet.
             await getOrCreateAttendanceOccurrence({
                 attendanceOccurrenceDate: attendanceForDateIsoString.value,
-                locationGuid: locationGuid.value,
-                scheduleGuid: scheduleGuid.value,
+                locationGuid: locationGuidOrNull,
+                scheduleGuid: scheduleGuidOrNull,
 
                 // Pass all attendances...
                 // If a new occurrence is created,
@@ -796,8 +809,8 @@
             // invoke get/create to save multiple attendances.
             await getOrCreateAttendanceOccurrence({
                 attendanceOccurrenceDate: attendanceForDateIsoString.value,
-                locationGuid: locationGuid.value,
-                scheduleGuid: scheduleGuid.value,
+                locationGuid: locationGuidOrNull,
+                scheduleGuid: scheduleGuidOrNull,
 
                 // Pass the attendance that changed and any new people (didAttend is null).
                 updatedAttendances: attendances.value.filter(attendance => attendance.personAliasId === bag.personAliasId || ((attendance.didAttend ?? null) === null)).map(attendance => ({
@@ -818,24 +831,29 @@
     async function printAttendanceRoster(): Promise<void> {
         try {
             isPrintingRoster.value = true;
+            let occurrenceGuid = toGuidOrNull(attendanceOccurrenceGuid.value);
+            const locationGuidOrNull = toGuidOrNull(locationGuid.value);
+            const scheduleGuidOrNull = toGuidOrNull(scheduleGuid.value);
 
-            if (!attendanceOccurrenceGuid.value) {
+            if (!occurrenceGuid || areEqual(occurrenceGuid, emptyGuid)) {
                 // The attendance occurrence hasn't been created yet for the selected date, location, and schedule.
                 // Create it before printing the roster.
 
                 await getOrCreateAttendanceOccurrence({
                     attendanceOccurrenceDate: attendanceForDateIsoString.value,
-                    attendanceOccurrenceGuid: attendanceOccurrenceGuid.value,
-                    locationGuid: locationGuid.value,
-                    scheduleGuid: scheduleGuid.value
+                    locationGuid: locationGuidOrNull,
+                    scheduleGuid: scheduleGuidOrNull
                 });
+
+                // Update the occurrence guid to the created/retrieved attendance occurrence.
+                occurrenceGuid = toGuidOrNull(attendanceOccurrenceGuid.value);
             }
 
             const bag: GroupAttendanceDetailPrintRosterRequestBag = {
                 attendanceOccurrenceDate: attendanceForDateIsoString.value,
-                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
-                locationGuid: locationGuid.value,
-                scheduleGuid: scheduleGuid.value
+                attendanceOccurrenceGuid: occurrenceGuid,
+                locationGuid: locationGuidOrNull,
+                scheduleGuid: scheduleGuidOrNull
             };
 
             var result = await invokeBlockAction<GroupAttendanceDetailPrintRosterResponseBag>("PrintRoster", { bag });
@@ -856,12 +874,14 @@
      * Updates the type of the current AttendanceOccurrence.
      */
     async function updateAttendanceOccurrenceType(bag: GroupAttendanceDetailUpdateAttendanceOccurrenceTypeRequestBag): Promise<void> {
-        if (!attendanceOccurrenceGuid.value) {
+        const occurrenceGuid = toGuidOrNull(attendanceOccurrenceGuid.value);
+
+        if (!occurrenceGuid || areEqual(occurrenceGuid, emptyGuid)) {
             // Create a new occurrence if it hasn't been saved yet.
             await getOrCreateAttendanceOccurrence({
                 attendanceOccurrenceDate: attendanceForDateIsoString.value,
-                locationGuid: locationGuid.value,
-                scheduleGuid: scheduleGuid.value,
+                locationGuid: toGuidOrNull(locationGuid.value),
+                scheduleGuid: toGuidOrNull(scheduleGuid.value),
 
                 // This will ensure the updated attendance occurrence type is set on the existing or newly created occurrence.
                 updatedAttendanceOccurrenceTypeGuid: bag.attendanceOccurrenceTypeGuid,
@@ -888,13 +908,14 @@
 
         try {
             isSavingDidNotOccur.value = true;
+            const occurrenceGuid = toGuidOrNull(attendanceOccurrenceGuid.value);
 
-            if (!attendanceOccurrenceGuid.value) {
+            if (!occurrenceGuid || areEqual(occurrenceGuid, emptyGuid)) {
                 // Create a new occurrence if it hasn't been saved yet.
                 await getOrCreateAttendanceOccurrence({
                     attendanceOccurrenceDate: attendanceForDateIsoString.value,
-                    locationGuid: locationGuid.value,
-                    scheduleGuid: scheduleGuid.value,
+                    locationGuid: toGuidOrNull(locationGuid.value),
+                    scheduleGuid: toGuidOrNull(scheduleGuid.value),
 
                     // This will ensure the updated did not occur flag is set on the existing or newly created occurrence.
                     updatedDidNotOccur: bag.didNotOccur,
@@ -922,8 +943,8 @@
             // Create a new occurrence if it hasn't been saved yet.
             await getOrCreateAttendanceOccurrence({
                 attendanceOccurrenceDate: attendanceForDateIsoString.value,
-                locationGuid: locationGuid.value,
-                scheduleGuid: scheduleGuid.value,
+                locationGuid: toGuidOrNull(locationGuid.value),
+                scheduleGuid: toGuidOrNull(scheduleGuid.value),
 
                 // This will ensure the updated notes are set on the existing or newly created occurrence.
                 updatedNotes: notes.value,
@@ -931,7 +952,7 @@
         }
         else {
             const bag: GroupAttendanceDetailUpdateNotesRequestBag = {
-                attendanceOccurrenceGuid: attendanceOccurrenceGuid.value || emptyGuid,
+                attendanceOccurrenceGuid: toGuidOrNull(attendanceOccurrenceGuid.value) ?? emptyGuid,
                 notes: notes.value
             };
 

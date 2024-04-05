@@ -17,13 +17,13 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null | undefined>,
             required: false
         },
 
         entityTypeGuid: {
-            type: String as PropType<Guid>,
-            default: null
+            type: String as PropType<Guid | undefined>,
+            default: undefined
         },
 
         ...standardAsyncPickerProps

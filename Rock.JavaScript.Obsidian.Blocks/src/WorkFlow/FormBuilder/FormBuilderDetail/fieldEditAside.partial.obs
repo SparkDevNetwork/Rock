@@ -86,7 +86,7 @@
     import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { List } from "@Obsidian/Utility/linq";
     import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
@@ -297,8 +297,10 @@
      * Loads all the conditional sources that will be used by this field during filtering.
      */
     async function loadConditionalSources(): Promise<void> {
+        const providedGuid = toGuidOrNull(props.modelValue.guid);
+
         // Get all fields except our own.
-        const fields = props.formFields.filter(f => !areEqual(f.guid, props.modelValue.guid));
+        const fields = props.formFields.filter(f => !areEqual(f.guid, providedGuid));
 
         const getFilterSources = invokeBlockAction<FieldFilterSourceBag[]>("GetFilterSources", {
             formFields: fields

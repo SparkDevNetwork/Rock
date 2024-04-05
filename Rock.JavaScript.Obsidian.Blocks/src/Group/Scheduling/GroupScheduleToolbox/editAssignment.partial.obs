@@ -11,14 +11,14 @@
             {{ blockActionErrorMessage }}
         </NotificationBox>
 
-        <DropDownList v-model="selectedScheduleGuid"
+        <DropDownList v-model="selectedScheduleGuidOrEmptyString"
                       label="Schedule"
                       formGroupClasses="assignment-schedules"
                       rules="required"
                       :items="schedules"
                       :disabled="isBusy || !schedules.length" />
 
-        <DropDownList v-model="selectedLocationGuid"
+        <DropDownList v-model="selectedLocationGuidOrEmptyString"
                       label="Location"
                       formGroupClasses="assignment-location"
                       :items="locations"
@@ -35,13 +35,14 @@
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { AssignmentOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/assignmentOptionsBag";
     import { GetAssignmentOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/getAssignmentOptionsRequestBag";
     import { SaveAssignmentRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveAssignmentRequestBag";
     import { SaveAssignmentResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveAssignmentResponseBag";
     import { SchedulePreferenceAssignmentBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/schedulePreferenceAssignmentBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -82,9 +83,13 @@
 
     const schedules = ref<ListItemBag[]>([]);
     const locationsBySchedule = ref<Record<string, ListItemBag[]>>({});
-    const editAssignmentGuid = ref<string | null | undefined>(props.optionsRequest?.editAssignmentGuid);
-    const selectedScheduleGuid = ref("");
-    const selectedLocationGuid = ref("");
+    const editAssignmentGuid = ref<Guid | null | undefined>(toGuidOrNull(props.optionsRequest?.editAssignmentGuid));
+
+    /** The selected schedule guid (or empty string if none selected). */
+    const selectedScheduleGuidOrEmptyString = ref<string>("");
+
+    /** The selected location guid (or empty string if none selected). */
+    const selectedLocationGuidOrEmptyString = ref<string>("");
 
     // #endregion Values
 
@@ -95,7 +100,7 @@
     });
 
     const locations = computed((): ListItemBag[] => {
-        return locationsBySchedule.value?.[selectedScheduleGuid.value] ?? [];
+        return locationsBySchedule.value?.[selectedScheduleGuidOrEmptyString.value] ?? [];
     });
 
     const isBusy = computed((): boolean => {
@@ -104,7 +109,7 @@
     });
 
     const isSaveButtonDisabled = computed((): boolean => {
-        return isBusy.value || !selectedScheduleGuid.value;
+        return isBusy.value || !selectedScheduleGuidOrEmptyString.value;
     });
 
     // #endregion Computed Values
@@ -143,9 +148,9 @@
     function setInternalValues(options: AssignmentOptionsBag | null | undefined): void {
         schedules.value = options?.schedules ?? [];
         locationsBySchedule.value = options?.locationsBySchedule ?? {};
-        editAssignmentGuid.value = options?.editAssignmentGuid ?? "";
-        selectedScheduleGuid.value = options?.selectedScheduleGuid ?? "";
-        selectedLocationGuid.value = options?.selectedLocationGuid ?? "";
+        editAssignmentGuid.value = options?.editAssignmentGuid;
+        selectedScheduleGuidOrEmptyString.value = options?.selectedScheduleGuid ?? "";
+        selectedLocationGuidOrEmptyString.value = options?.selectedLocationGuid ?? "";
     }
 
     // #endregion Functions
@@ -164,11 +169,11 @@
         blockActionErrorMessage.value = "";
 
         const bag: SaveAssignmentRequestBag = {
-            selectedPersonGuid: props.optionsRequest?.selectedPersonGuid || emptyGuid,
-            selectedGroupGuid: props.optionsRequest?.selectedGroupGuid || emptyGuid,
-            editAssignmentGuid: editAssignmentGuid.value,
-            selectedScheduleGuid: selectedScheduleGuid.value || emptyGuid,
-            selectedLocationGuid: selectedLocationGuid.value
+            selectedPersonGuid: toGuidOrNull(props.optionsRequest?.selectedPersonGuid) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(props.optionsRequest?.selectedGroupGuid) ?? emptyGuid,
+            editAssignmentGuid: toGuidOrNull(editAssignmentGuid.value),
+            selectedScheduleGuid: toGuidOrNull(selectedScheduleGuidOrEmptyString.value) ?? emptyGuid,
+            selectedLocationGuid: toGuidOrNull(selectedLocationGuidOrEmptyString.value)
         };
 
         const result = await invokeBlockAction<SaveAssignmentResponseBag>("SaveAssignment", { bag });

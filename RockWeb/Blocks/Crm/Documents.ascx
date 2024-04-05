@@ -64,6 +64,7 @@
                     <%-- Edit Controls --%>
                         <div class="panel-body">
                         <asp:ValidationSummary ID="valAddEditDocumentSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" DisplayMode="BulletList" />
+                        <asp:CustomValidator ID="cvDocuement" runat="server" Display="None" />
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlAddEditDocumentType" runat="server" Label="Document Type" Required="true" OnSelectedIndexChanged="ddlAddEditDocumentType_SelectedIndexChanged" AutoPostBack="true"/>

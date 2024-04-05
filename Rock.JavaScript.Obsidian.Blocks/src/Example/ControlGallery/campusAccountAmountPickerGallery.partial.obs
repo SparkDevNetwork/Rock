@@ -49,17 +49,18 @@
     import CampusAccountAmountPicker from "@Obsidian/Controls/campusAccountAmountPicker.obs";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import { getSfcControlImportPath } from "./utils.partial";
+    import { Guid } from "@Obsidian/Types";
 
     const multiple = ref(false);
     const value = ref([]);
-    const campusGuid = ref(null);
+    const campusGuid = ref<Guid | null>(null);
     const hideCampusIfKnown = ref(false);
     const orderBySelectableAccountsIndex = ref(false);
     const includeInactiveCampuses = ref(false);
     const disableAccountCampusMappingLogic = ref(false);
     const accountHeaderTemplate = ref("{{ Account.PublicName }}");
 
-    const selectableAccountGuids = [
+    const selectableAccountGuids: Guid[] = [
         "bab250ee-cae6-4a41-9756-ad9327408be0",
         "67c6181c-1d8c-44d7-b262-b81e746f06d8",
         "4410306f-3fb5-4a57-9a80-09a3f9d40d0c",

@@ -208,6 +208,8 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -290,15 +292,20 @@
     };
 
     const onAddEditAttribute = async (attribute: PublicEditableAttributeBag | null | undefined): Promise<void> => {
+        const attributeGuid = toGuidOrNull(attribute?.guid);
 
-        if (attribute && !attribute.guid) {
+        if (attribute && (!attributeGuid || areEqual(attributeGuid, emptyGuid))) {
             eventAttribute.value = attribute;
             isAttributeModalOpen.value = true;
         }
         else {
-            const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", {
-                attributeGuid: attribute?.guid ?? null
-            });
+            const request: {
+                attributeGuid: Guid | null;
+            } = {
+                attributeGuid
+            };
+
+            const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", request);
 
             if (response.isSuccess && response.data) {
                 eventAttribute.value = response.data.editableAttribute;

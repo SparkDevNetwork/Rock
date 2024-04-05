@@ -10,7 +10,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
+                 entityTypeName="FollowingEventType"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -91,7 +91,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return config.entity?.name ?? "Following Event Type";
+        return config.entity?.name ?? "";
     });
 
     /**

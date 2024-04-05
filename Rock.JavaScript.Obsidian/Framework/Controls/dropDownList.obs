@@ -24,6 +24,7 @@
                                :mode="mode"
                                :getPopupContainer="getPopupContainer"
                                showArrow
+                               :virtual="false"
                                @dropdownVisibleChange="onDropdownVisibleChange">
                         <template #clearIcon>
                             <i class="fa fa-times"></i>

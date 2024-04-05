@@ -13,6 +13,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -21,7 +22,7 @@
         },
 
         groupGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 
@@ -60,7 +61,7 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: GroupMemberPickerGetGroupMembersOptionsBag = {
-            groupGuid: props.groupGuid
+            groupGuid: toGuidOrNull(props.groupGuid)
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupMemberPickerGetGroupMembers", undefined, options);
 

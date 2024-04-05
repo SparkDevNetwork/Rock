@@ -39,7 +39,7 @@
 
             <div v-if="isActionsColumnVisible" class="col-md-4 mt-3 mt-sm-0 schedule-toolbox-actions-column">
                 <DropDownList v-if="isFamilyMemberSelectorVisible"
-                              v-model="selectedPersonGuid"
+                              v-model="selectedPersonGuidOrEmptyString"
                               label="Family Members"
                               formGroupClasses="schedule-toolbox-select-family-member"
                               :items="schedulableFamilyMembers"
@@ -111,6 +111,7 @@
     import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
     import { InitializationBox } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/initializationBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<InitializationBox>();
 
@@ -125,7 +126,9 @@
     const scrollContainer = ref<HTMLElement | null>(null);
 
     const schedulableFamilyMembers = ref<ListItemBag[]>(config.schedulableFamilyMembers ?? []);
-    const selectedPersonGuid = ref<string>(schedulableFamilyMembers.value.length ? schedulableFamilyMembers.value[0].value ?? "" : "");
+
+    /** Selected person guid (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = ref<string>(schedulableFamilyMembers.value.length ? toGuidOrNull(schedulableFamilyMembers.value[0].value) ?? "" : "");
 
     const selectedGroup = ref<GroupBag | null | undefined>();
 
@@ -307,7 +310,7 @@
 
     // #endregion Watchers
 
-    provide(SelectedPersonGuid, selectedPersonGuid);
+    provide(SelectedPersonGuid, selectedPersonGuidOrEmptyString);
     provide(SelectedGroup, selectedGroup);
     provideSecurityGrant(securityGrant);
 

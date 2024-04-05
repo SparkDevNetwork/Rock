@@ -24,7 +24,7 @@
     const props = defineProps({
         /** The currently selected campus value(s). */
         modelValue: {
-            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null | undefined>,
             required: false
         },
 
@@ -42,13 +42,13 @@
 
         /** Campus type defined value guids that limit which campuses are included in the list of options. */
         campusTypeFilter: {
-            type: [String, Array] as PropType<Guid | Guid[]>,
+            type: [String, Array] as PropType<Guid | Guid[] | undefined>,
             required: false
         },
 
         /** Campus status defined value guids that limit which campuses are included in the list of options. */
         campusStatusFilter: {
-            type: [String, Array] as PropType<Guid | Guid[]>,
+            type: [String, Array] as PropType<Guid | Guid[] | undefined>,
             required: false
         },
 

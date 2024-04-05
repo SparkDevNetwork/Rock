@@ -54,7 +54,7 @@
 
     <Modal v-model="showEditAttributeModal" :title="editAttributeModalTitle" saveText="Save" @save="saveEditAttribute">
         <div v-if="showEntityTypeQualifier" class="well">
-            <DropDownList v-model="entityTypeGuidForEdit"
+            <DropDownList v-model="entityTypeGuidForEditOrEmptyString"
                           label="Entity Type"
                           grouped
                           enhanceForLongLists
@@ -97,7 +97,7 @@
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { emptyGuid, normalize as normalizeGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, normalize as normalizeGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
@@ -154,7 +154,7 @@
     // #region Attribute Editing
 
     // Fields for editing an attribute
-    const entityTypeGuidForEdit = ref("");
+    const entityTypeGuidForEditOrEmptyString = ref<string>("");
     const entityTypeQualifierColumn = ref("");
     const entityTypeQualifierValue = ref("");
 
@@ -181,15 +181,19 @@
      * @param row The row that represents the attribute.
      */
     const onEditAttribute = async (guid: Guid): Promise<void> => {
-        const result = await invokeBlockAction<EditAttribute>("GetEditAttribute", {
-            attributeGuid: guid || emptyGuid
-        });
+        const request: {
+            attributeGuid: Guid;
+        } = {
+            attributeGuid: toGuidOrNull(guid) ?? emptyGuid,
+        };
+
+        const result = await invokeBlockAction<EditAttribute>("GetEditAttribute", request);
 
         if (!result.isSuccess || !result.data) {
             return alert(result.errorMessage ?? "Unable to edit attribute.");
         }
 
-        entityTypeGuidForEdit.value = result.data.entityTypeGuid ?? entityTypeGuid.value;
+        entityTypeGuidForEditOrEmptyString.value = result.data.entityTypeGuid ?? entityTypeGuid.value;
         entityTypeQualifierColumn.value = result.data.entityTypeQualifierColumn ?? "";
         entityTypeQualifierValue.value = result.data.entityTypeQualifierValue ?? "";
         editableAttribute.value = result.data.attribute;
@@ -200,12 +204,19 @@
      * Save the attribute information to the server.
      */
     const saveEditAttribute = async (): Promise<void> => {
-        const result = await invokeBlockAction<GridRow>("SaveEditAttribute", {
-            entityTypeGuid: entityTypeGuidForEdit.value || entityTypeGuid.value,
+        const request: {
+            entityTypeGuid: Guid | null;
+            entityTypeQualifierColumn: string | null;
+            entityTypeQualifierValue: string | null;
+            attribute: PublicEditableAttributeBag | null;
+        } = {
+            entityTypeGuid: toGuidOrNull(entityTypeGuidForEditOrEmptyString.value) ?? toGuidOrNull(entityTypeGuid.value),
             entityTypeQualifierColumn: entityTypeQualifierColumn.value,
             entityTypeQualifierValue: entityTypeQualifierValue.value,
-            attribute: editableAttribute.value
-        });
+            attribute: editableAttribute.value,
+        };
+
+        const result = await invokeBlockAction<GridRow>("SaveEditAttribute", request);
 
         if (!result.isSuccess || !result.data) {
             return alert(result.errorMessage ?? "Unable to save attribute.");
@@ -259,7 +270,7 @@
             isIndexEnabled: false
         };
         showEditAttributeModal.value = true;
-        entityTypeGuidForEdit.value = entityTypeGuid.value;
+        entityTypeGuidForEditOrEmptyString.value = entityTypeGuid.value;
         entityTypeQualifierColumn.value = "";
         entityTypeQualifierValue.value = "";
     };
@@ -270,9 +281,13 @@
      * @param row The row on which the delete button was clicked.
      */
     const onDeleteAttribute = async (key: Guid): Promise<void> => {
-        const result = await invokeBlockAction<GridRow>("DeleteAttribute", {
-            attributeGuid: key || emptyGuid
-        });
+        const request: {
+            attributeGuid: Guid;
+        } = {
+            attributeGuid: toGuidOrNull(key) ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction<GridRow>("DeleteAttribute", request);
 
         if (!result.isSuccess) {
             return alert(result.errorMessage || "Unable to delete attribute.");
@@ -324,9 +339,13 @@
             return;
         }
 
-        const result = await invokeBlockAction<{ attribute: PublicAttributeBag, value: string }>("GetEditAttributeValue", {
-            attributeGuid: key || emptyGuid
-        });
+        const request: {
+            attributeGuid: Guid;
+        } = {
+            attributeGuid: toGuidOrNull(key) ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction<{ attribute: PublicAttributeBag, value: string }>("GetEditAttributeValue", request);
 
         if (!result.isSuccess || !result.data) {
             return alert(result.errorMessage ?? "Unable to edit attribute value.");
@@ -358,10 +377,15 @@
      * Performs the save operation for editing an attribute value.
      */
     async function saveEditAttributeValue(): Promise<void> {
-        const result = await invokeBlockAction<GridRow>("SaveEditAttributeValue", {
-            attributeGuid: editAttribute.value?.attributeGuid || emptyGuid,
+        const request: {
+            attributeGuid: Guid;
+            value: string | null;
+        } = {
+            attributeGuid: toGuidOrNull(editAttribute.value?.attributeGuid) ?? emptyGuid,
             value: editAttributeValue.value
-        });
+        };
+
+        const result = await invokeBlockAction<GridRow>("SaveEditAttributeValue", request);
 
         if (!result.isSuccess || !result.data) {
             return alert(result.errorMessage ?? "Unable to save attribute value.");

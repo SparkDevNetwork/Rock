@@ -186,8 +186,13 @@ namespace Rock.Lava
 
                 OnRender( context, result );
             }
-            catch ( Exception ex )
+            catch ( LavaInterruptException liex )
             {
+                // Re-throw the LavaInterruptionException so the Lava engine can catch it.
+                throw liex;
+            }
+            catch ( Exception ex )
+            {                
                 // Throw a user-friendly error message that is suitable for rendering to output.
                 throw new Exception( $"(Block: {this.InternalElementName}) {ex.Message}", ex );
             }

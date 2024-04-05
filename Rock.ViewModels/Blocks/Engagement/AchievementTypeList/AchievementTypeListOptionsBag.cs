@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Engagement.AchievementTypeList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AchievementTypeListOptionsBag
     {
         /// <summary>

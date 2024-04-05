@@ -14,6 +14,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailGetGroupLocationScheduleDatesRequestBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -87,8 +88,8 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const bag: GroupAttendanceDetailGetGroupLocationScheduleDatesRequestBag = {
-            groupGuid: props.groupGuid,
-            locationGuid: props.locationGuid,
+            groupGuid: toGuidOrNull(props.groupGuid),
+            locationGuid: toGuidOrNull(props.locationGuid),
             numberOfPreviousDaysToShow: props.numberOfPreviousDaysToShow,
             occurrenceDate: props.date?.toISOString()
         };

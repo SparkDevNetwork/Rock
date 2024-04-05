@@ -1,4 +1,20 @@
-﻿using Rock.Attribute;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Core.SmartSearch;
 using Rock.Data;
 using Rock.Mobile;
@@ -12,7 +28,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Core
 {
     /// <summary>
     /// Performs a search using any of the configured search components and displays the results.
@@ -30,8 +46,8 @@ namespace Rock.Blocks.Types.Mobile
     [IconCssClass( "fa fa-search" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
-    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_SEARCH_V2_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CORE_SEARCH_V2 )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_SMART_SEARCH_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CORE_SMART_SEARCH )]
 
     #region Block Attributes
 

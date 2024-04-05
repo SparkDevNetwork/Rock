@@ -29,7 +29,6 @@
 </template>
 
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed, PropType, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
@@ -119,7 +118,7 @@
         return item.category === "disabled" || props.disabled;
     }
 
-    const getItemUniqueId = (uniqueId: Guid, item: ListItemBag): string => {
+    const getItemUniqueId = (uniqueId: string, item: ListItemBag): string => {
         const key = (item.value ?? "").replace(" ", "-");
 
         return `${uniqueId}-${key}`;
