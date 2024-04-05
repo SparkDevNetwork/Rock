@@ -80,7 +80,7 @@
 
                                 <div v-else-if="config.scheduleSelectionMode === GroupAttendanceDetailScheduleSelectionMode.Readonly">
                                     <RockLabel>Schedule</RockLabel>
-                                    <div>{{ config.scheduleLabel }}</div>
+                                    <div v-html="config.scheduleLabel"></div>
                                 </div>
                             </template>
                         </div>
