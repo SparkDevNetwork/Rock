@@ -428,6 +428,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUP_BIRTHDATE_RANGE = "F1A43EAB-D682-403F-A05E-CCFFBF879F32";
 
+        /// <summary>
+        /// Group attribute to store the birth month range of the group
+        /// </summary>
+        public const string GROUP_BIRTH_MONTH_RANGE = "C86610F1-A011-474A-BB60-1E131F2EEE95";
+
         #endregion
 
         #region Communication Module
