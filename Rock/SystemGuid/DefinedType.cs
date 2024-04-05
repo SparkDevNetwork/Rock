@@ -391,6 +391,12 @@ namespace Rock.SystemGuid
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
 
         /// <summary>
+        /// The "Saved Check-in Configurations" defined type that provides a list
+        /// of saved configuration settings for quickly starting up kiosks.
+        /// </summary>
+        public const string SAVED_CHECKIN_CONFIGURATIONS = "F986008C-99BB-4C48-8A6E-38C8A121D75B";
+
+        /// <summary>
         /// The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset.
         /// </summary>
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
