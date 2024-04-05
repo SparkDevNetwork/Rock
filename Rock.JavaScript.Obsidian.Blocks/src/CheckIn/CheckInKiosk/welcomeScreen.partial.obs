@@ -46,7 +46,7 @@
                     <path d="M92.8125 97.5H69.375V69.375H83.4375" stroke="#425466" stroke-width="7.14844" stroke-miterlimit="10" />
                 </svg>
             </span>
-            <span class="subtitle">Scan A Barcode</span>
+            <span class="subtitle">Scan Barcode</span>
         </RockButton>
     </div>
 </template>

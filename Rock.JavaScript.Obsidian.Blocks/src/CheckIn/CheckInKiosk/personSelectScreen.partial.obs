@@ -26,13 +26,13 @@
                         </span>
                     </span>
 
-                    <span v-if="attendee.isUnavailable" class="unavailable-reason">
+                    <span v-if="attendee.isUnavailable" class="message">
                         {{ attendee.unavailableMessage }}
                     </span>
 
                     <span v-if="isAutoSelectMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
-                                class="btn btn-info change-selection-button"
-                                @click.stop="onChangeSelection(attendee)">
+                          class="btn btn-info change-selection-button"
+                          @click.stop="onChangeSelection(attendee)">
                         Change
                     </span>
                 </RockButton>

@@ -493,7 +493,7 @@
     font-size: var(--font-size-btn-secondary);
 }
 
-.check-in-page .person-select-screen .attendee-button .unavailable-reason {
+.check-in-page .person-select-screen .attendee-button .message {
     font-size: var(--font-size-btn-secondary);
 }
 

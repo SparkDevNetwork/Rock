@@ -27,9 +27,9 @@
 
                         <RockButton btnType="default"
                                     btnSize="sm"
-                                    class="use-custom-configuration-button"
+                                    class="custom-configuration-button"
                                     @click="onCustomConfiguration">
-                            Use Custom Configuration
+                            Custom Configuration
                         </RockButton>
                     </div>
 
@@ -48,15 +48,15 @@
                         <h2>Check-in Setup Options</h2>
 
                         <RockButton btnType="default"
-                                    class="save-new-configuration-button"
-                                    @click="onSaveNewConfiguration">
+                                    class="save-configuration-button"
+                                    @click="onSaveConfiguration">
                             Save New Configuration
                         </RockButton>
 
                         <RockButton btnType="default"
-                                    class="use-custom-configuration-button"
-                                    @click="onUseSavedConfiguration">
-                            Use Saved Configuration
+                                    class="saved-configurations-button"
+                                    @click="onSavedConfigurations">
+                            Saved Configurations
                         </RockButton>
                     </div>
 
@@ -519,16 +519,16 @@
     }
 
     /**
-     * Event handler for when the Use Saved Configuration button is clicked.
+     * Event handler for when the Saved Configurations button is clicked.
      */
-    function onUseSavedConfiguration(): void {
+    function onSavedConfigurations(): void {
         isUsingCustomConfiguration.value = false;
     }
 
     /**
-     * Event handler for when the Save New Configuration button is clicked.
+     * Event handler for when the Save Configuration button is clicked.
      */
-    function onSaveNewConfiguration(): void {
+    function onSaveConfiguration(): void {
         alert("Not Implemented");
     }
 
