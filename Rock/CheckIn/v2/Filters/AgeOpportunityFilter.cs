@@ -80,18 +80,8 @@ namespace Rock.CheckIn.v2.Filters
                 return true;
             }
 
-            var birthMonthRangeMatch = CheckBirthMonthMatches( Person.Person.BirthDate?.DateTime,
-                group.CheckInData.MinimumBirthMonth,
-                group.CheckInData.MaximumBirthMonth,
-                TemplateConfiguration.IsAgeRequired );
-
-            if ( birthMonthRangeMatch == true )
-            {
-                return true;
-            }
-
             // If all checks are indeterminate, then consider it a match.
-            return !ageRangeMatch.HasValue && !birthdateRangeMatch.HasValue && !birthMonthRangeMatch.HasValue;
+            return !ageRangeMatch.HasValue && !birthdateRangeMatch.HasValue;
         }
 
         /// <summary>
@@ -194,73 +184,6 @@ namespace Rock.CheckIn.v2.Filters
             if ( birthdate.HasValue )
             {
                 return CheckBirthdateMatches( birthdate.Value, minimumBirthdate, maximumBirthdate );
-            }
-            else
-            {
-                // If birthdate is required but we don't have one, then no match.
-                return isBirthdateRequired ? false : ( bool? ) null;
-            }
-        }
-
-        /// <summary>
-        /// Checks if the birth monthmatches the specified month range.
-        /// </summary>
-        /// <param name="birthdate">The known birthdate of the person.</param>
-        /// <param name="minimumMonth">The minimum birth month.</param>
-        /// <param name="maximumMonth">The maximum birth month.</param>
-        /// <returns><c>true</c> if <paramref name="birthdate"/> matches <paramref name="minimumMonth"/> and <paramref name="maximumMonth"/>, <c>false</c> otherwise.</returns>
-        protected static bool CheckBirthMonthMatches( DateTime birthdate, int? minimumMonth, int? maximumMonth )
-        {
-            if ( minimumMonth.HasValue && maximumMonth.HasValue && maximumMonth.Value < minimumMonth.Value )
-            {
-                // If both are provided, then allow for a range like Nov - Feb
-                // which would include Nov, Dec, Jan and Feb. This means we
-                // basically need to invert the logic.
-
-                if ( birthdate.Month >= minimumMonth.Value )
-                {
-                    return true;
-                }
-
-                if ( birthdate.Month <= minimumMonth.Value )
-                {
-                    return true;
-                }
-
-                return false;
-            }
-
-            if ( minimumMonth.HasValue && birthdate.Month < minimumMonth.Value )
-            {
-                return false;
-            }
-
-            if ( maximumMonth.HasValue && birthdate.Month > maximumMonth.Value )
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Checks if the birth month matches the specified month range.
-        /// </summary>
-        /// <param name="birthdate">The known birthdate of the person.</param>
-        /// <param name="minimumMonth">The minimum birth month.</param>
-        /// <param name="maximumMonth">The maximum birth month.</param>
-        /// <param name="isBirthdateRequired">if set to <c>true</c> and no age is provided then <c>false</c> will be returned.</param>
-        /// <returns><c>true</c> if <paramref name="birthdate"/> matches <paramref name="minimumMonth"/> and <paramref name="maximumMonth"/>, <c>false</c> otherwise.</returns>
-        protected static bool? CheckBirthMonthMatches( DateTime? birthdate, int? minimumMonth, int? maximumMonth, bool isBirthdateRequired )
-        {
-            if ( !minimumMonth.HasValue && !maximumMonth.HasValue )
-            {
-                return null;
-            }
-
-            if ( birthdate.HasValue )
-            {
-                return CheckBirthMonthMatches( birthdate.Value, minimumMonth, maximumMonth );
             }
             else
             {

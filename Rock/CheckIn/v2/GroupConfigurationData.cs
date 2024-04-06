@@ -138,7 +138,7 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="groupCache">The group cache.</param>
         /// <returns>A tuple that contains the minimum and maximum values.</returns>
-        private static (decimal? MinimumAge, decimal? MaximumAge) GetAgeRange( GroupCache groupCache )
+        private static (decimal? MinimumAge, decimal? MaximumAge) GetAgeRange( IHasAttributes groupCache )
         {
             // Get the age ranges.
             var ageRange = groupCache.GetAttributeValue( "AgeRange" ).ToStringSafe();

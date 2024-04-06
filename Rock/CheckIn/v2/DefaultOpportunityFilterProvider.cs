@@ -36,6 +36,7 @@ namespace Rock.CheckIn.v2
         private static readonly List<Type> _defaultGroupFilterTypes = new List<Type>
         {
             typeof( AgeOpportunityFilter ),
+            typeof( BirthMonthOpportunityFilter ),
             typeof( GradeOpportunityFilter ),
             typeof( GenderOpportunityFilter ),
             typeof( MembershipOpportunityFilter ),
