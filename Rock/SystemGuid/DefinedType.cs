@@ -361,6 +361,11 @@ namespace Rock.SystemGuid
         public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
 
         /// <summary>
+        /// Theme Purpose
+        /// </summary>
+        public const string THEME_PURPOSE = "05189496-F60C-4563-8F10-42CEBB470C59";
+
+        /// <summary>
         /// Campus Topic Type
         /// </summary>
         public const string TOPIC_TYPE = "41141100-8fc6-44bb-aa36-9778eeda7f62";

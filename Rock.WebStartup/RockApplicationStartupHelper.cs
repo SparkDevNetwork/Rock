@@ -39,6 +39,7 @@ using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.WebFarm;
 
 namespace Rock.WebStartup
@@ -231,6 +232,12 @@ namespace Rock.WebStartup
             LogStartupMessage( "Starting the Rock Fast Queue" );
             Rock.Transactions.RockQueue.StartFastQueue();
             ShowDebugTimingMessage( "Rock Fast Queue" );
+
+            bool anyThemesUpdated = UpdateThemes();
+            if ( anyThemesUpdated )
+            {
+                LogStartupMessage( "Themes are updated" );
+            }
         }
 
         /// <summary>
@@ -568,6 +575,35 @@ namespace Rock.WebStartup
             }
 
             return migrationsWereRun;
+        }
+
+
+        /// <summary>
+        /// Update the themes.
+        /// </summary>
+        /// <returns></returns>
+        private static bool UpdateThemes()
+        {
+            bool anyThemesUpdated = false;
+            var rockContext = new RockContext();
+            var themeService = new ThemeService( rockContext );
+            var themes = RockTheme.GetThemes();
+            if ( themes != null && themes.Any() )
+            {
+                var dbThemes = themeService.Queryable().ToList();
+                foreach ( var theme in themes.Where( a => !dbThemes.Any( b => b.Name == a.Name ) ) )
+                {
+                    var dbTheme = new Theme();
+                    dbTheme.Name = theme.Name;
+                    dbTheme.IsSystem = theme.IsSystem;
+                    dbTheme.RootPath = theme.AbsolutePath.ToString();
+                    themeService.Add( dbTheme );
+                    rockContext.SaveChanges();
+                    anyThemesUpdated = true;
+                }
+            }
+
+            return anyThemesUpdated;
         }
 
         /// <summary>

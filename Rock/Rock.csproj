@@ -1085,6 +1085,7 @@
     <Compile Include="Model\CMS\ContentCollection\ContentCollection.cs" />
     <Compile Include="Model\CMS\ContentCollection\ContentCollection.Logic.cs" />
     <Compile Include="Model\CMS\ContentCollection\ContentCollectionService.cs" />
+    <Compile Include="Model\CMS\Theme\Theme.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
@@ -1116,6 +1117,7 @@
     <Compile Include="Model\CodeGenerated\SnippetService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\SnippetTypeService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\SystemPhoneNumberService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\ThemeService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\SnippetType\SnippetType.cs" />
     <Compile Include="Model\Communication\Snippet\Snippet.cs" />
     <Compile Include="Model\Communication\Communication\CommunicationType.cs" />
