@@ -40,14 +40,14 @@ namespace Rock.CheckIn.v2
         /// this value.
         /// </summary>
         /// <value>The minimum age requirement.</value>
-        public decimal? MinimumAge { get; }
+        public virtual decimal? MinimumAge { get; }
 
         /// <summary>
         /// Gets the maximum age requirement or <c>null</c> if there is no
         /// maximum. The person's age must be less than this value.
         /// </summary>
         /// <value>The maximum age requirement.</value>
-        public decimal? MaximumAge { get; }
+        public virtual decimal? MaximumAge { get; }
 
         /// <summary>
         /// Gets the minimum birthdate requirement or <c>null</c> if there
@@ -55,14 +55,14 @@ namespace Rock.CheckIn.v2
         /// equal to this value.
         /// </summary>
         /// <value>The minimum birthdate requirement.</value>
-        public DateTime? MinimumBirthdate { get; }
+        public virtual DateTime? MinimumBirthdate { get; }
 
         /// <summary>
         /// Gets the maximum birthdate requirement or <c>null</c> if there
         /// is no maximum. The person's birthdate must be less than this value.
         /// </summary>
         /// <value>The maximum birthdate requirement.</value>
-        public DateTime? MaximumBirthdate { get; }
+        public virtual DateTime? MaximumBirthdate { get; }
 
         /// <summary>
         /// Gets the minimum birth month requirement or <c>null</c> if there
@@ -70,7 +70,7 @@ namespace Rock.CheckIn.v2
         /// than or equal to this value.
         /// </summary>
         /// <value>The minimum birth month requirement.</value>
-        public int? MinimumBirthMonth { get; }
+        public virtual int? MinimumBirthMonth { get; }
 
         /// <summary>
         /// Gets the maximum birth month requirement or <c>null</c> if there
@@ -78,7 +78,7 @@ namespace Rock.CheckIn.v2
         /// than or equal to this value.
         /// </summary>
         /// <value>The maximum grade offset requirement.</value>
-        public int? MaximumBirthMonth { get; }
+        public virtual int? MaximumBirthMonth { get; }
 
         /// <summary>
         /// Gets the minimum grade offset requirement or <c>null</c> if there
@@ -86,7 +86,7 @@ namespace Rock.CheckIn.v2
         /// equal to this value.
         /// </summary>
         /// <value>The minimum grade offset requirement.</value>
-        public int? MinimumGradeOffset { get; }
+        public virtual int? MinimumGradeOffset { get; }
 
         /// <summary>
         /// Gets the maximum grade offset requirement or <c>null</c> if there
@@ -94,25 +94,35 @@ namespace Rock.CheckIn.v2
         /// equal to this value.
         /// </summary>
         /// <value>The maximum grade offset requirement.</value>
-        public int? MaximumGradeOffset { get; }
+        public virtual int? MaximumGradeOffset { get; }
 
         /// <summary>
         /// Gets the data view unique identifiers for this group. An individual
         /// must be a member of all of these data views.
         /// </summary>
         /// <value>The data view unique identifiers.</value>
-        public IReadOnlyCollection<Guid> DataViewGuids { get; }
+        public virtual IReadOnlyCollection<Guid> DataViewGuids { get; }
 
         /// <summary>
         /// Gets the gender that an individual must be in order to check-in to
         /// this group or <c>null</c> if there is no requirement.
         /// </summary>
         /// <value>The required gender.</value>
-        public Gender? Gender { get; }
+        public virtual Gender? Gender { get; }
 
         #endregion
 
         #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupConfigurationData"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This is meant to be used by unit tests only.
+        /// </remarks>
+        protected GroupConfigurationData()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupConfigurationData"/> class.
@@ -123,7 +133,7 @@ namespace Rock.CheckIn.v2
         {
             (MinimumAge, MaximumAge) = GetAgeRange( groupCache );
             (MinimumBirthdate, MaximumBirthdate) = GetBirthdateRange( groupCache );
-            (MinimumGradeOffset, MaximumGradeOffset) = GetGradeOffsetRange( groupCache );
+            (MinimumGradeOffset, MaximumGradeOffset) = GetGradeOffsetRange( groupCache, rockContext );
             (MinimumBirthMonth, MaximumBirthMonth) = GetBirthMonthRange( groupCache );
             Gender = groupCache.GetAttributeValue( "Gender" ).ConvertToEnumOrNull<Gender>();
             DataViewGuids = groupCache.GetAttributeValue( "DataView" ).SplitDelimitedValues().AsGuidList();
@@ -192,8 +202,9 @@ namespace Rock.CheckIn.v2
         /// Gets the grade range specified by the group attribute value.
         /// </summary>
         /// <param name="groupCache">The group cache.</param>
+        /// <param name="rockContext">The database context to use when loading data for cache.</param>
         /// <returns>A tuple that contains the minimum and maximum values.</returns>
-        private static (int? MinimumGradeOffset, int? MaximumGradeOffset) GetGradeOffsetRange( IHasAttributes groupCache )
+        private static (int? MinimumGradeOffset, int? MaximumGradeOffset) GetGradeOffsetRange( IHasAttributes groupCache, RockContext rockContext )
         {
             string gradeOffsetRange = groupCache.GetAttributeValue( "GradeRange" ) ?? string.Empty;
             var gradeOffsetRangePair = gradeOffsetRange.Split( new char[] { ',' }, StringSplitOptions.None ).AsGuidOrNullList().ToArray();
@@ -204,11 +215,11 @@ namespace Rock.CheckIn.v2
             }
 
             var minGradeDefinedValue = gradeOffsetRangePair[0].HasValue
-                ? DefinedValueCache.Get( gradeOffsetRangePair[0].Value )
+                ? DefinedValueCache.Get( gradeOffsetRangePair[0].Value, rockContext )
                 : null;
 
             var maxGradeDefinedValue = gradeOffsetRangePair[1].HasValue
-                ? DefinedValueCache.Get( gradeOffsetRangePair[1].Value )
+                ? DefinedValueCache.Get( gradeOffsetRangePair[1].Value, rockContext )
                 : null;
 
             // NOTE: the grade offsets are actually reversed because the range

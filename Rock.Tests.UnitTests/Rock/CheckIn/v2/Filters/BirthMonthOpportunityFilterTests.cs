@@ -22,7 +22,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, 4, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity();
+            var groupOpportunity = CreateGroupOpportunity( null, null );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -36,7 +36,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter();
-            var groupOpportunity = CreateGroupOpportunity();
+            var groupOpportunity = CreateGroupOpportunity( null, null );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -50,7 +50,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter();
-            var groupOpportunity = CreateGroupOpportunity( "3," );
+            var groupOpportunity = CreateGroupOpportunity( 3, null );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -64,7 +64,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter();
-            var groupOpportunity = CreateGroupOpportunity( ",3" );
+            var groupOpportunity = CreateGroupOpportunity( null, 3 );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -86,7 +86,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, 4, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( "9," );
+            var groupOpportunity = CreateGroupOpportunity( 9, null );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -100,7 +100,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, 9, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( "9," );
+            var groupOpportunity = CreateGroupOpportunity( 9, null );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -117,7 +117,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( "9," );
+            var groupOpportunity = CreateGroupOpportunity( 9, null );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -139,7 +139,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( ",9" );
+            var groupOpportunity = CreateGroupOpportunity( null, 9 );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -153,7 +153,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, 9, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( ",9" );
+            var groupOpportunity = CreateGroupOpportunity( null, 9 );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -170,7 +170,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( ",9" );
+            var groupOpportunity = CreateGroupOpportunity( null, 9 );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -186,12 +186,12 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 6 )]
         [DataRow( 7 )]
         [DataRow( 8 )]
-        [DataRow( 8 )]
+        [DataRow( 9 )]
         public void IsGroupValid_MinMaxMonthFilterWithInRangeBirthMonth_IsTrue( int month )
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( "3,9" );
+            var groupOpportunity = CreateGroupOpportunity( 3, 9 );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -210,7 +210,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( "3,9" );
+            var groupOpportunity = CreateGroupOpportunity( 3, 9 );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -231,7 +231,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( "9,3" );
+            var groupOpportunity = CreateGroupOpportunity( 9, 3 );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -250,7 +250,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         {
             // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
-            var groupOpportunity = CreateGroupOpportunity( "9,3" );
+            var groupOpportunity = CreateGroupOpportunity( 9, 3 );
 
             // Act
             var isValid = filter.IsGroupValid( groupOpportunity );
@@ -294,24 +294,19 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         /// Creates a group opportunity with the specified birth month range
         /// attribute value.
         /// </summary>
-        /// <param name="birthMonthRange">The birth month range.</param>
+        /// <param name="minBirthMonth">The minimum birth month value or <c>null</c>.</param>
+        /// <param name="maxBirthMonth">The maximum birth month value or <c>null</c>.</param>
         /// <returns>A new instance of <see cref="GroupOpportunity"/>.</returns>
-        private GroupOpportunity CreateGroupOpportunity( string birthMonthRange = null )
+        private GroupOpportunity CreateGroupOpportunity( int? minBirthMonth, int? maxBirthMonth )
         {
-            var attributeValues = new Dictionary<string, AttributeValueCache>();
+            var groupConfigurationMock = new Mock<GroupConfigurationData>( MockBehavior.Strict );
 
-            if ( birthMonthRange != null )
-            {
-                attributeValues.Add( "BirthMonthRange", new AttributeValueCache( 0, null, birthMonthRange ) );
-            }
-
-            var groupCacheMock = new Mock<GroupCache>( MockBehavior.Strict );
-
-            groupCacheMock.Setup( m => m.AttributeValues ).Returns( attributeValues );
+            groupConfigurationMock.Setup( m => m.MinimumBirthMonth ).Returns( minBirthMonth );
+            groupConfigurationMock.Setup( m => m.MaximumBirthMonth ).Returns( maxBirthMonth );
 
             return new GroupOpportunity
             {
-                CheckInData = new GroupConfigurationData( groupCacheMock.Object, null )
+                CheckInData = groupConfigurationMock.Object
             };
         }
 

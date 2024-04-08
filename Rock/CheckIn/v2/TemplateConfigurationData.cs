@@ -41,42 +41,42 @@ namespace Rock.CheckIn.v2
         /// ability level of the current individual.
         /// </summary>
         /// <value>How check-in should gather the ability level.</value>
-        public AbilityLevelDeterminationMode AbilityLevelDetermination { get; }
+        public virtual AbilityLevelDeterminationMode AbilityLevelDetermination { get; }
 
         /// <summary>
         /// Gets the achievement type unique identifiers that will be used
         /// for check-in celebrations.
         /// </summary>
         /// <value>The achievement type unique identifiers.</value>
-        public IReadOnlyCollection<Guid> AchievementTypeGuids { get; }
+        public virtual IReadOnlyCollection<Guid> AchievementTypeGuids { get; }
 
         /// <summary>
         /// Gets the number of days back the AutoSelect feature will use to
         /// determine automatic selections. A value of <c>0</c> will disable.
         /// </summary>
         /// <value>The number of days back.</value>
-        public int AutoSelectDaysBack { get; }
+        public virtual int AutoSelectDaysBack { get; }
 
         /// <summary>
         /// Gets the options that should be automatically selected if an
         /// individual has previously checked-in.
         /// </summary>
         /// <value>The options to automatically select.</value>
-        public AutoSelectMode AutoSelect { get; }
+        public virtual AutoSelectMode AutoSelect { get; }
 
         /// <summary>
         /// Gets the type of check-in experience to use. Family check-in allows
         /// more than one person in the family to be checked in at a time.
         /// </summary>
         /// <value>The type of check-in experience to use.</value>
-        public KioskCheckInMode KioskCheckInType { get; }
+        public virtual KioskCheckInMode KioskCheckInType { get; }
 
         /// <summary>
         /// Gets or sets the type of the family search configured for
         /// the configuration.
         /// </summary>
         /// <value>The type of the family search.</value>
-        public FamilySearchMode FamilySearchType { get; }
+        public virtual FamilySearchMode FamilySearchType { get; }
 
         /// <summary>
         /// Gets a value indicating whether age is required for check-in.
@@ -85,26 +85,26 @@ namespace Rock.CheckIn.v2
         /// that area or group.
         /// </summary>
         /// <value><c>true</c> if age is required for check-in; otherwise, <c>false</c>.</value>
-        public bool IsAgeRequired { get; }
+        public virtual bool IsAgeRequired { get; }
 
         /// <summary>
         /// Gets a value indicating whether self checkout is allowed at the kiosk.
         /// </summary>
         /// <value><c>true</c> if self checkout is allowed at the kiosk; otherwise, <c>false</c>.</value>
-        public bool IsCheckoutAtKioskAllowed { get; }
+        public virtual bool IsCheckoutAtKioskAllowed { get; }
 
         /// <summary>
         /// Gets a value indicating whether checkout is allowed in the manager.
         /// </summary>
         /// <value><c>true</c> if checkout is allowed in the manager; otherwise, <c>false</c>.</value>
-        public bool IsCheckoutInManagerAllowed { get; }
+        public virtual bool IsCheckoutInManagerAllowed { get; }
 
         /// <summary>
         /// Gets a value indicating whether to prevent people from being
         /// checked in to a specific schedule more than once.
         /// </summary>
         /// <value><c>true</c> if duplicate check-ins are prevented; otherwise, <c>false</c>.</value>
-        public bool IsDuplicateCheckInPrevented { get; }
+        public virtual bool IsDuplicateCheckInPrevented { get; }
 
         /// <summary>
         /// Gets a value indicating whether a grade is required for check-in.
@@ -113,21 +113,21 @@ namespace Rock.CheckIn.v2
         /// that area or group.
         /// </summary>
         /// <value><c>true</c> if grade is required; otherwise, <c>false</c>.</value>
-        public bool IsGradeRequired { get; }
+        public virtual bool IsGradeRequired { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether inactive people should
         /// be excluded from the check-in process.
         /// </summary>
         /// <value><c>true</c> if inactive people should be excluded; otherwise, <c>false</c>.</value>
-        public bool IsInactivePersonExcluded { get; }
+        public virtual bool IsInactivePersonExcluded { get; }
 
         /// <summary>
         /// Gets a value indicating whether the current location occupancy
         /// counts should be displayed when selecting a location.
         /// </summary>
         /// <value><c>true</c> if current location occupancy counts should be displayed; otherwise, <c>false</c>.</value>
-        public bool IsLocationCountDisplayed { get; }
+        public virtual bool IsLocationCountDisplayed { get; }
 
         /// <summary>
         /// Gets a value indicating whether the numeric only portion of the
@@ -135,7 +135,7 @@ namespace Rock.CheckIn.v2
         /// always randomized.
         /// </summary>
         /// <value><c>true</c> if numeric only portion of the security code is randomized; otherwise, <c>false</c>.</value>
-        public bool IsNumericSecurityCodeRandom { get; }
+        public virtual bool IsNumericSecurityCodeRandom { get; }
 
         /// <summary>
         /// Gets a value indicating whether an override option is available in
@@ -143,14 +143,14 @@ namespace Rock.CheckIn.v2
         /// person to bypass check-in requirements.
         /// </summary>
         /// <value><c>true</c> if the kiosk override option is available; otherwise, <c>false</c>.</value>
-        public bool IsOverrideAvailable { get; }
+        public virtual bool IsOverrideAvailable { get; }
 
         /// <summary>
         /// Gets a value indicating whether individual photos should be hidden
         /// on public kiosks.
         /// </summary>
         /// <value><c>true</c> if photos should be hidden; otherwise, <c>false</c>.</value>
-        public bool IsPhotoHidden { get; }
+        public virtual bool IsPhotoHidden { get; }
 
         /// <summary>
         /// Gets a value indicating whether the presence system is enabled.
@@ -158,7 +158,7 @@ namespace Rock.CheckIn.v2
         /// automatically.
         /// </summary>
         /// <value><c>true</c> if the presence system is enabled; otherwise, <c>false</c>.</value>
-        public bool IsPresenceEnabled { get; }
+        public virtual bool IsPresenceEnabled { get; }
 
         /// <summary>
         /// Gets a value indicating whether the same security code should be
@@ -166,7 +166,7 @@ namespace Rock.CheckIn.v2
         /// session.
         /// </summary>
         /// <value><c>true</c> if the same security could should be used for a single family check-in session; otherwise, <c>false</c>.</value>
-        public bool IsSameCodeUsedForFamily { get; }
+        public virtual bool IsSameCodeUsedForFamily { get; }
 
         /// <summary>
         /// Gets a value indicating whether to attempt to use the same options
@@ -174,40 +174,40 @@ namespace Rock.CheckIn.v2
         /// service schedule.
         /// </summary>
         /// <value><c>true</c> if the same options from the first service will be used; otherwise, <c>false</c>.</value>
-        public bool IsSameOptionUsed { get; }
+        public virtual bool IsSameOptionUsed { get; }
 
         /// <summary>
         /// Gets a value indicating whether the supervisor screen is available
         /// to kiosks after entering a pin number.
         /// </summary>
         /// <value><c>true</c> if the supervisor screen is available; otherwise, <c>false</c>.</value>
-        public bool IsSupervisorEnabled { get; }
+        public virtual bool IsSupervisorEnabled { get; }
 
         /// <summary>
         /// Gets or sets the maximum number of family search results.
         /// </summary>
         /// <value>The maximum number of family search results.</value>
-        public int? MaximumNumberOfResults { get; }
+        public virtual int? MaximumNumberOfResults { get; }
 
         /// <summary>
         /// Gets or sets the maximum length of the phone number during
         /// family search.
         /// </summary>
         /// <value>The maximum length of the phone number.</value>
-        public int? MaximumPhoneNumberLength { get; }
+        public virtual int? MaximumPhoneNumberLength { get; }
 
         /// <summary>
         /// Gets or sets the minimum length of the phone number during
         /// family search.
         /// </summary>
         /// <value>The minimum length of the phone number.</value>
-        public int? MinimumPhoneNumberLength { get; }
+        public virtual int? MinimumPhoneNumberLength { get; }
 
         /// <summary>
         /// Gets or sets the type of the phone search used in family search.
         /// </summary>
         /// <value>The type of the phone search used in family search.</value>
-        public PhoneSearchMode PhoneSearchType { get; }
+        public virtual PhoneSearchMode PhoneSearchType { get; }
 
         /// <summary>
         /// Gets the kiosk refresh interval. This is used by some kiosks to
@@ -215,42 +215,42 @@ namespace Rock.CheckIn.v2
         /// to see if any configuration data has changed.
         /// </summary>
         /// <value>The kiosk refresh interval in seconds.</value>
-        public int RefreshInterval { get; }
+        public virtual int RefreshInterval { get; }
 
         /// <summary>
         /// Gets the regular expression filter that will be run against the
         /// search term before a phone number search is performed.
         /// </summary>
         /// <value>The regular expression filter.</value>
-        public string RegularExpressionFilter { get; }
+        public virtual string RegularExpressionFilter { get; }
 
         /// <summary>
         /// Gets the length of the alpha character sequence for the security
         /// codes generated during check-in.
         /// </summary>
         /// <value>The length of the security code alpha character sequence.</value>
-        public int SecurityCodeAlphaLength { get; }
+        public virtual int SecurityCodeAlphaLength { get; }
 
         /// <summary>
         /// Gets the length of the alpha-numeric character sequence for the
         /// security codes generated during check-in.
         /// </summary>
         /// <value>The length of the security code alpha-numeric character sequence.</value>
-        public int SecurityCodeAlphaNumericLength { get; }
+        public virtual int SecurityCodeAlphaNumericLength { get; }
 
         /// <summary>
         /// Gets the length of the numeric character sequence for the security
         /// codes generated during check-in.
         /// </summary>
         /// <value>The length of the security code numeric character sequence.</value>
-        public int SecurityCodeNumericLength { get; }
+        public virtual int SecurityCodeNumericLength { get; }
 
         /// <summary>
         /// Gets a value that determines how the custom success lava template
         /// will be displayed at the end of the check-in session.
         /// </summary>
         /// <value>A value that determines how the custom success lava tempalte will be displayed.</value>
-        public SuccessLavaTemplateDisplayMode SuccessLavaTemplateDisplay { get; }
+        public virtual SuccessLavaTemplateDisplayMode SuccessLavaTemplateDisplay { get; }
 
         #endregion
 
@@ -262,7 +262,7 @@ namespace Rock.CheckIn.v2
         /// Ability Level Select screen.
         /// </summary>
         /// <value>The ability level select header lava template.</value>
-        public string AbilityLevelSelectHeaderLavaTemplate { get; }
+        public virtual string AbilityLevelSelectHeaderLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy action select header lava template. This is used
@@ -271,7 +271,7 @@ namespace Rock.CheckIn.v2
         /// person or check-out somebody already checked in.
         /// </summary>
         /// <value>The action select header lava template.</value>
-        public string ActionSelectHeaderLavaTemplate { get; }
+        public virtual string ActionSelectHeaderLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy checkout person select header lava template. This
@@ -279,7 +279,7 @@ namespace Rock.CheckIn.v2
         /// Checkout Person Select screen.
         /// </summary>
         /// <value>The checkout person select header lava template.</value>
-        public string CheckoutPersonSelectHeaderLavaTemplate { get; }
+        public virtual string CheckoutPersonSelectHeaderLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy family select button lava template. This is used
@@ -287,7 +287,7 @@ namespace Rock.CheckIn.v2
         /// each family on the Family Select screen.
         /// </summary>
         /// <value>The family select button lava template.</value>
-        public string FamilySelectButtonLavaTemplate { get; }
+        public virtual string FamilySelectButtonLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy group select header lava template. This is
@@ -295,7 +295,7 @@ namespace Rock.CheckIn.v2
         /// Group Select screen.
         /// </summary>
         /// <value>The group select header lava template.</value>
-        public string GroupSelectHeaderLavaTemplate { get; }
+        public virtual string GroupSelectHeaderLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy group type select header lava template. This is
@@ -303,7 +303,7 @@ namespace Rock.CheckIn.v2
         /// Group Type Select screen.
         /// </summary>
         /// <value>The group type select header lava template.</value>
-        public string GroupTypeSelectHeaderLavaTemplate { get; }
+        public virtual string GroupTypeSelectHeaderLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy location select header lava template. This is
@@ -311,7 +311,7 @@ namespace Rock.CheckIn.v2
         /// Location Select screen.
         /// </summary>
         /// <value>The location select header lava template.</value>
-        public string LocationSelectHeaderLavaTemplate { get; }
+        public virtual string LocationSelectHeaderLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy multi-person select header lava template. This is
@@ -319,7 +319,7 @@ namespace Rock.CheckIn.v2
         /// Multi-Person Select screen.
         /// </summary>
         /// <value>The multi-person select header lava template.</value>
-        public string MultiPersonSelectHeaderLavaTemplate { get; }
+        public virtual string MultiPersonSelectHeaderLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy lava template used by WebForms blocks to render
@@ -327,7 +327,7 @@ namespace Rock.CheckIn.v2
         /// Select screen.
         /// </summary>
         /// <value>The lava template used to render additional person information.</value>
-        public string PersonSelectAdditionalInformationLavaTemplate { get; }
+        public virtual string PersonSelectAdditionalInformationLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy person select header lava template. This is
@@ -335,7 +335,7 @@ namespace Rock.CheckIn.v2
         /// Person Select screen.
         /// </summary>
         /// <value>The person select header lava template.</value>
-        public string PersonSelectHeaderLavaTemplate { get; }
+        public virtual string PersonSelectHeaderLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy welcome screen lava template. This is used by
@@ -343,7 +343,7 @@ namespace Rock.CheckIn.v2
         /// Welcome screen.
         /// </summary>
         /// <value>The welcome screen lava template.</value>
-        public string StartLavaTemplate { get; }
+        public virtual string StartLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy success lava template used by WebForms blocks.
@@ -351,7 +351,7 @@ namespace Rock.CheckIn.v2
         /// content depending on the value of <see cref="SuccessLavaTemplateDisplay"/>.
         /// </summary>
         /// <value>The success lava template.</value>
-        public string SuccessLavaTemplate { get; }
+        public virtual string SuccessLavaTemplate { get; }
 
         /// <summary>
         /// Gets the legacy time select header lava template. This is
@@ -359,7 +359,7 @@ namespace Rock.CheckIn.v2
         /// Time Select screen.
         /// </summary>
         /// <value>The time select header lava template.</value>
-        public string TimeSelectHeaderLavaTemplate { get; }
+        public virtual string TimeSelectHeaderLavaTemplate { get; }
 
         #endregion
 
@@ -370,14 +370,14 @@ namespace Rock.CheckIn.v2
         /// a new family is added from the kiosk registration screen.
         /// </summary>
         /// <value>The workflow type unique identifiers.</value>
-        public IReadOnlyCollection<Guid> AddFamilyWorkflowTypeGuids { get; }
+        public virtual IReadOnlyCollection<Guid> AddFamilyWorkflowTypeGuids { get; }
 
         /// <summary>
         /// Gets the workflow type unique identifiers that will be launched when
         /// a new person is added from the kiosk registration screen.
         /// </summary>
         /// <value>The workflow type unique identifiers.</value>
-        public IReadOnlyCollection<Guid> AddPersonWorkflowTypeGuids { get; }
+        public virtual IReadOnlyCollection<Guid> AddPersonWorkflowTypeGuids { get; }
 
         /// <summary>
         /// Gets the relationship role unique identifiers that will indicate
@@ -385,77 +385,77 @@ namespace Rock.CheckIn.v2
         /// screen.
         /// </summary>
         /// <value>The relationship role unique identifiers.</value>
-        public IReadOnlyCollection<Guid> CanCheckInKnownRelationshipRoleGuids { get; }
+        public virtual IReadOnlyCollection<Guid> CanCheckInKnownRelationshipRoleGuids { get; }
 
         /// <summary>
         /// Gets the default person connection status unique identifier when
         /// adding a new person on the kiosk registration screen.
         /// </summary>
         /// <value>The default person connection status unique identifier.</value>
-        public Guid DefaultPersonConnectionStatusGuid { get; }
+        public virtual Guid DefaultPersonConnectionStatusGuid { get; }
 
         /// <summary>
         /// Gets a value indicating if the birthdate field is visible and/or
         /// required for adults on the kiosk registration screen.
         /// </summary>
         /// <value>A value indicating how to display the birthdate field for adults.</value>
-        public RequirementLevel DisplayBirthdateForAdults { get; }
+        public virtual RequirementLevel DisplayBirthdateForAdults { get; }
 
         /// <summary>
         /// Gets a value indicating if the birthdate field is visible and/or
         /// required for children on the kiosk registration screen.
         /// </summary>
         /// <value>A value indicating how to display the birthdate field for children.</value>
-        public RequirementLevel DisplayBirthdateForChildren { get; }
+        public virtual RequirementLevel DisplayBirthdateForChildren { get; }
 
         /// <summary>
         /// Gets a value indicating if the grade field is visible and/or
         /// required for children on the kiosk registration screen.
         /// </summary>
         /// <value>A value indicating how to display the grade field for children.</value>
-        public RequirementLevel DisplayGradeForChildren { get; }
+        public virtual RequirementLevel DisplayGradeForChildren { get; }
 
         /// <summary>
         /// Gets a value indicating if the ethnicity field is visible and/or
         /// required for adults on the kiosk registration screen.
         /// </summary>
         /// <value>A value indicating how to display the ethnicity field for adults.</value>
-        public RequirementLevel DisplayEthnicityForAdults { get; }
+        public virtual RequirementLevel DisplayEthnicityForAdults { get; }
 
         /// <summary>
         /// Gets a value indicating if the ethnicity field is visible and/or
         /// required for children on the kiosk registration screen.
         /// </summary>
         /// <value>A value indicating how to display the ethnicity field for adults.</value>
-        public RequirementLevel DisplayEthnicityForChildren { get; }
+        public virtual RequirementLevel DisplayEthnicityForChildren { get; }
 
         /// <summary>
         /// Gets a value indicating if the race field is visible and/or
         /// required for adults on the kiosk registration screen.
         /// </summary>
         /// <value>A value indicating how to display the race field for adults.</value>
-        public RequirementLevel DisplayRaceForAdults { get; }
+        public virtual RequirementLevel DisplayRaceForAdults { get; }
 
         /// <summary>
         /// Gets a value indicating whether the alternate identifier field
         /// is visible for adults on the kiosk registration screen.
         /// </summary>
         /// <value><c>true</c> if the alternate identifier field is visible; otherwise, <c>false</c>.</value>
-        public bool IsAlternateIdFieldVisibleForAdults { get; }
+        public virtual bool IsAlternateIdFieldVisibleForAdults { get; }
 
         /// <summary>
         /// Gets a value indicating whether the alternate identifier field
         /// is visible for children on the kiosk registration screen.
         /// </summary>
         /// <value><c>true</c> if the alternate identifier field is visible; otherwise, <c>false</c>.</value>
-        public bool IsAlternateIdFieldVisibleForChildren { get; }
+        public virtual bool IsAlternateIdFieldVisibleForChildren { get; }
 
         /// <summary>
         /// Gets a value indicating whether check-in should be offered to the
         /// family immediately after kiosk registration has completed.
         /// </summary>
         /// <value><c>true</c> if check-in should be allowed as part of the kiosk registraiton process; otherwise, <c>false</c>.</value>
-        public bool IsCheckInAfterRegistrationAllowed { get; }
+        public virtual bool IsCheckInAfterRegistrationAllowed { get; }
 
         /// <summary>
         /// Gets a value indicating whether the SMS button should default to
@@ -463,74 +463,84 @@ namespace Rock.CheckIn.v2
         /// screen.
         /// </summary>
         /// <value><c>true</c> if the SMS button should default to checked; otherwise, <c>false</c>.</value>
-        public bool IsSmsButtonCheckedByDefault { get; }
+        public virtual bool IsSmsButtonCheckedByDefault { get; }
 
         /// <summary>
         /// Gets a value indicating whether the SMS button is visible for
         /// mobile phone numbers on the kiosk registration screen.
         /// </summary>
         /// <value><c>true</c> if the SMS button should be visible; otherwise, <c>false</c>.</value>
-        public bool IsSmsButtonVisible { get; }
+        public virtual bool IsSmsButtonVisible { get; }
 
         /// <summary>
         /// Gets the relationship role unique identifiers that will be available
         /// to be selected for a child on the kiosk registration screen.
         /// </summary>
         /// <value>The relationship role unique identifiers.</value>
-        public IReadOnlyCollection<Guid> KnownRelationshipRoleGuids { get; }
+        public virtual IReadOnlyCollection<Guid> KnownRelationshipRoleGuids { get; }
 
         /// <summary>
         /// Gets the attribute unique identifiers that will be optional for adults
         /// on the kiosk registration screen.
         /// </summary>
         /// <value>The attribute unique identifiers.</value>
-        public IReadOnlyCollection<Guid> OptionalAttributeGuidsForAdults { get; }
+        public virtual IReadOnlyCollection<Guid> OptionalAttributeGuidsForAdults { get; }
 
         /// <summary>
         /// Gets the attribute unique identifiers that will be optional for children
         /// on the kiosk registration screen.
         /// </summary>
         /// <value>The attribute unique identifiers.</value>
-        public IReadOnlyCollection<Guid> OptionalAttributeGuidsForChildren { get; }
+        public virtual IReadOnlyCollection<Guid> OptionalAttributeGuidsForChildren { get; }
 
         /// <summary>
         /// Gets the attribute unique identifiers that will be optional for families
         /// on the kiosk registration screen.
         /// </summary>
         /// <value>The attribute unique identifiers.</value>
-        public IReadOnlyCollection<Guid> OptionalAttributeGuidsForFamilies { get; }
+        public virtual IReadOnlyCollection<Guid> OptionalAttributeGuidsForFamilies { get; }
 
         /// <summary>
         /// Gets the attribute unique identifiers that will be required for adults
         /// on the kiosk registration screen.
         /// </summary>
         /// <value>The attribute unique identifiers.</value>
-        public IReadOnlyCollection<Guid> RequiredAttributeGuidsForAdults { get; }
+        public virtual IReadOnlyCollection<Guid> RequiredAttributeGuidsForAdults { get; }
 
         /// <summary>
         /// Gets the attribute unique identifiers that will be required for children
         /// on the kiosk registration screen.
         /// </summary>
         /// <value>The attribute unique identifiers.</value>
-        public IReadOnlyCollection<Guid> RequiredAttributeGuidsForChildren { get; }
+        public virtual IReadOnlyCollection<Guid> RequiredAttributeGuidsForChildren { get; }
 
         /// <summary>
         /// Gets the attribute unique identifiers that will be required for families
         /// on the kiosk registration screen.
         /// </summary>
         /// <value>The attribute unique identifiers.</value>
-        public IReadOnlyCollection<Guid> RequiredAttributeGuidsForFamilies { get; }
+        public virtual IReadOnlyCollection<Guid> RequiredAttributeGuidsForFamilies { get; }
 
         /// <summary>
         /// Gets the relationship role unique identifiers that indicate a person
         /// is in the same family on the kiosk registration screen.
         /// </summary>
         /// <value>The relationship role unique identifiers.</value>
-        public IReadOnlyCollection<Guid> SameFamilyKnownRelationshipRoleGuids { get; }
+        public virtual IReadOnlyCollection<Guid> SameFamilyKnownRelationshipRoleGuids { get; }
 
         #endregion
 
         #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TemplateConfigurationData"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This is intended to be used by unit tests only.
+        /// </remarks>
+        protected TemplateConfigurationData()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TemplateConfigurationData"/> class.
