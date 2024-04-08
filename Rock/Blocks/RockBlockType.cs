@@ -483,7 +483,8 @@ Obsidian.onReady(() => {{
             {
                 EntityTypeKey = EntityTypeCache.Get<Rock.Model.Block>().IdKey,
                 EntityKey = BlockCache.IdKey,
-                Values = GetBlockPersonPreferences().GetAllValueBags().ToList()
+                Values = GetBlockPersonPreferences().GetAllValueBags().ToList(),
+                TimeStamp = DateTimeOffset.Now.ToUnixTimeMilliseconds()
             };
 
             return new ObsidianBlockConfigBag

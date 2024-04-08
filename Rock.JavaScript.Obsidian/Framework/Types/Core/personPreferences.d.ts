@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+import { PersonPreferenceEvents } from "@Obsidian/Core/Core/personPreferences";
+import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+
 /**
  * Provides access to person preferences from inside a block.
  */
@@ -98,4 +101,8 @@ export interface IPersonPreferenceCollection {
      * @returns A new instance of {@link IPersonPreferenceCollection}.
      */
     withPrefix(prefix: string): IPersonPreferenceCollection;
+
+    on(event: keyof PersonPreferenceEvents, callback: (preference: PersonPreferenceValueBag[]) => void): void;
+
+    off(event: keyof PersonPreferenceEvents, callback: (preference: PersonPreferenceValueBag[]) => void): void;
 }
