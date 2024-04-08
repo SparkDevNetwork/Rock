@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// This job will update the AnalyticsSourceZipCode table with geographical and census data.
+    /// This job will update the AnalyticsSourcePostalCode table with geographical and census data.
     /// </summary>
-    [DisplayName( "Update Analytics Source ZipCode" )]
-    [Description( "Job to update the AnalyticsSourceZipCode table with geographical and census data." )]
+    [DisplayName( "Update Analytics Source PostalCode" )]
+    [Description( "Job to update the AnalyticsSourcePostalCode table with geographical and census data." )]
 
     #region Job Attributes
 
@@ -62,7 +62,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    public class UpdateAnalyticsSourceZipCode : RockJob
+    public class UpdateAnalyticsSourcePostalCode : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -95,14 +95,14 @@ namespace Rock.Jobs
             {
                 UpdateLastStatusMessage( "Reading Census data." );
                 var rockContext = new Rock.Data.RockContext();
-                var censusData = AnalyticsSourceZipCode.GetZipCodeCensusData();
-                var query = rockContext.Set<AnalyticsSourceZipCode>().AsQueryable();
-                List<AnalyticsSourceZipCode.ZipCodeBoundary> boundaryData = null;
+                var censusData = AnalyticsSourcePostalCode.GetZipCodeCensusData();
+                var query = rockContext.Set<AnalyticsSourcePostalCode>().AsQueryable();
+                List<AnalyticsSourcePostalCode.ZipCodeBoundary> boundaryData = null;
                 int batchSize = 100;
 
-                // If an attempt has been made try and figure where we left off previously by comparing the last database entry ZipCode with the last Census data ZipCode
-                var lastDatabaseEntryZipCode = query.OrderByDescending( az => az.ZipCode ).Select( az => az.ZipCode ).FirstOrDefault();
-                var lastEntry = censusData.OrderByDescending( az => az.ZipCode ).FirstOrDefault();
+                // If an attempt has been made try and figure where we left off previously by comparing the last database entry PostalCode with the last Census data PostalCode
+                var lastDatabaseEntryPostalCode = query.OrderByDescending( az => az.PostalCode ).Select( az => az.PostalCode ).FirstOrDefault();
+                var lastEntry = censusData.OrderByDescending( az => az.PostalCode ).FirstOrDefault();
 
                 // If we have no data try downloading and saving the data from scratch.
                 if ( lastEntry == null )
@@ -112,10 +112,10 @@ namespace Rock.Jobs
                 else
                 {
                     // Else try picking up from where we last left off.
-                    if ( lastEntry.ZipCode.AsInteger() > lastDatabaseEntryZipCode.AsInteger() )
+                    if ( lastEntry.PostalCode.AsInteger() > lastDatabaseEntryPostalCode.AsInteger() )
                     {
                         // Get the index of the last record saved to the database.
-                        var lastDatabaseEntry = censusData.Find( az => az.ZipCode == lastDatabaseEntryZipCode );
+                        var lastDatabaseEntry = censusData.Find( az => az.PostalCode == lastDatabaseEntryPostalCode );
                         var skipCount = censusData.IndexOf( lastDatabaseEntry ) + 1;
 
                         // Get the records left after the last record was saved successfully to the database.                     
@@ -134,7 +134,7 @@ namespace Rock.Jobs
                             // Save the current batch.
                             var currentBatch = censusData.Skip( skipCount ).Take( batchSize ).ToList();
 
-                            rockContext.Set<AnalyticsSourceZipCode>().AddRange( currentBatch );
+                            rockContext.Set<AnalyticsSourcePostalCode>().AddRange( currentBatch );
                             rockContext.SaveChanges();
 
                             skipCount += batchSize;
@@ -152,29 +152,29 @@ namespace Rock.Jobs
                             rockContext.Configuration.ValidateOnSaveEnabled = false;
 
                             // Get and update the current batch
-                            var currentBatch = rockContext.Set<AnalyticsSourceZipCode>().OrderBy( az => az.ZipCode ).Skip( i * batchSize ).Take( batchSize ).ToList();
+                            var currentBatch = rockContext.Set<AnalyticsSourcePostalCode>().OrderBy( az => az.PostalCode ).Skip( i * batchSize ).Take( batchSize ).ToList();
 
-                            foreach ( var analyticsZipCode in currentBatch )
+                            foreach ( var analyticsPostalCode in currentBatch )
                             {
-                                var zipCodeBoundary = boundaryData.Find( z => z.ZipCode == analyticsZipCode.ZipCode );
+                                var zipCodeBoundary = boundaryData.Find( z => z.ZipCode == analyticsPostalCode.PostalCode );
 
                                 if ( zipCodeBoundary != null )
                                 {
-                                    analyticsZipCode.State = zipCodeBoundary.State ?? string.Empty;
-                                    analyticsZipCode.SquareMiles = zipCodeBoundary.SquareMiles;
-                                    analyticsZipCode.City = zipCodeBoundary.City ?? string.Empty;
-                                    analyticsZipCode.GeoFence = zipCodeBoundary.GeoFence;
+                                    analyticsPostalCode.State = zipCodeBoundary.State ?? string.Empty;
+                                    analyticsPostalCode.SquareMiles = zipCodeBoundary.SquareMiles;
+                                    analyticsPostalCode.City = zipCodeBoundary.City ?? string.Empty;
+                                    analyticsPostalCode.GeoFence = zipCodeBoundary.GeoFence;
                                 }
                             }
 
                             rockContext.SaveChanges();
 
-                            UpdateLastStatusMessage( $"Saving ZipCode Data ({i * batchSize}/{censusData.Count})." );
+                            UpdateLastStatusMessage( $"Saving PostalCode Data ({i * batchSize}/{censusData.Count})." );
                         }
                     }
 
                     failedAttempts = 0;
-                    UpdateLastStatusMessage( $"Saved ZipCode Data ({rockContext.Set<AnalyticsSourceZipCode>().Count()}/{censusData.Count})." );
+                    UpdateLastStatusMessage( $"Saved PostalCode Data ({rockContext.Set<AnalyticsSourcePostalCode>().Count()}/{censusData.Count})." );
                     SetAttributeValue( AttributeKey.FailedAttempts, failedAttempts.ToString() );
                     rockContext.Dispose();
                 }
@@ -182,13 +182,13 @@ namespace Rock.Jobs
 
             if ( failedAttempts == 0 )
             {
-                AnalyticsSourceZipCode.DeleteCensusDataFile();
+                AnalyticsSourcePostalCode.DeleteCensusDataFile();
                 DeleteJob();
             }
         }
 
         /// <summary>
-        /// Generates and saves the AnalyticsSourceZipCode data.
+        /// Generates and saves the AnalyticsSourcePostalCode data.
         /// </summary>
         /// <param name="failedAttempts">The number failed attempts.</param>
         private void GenerateData( int failedAttempts )
@@ -196,15 +196,15 @@ namespace Rock.Jobs
             try
             {
                 // remove all the rows in preparation for rebuild
-                AnalyticsSourceZipCode.ClearTable();
+                AnalyticsSourcePostalCode.ClearTable();
 
-                UpdateLastStatusMessage( "Reading ZipCode census data." );
-                var zipCodeCensusData = AnalyticsSourceZipCode.GetZipCodeCensusData();
+                UpdateLastStatusMessage( "Reading PostalCode census data." );
+                var zipCodeCensusData = AnalyticsSourcePostalCode.GetZipCodeCensusData();
 
-                UpdateLastStatusMessage( "Saving AnalyticsSourceZipCode." );
-                AnalyticsSourceZipCode.SaveBoundaryAndCensusData( zipCodeCensusData );
+                UpdateLastStatusMessage( "Saving AnalyticsSourcePostalCode." );
+                AnalyticsSourcePostalCode.SaveBoundaryAndCensusData( zipCodeCensusData );
 
-                UpdateLastStatusMessage( $"Updated {zipCodeCensusData.Count:N0} ZipCode values." );
+                UpdateLastStatusMessage( $"Updated {zipCodeCensusData.Count:N0} PostalCode values." );
 
                 failedAttempts = 0;
                 SetAttributeValue( AttributeKey.FailedAttempts, failedAttempts.ToString() );
