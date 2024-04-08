@@ -35,16 +35,16 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// AnalyticsSourceZipCode Logic
+    /// AnalyticsSourcePostalCode Logic
     /// </summary>
-    public partial class AnalyticsSourceZipCode
+    public partial class AnalyticsSourcePostalCode
     {
         private const string CensusDataPath = "App_Data\\Formatted_Census_Data.xlsx";
 
         /// <summary>
-        /// Saves the analytics source zip code data.
+        /// Saves the analytics source postal code data.
         /// </summary>
-        public static void GenerateAnalyticsSourceZipCodeData()
+        public static void GenerateAnalyticsSourcePostalCodeData()
         {
             // remove all the rows and rebuild
             ClearTable();
@@ -55,25 +55,25 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Combines the Census and boundary components into AnalyticsSourceZipCode entries.
+        /// Combines the Census and boundary components into AnalyticsSourcePostalCode entries.
         /// </summary>
-        /// <param name="analyticsZipCodes">The analytics zip codes.</param>
+        /// <param name="analyticsSourcePostalCodes">The analytics postal codes.</param>
         /// <param name="zipCodeBoundaries">The zip code boundaries.</param>
-        public static void SaveBoundaryAndCensusData( List<AnalyticsSourceZipCode> analyticsZipCodes, List<ZipCodeBoundary> zipCodeBoundaries = null )
+        public static void SaveBoundaryAndCensusData( List<AnalyticsSourcePostalCode> analyticsSourcePostalCodes, List<ZipCodeBoundary> zipCodeBoundaries = null )
         {
             // Update census data with ZipCode details
             if ( zipCodeBoundaries?.Any() == true )
             {
-                foreach ( var analyticsZipCode in analyticsZipCodes )
+                foreach ( var analyticsPostalCode in analyticsSourcePostalCodes )
                 {
-                    var zipCodeBoundary = zipCodeBoundaries.Find( z => z.ZipCode == analyticsZipCode.ZipCode );
+                    var zipCodeBoundary = zipCodeBoundaries.Find( z => z.ZipCode == analyticsPostalCode.PostalCode );
 
                     if ( zipCodeBoundary != null )
                     {
-                        analyticsZipCode.State = zipCodeBoundary.State ?? string.Empty;
-                        analyticsZipCode.SquareMiles = zipCodeBoundary.SquareMiles;
-                        analyticsZipCode.City = zipCodeBoundary.City ?? string.Empty;
-                        analyticsZipCode.GeoFence = zipCodeBoundary.GeoFence;
+                        analyticsPostalCode.State = zipCodeBoundary.State ?? string.Empty;
+                        analyticsPostalCode.SquareMiles = zipCodeBoundary.SquareMiles;
+                        analyticsPostalCode.City = zipCodeBoundary.City ?? string.Empty;
+                        analyticsPostalCode.GeoFence = zipCodeBoundary.GeoFence;
                     }
                 }
 
@@ -86,7 +86,7 @@ namespace Rock.Model
                 RockContext rockContext = new RockContext();
 
                 // Calculate the number of batches
-                var batches = ( int ) Math.Ceiling( ( double ) analyticsZipCodes.Count / batchSize );
+                int batches = ( int ) Math.Ceiling( ( double ) analyticsSourcePostalCodes.Count / batchSize );
                 for ( int i = 0; i < batches; i++ )
                 {
                     rockContext = new RockContext();
@@ -94,9 +94,9 @@ namespace Rock.Model
                     rockContext.Configuration.ValidateOnSaveEnabled = false;
 
                     // Get the current batch
-                    var currentBatch = analyticsZipCodes.Skip( i * batchSize ).Take( batchSize ).ToList();
+                    var currentBatch = analyticsSourcePostalCodes.Skip( i * batchSize ).Take( batchSize ).ToList();
 
-                    rockContext.Set<AnalyticsSourceZipCode>().AddRange( currentBatch );
+                    rockContext.Set<AnalyticsSourcePostalCode>().AddRange( currentBatch );
                     rockContext.SaveChanges();
                 }
 
@@ -107,7 +107,7 @@ namespace Rock.Model
                 using ( var rockContext = new RockContext() )
                 {
                     // Since we are not saving the DbGeography details we'll just use EFBatchOperation to BulkInsert.
-                    EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourceZipCode>() ).InsertAll( analyticsZipCodes );
+                    EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourcePostalCode>() ).InsertAll( analyticsSourcePostalCodes );
                 }
             }
         }
@@ -123,12 +123,12 @@ namespace Rock.Model
                 {
                     // if TRUNCATE takes more than 5 seconds, it is probably due to a lock. If so, do a DELETE FROM instead
                     rockContext.Database.CommandTimeout = 5;
-                    rockContext.Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceZipCode ).GetCustomAttribute<TableAttribute>().Name ) );
+                    rockContext.Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourcePostalCode ).GetCustomAttribute<TableAttribute>().Name ) );
                 }
                 catch
                 {
                     rockContext.Database.CommandTimeout = null;
-                    rockContext.Database.ExecuteSqlCommand( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourceZipCode ).GetCustomAttribute<TableAttribute>().Name ) );
+                    rockContext.Database.ExecuteSqlCommand( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourcePostalCode ).GetCustomAttribute<TableAttribute>().Name ) );
                 }
             }
         }
@@ -137,7 +137,7 @@ namespace Rock.Model
         /// Reads the Census data component from disk.
         /// </summary>
         /// <returns></returns>
-        public static List<AnalyticsSourceZipCode> GetZipCodeCensusData()
+        public static List<AnalyticsSourcePostalCode> GetZipCodeCensusData()
         {
             var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, CensusDataPath );
             var fileInfo = new FileInfo( path );
@@ -150,7 +150,7 @@ namespace Rock.Model
                 //check if the worksheet is completely empty
                 if ( workSheet.Dimension == null )
                 {
-                    return new List<AnalyticsSourceZipCode>();
+                    return new List<AnalyticsSourcePostalCode>();
                 }
 
                 var noOfCol = workSheet.Dimension.End.Column;
@@ -160,7 +160,14 @@ namespace Rock.Model
                 // Get headers
                 for ( int c = 1; c <= noOfCol; c++ )
                 {
-                    table.Columns.Add( workSheet.Cells[rowIndex, c].Text );
+                    if ( workSheet.Cells[rowIndex, c].Text == "ZipCode" )
+                    {
+                        table.Columns.Add( "PostalCode" );
+                    }
+                    else
+                    {
+                        table.Columns.Add( workSheet.Cells[rowIndex, c].Text );
+                    }
                 }
 
                 // Get rows
@@ -175,14 +182,14 @@ namespace Rock.Model
                     table.Rows.Add( dr );
                 }
 
-                // Deserialize data as AnalyticsSourceZipCode and ignore any parsing errors from DataType mismatch, some decimal columns contain string '**'
+                // Deserialize data as AnalyticsSourcePostalCode and ignore any parsing errors from DataType mismatch, some decimal columns contain string '**'
                 // values so we ignore these and leave their values as default.
-                var data = JsonConvert.DeserializeObject<List<AnalyticsSourceZipCode>>( JsonConvert.SerializeObject( table ), new JsonSerializerSettings()
+                var data = JsonConvert.DeserializeObject<List<AnalyticsSourcePostalCode>>( JsonConvert.SerializeObject( table ), new JsonSerializerSettings()
                 {
                     Error = HandleDeserializationError
                 } );
 
-                return data.OrderBy( z => z.ZipCode ).ToList();
+                return data.OrderBy( z => z.PostalCode ).ToList();
             }
         }
 

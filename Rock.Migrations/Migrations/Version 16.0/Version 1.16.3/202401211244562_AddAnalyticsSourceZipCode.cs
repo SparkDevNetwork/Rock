@@ -63,7 +63,7 @@ namespace Rock.Migrations
                 SELECT 1
                 FROM [ServiceJob]
                 WHERE [Class] = 'Rock.Jobs.UpdateAnalyticsSourceZipCode'
-                                AND [Guid] = '{SystemGuid.ServiceJob.UPDATE_ANALYTICS_SOURCE_ZIPCODE}'
+                                AND [Guid] = '{SystemGuid.ServiceJob.UPDATE_ANALYTICS_SOURCE_POSTAL_CODE}'
             )
             BEGIN
                 INSERT INTO [ServiceJob] (
@@ -85,7 +85,7 @@ namespace Rock.Migrations
                     ,'0 20 1 1/1 * ? *'
                     ,1
                     ,500 
-                    ,'{SystemGuid.ServiceJob.UPDATE_ANALYTICS_SOURCE_ZIPCODE}'
+                    ,'{SystemGuid.ServiceJob.UPDATE_ANALYTICS_SOURCE_POSTAL_CODE}'
                 );
             END" );
         }
@@ -96,7 +96,7 @@ namespace Rock.Migrations
         public override void Down()
         {
             DropTable( "dbo.AnalyticsSourceZipCode" );
-            Sql( $"DELETE FROM ServiceJob WHERE Guid = '{Rock.SystemGuid.ServiceJob.UPDATE_ANALYTICS_SOURCE_ZIPCODE}';" );
+            Sql( $"DELETE FROM ServiceJob WHERE Guid = '{Rock.SystemGuid.ServiceJob.UPDATE_ANALYTICS_SOURCE_POSTAL_CODE}';" );
         }
     }
 }
