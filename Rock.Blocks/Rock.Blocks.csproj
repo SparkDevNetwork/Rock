@@ -64,6 +64,7 @@
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Core\AuditList.cs" />
@@ -75,7 +76,7 @@
     <Compile Include="Core\NotificationMessageList.cs" />
     <Compile Include="Cms\BlockTypeDetail.cs" />
     <Compile Include="Core\InteractionChannelDetail.cs" />
-	<Compile Include="Core\ScheduledJobList.cs" />
+    <Compile Include="Core\ScheduledJobList.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
