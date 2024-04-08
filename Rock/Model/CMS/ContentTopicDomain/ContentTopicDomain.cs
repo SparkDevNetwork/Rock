@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
+using System.Data.Entity.ModelConfiguration;
 
 namespace Rock.Model
 {
@@ -83,4 +84,22 @@ namespace Rock.Model
 
         #endregion Entity Properties
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// ContentTopicDomain Configuration Class
+    /// </summary>
+    public partial class ContentTopicDomainConfiguration : EntityTypeConfiguration<ContentTopicDomain>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentTopicDomainConfiguration"/> class.
+        /// </summary>
+        public ContentTopicDomainConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }
