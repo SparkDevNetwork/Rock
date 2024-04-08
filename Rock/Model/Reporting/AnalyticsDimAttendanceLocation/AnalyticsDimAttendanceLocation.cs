@@ -18,6 +18,7 @@ using Rock.Data;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
 
@@ -198,4 +199,22 @@ namespace Rock.Model
 
         #endregion Entity Properties Specific to Analytics
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsDimAttendanceLocation Configuration Class
+    /// </summary>
+    public partial class AnalyticsDimAttendanceLocationConfiguration : EntityTypeConfiguration<AnalyticsDimAttendanceLocation>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsDimAttendanceLocationConfiguration"/> class.
+        /// </summary>
+        public AnalyticsDimAttendanceLocationConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
 
@@ -280,4 +281,22 @@ namespace Rock.Model
         [DataMember]
         public int? LastUpdate { get; set; }
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsSourcePostalCode Configuration Class
+    /// </summary>
+    public partial class AnalyticsSourcePostalCodeConfiguration : EntityTypeConfiguration<AnalyticsSourcePostalCode>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsSourcePostalCodeConfiguration"/> class.
+        /// </summary>
+        public AnalyticsSourcePostalCodeConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }
