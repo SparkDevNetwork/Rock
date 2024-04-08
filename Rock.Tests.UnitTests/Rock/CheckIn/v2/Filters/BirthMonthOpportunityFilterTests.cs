@@ -256,7 +256,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             var isValid = filter.IsGroupValid( groupOpportunity );
 
             // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsFalse( isValid );
         }
 
         #endregion

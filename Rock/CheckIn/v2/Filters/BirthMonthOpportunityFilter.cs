@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System;
-
 namespace Rock.CheckIn.v2.Filters
 {
     /// <summary>
@@ -68,7 +66,7 @@ namespace Rock.CheckIn.v2.Filters
                     return true;
                 }
 
-                if ( birthMonth <= minimumMonth.Value )
+                if ( birthMonth <= maximumMonth.Value )
                 {
                     return true;
                 }
