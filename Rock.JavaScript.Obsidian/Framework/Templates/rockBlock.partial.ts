@@ -227,9 +227,35 @@ export default defineComponent({
          * @returns A block person preference provider.
          */
         function getPreferenceProvider(): IBlockPersonPreferencesProvider {
+            let timeStampFromSessionData = 0;
+            let valuesFromSessionData: PersonPreferenceValueBag[] = [];
+            let values: PersonPreferenceValueBag[] = [];
+
+            const sessionStorageKey = `${props.config.rootElementId}-preferences`;
+
+            try {
+                const sessionStorageDataRaw = sessionStorage.getItem(sessionStorageKey) ?? "{}";
+                timeStampFromSessionData = (JSON.parse(sessionStorageDataRaw))?.timeStamp ?? 0;
+                valuesFromSessionData = ((JSON.parse(sessionStorageDataRaw))?.values ?? []) as PersonPreferenceValueBag[];
+            }
+            catch { /* continue with the default values if parsing of sessionData fails */ }
+
+            // Compare the preference in the props with the one in the Session Storage and choose the later of the two.
+            // This was done to avoid displaying outdated preference when the individual navigates to the webpage using a back button for instance.
+            if(props.config?.preferences?.timeStamp && timeStampFromSessionData <= props.config.preferences.timeStamp) {
+                const preferenceDataToBeStored = {
+                    timeStamp: props.config.preferences?.timeStamp,
+                    values: props.config.preferences?.values ?? []
+                };
+                sessionStorage.setItem(sessionStorageKey, `${JSON.stringify(preferenceDataToBeStored)}`);
+                values = props.config.preferences?.values ?? [];
+            }
+            else {
+                values = valuesFromSessionData;
+            }
+
             const entityTypeKey = props.config.preferences?.entityTypeKey ?? undefined;
             const entityKey = props.config.preferences?.entityKey ?? undefined;
-            const values = props.config.preferences?.values ?? [];
             const anonymous = !store.state.isAnonymousVisitor && !store.state.currentPerson;
 
             const preferenceProvider: IBlockPersonPreferencesProvider = {
@@ -268,6 +294,18 @@ export default defineComponent({
                     }
                 },
             };
+
+            // Store the preference in the Session Storage when it changes after render.
+            const onPreferenceSave = (prefereneces: PersonPreferenceValueBag[]): void => {
+                const preferenceDataToBeStored = {
+                    timeStamp: new Date().getTime(),
+                    values: prefereneces
+                };
+
+                sessionStorage.setItem(sessionStorageKey, `${JSON.stringify(preferenceDataToBeStored)}`);
+            };
+
+            preferenceProvider.blockPreferences.on("preferenceSaved", onPreferenceSave);
 
             return preferenceProvider;
         }

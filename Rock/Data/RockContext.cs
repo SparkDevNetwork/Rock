@@ -2997,7 +2997,7 @@ namespace Rock.Data
         /// </value>
         [RockObsolete( "1.16.4" )]
         [Obsolete( "Use service instance instead." )]
-        public DbSet<AnalyticsSourceZipCode> AnalyticsSourceZipCodes { get; set; }
+        public DbSet<AnalyticsSourcePostalCode> AnalyticsSourcePostalCodes { get; set; }
 
         #endregion
 

@@ -1791,6 +1791,11 @@ namespace Rock.SystemGuid
         public const string TAGGED_ITEM = "AB97403A-206E-4E0C-AC42-856A010FA6DD";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Theme"/> 
+        /// </summary>
+        public const string THEME = "D02B63B9-E945-45BC-9D41-2C3E72B85F46";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.UserLogin"/> 
         /// </summary>
         public const string USER_LOGIN = "0FA592F1-728C-4885-BE38-60ED6C0D834F";

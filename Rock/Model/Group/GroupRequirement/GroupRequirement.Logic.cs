@@ -213,12 +213,14 @@ namespace Rock.Model
                         groupRequirementTypePersonIdQuery = personService.Get( paramExpression, dataViewWhereExpression ).Select( p => p.Id );
                     }
 
+                    var groupRequirementTypePersonIdList = groupRequirementTypePersonIdQuery.ToHashSet();
+
                     var candidatePersonIdList = personQry.Select( p => p.Id )
                         .ToHashSet();
 
-                    var personWithRequirementsList = candidatePersonIdList.Intersect( groupRequirementTypePersonIdQuery )
+                    var personWithRequirementsList = candidatePersonIdList.Intersect( groupRequirementTypePersonIdList )
                         .Select( p => new { PersonId = p, Included = true } )
-                        .Union( candidatePersonIdList.Except( groupRequirementTypePersonIdQuery ).Select( p => new { PersonId = p, Included = false } ) )
+                        .Union( candidatePersonIdList.Except( groupRequirementTypePersonIdList ).Select( p => new { PersonId = p, Included = false } ) )
                         .ToList();
 
                     var result = personWithRequirementsList.Select( a =>

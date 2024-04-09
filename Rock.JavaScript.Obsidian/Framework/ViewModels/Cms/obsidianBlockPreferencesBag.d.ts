@@ -33,4 +33,7 @@ export type ObsidianBlockPreferencesBag = {
 
     /** Gets or sets the person preference values. */
     values?: PersonPreferenceValueBag[] | null;
+
+    /** Gets or sets the time stamp at which the preferences were fetched from the database. */
+    timeStamp?: number | null;
 };

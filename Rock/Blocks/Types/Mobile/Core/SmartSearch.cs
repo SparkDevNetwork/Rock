@@ -449,11 +449,16 @@ namespace Rock.Blocks.Types.Mobile.Core
                     continue;
                 }
 
+                var searchComponent = SearchContainer.Instance.Components
+                    .Select( c => c.Value.Value )
+                    .FirstOrDefault( c => c.TypeGuid == guid );
+
                 var componentBag = new SearchComponentBag
                 {
                     Guid = guid,
                     TemplateKey = templateKey,
-                    Name = componentEntityType.FriendlyName
+                    Name = componentEntityType.FriendlyName,
+                    PreferredKeyboardMode = ( searchComponent?.PreferredKeyboardMode ?? Enums.Core.KeyboardInputMode.Default ).ToMobile()
                 };
 
                 components.Add( componentBag );

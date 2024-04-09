@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 
@@ -53,4 +54,22 @@ namespace Rock.Model
         public DateTime? LastIssueDateTime { get; set; }
         #endregion Properties
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// IdentityVerificationCode Configuration Class
+    /// </summary>
+    public partial class IdentityVerificationCodeConfiguration : EntityTypeConfiguration<IdentityVerificationCode>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityVerificationCodeConfiguration"/> class.
+        /// </summary>
+        public IdentityVerificationCodeConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

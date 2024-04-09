@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
 
@@ -27,11 +28,11 @@ namespace Rock.Model
     /// AnalyticsSourceZipCode table for reporting on zip codes.
     /// </summary>
     [RockDomain( "Reporting" )]
-    [Table( "AnalyticsSourceZipCode" )]
+    [Table( "AnalyticsSourcePostalCode" )]
     [DataContract]
     [HideFromReporting]
     [IncludeForModelMap]
-    public partial class AnalyticsSourceZipCode
+    public partial class AnalyticsSourcePostalCode
     {
         /// <summary>
         /// Gets or sets the zip code.
@@ -42,7 +43,7 @@ namespace Rock.Model
         [DataMember]
         [Key, DatabaseGenerated( DatabaseGeneratedOption.None )]
         [MaxLength( 50 )]
-        public string ZipCode { get; set; }
+        public string PostalCode { get; set; }
 
         /// <summary>
         /// Gets or sets the geographic parameter around the a ZipCode's GeoPoint. This can also be used to define a large area
@@ -54,6 +55,16 @@ namespace Rock.Model
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
         public DbGeography GeoFence { get; set; }
+
+        /// <summary>
+        /// Gets or sets the country code.
+        /// </summary>
+        /// <value>
+        /// The country code.
+        /// </value>
+        [DataMember]
+        [MaxLength( 3 )]
+        public string CountryCode { get; set; } = "US";
 
         /// <summary>
         /// Gets or sets the state.
@@ -270,4 +281,22 @@ namespace Rock.Model
         [DataMember]
         public int? LastUpdate { get; set; }
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsSourcePostalCode Configuration Class
+    /// </summary>
+    public partial class AnalyticsSourcePostalCodeConfiguration : EntityTypeConfiguration<AnalyticsSourcePostalCode>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsSourcePostalCodeConfiguration"/> class.
+        /// </summary>
+        public AnalyticsSourcePostalCodeConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

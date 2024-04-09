@@ -78,6 +78,7 @@
             </div>
 
             <CodeEditor v-model="resultsTemplate"
+                        v-if="!isMobileSiteType"
                         label="Results Template"
                         mode="lava"
                         rules="required" />
@@ -89,6 +90,12 @@
 
             <CodeEditor v-model="preSearchTemplate"
                         label="Pre-Search Template"
+                        mode="lava" />
+
+            <CodeEditor v-model="groupHeaderTemplate"
+                        v-if="isMobileSiteType && isGroupBySourceEnabled"
+                        label="Group Header Template"
+                        help="The template to use for the header of each group of results."
                         mode="lava" />
 
             <div v-if="showFiltersPanel">
@@ -213,6 +220,7 @@
     const contentCollection = ref("");
     const contentCollectionItems = ref<ContentCollectionListItemBag[]>([]);
     const groupResultsBySource = ref(false);
+    const siteType = ref("");
     const searchOnLoad = ref(false);
     const numberOfResults = ref<number | null>(null);
     const showFiltersPanel = ref(false);
@@ -222,6 +230,8 @@
     const trendingTerm = ref("");
     const filters = ref<FilterOptionsBag[]>([]);
     const resultsTemplate = ref("");
+    const groupHeaderTemplate = ref("");
+
     const itemTemplate = ref("");
     const preSearchTemplate = ref("");
     const boostMatchingSegments = ref(false);
@@ -242,6 +252,14 @@
 
     const isTrendingSortEnabled = computed((): boolean => {
         return enabledSortOrders.value.includes(SortOrdersKey.Trending);
+    });
+
+    const isMobileSiteType = computed((): boolean => {
+        return siteType.value === "mobile";
+    });
+
+    const isGroupBySourceEnabled = computed((): boolean => {
+        return groupResultsBySource.value;
     });
 
     // #endregion
@@ -274,6 +292,8 @@
             boostMatchingRequestFilters.value = result.data.settings.boostMatchingRequestFilters;
             segmentBoostAmount.value = result.data.settings.segmentBoostAmount ?? null;
             requestFilterBoostAmount.value = result.data.settings.requestFilterBoostAmount ?? null;
+            siteType.value = result.data.settings.siteType ?? "web";
+            groupHeaderTemplate.value = result.data.settings.groupHeaderTemplate ?? "";
 
             // Set any additional information required by the UI to paint the
             // custom settings interface.
@@ -332,6 +352,7 @@
         setCustomSettingsBoxValue(box, "boostMatchingRequestFilters", boostMatchingRequestFilters.value);
         setCustomSettingsBoxValue(box, "segmentBoostAmount", segmentBoostAmount.value);
         setCustomSettingsBoxValue(box, "requestFilterBoostAmount", requestFilterBoostAmount.value);
+        setCustomSettingsBoxValue(box, "groupHeaderTemplate", groupHeaderTemplate.value);
 
         const data = {
             box
