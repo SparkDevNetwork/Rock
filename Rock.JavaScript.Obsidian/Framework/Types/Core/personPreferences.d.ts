@@ -15,8 +15,20 @@
 // </copyright>
 //
 
-import { PersonPreferenceEvents } from "@Obsidian/Core/Core/personPreferences";
-import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+
+type IPersonPreferenceValueBag = {
+    /** Gets or sets the key of the preference value. */
+    key?: string | null;
+
+    /** Gets or sets the last accessed date time. */
+    lastAccessedDateTime?: string | null;
+
+    /** Gets or sets the preference value. */
+    value?: string | null;
+};
+
+type PersonPreferenceChangedEvents =
+    "preferenceSaved";
 
 /**
  * Provides access to person preferences from inside a block.
@@ -102,7 +114,7 @@ export interface IPersonPreferenceCollection {
      */
     withPrefix(prefix: string): IPersonPreferenceCollection;
 
-    on(event: keyof PersonPreferenceEvents, callback: (preference: PersonPreferenceValueBag[]) => void): void;
+    on(event: PersonPreferenceChangedEvents, callback: (preference: IPersonPreferenceValueBag[]) => void): void;
 
-    off(event: keyof PersonPreferenceEvents, callback: (preference: PersonPreferenceValueBag[]) => void): void;
+    off(event: PersonPreferenceChangedEvents, callback: (preference: IPersonPreferenceValueBag[]) => void): void;
 }
