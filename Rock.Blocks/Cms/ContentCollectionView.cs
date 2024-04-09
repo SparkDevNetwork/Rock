@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -45,7 +46,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the search results of a particular content collection." )]
     [IconCssClass( "fa fa-book-open" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web, Model.SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -54,8 +55,8 @@ namespace Rock.Blocks.Cms
         Category = "CustomSetting",
         Key = AttributeKey.ContentCollection )]
 
-    [BooleanField( "Show Filters Panel",
-        Description = "Determines if the filters panel should be visible.",
+    [BooleanField( "Show Filters",
+        Description = "Determines if the filters should be visible.",
         DefaultBooleanValue = true,
         Category = "CustomSetting",
         Key = AttributeKey.ShowFiltersPanel )]
@@ -129,23 +130,21 @@ namespace Rock.Blocks.Cms
         Category = "CustomSetting",
         Key = AttributeKey.ResultsTemplate )]
 
+    [TextField( "Group Header Template",
+        Description = "The lava template to use to render the group headers. This will display above each content collection source.",
+        DefaultValue = DefaultMobileGroupHeaderTemplate,
+        Category = "CustomSetting",
+        Key = AttributeKey.GroupHeaderTemplate )]
+
     [TextField( "Item Template",
         Description = "The lava template to use to render a single result.",
-        DefaultValue = @"<div class=""result-item"">
-    <h4 class=""mt-0"">{{ Item.Name }}</h4>
-    <div class=""mb-3"">
-    {{ Item.Content | StripHtml | Truncate:300 }}
-    </div>
-    <a href=""#"" class=""stretched-link"">Read More</a>
-</div>",
+        DefaultValue = DefaultTemplateMarker,
         Category = "CustomSetting",
         Key = AttributeKey.ItemTemplate )]
 
     [TextField( "Pre-Search Template",
         Description = "The lava template to use to render the content displayed before a search happens. This will not be used if Search on Load is enabled.",
-        DefaultValue = @"<div class=""panel panel-default"">
-    <div class=""panel-body"">Discover content that matches your preferences.</div>
-</div>",
+        DefaultValue = DefaultTemplateMarker,
         Category = "CustomSetting",
         Key = AttributeKey.PreSearchTemplate )]
 
@@ -205,6 +204,8 @@ namespace Rock.Blocks.Cms
 
             public const string ResultsTemplate = "ResultsTemplate";
 
+            public const string GroupHeaderTemplate = "GroupHeaderTemplate";
+
             public const string ItemTemplate = "ItemTemplate";
 
             public const string PreSearchTemplate = "PreSearchTemplate";
@@ -233,6 +234,92 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        #region Constants
+
+        /// <summary>
+        /// The marker that we use internally to swap out the default template.
+        /// </summary>
+        private const string DefaultTemplateMarker = "## INTERNAL DEFAULT TEMPLATE MARKER";
+
+        /// <summary>
+        /// The default template for the web item.
+        /// </summary>
+        private readonly string DefaultWebItemTemplate = @"<div class=""result-item"">
+    <h4 class=""mt-0"">{{ Item.Name }}</h4>
+    <div class=""mb-3"">
+    {{ Item.Content | StripHtml | Truncate:300 }}
+    </div>
+    <a href=""#"" class=""stretched-link"">Read More</a>
+</div>";
+
+        /// <summary>
+        /// The default template for the mobile item.
+        /// </summary>
+        private readonly string DefaultMobileItemTemplate = @"<Grid RowDefinitions=""Auto, Auto, Auto""
+      ColumnDefinitions=""*, Auto""
+      StyleClass=""px-16, gap-col-12"">
+    
+    <Grid.Behaviors>
+        <Rock:AddCssClassWhenTrueBehavior Value=""{Binding IsLastItem}""
+                                          ClassName=""mb-16"" />
+    </Grid.Behaviors>
+    
+    <Label Text=""{{ Item.Name | Escape }}""
+           StyleClass=""body, bold, text-interface-stronger, mt-16""
+           MaxLines=""2""
+           LineBreakMode=""TailTruncation""
+           Grid.Row=""0""
+           Grid.Column=""0"" />
+           
+    <Label Text=""{{ Item.Content | StripHtml | Trim | Escape }}""
+           StyleClass=""footnote, text-interface-strong""
+           MaxLines=""2""
+           LineBreakMode=""TailTruncation""
+           Grid.Row=""1"" 
+           Grid.Column=""0"" />
+    
+    <Rock:Icon IconClass=""chevron-right""
+               StyleClass=""text-interface-medium""
+               Grid.Row=""0"" 
+               Grid.RowSpan=""3""
+               Grid.Column=""1""
+               VerticalOptions=""Center"" />
+               
+    <BoxView HeightRequest=""1""
+             StyleClass=""mt-16, text-interface-soft""
+             IsVisible=""{Binding IsLastItem, Converter={Rock:InverseBooleanConverter}}""
+             Grid.Row=""2"" 
+             Grid.Column=""0"" 
+             Grid.ColumnSpan=""2"" />
+</Grid>";
+
+        /// <summary>
+        /// The default template for the pre-search content.
+        /// </summary>
+        private readonly string DefaultWebPreSearchTemplate = @"<div class=""panel panel-default"">
+    <div class=""panel-body"">Discover content that matches your preferences.</div>
+</div>";
+
+        /// <summary>
+        /// The default template for a mobile group header.
+        /// </summary>
+        private const string DefaultMobileGroupHeaderTemplate = @"<Grid StyleClass=""px-8, mt-8""
+      MarginBottom=""-8""
+      HorizontalOptions=""Center""
+      ColumnDefinitions=""Auto, *"">
+    
+    <Rock:Icon IconClass=""{{ SourceEntity.IconCssClass }}""
+               StyleClass=""mr-8, title2, text-primary-strong""
+               Grid.Column=""0""
+               VerticalOptions=""Center"" />
+
+    <Label Text=""{{ SourceName | Escape }}""
+           StyleClass=""title2, text-interface-stronger, bold""
+           Grid.Column=""1"" />
+</Grid>";
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -251,7 +338,7 @@ namespace Rock.Blocks.Cms
                 }
 
                 var searchOnLoad = GetAttributeValue( AttributeKey.SearchOnLoad ).AsBoolean();
-                var preSearchTemplate = GetAttributeValue( AttributeKey.PreSearchTemplate );
+                var preSearchTemplate = GetPreSearchTemplate();
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 var preSearchContent = preSearchTemplate.ResolveMergeFields( mergeFields );
                 SearchResultBag initialSearchResults = null;
@@ -545,6 +632,70 @@ namespace Rock.Blocks.Cms
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the pre-search template for the content collection view.
+        /// </summary>
+        /// <returns></returns>
+        private string GetPreSearchTemplate()
+        {
+            var itemTemplate = GetAttributeValue( AttributeKey.PreSearchTemplate );
+
+            var useMobileTemplate = PageCache.Layout?.Site?.SiteType == Model.SiteType.Mobile;
+
+            //
+            // We want to set the default value of the item template depending on
+            // the site type. This is kind of a cheesy wasy to do it, considering this
+            // block is unique in the aspect that all of the settings are "custom".
+            // This is a temporary solution until we can figure out a better way to
+            // set default values depending on the site type.
+            //
+            if ( itemTemplate == DefaultTemplateMarker )
+            {
+                if ( useMobileTemplate )
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    return DefaultWebPreSearchTemplate;
+                }
+            }
+
+            return itemTemplate;
+        }
+
+        /// <summary>
+        /// Gets the item template for the content collection view.
+        /// </summary>
+        /// <returns></returns>
+        private string GetItemTemplate()
+        {
+            var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
+
+            var useMobileTemplate = PageCache.Layout?.Site?.SiteType == Model.SiteType.Mobile;
+
+            //
+            // We want to set the default value of the item template depending on
+            // the site type. This is kind of a cheesy wasy to do it, considering this
+            // block is unique in the aspect that all of the settings are "custom".
+            // This is a temporary solution until we can figure out a better way to
+            // set default values depending on the site type.
+            //
+            if ( itemTemplate == DefaultTemplateMarker )
+            {
+                if ( useMobileTemplate )
+                {
+                    return DefaultMobileItemTemplate;
+                }
+                else
+                {
+                    return DefaultWebItemTemplate;
+                }
+            }
+
+            return itemTemplate;
         }
 
         /// <summary>
@@ -1008,7 +1159,18 @@ namespace Rock.Blocks.Cms
 
             // Always include the source result template just in case something
             // weird happens and they start loading items past offset 0 first.
-            var resultsTemplate = GetAttributeValue( AttributeKey.ResultsTemplate );
+
+            string resultsTemplate;
+
+            if ( PageCache.Layout?.Site?.SiteType == Model.SiteType.Mobile )
+            {
+                resultsTemplate = GetAttributeValue( AttributeKey.GroupHeaderTemplate );
+            }
+            else
+            {
+                resultsTemplate = GetAttributeValue( AttributeKey.ResultsTemplate );
+            }
+
             var mergeFields = RequestContext.GetCommonMergeFields();
 
             if ( source != null )
@@ -1032,7 +1194,7 @@ namespace Rock.Blocks.Cms
                 resultBag.TotalResultCount = results.TotalResultsAvailable;
 
                 // Merge the results with the Lava template.
-                var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
+                var itemTemplate = GetItemTemplate();
 
                 foreach ( var result in results.Documents )
                 {
@@ -1089,7 +1251,65 @@ namespace Rock.Blocks.Cms
 
         #endregion
 
+        #region Mobile
+
+        /// <summary>
+        /// Gets the configuration values for the mobile shell.
+        /// </summary>
+        /// <returns></returns>
+        public override object GetMobileConfigurationValues()
+        {
+            var contentCollectionGuid = GetAttributeValue( AttributeKey.ContentCollection ).AsGuidOrNull();
+
+            if ( contentCollectionGuid == null )
+            {
+                return null;
+            }
+
+            var contentCollection = ContentCollectionCache.Get( contentCollectionGuid.Value );
+            if ( contentCollection == null )
+            {
+                return null;
+            }
+
+            return new
+            {
+                ContentCollection = contentCollectionGuid,
+                ShowFilters = GetAttributeValue( AttributeKey.ShowFiltersPanel ).AsBoolean(),
+                ShowFullTextSearch = GetAttributeValue( AttributeKey.ShowFullTextSearch ).AsBoolean(),
+                ShowSort = GetAttributeValue( AttributeKey.ShowSort ).AsBoolean(),
+                NumberOfResults = GetAttributeValue( AttributeKey.NumberOfResults ).AsIntegerOrNull(),
+                SearchOnLoad = GetAttributeValue( AttributeKey.SearchOnLoad ).AsBoolean(),
+                GroupResultsBySource = GetAttributeValue( AttributeKey.GroupResultsBySource ).AsBoolean(),
+                EnabledSortOrders = GetAttributeValue( AttributeKey.EnabledSortOrders ).SplitDelimitedValues().ToList(),
+                TrendingTerm = GetAttributeValue( AttributeKey.TrendingTerm ),
+                ResultsTemplate = GetAttributeValue( AttributeKey.ResultsTemplate ),
+                ItemTemplate = GetItemTemplate(),
+                PreSearchTemplate = GetPreSearchTemplate(),
+                Filters = GetSearchFilters( contentCollection ),
+                BoostMatchingSegments = GetAttributeValue( AttributeKey.BoostMatchingSegments ).AsBoolean(),
+                BoostMatchingRequestFilters = GetAttributeValue( AttributeKey.BoostMatchingRequestFilters ).AsBoolean(),
+                SegmentBoostAmount = GetAttributeValue( AttributeKey.SegmentBoostAmount ).AsDecimalOrNull(),
+                RequestFilterBoostAmount = GetAttributeValue( AttributeKey.RequestFilterBoostAmount ).AsDecimalOrNull(),
+            };
+        }
+
+        #endregion
+
         #region Block Actions
+
+        [BlockAction]
+        public async Task<BlockActionResult> PerformInitialSearch()
+        {
+            var result = await PerformInitialSearchAsync();
+
+            if ( result == null )
+            {
+                return ActionBadRequest( "Search request was not valid." );
+            }
+
+            return ActionOk( result );
+        }
 
         /// <summary>
         /// Performs the search using the information specified in the query.
@@ -1151,12 +1371,14 @@ namespace Rock.Blocks.Cms
                     TrendingTerm = GetAttributeValue( AttributeKey.TrendingTerm ),
                     Filters = filters,
                     ResultsTemplate = GetAttributeValue( AttributeKey.ResultsTemplate ),
-                    ItemTemplate = GetAttributeValue( AttributeKey.ItemTemplate ),
-                    PreSearchTemplate = GetAttributeValue( AttributeKey.PreSearchTemplate ),
+                    ItemTemplate = GetItemTemplate(),
+                    PreSearchTemplate = GetPreSearchTemplate(),
                     BoostMatchingSegments = GetAttributeValue( AttributeKey.BoostMatchingSegments ).AsBoolean(),
                     BoostMatchingRequestFilters = GetAttributeValue( AttributeKey.BoostMatchingRequestFilters ).AsBoolean(),
                     SegmentBoostAmount = GetAttributeValue( AttributeKey.SegmentBoostAmount ).AsDecimalOrNull(),
-                    RequestFilterBoostAmount = GetAttributeValue( AttributeKey.RequestFilterBoostAmount ).AsDecimalOrNull()
+                    RequestFilterBoostAmount = GetAttributeValue( AttributeKey.RequestFilterBoostAmount ).AsDecimalOrNull(),
+                    GroupHeaderTemplate = GetAttributeValue( AttributeKey.GroupHeaderTemplate ),
+                    SiteType = ( PageCache?.Layout?.Site?.SiteType ?? Model.SiteType.Web ).ToString().ToLower()
                 };
 
                 return ActionOk( new CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>
@@ -1262,6 +1484,9 @@ namespace Rock.Blocks.Cms
 
                 box.IfValidProperty( nameof( box.Settings.RequestFilterBoostAmount ),
                     () => block.SetAttributeValue( AttributeKey.RequestFilterBoostAmount, box.Settings.RequestFilterBoostAmount.ToString() ) );
+
+                box.IfValidProperty( nameof( box.Settings.GroupHeaderTemplate ),
+                    () => block.SetAttributeValue( AttributeKey.GroupHeaderTemplate, box.Settings.GroupHeaderTemplate ) );
 
                 block.SaveAttributeValues( rockContext );
 

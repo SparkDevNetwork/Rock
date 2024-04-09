@@ -66,6 +66,14 @@ export type CustomSettingsBag = {
     itemTemplate?: string | null;
 
     /**
+     * Gets or sets the template that will be used to render the group header
+     * for each group of search results.
+     *
+     * Only for mobile.
+     */
+    groupHeaderTemplate?: string | null;
+
+    /**
      * Gets or sets the number of results to return per source. If grouping
      * is not enabled then this controls the total number of results.
      */
@@ -118,4 +126,7 @@ export type CustomSettingsBag = {
 
     /** Gets or sets the trending term to use when displaying the sort option. */
     trendingTerm?: string | null;
+
+    /** Gets or sets the type of the website that is currently selected. */
+    siteType?: string | "web";
 };

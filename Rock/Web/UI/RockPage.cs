@@ -115,6 +115,17 @@ namespace Rock.Web.UI
         /// The currently running Rock version.
         /// </summary>
         private static string _rockVersion = "";
+        
+        /// <summary>
+        /// A list of blocks (their paths) that will force the obsidian libraries to be loaded.
+        /// This is particularly useful when a block has a settings dialog that is dependent on
+        /// obsidian, but the block itself is not.
+        /// </summary>
+        private static readonly List<string> _blocksToForceObsidianLoad = new List<string>
+        {
+            "~/Blocks/Cms/PageZoneBlocksEditor.ascx",
+            "~/Blocks/Mobile/MobilePageDetail.ascx"
+        };
 
         #endregion
 
@@ -750,7 +761,7 @@ namespace Rock.Web.UI
         protected override void OnInit( EventArgs e )
         {
             // Add configuration specific to Rock Page to the observability activity
-            if (Activity.Current != null)
+            if ( Activity.Current != null )
             {
                 Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {PageReference.Route}";
 
@@ -1326,10 +1337,8 @@ Rock.settings.initialize({{
                                         control = TemplateControl.LoadControl( block.BlockType.Path );
                                         control.ClientIDMode = ClientIDMode.AutoID;
 
-                                        // This block needs Obsidian so that it can
-                                        // open the custom settings dialogs of Obsidian
-                                        // blocks on the page.
-                                        if ( block.BlockType.Path.Equals( "~/Blocks/Cms/PageZoneBlocksEditor.ascx", StringComparison.OrdinalIgnoreCase ) )
+                                        // These blocks needs Obsidian for their settings dialog to display properly.
+                                        if ( _blocksToForceObsidianLoad.Any( blockTypePath => blockTypePath.Equals( block.BlockType.Path ) ) )
                                         {
                                             _pageNeedsObsidian = true;
                                         }
@@ -1486,7 +1495,7 @@ Obsidian.onReady(() => {{
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
             currentPerson: {currentPersonJson},
-            isAnonymousVisitor: {(isAnonymousVisitor ? "true" : "false")},
+            isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
         }});
     }});
@@ -1567,7 +1576,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             //_btnRestoreImpersonatedByUser.CssClass = "btn";
                             _btnRestoreImpersonatedByUser.Visible = impersonatedByUser != null;
                             _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
-                            _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> " + $"Restore { impersonatedByUser?.Person?.ToString()}";
+                            _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> " + $"Restore {impersonatedByUser?.Person?.ToString()}";
                             impersonatedByUserDiv.Controls.Add( _btnRestoreImpersonatedByUser );
                             adminFooter.Controls.Add( impersonatedByUserDiv );
                         }
@@ -2221,7 +2230,7 @@ Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
         module.initializePageTimings({{
             elementId: '{_obsidianPageTimingControlId}',
-            debugTimingViewModels: { _debugTimingViewModels.ToCamelCaseJson( false, true ) }
+            debugTimingViewModels: {_debugTimingViewModels.ToCamelCaseJson( false, true )}
         }});
     }});
 }});";
@@ -2468,7 +2477,7 @@ Obsidian.onReady(() => {{
                     }
                 }
 
-                phLoadStats.Controls.Add( new LiteralControl( $"<span class='cms-admin-footer-property'><a href='{ showTimingsUrl }'> Page Load Time: {_tsDuration.TotalSeconds:N2}s </a></span><span class='margin-l-md js-view-state-stats cms-admin-footer-property'></span> <span class='margin-l-md js-html-size-stats cms-admin-footer-property'></span>" ) );
+                phLoadStats.Controls.Add( new LiteralControl( $"<span class='cms-admin-footer-property'><a href='{showTimingsUrl}'> Page Load Time: {_tsDuration.TotalSeconds:N2}s </a></span><span class='margin-l-md js-view-state-stats cms-admin-footer-property'></span> <span class='margin-l-md js-html-size-stats cms-admin-footer-property'></span>" ) );
 
                 if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
                 {
@@ -2569,7 +2578,7 @@ $.ajax({
 
             script = script.Replace( "<rockVisitorCookieName>", Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
             script = script.Replace( "<jsonData>", pageInteraction.ToJson() );
-            script = script.Replace( "<userIdProperty>", nameof(pageInteraction.UserIdKey) );
+            script = script.Replace( "<userIdProperty>", nameof( pageInteraction.UserIdKey ) );
 
             ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-register-interaction", script, true );
         }
