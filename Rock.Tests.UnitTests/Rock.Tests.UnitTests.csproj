@@ -141,7 +141,9 @@
     <Compile Include="Rock\Blocks\Mobile\Cms\DailyChallengeEntryTests.cs" />
     <Compile Include="Rock\CheckIn\v2\CheckInMockDatabase.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\BirthMonthOpportunityFilterTests.cs" />
+    <Compile Include="Rock\CheckIn\v2\Filters\DataViewOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\GradeOpportunityFilterTests.cs" />
+    <Compile Include="Rock\CheckIn\v2\TestExtensions.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />
     <Compile Include="Rock\Lava\Filters\StructuredContentFilterTests.cs" />

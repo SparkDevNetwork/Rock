@@ -46,7 +46,12 @@ namespace Rock.CheckIn.v2.Filters
                     continue;
                 }
 
-                if ( !dataView.GetEntityIds().Contains( PersonId.Value ) )
+                var queryArgs = new Reporting.GetQueryableOptions
+                {
+                    DbContext = RockContext
+                };
+
+                if ( !dataView.GetEntityIds( queryArgs ).Contains( PersonId.Value ) )
                 {
                     return false;
                 }

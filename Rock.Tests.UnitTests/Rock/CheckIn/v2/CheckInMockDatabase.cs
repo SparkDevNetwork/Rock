@@ -12,6 +12,7 @@ using MassTransit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
+using Moq.Protected;
 
 using Rock.Bus;
 using Rock.Bus.Transport;
@@ -88,7 +89,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         /// additional mocked values and then used for database access.
         /// </summary>
         /// <returns>An mocking instance for <see cref="RockContext"/>.</returns>
-        protected static Mock<RockContext> GetMockRockContext()
+        protected static Mock<RockContext> GetRockContextMock()
         {
             var rockContextMock = new Mock<RockContext>( MockBehavior.Strict, "invalidConnectionString" );
 
@@ -97,35 +98,18 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             // trying to initialize all the DbSet properties.
             rockContextMock.Setup( m => m.Set<It.IsAnyType>() ).Returns( new InvocationFunc( invocation =>
             {
-                var t = invocation.Method.GetGenericArguments()[0];
-
-                var mockType = typeof( Mock<> ).MakeGenericType( typeof( DbSet<> ).MakeGenericType( t ) );
+                var dbSetType = invocation.Method.GetGenericArguments()[0];
+                var mockType = typeof( Mock<> ).MakeGenericType( typeof( DbSet<> ).MakeGenericType( dbSetType ) );
 
                 var dbSetMock = ( Mock ) Activator.CreateInstance( mockType, new object[] { MockBehavior.Strict } );
+
                 return dbSetMock.Object;
             } ) );
 
+            // Ignore any call to dispose.
+            rockContextMock.Protected().Setup( "Dispose", ItExpr.IsAny<bool>() );
+
             return rockContextMock;
-        }
-
-        /// <summary>
-        /// Gets a mocked <see cref="DbSet{TEntity}"/> instance that will
-        /// provide access to the items in the <paramref name="sourceList"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of entity provided by this <see cref="DbSet{TEntity}"/>.</typeparam>
-        /// <param name="sourceList">The source list of objects.</param>
-        /// <returns>A mocking instance for <see cref="DbSet{TEntity}"/>.</returns>
-        protected static DbSet<T> GetDbSetMock<T>( List<T> sourceList ) where T : class
-        {
-            var queryable = sourceList.AsQueryable();
-
-            var dbSet = new Mock<DbSet<T>>();
-            dbSet.As<IQueryable<T>>().Setup( m => m.Provider ).Returns( queryable.Provider );
-            dbSet.As<IQueryable<T>>().Setup( m => m.Expression ).Returns( queryable.Expression );
-            dbSet.As<IQueryable<T>>().Setup( m => m.ElementType ).Returns( queryable.ElementType );
-            dbSet.As<IQueryable<T>>().Setup( m => m.GetEnumerator() ).Returns( () => queryable.GetEnumerator() );
-
-            return dbSet.Object;
         }
     }
 }
