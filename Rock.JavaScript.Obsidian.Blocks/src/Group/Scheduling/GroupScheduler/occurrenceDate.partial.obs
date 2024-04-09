@@ -25,10 +25,10 @@
 <script setup lang="ts">
     import { ComponentPublicInstance, computed, nextTick, onUnmounted, PropType, provide, ref, watch } from "vue";
     import Schedule from "./schedule.partial.obs";
-    import { OccurrenceDateTitle } from "./types.partial";
+    import { OccurrenceDate, OccurrenceDateTitle } from "./types.partial";
+    import { formatSchedulerDate } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-    import { toOrdinalSuffix } from "@Obsidian/Utility/numberUtils";
     import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
 
     const props = defineProps({
@@ -67,27 +67,14 @@
 
     // #region Computed Values
 
-    const title = computed((): string => {
+    const occurrenceDate = computed((): string => {
         // It's assumed that all occurrences provided will belong to the same occurrence date;
-        // just grab the first friendlyOccurrenceDate, since they should all be the same.
-        let friendlyOccurrenceDate: string | null | undefined;
-        if (props.occurrences?.length) {
-            friendlyOccurrenceDate = props.occurrences[0].friendlyOccurrenceDate;
+        // just provide the first occcurrenceDate, since they should all be the same.
+        return props.occurrences?.[0]?.occurrenceDate ?? "";
+    });
 
-            if (friendlyOccurrenceDate) {
-                const dateParts = friendlyOccurrenceDate.split(" ");
-                if (dateParts.length === 3) {
-                    const ordinalDate = toOrdinalSuffix(+dateParts[2]);
-                    friendlyOccurrenceDate = [
-                        dateParts[0],
-                        dateParts[1],
-                        ordinalDate ?? dateParts[2]
-                    ].join(" ");
-                }
-            }
-        }
-
-        return friendlyOccurrenceDate || "No Date Provided";
+    const title = computed((): string => {
+        return formatSchedulerDate(occurrenceDate.value);
     });
 
     const sortedOccurrencesBySchedule = computed((): (GroupSchedulerOccurrenceBag[])[] => {
@@ -239,6 +226,7 @@
 
     // #endregion
 
+    provide(OccurrenceDate, occurrenceDate);
     provide(OccurrenceDateTitle, title);
 
     watch(() => props.occurrences, () => {

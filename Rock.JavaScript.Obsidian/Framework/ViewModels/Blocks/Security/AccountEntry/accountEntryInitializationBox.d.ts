@@ -21,11 +21,15 @@
 // </copyright>
 //
 
+import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
 import { AccountEntryRegisterResponseBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterResponseBox";
 
 /** A box that contains the required information to render an account entry block. */
 export type AccountEntryInitializationBox = {
+    /** Gets or sets the person details if there is an identified user. */
+    accountEntryPersonInfoBag?: AccountEntryPersonInfoBag | null;
+
     /** Gets or sets the account entry step box. */
     accountEntryRegisterStepBox?: AccountEntryRegisterResponseBox | null;
 
@@ -37,6 +41,9 @@ export type AccountEntryInitializationBox = {
 
     /** The caption when a confirmation email was sent to a selected, duplicate person. */
     confirmationSentCaption?: string | null;
+
+    /** If set to true if the Captcha verification step should not be performed. */
+    disableCaptchaSupport: boolean;
 
     /** The email address of the registering user. */
     email?: string | null;
@@ -61,6 +68,9 @@ export type AccountEntryInitializationBox = {
 
     /** Gets or sets a value indicating whether username must be an email. */
     isEmailRequiredForUsername: boolean;
+
+    /** Indicating whether the Gender dropdown is shown. */
+    isGenderPickerShown: boolean;
 
     /** Gets or sets a value indicating whether the mobile number is hidden. */
     isMobileNumberHidden: boolean;

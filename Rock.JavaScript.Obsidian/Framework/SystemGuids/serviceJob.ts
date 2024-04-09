@@ -79,6 +79,8 @@ export const ServiceJob = {
     DataMigrations152IxValueAsPersonId: "5DC19FB3-AB0B-48F3-817D-9023C65C5F8A",
     /** The Job to run Post v15.2 to replace web forms blocks with Obsidian blocks. */
     DataMigrations152ReplaceWebFormsBlocksWithObsidianBlocks: "4232194C-90AE-4B44-93E7-1E5DE984A9E1",
+    /** The Job to run Post v15.4 to update the AgeBracket values to reflect the new values after spliting the 0 - 12 bracket. */
+    DataMigrations154UpdateAgeBracketValues: "C1234A63-09A6-45C1-96D8-0DE03EC4A7A1",
     /** The post update data migration job to chop the Group Registration block */
     DataMigrations160ChopBlocksGroupRegistration: "72D9EC04-517A-4CA0-B631-9F9A41F1790D",
     /** The Job to run Post v16.0 Move Person Preferences. */
@@ -99,6 +101,22 @@ export const ServiceJob = {
     DataMigrations160UpdatePersonPrimaryPersonAliasId: "BC7564DC-594F-4B50-8988-1594849515F1",
     /** The Job to run Post v16.0 Data Migrations to update the newly persisted WorkflowId column on Workflow entity with their correct values. */
     DataMigrations160UpdateWorkflowidColumns: "2222F9D2-4771-4B21-A630-E696DB0C329A",
+    /** The Job to run Post v16.1 Data Migrations to swap AccountEntry and Login web forms blocks with obisdian blocks. */
+    DataMigrations161ChopAccountentryAndLogin: "A65D26C1-229E-4198-B388-E269C3534BC0",
+    /** The post update data migration job to chop the Group Schedule Toolbox V2. */
+    DataMigrations161ChopBlockGroupScheduleToolboxV2: "7F989E9F-913C-45E4-9EB1-EC70AC220939",
+    /** The post update data migration job to chop the Login and Account Entry blocks. */
+    DataMigrations161ChopSecurityBlocks: "A65D26C1-229E-4198-B388-E269C3534BC0",
+    /** The post update data migration job to remove obsidian group schedule toolbox back buttons. */
+    DataMigrations161RemoveObsidianGroupScheduleToolboxBackButtons: "781F2D3B-E5E4-41D5-9145-1D70DDB3EE04",
+    /** The post update data migration job to swap the Group Schedule Toolbox V1. */
+    DataMigrations161SwapBlockGroupScheduleToolboxV1: "22DBD648-79C0-40C7-B561-094E4E7637E5",
+    /** The Job to run Post v16.1 Data Migrations to swap Financial Batch List web forms block with obsidian block. */
+    DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
+    /** The post update data migration job to chop the Email Preference Entry block. */
+    DataMigrations162ChopEmailPreferenceEntry: "AE07C80A-80A4-48FD-908C-56DDB1CAA322",
+    /** The post update data migration job to remove legacy preference attributes. */
+    DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
@@ -135,8 +153,12 @@ export const ServiceJob = {
     StepsAutomation: "97858941-0447-49D6-9E35-B03665FEE965",
     /** The media synchronize job. */
     SyncMedia: "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
+    /** The Rock.Jobs.UpdateAnalyticsSourceZipCode job. */
+    UpdateAnalyticsSourceZipcode: "29731D97-699D-4D34-A9F4-50C7C33D5C48",
     /** The Update Persisted Attribute Values job. */
     UpdatePersistedAttributeValue: "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70",
+    /** The Rock.Jobs.UpdatePersistedDatasets job. */
+    UpdatePersistedDatasets: "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
 };

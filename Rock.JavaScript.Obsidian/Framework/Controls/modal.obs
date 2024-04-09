@@ -13,7 +13,7 @@
                      role="dialog"
                      style="display: block; margin-top: 0px;">
                     <div class="modal-header">
-                        <button @click="onClose" class="close" aria-hidden="true" type="button">&times;</button>
+                        <button v-if="!isCloseButtonHidden" @click="onClose" class="close" aria-hidden="true" type="button">&times;</button>
                         <template v-if="title">
                             <h3 class="modal-title">{{ title }}</h3>
                             <small v-if="subtitle">{{ subtitle }}</small>
@@ -33,7 +33,7 @@
                         </div>
 
                         <div v-if="!isFooterHidden" class="modal-footer">
-                            <RockButton @click="onClose" btnType="link">{{ cancelText }}</RockButton>
+                            <RockButton v-if="cancelText" @click="onClose" btnType="link">{{ cancelText }}</RockButton>
                             <RockButton v-if="saveText" type="submit" btnType="primary" :disabled="isSaveButtonDisabled">{{ saveText }}</RockButton>
                             <slot name="customButtons" />
                         </div>
@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import RockForm from "./rockForm.obs";
     import RockButton from "./rockButton.obs";
     import RockValidation from "./rockValidation.obs";
@@ -89,6 +89,11 @@
         },
 
         isSaveButtonDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isCloseButtonHidden: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -230,6 +235,8 @@
                 }
             });
         }
+
+        nextTick(adjustOverflowPadding);
     }
 
     /**

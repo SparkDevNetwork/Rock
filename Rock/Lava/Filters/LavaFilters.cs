@@ -33,6 +33,7 @@ using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
 using ImageResizer;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
@@ -41,6 +42,7 @@ using Rock.Enums.Core;
 using Rock.Lava.Helpers;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Utilities;
 using Rock.Utility;
@@ -927,21 +929,6 @@ namespace Rock.Lava
         }
 
         #endregion
-
-        /// <summary>
-        /// Decrypts an encrypted string
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static string Decrypt( string input )
-        {
-            if ( input == null )
-            {
-                return input;
-            }
-
-            return Rock.Security.Encryption.DecryptString( input );
-        }
 
         /// <summary>
         /// Parse the input string as a URL and then return a specific part of the URL.
@@ -2078,7 +2065,7 @@ namespace Rock.Lava
                     // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
                     if ( qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                        return item.AttributeValues[attributeKey].PersistedHtmlValue;
                     }
 
                     // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
@@ -2501,6 +2488,11 @@ namespace Rock.Lava
                             modelCacheType = typeof( CampusCache );
                             break;
                         }
+                    case "EntityType":
+                        {
+                            modelCacheType = typeof( EntityTypeCache );
+                            break;
+                        }
                     case "Category":
                         {
                             modelCacheType = typeof( CategoryCache );
@@ -2614,16 +2606,30 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns a dynamic object from a JSON string.
+        /// Returns a dynamic object from a JSON string. The returned type parameter should be considered 'internal' at this point. It
+        /// is not documented and could be removed if we can use the NestedDictionaryConverter as the default return type. 
         /// See https://www.rockrms.com/page/565#fromjson
         /// </summary>
         /// <param name="input">The input.</param>
+        /// <param name="returnType"></param>
         /// <returns></returns>
-        public static object FromJSON( object input )
+        public static object FromJSON( object input, string returnType = "ExpandoObject" )
         {
-            var objectResult = ( input as string ).FromJsonDynamicOrNull();
+            switch ( returnType )
+            {
+                case "Dictionary":
+                    {
+                        var jsonSettings = new JsonSerializerSettings{
+                            Converters = new List<JsonConverter> { new NestedDictionaryConverter() }
+                        };
 
-            return objectResult;
+                        return JsonConvert.DeserializeObject<Dictionary<string, object>>( input.ToString(), jsonSettings );
+                    }
+                default:
+                    {
+                        return ( input as string ).FromJsonDynamicOrNull();
+                    }
+            }
         }
 
         /// <summary>
@@ -2860,7 +2866,7 @@ namespace Rock.Lava
             DateTime? startDate = null;
 
             // Quick out if we have no data
-            if ( source == null || currentPerson == null )
+            if ( source == null )
             {
                 return source;
             }
@@ -2920,10 +2926,22 @@ namespace Rock.Lava
                 }
             }
 
+            if ( source is Dictionary<string, object> dictionary )
+            {
+                // Try treating it as a dictionary 
+                return LavaAppendWatchesHelper.AppendMediaForDictionary( dictionary, startDate, currentPerson, rockContext );
+            }
+
             // ExpandoObject
             if ( source is ExpandoObject xo )
             {
-                return LavaAppendWatchesHelper.AppendMediaForExpando( xo, startDate, currentPerson, rockContext );
+                if ( LavaAppendWatchesHelper.DynamicContainsKey( xo, "MediaId" ) )
+                {
+                    return LavaAppendWatchesHelper.AppendMediaForExpando( xo, startDate, currentPerson, rockContext );
+                }
+
+                // If the expando didn't have the key, it could be a dictionary
+                return LavaAppendWatchesHelper.AppendMediaForDictionary( xo, startDate, currentPerson, rockContext ) ;
             }
             
 
@@ -2973,7 +2991,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="dataObject">The data object.</param>
         /// <returns></returns>
-        public static object FilterNotFollowed( ILavaRenderContext context, object dataObject )
+        public static object FilterUnfollowed( ILavaRenderContext context, object dataObject )
         {
             return FilterFollowedOrNotFollowed( context, GetCurrentPerson( context ), dataObject, FollowFilterType.NotFollowed );
         }
@@ -3401,103 +3419,129 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Pages the specified input.
+        /// Returns information about the current page.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="parm">The parm.</param>
-        /// <returns></returns>
-        public static object Page( string input, string parm )
+        /// <param name="parm">The type of information to return about the current page.</param>
+        /// <returns>Information about the current page or null if not found.</returns>
+        public static object Page( ILavaRenderContext context, string input, string parm )
         {
+            PageCache pageCache = null;
             var page = HttpContext.Current?.Handler as RockPage;
 
-            if ( page != null )
+            var rockRequestContext = context.GetRockRequestContext();
+            if ( rockRequestContext != null )
             {
-                switch ( parm )
-                {
-                    case "Title":
+                pageCache = rockRequestContext.Page;
+            }
+            else if ( page != null )
+            {
+                pageCache = PageCache.Get( page.PageId );
+            }
+
+            if ( pageCache == null )
+            {
+                return null;
+            }
+
+            switch ( parm )
+            {
+                case "Title":
+                    {
+                        return pageCache.PageTitle;
+                    }
+
+                case "BrowserTitle":
+                    {
+                        return pageCache.BrowserTitle;
+                    }
+
+                case "Url":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().AbsoluteUri;
+                    }
+
+                case "Id":
+                    {
+                        return pageCache.Id.ToString();
+                    }
+
+                case "Host":
+                    {
+                        var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+                        return host;
+                    }
+
+                case "Path":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().AbsolutePath;
+                    }
+
+                case "SiteName":
+                    {
+                        return pageCache.Site;
+                    }
+
+                case "SiteId":
+                    {
+                        return pageCache.SiteId;
+                    }
+
+                case "Theme":
+                    {
+                        if ( page?.Theme != null )
                         {
-                            return page.PageTitle;
+                            return page.Theme;
                         }
 
-                    case "BrowserTitle":
-                        {
-                            return page.BrowserTitle;
-                        }
-
-                    case "Url":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().AbsoluteUri;
-                        }
-
-                    case "Id":
-                        {
-                            return page.PageId.ToString();
-                        }
-
-                    case "Host":
-                        {
-                            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
-                            return host;
-                        }
-
-                    case "Path":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().AbsolutePath;
-                        }
-
-                    case "SiteName":
-                        {
-                            return page.Site.Name;
-                        }
-
-                    case "SiteId":
-                        {
-                            return page.Site.Id.ToString();
-                        }
-
-                    case "Theme":
-                        {
-                            if ( page.Theme != null )
-                            {
-                                return page.Theme;
-                            }
-                            else
-                            {
-                                return page.Site.Theme;
-                            }
-                        }
-                    case "Description":
+                        return pageCache.SiteTheme;
+                    }
+                case "Description":
+                    {
+                        if ( page?.MetaDescription != null )
                         {
                             return page.MetaDescription;
                         }
-                    case "Layout":
-                        {
-                            return page.Layout.Name;
-                        }
 
-                    case "Scheme":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().Scheme;
-                        }
+                        return pageCache.Description;
+                    }
+                case "Layout":
+                    {
+                        return pageCache.Layout?.Name;
+                    }
 
-                    case "QueryString":
+                case "Scheme":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().Scheme;
+                    }
+
+                case "QueryString":
+                    {
+                        if ( rockRequestContext != null )
+                        {
+                            return rockRequestContext.PageParameters;
+                        }
+                        else if ( page != null )
                         {
                             return page.PageParameters();
                         }
-                    case "Cookies":
+
+                        return null;
+                    }
+                case "Cookies":
+                    {
+                        var cookies = new List<HttpCookieDrop>();
+                        foreach ( string cookieKey in System.Web.HttpContext.Current.Request.Cookies )
                         {
-                            var cookies = new List<HttpCookieDrop>();
-                            foreach ( string cookieKey in System.Web.HttpContext.Current.Request.Cookies )
-                            {
-                                cookies.Add( new HttpCookieDrop( System.Web.HttpContext.Current.Request.Cookies[cookieKey] ) );
-                            }
-
-                            return cookies;
+                            cookies.Add( new HttpCookieDrop( System.Web.HttpContext.Current.Request.Cookies[cookieKey] ) );
                         }
-                }
-            }
 
-            return null;
+                        return cookies;
+                    }
+                default:
+                    return null;
+            }
         }
 
         /// <summary>
@@ -3517,20 +3561,26 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns the specified page parm.
+        /// Returns the specified page parameter.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="parm">The parm.</param>
-        /// <returns></returns>
-        public static object PageParameter( string input, string parm )
+        /// <param name="parm">The parameter name.</param>
+        /// <returns>The page parameter or null if not found.</returns>
+        public static object PageParameter( ILavaRenderContext context, string input, string parm )
         {
-            var page = HttpContext.Current?.Handler as RockPage;
-            if ( page == null )
-            {
-                return null;
-            }
+            string parmReturn;
 
-            var parmReturn = page.PageParameter( parm );
+            var rockRequestContext = context.GetRockRequestContext();
+            if ( rockRequestContext != null )
+            {
+                parmReturn = rockRequestContext.GetPageParameter( parm );
+            }
+            else
+            {
+                var page = HttpContext.Current?.Handler as RockPage;
+                parmReturn = page?.PageParameter( parm );
+            }
 
             if ( parmReturn == null )
             {
@@ -4079,7 +4129,6 @@ namespace Rock.Lava
 
                 input = input.EscapeQuotes();
 
-                input = input.EscapeQuotes();
                 if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
                 {
                     var quickReturnScript = "" +
@@ -4982,18 +5031,25 @@ namespace Rock.Lava
         private static Person GetCurrentPerson( ILavaRenderContext context )
         {
             // First check for a person override value included in lava context
-            var currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
-
-            if ( currentPerson == null )
+            if ( context.GetMergeField( "CurrentPerson" ) is Person currentPerson )
             {
-                var httpContext = System.Web.HttpContext.Current;
-                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
-                }
+                return currentPerson;
             }
 
-            return currentPerson;
+            // Next check the RockRequestContext in the lava context.
+            if ( context.GetInternalField( "RockRequestContext" ) is RockRequestContext currentRequest )
+            {
+                return currentRequest.CurrentPerson;
+            }
+
+            // Finally check the HttpContext.
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+            {
+                return httpContext.Items["CurrentPerson"] as Person;
+            }
+
+            return null;
         }
 
         /// <summary>

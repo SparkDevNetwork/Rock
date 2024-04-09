@@ -16,13 +16,19 @@
 //
 using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Tests.Integration.Events;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+using static Rock.Tests.Integration.Events.EventsDataManager;
+
+namespace Rock.Tests.Integration.Modules.Core.Lava
 {
     /// <summary>
     /// Tests for Lava Command "EventScheduledInstance".
@@ -51,7 +57,7 @@ namespace Rock.Tests.Integration.Core.Lava
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            TestDataHelper.Events.AddDataForRockSolidFinancesClass();
+            EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
         }
 
         private string GetTestTemplate( string parameters )
@@ -209,28 +215,50 @@ namespace Rock.Tests.Integration.Core.Lava
         public void EventScheduledInstanceCommand_WithDateRangeInDays_ReturnsExpectedEvents()
         {
             const string NewEventGuid = "F7CE040E-CD1C-41E0-81D7-9F88BCDAF6A7";
+            const string testScheduleGuid = "E31C0108-3F3A-4101-B135-A7B8482A226C";
 
             var rockContext = new RockContext();
 
             // Create a new Event that occurs daily.
-            var startDateTime = RockDateTime.New( 2020, 1, 1 ).Value.AddHours(19).AddMinutes(30);
+            var startDateTime = RockDateTime.New( 2020, 1, 1 ).Value.AddHours( 19 ).AddMinutes( 30 );
             var endDate = startDateTime.AddMonths( 3 );
 
-            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime, endDate, new TimeSpan(1,0,0) );
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime, endDate, new TimeSpan( 1, 0, 0 ) );
 
-            var createEventInfo = new TestDataHelper.Events.CreateEventItemActionArgs
+            var addScheduleArgs = new EventsDataManager.AddScheduleDailyRecurrenceActionArgs
+            {
+                Guid = testScheduleGuid.AsGuid(),
+                StartDateTime = startDateTime,
+                EndDateTime = endDate,
+                EventDuration = new TimeSpan( 1, 0, 0 )
+            };
+            var createEventInfo = new CreateEventItemActionArgs
             {
                 Guid = NewEventGuid.AsGuid(),
-                Schedule = schedule,
-                EventName = "Test Daily Event",
-                MeetingLocation = "Test Location"
+                Properties = new EventItemInfo
+                {
+                    EventName = "Test Daily Event"
+                }
+            };
+            var createOccurrenceInfo = new CreateEventItemOccurrenceActionArgs
+            {
+                Properties = new EventItemOccurrenceInfo
+                {
+                    EventIdentifier = NewEventGuid,
+                    MeetingLocationDescription = "Test Location",
+                    ScheduleIdentifier = testScheduleGuid,
+                    CampusIdentifier = "Main Campus"
+                }
             };
 
-            TestDataHelper.Events.DeleteEventItem( NewEventGuid, rockContext );
+            var eventsManager = EventsDataManager.Instance;
+            eventsManager.AddScheduleWithDailyRecurrence( addScheduleArgs );
+
+            eventsManager.DeleteEventItem( NewEventGuid, rockContext );
             rockContext.SaveChanges();
 
-            TestDataHelper.Events.CreateEventItem( createEventInfo, rockContext );
-            rockContext.SaveChanges();
+            eventsManager.AddEventItem( createEventInfo );
+            eventsManager.AddEventItemOccurrence( createOccurrenceInfo );
 
             try
             {
@@ -262,7 +290,7 @@ namespace Rock.Tests.Integration.Core.Lava
             finally
             {
                 // Remove the test event so it does not interfere with other tests.
-                TestDataHelper.Events.DeleteEventItem( NewEventGuid, rockContext );
+                eventsManager.DeleteEventItem( NewEventGuid, rockContext );
                 rockContext.SaveChanges();
             }
         }

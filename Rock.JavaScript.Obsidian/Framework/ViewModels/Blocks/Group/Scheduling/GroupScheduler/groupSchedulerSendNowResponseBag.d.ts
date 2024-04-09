@@ -23,7 +23,7 @@
 
 /** The outcome of a request to send confirmation communications to scheduled individuals. */
 export type GroupSchedulerSendNowResponseBag = {
-    /** Gets or sets whether there were any communications to send (false if all communications have already been sent). */
+    /** Gets or sets whether there are any communications to send. */
     anyCommunicationsToSend: boolean;
 
     /** Gets or sets the count of communications sent. */

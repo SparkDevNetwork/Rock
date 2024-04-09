@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Newtonsoft.Json;
 using Rock.Tasks;
+using Rock.Constants;
 
 namespace RockWeb.Blocks.WorkFlow
 {
@@ -90,6 +91,19 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnInit( e );
 
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
+            {
+                Guid workflowTypeGuid = Guid.Empty;
+                Guid.TryParse( GetAttributeValue( "DefaultWorkflowType" ), out workflowTypeGuid );
+                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
+            }
+            else
+            {
+                int workflowTypeId = 0;
+                workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
+                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+            }
+
             if ( _workflowType != null )
             {
                 _canEdit = UserCanEdit || _workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -142,10 +156,19 @@ namespace RockWeb.Blocks.WorkFlow
             base.OnLoad( e );
 
             nbResult.Visible = false;
-            if ( !Page.IsPostBack && _canView )
+            if ( !Page.IsPostBack )
             {
-                SetFilter();
-                BindGrid();
+                if ( _canView )
+                {
+                    SetFilter();
+                    BindGrid();
+                }
+                else
+                {
+                    pnlWorkflowList.Visible = false;
+                    nbMessage.Visible = true;
+                    nbMessage.Text = EditModeMessage.NotAuthorizedToView( WorkflowType.FriendlyTypeName );
+                }
             }
         }
 
@@ -161,23 +184,24 @@ namespace RockWeb.Blocks.WorkFlow
         public override List<BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
+            WorkflowType workflowType;
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultWorkflowType" ) ) )
             {
                 Guid workflowTypeGuid = Guid.Empty;
                 Guid.TryParse( GetAttributeValue( "DefaultWorkflowType" ), out workflowTypeGuid );
-                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
+                workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
             }
             else
             {
                 int workflowTypeId = 0;
                 workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
-                _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+                workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
             }
 
-            if ( _workflowType != null )
+            if ( workflowType != null )
             {
-                breadCrumbs.Add( new BreadCrumb( _workflowType.Name, pageReference ) );
+                breadCrumbs.Add( new BreadCrumb( workflowType.Name, pageReference ) );
             }
 
             return breadCrumbs;
@@ -293,7 +317,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            BindGrid();
+                BindGrid();
         }
 
         /// <summary>
@@ -637,6 +661,11 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private void BindGrid()
         {
+            if ( !_canView )
+            {
+                return;
+            }
+
             if ( _workflowType != null )
             {
                 pnlWorkflowList.Visible = true;
@@ -790,7 +819,6 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 pnlWorkflowList.Visible = false;
             }
-
         }
 
         private string MakeKeyUniqueToType( string key )

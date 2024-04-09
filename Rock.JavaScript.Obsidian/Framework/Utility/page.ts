@@ -22,7 +22,7 @@ export type PageConfig = {
     executionStartTime: number;
     pageId: number;
     pageGuid: Guid;
-    pageParameters: Record<string, unknown>;
+    pageParameters: Record<string, string>;
     currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;
     loginUrlWithReturnUrl: string;
@@ -94,7 +94,7 @@ export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () =>
     let src = source;
 
     // Add the cache busting fingerprint if we have one.
-    if (fingerprint !== false && Obsidian.options.fingerprint) {
+    if (fingerprint !== false && typeof Obsidian !== "undefined" && Obsidian?.options?.fingerprint) {
         if (src.indexOf("?") === -1) {
             src += `?${Obsidian.options.fingerprint}`;
         }
@@ -157,4 +157,22 @@ export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () =>
             return false;
         }
     }
+}
+
+/**
+ * Adds a new link to the quick return action menu. The URL in the address bar
+ * will be used as the destination.
+ *
+ * @param title The title of the quick link that identifies the current page.
+ * @param section The section title to place this link into.
+ * @param sectionOrder The priority order to give the section if it doesn't already exist.
+ */
+export function addQuickReturn(title: string, section: string, sectionOrder?: number): void {
+    interface IRock {
+        personalLinks: {
+            addQuickReturn: (type: string, typeOrder: number, itemName: string) => void
+        }
+    }
+
+    (window["Rock"] as IRock).personalLinks.addQuickReturn(section, sectionOrder ?? 0, title);
 }

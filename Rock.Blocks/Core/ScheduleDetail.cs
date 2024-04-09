@@ -15,11 +15,11 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -86,6 +86,11 @@ namespace Rock.Blocks.Core
                 }
 
                 SetBoxInitialEntityState( box, rockContext, entity );
+                if ( box.Entity == null )
+                {
+                    return box;
+                }
+
                 var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 if ( categoryId.HasValue )
                 {
@@ -109,10 +114,7 @@ namespace Rock.Blocks.Core
         /// <returns>The options that provide additional details to the block.</returns>
         private ScheduleDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext, Schedule entity )
         {
-            var options = new ScheduleDetailOptionsBag
-            {
-                NextOccurrence = entity.GetNextStartDateTime( RockDateTime.Now )
-            };
+            var options = new ScheduleDetailOptionsBag();
 
             options.HasScheduleWarning = entity.HasScheduleWarning();
 
@@ -121,7 +123,7 @@ namespace Rock.Blocks.Core
 
             options.HasAttendance = entity.Id > 0 && new AttendanceService( rockContext )
                 .Queryable()
-                .Where( a => a.Occurrence.ScheduleId.HasValue && a.Occurrence.ScheduleId == entity.Id )
+                .Where( a => a.Occurrence != null && a.Occurrence.ScheduleId.HasValue && a.Occurrence.ScheduleId == entity.Id )
                 .Any();
 
             options.HelpText = ScheduleService.CreatePreviewHTML( entity );
@@ -160,7 +162,18 @@ namespace Rock.Blocks.Core
         /// <returns><c>true</c> if the Schedule is valid, <c>false</c> otherwise.</returns>
         private bool ValidateSchedule( Schedule schedule, RockContext rockContext, out string errorMessage )
         {
-            errorMessage = null;
+            errorMessage = string.Empty;
+
+            if ( schedule.CategoryId == 0 )
+            {
+                errorMessage = "Category is invalid";
+                return false;
+            }
+
+            if ( !schedule.IsValid )
+            {
+                return false;
+            }
 
             return true;
         }
@@ -240,7 +253,7 @@ namespace Rock.Blocks.Core
                 IsActive = entity.IsActive,
                 IsPublic = entity.IsPublic,
                 Name = entity.Name,
-                Order = entity.Order
+                NextOccurrence = entity.GetNextStartDateTime( RockDateTime.Now )?.ToString( "g" ) ?? string.Empty
             };
         }
 
@@ -303,7 +316,7 @@ namespace Rock.Blocks.Core
                 () => entity.AutoInactivateWhenComplete = box.Entity.AutoInactivateWhenComplete );
 
             box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ).ToIntSafe() );
 
             box.IfValidProperty( nameof( box.Entity.CheckInEndOffsetMinutes ),
                 () => entity.CheckInEndOffsetMinutes = box.Entity.CheckInEndOffsetMinutes );
@@ -331,9 +344,6 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
-
-            box.IfValidProperty( nameof( box.Entity.Order ),
-                () => entity.Order = box.Entity.Order );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -457,7 +467,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Schedule.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Schedule.FriendlyTypeName}." );
                 return false;
             }
 
@@ -467,6 +477,30 @@ namespace Rock.Blocks.Core
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Copy the Schedule to create a new Schedule
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult Copy( string key )
+        {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( $"Not authorized to copy {Schedule.FriendlyTypeName}." );
+            }
+
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return ActionNotFound();
+            }
+
+            var copiedEntity = new ScheduleService( new RockContext() ).Copy( key );
+
+            return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+            {
+                [PageParameterKey.ScheduleId] = copiedEntity.IdKey
+            } ) );
+        }
 
         /// <summary>
         /// Gets the box that will contain all the information needed to begin
@@ -532,6 +566,8 @@ namespace Rock.Blocks.Core
                     entity.SaveAttributeValues( rockContext );
                 } );
 
+                Rock.CheckIn.KioskDevice.Clear();
+
                 if ( isNew )
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
@@ -570,19 +606,18 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( errorMessage );
                 }
 
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
                 // reload page, selecting the deleted data view's parent
                 var qryParams = new Dictionary<string, string>();
                 if ( entity.CategoryId != null )
                 {
                     qryParams["CategoryId"] = entity.CategoryId.ToString();
                 }
-
                 qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
-                return ActionOk( (new Rock.Web.PageReference( this.PageCache.Guid.ToString(), qryParams )).BuildUrl() );
+                entityService.Delete( entity );
+                rockContext.SaveChanges();
+
+                return ActionOk( ( new Rock.Web.PageReference( this.PageCache.Guid.ToString(), qryParams ) ).BuildUrl() );
             }
         }
 

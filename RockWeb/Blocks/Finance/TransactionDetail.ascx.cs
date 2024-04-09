@@ -375,6 +375,12 @@ namespace RockWeb.Blocks.Finance
                 */
                 var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
                 pageRef.Parameters.Add( "TransactionId", savedTransactionId.ToString() );
+
+                if ( PageParameter( "BatchId" ).IsNotNullOrWhiteSpace() )
+                {
+                    pageRef.Parameters.Add( "BatchId", PageParameter( "BatchId" ) );
+                }
+
                 NavigateToPage( pageRef );
             }
         }
@@ -493,7 +499,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( txn.RefundDetails != null )
                     {
-                        rockContext.FinancialTransactionRefunds.Remove( txn.RefundDetails );
+                        new FinancialTransactionRefundService( rockContext ).Delete( txn.RefundDetails );
                     }
                 }
 

@@ -21,12 +21,13 @@
                    :label="label"
                    :help="helpText"
                    :configurationValues="configurationValues"
-                   :rules="rules" />
+                   :rules="rules"
+                   :dataEntryMode="dataEntryMode" />
     </div>
 </template>
 
 <script setup lang="ts">
-    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { DataEntryMode, getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { computed, PropType, provide } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
@@ -57,6 +58,10 @@
         isCondensed: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        dataEntryMode: {
+            type: String as PropType<DataEntryMode>,
+            default: undefined
         }
     });
 
@@ -98,12 +103,12 @@
         //const _ignored = props.attributeValue.value;
 
         return props.isCondensed
-            ? field.value?.getCondensedFormattedComponent()
-            : field.value?.getFormattedComponent();
+            ? field.value?.getCondensedFormattedComponent(configurationValues.value)
+            : field.value?.getFormattedComponent(configurationValues.value);
     });
 
     /** The edit component to use to display the value. */
-    const editComponent = computed(() => field.value?.getEditComponent());
+    const editComponent = computed(() => field.value?.getEditComponent(configurationValues.value));
 
     /** The value to display or edit. */
     const value = computed({

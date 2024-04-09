@@ -28,6 +28,9 @@ namespace Rock.Utility.Settings
     {
         #region Fields
 
+        private string _readOnlyConnectionString = null;
+        private string _analyticsConnectionString = null;
+
         private bool _versionInfoRetrieved = false;
         private string _versionNumber;
         private string _version;
@@ -72,6 +75,20 @@ namespace Rock.Utility.Settings
         public string ConnectionString { get; private set; }
 
         /// <summary>
+        /// Gets the database connection string for read-only replicas.
+        /// If no read-only connection string has been configured then
+        /// the standard connection string is returned.
+        /// </summary>
+        public string ReadOnlyConnectionString => _readOnlyConnectionString ?? ConnectionString;
+
+        /// <summary>
+        /// Gets the database connection string to use for analytics.
+        /// If no analytics connection string has been configured then
+        /// the standard connection string is returned.
+        /// </summary>
+        public string AnalyticsConnectionString => _analyticsConnectionString ?? ConnectionString;
+
+        /// <summary>
         /// Set the database connection string.
         /// </summary>
         /// <param name="connectionString"></param>
@@ -84,30 +101,12 @@ namespace Rock.Utility.Settings
             else
             {
                 // Parse the connection string and store the server name and database name.
-                var csBuilder = new System.Data.Odbc.OdbcConnectionStringBuilder( connectionString );
+                var csBuilder = new SqlConnectionStringBuilder( connectionString );
 
-                object serverName;
-                object databaseName;
-                bool isValid;
+                _serverName = csBuilder.DataSource;
+                _databaseName = csBuilder.InitialCatalog;
 
-                isValid = csBuilder.TryGetValue( "server", out serverName );
-
-                if ( !isValid )
-                {
-                    csBuilder.TryGetValue( "data source", out serverName );
-                }
-
-                isValid = csBuilder.TryGetValue( "database", out databaseName );
-
-                if ( !isValid )
-                {
-                    csBuilder.TryGetValue( "initial catalog", out databaseName );
-                }
-
-                _serverName = serverName.ToStringSafe();
-                _databaseName = databaseName.ToStringSafe();
-
-                this.ConnectionString = connectionString;
+                ConnectionString = connectionString;
             }
 
             // Reset all cached properties.
@@ -122,6 +121,24 @@ namespace Rock.Utility.Settings
             _edition = null;
             _recoverMode = null;
             _compatibility = null;
+        }
+
+        /// <summary>
+        /// Sets the read-only replica connection string for this Rock instance.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        public void SetReadOnlyConnectionString( string connectionString )
+        {
+            _readOnlyConnectionString = connectionString;
+        }
+
+        /// <summary>
+        /// Sets the analytics replica connection string for this Rock instance.
+        /// </summary>
+        /// <param name="connectionString">The connection string.</param>
+        public void SetAnalyticsConnectionString( string connectionString )
+        {
+            _analyticsConnectionString = connectionString;
         }
 
         /// <summary>
@@ -412,9 +429,9 @@ WHERE  name = DB_NAME()
         }
 
         /// <summary>
-        /// Gets the compatibility version of the database.
+        /// Gets the Compatibility Level of the database
         /// </summary>
-        public string CompatibilityVersion
+        public int CompatibilityLevel
         {
             get
             {
@@ -423,26 +440,39 @@ WHERE  name = DB_NAME()
                     GetCompatibilityLevel();
                 }
 
-                switch ( _compatibility )
+                return int.Parse( _compatibility );
+            }
+        }
+
+        /// <summary>
+        /// Gets the compatibility version of the database.
+        /// </summary>
+        public string CompatibilityVersion
+        {
+            get
+            {
+                switch ( CompatibilityLevel )
                 {
-                    case "150":
+                    case 160:
+                        return "SQL Server 2022";
+                    case 150:
                         return "SQL Server 2019";
-                    case "140":
+                    case 140:
                         return "SQL Server 2017";
-                    case "130":
+                    case 130:
                         return "SQL Server 2016";
-                    case "120":
+                    case 120:
                         return "SQL Server 2014";
-                    case "110":
+                    case 110:
                         return "SQL Server 2012";
-                    case "100":
+                    case 100:
                         return "SQL Server 2008";
-                    case "90":
+                    case 90:
                         return "SQL Server 2005";
-                    case "80":
+                    case 80:
                         return "SQL Server 2000";
                     default:
-                        return "Unkown";
+                        return CompatibilityLevel.ToString();
                 }
             }
         }
@@ -522,6 +552,10 @@ SELECT SERVERPROPERTY('productversion'), @@Version;
             {
                 _versionFriendlyName = "SQL Server 2019";
             }
+            else if ( _versionNumber.StartsWith( "16.0" ) )
+            {
+                _versionFriendlyName = "SQL Server 2022";
+            }
             else
             {
                 _versionFriendlyName = "Unknown";
@@ -591,7 +625,7 @@ WHERE  name = DB_NAME()
             catch
             {
                 // Ignore errors and continue.
-                _compatibility = "#ERROR#";
+                _compatibility = "0";
             }
         }
 

@@ -111,8 +111,9 @@
     <TypeScriptCompile Include="src\quote.ts" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
-  <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean">
-    <Exec Command="npm install" Condition="'$(EnableTypeScript)' == 'true' And !Exists('$(QualifiedProjectHome)node_modules\.bin\tsc')" />
+  <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">
+    <Exec Command="npm ci" />
+    <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <ProjectExtensions>
     <VisualStudio>

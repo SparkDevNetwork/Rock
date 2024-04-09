@@ -25,11 +25,11 @@ namespace Rock.Chart
 {
     /// <summary>
     /// Provides base functionality for factories that build the data structures needed to render a chart with the Chart.js library.
-    /// These factories produce data that descirbes the presentation and functionality of a chart,
+    /// These factories produce data that describes the presentation and functionality of a chart,
     /// they do not produce the datapoints that are mapped by the chart.
     /// </summary>
     /// <remarks>
-    /// Compatible with ChartJS v2.8.0.
+    /// Compatible with ChartJS v2.9.3.
     /// </remarks>
     public abstract class ChartJsDataFactory
     {
@@ -148,7 +148,7 @@ namespace Rock.Chart
             else if ( valueFormatString == "percentage" )
             {
                 callbackStr = @"function (label, index, values) {
-                return value + '%';
+                return label + '%';
               }";
             }
             else
@@ -427,9 +427,6 @@ function(tooltipModel) {
         /// <summary>
         /// Legend alignment: {start|center|end}
         /// </summary>
-        /// <remarks>
-        /// This setting has no effect in ChartJs v2.8.0
-        /// </remarks>
         [Obsolete( "Use the GetJsonArgs parameter instead." )]
         [RockObsolete("1.15")]
         public string LegendAlignment { get; set; } = "center";
@@ -528,13 +525,10 @@ function(tooltipModel) {
             /// <summary>
             /// Legend alignment: {start|center|end}
             /// </summary>
-            /// <remarks>
-            /// This setting has no effect in ChartJs v2.8.0
-            /// </remarks>
             public string LegendAlignment { get; set; } = "center";
 
             /// <summary>
-            /// Bezier curve tension of the line. Set to 0 to draw straightlines.
+            /// Bezier curve tension of the line. Set to 0 to draw straight lines.
             /// This option is ignored if monotone cubic interpolation is used.
             /// </summary>
             public decimal LineTension { get; set; } = 0m;

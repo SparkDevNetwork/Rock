@@ -23,7 +23,6 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -219,7 +218,8 @@ namespace Rock.Web.UI.Controls
                     Controls.Add( _lbManualRequirement );
                 }
 
-                if ( groupRequirement.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
+                // This _canOverride is determined by the GroupMemberRequirementContainer when it creates a GroupMemberRequirementCard.
+                if ( _canOverride )
                 {
                     _lbMarkAsMet = new LinkButton
                     {
@@ -325,11 +325,15 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             _groupMemberRequirement = new GroupMemberRequirementService( new RockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
+            var meetsGroupRequirement = _groupMemberRequirement?.WasOverridden == true ?
+                MeetsGroupRequirement.Meets :
+                MeetsGroupRequirement;
+
             if ( this.Title.Trim() != string.Empty )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12 col-sm-6 col-md-4 requirement-item" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, CardStatus( MeetsGroupRequirement ) + " alert-requirement" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, CardStatus( meetsGroupRequirement ) + " alert-requirement" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( !string.IsNullOrWhiteSpace( TypeIconCssClass ) )

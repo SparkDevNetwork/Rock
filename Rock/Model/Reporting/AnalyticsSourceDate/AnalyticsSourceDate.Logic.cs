@@ -124,7 +124,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         #endregion
 
         /// <summary>
-        /// Determines the Fiscal Year (the calendar year in which the fiscal year ends) for the specified date and fiscal startmonth
+        /// Determines the Fiscal Year (the calendar year in which the fiscal year ends) for the specified date and fiscal start month.
         /// </summary>
         /// <param name="fiscalStartMonth">The fiscal start month.</param>
         /// <param name="date">The date.</param>
@@ -137,10 +137,25 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         }
 
         /// <summary>
+        /// Gets the count of weeks in the specified year.
+        /// https://stackoverflow.com/a/17391168
+        /// </summary>
+        /// <param name="year">The year for which to determine the count of weeks.</param>
+        /// <param name="calendarWeekRule">The calendar week rule.</param>
+        /// <param name="firstDayOfWeek">The first day of the week.</param>
+        /// <returns>The count of weeks in the specified year.</returns>
+        private static int GetWeeksInYear( int year, System.Globalization.CalendarWeekRule calendarWeekRule, System.DayOfWeek firstDayOfWeek )
+        {
+            var lastDayOfYear = new DateTime( year, 12, 31 );
+            var calendar = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
+            return calendar.GetWeekOfYear( lastDayOfYear, calendarWeekRule, firstDayOfWeek );
+        }
+
+        /// <summary>
         /// Populates the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it.
         /// </summary>
         /// <param name="fiscalStartMonth">The fiscal start month.</param>
-        /// <param name="givingMonthUseSundayDate">if set to <c>true</c> [giving month use sunday date].</param>
+        /// <param name="givingMonthUseSundayDate">if set to <c>true</c> [giving month use Sunday date].</param>
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
         public static void GenerateAnalyticsSourceDateData( int fiscalStartMonth, bool givingMonthUseSundayDate, DateTime startDate, DateTime endDate )
@@ -234,7 +249,8 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 // see http://www.filemaker.com/help/12/fmp/en/html/func_ref1.31.28.html and do it that way, except using RockDateTime.FirstDayOfWeek
                 int fiscalWeekOffset = fiscalStartDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek ) - 1;
                 int fiscalWeek = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek ) - fiscalWeekOffset;
-                fiscalWeek = fiscalWeek < 1 ? fiscalWeek + 52 : fiscalWeek;
+                int weeksInYear = GetWeeksInYear( fiscalYear, System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
+                fiscalWeek = fiscalWeek < 1 ? fiscalWeek + weeksInYear : fiscalWeek;
 
                 analyticsSourceDate.FiscalWeek = fiscalWeek;
                 analyticsSourceDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
@@ -323,7 +339,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
             using ( var rockContext = new RockContext() )
             {
                 // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
-                EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
+                EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourceDate>() ).InsertAll( generatedDates );
 
                 // Update the Sunday of the Year data
                 rockContext.Database.ExecuteSqlCommand( SundayOfTheYearSql );

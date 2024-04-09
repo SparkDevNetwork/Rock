@@ -16,6 +16,7 @@
 //
 using System;
 
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -80,7 +81,7 @@ namespace Rock.Attribute
             this.DefinedTypeGuid = definedTypeGuid;
             this.AllowMultiple = allowMultiple;
             this.Enhanced = enhanced;
-            if ( string.IsNullOrWhiteSpace( Name ) )
+            if ( string.IsNullOrWhiteSpace( Name ) && RockInstanceConfig.DatabaseIsAvailable )
             {
                 this.Name = DefinedValueCache.Get( definedTypeGuid.AsGuid() )?.Value;
             }
@@ -118,7 +119,7 @@ namespace Rock.Attribute
             this.IncludeInactive = includeInactive;
             this.DisplayDescription = displayDescription;
 
-            if ( string.IsNullOrWhiteSpace( Name ) )
+            if ( string.IsNullOrWhiteSpace( Name ) && RockInstanceConfig.DatabaseIsAvailable )
             {
                 this.Name = DefinedValueCache.Get( definedTypeGuid.AsGuid() )?.Value;
             }
@@ -154,7 +155,7 @@ namespace Rock.Attribute
             {
                 var definedTypeGuid = value.AsGuidOrNull();
                 int? definedTypeId = null;
-                if ( definedTypeGuid.HasValue )
+                if ( definedTypeGuid.HasValue && RockInstanceConfig.DatabaseIsAvailable )
                 {
                     definedTypeId = DefinedTypeCache.GetId( definedTypeGuid.Value );
                 }

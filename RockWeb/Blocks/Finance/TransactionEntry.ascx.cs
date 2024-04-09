@@ -42,9 +42,9 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Add a new one-time or scheduled transaction
     /// </summary>
-    [DisplayName( "Transaction Entry" )]
+    [DisplayName( "Transaction Entry (Legacy)" )]
     [Category( "Finance" )]
-    [Description( "Creates a new financial transaction or scheduled transaction." )]
+    [Description( "Creates a new financial transaction or scheduled transaction. This block has been replaced with the Utility Payment Entry block." )]
 
     #region Block Attributes
 
@@ -717,17 +717,6 @@ namespace RockWeb.Blocks.Finance
                 SetTargetPerson( rockContext );
                 SetGatewayOptions( rockContext );
                 BindSavedAccounts( rockContext, true );
-            }
-
-            // Determine account campus context mode
-            _accountCampusContextFilter = GetAttributeValue( AttributeKey.AccountCampusContext ).AsType<int>();
-            if ( _accountCampusContextFilter > -1 )
-            {
-                var campusEntity = RockPage.GetCurrentContext( EntityTypeCache.Get( typeof( Campus ) ) );
-                if ( campusEntity != null )
-                {
-                    _currentCampusContextId = campusEntity.Id;
-                }
             }
 
             // Determine account campus context mode

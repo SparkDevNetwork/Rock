@@ -23,6 +23,8 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.OData;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -51,15 +53,15 @@ namespace Rock.Rest
         /// The rock request context that describes the current request
         /// being made.
         /// </value>
-        public RockRequestContext RockRequestContext => _rockRequestContext.Value;
-        private Lazy<RockRequestContext> _rockRequestContext;
+        public RockRequestContext RockRequestContext { get; private set; }
 
         /// <inheritdoc/>
         public override Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
         {
-            // Initialize as lazy since very few API calls use this yet. Once
-            // it becomes more common the lazy part can be removed.
-            _rockRequestContext = new Lazy<RockRequestContext>( () => new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ) ) );
+            if ( controllerContext.Request.Properties["RockServiceProvider"] is IServiceProvider serviceProvider )
+            {
+                RockRequestContext = serviceProvider.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext;
+            }
 
             return base.ExecuteAsync( controllerContext, cancellationToken );
         }

@@ -3,71 +3,78 @@
         <template #default>
             <fieldset>
 
+                <template v-if="config.successfullyUnsubscribedText">
+                    <h2>Unsubscribe Successful</h2>
+                    <p>{{ config.successfullyUnsubscribedText }}</p>
+
+                    <RockLabel >Other Actions</RockLabel>
+                </template>
+
                 <NotificationBox alertType="danger" v-if="errorMessage" v-html="errorMessage" />
 
-                <div v-if="unsubscribeFromListOptions.length > 0">
+                <div v-if="noMassEmailsText" class="radio">
+                    <label :for="noMassEmails">
+                        <input :id="noMassEmails"
+                            :name="noMassEmails"
+                            type="radio"
+                            :value="noMassEmails"
+                            v-model="emailPreference" />
+                        <span class="label-text">{{ noMassEmailsText }}</span>
+                    </label>
+                </div>
+
+                <div v-if="emailsAllowedText" class="radio">
+                    <label :for="emailsAllowed">
+                        <input :id="emailsAllowed"
+                            :name="emailsAllowed"
+                            type="radio"
+                            :value="emailsAllowed"
+                            v-model="emailPreference" />
+                        <span class="label-text">{{ emailsAllowedText }}</span>
+                    </label>
+                </div>
+
+                <template v-if="unsubscribeFromListOptions.length > 0">
                     <div class="radio">
                         <label :for="unsubscribe">
                             <input :id="unsubscribe"
-                                   :name="unsubscribe"
-                                   type="radio"
-                                   :value="unsubscribe"
-                                   v-model="emailPreference" />
+                                    :name="unsubscribe"
+                                    type="radio"
+                                    :value="unsubscribe"
+                                    v-model="emailPreference" />
                             <span class="label-text">{{ unsubscribeText }}</span>
                         </label>
                     </div>
                     <TransitionVerticalCollapse>
                         <div v-if="showUnsubscribeList" class="margin-l-lg margin-t-sm">
                             <CheckBoxList v-model="unsubscribeFromList"
-                                          :items="unsubscribeFromListOptions"
-                                          :horizontal="false" />
+                                        :items="unsubscribeFromListOptions"
+                                        :horizontal="false" />
                         </div>
                     </TransitionVerticalCollapse>
-                </div>
+                </template>
 
-                <div v-if="updateEmailAddressText">
+                <template v-if="updateEmailAddressText">
                     <div class="radio">
                         <label :for="updateEmailAddress">
                             <input :id="updateEmailAddress"
-                                   :name="updateEmailAddress"
-                                   type="radio"
-                                   :value="updateEmailAddress"
-                                   v-model="emailPreference" />
+                                    :name="updateEmailAddress"
+                                    type="radio"
+                                    :value="updateEmailAddress"
+                                    v-model="emailPreference" />
                             <span class="label-text">{{ updateEmailAddressText }}</span>
                         </label>
                     </div>
                     <TransitionVerticalCollapse>
                         <div v-if="showUpdateEmailInput">
                             <EmailBox label="Email"
-                                      v-model="email"
-                                      class="input-width-xxl" />
+                                    v-model="email"
+                                    class="input-width-xxl" />
                         </div>
                     </TransitionVerticalCollapse>
-                </div>
+                </template>
 
-                <div class="radio" v-if="emailsAllowedText">
-                    <label :for="emailsAllowed">
-                        <input :id="emailsAllowed"
-                               :name="emailsAllowed"
-                               type="radio"
-                               :value="emailsAllowed"
-                               v-model="emailPreference" />
-                        <span class="label-text">{{ emailsAllowedText }}</span>
-                    </label>
-                </div>
-
-                <div class="radio" v-if="noMassEmailsText">
-                    <label :for="noMassEmails">
-                        <input :id="noMassEmails"
-                               :name="noMassEmails"
-                               type="radio"
-                               :value="noMassEmails"
-                               v-model="emailPreference" />
-                        <span class="label-text">{{ noMassEmailsText }}</span>
-                    </label>
-                </div>
-
-                <div class="radio" v-if="noEmailsText">
+                <div v-if="noEmailsText" class="radio">
                     <label :for="noEmails">
                         <input :id="noEmails"
                                :name="noEmails"
@@ -78,24 +85,24 @@
                     </label>
                 </div>
 
-                <div v-if="notInvolvedText">
+                <template v-if="notInvolvedText">
                     <div class="radio">
                         <label :for="notInvolved">
                             <input :id="notInvolved"
-                                   :name="notInvolved"
-                                   type="radio"
-                                   :value="notInvolved"
-                                   v-model="emailPreference" />
+                                    :name="notInvolved"
+                                    type="radio"
+                                    :value="notInvolved"
+                                    v-model="emailPreference" />
                             <span class="label-text">{{ notInvolvedText }}</span>
                         </label>
                     </div>
                     <TransitionVerticalCollapse>
-                        <div v-if="showNotInvolvedDetails" class="row">
+                        <div v-if="notInvolvedText && showNotInvolvedDetails" class="row">
                             <div class="col-md-6">
                                 <DropDownList label="Reason"
-                                              v-model="inactiveReason"
-                                              :items="inactiveReasons"
-                                              :showBlankItem="false" />
+                                                v-model="inactiveReason"
+                                                :items="inactiveReasons"
+                                                :showBlankItem="false" />
 
                                 <div v-if="allowInactivatingFamily">
                                     <RockLabel>Inactivate all individuals in my family</RockLabel>
@@ -103,14 +110,14 @@
                                 </div>
 
                                 <TextBox label="More Info (optional)"
-                                         v-model="inactiveNote"
-                                         textMode="MultiLine"
-                                         :rows="5"
-                                         :maxLength="100" />
+                                            v-model="inactiveNote"
+                                            textMode="MultiLine"
+                                            :rows="5"
+                                            :maxLength="100" />
                             </div>
                         </div>
                     </TransitionVerticalCollapse>
-                </div>
+                </template>
 
             </fieldset>
 

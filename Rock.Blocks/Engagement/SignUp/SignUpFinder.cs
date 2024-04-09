@@ -15,13 +15,6 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Data.Entity.Spatial;
-using System.Linq;
-using System.Linq.Expressions;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
@@ -36,17 +29,25 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Data.Entity.Spatial;
+using System.Linq;
+using System.Linq.Expressions;
+
 namespace Rock.Blocks.Engagement.SignUp
 {
     /// <summary>
-    /// Block used for finding a sign-up group/project.
+    /// Block used for finding sign-up groups/projects.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="Rock.Blocks.IHasCustomActions" />
 
-    [DisplayName( "Sign-Up Finder" )]
+    [DisplayName( "Sign-Ups Finder" )]
     [Category( "Engagement > Sign-Up" )]
-    [Description( "Block used for finding a sign-up group/project." )]
+    [Description( "Block used for finding sign-up groups/projects." )]
     [IconCssClass( "fa fa-clipboard-check" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
@@ -93,7 +94,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [GroupTypesField( "Project Types",
         Key = AttributeKey.ProjectTypes,
-        Description = "",
+        Description = "Select the sign-up project group types that should be considered for the search.",
         Category = AttributeCategory.CustomSetting,
         DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_SIGNUP_GROUP,
         IsRequired = true )]
@@ -125,9 +126,17 @@ namespace Rock.Blocks.Engagement.SignUp
         DefaultBooleanValue = false,
         IsRequired = false )]
 
+    [BooleanField( "Hide Campuses with no Sign-Up Opportunities",
+        Key = AttributeKey.HideCampusesWithNoOpportunities,
+        Description = @"Determines if campuses should be excluded from the filter list if they don't have any sign-up opportunities. This setting will be ignored if ""Display Campus Filter"" is disabled.",
+        Category = AttributeCategory.CustomSetting,
+        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        DefaultBooleanValue = false,
+        IsRequired = false )]
+
     [BooleanField( "Enable Campus Context",
         Key = AttributeKey.EnableCampusContext,
-        Description = "If the page has a campus context, its value will be used as a filter.",
+        Description = @"If enabled and the page has a campus context, its value will be used as a filter. If ""Display Campus Filter"" is disabled when this setting is enabled, the ""Campus Types"", ""Campus Statuses"" and ""Campuses"" settings will be ignored. However, if ""Display Campus Filter"" is enabled and the campus context is one of the allowed campuses, it will be pre-selected in the filter list.",
         Category = AttributeCategory.CustomSetting,
         ControlType = BooleanFieldType.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
@@ -135,7 +144,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [DefinedValueField( "Campus Types",
         Key = AttributeKey.CampusTypes,
-        Description = "The types of campuses to include in the campus list.",
+        Description = @"The types of campuses to include in the filter list if ""Display Campus Filter"" is enabled. If the filter is not displayed, these are the types the results should be automatically filtered by.",
         Category = AttributeCategory.CustomSetting,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
         AllowMultiple = true,
@@ -143,10 +152,16 @@ namespace Rock.Blocks.Engagement.SignUp
 
     [DefinedValueField( "Campus Statuses",
         Key = AttributeKey.CampusStatuses,
-        Description = "The statuses of the campuses to include in the campus list.",
+        Description = @"The statuses of campuses to include in the filter list if ""Display Campus Filter"" is enabled. If the filter is not displayed, these are the statuses the results should be automatically filtered by.",
         Category = AttributeCategory.CustomSetting,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
         AllowMultiple = true,
+        IsRequired = false )]
+
+    [CustomCheckboxListField( "Campuses",
+        Key = AttributeKey.Campuses,
+        Description = @"The specific campuses to include in the filter list if ""Display Campus Filter"" is enabled. If the filter is not displayed, these are the campuses the results should be automatically filtered by.",
+        Category = AttributeCategory.CustomSetting,
         IsRequired = false )]
 
     #endregion
@@ -284,9 +299,11 @@ namespace Rock.Blocks.Engagement.SignUp
 
             // Campus Filters.
             public const string DisplayCampusFilter = "DisplayCampusFilter";
+            public const string HideCampusesWithNoOpportunities = "HideCampusesWithNoOpportunities";
             public const string EnableCampusContext = "EnableCampusContext";
             public const string CampusTypes = "CampusTypes";
             public const string CampusStatuses = "CampusStatuses";
+            public const string Campuses = "Campuses";
 
             // Schedule Filters.
             public const string DisplayNamedScheduleFilter = "DisplayNamedScheduleFilter";
@@ -401,6 +418,8 @@ namespace Rock.Blocks.Engagement.SignUp
 
         private List<ListItemBag> _projectTypeFilterItems;
 
+        private CampusSettings _campusSettings;
+
         #endregion
 
         #region Properties
@@ -445,8 +464,7 @@ namespace Rock.Blocks.Engagement.SignUp
             box.FilterColumns = GetAttributeValue( AttributeKey.FilterColumns ).ToIntSafe();
             box.ProjectTypes = GetShouldDisplayProjectTypeFilter() ? GetProjectTypeFilterItems() : new List<ListItemBag>();
             box.ProjectTypeFilterLabel = GetAttributeValue( AttributeKey.ProjectTypeFilterLabel );
-            box.Campuses = GetCampusFilterItems();
-            box.PageCampusContext = GetPageCampusContext();
+            box.PageCampusContext = GetPageCampusContext().ToListItemBag();
             box.NamedSchedules = GetNamedScheduleFilterItems( rockContext );
             box.NamedScheduleFilterLabel = GetAttributeValue( AttributeKey.NamedScheduleFilterLabel );
             box.AttributesByProjectType = GetAttributeFilterItems( rockContext );
@@ -455,6 +473,34 @@ namespace Rock.Blocks.Engagement.SignUp
             box.LocationSortLabel = GetAttributeValue( AttributeKey.LocationSortLabel );
             box.DisplayLocationRangeFilter = GetShouldDisplayLocationRangeFilter();
             box.DisplaySlotsAvailableFilter = GetAttributeValue( AttributeKey.DisplaySlotsAvailableFilter ).AsBoolean();
+
+            var campusSettings = GetCampusSettings();
+            if ( !campusSettings.DisplayCampusFilter || campusSettings.AllowedCampuses.Count < 2 )
+            {
+                // We'll only send campuses to the UI if there are at least 2 for the individual to choose from.
+                return;
+            }
+
+            box.Campuses = campusSettings.AllowedCampuses;
+
+            if ( !campusSettings.HideCampusesWithNoOpportunities )
+            {
+                return;
+            }
+
+            // Perform a preliminary search using allowed campuses to hide those that don't have any opportunities.
+            var selectedFilters = new SignUpFinderSelectedFiltersBag
+            {
+                Campuses = campusSettings.AllowedCampuses.Select( c => c.Value ).ToList()
+            };
+
+            var opportunities = GetOpportunities( rockContext, selectedFilters );
+            var campusesWithOpportunities = campusSettings.AllowedCampuses.Where( c =>
+                opportunities.Any( o => o.Project.Campus?.Guid.ToString() == c.Value )
+            ).ToList();
+
+            // Again, only send campuses to the UI if there are at least 2 for the individual to choose from.
+            box.Campuses = campusesWithOpportunities.Count > 1 ? campusesWithOpportunities : null;
         }
 
         /// <summary>
@@ -472,60 +518,12 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <returns>The sign-up project group types that should be presented as filter items for the search.</returns>
         private List<ListItemBag> GetProjectTypeFilterItems()
         {
-            if ( _projectTypeFilterItems != null )
+            if ( _projectTypeFilterItems == null )
             {
-                return _projectTypeFilterItems;
+                _projectTypeFilterItems = GetAttributeValue( AttributeKey.ProjectTypes ).GroupTypeGuidsToListItemBagList();
             }
-
-            _projectTypeFilterItems = GetAttributeValue( AttributeKey.ProjectTypes ).GroupTypeGuidsToListItemBagList();
 
             return _projectTypeFilterItems;
-        }
-
-        /// <summary>
-        /// Gets the campuses that should be presented as filter items for the search.
-        /// </summary>
-        /// <returns>The campuses that should be presented as filter items for the search.</returns>
-        private List<ListItemBag> GetCampusFilterItems()
-        {
-            if ( !GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean() )
-            {
-                return new List<ListItemBag>();
-            }
-
-            var campusCaches = CampusCache
-                .All()
-                .Where( c => c.IsActive.HasValue && c.IsActive.Value )
-                .ToList();
-
-            var campusTypeIds = GetIds( GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues( "," ), DefinedValueCache.GetId );
-            if ( campusTypeIds.Any() )
-            {
-                campusCaches = campusCaches
-                    .Where( c => c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) )
-                    .ToList();
-            }
-
-            if ( !campusCaches.Any() )
-            {
-                return new List<ListItemBag>();
-            }
-
-            var campusStatusIds = GetIds( GetAttributeValue( AttributeKey.CampusStatuses ).SplitDelimitedValues( "," ), DefinedValueCache.GetId );
-            if ( campusStatusIds.Any() )
-            {
-                campusCaches = campusCaches
-                    .Where( c => c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) )
-                    .ToList();
-            }
-
-            if ( campusCaches.Count == 1 )
-            {
-                // Only display campus filter if there is more than one campus.
-                return new List<ListItemBag>();
-            }
-
-            return campusCaches.ToListItemBagList();
         }
 
         /// <summary>
@@ -553,21 +551,19 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             return entityGuidStrings
-                .Select( a => a.AsGuidOrNull() )
-                .Where( a => a.HasValue )
-                .Select( a => getEntityIdFunc( a.Value ) )
-                .Where( a => a.HasValue )
-                .Select( a => a.Value )
-                .ToList();
+                .AsGuidList()
+                .Select( g => getEntityIdFunc( g ) )
+                .AsIntegerList();
         }
 
         /// <summary>
-        /// Gets the page campus context, if enabled and defined.
+        /// Gets the page campus context entity, if enabled, defined and allowed.
         /// </summary>
-        /// <returns>The page campus context, if enabled and defined.</returns>
-        private ListItemBag GetPageCampusContext()
+        /// <returns>The page campus context entity or <see langword="null"/> if not enabled, defined or allowed.</returns>
+        private Campus GetPageCampusContext()
         {
-            if ( !GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
+            var campusSettings = GetCampusSettings();
+            if ( !campusSettings.EnableCampusContext )
             {
                 return null;
             }
@@ -578,7 +574,14 @@ namespace Rock.Blocks.Engagement.SignUp
                 return null;
             }
 
-            return pageContextCampus.ToListItemBag();
+            // If the campus filter is displayed, the campus context must be one of the allowed campuses
+            // as dictated by the other campus block settings in order to use it for filtering.
+            if ( campusSettings.DisplayCampusFilter && !campusSettings.AllowedCampuses.Any( c => c.Value == pageContextCampus.Guid.ToString() ) )
+            {
+                return null;
+            }
+
+            return pageContextCampus;
         }
 
         /// <summary>
@@ -602,7 +605,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 var rootScheduleCategoryId = CategoryCache.GetId( rootScheduleCategoryGuid.Value );
                 if ( rootScheduleCategoryId.HasValue )
                 {
-                    query = query.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == rootScheduleCategoryId.Value );
+                    query = query.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == rootScheduleCategoryId.Value && a.IsActive );
                 }
             }
 
@@ -738,6 +741,41 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
+        /// Gets the campus settings to be used within the custom settings modal and public-facing search filters.
+        /// </summary>
+        /// <returns>The campus settings.</returns>
+        private CampusSettings GetCampusSettings()
+        {
+            if ( _campusSettings == null )
+            {
+                // The available campuses are based on the currently-selected campus types and statuses, so get these first.
+                var selectedCampusTypes = GetAttributeValue( AttributeKey.CampusTypes ).DefinedValueGuidsToListItemBagList();
+                var selectedCampusStatuses = GetAttributeValue( AttributeKey.CampusStatuses ).DefinedValueGuidsToListItemBagList();
+
+                var availableCampuses = GetCustomSettingsAvailableCampuses( selectedCampusTypes.Select( t => t.Value ), selectedCampusStatuses.Select( s => s.Value ) );
+
+                // Ensure we don't try to filter against a campus that was previously saved, but no longer available.
+                var selectedCampuses = GetAttributeValue( AttributeKey.Campuses ).ToListItemBagListUsingAvailableOptions( availableCampuses );
+
+                // Double-check whether this Rock instance currently has multiple active Campuses.
+                var hasMultipleCampuses = !CampusCache.SingleCampusId.HasValue;
+
+                _campusSettings = new CampusSettings
+                {
+                    DisplayCampusFilter = hasMultipleCampuses && GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean(),
+                    HideCampusesWithNoOpportunities = GetAttributeValue( AttributeKey.HideCampusesWithNoOpportunities ).AsBoolean(),
+                    EnableCampusContext = GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean(),
+                    SelectedCampusTypes = selectedCampusTypes,
+                    SelectedCampusStatuses = selectedCampusStatuses,
+                    AvailableCampuses = availableCampuses,
+                    SelectedCampuses = selectedCampuses
+                };
+            }
+
+            return _campusSettings;
+        }
+
+        /// <summary>
         /// Gets the available sign-up project opportunities, based on the selected filters.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -783,16 +821,34 @@ namespace Rock.Blocks.Engagement.SignUp
 
             // Filter by campuses.
             var campusIds = new List<int>();
-            if ( GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean() )
+            var campusSettings = GetCampusSettings();
+
+            if ( !campusSettings.DisplayCampusFilter )
             {
-                campusIds = GetIds( selectedFilters.Campuses, CampusCache.GetId, GetCampusFilterItems() );
-            }
-            else if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
-            {
-                var pageContextCampus = this.RequestContext.GetContextEntity<Campus>();
-                if ( pageContextCampus!= null )
+                if ( campusSettings.EnableCampusContext )
                 {
-                    campusIds.Add( pageContextCampus.Id );
+                    // Campus context filtering overrules any other block settings campus filters in this
+                    // case, even if there isn't actually a campus entity on the current page context.
+                    var pageCampusContext = GetPageCampusContext();
+                    if ( pageCampusContext != null )
+                    {
+                        campusIds.Add( pageCampusContext.Id );
+                    }
+                }
+                else if ( campusSettings.AreCampusesFilteredByBlockSettings )
+                {
+                    campusIds = GetIds( campusSettings.AllowedCampuses.Select( c => c.Value ), CampusCache.GetId, campusSettings.AllowedCampuses );
+                }
+            }
+            else
+            {
+                if ( selectedFilters.Campuses?.Any() == true )
+                {
+                    campusIds = GetIds( selectedFilters.Campuses, CampusCache.GetId, campusSettings.AllowedCampuses );
+                }
+                else if ( campusSettings.AreCampusesFilteredByBlockSettings )
+                {
+                    campusIds = GetIds( campusSettings.AllowedCampuses.Select( c => c.Value ), CampusCache.GetId, campusSettings.AllowedCampuses );
                 }
             }
 
@@ -800,6 +856,12 @@ namespace Rock.Blocks.Engagement.SignUp
             {
                 qryGroupLocationSchedules = qryGroupLocationSchedules
                     .Where( gls => gls.Group.CampusId.HasValue && campusIds.Contains( gls.Group.CampusId.Value ) );
+            }
+            else if ( campusSettings.AreCampusesFilteredByBlockSettings )
+            {
+                // If - for some reason - we don't have any campus IDs even though a block admin applied
+                // behind-the-scenes campus filters, return no results.
+                return new List<Opportunity>();
             }
 
             // Filter by named schedules.
@@ -811,7 +873,7 @@ namespace Rock.Blocks.Engagement.SignUp
             }
 
             // Filter by attributes.
-            if ( selectedFilters.AttributeFiltersByProjectType.Any( kvp => kvp.Value.Any() ) )
+            if ( selectedFilters.AttributeFiltersByProjectType?.Any( kvp => kvp.Value.Any() ) == true )
             {
                 /*
                  * 2/1/2023 - JPH
@@ -1000,6 +1062,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
                     return new Opportunity
                     {
+                        Campus = gls.Group.Campus,
                         Project = gls.Group,
                         Location = gls.Location,
                         Schedule = gls.Schedule,
@@ -1319,6 +1382,44 @@ namespace Rock.Blocks.Engagement.SignUp
         }
 
         /// <summary>
+        /// Gets the available campuses for an individual to filter the results by, for the custom settings modal.
+        /// </summary>
+        /// <param name="selectedCampusTypeGuidStrings">The selected campus type guid strings.</param>
+        /// <param name="selectedCampusStatusGuidStrings">The selected campus status guid strings.</param>
+        /// <returns>A <see cref="ListItemBag"/> list of the available campuses for an individual to filter the results by.</returns>
+        private List<ListItemBag> GetCustomSettingsAvailableCampuses( IEnumerable<string> selectedCampusTypeGuidStrings, IEnumerable<string> selectedCampusStatusGuidStrings )
+        {
+            // Only get active campuses.
+            var campusCaches = CampusCache.All( false );
+
+            var selectedCampusTypeIds = ( selectedCampusTypeGuidStrings ?? new List<string>() )
+                .AsGuidList()
+                .Select( g => DefinedValueCache.GetId( g ) )
+                .AsIntegerList();
+
+            if ( selectedCampusTypeIds.Any() )
+            {
+                campusCaches = campusCaches
+                    .Where( c => c.CampusTypeValueId.HasValue && selectedCampusTypeIds.Contains( c.CampusTypeValueId.Value ) )
+                    .ToList();
+            }
+
+            var selectedCampusStatusIds = ( selectedCampusStatusGuidStrings ?? new List<string>() )
+                .AsGuidList()
+                .Select( g => DefinedValueCache.GetId( g ) )
+                .AsIntegerList();
+
+            if ( selectedCampusStatusIds.Any() )
+            {
+                campusCaches = campusCaches
+                    .Where( c => c.CampusStatusValueId.HasValue && selectedCampusStatusIds.Contains( c.CampusStatusValueId.Value ) )
+                    .ToList();
+            }
+
+            return campusCaches.ToListItemBagList();
+        }
+
+        /// <summary>
         /// Gets the linked page URL.
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
@@ -1372,7 +1473,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var actions = new List<BlockCustomActionBag>();
 
-            if ( BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
+            if ( canAdministrate )
             {
                 actions.Add( new BlockCustomActionBag
                 {
@@ -1447,18 +1548,21 @@ namespace Rock.Blocks.Engagement.SignUp
                     return ActionForbidden( "Not authorized to edit block settings." );
                 }
 
+                var campusSettings = GetCampusSettings();
+
                 // The available attribute filters are based on the currently-selected group type(s), so get these first.
                 var projectTypes = GetAttributeValue( AttributeKey.ProjectTypes ).GroupTypeGuidsToListItemBagList();
 
                 var options = new SignUpFinderCustomSettingsOptionsBag
                 {
                     AvailableProjectTypeGuids = GetCustomSettingsProjectTypeGuids(),
-                    AvailableDisplayAttributeFilters = GetCustomSettingsDisplayAttributeFilters( projectTypes.Select( pt => pt.Value ) )
+                    AvailableDisplayAttributeFilters = GetCustomSettingsDisplayAttributeFilters( projectTypes.Select( pt => pt.Value ) ),
+                    AvailableCampuses = campusSettings.AvailableCampuses
                 };
 
                 // Ensure we don't try to preselect an attribute filter that was previously saved, but no longer relevant based on the currently-selected group type(s).
                 var displayAttributeFilters = GetAttributeValue( AttributeKey.DisplayAttributeFilters )
-                    .ToListItemsBagListUsingAvailableOptions( options.AvailableDisplayAttributeFilters )
+                    .ToListItemBagListUsingAvailableOptions( options.AvailableDisplayAttributeFilters )
                     .Select( a => a.Value )
                     .ToList();
 
@@ -1477,10 +1581,12 @@ namespace Rock.Blocks.Engagement.SignUp
 
                     // Campus Filters.
                     DisplayCampusFilterSettings = !CampusCache.SingleCampusId.HasValue, // Only display campus-related settings if there is more than one campus.
-                    DisplayCampusFilter = GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean(),
-                    EnableCampusContext = GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean(),
-                    CampusTypes = GetAttributeValue( AttributeKey.CampusTypes ).DefinedValueGuidsToListItemBagList(),
-                    CampusStatuses = GetAttributeValue( AttributeKey.CampusStatuses ).DefinedValueGuidsToListItemBagList(),
+                    DisplayCampusFilter = campusSettings.DisplayCampusFilter,
+                    EnableCampusContext = campusSettings.EnableCampusContext,
+                    HideCampusesWithNoOpportunities = campusSettings.HideCampusesWithNoOpportunities,
+                    CampusTypes = campusSettings.SelectedCampusTypes,
+                    CampusStatuses = campusSettings.SelectedCampusStatuses,
+                    Campuses = campusSettings.SelectedCampuses.Select( c => c.Value ).ToList(),
 
                     // Schedule Filters.
                     DisplayNamedScheduleFilter = GetAttributeValue( AttributeKey.DisplayNamedScheduleFilter ).AsBoolean(),
@@ -1523,6 +1629,22 @@ namespace Rock.Blocks.Engagement.SignUp
         public BlockActionResult GetUpdatedDisplayAttributeFilters( IEnumerable<string> selectedProjectTypeGuidStrings )
         {
             return ActionOk( GetCustomSettingsDisplayAttributeFilters( selectedProjectTypeGuidStrings, GetCustomSettingsProjectTypeGuids() ) );
+        }
+
+        /// <summary>
+        /// Gets the updated available campuses.
+        /// </summary>
+        /// <param name="bag">The information needed to get the available campuses.</param>
+        /// <returns>A <see cref="ListItemBag"/> list representing the updated available campuses.</returns>
+        [BlockAction]
+        public BlockActionResult GetUpdatedAvailableCampuses( GetAvailableCampusesBag bag )
+        {
+            if ( bag == null )
+            {
+                return ActionBadRequest();
+            }
+
+            return ActionOk( GetCustomSettingsAvailableCampuses( bag.SelectedCampusTypes, bag.SelectedCampusStatuses ) );
         }
 
         /// <summary>
@@ -1580,11 +1702,17 @@ namespace Rock.Blocks.Engagement.SignUp
                 box.IfValidProperty( nameof( box.Settings.EnableCampusContext ),
                     () => block.SetAttributeValue( AttributeKey.EnableCampusContext, box.Settings.EnableCampusContext.ToString() ) );
 
+                box.IfValidProperty( nameof( box.Settings.HideCampusesWithNoOpportunities ),
+                    () => block.SetAttributeValue( AttributeKey.HideCampusesWithNoOpportunities, box.Settings.HideCampusesWithNoOpportunities.ToString() ) );
+
                 box.IfValidProperty( nameof( box.Settings.CampusTypes ),
                     () => block.SetAttributeValue( AttributeKey.CampusTypes, box.Settings.CampusTypes.ToCommaDelimitedValuesString() ) );
 
                 box.IfValidProperty( nameof( box.Settings.CampusStatuses ),
                     () => block.SetAttributeValue( AttributeKey.CampusStatuses, box.Settings.CampusStatuses.ToCommaDelimitedValuesString() ) );
+
+                box.IfValidProperty( nameof( box.Settings.Campuses ),
+                    () => block.SetAttributeValue( AttributeKey.Campuses, box.Settings.Campuses.AsDelimited( "," ) ) );
 
                 #endregion
 
@@ -1655,6 +1783,85 @@ namespace Rock.Blocks.Engagement.SignUp
         #region Supporting Classes
 
         /// <summary>
+        /// This POCO will hold campus-related settings to be used within the custom settings
+        /// modal in an administrative setting, as well as the public-facing search filters.
+        /// </summary>
+        private class CampusSettings
+        {
+            /// <summary>
+            /// Gets or sets whether the campus filter should be shown.
+            /// </summary>
+            public bool DisplayCampusFilter { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether to hide campuses with no opportunities.
+            /// </summary>
+            public bool HideCampusesWithNoOpportunities { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether to enable the page campus context.
+            /// </summary>
+            public bool EnableCampusContext { get; set; }
+
+            /// <summary>
+            /// Gets or sets the selected campus types.
+            /// </summary>
+            public List<ListItemBag> SelectedCampusTypes { get; set; }
+
+            /// <summary>
+            /// Gets or sets the selected campus statuses.
+            /// </summary>
+            public List<ListItemBag> SelectedCampusStatuses { get; set; }
+
+            /// <summary>
+            /// Gets or sets the available campuses.
+            /// </summary>
+            public List<ListItemBag> AvailableCampuses { get; set; }
+
+            /// <summary>
+            /// Gets or sets the selected campuses.
+            /// </summary>
+            public List<ListItemBag> SelectedCampuses { get; set; }
+
+            /// <summary>
+            /// Gets the allowed campuses based on the current campus settings.
+            /// <para>
+            /// This will never return null.
+            /// </para>
+            /// </summary>
+            public List<ListItemBag> AllowedCampuses
+            {
+                get
+                {
+                    if ( !this.DisplayCampusFilter && this.EnableCampusContext )
+                    {
+                        return new List<ListItemBag>();
+                    }
+
+                    if ( this.SelectedCampuses?.Any() == true )
+                    {
+                        return this.SelectedCampuses;
+                    }
+
+                    return this.AvailableCampuses ?? new List<ListItemBag>();
+                }
+            }
+
+            /// <summary>
+            /// Gets whether a block admin applied any behind-the-scenes campus filters.
+            /// </summary>
+            public bool AreCampusesFilteredByBlockSettings
+            {
+                get
+                {
+                    return this.SelectedCampusTypes?.Any() == true
+                        || this.SelectedCampusStatuses?.Any() == true
+                        || this.SelectedCampuses?.Any() == true;
+                }
+            }
+        }
+
+        /// <summary>
         /// This POCO will be used to hold project opportunity instances (GroupLocationSchedules), against which we'll perform filtering.
         /// <para>
         /// It will also provide convenience properties for the final, Lava class, <see cref="SignUpFinder.Project"/> to easily pick from.
@@ -1662,6 +1869,8 @@ namespace Rock.Blocks.Engagement.SignUp
         /// </summary>
         private class Opportunity
         {
+            public Campus Campus { get; set; }
+
             public Rock.Model.Group Project { get; set; }
 
             public Location Location { get; set; }
@@ -1844,6 +2053,8 @@ namespace Rock.Blocks.Engagement.SignUp
             public string ProjectDetailPageUrl { get; set; }
 
             public string RegisterPageUrl { get; set; }
+
+            public int CampusId { get; set; }
 
             public int GroupId { get; set; }
 

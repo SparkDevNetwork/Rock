@@ -146,6 +146,11 @@ namespace Rock.Jobs
 
             if ( ErrorMessage.Any() )
             {
+                // If there were errors, fail the job and make it non-system so that the admins may choose to run it again or delete it based on their discretion
+                RockContext rockContext = new RockContext();
+                var serviceJob = ( new ServiceJobService( rockContext ) ).Get( this.ServiceJobId );
+                serviceJob.IsSystem = false;
+                rockContext.SaveChanges();
                 throw new RockJobWarningException( string.Join( ",\n", ErrorMessage ) );
             }
 
@@ -192,9 +197,11 @@ namespace Rock.Jobs
         private void ReplaceBlocksOfOneBlockTypeWithBlocksOfAnotherBlockType( Guid oldBlockTypeGuid, Guid newBlockTypeGuid, RockContext rockContext, MigrationHelper migrationHelper )
         {
             var oldBlockTypeId = BlockTypeCache.GetId( oldBlockTypeGuid );
+            // If the old block is not found in the Cache, it mostly likely was deleted in a previous migration in a previous version.
+            // So we merely log it to the exception table and continue
             if ( !oldBlockTypeId.HasValue )
             {
-                ErrorMessage.Add( $"BlockType could not be found for guid '{oldBlockTypeGuid}' for the current block" );
+                ExceptionLogService.LogException( $"BlockType could not be found for guid '{oldBlockTypeGuid}' for the current block" );
                 return;
             }
 
@@ -214,10 +221,32 @@ namespace Rock.Jobs
 
             try
             {
+                var flushPageIds = new List<int>();
+                var flushLayoutIds = new List<int>();
+                var flushSiteIds = new List<int>();
+
                 rockContext.WrapTransaction( () =>
                 {
                     var copiedBlockMappings = AddCopiesOfBlocksInSameLocationsButWithNewBlockType( oldBlockTypeGuid, newBlockTypeId.Value, rockContext );
                     rockContext.SaveChanges(); // saving the new blocks so that the attributes and person preferences may be copied over.
+
+                    foreach ( var block in copiedBlockMappings.Keys )
+                    {
+                        if ( block.PageId.HasValue && !flushPageIds.Contains( block.PageId.Value ) )
+                        {
+                            flushPageIds.Add( block.PageId.Value );
+                        }
+
+                        if ( block.LayoutId.HasValue && !flushLayoutIds.Contains( block.LayoutId.Value ) )
+                        {
+                            flushLayoutIds.Add( block.LayoutId.Value );
+                        }
+
+                        if ( block.SiteId.HasValue && !flushSiteIds.Contains( block.SiteId.Value ) )
+                        {
+                            flushSiteIds.Add( block.SiteId.Value );
+                        }
+                    }
 
                     CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings );
 
@@ -230,6 +259,21 @@ namespace Rock.Jobs
                     ChopBlock( oldBlockTypeGuid, rockContext );
                     rockContext.SaveChanges();
                 } );
+
+                foreach ( var pageId in flushPageIds )
+                {
+                    PageCache.FlushPage( pageId );
+                }
+
+                foreach ( var layoutId in flushLayoutIds )
+                {
+                    PageCache.FlushPagesForLayout( layoutId );
+                }
+
+                foreach ( var siteId in flushSiteIds )
+                {
+                    PageCache.FlushPagesForSite( siteId );
+                }
             }
             catch ( Exception ex )
             {

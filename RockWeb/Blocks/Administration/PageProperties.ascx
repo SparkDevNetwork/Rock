@@ -104,6 +104,7 @@
                                             <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" Help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
                                             <asp:CustomValidator ID="cvPageRoute" runat="server" ControlToValidate="tbPageRoute" OnServerValidate="cvPageRoute_ServerValidate" Display="None" ErrorMessage="Invalid Route(s)" />
                                         </fieldset>
+                                        <Rock:DefinedValuesPickerEnhanced ID="dvpPageIntents" runat="server" Label="Page Intent" Help="Helps classify the purpose of the page. This is written to interactions as individuals view the page. You can provide options here by editing the Interaction Intent Defined Type." />
                                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                                             <fieldset>
                                                 <h4>Context Parameters</h4>
@@ -122,7 +123,7 @@
                                         <Rock:CacheabilityPicker ID="cpCacheSettings" runat="server" Label="" />
                                     </div>
                                     <div class="col-md-12">
-                                        <Rock:RockCheckBox runat="server" ID="cbEnableRateLimiting" CssClass="js-rate-limit-checkbox" Label="Rate Limiting Enable" Help="Rate Limiting will limit the number of request that can be made to this page. This will help prevent bots from spamming a certain page." />
+                                        <Rock:RockCheckBox runat="server" ID="cbEnableRateLimiting" CssClass="js-rate-limit-checkbox" Label="Rate Limiting Enable" Help="Rate Limiting restricts the number of requests from each IP Address, helping to protect pages from bot spam." />
                                     </div>
                                     <asp:Panel runat="server" ID="pnlRateLimitingSettings" CssClass="js-rate-limit-settings d-none">
                                         <div class="col-md-6">

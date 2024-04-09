@@ -507,6 +507,21 @@ namespace RockWeb.Blocks.Event
                 hlType.Visible = registrationInstance.RegistrationTemplate != null;
                 hlType.Text = registrationInstance.RegistrationTemplate != null ? registrationInstance.RegistrationTemplate.Name : string.Empty;
 
+                // Display the status of whether the registration is open or not
+                var registrationIsOpen = ( registrationInstance.StartDateTime == null || registrationInstance.StartDateTime.Value <= RockDateTime.Now )
+                                            && ( registrationInstance.EndDateTime == null || registrationInstance.EndDateTime.Value >= RockDateTime.Now );
+
+                if ( registrationIsOpen )
+                {
+                    hlStatus.Text = "Open";
+                    hlStatus.LabelType = LabelType.Success;
+                }
+                else
+                {
+                    hlStatus.Text = "Closed";
+                    hlStatus.LabelType = LabelType.Type;
+                }
+
                 lWizardTemplateName.Text = hlType.Text;
 
                 pnlDetails.Visible = true;
@@ -644,6 +659,21 @@ namespace RockWeb.Blocks.Event
                 lCost.Visible = false;
                 lMinimumInitialPayment.Visible = false;
                 lDefaultPaymentAmount.Visible = false;
+            }
+
+            // Display the status of whether the registration is open or not
+            var registrationIsOpen = ( registrationInstance.StartDateTime == null || registrationInstance.StartDateTime.Value <= RockDateTime.Now )
+                                        && ( registrationInstance.EndDateTime == null || registrationInstance.EndDateTime.Value >= RockDateTime.Now );
+
+            if ( registrationIsOpen )
+            {
+                hlStatus.Text = "Open";
+                hlStatus.LabelType = LabelType.Success;
+            }
+            else
+            {
+                hlStatus.Text = "Closed";
+                hlStatus.LabelType = LabelType.Type;
             }
 
             lAccount.Visible = registrationInstance.Account != null;

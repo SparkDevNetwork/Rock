@@ -36,12 +36,11 @@ namespace Rock.Blocks.Finance
     /// <summary>
     /// Displays the details of a particular financial pledge.
     /// </summary>
-
     [DisplayName( "Pledge Detail" )]
     [Category( "Finance" )]
     [Description( "Allows the details of a given pledge to be edited." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
     [GroupTypeField( "Select Group Type",
@@ -97,7 +96,6 @@ namespace Rock.Blocks.Finance
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
         private FinancialPledgeDetailOptionsBag GetBoxOptions( FinancialPledgeBag bag, RockContext rockContext )
@@ -129,7 +127,6 @@ namespace Rock.Blocks.Finance
                 errorMessage = string.Join("</br>", financialPledge.ValidationResults.Select( x => x.ErrorMessage ) );
                 return false;
             }
-
 
             return true;
         }
@@ -200,18 +197,14 @@ namespace Rock.Blocks.Finance
                 IdKey = entity.IdKey,
                 Account = entity.Account.ToListItemBag(),
                 Group = entity.Group.ToListItemBag(),
-                PersonAlias = entity.PersonAlias != null ? entity.PersonAlias.ToListItemBag() : GetPersonByBersonActionIdentifier( rockContext ),
+                PersonAlias = entity.PersonAlias != null ? entity.PersonAlias.ToListItemBag() : GetPersonByPersonActionIdentifier( rockContext ),
                 PledgeFrequencyValue = entity.PledgeFrequencyValue.ToListItemBag(),
                 TotalAmount = entity.Id == 0 ? ( decimal? ) null : entity.TotalAmount
             };
 
-            if ( entity.StartDate != DateTime.MinValue )
+            if ( entity.Id != 0 )
             {
-                bag.StartDate = entity.StartDate;
-            }
-
-            if ( entity.EndDate != DateTime.MinValue )
-            {
+                bag.StartDate = entity.StartDate == DateTime.MinValue ? ( DateTime? ) null : entity.StartDate;
                 bag.EndDate = entity.EndDate;
             }
 
@@ -219,17 +212,17 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Gets the person by berson action identifier.
+        /// Gets the person by person action identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        private ListItemBag GetPersonByBersonActionIdentifier( RockContext rockContext )
+        private ListItemBag GetPersonByPersonActionIdentifier( RockContext rockContext )
         {
             var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
             var person = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "pledge" );
 
-            return person.ToListItemBag();
+            return person?.PrimaryAlias?.ToListItemBag();
         }
 
         /// <summary>
@@ -422,7 +415,7 @@ namespace Rock.Blocks.Finance
             Guid? groupTypeGuid = GetAttributeValue( AttributeKey.SelectGroupType ).AsGuidOrNull();
             if ( personAliasGuid.HasValue && groupTypeGuid.HasValue )
             {
-                var personId = new PersonAliasService( rockContext ).Get( personAliasGuid.Value )?.PersonId ?? 0;
+                var personId = new PersonAliasService( rockContext ).GetSelect( personAliasGuid.Value, p => p.PersonId );
 
                 var groups = new GroupMemberService( rockContext )
                     .Queryable().AsNoTracking()
@@ -492,8 +485,6 @@ namespace Rock.Blocks.Finance
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new FinancialPledgeService( rockContext );
-
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;

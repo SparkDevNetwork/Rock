@@ -1,0 +1,317 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           modalWrapperClasses="group-scheduler-v2 provide-location-modal"
+           saveText="Save"
+           :title="title"
+           :isSaveButtonDisabled="isSaveButtonDisabled"
+           @save="onSave">
+
+        <NotificationBox v-if="isDataMissing" :alertType="AlertType.Warning">
+            {{ missingDataErrorMessage }}
+        </NotificationBox>
+
+        <template v-else>
+            <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+                {{ blockActionErrorMessage }}
+            </NotificationBox>
+
+            <LoadingIndicator v-if="isLoadingResources" :delay="500" />
+
+            <div v-for="resource in resources" class="sched-group-provide-location-resource">
+                <div class="sched-group-provide-location-resource-name">
+                    {{ resource.PersonName }}
+                </div>
+
+                <DropDownList v-model="locationIdByPersonIds[resource.PersonId]"
+                              :items="locations"
+                              :validationTitle="`Location for ${resource.PersonName}`"
+                              inputClasses="input-width-lg"
+                              :disabled="isBusy" />
+            </div>
+        </template>
+
+    </Modal>
+</template>
+
+<!-- These styles cannot be scoped since some of them are being used in a modal. -->
+<style>
+.group-scheduler-v2 {
+    @media (min-width: 576px) {
+        &.provide-location-modal {
+            .modal-scrollable {
+                display: flex;
+                justify-content: center;
+            }
+
+            .modal.container {
+                width: auto;
+                min-width: 480px;
+                left: auto;
+                right: auto;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    }
+
+    .sched-group-provide-location-resource {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+
+        &:not(:first-of-type) {
+            margin-top: 12px;
+        }
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, ref } from "vue";
+    import { ISchedulerResourceAttend, ReportAssignedResources } from "./types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { Guid } from "@Obsidian/Types";
+    import { HttpUrlParams } from "@Obsidian/Types/Utility/http";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+    import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const http = useHttp();
+    const baseApiUrl = "/api/Attendances";
+
+    const props = defineProps({
+        isVisible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        unassignedResourceCount: {
+            type: Object as PropType<GroupSchedulerUnassignedResourceCountBag | null | undefined>,
+            required: true
+        },
+
+        availableOccurrences: {
+            type: Array as PropType<GroupSchedulerOccurrenceBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isVisible"): void,
+        (e: "resourceListUpdated", attendanceOccurrenceId: number): void
+    }>();
+
+    const missingDataErrorMessage = "Unable to get unassigned resources.";
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "isVisible", emit);
+
+    const blockActionErrorMessage = ref("");
+
+    const isLoadingResources = ref(false);
+    const resources = ref<ISchedulerResourceAttend[]>([]);
+
+    const locationIdByPersonIds = ref<Record<number, string>>({});
+
+    const isAssigningResources = ref(false);
+
+    const reportAssignedResources = inject(ReportAssignedResources);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return `Provide ${pluralize("Location", props.unassignedResourceCount?.resourceCount ?? 0)}`;
+    });
+
+    const unassignedResourceCountGuid = computed((): Guid | null | undefined => {
+        return props.unassignedResourceCount?.guid;
+    });
+
+    const occurrenceDate = computed((): string => {
+        return props.unassignedResourceCount?.occurrenceDate ?? "";
+    });
+
+    const scheduleId = computed((): number => {
+        return props.unassignedResourceCount?.scheduleId ?? 0;
+    });
+
+    const groupId = computed((): number => {
+        return props.unassignedResourceCount?.groupId ?? 0;
+    });
+
+    const attendanceOccurrenceId = computed((): number => {
+        return props.unassignedResourceCount?.attendanceOccurrenceId ?? 0;
+    });
+
+    const locations = computed((): ListItemBag[] => {
+        return props.availableOccurrences
+            ?.filter((o: GroupSchedulerOccurrenceBag) => o?.locationId && o.locationName)
+            .map((o: GroupSchedulerOccurrenceBag) => ({
+                text: o.locationName,
+                value: o.locationId.toString()
+            })) ?? [];
+    });
+
+    const isDataMissing = computed((): boolean => {
+        return !unassignedResourceCountGuid
+            || !occurrenceDate
+            || !scheduleId
+            || !groupId
+            || !attendanceOccurrenceId
+            || !locations.value.length;
+    });
+
+    const isBusy = computed((): boolean => {
+        return isLoadingResources.value || isAssigningResources.value;
+    });
+
+    const areAnyLocationsSelected = computed((): boolean => {
+        return Object.entries(locationIdByPersonIds.value)
+            .some(([_, value]: [string, string]) => !!value);
+    });
+
+    const isSaveButtonDisabled = computed((): boolean => {
+        return isDataMissing.value || isBusy.value || !areAnyLocationsSelected.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the unassigned resources.
+     */
+    async function getUnassignedResources(): Promise<void> {
+        if (isBusy.value || isDataMissing.value) {
+            return;
+        }
+
+        isLoadingResources.value = true;
+        blockActionErrorMessage.value = "";
+
+        const result = await http.get<ISchedulerResourceAttend[]>(`${baseApiUrl}/GetAttendingSchedulerResources?attendanceOccurrenceId=${attendanceOccurrenceId.value}`);
+        isLoadingResources.value = false;
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to get unassigned resources.";
+            return;
+        }
+
+        resources.value = result.data ?? [];
+
+        if (!resources.value.length) {
+            blockActionErrorMessage.value = missingDataErrorMessage;
+            return;
+        }
+
+        const locationIdByPersonIds: Record<number, string> = {};
+        resources.value.forEach((r: ISchedulerResourceAttend) => {
+            locationIdByPersonIds[r.PersonId] = "";
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the `save` event of the Modal component.
+     */
+    async function onSave(): Promise<void> {
+        if (isSaveButtonDisabled.value) {
+            return;
+        }
+
+        isAssigningResources.value = true;
+        blockActionErrorMessage.value = "";
+
+        const successfullyAssignedPersonIds: number[] = [];
+        const unsuccessfullyAssignedPersonIds: number[] = [];
+
+        await Promise.all(resources.value.map(async (resource: ISchedulerResourceAttend) => {
+            // Map each selected location back to its respective attendance occurrence.
+            const personId = resource.PersonId;
+            const locationId = toNumberOrNull(locationIdByPersonIds.value[personId]);
+            if (!locationId) {
+                // A location wasn't selected for this resource; move on to the next resource.
+                return;
+            }
+
+            const assignToAttendanceOccurrenceId = props.availableOccurrences
+                ?.find((o: GroupSchedulerOccurrenceBag) => o?.locationId === locationId)
+                ?.attendanceOccurrenceId;
+            if (!assignToAttendanceOccurrenceId) {
+                // Unable to map the selected location back to the attendance occurrence; should never happen.
+                unsuccessfullyAssignedPersonIds.push(personId);
+                return;
+            }
+
+            // Unassign the person from the attendance occurrence without a location.
+            const attendanceId = resource.AttendanceId;
+            let result = await http.doApiCall("PUT", `${baseApiUrl}/ScheduledPersonRemove?attendanceId=${attendanceId}`);
+            if (!result.isSuccess) {
+                // Unable to remove the resource from the non-location attendance occurrence; should never happen.
+                unsuccessfullyAssignedPersonIds.push(personId);
+                return;
+            }
+
+            // Assign the person the the newly-selected attendance occurrence.
+            const params: HttpUrlParams = {
+                personId,
+                attendanceOccurrenceId: assignToAttendanceOccurrenceId
+            };
+
+            result = await http.doApiCall("PUT", `${baseApiUrl}/ScheduledPersonAddConfirmed`, params);
+            if (!result.isSuccess) {
+                unsuccessfullyAssignedPersonIds.push(personId);
+            }
+            else {
+                successfullyAssignedPersonIds.push(personId);
+            }
+        }));
+
+        if (successfullyAssignedPersonIds.length) {
+            // Instruct all other occurrences within this occurrence date > schedule to reload themselves.
+            emit("resourceListUpdated", attendanceOccurrenceId.value);
+
+            // Report the count of resources successfully assigned to update the DOM.
+            reportAssignedResources?.(unassignedResourceCountGuid.value, successfullyAssignedPersonIds.length);
+
+            // Remove any successfully-assigned resources from local refs.
+            resources.value = resources.value
+                .filter((resource: ISchedulerResourceAttend) =>
+                    !successfullyAssignedPersonIds.some((id: number) => resource.PersonId === id)
+                );
+
+            successfullyAssignedPersonIds.forEach((id: number) => delete locationIdByPersonIds.value[id]);
+        }
+
+        if (unsuccessfullyAssignedPersonIds.length) {
+            const count = unsuccessfullyAssignedPersonIds.length;
+            blockActionErrorMessage.value = `The following ${pluralize("assignment", count)} ${pluralize("was", count)} unsuccessful.`;
+        }
+        else {
+            // All assignments were successful; close the modal.
+            isVisible.value = false;
+        }
+
+        isAssigningResources.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    getUnassignedResources();
+</script>

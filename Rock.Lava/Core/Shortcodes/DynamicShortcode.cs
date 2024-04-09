@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -94,8 +93,46 @@ namespace Rock.Lava
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
         public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
+            // This code is only required for the DotLiquid implementation of Lava.
+            if ( _engine.EngineName == "RockLiquid" )
+            {
+                InitializeRockLiquidShortcode( tagName, markup, tokens );
+                return;
+            }
+
             _elementAttributesMarkup = markup;
             _tagName = tagName;
+
+            _blockMarkup = new StringBuilder();
+
+            if ( tokens.Any() )
+            {
+                // To allow for backward-compatibility with custom blocks developed for the DotLiquid framework,
+                // the set of tokens returned by the Lava block parser includes the closing tag of the block.
+                // We remove the closing tag here because it is not needed for our internal dynamic shortcode implementation.
+                tokens = tokens.Take( tokens.Count - 1 ).ToList();
+
+                foreach ( var tokenText in tokens )
+                {
+                    _blockMarkup.Append( tokenText );
+                }
+            }
+
+            base.OnInitialize( tagName, markup, tokens );
+        }
+
+        /// <summary>
+        /// Initializes the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="markup">The markup.</param>
+        /// <param name="tokens">The tokens.</param>
+        /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
+        private void InitializeRockLiquidShortcode( string tagName, string markup, List<string> tokens )
+        {
+            _elementAttributesMarkup = markup;
+            _tagName = tagName;
+
             _blockMarkup = new StringBuilder();
 
             // Get the block markup. The list of tokens contains all of the lava from the start tag to
@@ -105,10 +142,8 @@ namespace Rock.Lava
             var endTagFound = false;
 
             // Create regular expressions for start and end tags.
-            // In the source document, the Lava Shortcode element tag format is "{[ tagname ]}".
-            // However, our pre-processing of the document substitutes the Lava-specific tag format for the Liquid-compatible tag format "{% tagname@ %}"
-            var startTag = $@"{{\[\s*{ _tagName }\s*(.*?)\]}}";
-            var endTag = $@"{{\[\s*end{ _tagName }\s*\]}}";
+            var startTag = $@"{{\[\s*{_tagName}\s*(.*?)\]}}";
+            var endTag = $@"{{\[\s*end{_tagName}\s*\]}}";
 
             var startTags = 0;
 
@@ -236,7 +271,15 @@ namespace Rock.Lava
             // Parameters declared on child elements can be referenced in the shortcode template as <childElementName>.<paramName>.
             Dictionary<string, object> childElements;
 
-            var residualMarkup = ExtractShortcodeBlockChildElements( shortcodeTemplateMarkup, out childElements );
+            string residualMarkup;
+            var childElementsAreValid = ExtractShortcodeBlockChildElements( shortcodeTemplateMarkup, out childElements, out residualMarkup );
+
+            if ( !childElementsAreValid )
+            {
+                // The residual block markup contains the error message, so write it to the output stream.
+                result.Write( residualMarkup );
+                return;
+            }
 
             // Add the collections of child to the set of parameters that will be passed to the shortcode template.
             foreach ( var item in childElements )
@@ -251,22 +294,30 @@ namespace Rock.Lava
             if ( blockHasContent )
             {
                 parms.AddOrReplace( "blockContent", residualMarkup );
-            }
 
-            // Now ensure there aren't any entity commands in the block that are not allowed.
-            // This is necessary because the shortcode may be configured to allow more entities for processing
-            // than the source block, template, action, etc. permits.
-            var securityCheckResult = _engine.RenderTemplate( residualMarkup, LavaRenderParameters.WithContext( context ) );
+                // Render the shortcode template to check for security error messages.
+                // This is necessary because the shortcode may be configured to permit access to more entities than the source block, template, or current action permits.
+                // Note that in some situations, the template may fail to render for other reasons - for example, where the previous render operation has
+                // introduced invalid Lava as the output of a {% raw %} tag.
+                // This method of verifying security is unreliable and should be replaced with a more robust implementation in the future.
+                // We need a render process that can replace merge fields while leaving tags and blocks intact.
+                var securityRenderParameters = new LavaRenderParameters
+                {
+                    Context = context,
+                    ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput
+                };
+                var securityCheckResult = _engine.RenderTemplate( residualMarkup, securityRenderParameters );
 
-            var securityErrorPattern = new Regex( string.Format( Constants.Messages.NotAuthorizedMessage, ".*" ) );
-            var securityErrorMatch = securityErrorPattern.Match( securityCheckResult.Text );
+                var securityErrorPattern = new Regex( string.Format( Constants.Messages.NotAuthorizedMessage, ".*" ) );
+                var securityErrorMatch = securityErrorPattern.Match( securityCheckResult.Text );
 
-            // If the security check failed, return the error message.
-            if ( securityErrorMatch.Success )
-            {
-                result.Write( securityErrorMatch.Value );
+                // If the security check failed, return the error message.
+                if ( securityErrorMatch.Success )
+                {
+                    result.Write( securityErrorMatch.Value );
 
-                return;
+                    return;
+                }
             }
 
             // Render the shortcode template in a child scope that includes the shortcode parameters.
@@ -311,12 +362,13 @@ namespace Rock.Lava
         /// <param name="blockContent">Content of the block.</param>
         /// <param name="childParameters">The child parameters.</param>
         /// <returns></returns>
-        private string ExtractShortcodeBlockChildElements( string blockContent, out Dictionary<string, object> childParameters )
+        private bool ExtractShortcodeBlockChildElements( string blockContent, out Dictionary<string, object> childParameters, out string residualBlockContent )
         {
             childParameters = new Dictionary<string, object>();
 
             var startTagStartExpress = new Regex( @"\[\[\s*" );
 
+            var isValid = true;
             var matchExists = true;
             while ( matchExists )
             {
@@ -343,7 +395,7 @@ namespace Rock.Lava
                         var endTagMatchExpression = String.Format( @"\[\[\s*end{0}\s*\]\]", parmName );
                         var endTagMatch = new Regex( endTagMatchExpression ).Match( blockContent, startTagStartIndex );
 
-                        if ( endTagMatch != null )
+                        if ( endTagMatch.Success )
                         {
                             var endTagStartIndex = endTagMatch.Index;
                             var endTagEndIndex = endTagStartIndex + endTagMatch.Length;
@@ -393,6 +445,7 @@ namespace Rock.Lava
                         else
                         {
                             // there was no matching end tag, for safety sake we'd better bail out of loop
+                            isValid = false;
                             matchExists = false;
                             blockContent = blockContent + "Warning: missing end tag end" + parmName;
                         }
@@ -400,6 +453,7 @@ namespace Rock.Lava
                     else
                     {
                         // there was no parm name on the tag, for safety sake we'd better bail out of loop
+                        isValid = false;
                         matchExists = false;
                         blockContent = blockContent + "Warning: invalid child parameter definition.";
                     }
@@ -411,7 +465,9 @@ namespace Rock.Lava
                 }
             }
 
-            return blockContent.Trim();
+            residualBlockContent = blockContent.Trim();
+
+            return isValid;
         }
 
         /// <summary>

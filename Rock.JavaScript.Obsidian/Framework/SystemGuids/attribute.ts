@@ -77,6 +77,8 @@ export const Attribute = {
     CurrencyCodeSymbol: "1268AD58-5459-4C1C-A036-B7A6D948198F",
     /** The Currency type DefinedType &gt; IconCssClass DefinedValue Attribute Guid */
     DefinedTypeCurrencyTypeIconcssclass: "CB1E9401-E1FD-4DBB-B15F-4E6994602723",
+    /** The Financial Frequency DefinedType &gt; Interval Days DefinedValue Attribute Guid */
+    DefinedTypeFinancialFrequencyIntervalDays: "E18CB1D2-08A9-4D12-BCEA-33369193C869",
     /** The Template DefinedType &gt; Icon DefinedValue Attribute Guid */
     DefinedTypeTemplateIcon: "831403EB-262E-4BC5-8B5E-F16153493BF5",
     /** The Template DefinedType &gt; TemplateBlock DefinedValue Attribute Guid */

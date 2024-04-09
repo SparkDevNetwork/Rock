@@ -372,8 +372,17 @@ namespace Rock.Blocks.Security
 
                 user.IsConfirmed = true;
                 rockContext.SaveChanges();
+                
+                /*
+                    10/20/2023 - JMH
 
-                Authorization.SetAuthCookie( user.UserName, false, false );
+                    Do not automatically authenticate the individual after confirming their account.
+                    Instead, they should have to authenticate using the Login (or other authentication) block,
+                    where 2FA and other authentication logic is handled.
+
+                    Reason: Two-Factor Authentication
+                 */
+                // Authorization.SetAuthCookie( user.UserName, isPersisted: false, isImpersonated: false );
 
                 return ShowAlertView( GetAccountConfirmedCaption( user ), ConfirmAccountAlertType.Success );
             }

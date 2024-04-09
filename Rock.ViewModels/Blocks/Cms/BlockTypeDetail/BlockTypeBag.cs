@@ -64,5 +64,15 @@ namespace Rock.ViewModels.Blocks.Cms.BlockTypeDetail
         /// Gets or sets the name of the fully qualified page referencing Block Type.
         /// </summary>
         public List<string> Pages { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the Layouts having the Block of the given Block Type.
+        /// </summary>
+        public List<string> Layouts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the Sites having the Block of the given Block Type.
+        /// </summary>
+        public List<string> Sites { get; set; }
     }
 }

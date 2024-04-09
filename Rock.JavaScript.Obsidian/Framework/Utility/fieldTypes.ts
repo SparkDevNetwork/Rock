@@ -21,10 +21,13 @@ import { IFieldType } from "@Obsidian/Types/fieldType";
 
 const fieldTypeTable: Record<Guid, IFieldType> = {};
 
+/** Determines how the field type component is being used so it can adapt to different */
+export type DataEntryMode = "defaultValue" | undefined;
+
 /**
  * Register a new field type in the system. This must be called for all field
  * types a plugin registers.
- * 
+ *
  * @param fieldTypeGuid The unique identifier of the field type.
  * @param fieldType The class instance that will handle the field type.
  */
@@ -46,7 +49,7 @@ export function registerFieldType(fieldTypeGuid: Guid, fieldType: IFieldType): v
  * Get the field type handler for a given unique identifier.
  *
  * @param fieldTypeGuid The unique identifier of the field type.
- * 
+ *
  * @returns The field type instance or null if not found.
  */
 export function getFieldType(fieldTypeGuid: Guid): IFieldType | null {

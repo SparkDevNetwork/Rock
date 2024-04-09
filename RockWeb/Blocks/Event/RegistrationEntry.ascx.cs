@@ -825,7 +825,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( RegistrationTemplate == null )
                 {
-                   FindMatchingRegistrationInstance();
+                    FindMatchingRegistrationInstance();
                 }
             }
         }
@@ -838,28 +838,12 @@ namespace RockWeb.Blocks.Event
             /*
                 03/16/2022 - KA
 
-                If a RegistrationInstanceId parameter was provided, it is used to retrieve the
-                associated RegistrationInstance without the StartDate EndDate filter used in
-                SetRegistrationState, this is to help generate an appropriate errorMessage for
-                the user. It is only called in OnLoad after SetRegistrationState returns a null
-                RegistrationInstanceState.
+                Attempt to retrieve the associated RegistrationInstance without the StartDate EndDate filter 
+                used in SetRegistrationState, this is to help generate an appropriate errorMessage for
+                the user. It is only called in OnLoad after SetRegistrationState returns a null RegistrationInstanceState.
             */
 
-            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
-
-            if ( !registrationInstanceId.HasValue )
-            {
-                return;
-            }
-
-            var registrationInstance = new RegistrationInstanceService( new RockContext() )
-                .Queryable()
-                .Where( r =>
-                    r.Id == registrationInstanceId.Value &&
-                    r.IsActive &&
-                    r.RegistrationTemplate != null &&
-                    r.RegistrationTemplate.IsActive )
-                .FirstOrDefault();
+            var registrationInstance = GetRegistrationInstance();
 
             if ( registrationInstance == null )
             {
@@ -876,6 +860,71 @@ namespace RockWeb.Blocks.Event
             else
             {
                 ShowWarning( String.Empty, string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the registration instance by using the RegistrationInstanceId, Slug or RegistrationId query params without applying a Start and End Date filter.
+        /// </summary>
+        /// <returns></returns>
+        private RegistrationInstance GetRegistrationInstance()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+                if ( registrationInstanceId.HasValue )
+                {
+                    var registrationInstance = new RegistrationInstanceService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( r =>
+                                r.Id == registrationInstanceId.Value &&
+                                r.IsActive &&
+                                r.RegistrationTemplate != null &&
+                                r.RegistrationTemplate.IsActive )
+                            .FirstOrDefault();
+
+                    if ( registrationInstance != null )
+                    {
+                        return registrationInstance;
+                    }
+                }
+
+                var slug = PageParameter( SLUG_PARAM_NAME );
+                if ( !slug.IsNullOrWhiteSpace() )
+                {
+                    var registrationInstance = new EventItemOccurrenceGroupMapService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( l =>
+                            l.UrlSlug == slug &&
+                            l.RegistrationInstanceId.HasValue )
+                        .Select( l => l.RegistrationInstance )
+                        .FirstOrDefault();
+
+                    if ( registrationInstance != null )
+                    {
+                        return registrationInstance;
+                    }
+                }
+
+                var registrationId = PageParameter( REGISTRATION_ID_PARAM_NAME ).AsIntegerOrNull();
+                if ( registrationId.HasValue )
+                {
+                    var registrationInstance = new RegistrationService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( r => r.Id == registrationId.Value )
+                        .Select( r => r.RegistrationInstance )
+                        .FirstOrDefault();
+
+                    if ( registrationInstance != null )
+                    {
+                        return registrationInstance;
+                    }
+                }
+
+                return default;
             }
         }
 
@@ -1331,7 +1380,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantNext_Click( object sender, EventArgs e )
         {
-            if ( !ValidateControls( phRegistrantControls.Controls) )
+            if ( !ValidateControls( phRegistrantControls.Controls ) )
             {
                 return;
             }
@@ -1354,7 +1403,7 @@ namespace RockWeb.Blocks.Event
         {
             var isValid = true;
 
-            foreach( Control control in controls )
+            foreach ( Control control in controls )
             {
                 if ( control is FieldVisibilityWrapper )
                 {
@@ -2703,7 +2752,7 @@ namespace RockWeb.Blocks.Event
             var logCurrentPersonDetails = $"Current Person Name: {this.CurrentPerson?.FullName} (Person ID: {this.CurrentPerson?.Id});";
             var logMsgPrefix = $"Legacy{( logInstanceOrTemplateName.IsNotNullOrWhiteSpace() ? $@" ""{logInstanceOrTemplateName}""" : string.Empty )} Registration; {logCurrentPersonDetails}{Environment.NewLine}";
 
-            var ( wereFieldsMissing, missingFieldsDetails ) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( RegistrationTemplate?.Forms?.ToList() );
+            var (wereFieldsMissing, missingFieldsDetails) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( RegistrationTemplate?.Forms?.ToList() );
             if ( wereFieldsMissing )
             {
                 var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
@@ -2971,6 +3020,11 @@ namespace RockWeb.Blocks.Event
                 // Get each registrant
                 var index = 0;
 
+                // Keep track of the registered person IDs to prevent mistakenly merging different
+                // people (i.e. twins who share an email address) into the same person record
+                // based on an over-confident PersonService.FindPerson(...) match result.
+                var personIdsRegisteredWithinThisSession = new List<int>();
+
                 foreach ( var registrantInfo in RegistrationState.Registrants.ToList() )
                 {
                     var registrantChanges = new History.HistoryChangeList();
@@ -2982,6 +3036,22 @@ namespace RockWeb.Blocks.Event
                     string firstName = registrantInfo.GetFirstName( RegistrationTemplate );
                     string lastName = registrantInfo.GetLastName( RegistrationTemplate );
                     string email = registrantInfo.GetEmail( RegistrationTemplate );
+
+                    /*
+                        10/11/2023 - DSH
+
+                        In regards to https://github.com/SparkDevNetwork/Rock/issues/5091,
+                        we believe the issue is only with this block and not the Obsidian
+                        version of the block. Since we still can't track down what is
+                        causing the issue our plan is to at least prevent these blank
+                        registrations from being created when possible. So if either
+                        the first name or last name fields are blank (which they should
+                        never be), we will abort the registration with an error.
+                     */
+                    if ( firstName.IsNullOrWhiteSpace() || lastName.IsNullOrWhiteSpace() )
+                    {
+                        throw new RegistrationTemplateFormFieldException( "Registration cannot be completed due to missing information. Please refresh the page and try again, or contact us if the issue persists." );
+                    }
 
                     var birthday = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate ).ToStringSafe().AsDateTime();
                     var mobilePhone = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone ).ToStringSafe();
@@ -3062,6 +3132,25 @@ namespace RockWeb.Blocks.Event
                         var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
                         person = personService.FindPerson( personQuery, true );
 
+                        if ( person != null && personIdsRegisteredWithinThisSession.Contains( person.Id ) )
+                        {
+                            /*
+                                1/8/2024 - JPH
+
+                                We've seen scenarios in which different people (i.e. twins who share an email address) are
+                                mistakenly merged into a single person record because of the way our FindPerson(...) method
+                                works. Rock is correctly attempting to prevent the creation of duplicate person records,
+                                but we need to handle this unique scenario by instead keeping track of the person IDs that
+                                have already been tied to a registrant record within this specific registration session,
+                                and if the FindPerson(...) method returns the same person more than once, we'll force Rock
+                                to create a new person record, at the risk of creating duplicate people. This risk is more
+                                tolerable than the risk of failing to save a Person altogether, as in the twin example above.
+
+                                Reason: Attempt to prevent merging different people based on an over-confident match result.
+                            */
+                            person = null;
+                        }
+
                         // Try to find a matching person based on name within same family as registrar
                         if ( person == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
                         {
@@ -3117,15 +3206,15 @@ namespace RockWeb.Blocks.Event
                         }
                         else
                         {
-                        // If a match was not found, create a new person
-                        person = new Person();
-                        person.FirstName = firstName;
-                        person.LastName = lastName;
-                        person.IsEmailActive = true;
-                        person.Email = email;
-                        person.EmailPreference = EmailPreference.EmailAllowed;
-                        person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                        if ( dvcConnectionStatus != null )
+                            // If a match was not found, create a new person
+                            person = new Person();
+                            person.FirstName = firstName;
+                            person.LastName = lastName;
+                            person.IsEmailActive = true;
+                            person.Email = email;
+                            person.EmailPreference = EmailPreference.EmailAllowed;
+                            person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            if ( dvcConnectionStatus != null )
                             {
                                 person.ConnectionStatusValueId = dvcConnectionStatus.Id;
                             }
@@ -3257,6 +3346,9 @@ namespace RockWeb.Blocks.Event
 
                     // Save the person ( and family if needed )
                     SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateExistingCampus );
+
+                    // Take note of this registered person identifier.
+                    personIdsRegisteredWithinThisSession.Add( person.Id );
 
                     // Load the person's attributes
                     person.LoadAttributes();
@@ -4905,7 +4997,7 @@ namespace RockWeb.Blocks.Event
             string resolvedUrl = ResolveRockUrl( relativeUrl ).RemoveLeadingForwardslash();
             var proxySafeUri = Request.UrlProxySafe();
 
-            string url = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority }".EnsureTrailingForwardslash() + resolvedUrl;
+            string url = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}".EnsureTrailingForwardslash() + resolvedUrl;
 
             try
             {
@@ -4995,7 +5087,7 @@ namespace RockWeb.Blocks.Event
 
     // Toggle credit card display if saved card option is available
     $('div.radio-content').prev('div.radio-list').find('input:radio').unbind('click').on('click', function () {{
-        $content = $(this).parents('div.radio-list').first().next('.radio-content');
+        $content = $(this).parents('div.radio-list.rockradiobuttonlist').first().next('.radio-content');
         var radioDisplay = $content.css('display');
         if ($(this).val() == 0 && radioDisplay == 'none') {{
             $content.slideToggle();

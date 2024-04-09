@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Communication
 
     [BooleanField( "Hide personal SMS numbers",
         Key = AttributeKey.HidePersonalSmsNumbers,
-        Description = "Only SMS Numbers that are not associated with a person. The numbers without a 'ResponseRecipient' attribute value.",
+        Description = "When enabled, only SMS Numbers that are not 'Assigned to a person' will be shown.",
         DefaultBooleanValue = false,
         Order = 3
          )]
@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Communication
         private bool LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Communication
             // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
             if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
             {
-                smsNumbers = smsNumbers.Where( spn => spn.AssignedToPersonAliasId.HasValue ).ToList();
+                smsNumbers = smsNumbers.Where( spn => !spn.AssignedToPersonAliasId.HasValue ).ToList();
             }
 
             // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.

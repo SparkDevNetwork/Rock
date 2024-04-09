@@ -24,6 +24,7 @@
 import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";
 import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The box that contains all the initialization information for the Sign-Up Register block. */
 export type SignUpRegisterInitializationBox = {
@@ -35,6 +36,12 @@ export type SignUpRegisterInitializationBox = {
      * an error is preventing the block from being displayed.
      */
     errorMessage?: string | null;
+
+    /** Gets or sets the registrant member attributes. */
+    memberAttributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the registrant member opportunity attributes. */
+    memberOpportunityAttributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the registration mode the block is in. */
     mode: RegisterMode;

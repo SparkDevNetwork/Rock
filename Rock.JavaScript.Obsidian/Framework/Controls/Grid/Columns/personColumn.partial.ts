@@ -41,7 +41,7 @@ function getDisplayedValue(row: Record<string, unknown>, column: ColumnDefinitio
         return undefined;
     }
 
-    if (column.props.showLastNameFirst === true || column.props.showLastNameFirst === "") {
+    if (column.props.showLastNameFirst === true) {
         return `${value.lastName ?? ""}, ${value.nickName ?? ""}`;
     }
 

@@ -47,6 +47,17 @@ function BindNavEvents() {
       }
     });
 
+    // Because the header naturally closes addClass navbar-side-open when a modal is open
+    if ($('#fixed-header').length) {
+      if ( $('#fixed-header').find('.modal.in').length ) {
+        bodyElement.addClass('navbar-side-open');
+        // Listen for modal close
+        $('#fixed-header').find('.modal.in').on('hidden.bs.modal', function (e) {
+          bodyElement.removeClass('navbar-side-open');
+        })
+      }
+    }
+
     topHeaderOffset()
 
     var topHeader = $('.rock-top-header');

@@ -774,6 +774,9 @@ namespace RockWeb.Blocks.Mobile
             ceCssStyles.Text = additionalSettings.CssStyles;
             imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
+            page.LoadAttributes();
+            avcAttributes.AddEditControls( page, Rock.Security.Authorization.EDIT, CurrentPerson );
+
             ddlMenuDisplayWhen.BindToEnum<Rock.Model.DisplayInNavWhen>();
             ddlMenuDisplayWhen.SetValue( page.DisplayInNavWhen.ToStringSafe().AsIntegerOrNull() ?? page.DisplayInNavWhen.ConvertToInt() );
 
@@ -796,6 +799,8 @@ namespace RockWeb.Blocks.Mobile
             pnlEditPage.Visible = true;
             pnlDetails.Visible = false;
             pnlBlocks.Visible = false;
+            // Hide Context Panel if a valid pageId is not provided, even if the block has required context entities.
+            phContextPanel.Visible = phContextPanel.Visible && pageId != 0;
 
             UpdateAdvancedSettingsVisibility();
         }
@@ -1154,6 +1159,9 @@ namespace RockWeb.Blocks.Mobile
                 oldIconId = page.IconBinaryFileId;
                 page.IconBinaryFileId = imgPageIcon.BinaryFileId;
             }
+
+            avcAttributes.GetEditValues( page );
+            page.SaveAttributeValues();
 
             // update PageContexts
             foreach ( var pageContext in page.PageContexts.ToList() )

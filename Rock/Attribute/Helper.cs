@@ -618,9 +618,42 @@ This can be due to multiple threads updating the same attribute at the same time
                         var predicate = LinqPredicateBuilder.False<AttributeValue>();
                         foreach ( var inheritedAttribute in inheritedAttributes )
                         {
-                            predicate = predicate.Or( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
-                                     && v.EntityId.HasValue
-                                     && inheritedAttribute.Value.Contains( v.EntityId.Value ) );
+                            // a Linq query that uses 'Contains' can't be cached
+                            // in the EF Plan Cache, so instead of doing a
+                            // Contains, build a List of OR conditions. This can
+                            // save 15-20ms per call (and still ends up with the
+                            // exact same SQL).
+                            // https://learn.microsoft.com/en-us/ef/ef6/fundamentals/performance/perf-whitepaper?redirectedfrom=MSDN#41-using-ienumerabletcontainstt-value
+                            var attributeValueParameterExpression = Expression.Parameter( typeof( AttributeValue ), "v" );
+                            var entityIdPropertyExpression = Expression.Property( attributeValueParameterExpression, "EntityId" );
+                            entityIdPropertyExpression = Expression.Property( entityIdPropertyExpression, "Value" );
+                            Expression<Func<AttributeValue, bool>> inheritedEntityIdExpression = null;
+
+                            foreach ( var alternateEntityId in inheritedAttribute.Value )
+                            {
+                                var alternateEntityIdConstant = Expression.Constant( alternateEntityId );
+                                var equalityExpression = Expression.Equal( entityIdPropertyExpression, alternateEntityIdConstant );
+                                var expr = Expression.Lambda<Func<AttributeValue, bool>>( equalityExpression, attributeValueParameterExpression );
+
+                                if ( inheritedEntityIdExpression != null )
+                                {
+                                    inheritedEntityIdExpression = inheritedEntityIdExpression.Or( expr );
+                                }
+                                else
+                                {
+                                    inheritedEntityIdExpression = expr;
+                                }
+                            }
+
+                            // Build the expression for this attribute. This is effectively:
+                            // .Where( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
+                            //    && v.EntityId.HasValue
+                            //    && inheritedAttribute.Value.Contains( v.EntityId.Value ) );
+                            var expression = LinqPredicateBuilder.Create<AttributeValue>( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
+                                     && v.EntityId.HasValue );
+                            expression = expression.And( inheritedEntityIdExpression );
+
+                            predicate = predicate.Or( expression );
                         }
 
                         attributeValueQuery = attributeValueService.Queryable().AsNoTracking().Where( predicate );
@@ -1340,7 +1373,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 newAttribute.Order = attributeService.Queryable().Max( a => a.Order ) + 1;
             }
 
-            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeGuid ?? Guid.Empty );
+            var fieldTypeCache = FieldTypeCache.Get( attribute.RealFieldTypeGuid ?? attribute.FieldTypeGuid ?? Guid.Empty );
 
             // For now, if they try to make changes to an attribute that is using
             // an unknown field type we just can't do it. Even if they only change

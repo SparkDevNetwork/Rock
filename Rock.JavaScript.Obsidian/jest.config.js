@@ -13,6 +13,13 @@ module.exports = {
     testMatch: [
         "**/?(*.)+(spec|test).ts"
     ],
+    transform: {
+        "^.+\\.obs$": [
+            "@vue/vue3-jest",
+            {
+            }
+        ]
+    },
     moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"],
     moduleNameMapper: {
         "^@Obsidian/(.*)$": `${__dirname}/Framework/$1`

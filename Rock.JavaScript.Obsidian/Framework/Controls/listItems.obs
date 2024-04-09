@@ -1,0 +1,131 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValues"
+                   v-bind="fieldProps"
+                   formGroupClasses="list-items"
+                   name="value-list"
+                   :rules="augmentedRules"
+                   watchDeep>
+        <template #default="{ uniqueId }">
+            <div class="control-wrapper">
+                <span :id="uniqueId">
+                    <span class="list-items-rows"
+                          v-dragSource="dragOptions"
+                          v-dragTarget="dragOptions">
+                        <div v-for="(value, valueIndex) in internalValues" class="controls controls-row form-control-group list-item-row" :key="value.key ?? ''">
+                            <div class="input-group">
+                                <span class="reorder-handle input-group-addon">
+                                    <i class="fa fa-bars"></i>
+                                </span>
+                                <input v-model="value.value" class="key-value-value form-control input-width-lg" type="text" :placeholder="valuePrompt">
+                            </div>
+                            <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
+                        </div>
+                    </span>
+                    <div class="control-actions">
+                        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="fa fa-plus-circle"></i></a>
+                    </div>
+                </span>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<style scoped>
+.list-item-row .reorder-handle {
+    cursor: grab;
+}
+</style>
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import RockFormField from "./rockFormField.obs";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import type { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
+    import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: String,
+            default: "[]"
+        },
+
+        valuePrompt: {
+            type: String,
+            default: "Value"
+        },
+
+        allowHtml: {
+            type: Boolean,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void
+    }>();
+
+    function parseModelValue(modelValue: string | undefined): KeyValueItem[] {
+        try {
+            return JSON.parse(modelValue ?? "[]") as KeyValueItem[];
+        }
+        catch {
+            return [];
+        }
+    }
+
+    // convert the string[] of the modelValue to ValueItem[] so it can be edited correctly
+    const internalValues = ref(parseModelValue(props.modelValue));
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    watch(() => props.modelValue, () => {
+        internalValues.value = parseModelValue(props.modelValue);
+    });
+
+    watch(() => internalValues, () => {
+        emit("update:modelValue", JSON.stringify(internalValues.value));
+    }, { deep: true });
+
+    const onAddClick = (): void => {
+        let defaultValue = "";
+        let defaultGuid = newGuid();
+        internalValues.value.push({ key: defaultGuid, value: defaultValue });
+    };
+
+    const dragOptions = useDragReorder(internalValues);
+
+    const onRemoveClick = (index: number): void => {
+        internalValues.value.splice(index, 1);
+    };
+
+    const augmentedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (!props.allowHtml) {
+            rules.push(function (value: unknown) {
+                const isArr = Array.isArray(value);
+                if (isNullOrWhiteSpace(value) || (isArr && value.length === 0)) {
+                    return true;
+                }
+
+                if (isArr) {
+                    for (let i = 0; i < value.length; i++) {
+                        if (containsHtmlTag(value[i])) {
+                            return "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
+                        }
+                    }
+                }
+
+                return true;
+            } as ValidationRule);
+        }
+
+        return rules;
+    });
+</script>

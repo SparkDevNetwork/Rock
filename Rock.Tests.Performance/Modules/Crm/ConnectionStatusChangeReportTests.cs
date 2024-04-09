@@ -17,11 +17,14 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.Data;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Performance.Crm
@@ -30,7 +33,7 @@ namespace Rock.Tests.Performance.Crm
     /// Create and manage test data for the Rock CRM module.
     /// </summary>
     [TestClass]
-    public class ConnectionStatusChangeReportTests
+    public class ConnectionStatusChangeReportTests : DatabaseTestsBase
     {
         #region Initialization
 

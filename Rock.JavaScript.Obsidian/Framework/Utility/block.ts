@@ -22,9 +22,12 @@ import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { inject, provide, Ref, ref, watch } from "vue";
 import { RockDateTime } from "./rockDateTime";
 import { Guid } from "@Obsidian/Types";
+import { HttpBodyData, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
+import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
+const staticContentSymbol = Symbol();
 
 // TODO: Change these to use symbols
 
@@ -56,6 +59,38 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
     }
 
     return result;
+}
+
+/**
+ * Creates a function that can be provided to the block that allows calling
+ * block actions.
+ *
+ * @private This should not be used by plugins.
+ *
+ * @param post The function to handle the post operation.
+ * @param pageGuid The unique identifier of the page.
+ * @param blockGuid The unique identifier of the block.
+ * @param pageParameters The parameters to include with the block action calls.
+ *
+ * @returns A function that can be used to provide the invoke block action.
+ */
+export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>): InvokeBlockActionFunc {
+    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined): Promise<HttpResult<T>> {
+        let context: BlockActionContextBag = {};
+
+        if (actionContext) {
+            context = {...actionContext};
+        }
+
+        context.pageParameters = pageParameters;
+
+        return await post<T>(`/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`, undefined, {
+            __context: context,
+            ...data
+        });
+    }
+
+    return invokeBlockAction;
 }
 
 /**
@@ -115,6 +150,24 @@ export function onConfigurationValuesChanged(callback: () => void): void {
     if (callbacks !== undefined) {
         callbacks.push(callback);
     }
+}
+
+/**
+ * Provides the static content that the block provided on the server.
+ *
+ * @param content The static content from the server.
+ */
+export function provideStaticContent(content: string | undefined): void {
+    provide(staticContentSymbol, content);
+}
+
+/**
+ * Gets the static content that was provided by the block on the server.
+ *
+ * @returns A string of HTML content or undefined.
+ */
+export function useStaticContent(): string | undefined {
+    return inject<string>(staticContentSymbol);
 }
 
 

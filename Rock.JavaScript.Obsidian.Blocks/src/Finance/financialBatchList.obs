@@ -1,0 +1,638 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid ref="gridElement"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :customActions="customActions"
+          itemTerm="Batch"
+          :entityTypeGuid="EntityType.FinancialBatch"
+          stickyHeader
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @filteredRowsChanged="onFilteredRowsChanged"
+          @selectedKeysChanged="onSelectedKeysChanged">
+        <SelectColumn />
+
+        <DateColumn name="date"
+                    title="Date"
+                    field="startDateTime"
+                    :filter="dateValueFilter"
+                    width="120"
+                    visiblePriority="sm">
+            <template #filterPrepend>
+                <div v-if="hasSettingsFilterDate" class="alert alert-info">
+                    Settings is also limiting the dates shown.
+                </div>
+            </template>
+        </DateColumn>
+
+        <Column name="name"
+                title="Name"
+                :filter="textValueFilter"
+                :filterValue="getRowNameFilterValue"
+                :quickFilterValue="getRowNameFilterValue"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span class="text-semibold">{{ row.name }}</span> <span class="text-muted text-xs">{{ row.id }}</span>
+                    </div>
+                    <div v-if="row.note">
+                        {{ row.note }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn name="accountingSystemCode"
+                    title="Accounting Code"
+                    field="accountingSystemCode"
+                    :filter="textValueFilter"
+                    :hideOnScreen="!config.options?.showAccountingSystemCodeColumn"
+                    visiblePriority="lg" />
+
+        <Column name="accounts"
+                title="Accounts"
+                :filter="textValueFilter"
+                :filterValue="getRowAccountsFilterValue"
+                :quickFilterValue="getRowAccountsFilterValue"
+                :hideOnScreen="!config.options?.showAccountsColumn"
+                visiblePriority="lg">
+            <template #format="{ row }">
+                <div class="text-sm">
+                    <div v-for="account in row.accounts">
+                        {{ account.name }}: {{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="variances"
+                title="Variances"
+                width="140"
+                :sortValue="getRowVariancesSortValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <span v-if="row.variance" class="label label-warning">
+                    {{ toCurrencyOrNull(row.variance.amount, config.options?.currencyInfo) }} | {{ row.variance.count }}
+                </span>
+            </template>
+        </Column>
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter"
+                    :hideOnScreen="!config.options?.hasMultipleCampuses"
+                    visiblePriority="lg" />
+
+        <LabelColumn name="status"
+                     title="Status"
+                     field="status"
+                     :filter="pickExistingValueFilter"
+                     :textSource="BatchStatusDescription"
+                     :classSource="batchLabelColors"
+                     width="120"
+                     visiblePriority="sm" />
+
+        <Column name="settlement"
+                title="Settlement Id"
+                :quickFilterValue="getRowSettlementFilterValue"
+                :filterValue="getRowSettlementFilterValue"
+                :filter="textValueFilter"
+                :hideOnScreen="!hasAnySettlementId"
+                width="7%"
+                visiblePriority="xl">
+            <template #format="{ row }">
+                <div class="text-sm">
+                    <a v-if="row.remoteSettlementKey && row.remoteSettlementUrl"
+                       :href="row.remoteSettlementUrl"
+                       :onclick="(e: Event) => e.stopPropagation()">
+                        {{ row.remoteSettlementKey }}
+                    </a>
+                    <span v-else>
+                        {{ row.remoteSettlementKey }}
+                    </span>
+
+                    <span v-if="row.remoteSettlementAmountStatus !== 0" class="ml-1 text-xs">
+                        <i v-if="row.remoteSettlementAmountStatus === 1"
+                           class="fa fa-circle text-warning"
+                           title="The batch totals do not match the remote settlement amount."></i>
+                        <i v-else
+                           class="fa fa-circle text-success"
+                           title="The batch totals match the remote settlement amount."></i>
+                    </span>
+                </div>
+            </template>
+        </Column>
+
+        <CurrencyColumn name="totalAmount"
+                        title="Total Amount"
+                        field="totalAmount"
+                        :filter="numberValueFilter"
+                        width="165"
+                        visiblePriority="md">
+            <template #format="{ row }">
+                <div class="flex-grow-1 text-right">
+                    {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
+                </div>
+            </template>
+        </CurrencyColumn>
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :rowDisabled="onDeleteRowDisabled"
+                      @click="onDeleteClick" />
+
+        <template #gridFooterAppend>
+            <div v-if="accountSummaries.length > 0" class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+                <div class="flex-grow-1"></div>
+                <div>
+                    <SectionHeader title="Totals">
+                        <template #actions>
+                            <RockButton btnType="link"
+                                        btnSize="xs"
+                                        @click="showAllSummaryAccounts = !showAllSummaryAccounts">
+                                <template v-if="!showAllSummaryAccounts">Show all</template>
+                                <template v-else>Show top 5</template>
+                            </RockButton>
+                        </template>
+                    </SectionHeader>
+                    <table>
+                        <tr v-for="account in visibleAccountSummaries">
+                            <td :class="{ 'font-italic': account.isOtherAccount }">{{ account.name }}</td>
+                            <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-bold">Total</td>
+                            <td class="text-bold text-right" style="padding-left:52px;">{{ toCurrencyOrNull(summaryTotal, config.options?.currencyInfo) }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </template>
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :transactionTypeItems="config.options?.transactionTypes ?? []"
+                       :sourceItems="config.options?.sources ?? []" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, Column, DateColumn, dateValueFilter, LabelColumn, CurrencyColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FinancialBatchListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchList/financialBatchListOptionsBag";
+    import { SetBulkBatchStatusRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchList/setBulkBatchStatusRequestBag";
+    import { SetBulkBatchStatusResponseBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchList/setBulkBatchStatusResponseBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PreferenceKey, NavigationUrlKey, Row, AccountSummary, GridSettingsOptions } from "./FinancialBatchList/types.partial";
+    import { computed, ref, watch } from "vue";
+    import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { BatchStatus, BatchStatusDescription } from "@Obsidian/Enums/Finance/batchStatus";
+    import GridSettingsModal from "./FinancialBatchList/gridSettingsModal.partial.obs";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+
+    const config = useConfigurationValues<ListBlockBox<FinancialBatchListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridElement = ref<InstanceType<typeof Grid>>();
+    const gridDataSource = ref<Promise<GridDataBag>>();
+
+    const hasAnySettlementId = ref(false);
+    const hasSelectedRows = ref(false);
+
+    const showAllSummaryAccounts = ref(false);
+    const accountSummaries = ref<AccountSummary[]>([]);
+    const summaryTotal = ref(0);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        daysBack: toNumberOrNull(preferences.getValue(PreferenceKey.FilterDaysBack)) ?? 180,
+        containsSourceType: preferences.getValue(PreferenceKey.FilterContainsSourceType),
+        containsTransactionType: preferences.getValue(PreferenceKey.FilterContainsTransactionType),
+        accounts: JSON.parse(preferences.getValue(PreferenceKey.FilterAccounts) || "[]")
+    });
+
+    const batchLabelColors: Record<string, string> = {
+        [BatchStatusDescription[BatchStatus.Pending]]: "warning",
+        [BatchStatusDescription[BatchStatus.Open]]: "info",
+        [BatchStatusDescription[BatchStatus.Closed]]: "default"
+    };
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return gridSettings.value.daysBack > 0
+            || !!gridSettings.value.containsSourceType
+            || !!gridSettings.value.containsTransactionType
+            || gridSettings.value.accounts.length > 0;
+    });
+
+    /** `true` if the grid settings is filtering by date. */
+    const hasSettingsFilterDate = computed((): boolean => {
+        return gridSettings.value.daysBack > 0;
+    });
+
+    /**
+     * The custom actions supported by this grid.
+     */
+    const customActions = computed((): GridAction[] => {
+        return [
+            {
+                title: "Open Selected Batches",
+                iconCssClass: "fa fa-folder-open",
+                disabled: !hasSelectedRows.value,
+                handler: onOpenSelectedBatches
+            },
+            {
+                title: "Close Selected Batches",
+                iconCssClass: "fa fa-folder",
+                disabled: !hasSelectedRows.value,
+                handler: onCloseSelectedBatches
+            }
+        ];
+    });
+
+    /**
+     * The summary accounts that should be visible in the grid footer. This
+     * handles limiting the summary list to 5 accounts and appending the
+     * "Other" account if so configured.
+     */
+    const visibleAccountSummaries = computed((): AccountSummary[] => {
+        if (showAllSummaryAccounts.value) {
+            return accountSummaries.value;
+        }
+
+        const summaries: AccountSummary[] = [];
+        let otherAccount: AccountSummary | undefined;
+
+        for (const account of accountSummaries.value) {
+            if (summaries.length >= 5) {
+                if (!otherAccount) {
+                    otherAccount = {
+                        idKey: "",
+                        name: "Other",
+                        amount: 0,
+                        isOtherAccount: true
+                    };
+
+                    summaries.push(otherAccount);
+                }
+
+                otherAccount.amount += account.amount;
+            }
+            else {
+                summaries.push(account);
+            }
+        }
+
+        return summaries;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            if (result.data.rows) {
+                updateAdditionalRowData(result.data.rows as Row[]);
+                calculateTotals(result.data.rows as Row[]);
+
+                hasAnySettlementId.value = (result.data.rows as Row[]).some(r => !!r.remoteSettlementKey);
+            }
+
+            return result.data;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Opens or closes a set of batches in bulk.
+     *
+     * @param state The grid state to use when getting the selected keys and updating values.
+     *
+     * @param open `true` if the selected batches should be opened, otherwise `false` to mean closed.
+     */
+    async function setBulkBatchStatus(state: IGridState, open: boolean): Promise<void> {
+        if (!state.selectedKeys || state.selectedKeys.length === 0) {
+            return;
+        }
+
+        const request: SetBulkBatchStatusRequestBag = {
+            keys: state.selectedKeys as string[],
+            open
+        };
+
+        const result = await invokeBlockAction<SetBulkBatchStatusResponseBag>("SetBulkBatchStatus", { request });
+
+        if (result.isSuccess && result.data) {
+            if (!result.data.isSuccess) {
+                let msg = result.data.message ?? `Unknown error while trying to ${open ? "open" : "close"} batches.`;
+
+                if (result.data.errors && result.data.errors.length > 0) {
+                    msg += "\n" + result.data.errors.join("\n");
+                }
+
+                return await alert(msg);
+            }
+
+            const rows = state.rows as Row[];
+
+            for (const key of state.selectedKeys) {
+                const row = rows.find(r => r.idKey === key);
+
+                if (row) {
+                    row.status = open ? BatchStatus.Open : BatchStatus.Closed;
+                }
+            }
+
+            gridElement.value?.rowsUpdated(state.selectedKeys);
+
+            await alert(result.data.message ?? "Batches have been updated.");
+        }
+        else {
+            await alert(result.errorMessage ?? `Unknown error while trying to ${open ? "open" : "close"} batches.`);
+        }
+    }
+
+    /**
+     * Adds client-side calculated values to the rows.
+     *
+     * @param rows The data rows that need to be updated.
+     */
+    function updateAdditionalRowData(rows: Row[]): void {
+        for (const row of rows) {
+            let totalAmount = 0;
+            let varianceAmount = 0;
+            let varianceCount = 0;
+
+            for (const account of row.accounts) {
+                totalAmount += account.amount;
+            }
+
+            row.totalAmount = totalAmount;
+
+            // Update the variance information.
+            varianceAmount = totalAmount - row.controlAmount;
+            varianceCount = row.controlItemCount ? row.transactionCount - row.controlItemCount : 0;
+
+            if (varianceAmount !== 0 || varianceCount !== 0) {
+                row.variance = {
+                    amount: varianceAmount,
+                    count: varianceCount
+                };
+            }
+
+            // Update the remote settlement variance information.
+            if (row.remoteSettlementAmount === undefined || row.remoteSettlementAmount === null) {
+                row.remoteSettlementAmountStatus = 0;
+            }
+            else if (row.remoteSettlementAmount !== totalAmount) {
+                row.remoteSettlementAmountStatus = 1; // Warning
+            }
+            else {
+                row.remoteSettlementAmountStatus = 2; // Success
+            }
+        }
+    }
+
+    /**
+     * Calculates the account summary totals at the bottom of the grid.
+     *
+     * @param rows The rows that will be used for the calculation.
+     */
+    function calculateTotals(rows: Row[]): void {
+        const summaries = new Map<string, AccountSummary>();
+
+        summaryTotal.value = 0;
+
+        for (const row of rows) {
+            for (const account of row.accounts) {
+                let summary = summaries.get(account.idKey);
+
+                if (!summary) {
+                    summary = {
+                        idKey: account.idKey,
+                        name: account.name,
+                        amount: 0,
+                        isOtherAccount: false
+                    };
+
+                    summaries.set(account.idKey, summary);
+                }
+
+                summary.amount += account.amount;
+                summaryTotal.value += account.amount;
+            }
+        }
+
+        const sortedSummaries = [...summaries.values()];
+        sortedSummaries.sort((a, b) => b.amount - a.amount);
+
+        accountSummaries.value = sortedSummaries;
+    }
+
+    /**
+     * Gets the filter value text to use for the name column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowNameFilterValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+
+        return `${r.name} ${r.id} ${r.note ?? ""}`;
+    }
+
+    /**
+     * Gets the filter value text to use for the accounts column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowAccountsFilterValue(row: Record<string, unknown>): string {
+        let filterValue = "";
+
+        for (const account of (row as Row).accounts) {
+            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount, config.options?.currencyInfo) ?? ""}`;
+        }
+
+        return filterValue;
+    }
+
+    /**
+     * Gets the sort value to use for the variances column.
+     *
+     * @param row The row to be sorted.
+     */
+    function getRowVariancesSortValue(row: Record<string, unknown>): number {
+        const r = <Row>row;
+
+        if (r.variance) {
+            if (r.variance.count != 0) {
+                return 2;
+            }
+            else {
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Gets the filter value to use for the settlement column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowSettlementFilterValue(row: Record<string, unknown>): string {
+        return (row as Row).remoteSettlementKey ?? "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string, state: IGridState): Promise<void> {
+        const row = state.rows.find(r => r["idKey"] === key) as Row | undefined;
+
+        if (row && row.transactionCount > 0) {
+            const reallyConfirmed = await confirm("This batch has transactions. Are you sure that you want to delete this batch and all of its transactions?");
+
+            if (!reallyConfirmed) {
+                return;
+            }
+        }
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridElement.value) {
+                gridElement.value.deleteRow(key);
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete financial batch.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when the rows that match the user filters have changed.
+     *
+     * @param state The state object that describes the grid.
+     */
+    function onFilteredRowsChanged(state: IGridState): void {
+        calculateTotals(state.filteredRows as Row[]);
+    }
+
+    /**
+     * Called when the individual changes which rows are selected.
+     *
+     * @param state The state object that describes the grid.
+     */
+    function onSelectedKeysChanged(state: IGridState): void {
+        hasSelectedRows.value = state.selectedKeys.length > 0;
+    }
+
+    /**
+     * Called when the individual picks the "open selected batches" action
+     * from the grid menu.
+     *
+     * @param state The state object that describes the grid.
+     */
+    async function onOpenSelectedBatches(state: IGridState): Promise<void> {
+        setBulkBatchStatus(state, true);
+    }
+
+    /**
+     * Called when the individual picks the "close selected batches" action
+     * from the grid menu.
+     *
+     * @param state The state object that describes the grid.
+     */
+     async function onCloseSelectedBatches(state: IGridState): Promise<void> {
+        setBulkBatchStatus(state, false);
+    }
+
+    /**
+     * Called when the delete button for a row wants to know if it should be
+     * disabled.
+     *
+     * @param row The row associated with the delete button.
+     */
+    function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
+        return (row as Row).status === BatchStatus.Closed;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDaysBack, gridSettings.value.daysBack.toString());
+        preferences.setValue(PreferenceKey.FilterContainsSourceType, gridSettings.value.containsSourceType ?? "");
+        preferences.setValue(PreferenceKey.FilterContainsTransactionType, gridSettings.value.containsTransactionType ?? "");
+        preferences.setValue(PreferenceKey.FilterAccounts, JSON.stringify(gridSettings.value.accounts));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -15,35 +15,34 @@
 
             <div class="d-md-flex justify-content-md-between">
 
-                <div>
+                <div class="resource-sources">
                     <template v-if="primarySourceTypeItems.length > 1">
                         <!-- Desktop -->
                         <div class="d-none d-md-block form-group">
                             <ButtonGroup v-model="selectedPrimarySourceType"
-                                            :items="primarySourceTypeItems"
-                                            :disabled="isBusy"
-                                            @update:modelValue="onSettingsSelectionChanged" />
+                                         :items="primarySourceTypeItems"
+                                         :disabled="isBusy"
+                                         @update:modelValue="onSettingsSelectionChanged" />
                         </div>
 
                         <!-- Mobile -->
                         <div class="d-md-none form-group">
                             <DropDownList v-model="selectedPrimarySourceType"
-                                            :items="primarySourceTypeItems"
-                                            :showBlankItem="false"
-                                            :disabled="isBusy"
-                                            @update:modelValue="onSettingsSelectionChanged" />
+                                          :items="primarySourceTypeItems"
+                                          :showBlankItem="false"
+                                          :disabled="isBusy"
+                                          @update:modelValue="onSettingsSelectionChanged" />
                         </div>
                     </template>
 
                     <div v-if="selectedSourceTypeIsAlternateGroup" class="form-group">
                         <GroupPicker v-model="selectedAlternateGroup"
-                                        :disabled="isBusy"
-                                        @update:modelValue="onSettingsSelectionChanged" />
+                                     :disabled="isBusy"
+                                     @update:modelValue="onSettingsSelectionChanged" />
                     </div>
 
                     <div v-if="selectedSourceTypeIsDataView" class="form-group">
-                        <DataViewPicker
-                                        v-model="selectedDataView"
+                        <DataViewPicker v-model="selectedDataView"
                                         :entityTypeGuid="EntityType.Person"
                                         :disabled="isBusy"
                                         @update:modelValue="onSettingsSelectionChanged" />
@@ -55,27 +54,33 @@
                         <!-- Desktop -->
                         <div class="d-none d-md-block form-group">
                             <ButtonGroup v-model="selectedSecondarySourceType"
-                                            :items="secondarySourceTypeItems"
-                                            :btnSize="BtnSize.ExtraSmall"
-                                            :disabled="isBusy"
-                                            @update:modelValue="onSettingsSelectionChanged" />
+                                         :items="secondarySourceTypeItems"
+                                         :btnSize="BtnSize.ExtraSmall"
+                                         :disabled="isBusy"
+                                         @update:modelValue="onSettingsSelectionChanged" />
                         </div>
 
                         <!-- Mobile -->
                         <div class="d-md-none form-group">
                             <DropDownList v-model="selectedSecondarySourceType"
-                                            :items="secondarySourceTypeItems"
-                                            :showBlankItem="false"
-                                            :disabled="isBusy"
-                                            @update:modelValue="onSettingsSelectionChanged" />
+                                          :items="secondarySourceTypeItems"
+                                          :showBlankItem="false"
+                                          :disabled="isBusy"
+                                          @update:modelValue="onSettingsSelectionChanged" />
                         </div>
                     </template>
                 </div>
 
-                <div v-if="remainingResourceSpots" class="form-group">
-                    <span :class="remainingResourceSpots.cssClass">
-                        {{ remainingResourceSpots.label }}
-                    </span>
+                <div :class="remainingSpotsAndNameFilterCssClass">
+                    <div v-if="remainingResourceSpots" class="mb-0 mb-md-2">
+                        <span :class="remainingResourceSpots.cssClass">
+                            {{ remainingResourceSpots.label }}
+                        </span>
+                    </div>
+                    <div :class="{ 'mb-2 mb-md-0': remainingResourceSpots }">
+                        <ResourceFilterByName v-model="resourceNameFilter"
+                                              :disabled="isNameFilterDisabled" />
+                    </div>
                 </div>
 
             </div>
@@ -99,12 +104,12 @@
                     {{ loadResourcesErrorMessage }}
                 </NotificationBox>
 
-                <NotificationBox v-else-if="loadResourcesInfoMessage" :alertType="AlertType.Info">
-                    {{ loadResourcesInfoMessage }}
+                <NotificationBox v-else-if="noResourcesMessage" :alertType="AlertType.Info">
+                    {{ noResourcesMessage }}
                 </NotificationBox>
 
                 <AvailableResources v-else v-model="selectedPersonIds"
-                                    :resources="availableResources"
+                                    :resources="filteredResources"
                                     :disabled="isBusy" />
             </Loading>
 
@@ -116,6 +121,7 @@
 <script setup lang="ts">
     import { computed, inject, nextTick, PropType, ref, watch } from "vue";
     import AvailableResources from "./availableResources.partial.obs";
+    import ResourceFilterByName from "./resourceFilterByName.partial.obs";
     import { IRemainingResourceSpots, ISchedulerResource, ISchedulerResourceParameters, OccurrenceDateTitle } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
@@ -205,6 +211,8 @@
 
     const availableResources = ref<ISchedulerResource[]>([]);
     const selectedPersonIds = ref<number[]>([]);
+
+    const resourceNameFilter = ref("");
 
     // #endregion
 
@@ -337,6 +345,14 @@
         }
     });
 
+    const remainingSpotsAndNameFilterCssClass = computed((): string => {
+        const justifyClass = remainingResourceSpots.value
+            ? "justify-content-between"
+            : "justify-content-end";
+
+        return `d-flex flex-column-reverse flex-md-column ${justifyClass} align-items-start align-items-md-end form-group`;
+    });
+
     const groupId = computed((): number => {
         return props.occurrence?.groupId ?? 0;
     });
@@ -365,8 +381,72 @@
         return resourceSettings.value?.resourceGroupMemberFilterType ?? 1;
     });
 
+    const filteredResources = computed((): ISchedulerResource[] => {
+        // Remove unwanted whitespace.
+        const filter = resourceNameFilter.value
+            ?.trim()
+            .replace(/\s+/g, " ");
+
+        if (!filter || filter.length < 2) {
+            return availableResources.value;
+        }
+
+        let filterParts: string[];
+        let lastNameFilter: string;
+        let firstNameFilter: string;
+        let useOrComparison = false;
+
+        if (filter.includes(",")) {
+            // last, first
+            filterParts = filter.split(",");
+            lastNameFilter = filterParts[0].trim();
+            firstNameFilter = filterParts[1].trim();
+        }
+        else if (filter.includes(" ")) {
+            // first last
+            filterParts = filter.split(" ");
+            lastNameFilter = filterParts[1];
+            firstNameFilter = filterParts[0];
+        }
+        else {
+            // last OR first
+            lastNameFilter = filter;
+            firstNameFilter = filter;
+            useOrComparison = true;
+        }
+
+        lastNameFilter = lastNameFilter.toUpperCase();
+        firstNameFilter = firstNameFilter.toUpperCase();
+
+        return availableResources.value
+            .filter((resource: ISchedulerResource) => {
+                if (useOrComparison) {
+                    return !!(resource.PersonNickName?.toUpperCase().startsWith(firstNameFilter))
+                        || !!(resource.PersonLastName?.toUpperCase().startsWith(lastNameFilter));
+                }
+                else {
+                    return !!(resource.PersonNickName?.toUpperCase().startsWith(firstNameFilter))
+                        && !!(resource.PersonLastName?.toUpperCase().startsWith(lastNameFilter));
+                }
+            });
+    });
+
+    const noResourcesMessage = computed((): string => {
+        if (loadResourcesInfoMessage.value) {
+            return loadResourcesInfoMessage.value;
+        }
+
+        return filteredResources.value.length
+            ? ""
+            : "No individuals available for selection.";
+    });
+
     const isBusy = computed((): boolean => {
         return isLoadingResourceSettings.value || isLoadingResources.value || isAssigningResources.value;
+    });
+
+    const isNameFilterDisabled = computed((): boolean => {
+        return isBusy.value || !availableResources.value.length;
     });
 
     const isSaveButtonDisabled = computed((): boolean => {
@@ -480,6 +560,7 @@
         }
 
         isLoadingResources.value = true;
+        loadResourcesInfoMessage.value = "";
         loadResourcesErrorMessage.value = "";
 
         const result = await http.post<ISchedulerResource[]>(`${baseApiUrl}/GetSchedulerResources`, null, parameters);
@@ -491,10 +572,6 @@
         }
 
         availableResources.value = result.data ?? [];
-
-        loadResourcesInfoMessage.value = availableResources.value.length
-            ? ""
-            : "No individuals available for selection.";
     }
 
     // #endregion
@@ -600,6 +677,7 @@
     watch(isVisible, () => {
         if (isVisible.value) {
             getResourceSettings();
+            resourceNameFilter.value = "";
         }
         else {
             isLoadingResourceSettings.value = false;

@@ -14,13 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
-using Rock.Bus;
+using System.Text;
+
 using Rock.Observability;
 using Rock.Web.Cache.NonEntities;
 
@@ -286,18 +288,50 @@ namespace Rock.Data.Interception
             if ( activity != null )
             {
                 var observabilityInfo = DbCommandObservabilityCache.Get( command.CommandText );
+                var rootActivity = ObservabilityHelper.GetRootActivity( activity );
+                var isTargeted = DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash );
 
                 activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
                 activity.AddTag( "db.system", "mssql" );
-                activity.AddTag( "db.query", command.CommandText );
-                activity.AddTag( "rock-otel-type", "rock-db" );
-                activity.AddTag( "rock-db-hash", observabilityInfo.CommandHash );
+                activity.AddTag( "rock.otel_type", "rock-db" );
+                activity.AddTag( "rock.db.hash", observabilityInfo.CommandHash );
+
+                if ( rootActivity != null )
+                {
+                    var queryCount = rootActivity.GetTagItem( "rock.db.query_count" ) as int? ?? 0;
+
+                    rootActivity.SetTag( "rock.db.query_count", queryCount + 1 );
+                }
+
+                if ( isTargeted || DbCommandObservabilityCache.IsQueryIncluded )
+                {
+                    activity.AddTag( "db.query", command.CommandText.Truncate( ObservabilityHelper.MaximumAttributeLength, false ) );
+                }
 
                 // Check if this query should get additional observability telemetry
-                if ( DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash ) )
+                if ( isTargeted )
                 {
-                    activity.AddTag( "rock-db-stacktrace", System.Environment.StackTrace );
+                    // Append stack trace
+                    var stackTrace = TrimInfrastructureFromStackTrace( new StackTrace( true ).ToString() );
+
+                    activity.AddTag( "rock.db.stacktrace", stackTrace.Truncate( ObservabilityHelper.MaximumAttributeLength ) );
+
+                    // Append parameters
+                    var parameters = new StringBuilder();
+                    foreach ( DbParameter parm in command.Parameters )
+                    {
+                        var keyValue = GetSqlParameterKeyValue( parm );
+
+                        parameters.Append( $"{keyValue.Key}: {keyValue.Value}{Environment.NewLine}" );
+                    }
+
+                    activity.AddTag( "rock.db.parameters", parameters.ToString().Truncate( ObservabilityHelper.MaximumAttributeLength ) );
                 }
+
+                // Add observability metric
+                var tags = RockMetricSource.CommonTags;
+                tags.Add( "operation", observabilityInfo.CommandType );
+                RockMetricSource.DatabaseQueriesCounter?.Add( 1, tags );
             }
 
             if ( context is RockContext rockContext )
@@ -353,7 +387,7 @@ namespace Rock.Data.Interception
 
                 // Complete the observability activity if it is the correct
                 // activity.
-                if ( activity != null && activity.GetTagItem( "rock-db-hash" ) is string activityHash && queryHash == activityHash )
+                if ( activity != null && activity.GetTagItem( "rock.db.hash" ) is string activityHash && queryHash == activityHash )
                 {
                     activity.Dispose();
                 }
@@ -395,26 +429,83 @@ namespace Rock.Data.Interception
             // Merge each parameter into the SQL string
             foreach ( DbParameter parm in command.Parameters )
             {
-                var key = parm.ParameterName;
+                var keyValue = GetSqlParameterKeyValue( parm );
 
-                // If the parameter doesn't start with @ append it. EF puts @ on parms for INSERTS but not SELECTS
-                if ( !key.StartsWith( "@" ) )
-                {
-                    key = "@" + key;
-                }
-
-                var value = parm.Value.ToString();
-
-                // Check if the value needs to be quoted
-                if ( _quoteRequiredFieldTypes.Contains( parm.DbType ) )
-                {
-                    value = "'" + value.Replace( "'", "''" ) + "'";
-                }
-
-                sql = sql.Replace( key, value );
+                sql = sql.Replace( keyValue.Key, keyValue.Value );
             }
 
             return sql;
+        }
+
+        /// <summary>
+        /// Parses a DbParameter into a key value pair.
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+        private (string Key, string Value) GetSqlParameterKeyValue( DbParameter parm )
+        {
+            var key = parm.ParameterName.AddStringAtBeginningIfItDoesNotExist( "@" );
+
+            var value = parm.Value.ToString();
+
+            // Check if the value needs to be quoted
+            if ( _quoteRequiredFieldTypes.Contains( parm.DbType ) )
+            {
+                value = "'" + value.Replace( "'", "''" ) + "'";
+            }
+
+            return (key, value);
+        }
+
+        /// <summary>
+        /// Trims the Entity Framework Infrastructure calls from stack trace.
+        /// The stack trace will have a few frames from RockEfInterceptor and
+        /// then a bunch of System.Data.Entity.* calls. After those it goes
+        /// into user code for what caused the SQL command to execute. Because
+        /// space is limited we remove these inner 8 or so calls which gives us
+        /// an additional 8 or so stack traces of user code to diagnose where
+        /// the real problem lies.
+        /// </summary>
+        /// <param name="stackTrace">The stack trace to be trimmed.</param>
+        /// <returns>A string that contains the trimmed stack trace information.</returns>
+        private static string TrimInfrastructureFromStackTrace( string stackTrace )
+        {
+            var stackTraceLines = stackTrace.Split( new string[] { Environment.NewLine }, StringSplitOptions.None );
+            var trimmedStackTraceLines = new List<string>( stackTraceLines.Length );
+            var trimming = false;
+
+            for ( int i = 0; i < stackTraceLines.Length; i++ )
+            {
+                if ( !trimming )
+                {
+                    if ( stackTraceLines[i].StartsWith( "   at Rock.Data.Interception." ) )
+                    {
+                        trimmedStackTraceLines.Add( stackTraceLines[i] );
+                    }
+                    else
+                    {
+                        trimming = true;
+                    }
+                }
+                else
+                {
+                    if ( stackTraceLines[i].StartsWith( "   at System.Data.Entity." ) )
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        trimmedStackTraceLines.Add( "   [trimmed]" );
+                        trimmedStackTraceLines.AddRange( stackTraceLines.Skip( i ) );
+
+                        return string.Join( Environment.NewLine, trimmedStackTraceLines );
+                    }
+                }
+            }
+
+            // Shouldn't ever really get here, but just in case return the
+            // original stack trace.
+            return stackTrace;
         }
 
         #endregion

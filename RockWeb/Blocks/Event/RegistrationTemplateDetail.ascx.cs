@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Event
 				<ul>
 				{% for fee in registrant.Fees %}
 					<li>
-						{{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                        {{ fee.RegistrationTemplateFee.Name }} {% if fee.RegistrationTemplateFee.FeeType == 'Multiple' %} - {{ fee.Option }} {% endif %}
 						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
 					</li>
 				{% endfor %}
@@ -126,9 +126,12 @@ namespace RockWeb.Blocks.Event
 </p>
 {% endif %}
 
-<p>
-    {{ RegistrationInstance.AdditionalConfirmationDetails }}
-</p>
+//- 16.4 fix
+{% if registrantCount > 0 %}
+    <p>
+        {{ RegistrationInstance.AdditionalConfirmationDetails }}
+    </p>
+{% endif %}
 
 <p>
     If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
@@ -218,7 +221,7 @@ namespace RockWeb.Blocks.Event
                 <ul class='list-unstyled'>
                 {% for fee in registrant.Fees %}
                     <li>
-                        {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                        {{ fee.RegistrationTemplateFee.Name }} {% if fee.RegistrationTemplateFee.FeeType == 'Multiple' %} - {{ fee.Option }} {% endif %}
                         {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
                     </li>
                 {% endfor %}
@@ -338,7 +341,7 @@ namespace RockWeb.Blocks.Event
 
 {% if AdditionalFieldsNeeded %}
     <p>
-        <strong>Addition information is needed in order to process this registration. Please visit the
+        <strong>Additional information is needed in order to process this registration. Please visit the
         <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}&StartAtBeginning=True'>
         online registration page</a> to complete the registration.</strong>
     </p>
@@ -349,6 +352,13 @@ namespace RockWeb.Blocks.Event
         A balance of {{ Registration.BalanceDue | FormatAsCurrency }} remains on this registration. You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
         using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
         online registration page</a>.
+    </p>
+{% endif %}
+
+//- 16.4 fix
+{% if AdditionalFieldsNeeded == false and Registration.BalanceDue <= 0 %}
+    <p>
+        {{ RegistrationInstance.AdditionalConfirmationDetails }}
     </p>
 {% endif %}
 
@@ -2932,10 +2942,6 @@ The logged-in person's information will be used to complete the registrar inform
 
             ddlFieldSource.BindToEnum<RegistrationFieldSource>();
 
-            ddlPersonField.BindToEnum<RegistrationPersonFieldType>( sortAlpha: true );
-            ddlPersonField.Items.Remove( ddlPersonField.Items.FindByValue( "0" ) );
-            ddlPersonField.Items.Remove( ddlPersonField.Items.FindByValue( "1" ) );
-
             rblFeeType.BindToEnum<RegistrationFeeType>();
 
             ddlSignatureDocumentTemplate.Items.Clear();
@@ -3145,6 +3151,17 @@ The logged-in person's information will be used to complete the registrar inform
 
                 var fieldList = FormFieldsState[formGuid];
 
+                // Find all the existing fields for the various types.
+                var personPropertyFields = FormFieldsState.SelectMany( forms => forms.Value )
+                    .Where( field => field.FieldSource == RegistrationFieldSource.PersonField )
+                    .ToList();
+                var personAttributeFields = FormFieldsState.SelectMany( forms => forms.Value )
+                    .Where( field => field.FieldSource == RegistrationFieldSource.PersonAttribute )
+                    .ToList();
+                var groupAttributeFields = FormFieldsState.SelectMany( forms => forms.Value )
+                    .Where( field => field.FieldSource == RegistrationFieldSource.GroupMemberAttribute )
+                    .ToList();
+
                 RegistrationTemplateFormField formField = fieldList.FirstOrDefault( a => a.Guid.Equals( formFieldGuid ) );
                 if ( formField == null )
                 {
@@ -3164,9 +3181,23 @@ The logged-in person's information will be used to complete the registrar inform
                 ceFormFieldPreHtml.Text = formField.PreText;
                 ceFormFieldPostHtml.Text = formField.PostText;
                 ddlFieldSource.SetValue( formField.FieldSource.ConvertToInt() );
-                ddlPersonField.SetValue( formField.PersonFieldType.ConvertToInt() );
-                lPersonField.Text = formField.PersonFieldType.ConvertToString();
 
+                // Populate the Person Field picker and then remove any fields
+                // that already exist on any form.
+                ddlPersonField.Items.Clear();
+                ddlPersonField.BindToEnum<RegistrationPersonFieldType>( sortAlpha: true );
+
+                foreach ( var field in personPropertyFields )
+                {
+                    var existingItem = ddlPersonField.Items.FindByValue( field.PersonFieldType.ConvertToInt().ToString() );
+                    if ( existingItem != null && field.Guid != formFieldGuid )
+                    {
+                        ddlPersonField.Items.Remove( existingItem );
+                    }
+                }
+
+                // Populate the Person Attribute picker and skip any attributes
+                // that already exist on the form.
                 ddlPersonAttributes.Items.Clear();
                 var person = new Person();
                 person.LoadAttributes();
@@ -3174,6 +3205,17 @@ The logged-in person's information will be used to complete the registrar inform
                     .OrderBy( a => a.Value.Name )
                     .Select( a => a.Value ) )
                 {
+                    // Check if this attribute already exists on any form and
+                    // is not the same field we are editing.
+                    var existingItem = personAttributeFields
+                        .Where( paf => paf.Guid != formFieldGuid && paf.AttributeId == attr.Id )
+                        .FirstOrDefault();
+
+                    if ( existingItem != null )
+                    {
+                        continue;
+                    }
+
                     if ( attr.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         var listItem = new ListItem( attr.Name, attr.Id.ToString() );
@@ -3182,16 +3224,30 @@ The logged-in person's information will be used to complete the registrar inform
                     }
                 }
 
+                // Populate the Group Member Attribute picker and skip any attributes
+                // that already exist on the form.
                 ddlGroupTypeAttributes.Items.Clear();
                 var group = new Group();
                 group.GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0;
                 var groupMember = new GroupMember();
                 groupMember.Group = group;
+                groupMember.GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0;
                 groupMember.LoadAttributes();
                 foreach ( var attr in groupMember.Attributes
                     .OrderBy( a => a.Value.Name )
                     .Select( a => a.Value ) )
                 {
+                    // Check if this attribute already exists on any form and
+                    // is not the same field we are editing.
+                    var existingItem = groupAttributeFields
+                        .Where( gaf => gaf.Guid != formFieldGuid && gaf.AttributeId == attr.Id )
+                        .FirstOrDefault();
+
+                    if ( existingItem != null )
+                    {
+                        continue;
+                    }
+
                     if ( attr.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         ddlGroupTypeAttributes.Items.Add( new ListItem( attr.Name, attr.Id.ToString() ) );
@@ -3201,7 +3257,12 @@ The logged-in person's information will be used to complete the registrar inform
                 var attribute = new Attribute();
                 attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
 
-                if ( formField.FieldSource == RegistrationFieldSource.PersonAttribute )
+                if ( formField.FieldSource == RegistrationFieldSource.PersonField )
+                {
+                    ddlPersonField.SetValue( formField.PersonFieldType.ConvertToInt() );
+                    lPersonField.Text = formField.PersonFieldType.ConvertToString();
+                }
+                else if ( formField.FieldSource == RegistrationFieldSource.PersonAttribute )
                 {
                     ddlPersonAttributes.SetValue( formField.AttributeId );
                 }
@@ -3270,8 +3331,7 @@ The logged-in person's information will be used to complete the registrar inform
                 fieldSource == RegistrationFieldSource.PersonField;
 
             // If this is a RegistrantAttribute, the ShowOnGrid is determined by the Attribute's ShowOnGrid, so we don't need to show the top ShowOnGrid option
-            // Also, if this is a GroupMemberAttribute, we'll hide the ShowOnGrid and they'll have to go the GroupMemberList block to see those
-            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute ) && ( fieldSource != RegistrationFieldSource.GroupMemberAttribute );
+            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute );
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrantAttribute;
 
             edtRegistrantAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrantAttribute;

@@ -17,10 +17,13 @@
                            class="form-control"
                            :class="inputClasses"
                            v-bind="field"
+                           inputmode="decimal"
                            :placeholder="placeholder"
                            :step="internalStep"
                            :min="minimumValue"
-                           :max="maximumValue" />
+                           :max="maximumValue"
+                           @change="formatInternalValue"
+                           @blur="formatInternalValue" />
                     <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>
                 <slot name="append" />
@@ -72,7 +75,7 @@
     }>();
 
     const slots = useSlots();
-    const internalValue = ref(asFormattedString(props.modelValue, props.decimalCount ?? undefined, { useGrouping: false }));
+    const internalValue = ref(formatNumber(props.modelValue));
 
     const internalNumberValue = computed((): number | null => {
         return toNumberOrNull(internalValue.value);
@@ -93,24 +96,36 @@
     const computedRules = computed((): ValidationRule[] => {
         const rules = normalizeRules(props.rules);
 
-        if (props.maximumValue !== null && props.maximumValue !== undefined) {
+        if (props.maximumValue != null) {
             rules.push(`lte:${props.maximumValue}`);
         }
 
-        if (props.minimumValue !== null && props.minimumValue !== undefined) {
+        if (props.minimumValue != null) {
             rules.push(`gte:${props.minimumValue}`);
         }
 
         return rules;
     });
 
+    function formatNumber(num: number | null): string {
+        return asFormattedString(num, props.decimalCount ?? undefined, { useGrouping: false });
+    }
+
+    function formatInternalValue(): void {
+        internalValue.value = formatNumber(internalNumberValue.value);
+    }
+
     watch(() => props.modelValue, () => {
         if (props.modelValue !== internalNumberValue.value) {
-            internalValue.value = asFormattedString(props.modelValue, props.decimalCount ?? undefined, { useGrouping: false });
+            internalValue.value = formatNumber(props.modelValue);
         }
     });
 
     watch(internalNumberValue, () => {
         emit("update:modelValue", internalNumberValue.value);
+    });
+
+    watch(() => props.decimalCount, () => {
+        formatInternalValue();
     });
 </script>

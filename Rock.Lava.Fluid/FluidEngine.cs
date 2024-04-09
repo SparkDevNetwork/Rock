@@ -142,6 +142,10 @@ namespace Rock.Lava.Fluid
                 {
                     return new LavaDateTimeValue( dto );
                 }
+                else if ( value is TimeSpan ts )
+                {
+                    return new LavaTimeSpanValue( ts );
+                }
 
                 // This converter cannot process the value.
                 return null;
@@ -570,24 +574,19 @@ namespace Rock.Lava.Fluid
             }
         }
 
-        private static LavaToLiquidTemplateConverter _lavaToLiquidConverter = new LavaToLiquidTemplateConverter();
-
         /// <summary>
         /// Pre-parses a Lava template to ensure it is using Liquid-compliant syntax, and creates a new template object.
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <param name=""></param>
         /// <returns></returns>
-        private FluidTemplate CreateNewFluidTemplate( string lavaTemplate, out string liquidTemplate )
+        private FluidTemplate CreateNewFluidTemplate( string lavaTemplate )
         {
             FluidTemplate template;
-
-            liquidTemplate = _lavaToLiquidConverter.RemoveLavaComments( lavaTemplate );
-
             string error;
             IFluidTemplate fluidTemplate;
 
-            var success = _parser.TryParse( liquidTemplate, out fluidTemplate, out error );
+            var success = _parser.TryParse( lavaTemplate, out fluidTemplate, out error );
 
             var fluidTemplateObject = ( FluidTemplate ) fluidTemplate;
 
@@ -597,7 +596,7 @@ namespace Rock.Lava.Fluid
             }
             else
             {
-                throw new LavaParseException( this.EngineName, liquidTemplate, error );
+                throw new LavaParseException( this.EngineName, lavaTemplate, error );
             }
 
             return template;
@@ -724,14 +723,36 @@ namespace Rock.Lava.Fluid
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>
+        [Obsolete( "Use ParseTemplateToTokens instead.")]
+        [RockObsolete("v17")] 
         public List<string> TokenizeTemplate( string lavaTemplate )
         {
             return LavaFluidParser.ParseToTokens( lavaTemplate );
         }
 
+        /// <summary>
+        /// Process a template and return the list of valid tokens identified by the parser.
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public List<string> ParseTemplateToTokens( string lavaTemplate, bool includeComments = false )
+        {
+            return LavaFluidParser.ParseToTokens( lavaTemplate, includeComments );
+        }
+
+        /// <summary>
+        /// Process a template and return the list of statements identified by the parser.
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public List<string> ParseTemplateToStatements( string lavaTemplate )
+        {
+            return LavaFluidParser.ParseToStatements( lavaTemplate );
+        }
+
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )
         {
-            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate, out _ );
+            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate );
 
             var newTemplate = new FluidTemplateProxy( fluidTemplate, lavaTemplate );
 
@@ -757,6 +778,18 @@ namespace Rock.Lava.Fluid
             }
 
             return left.Equals( right );
+        }
+
+        /// <inheritdoc />
+        public override List<string> GetRegisteredFilterNames()
+        {
+            var templateOptions = GetTemplateOptions();
+
+            var filterNames = templateOptions.Filters
+                .Select( f => f.Key )
+                .OrderBy( f => f )
+                .ToList();
+            return filterNames;
         }
     }
 }

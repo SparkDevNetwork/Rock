@@ -15,13 +15,18 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Performance.Rest.ControllersTests
+using Rock.Tests.Performance.Modules.Crm.Person;
+
+namespace Rock.Tests.Performance.BenchmarkRunners
 {
     [TestClass]
+    [Ignore( "Benchmarks must be run in Release mode, this should be updated to only run via CLI." )]
     public class BenchmarkRunners
     {
         [TestMethod]
@@ -44,18 +49,18 @@ namespace Rock.Tests.Performance.Rest.ControllersTests
         private static List<string> _nameSearchStrings = new List<string>
             {
                 // Search strings for Sample Database.
-                //"Decker", "Greggs", "Jackson", "Jones", "Lowe", "Marble", "Miller", "Peterson", "Simmons", "Tucker", "Webb"
+                "Decker", "Greggs", "Jackson", "Jones", "Lowe", "Marble", "Miller", "Peterson", "Simmons", "Tucker", "Webb"
 
                 // Search strings for Spark Site.
-                "Leigh", "Airdo", "Cummings", "Drotning", "Edmiston", "Hazelbaker", "Kishor", "Pena", "Peterson", "Zimmerman"
+                //"Leigh", "Airdo", "Cummings", "Drotning", "Edmiston", "Hazelbaker", "Kishor", "Pena", "Peterson", "Zimmerman"
             };
         private static List<string> _addressSearchStrings = new List<string>
             {
                 // Search strings for Sample Database.
-                //"18th", "30th", "Bloomfield", "Harmont", "Shangri La", "Lupine", "Eugie", "Curnow", "33rd"
+                "18th", "30th", "Bloomfield", "Harmont", "Shangri La", "Lupine", "Eugie", "Curnow", "33rd"
 
                 // Search strings for Spark Database.
-                "18th", "30th", "Main", "Street", "Route", "Drive", "Box", "Walnut", "33rd"
+                //"18th", "30th", "Main", "Street", "Route", "Drive", "Box", "Walnut", "33rd"
                 //"24654 N Lake Pleasant Pkwy # 103-218"
             };
 

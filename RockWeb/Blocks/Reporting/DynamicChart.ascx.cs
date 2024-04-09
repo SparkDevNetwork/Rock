@@ -41,51 +41,41 @@ namespace RockWeb.Blocks.Reporting
         Description = "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have its value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id.",
         IsRequired = false )]
     [CodeEditorField( "SQL",
-        Description = @"The SQL for the datasource. Output columns must be as follows:
-<ul>
-    <li>Bar or Line Chart
-        <ul>
-           <li>[SeriesName] : string or numeric </li>
-           <li>[DateTime] : DateTime </li>
-           <li>[YValue] : numeric </li>
-        </ul>
-    </li>
-    <li>Pie Chart
-        <ul>
-           <li>[MetricTitle] : string </li>
-           <li>[YValueTotal] : numeric </li>
-        </ul>
-    </li>
-</ul>
+        Description = "See the code example in the default text of the block.",
+        DefaultValue = @"/*The SQL for the datasource. Output columns must be as follows:
+Bar or Line Chart
+    [SeriesName] : string or numeric
+    [DateTime] : DateTime
+    [YValue] : numeric
 
-Example: 
-<code>
-    <pre>
-        -- Get Exception count per day for the last 10 days.
-        WITH [Last10Days]
-        AS
-        (
-            SELECT CONVERT(date, GETDATE()) [Date]
-            UNION ALL
-            SELECT DATEADD(day, -1, [Date])
-            FROM [Last10Days]
-            WHERE ([Date] > GETDATE() - 9)
-        )
-        SELECT 'Exception Count' [SeriesName]
-            , d.[Date] [DateTime]
-            , CASE WHEN exceptions.[ExceptionCount] IS NOT NULL THEN exceptions.[ExceptionCount] ELSE 0 END [YValue]
-        FROM [Last10Days] d
-        LEFT OUTER JOIN
-        (
-            SELECT CONVERT(date, [CreatedDateTime]) [Date]
-                , COUNT(*) [ExceptionCount]
-            FROM [ExceptionLog]
-            GROUP BY CONVERT(date, [CreatedDateTime])
-        ) exceptions
-            ON d.[Date] = exceptions.[Date]
-        ORDER BY d.[Date];
-    </pre>
-</code>",
+Pie Chart
+[MetricTitle] : string
+[YValueTotal] : numeric
+*/
+
+-- Get Exception count per day for the last 10 days.
+WITH [Last10Days]
+AS
+(
+    SELECT CONVERT(date, GETDATE()) [Date]
+    UNION ALL
+    SELECT DATEADD(day, -1, [Date])
+    FROM [Last10Days]
+    WHERE ([Date] > GETDATE() - 9)
+)
+SELECT 'Exception Count' [SeriesName]
+    , d.[Date] [DateTime]
+    , CASE WHEN exceptions.[ExceptionCount] IS NOT NULL THEN exceptions.[ExceptionCount] ELSE 0 END [YValue]
+FROM [Last10Days] d
+LEFT OUTER JOIN
+(
+    SELECT CONVERT(date, [CreatedDateTime]) [Date]
+        , COUNT(*) [ExceptionCount]
+    FROM [ExceptionLog]
+    GROUP BY CONVERT(date, [CreatedDateTime])
+) exceptions
+    ON d.[Date] = exceptions.[Date]
+ORDER BY d.[Date];",
         EditorMode = CodeEditorMode.Sql )]
     [TextField( "Title",
         Description = "The title of the widget",
@@ -110,7 +100,7 @@ Example:
         Order = 7 )]
     [CustomDropdownListField( "Legend Position",
         Description = "Select the position of the Legend (corner)",
-        ListSource = "ne,nw,se,sw",
+        ListSource = "n,ne,e,se,s,sw,w,nw",
         IsRequired = false,
         DefaultValue = "ne",
         Order = 8 )]

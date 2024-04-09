@@ -52,19 +52,19 @@
                     help="This specifies what linked activity types this Streak Type may interface with. Something very broad like “Attendance: Any” could
                         help measure general engagement with the church. Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
 
-                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == StreakStructureType.GroupType" v-model="structureEntity" :isSortedByName="true"/>
+                <GroupTypePicker label="Group Type" v-if="modelValue.structureType == StreakStructureType.GroupType" v-model="structureEntity" :isSortedByName="true" showBlankItem />
 
-                <GroupPicker label="Group" v-if="modelValue.structureType == StreakStructureType.Group" v-model="structureEntity" />
+                <GroupPicker label="Group" v-if="modelValue.structureType == StreakStructureType.Group" v-model="structureEntity" showBlankItem />
 
                 <DefinedValuePicker label="Group Type Purpose" v-if="modelValue.structureType == StreakStructureType.GroupTypePurpose" v-model="structureEntity" :definedTypeGuid="DefinedType.GrouptypePurpose" showBlankItem />
 
-                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == StreakStructureType.CheckInConfig" v-model="structureEntity" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids"/>
+                <GroupTypePicker label="Check-In Configuration" v-if="modelValue.structureType == StreakStructureType.CheckInConfig" v-model="structureEntity" :isSortedByName="true" :groupTypes="options?.attendanceCheckInConfigGroupTypesGuids" showBlankItem/>
 
-                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionChannel" v-model="structureEntity"  />
+                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionChannel" v-model="structureEntity" showBlankItem />
 
-                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="interactionComponentInteractionChannel"  />
+                <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="interactionComponentInteractionChannel" showBlankItem />
 
-                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntity" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" />
+                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntity" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" showBlankItem />
 
                 <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == StreakStructureType.InteractionMedium" v-model="structureEntity" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
 
@@ -84,7 +84,7 @@
                     :blankValue="streakOccurrenceFrequencies?.[0].value ?? ''"
                     help="Daily measuring is great for something like Bible Reading where the ideal is daily engagement. Weekly measurements are better suited for activities
                         such as a small group where the ideal is weekly engagement." />
-                <DayOfWeekPicker v-if="canUpdateDayOfWeekPicker" label="Day of the Week" v-model="firstDayOfWeek" :showBlankItem="false"
+                <DayOfWeekPicker v-if="canUpdateDayOfWeekPicker" label="Day of the Week" v-model="firstDayOfWeek"
                     help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting. Leave this blank to use the system setting." />
             </div>
         </div>
@@ -108,7 +108,7 @@
     import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
     import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
     import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { StreakStructureType, StreakStructureTypeDescription } from "@Obsidian/Enums/Engagement/streakStructureType";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -150,7 +150,7 @@
     const structureType = propertyRef(props.modelValue?.structureType?.toString() ?? "None", "StructureType");
     const structureEntity = propertyRef(props.modelValue?.structureEntity ?? {}, "StructureEntity");
     const includeChildAccounts = propertyRef(props.modelValue?.includeChildAccounts ?? {}, "IncludeChildAccounts");
-    const interactionComponentInteractionChannel = ref(props.modelValue.interactionComponentInteractionChannel);
+    const interactionComponentInteractionChannel = ref(props.modelValue?.interactionComponentInteractionChannel);
     const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
     const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
 
@@ -208,7 +208,7 @@
             enableAttendance: enableAttendance.value,
             firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
             occurrenceFrequency: toNumber(occurrenceFrequency.value),
-            structureType: toNumber(structureType.value),
+            structureType: toNumberOrNull(structureType.value),
             structureEntity: props.modelValue?.structureType?.toString() == structureType.value ? structureEntity.value: {},
             includeChildAccounts: includeChildAccounts.value
         };

@@ -696,7 +696,7 @@ namespace Rock.Web.Cache
                 rockControl.Warning = options.WarningText;
                 rockControl.Required = isRequired;
                 rockControl.ValidationGroup = options.ValidationGroup;
-                if ( options.LabelText.IsNullOrWhiteSpace() && isRequired )
+                if ( options.LabelText.IsNullOrWhiteSpace() && isRequired && rockControl.RequiredErrorMessage.IsNullOrWhiteSpace() )
                 {
                     rockControl.RequiredErrorMessage = $"{Name} is required.";
                 }
@@ -866,6 +866,16 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Loads the referenced entity dependency cache if it is empty. This can be called
+        /// before an Attribute is created, modified or deleted if there is the possibility
+        /// the cache might be empty to prevent a deadlock.
+        /// </summary>
+        internal static void GetReferencedEntityDependencies()
+        {
+            RockCache.GetOrAddExisting( AttributePropertyDependenciesCacheKey, GetAttributePropertyDependencies );
+        }
+
+        /// <summary>
         /// Gets the dependencies that all attributes have on entity types
         /// whose properties get modified.
         /// </summary>
@@ -963,6 +973,29 @@ namespace Rock.Web.Cache
                 .ToList();
 
             return qualifiedColumns;
+        }
+
+        /// <summary>
+        /// Flushes the attributes for a block type.
+        /// </summary>
+        /// <param name="blockTypeId">The block type identifier.</param>
+        [RockInternal( "1.16.1" )]
+        public static void FlushAttributesForBlockType( int blockTypeId )
+        {
+            if ( blockTypeId <= 0 )
+            {
+                return;
+            }
+
+            var blockTypeIdString = blockTypeId.ToString();
+
+            foreach ( var attribute in All() )
+            {
+                if ( attribute != null && attribute.EntityTypeQualifierColumn == "BlockTypeId" && attribute.EntityTypeQualifierValue == blockTypeIdString )
+                {
+                    AttributeCache.FlushItem( attribute.Id );
+                }
+            }
         }
 
         #endregion

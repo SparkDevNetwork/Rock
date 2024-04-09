@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
 using Rock.SystemKey;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -43,8 +44,8 @@ namespace Rock.Model
         {
             get
             {
-                var rockContext = System.Configuration.ConfigurationManager.ConnectionStrings[SystemSetting.ROCK_CONTEXT]?.ConnectionString;
-                var readOnlyContext = System.Configuration.ConfigurationManager.ConnectionStrings[SystemSetting.ROCK_CONTEXT_READ_ONLY]?.ConnectionString;
+                var rockContext = RockInstanceConfig.Database.ConnectionString;
+                var readOnlyContext = RockInstanceConfig.Database.ReadOnlyConnectionString;
 
                 if ( rockContext != null && readOnlyContext != null && !rockContext.Equals( readOnlyContext ) )
                 {
@@ -294,6 +295,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a List of <see cref="Rock.Model.DataViewPersistedValue"/>
+        /// matching the specified list of <paramref name="entityIds"/> and
+        /// (optionally) <paramref name="dataViewIds"/>.
+        /// </summary>
+        /// <param name="entityIds">The list of EntityIds to filter to.</param>
+        /// <param name="dataViewIds">The (optional) list of DataViewIds to filter to.</param>
+        /// <returns>A List of <see cref="Rock.Model.DataViewPersistedValue"/></returns>
+        public List<DataViewPersistedValue> GetDataViewPersistedValuesForIds( IEnumerable<int> entityIds, IEnumerable<int> dataViewIds = null )
+        {
+            var entityIdsParamName = "@EntityIds";
+            var entityIdsParam = entityIds.ConvertToEntityIdListParameter( entityIdsParamName );
+            var sql = $@"
+                SELECT [DataViewId]
+                    , [EntityId]
+                FROM [DataViewPersistedValue] [dv]
+                JOIN {entityIdsParamName} [e] ON [dv].EntityId = [e].Id";
+
+            if ( dataViewIds != null && dataViewIds.Any() )
+            {
+                var dataViewIdsParamName = "@DataViewIds";
+                // If there's also a filter condition for dataViewIds add the condition and return the result.
+                var dataViewIdsParam = dataViewIds.ConvertToEntityIdListParameter( dataViewIdsParamName );
+                sql += $@"
+                JOIN {dataViewIdsParamName} [d] ON [dv].[DataViewId] = [d].Id";
+                return this.Context.Database.SqlQuery<DataViewPersistedValue>( sql, entityIdsParam, dataViewIdsParam ).ToList();
+            }
+
+            // Return the list based solely on EntityIds filtering.
+            return this.Context.Database.SqlQuery<DataViewPersistedValue>( sql, entityIdsParam ).ToList();
+        }
+
+        /// <summary>
         /// Updates the data view's <see cref="DataViewPersistedValue"/>s in the database.
         /// </summary>
         /// <param name="dataViewId">The identifier of the data view whose values should be updated.</param>
@@ -398,7 +431,8 @@ END CATCH;";
                 new SqlParameter( "@DataViewId", dataView.Id )
             }
             .Concat(
-                dataViewObjectQuery.Parameters.Select( objectParameter => {
+                dataViewObjectQuery.Parameters.Select( objectParameter =>
+                {
                     if ( objectParameter.Value is DbGeography geography )
                     {
                         // We need to manually convert DbGeography to SqlGeography since we're sidestepping EF here.

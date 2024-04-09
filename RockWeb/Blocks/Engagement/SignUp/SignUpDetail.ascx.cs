@@ -15,6 +15,19 @@
 // </copyright>
 //
 
+using Newtonsoft.Json;
+
+using Rock;
+using Rock.Attribute;
+using Rock.Constants;
+using Rock.Data;
+using Rock.Model;
+using Rock.Security;
+using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,16 +38,8 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
-using Rock;
-using Rock.Attribute;
-using Rock.Constants;
-using Rock.Data;
-using Rock.Model;
-using Rock.Security;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
+
+using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Engagement.SignUp
 {
@@ -51,7 +56,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         IsRequired = false,
         Order = 0 )]
 
-    #endregion
+    #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "69F5C6BD-7A22-42FE-8285-7C8E586E746A" )]
     public partial class SignUpDetail : RockBlock
@@ -80,8 +85,13 @@ namespace RockWeb.Blocks.Engagement.SignUp
             public const string GroupId = "GroupId";
             public const string GroupTypeId = "GroupTypeId";
             public const string GroupRequirementsState = "GroupRequirementsState";
+            public const string IsAuthorizedToAdministrate = "IsAuthorizedToAdministrate";
             public const string IsAuthorizedToEdit = "IsAuthorizedToEdit";
+            public const string IsAuthorizedToSchedule = "IsAuthorizedToSchedule";
             public const string IsProjectTypeInPerson = "IsProjectTypeInPerson";
+            public const string MemberAttributesInheritedState = "MemberAttributesInheritedState";
+            public const string MemberAttributesState = "MemberAttributesState";
+            public const string MemberOpportunityAttributesState = "MemberOpportunityAttributesState";
             public const string OpportunitiesState = "OpportunitiesState";
             public const string ProjectName = "ProjectName";
             public const string ProjectTypeHelpText = "ProjectTypeHelpText";
@@ -91,6 +101,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
         {
             public const string AddOpportunity = "AddOpportunity";
             public const string GroupRequirements = "GroupRequirements";
+            public const string MemberAttribute = "MemberAttribute";
+            public const string MemberOpportunityAttribute = "MemberOpportunityAttribute";
         }
 
         private static class DataKeyName
@@ -101,14 +113,17 @@ namespace RockWeb.Blocks.Engagement.SignUp
             public const string ScheduleId = "ScheduleId";
         }
 
-        #endregion
+        #endregion Keys
 
         #region Fields
 
+        private bool _canAdministrate;
         private bool _canEdit;
+        private bool _canSchedule;
+
         private bool _isProjectTypeInPerson;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -277,11 +292,17 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
         }
 
+        private List<InheritedAttribute> MemberAttributesInheritedState { get; set; }
+
+        private List<Attribute> MemberAttributesState { get; set; }
+
+        private List<Attribute> MemberOpportunityAttributesState { get; set; }
+
         private List<GroupRequirement> GroupRequirementsState { get; set; }
 
         private List<Opportunity> OpportunitiesState { get; set; }
 
-        #endregion
+        #endregion Properties
 
         #region Control Life-Cycle Events
 
@@ -293,15 +314,48 @@ namespace RockWeb.Blocks.Engagement.SignUp
         {
             base.LoadViewState( savedState );
 
+            _canAdministrate = ( bool ) ViewState[ViewStateKey.IsAuthorizedToAdministrate];
             _canEdit = ( bool ) ViewState[ViewStateKey.IsAuthorizedToEdit];
-            gOpportunities.Actions.ShowAdd = _canEdit;
+
+            _canSchedule = ( bool ) ViewState[ViewStateKey.IsAuthorizedToSchedule];
+            gOpportunities.Actions.ShowAdd = _canSchedule;
 
             _isProjectTypeInPerson = ( bool ) ViewState[ViewStateKey.IsProjectTypeInPerson];
 
             rblProjectType.Help = ViewState[ViewStateKey.ProjectTypeHelpText]?.ToString();
 
-            var json = ViewState[ViewStateKey.GroupRequirementsState] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            var json = ViewState[ViewStateKey.MemberAttributesInheritedState] as string;
+            if ( json.IsNullOrWhiteSpace() )
+            {
+                this.MemberAttributesInheritedState = new List<InheritedAttribute>();
+            }
+            else
+            {
+                this.MemberAttributesInheritedState = JsonConvert.DeserializeObject<List<InheritedAttribute>>( json );
+            }
+
+            json = ViewState[ViewStateKey.MemberAttributesState] as string;
+            if ( json.IsNullOrWhiteSpace() )
+            {
+                this.MemberAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                this.MemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            json = ViewState[ViewStateKey.MemberOpportunityAttributesState] as string;
+            if ( json.IsNullOrWhiteSpace() )
+            {
+                this.MemberOpportunityAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                this.MemberOpportunityAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            json = ViewState[ViewStateKey.GroupRequirementsState] as string;
+            if ( json.IsNullOrWhiteSpace() )
             {
                 this.GroupRequirementsState = new List<GroupRequirement>();
             }
@@ -356,13 +410,35 @@ namespace RockWeb.Blocks.Engagement.SignUp
             nbNotAuthorizedToView.Text = EditModeMessage.NotAuthorizedToView( Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
 
+            gMemberAttributesInherited.Actions.ShowAdd = false;
+            gMemberAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
+            gMemberAttributesInherited.GridRebind += gMemberAttributesInherited_GridRebind;
+
+            gMemberAttributes.DataKeyNames = new string[] { "Guid" };
+            gMemberAttributes.Actions.AddClick += gMemberAttributes_Add;
+            gMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gMemberAttributes.GridRebind += gMemberAttributes_GridRebind;
+            gMemberAttributes.GridReorder += gMemberAttributes_GridReorder;
+
+            SecurityField memberAttributeSecurityField = gMemberAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            memberAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+
+            gMemberOpportunityAttributes.DataKeyNames = new string[] { "Guid" };
+            gMemberOpportunityAttributes.Actions.AddClick += gMemberOpportunityAttributes_Add;
+            gMemberOpportunityAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gMemberOpportunityAttributes.GridRebind += gMemberOpportunityAttributes_GridRebind;
+            gMemberOpportunityAttributes.GridReorder += gMemberOpportunityAttributes_GridReorder;
+
+            SecurityField memberOpportunityAttributeSecurityField = gMemberOpportunityAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            memberOpportunityAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+
             gGroupRequirements.Actions.AddClick += gGroupRequirements_Add;
             gGroupRequirements.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gOpportunities.Actions.AddClick += gOpportunities_Add;
             gOpportunities.EmptyDataText = Server.HtmlEncode( None.Text );
 
-            // we'll have custom JavaScript (see SignUpDetail.ascx ) do this instead.
+            // We'll have custom JavaScript (see SignUpDetail.ascx ) do this instead.
             gOpportunities.ShowConfirmDeleteDialog = false;
 
             // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
@@ -427,7 +503,9 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </returns>
         protected override object SaveViewState()
         {
+            ViewState[ViewStateKey.IsAuthorizedToAdministrate] = _canAdministrate;
             ViewState[ViewStateKey.IsAuthorizedToEdit] = _canEdit;
+            ViewState[ViewStateKey.IsAuthorizedToSchedule] = _canSchedule;
             ViewState[ViewStateKey.IsProjectTypeInPerson] = _isProjectTypeInPerson;
 
             var jsonSetting = new JsonSerializerSettings
@@ -437,13 +515,60 @@ namespace RockWeb.Blocks.Engagement.SignUp
             };
 
             ViewState[ViewStateKey.ProjectTypeHelpText] = rblProjectType.Help;
+            ViewState[ViewStateKey.MemberAttributesInheritedState] = JsonConvert.SerializeObject( this.MemberAttributesInheritedState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.MemberAttributesState] = JsonConvert.SerializeObject( this.MemberAttributesState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.MemberOpportunityAttributesState] = JsonConvert.SerializeObject( this.MemberOpportunityAttributesState, Formatting.None, jsonSetting );
             ViewState[ViewStateKey.GroupRequirementsState] = JsonConvert.SerializeObject( this.GroupRequirementsState, Formatting.None, jsonSetting );
             ViewState[ViewStateKey.OpportunitiesState] = JsonConvert.SerializeObject( this.OpportunitiesState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
 
-        #endregion
+        /// <summary>
+        /// Gets the bread crumbs.
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <returns></returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? groupId = 0;
+            if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
+            {
+                groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            }
+
+            if ( groupId.HasValue && groupId.Value >= 0 )
+            {
+                Group group = null;
+
+                if ( groupId.Value > 0 )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        group = new GroupService( rockContext ).GetNoTracking( groupId.Value );
+                    }
+                }
+
+                if ( group != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( group.Name, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Sign-Up Project", pageReference ) );
+                }
+            }
+            else
+            {
+                // Don't show a breadcrumb if we don't have a page param to work with.
+            }
+
+            return breadCrumbs;
+        }
+
+        #endregion Control Life-Cycle Events
 
         #region Edit Events
 
@@ -460,8 +585,6 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             using ( var rockContext = new RockContext() )
             {
-                BuildGroupRequirementsList( true, rockContext );
-
                 Group group;
                 if ( this.GroupId == 0 )
                 {
@@ -476,6 +599,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 group.LoadAttributes();
 
                 BuildEditModeAttributesControls( group );
+
+                BuildGroupRequirementsList( true, rockContext, group );
             }
         }
 
@@ -505,6 +630,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 var isNewGroup = false;
                 var groupService = new GroupService( rockContext );
                 var groupRequirementService = new GroupRequirementService( rockContext );
+                var attributeService = new AttributeService( rockContext );
 
                 if ( this.GroupId == 0 )
                 {
@@ -515,7 +641,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 else
                 {
                     group = groupService.Queryable()
-                        .Include( g => g.ParentGroup ) // Parent group is needed to properly check for edit authorization.
+                        .Include( g => g.ParentGroup ) // ParentGroup may be needed for a proper authorization check.
                         .Include( g => g.GroupRequirements )
                         .FirstOrDefault( g => g.Id == this.GroupId );
 
@@ -651,6 +777,49 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     rockContext.SaveChanges();
 
                     group.SaveAttributeValues( rockContext );
+
+                    // Take care of member attributes.
+                    var entityTypeId = EntityTypeCache.Get( typeof( GroupMember ) ).Id;
+                    var qualifierColumn = "GroupId";
+                    var qualifierValue = group.Id.ToString();
+
+                    // Get the existing attributes for this entity type and qualifier value.
+                    var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
+
+                    // Delete any of those attributes that were removed in the UI.
+                    var selectedAttributeGuids = MemberAttributesState.Select( a => a.Guid );
+                    foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+                    {
+                        attributeService.Delete( attr );
+                    }
+
+                    // Update the Attributes that were assigned in the UI.
+                    foreach ( var attributeState in MemberAttributesState )
+                    {
+                        Rock.Attribute.Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                    }
+
+                    // Take care of member opportunity attributes.
+                    entityTypeId = EntityTypeCache.Get( typeof( GroupMemberAssignment ) ).Id;
+
+                    // Get the existing attributes for this entity type and qualifier value.
+                    attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
+
+                    // Delete any of those attributes that were removed in the UI.
+                    selectedAttributeGuids = MemberOpportunityAttributesState.Select( a => a.Guid );
+                    foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+                    {
+                        attributeService.Delete( attr );
+                    }
+
+                    // Update the Attributes that were assigned in the UI.
+                    foreach ( var attributeState in MemberOpportunityAttributesState )
+                    {
+                        Rock.Attribute.Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                    }
+
+                    // Final save for member and member opportunity attributes.
+                    rockContext.SaveChanges();
                 } );
             }
 
@@ -677,7 +846,398 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
         }
 
-        #endregion
+        #endregion Edit Events
+
+        #region Inherited Member Attributes Events and Helpers
+
+        /// <summary>
+        /// Binds the inherited member attributes.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        private void BindInheritedMemberAttributes( Group group, AttributeService attributeService )
+        {
+            MemberAttributesInheritedState = new List<InheritedAttribute>();
+
+            int? inheritedGroupTypeId = group.GroupTypeId;
+            while ( inheritedGroupTypeId.HasValue )
+            {
+                var inheritedGroupType = GroupTypeCache.Get( inheritedGroupTypeId.Value );
+                if ( inheritedGroupType != null )
+                {
+                    var qualifierValue = inheritedGroupType.Id.ToString();
+                    foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId, false ).AsQueryable()
+                        .Where( a =>
+                            a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                            a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() )
+                    {
+                        MemberAttributesInheritedState.Add( new InheritedAttribute(
+                            attribute.Name,
+                            attribute.Key,
+                            attribute.Description,
+                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
+                            inheritedGroupType.Name ) );
+                    }
+
+                    inheritedGroupTypeId = inheritedGroupType.InheritedGroupTypeId;
+                }
+                else
+                {
+                    inheritedGroupTypeId = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Binds the inherited member attributes grid.
+        /// </summary>
+        private void BindInheritedMemberAttributesGrid()
+        {
+            gMemberAttributesInherited.DataSource = MemberAttributesInheritedState;
+            gMemberAttributesInherited.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gMemberAttributesInherited control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberAttributesInherited_GridRebind( object sender, EventArgs e )
+        {
+            BindInheritedMemberAttributesGrid();
+        }
+
+        #endregion Inherited Member Attributes Events and Helpers
+
+        #region Member Attributes Events and Helpers
+
+        /// <summary>
+        /// Binds the member attributes.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        private void BindMemberAttributes( Group group, AttributeService attributeService )
+        {
+            var qualifierValue = group.Id.ToString();
+            MemberAttributesState = attributeService.GetByEntityTypeId( new GroupMember().TypeId, true ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Binds the member attributes grid.
+        /// </summary>
+        private void BindMemberAttributesGrid()
+        {
+            SetAttributeListOrder( MemberAttributesState );
+            gMemberAttributes.DataSource = MemberAttributesState
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+
+            gMemberAttributes.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the Add event of the gMemberAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberAttributes_Add( object sender, EventArgs e )
+        {
+            gMemberAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gMemberAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gMemberAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            gMemberAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Shows the mdMemberAttribute modal dialog to add/edit a member attribute.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberAttributes_ShowEdit( Guid attributeGuid )
+        {
+            Attribute attribute;
+            var itemFriendlyName = $"attribute for members{( tbName.Text.IsNotNullOrWhiteSpace() ? $" of {tbName.Text}" : string.Empty )}";
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                edtMemberAttribute.ActionTitle = ActionTitle.Add( itemFriendlyName );
+            }
+            else
+            {
+                attribute = MemberAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                edtMemberAttribute.ActionTitle = ActionTitle.Edit( itemFriendlyName );
+            }
+
+            var reservedKeyNames = new List<string>();
+            MemberAttributesInheritedState.Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            MemberAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtMemberAttribute.ReservedKeyNames = reservedKeyNames.ToList();
+            edtMemberAttribute.SetAttributeProperties( attribute, typeof( GroupMember ) );
+
+            ShowDialog( DialogKey.MemberAttribute );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdMemberAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdMemberAttribute_SaveClick( object sender, EventArgs e )
+        {
+            var attribute = new Attribute();
+            edtMemberAttribute.GetAttributeProperties( attribute );
+
+            // Controls will show warnings.
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( MemberAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                // Get the non-editable stuff from the state and put it back into the object.
+                var attributeState = MemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+                if ( attributeState != null )
+                {
+                    attribute.Order = attributeState.Order;
+                    attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                    attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                    attribute.ForeignGuid = attributeState.ForeignGuid;
+                    attribute.ForeignId = attributeState.ForeignId;
+                    attribute.ForeignKey = attributeState.ForeignKey;
+                }
+
+                MemberAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = MemberAttributesState.Any() ? MemberAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+
+            MemberAttributesState.Add( attribute );
+
+            BindMemberAttributesGrid();
+
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gMemberAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindMemberAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gMemberAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gMemberAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderAttributeList( MemberAttributesState, e.OldIndex, e.NewIndex );
+            BindMemberAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gMemberAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gMemberAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            MemberAttributesState.RemoveEntity( attributeGuid );
+
+            BindMemberAttributesGrid();
+        }
+
+        #endregion Member Attributes Events and Helpers
+
+        #region Member Opportunity Attributes Events and Helpers
+
+        /// <summary>
+        /// Binds the member opportunity attributes.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        private void BindMemberOpportunityAttributes( Group group, AttributeService attributeService )
+        {
+            var qualifierValue = group.Id.ToString();
+            MemberOpportunityAttributesState = attributeService.GetByEntityTypeId( new GroupMemberAssignment().TypeId, true ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Binds the member opportunity attributes grid.
+        /// </summary>
+        private void BindMemberOpportunityAttributesGrid()
+        {
+            SetAttributeListOrder( MemberOpportunityAttributesState );
+            gMemberOpportunityAttributes.DataSource = MemberOpportunityAttributesState
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+
+            gMemberOpportunityAttributes.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the Add event of the gMemberOpportunityAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberOpportunityAttributes_Add( object sender, EventArgs e )
+        {
+            gMemberOpportunityAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gMemberOpportunityAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gMemberOpportunityAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            gMemberOpportunityAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Shows the mdMemberOpportunityAttribute modal dialog to add/edit a member opportunity attribute.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberOpportunityAttributes_ShowEdit( Guid attributeGuid )
+        {
+            Attribute attribute;
+            var itemFriendlyName = $"attribute for member opportunities{( tbName.Text.IsNotNullOrWhiteSpace() ? $" of {tbName.Text}" : string.Empty )}";
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                edtMemberOpportunityAttribute.ActionTitle = ActionTitle.Add( itemFriendlyName );
+            }
+            else
+            {
+                attribute = MemberOpportunityAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                edtMemberOpportunityAttribute.ActionTitle = ActionTitle.Edit( itemFriendlyName );
+            }
+
+            var reservedKeyNames = new List<string>();
+            MemberOpportunityAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtMemberOpportunityAttribute.ReservedKeyNames = reservedKeyNames.ToList();
+            edtMemberOpportunityAttribute.SetAttributeProperties( attribute, typeof( GroupMemberAssignment ) );
+
+            ShowDialog( DialogKey.MemberOpportunityAttribute );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdMemberOpportunityAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdMemberOpportunityAttribute_SaveClick( object sender, EventArgs e )
+        {
+            var attribute = new Attribute();
+            edtMemberOpportunityAttribute.GetAttributeProperties( attribute );
+
+            // Controls will show warnings.
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( MemberOpportunityAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                // Get the non-editable stuff from the state and put it back into the object.
+                var attributeState = MemberOpportunityAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+                if ( attributeState != null )
+                {
+                    attribute.Order = attributeState.Order;
+                    attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                    attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                    attribute.ForeignGuid = attributeState.ForeignGuid;
+                    attribute.ForeignId = attributeState.ForeignId;
+                    attribute.ForeignKey = attributeState.ForeignKey;
+                }
+
+                MemberOpportunityAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = MemberOpportunityAttributesState.Any() ? MemberOpportunityAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+
+            MemberOpportunityAttributesState.Add( attribute );
+
+            BindMemberOpportunityAttributesGrid();
+
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gMemberOpportunityAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMemberOpportunityAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindMemberOpportunityAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gMemberOpportunityAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gMemberOpportunityAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderAttributeList( MemberOpportunityAttributesState, e.OldIndex, e.NewIndex );
+            BindMemberOpportunityAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gMemberOpportunityAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gMemberOpportunityAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            MemberOpportunityAttributesState.RemoveEntity( attributeGuid );
+
+            BindMemberOpportunityAttributesGrid();
+        }
+
+        #endregion Member Opportunity Attributes Events and Helpers
 
         #region Add/Edit Group Requirements Events
 
@@ -718,7 +1278,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Shows the modal dialog to add/edit a Group Requirement
+        /// Shows the mdGroupRequirement modal dialog to add/edit a group requirement.
         /// </summary>
         /// <param name="groupRequirementGuid">The group requirement unique identifier.</param>
         protected void gGroupRequirements_ShowEdit( Guid groupRequirementGuid )
@@ -934,7 +1494,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             }
         }
 
-        #endregion
+        #endregion Add/Edit Group Requirements Events
 
         #region View Events
 
@@ -1013,7 +1573,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
             }
 
-            if ( !_canEdit )
+            if ( !_canSchedule )
             {
                 var editField = gOpportunities.ColumnsOfType<EditField>().FirstOrDefault( c => c.ID == "efOpportunities" );
                 if ( editField != null )
@@ -1071,7 +1631,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             {
                 var groupService = new GroupService( rockContext );
                 var group = groupService.Queryable()
-                    .Include( g => g.ParentGroup ) // Parent group is needed to properly check for edit authorization.
+                    .Include( g => g.ParentGroup ) // ParentGroup may be needed for a proper authorization check.
                     .FirstOrDefault( g => g.Id == this.GroupId );
 
                 if ( group == null )
@@ -1149,7 +1709,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             TryNavigateToParentGroup( parentGroupId );
         }
 
-        #endregion
+        #endregion View Events
 
         #region Add/Edit Opportunity (GroupLocationSchedule) Events
 
@@ -1175,7 +1735,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Shows the modal dialog to add/edit an opportunity.
+        /// Shows the mdAddOpportunity modal dialog to add/edit an opportunity.
         /// </summary>
         /// <param name="groupLocationId">The group location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
@@ -1733,7 +2293,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             BindOpportunitiesGrid();
         }
 
-        #endregion
+        #endregion Add/Edit Opportunity (GroupLocationSchedule) Events
 
         #region Internal Members
 
@@ -1764,18 +2324,45 @@ namespace RockWeb.Blocks.Engagement.SignUp
         }
 
         /// <summary>
-        /// Determines whether [is authorized to edit] [the specified group].
+        /// Determines whether the current person is authorized to administrate the current project (group).
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns>Whether the current person is authorized to administrate the current project (group).</returns>
+        private bool IsAuthorizedToAdministrate( Group group )
+        {
+            _canAdministrate = group != null
+                && group.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson );
+
+            return _canAdministrate;
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to edit the current project (group).
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns>
-        ///   <c>true</c> if [is authorized to edit] [the specified group]; otherwise, <c>false</c>.
+        /// Whether the current person is authorized to edit the current project (group).
         /// </returns>
         private bool IsAuthorizedToEdit( Group group )
         {
-            _canEdit = IsUserAuthorized( Authorization.EDIT )
-                && group?.IsSystem == false
-                && group?.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) == true;
+            _canEdit = group != null
+                && !group.IsSystem
+                && group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+
             return _canEdit;
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to schedule (add/edit/delete) project opportunities.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns>Whether the current person is authorized to schedule (add/edit/delete) project opportunities.</returns>
+        private bool IsAuthorizedToSchedule( Group group )
+        {
+            _canSchedule = group != null
+                && ( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) );
+
+            return _canSchedule;
         }
 
         /// <summary>
@@ -2062,7 +2649,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             cpCampus.SelectedCampusId = group.CampusId;
             SetIsCampusRequired();
 
-            BuildGroupRequirementsList( true, rockContext );
+            BuildGroupRequirementsList( true, rockContext, group );
 
             BuildEditModeAttributesControls( group );
 
@@ -2105,13 +2692,18 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             InitializeAttributeValuesContainer( group, false );
 
-            BuildGroupRequirementsList( false, rockContext );
+            BuildGroupRequirementsList( false, rockContext, group );
 
             BindOpportunitiesGrid( group );
 
-            pnlActions.Visible = !isReadOnly;
+            var canAdministrate = IsAuthorizedToAdministrate( group );
 
-            btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            pnlActions.Visible = !isReadOnly || canAdministrate;
+
+            btnEdit.Visible = !isReadOnly;
+            btnDelete.Visible = !isReadOnly;
+
+            btnSecurity.Visible = canAdministrate;
             btnSecurity.EntityId = group.Id;
         }
 
@@ -2254,7 +2846,8 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// </summary>
         /// <param name="isEditMode">if set to <c>true</c> [is edit mode].</param>
         /// <param name="rockContext">The rock context.</param>
-        private void BuildGroupRequirementsList( bool isEditMode, RockContext rockContext )
+        /// <param name="group">The group.</param>
+        private void BuildGroupRequirementsList( bool isEditMode, RockContext rockContext, Group group = null )
         {
             var groupTypeGroupRequirements = new GroupRequirementService( rockContext )
                 .Queryable()
@@ -2266,20 +2859,26 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             var anyGroupTypeGroupRequirements = groupTypeGroupRequirements.Any();
             var groupGroupRequirements = this.GroupRequirementsState.OrderBy( r => r.GroupRequirementType.Name ).ToList();
-            var anyGroupGroupRequirments = groupGroupRequirements.Any();
-            var anyGroupRequirements = anyGroupTypeGroupRequirements || anyGroupGroupRequirments;
+            var anyGroupGroupRequirements = groupGroupRequirements.Any();
+            var anyGroupRequirements = anyGroupTypeGroupRequirements || anyGroupGroupRequirements;
 
             if ( isEditMode )
             {
+                // Check administrate authorization against the group if provided, or against the last value
+                // set in ViewState if group was not provided.
+                var canAdministrate = group != null
+                    ? IsAuthorizedToAdministrate( group )
+                    : _canAdministrate;
+
                 var areSpecificGroupRequirementsEnabled = this.CurrentGroupType.EnableSpecificGroupRequirements;
 
-                if ( !anyGroupRequirements && !areSpecificGroupRequirementsEnabled )
+                if ( !canAdministrate || ( !anyGroupRequirements && !areSpecificGroupRequirementsEnabled ) )
                 {
-                    pnlEditGroupRequirements.Visible = false;
+                    wpGroupRequirements.Visible = false;
                     return;
                 }
 
-                pnlEditGroupRequirements.Visible = true;
+                wpGroupRequirements.Visible = true;
 
                 if ( anyGroupTypeGroupRequirements )
                 {
@@ -2294,7 +2893,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     rcwGroupTypeGroupRequirements.Visible = false;
                 }
 
-                rcwGroupRequirements.Visible = anyGroupGroupRequirments || areSpecificGroupRequirementsEnabled;
+                rcwGroupRequirements.Visible = anyGroupGroupRequirements || areSpecificGroupRequirementsEnabled;
                 if ( !rcwGroupRequirements.Visible )
                 {
                     return;
@@ -2340,6 +2939,53 @@ namespace RockWeb.Blocks.Engagement.SignUp
             InitializeAttributeValuesContainer( group, true );
 
             BuildProjectTypeRadioButtonList( group );
+
+            if ( !IsAuthorizedToAdministrate( group ) )
+            {
+                wpMemberAttributes.Visible = false;
+                wpMemberOpportunityAttributes.Visible = false;
+                return;
+            }
+
+            // Purposefully using a new, unmanaged RockContext instance here, due to the need for
+            // lazy loading of these entities' props with respect to ViewState, Etc.
+            var attributeService = new AttributeService( new RockContext() );
+            var allowSpecificGroupMemberAttributes = this.CurrentGroupType?.AllowSpecificGroupMemberAttributes == true;
+
+            // Toggle visibility of the inherited member attributes grid.
+            BindInheritedMemberAttributes( group, attributeService );
+            var showMemberAttributesInheritedGrid = MemberAttributesInheritedState.Any();
+            rcwMemberAttributesInherited.Visible = showMemberAttributesInheritedGrid;
+
+            if ( showMemberAttributesInheritedGrid )
+            {
+                BindInheritedMemberAttributesGrid();
+            }
+
+            // Toggle visibility of the member attributes grid.
+            BindMemberAttributes( group, attributeService );
+            var showMemberAttributesGrid = allowSpecificGroupMemberAttributes || MemberAttributesState.Any();
+            rcwMemberAttributes.Visible = showMemberAttributesGrid;
+
+            if ( showMemberAttributesGrid )
+            {
+                BindMemberAttributesGrid();
+                gMemberAttributes.Actions.ShowAdd = allowSpecificGroupMemberAttributes;
+                rcwMemberAttributes.Label = showMemberAttributesInheritedGrid ? "Member Attributes" : string.Empty;
+            }
+
+            wpMemberAttributes.Visible = showMemberAttributesInheritedGrid || showMemberAttributesGrid;
+
+            // Toggle visibility of the member opportunity attributes grid.
+            BindMemberOpportunityAttributes( group, attributeService );
+            var showMemberOpportunityAttributesGrid = allowSpecificGroupMemberAttributes || MemberOpportunityAttributesState.Any();
+            wpMemberOpportunityAttributes.Visible = showMemberOpportunityAttributesGrid;
+
+            if ( showMemberOpportunityAttributesGrid )
+            {
+                BindMemberOpportunityAttributesGrid();
+                gMemberOpportunityAttributes.Actions.ShowAdd = allowSpecificGroupMemberAttributes;
+            }
         }
 
         /// <summary>
@@ -2490,6 +3136,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 case DialogKey.GroupRequirements:
                     mdGroupRequirement.Show();
                     break;
+                case DialogKey.MemberAttribute:
+                    mdMemberAttribute.Show();
+                    break;
+                case DialogKey.MemberOpportunityAttribute:
+                    mdMemberOpportunityAttribute.Show();
+                    break;
             }
         }
 
@@ -2505,6 +3157,12 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     break;
                 case DialogKey.GroupRequirements:
                     mdGroupRequirement.Hide();
+                    break;
+                case DialogKey.MemberAttribute:
+                    mdMemberAttribute.Hide();
+                    break;
+                case DialogKey.MemberOpportunityAttribute:
+                    mdMemberOpportunityAttribute.Hide();
                     break;
             }
         }
@@ -2718,7 +3376,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
     <div class=""indicator"" style=""left: {percentage}%;""></div>";
                     }
 
-                    return $@"<div class=""progress progress-sign-ups text-{progressState} m-0 flex-fill js-progress-sign-ups"" role=""progressbar"" title=""{ProgressBarTooltip.EncodeHtml()}"" aria-label=""Sign-Ups Progress"">
+                    return $@"<div class=""progress progress-sign-ups text-{progressState} m-0 flex-fill js-progress-sign-ups"" role=""progressbar"" title=""{ProgressBarTooltip.EncodeHtml()}"" aria-label=""Sign-Ups Progress"" data-slots-filled=""{filled}"">
     <div class=""progress-bar progress-bar-sign-ups bg-{progressState}"" style=""width: {filledPercentage}%""></div>{GetIndicator( minPercentage )}{GetIndicator( desiredPercentage )}{GetIndicator( maxPercentage, true )}
 </div>";
                 }
@@ -2759,6 +3417,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                     .Queryable()
                     .AsNoTracking()
                     .Include( g => g.Campus )
+                    .Include( g => g.ParentGroup ) // ParentGroup may be needed for a proper authorization check.
                     .FirstOrDefault( g => g.Id == this.GroupId );
 
                 if ( shouldForceRefresh || this.OpportunitiesState?.Any() != true )
@@ -2824,13 +3483,13 @@ namespace RockWeb.Blocks.Engagement.SignUp
                                 }
                             }
 
-                            var particpantCount = participantCounts.FirstOrDefault( c =>
+                            var participantCount = participantCounts.FirstOrDefault( c =>
                                 c.GroupId == gls.Group.Id
                                 && c.LocationId == gls.Location.Id
                                 && c.ScheduleId == gls.Schedule.Id
                             )?.Count ?? 0;
 
-                            totalParticipantCount += particpantCount;
+                            totalParticipantCount += participantCount;
 
                             return new Opportunity
                             {
@@ -2846,7 +3505,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                                 SlotsMin = gls.Config?.MinimumCapacity,
                                 SlotsDesired = gls.Config?.DesiredCapacity,
                                 SlotsMax = gls.Config?.MaximumCapacity,
-                                SlotsFilled = particpantCount,
+                                SlotsFilled = participantCount,
                                 ReminderAdditionalDetails = gls.Config?.ReminderAdditionalDetails,
                                 ConfirmationAdditionalDetails = gls.Config?.ConfirmationAdditionalDetails
                             };
@@ -2880,7 +3539,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
                 }
 
                 gOpportunities.RowItemText = timeframe == OpportunityTimeframe.Upcoming ? "Upcoming Opportunity" : "Past Opportunity";
-                gOpportunities.Actions.ShowAdd = IsAuthorizedToEdit( group );
+                gOpportunities.Actions.ShowAdd = IsAuthorizedToSchedule( group );
 
                 var nameColumn = gOpportunities.ColumnsOfType<RockBoundField>().FirstOrDefault( c => c.DataField == "Name" );
                 if ( nameColumn != null )
@@ -3170,6 +3829,48 @@ namespace RockWeb.Blocks.Engagement.SignUp
 </div>";
         }
 
-        #endregion
+        /// <summary>
+        /// Sets the attribute list order.
+        /// </summary>
+        /// <param name="attributeList">The attribute list.</param>
+        private void SetAttributeListOrder( List<Attribute> attributeList )
+        {
+            int order = 0;
+            attributeList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList().ForEach( a => a.Order = order++ );
+        }
+
+        /// <summary>
+        /// Reorders the attribute list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void ReorderAttributeList( List<Attribute> itemList, int oldIndex, int newIndex )
+        {
+            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order++;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order--;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
+        }
+
+        #endregion Internal Members
     }
 }

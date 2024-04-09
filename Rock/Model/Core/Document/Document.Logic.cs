@@ -98,7 +98,7 @@ namespace Rock.Model
             {
                 var documentsPerEntityCount = new DocumentService( rockContext )
                     .Queryable()
-                    .Where( a => a.DocumentTypeId == DocumentTypeId && EntityId == this.EntityId )
+                    .Where( a => a.DocumentTypeId == DocumentTypeId && a.EntityId == this.EntityId && a.Id != this.Id )
                     .Count();
 
                 if ( documentsPerEntityCount >= documentType.MaxDocumentsPerEntity.Value )

@@ -41,16 +41,85 @@ namespace Rock.Communication.Transport
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Mailgun HTTP" )]
 
-    [TextField( "Base URL", "The API URL provided by Mailgun, keep the default in most cases.", true, @"https://api.mailgun.net/v3", "", 0, "BaseURL" )]
-    [TextField( "Resource", "The URL part provided by Mailgun, keep the default in most cases.", true, @"{domain}/messages", "", 1, "Resource" )]
-    [TextField( "Domain", "The email domain (e.g. rocksolidchurchdemo.com).", true, "", "", 2, "Domain" )]
-    [TextField( "API Key", "The Private API Key provided by Mailgun.", true, "", "", 3, "APIKey" )]
-    [BooleanField( "Track Opens", "Allow Mailgun to track opens, clicks, and unsubscribes.", true, "", 4, "TrackOpens" )]
-    [BooleanField( "Replace Unsafe Sender", "Defaults to \"Yes\".  If set to \"No\" Mailgun will allow relaying email \"on behalf of\" regardless of the sender's domain.  The safe sender list will still be used for adding a \"Sender\" header.", true, "", 5 )]
-    [IntegerField( "Concurrent Send Workers", "", false, 10, "", 6, key: "MaxParallelization" )]
+    #region Attributes
+
+    [TextField( "Base URL",
+        Key = AttributeKey.BaseURL,
+        Description = "The API URL provided by Mailgun, keep the default in most cases.",
+        DefaultValue = "https://api.mailgun.net/v3",
+        Order = 0,
+        IsRequired = true )]
+
+    [TextField( "Resource",
+        Key = AttributeKey.Resource,
+        Description = "The URL part provided by Mailgun, keep the default in most cases.",
+        DefaultValue = "{domain}/messages",
+        Order = 1,
+        IsRequired = true )]
+
+    [TextField( "Domain",
+        Key = AttributeKey.Domain,
+        Description = "The email domain (e.g. rocksolidchurchdemo.com). This should match the domain name as listed in your Mailgun account.",
+        DefaultValue = "",
+        Order = 2,
+        IsRequired = true )]
+
+    [TextField( "API Key",
+        Key = AttributeKey.APIKey,
+        Description = @"The API Key provided by Mailgun. Newly-created Mailgun accounts should use one of the account-wide ""Mailgun API keys"" or domain-specific ""Sending API keys"" for this value. Preexisting Mailgun accounts might refer to this value as the ""Private API key"".",
+        DefaultValue = "",
+        Order = 3,
+        IsRequired = true )]
+
+    [TextField( "HTTP Webhook Signing Key",
+        Key = AttributeKey.HTTPWebhookSigningKey,
+        Description = "The HTTP Webhook Signing Key provided by Mailgun. Newly-created Mailgun accounts will have separate API and Webhook keys.",
+        DefaultValue = "",
+        Order = 4,
+        IsRequired = true )]
+
+    [BooleanField( "Track Opens",
+        Key = AttributeKey.TrackOpens,
+        Description = "Allow Mailgun to track opens, clicks, and unsubscribes.",
+        DefaultBooleanValue = true,
+        Order = 5,
+        IsRequired = false )]
+
+    [BooleanField( "Replace Unsafe Sender",
+        Key = AttributeKey.ReplaceUnsafeSender,
+        Description = @"Defaults to ""Yes"". If set to ""No"" Mailgun will allow relaying email ""on behalf of"" regardless of the sender's domain. The safe sender list will still be used for adding a ""Sender"" header.",
+        DefaultBooleanValue = true,
+        Order = 6,
+        IsRequired = false )]
+
+    [IntegerField( "Concurrent Send Workers",
+        Key = AttributeKey.MaxParallelization,
+        Description = "The maximum number of emails that will be sent concurrently.",
+        DefaultIntegerValue = 10,
+        Order = 7,
+        IsRequired = false )]
+
+    #endregion Attributes
+
     [Rock.SystemGuid.EntityTypeGuid( "35E39CA7-9383-421C-BBFA-0A6CC7AF1BAC")]
     public class MailgunHttp : EmailTransportComponent, IAsyncTransport
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string BaseURL = "BaseURL";
+            public const string Resource = "Resource";
+            public const string Domain = "Domain";
+            public const string APIKey = "APIKey";
+            public const string HTTPWebhookSigningKey = "HTTPWebhookSigningKey";
+            public const string TrackOpens = "TrackOpens";
+            public const string ReplaceUnsafeSender = "ReplaceUnsafeSender";
+            public const string MaxParallelization = "MaxParallelization";
+        }
+
+        #endregion Keys
+
         /// <summary>
         /// Gets the response returned from the Mailgun API REST call.
         /// </summary>
@@ -68,7 +137,7 @@ namespace Rock.Communication.Transport
         /// </value>
         public override bool CanTrackOpens
         {
-            get { return GetAttributeValue( "TrackOpens" ).AsBoolean( true ); }
+            get { return GetAttributeValue( AttributeKey.TrackOpens ).AsBoolean( true ); }
         }
 
         /// <summary>
@@ -81,7 +150,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return GetAttributeValue( "MaxParallelization" ).AsIntegerOrNull() ?? 10;
+                return GetAttributeValue( AttributeKey.MaxParallelization ).AsIntegerOrNull() ?? 10;
             }
         }
 
@@ -127,8 +196,8 @@ namespace Rock.Communication.Transport
 
             var restClient = new RestClient
             {
-                BaseUrl = new Uri( GetAttributeValue( "BaseURL" ) ),
-                Authenticator = new HttpBasicAuthenticator( "api", GetAttributeValue( "APIKey" ) )
+                BaseUrl = new Uri( GetAttributeValue( AttributeKey.BaseURL ) ),
+                Authenticator = new HttpBasicAuthenticator( "api", GetAttributeValue( AttributeKey.APIKey ) )
             };
 
             var retriableStatusCode = new List<HttpStatusCode>()
@@ -165,7 +234,7 @@ namespace Rock.Communication.Transport
         /// <returns></returns>
         protected override SafeSenderResult CheckSafeSender( List<string> toEmailAddresses, MailAddress fromEmail, string organizationEmail )
         {
-            if ( GetAttributeValue( "ReplaceUnsafeSender" ).AsBoolean( true ) )
+            if ( GetAttributeValue( AttributeKey.ReplaceUnsafeSender ).AsBoolean( true ) )
             {
                 return base.CheckSafeSender( toEmailAddresses, fromEmail, organizationEmail );
             }
@@ -173,7 +242,7 @@ namespace Rock.Communication.Transport
             return new SafeSenderResult();
         }
 
-        private void AddAdditionalHeaders( RestRequest restRequest, Dictionary<string, string> headers )
+        private void AddAdditionalHeaders( RestRequest restRequest, Dictionary<string, string> metadata, Dictionary<string, string> headers )
         {
             // Add tracking settings
             restRequest.AddParameter( "o:tracking", CanTrackOpens.ToYesNo() );
@@ -181,22 +250,31 @@ namespace Rock.Communication.Transport
             restRequest.AddParameter( "o:tracking-clicks", CanTrackOpens.ToYesNo() );
 
             // Add additional JSON info
-            if ( headers != null )
+            if ( metadata != null )
             {
                 var variables = new List<string>();
-                foreach ( var param in headers )
+                foreach ( var param in metadata )
                 {
                     variables.Add( string.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
                 }
 
                 restRequest.AddParameter( "v:X-Mailgun-Variables", string.Format( @"{{{0}}}", variables.AsDelimited( "," ) ) );
             }
+
+            // Add headers
+            if ( headers != null )
+            {
+                foreach (var header in headers )
+                {
+                    restRequest.AddParameter( $"h:{header.Key}", header.Value );
+                }
+            }
         }
 
         private RestRequest GetRestRequestFromRockEmailMessage( RockEmailMessage rockEmailMessage )
         {
-            var restRequest = new RestRequest( GetAttributeValue( "Resource" ), Method.POST );
-            restRequest.AddParameter( "domain", GetAttributeValue( "Domain" ), ParameterType.UrlSegment );
+            var restRequest = new RestRequest( GetAttributeValue( AttributeKey.Resource ), Method.POST );
+            restRequest.AddParameter( "domain", GetAttributeValue( AttributeKey.Domain ), ParameterType.UrlSegment );
 
             // To
             rockEmailMessage.GetRecipients().ForEach( r => restRequest.AddParameter( "to", new MailAddress( r.To, r.Name ).ToString() ) );
@@ -244,8 +322,8 @@ namespace Rock.Communication.Transport
             // Body (html)
             restRequest.AddParameter( "html", rockEmailMessage.Message );
 
-            // Communication record for tracking opens & clicks
-            AddAdditionalHeaders( restRequest, rockEmailMessage.MessageMetaData );
+            // Communication record for tracking opens & clicks, and headers.
+            AddAdditionalHeaders( restRequest, rockEmailMessage.MessageMetaData, rockEmailMessage.EmailHeaders );
 
             // Attachments
             foreach ( var attachment in rockEmailMessage.Attachments )

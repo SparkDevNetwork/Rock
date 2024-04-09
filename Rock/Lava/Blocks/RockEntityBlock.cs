@@ -379,7 +379,7 @@ namespace Rock.Lava.Blocks
                         if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                         {
                             int countResult = queryResult.Count();
-                            context.SetMergeField( "count", countResult, LavaContextRelativeScopeSpecifier.Root );
+                            context.SetMergeField( "count", countResult );
                         }
                         else
                         {
@@ -530,7 +530,7 @@ namespace Rock.Lava.Blocks
                             }
 
                             // Add the result to the current context.
-                            context.SetMergeField( parms["iterator"], returnValues, LavaContextRelativeScopeSpecifier.Current );
+                            context.SetMergeField( parms["iterator"], returnValues );
 
                             if ( returnCount == 1 )
                             {
@@ -621,7 +621,7 @@ namespace Rock.Lava.Blocks
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
-           engine.RegisterBlock( "business", ( name ) => { return new RockEntityBlock(); } );
+           engine.RegisterBlock( "business", ( name ) => CreateEntityBlockInstance( name ) );
 
             // Register the core models, replacing existing blocks of the same name if necessary.
             foreach ( var entityType in entityTypes
@@ -661,13 +661,19 @@ namespace Rock.Lava.Blocks
                     entityName = entityType.Name.Replace( '.', '_' );
                 }
 
-                engine.RegisterBlock( entityName,
-                    ( name ) =>
-                    {
-                        // Return a block having a tag name corresponding to the entity name.
-                        return new RockEntityBlock() { SourceElementName = entityName, EntityName = entityName };
-                    } );
+                engine.RegisterBlock( entityName, ( name ) => CreateEntityBlockInstance( name ) );
             }
+        }
+
+        /// <summary>
+        /// Factory method to return a new block for the specified Entity.
+        /// </summary>
+        /// <param name="entityName"></param>
+        /// <returns></returns>
+        private static RockEntityBlock CreateEntityBlockInstance( string entityName )
+        {
+            // Return a block having a tag name corresponding to the entity name.
+            return new RockEntityBlock() { SourceElementName = entityName, EntityName = entityName };
         }
 
         /// <summary>
@@ -882,9 +888,20 @@ namespace Rock.Lava.Blocks
                         foreach ( var attribute in entityAttributeListForAttributeKey )
                         {
                             filterAttribute = attribute;
-                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
-                            var filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute, limitToFilterableAttributes:false );
+
+                            Expression filterExpression;
+                            if ( attributeEntityField == null )
+                            {
+                                // There is no Entity field matching this Attribute, so ignore the filter.
+                                filterExpression = new NoAttributeFilterExpression();
+                            }
+                            else
+                            {
+                                filterExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            }
+                            
                             if ( filterExpression is NoAttributeFilterExpression )
                             {
                                 // Ignore this filter because it would cause the Where expression to match everything.
@@ -932,8 +949,19 @@ namespace Rock.Lava.Blocks
                 }
                 else
                 {
-                    // error in parsing expression
-                    throw new Exception( "Error in Where expression" );
+                    // The Where clause is incomplete.
+                    string errorDetail;
+                    if ( expressionParts.Count == 2 )
+                    {
+                        errorDetail = "Missing or invalid value in Where expression.";
+                    }
+                    else
+                    {
+                        errorDetail = "Where expression is incomplete.";
+                    }
+
+                    errorDetail = $"{errorDetail} [Expression=\"{whereClause}\"]";
+                    throw new Exception( "RockEntity block error. The Where expression is invalid.", new Exception( errorDetail ) );
                 }
             }
 

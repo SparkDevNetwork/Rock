@@ -11,7 +11,7 @@
         </div>
 
         <template #footerActions v-if="!resultLavaTemplate && !blockError">
-            <RockButton :btnSize="BtnSize.Default" :btnType="BtnType.Primary" @click="onSave">
+            <RockButton :btnSize="BtnSize.Default" :btnType="BtnType.Primary" :disabled="isRegistering" @click="onSave">
                 {{ buttonText }}
             </RockButton>
         </template>
@@ -43,6 +43,7 @@ const errorMessage = ref("");
 const groupRegistrationBag = ref<GroupRegistrationBag>({} as GroupRegistrationBag);
 const resultLavaTemplate = ref<string>("");
 const buttonText = ref(config.registerButtonAltText ?? "Register");
+const isRegistering = ref(false);
 
 // #endregion
 
@@ -75,10 +76,12 @@ const options = computed((): GroupRegistrationBlockBox => {
  */
 async function onSave(): Promise<void> {
     errorMessage.value = "";
+    isRegistering.value = true;
 
     const result = await invokeBlockAction<string>("Save", {
         groupRegistrationBag: groupRegistrationBag.value
     });
+    isRegistering.value = false;
 
     if (result.isSuccess && result.data) {
 
@@ -89,8 +92,8 @@ async function onSave(): Promise<void> {
             window.location.href = makeUrlRedirectSafe(result.data);
         }
     }
- else {
-        errorMessage.value = result.data ?? "Unknown error while trying to save group.";
+    else {
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save group.";
     }
 }
 

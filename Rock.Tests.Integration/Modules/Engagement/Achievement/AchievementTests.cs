@@ -15,23 +15,26 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Achievement;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Tests.Shared;
-using System.Collections.Generic;
+using Rock.Tests.Shared.TestFramework;
+using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Engagement.Achievements
+namespace Rock.Tests.Integration.Modules.Engagement.Achievements
 {
     /// <summary>
     /// Tests for Achievements that use the database
     /// </summary>
     [TestClass]
-    public class AchievementTests
+    public class AchievementTests : DatabaseTestsBase
     {
         private const string ComponentEntityTypeName = "Rock.Achievement.Component.StreakAchievement";
         private const string StreakTypeGuidString = "93050DB0-82FC-4EBE-9AB8-8BB8BADFB2F0";
@@ -153,55 +156,14 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         }
 
         /// <summary>
-        /// Delete the streak type created by this test class
-        /// </summary>
-        private static void DeleteTestData()
-        {
-            TestDataHelper.DeletePersonByGuid( new List<Guid> { TerryTestPersonGuid.AsGuid() } );
-
-            var rockContext = new RockContext();
-
-            // Remove Streak Type.
-            var streakTypeGuid = new Guid( StreakTypeGuidString );
-            var _streakTypeService = new StreakTypeService( rockContext );
-
-            var streakType = _streakTypeService.Queryable().FirstOrDefault( st => st.Guid == streakTypeGuid );
-
-            if ( streakType != null )
-            {
-                _streakTypeService.Delete( streakType );
-            }
-
-            rockContext.SaveChanges();
-
-            // Remove Streaks.
-            var streakService = new StreakService( rockContext );
-
-            var testStreaks = streakService.Queryable().Where( x => x.ForeignKey == TestRecordForeignKey ).ToList();
-            streakService.DeleteRange( testStreaks );
-
-            rockContext.SaveChanges();
-
-            // Remove Achievement Attempts
-            var attemptsService = new AchievementAttemptService( rockContext );
-            var attemptsQuery = attemptsService.Queryable()
-                .Where( x => x.ForeignKey == TestRecordForeignKey );
-
-            attemptsService.DeleteRange( attemptsQuery );
-            rockContext.SaveChanges();
-
-            // Remove Aliases
-            var personAliasService = new PersonAliasService( rockContext );
-            var personAliases = personAliasService.Queryable().Where( pa => pa.ForeignKey == TestRecordForeignKey ).ToList();
-            personAliasService.DeleteRange( personAliases );
-            rockContext.SaveChanges();
-        }
-
-        /// <summary>
         /// Creates the achievement type data.
         /// </summary>
         private static void CreateAchievementTypeData()
         {
+            // Create the component so it sets up the attributes.
+            AchievementContainer.Instance.Refresh();
+            _ = AchievementContainer.GetComponent( ComponentEntityTypeName );
+
             var rockContext = new RockContext();
 
             var achievementType = new AchievementType
@@ -233,21 +195,9 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
-            TestDatabaseHelper.ResetDatabase();
-
-            DeleteTestData();
             CreatePersonData();
             CreateStreakTypeData();
             CreateAchievementTypeData();
-        }
-
-        /// <summary>
-        /// Runs after all tests in this class is executed.
-        /// </summary>
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            DeleteTestData();
         }
 
         [TestCleanup]

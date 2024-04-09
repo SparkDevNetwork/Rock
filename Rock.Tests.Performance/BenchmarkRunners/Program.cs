@@ -15,13 +15,16 @@
 // </copyright>
 //
 using System;
+
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
+
 using Rock.Lava.Fluid;
-using Rock.Tests.Integration.Core.Lava;
+using Rock.Tests.Performance.Modules.Lava;
+using Rock.Tests.Shared.Lava;
 using Rock.Tests.UnitTests.Lava;
 
-namespace Rock.Tests.Performance
+namespace Rock.Tests.Performance.BenchmarkRunners
 {
     /// <summary>
     /// The main entry point for this utility application.

@@ -33,10 +33,13 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
+    /// Displays person details for a checked-in person
     /// </summary>
     [DisplayName( "Person Profile " )]
     [Category( "Check-in > Manager" )]
     [Description( "Displays person details for a checked-in person" )]
+
+    #region Block Attributes
 
     [BooleanField(
         "Show Related People",
@@ -95,6 +98,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Order = 6
         )]
 
+    [CategoryField(
+        "Snippet Category",
+        Description = "The category to show SMS Snippets for (leave blank for all categories).",
+        Key = AttributeKey.SnippetCategory,
+        EntityType = typeof( Snippet ),
+        IsRequired = false,
+        Order = 7 )]
+
+    #endregion Block Attributes
+
     [Rock.SystemGuid.BlockTypeGuid( "D54909DB-8A5D-4665-97ED-E2C8577E3C64" )]
     public partial class PersonLeft : Rock.Web.UI.RockBlock
     {
@@ -109,9 +122,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public const string SharePersonPage = "SharePersonPage";
             public const string ShowSharePersonButton = "ShowSharePersonButton";
             public const string PersonProfilePage = "PersonProfilePage";
+            public const string SnippetCategory = "SnippetCategory";
         }
 
-        #endregion
+        #endregion Attribute Keys
 
         #region ViewState Keys
 
@@ -122,7 +136,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #endregion ViewState Keys
 
-        #region Page Parameter Constants
+        #region Page Parameter Keys
 
         private static class PageParameterKey
         {
@@ -147,7 +161,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public const string AttendanceId = "AttendanceId";
         }
 
-        #endregion
+        #endregion Page Parameter Keys
 
         #region Properties
 
@@ -170,7 +184,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Base Control Methods
 
@@ -238,7 +252,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -313,30 +327,34 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSms_Click( object sender, EventArgs e )
         {
-            nbResult.Visible = false;
-            nbResult.Text = string.Empty;
-            tbSmsMessage.Visible = btnSmsCancel.Visible = btnSmsSend.Visible = true;
+            nbSmsSendResult.Visible = false;
+            nbSmsSendResult.Text = string.Empty;
+            nbSmsError.Visible = false;
+            nbSmsError.Text = string.Empty;
+            mdSms.Show();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSend control.
+        /// Handles the SaveClick event of the mdSms control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnSend_Click( object sender, EventArgs e )
+        protected void mdSms_SaveClick( object sender, EventArgs e )
         {
             var systemPhoneNumberGuid = GetAttributeValue( AttributeKey.SMSFrom ).AsGuidOrNull();
-            var message = tbSmsMessage.Value.Trim();
+            var message = tbSmsMessage.Text.Trim();
 
-            if ( message.IsNullOrWhiteSpace() || !systemPhoneNumberGuid.HasValue )
+            if ( message.IsNullOrWhiteSpace() )
             {
                 ResetSms();
-                DisplayResult( NotificationBoxType.Danger, "Error sending message. Please try again or contact an administrator if the error continues." );
-                if ( !systemPhoneNumberGuid.HasValue )
-                {
-                    LogException( new Exception( string.Format( "While trying to send an SMS from the Check-in Manager, the following error occurred: There is a misconfiguration with the {0} setting.", AttributeKey.SMSFrom ) ) );
-                }
-
+                DisplaySmsError( "Please enter a valid message to send." );
+                return;
+            }
+            else if ( !systemPhoneNumberGuid.HasValue )
+            {
+                ResetSms();
+                DisplaySmsError( "Error sending message. Please try again or contact an administrator if the error continues." );
+                LogException( new Exception( string.Format( "While trying to send an SMS from the Check-in Manager, the following error occurred: There is a misconfiguration with the {0} setting.", AttributeKey.SMSFrom ) ) );
                 return;
             }
 
@@ -344,7 +362,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( smsFromNumber == null )
             {
                 ResetSms();
-                DisplayResult( NotificationBoxType.Danger, "Could not find a valid phone number to send from." );
+                DisplaySmsError( "Could not find a valid phone number to send from." );
+                LogException( new Exception( $"While trying to send an SMS from the Check-in Manager, the following error occurred: The configured System Phone Number ({systemPhoneNumberGuid}) does not exist." ) );
                 return;
             }
 
@@ -354,7 +373,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( phoneNumber == null )
             {
                 ResetSms();
-                DisplayResult( NotificationBoxType.Danger, "Could not find a valid number for this person." );
+                DisplaySmsError( "Could not find a valid number for this person." );
                 return;
             }
 
@@ -365,25 +384,62 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 message,
                 smsFromNumber,
                 null,
-                null,
+                GetAttachments(),
                 rockContext );
 
-            DisplayResult( NotificationBoxType.Success, "Message queued." );
+            DisplaySmsSuccess( "Message queued." );
             ResetSms();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSmsCancel control.
+        /// Handles the Command event of the btnSmsSnippet control.  This event handler is used for buttons within the rptrSmsSnippets repeater control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">The <see cref="CommandEventArgs"/> instance containing the event data.</param>
+        protected void btnSmsSnippet_Command( object sender, CommandEventArgs e )
+        {
+            if ( e.CommandName == "InputSnippet" )
+            {
+                SetSmsSnippet( e.CommandArgument.ToStringSafe() );
+            }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglUsePersonal control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnSmsCancel_Click( object sender, EventArgs e )
+        protected void tglUsePersonal_CheckedChanged( object sender, EventArgs e )
         {
-            nbResult.Visible = false;
-            ResetSms();
+            var snippets = GetSnippets();
+
+            var showSnippets = snippets.Any();
+            if ( showSnippets )
+            {
+                pnlSmsNoSnippets.Visible = false;
+                rptrSmsSnippets.Visible = true;
+                rptrSmsSnippets.DataSource = snippets;
+                rptrSmsSnippets.DataBind();
+            }
+            else
+            {
+                pnlSmsNoSnippets.Visible = true;
+                rptrSmsSnippets.Visible = false;
+            }
+
+            var usePersonal = tglUsePersonal.Checked;
+            if ( usePersonal )
+            {
+                lblSmsSnippetType.Text = "personal";
+            }
+            else
+            {
+                lblSmsSnippetType.Text = "shared";
+            }
+
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -459,6 +515,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
 
                 lName.Text = person.FullName;
+                lSmsRecipient.Text = person.FullName;
 
                 string photoTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 200, 200 );
                 if ( person.PhotoId.HasValue )
@@ -515,7 +572,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     .Select( m => new PersonInfo
                     {
                         PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 64, 64, className: "d-block mb-1" ),
-                        Url = GetRelatedPersonUrl( person, m.Person.Guid, m.Person.Id ),
+                        Url = GetRelatedPersonUrl( m.Person.Guid ),
                         NickName = m.Person.NickName
                     } )
                     .ToList();
@@ -559,7 +616,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .Select( m => new PersonInfo
                             {
                                 PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 50, 50, className: "rounded" ),
-                                Url = GetRelatedPersonUrl( person, m.Person.Guid, m.Person.Id ),
+                                Url = GetRelatedPersonUrl( m.Person.Guid ),
                                 NickName = m.Person.NickName,
                                 RelationshipName = m.GroupRole.Name
                             } )
@@ -575,16 +632,32 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 rptrPhones.DataSource = phoneNumbers;
                 rptrPhones.DataBind();
                 pnlContact.Visible = phoneNumbers.Any() || lEmail.Visible;
+
+                var snippets = GetSnippets();
+                if ( snippets.Any() )
+                {
+                    pnlSmsNoSnippets.Visible = false;
+                    rptrSmsSnippets.Visible = true;
+                    rptrSmsSnippets.DataSource = snippets;
+                    rptrSmsSnippets.DataBind();
+                }
+                else
+                {
+                    pnlSmsNoSnippets.Visible = true;
+                    rptrSmsSnippets.Visible = false;
+                }
             }
         }
 
         /// <summary>
         /// Gets the related person URL.
         /// </summary>
-        private string GetRelatedPersonUrl( Rock.Model.Person currentPerson, Guid relatedPersonGuid, int relatedPersonId )
+        private string GetRelatedPersonUrl( Guid relatedPersonGuid )
         {
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( PageParameterKey.PersonGuid, relatedPersonGuid.ToString() );
+            var queryParams = new Dictionary<string, string>
+            {
+                { PageParameterKey.PersonGuid, relatedPersonGuid.ToString() }
+            };
 
             return LinkedPageUrl( AttributeKey.PersonProfilePage, queryParams );
         }
@@ -623,9 +696,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// </summary>
         private void ResetSms()
         {
-            // If this method got called, we've already checked the person has a valid number.
-            tbSmsMessage.Visible = btnSmsCancel.Visible = btnSmsSend.Visible = false;
-            tbSmsMessage.Value = string.Empty;
+            tbSmsMessage.Text = string.Empty;
+            imgSmsImage.BinaryFileId = null;
         }
 
         /// <summary>
@@ -633,28 +705,142 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// </summary>
         /// <param name="type">The NotificationBoxType.</param>
         /// <param name="message">The message to display.</param>
-        private void DisplayResult( NotificationBoxType type, string message )
+        private void DisplaySmsError( string message )
         {
-            nbResult.NotificationBoxType = type;
-            nbResult.Text = message;
-            nbResult.Visible = true;
+            nbSmsError.Text = message;
+            nbSmsError.Visible = true;
         }
 
-        #endregion
+        /// <summary>
+        /// Displays the result of an attempt to send a SMS.
+        /// </summary>
+        /// <param name="type">The NotificationBoxType.</param>
+        /// <param name="message">The message to display.</param>
+        private void DisplaySmsSuccess( string message )
+        {
+            nbSmsSendResult.Text = message;
+            nbSmsSendResult.Visible = true;
+            mdSms.Hide();
+        }
 
-        #region Helper Classes
+        /// <summary>
+        /// Gets the attachements.
+        /// </summary>
+        /// <returns>A list of <see cref="BinaryFile"/> attachments or null.</returns>
+        private List<BinaryFile> GetAttachments()
+        {
+            if ( imgSmsImage.BinaryFileId.IsNotNullOrZero() )
+            {
+                var binaryFile = new BinaryFileService( new RockContext() ).Get( imgSmsImage.BinaryFileId.Value );
+                return new List<BinaryFile> { binaryFile };
+            }
 
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the SMS Snippets.
+        /// </summary>
+        /// <returns></returns>
+        private List<Snippet> GetSnippets()
+        {
+            var snippetTypeGuidSms = Rock.SystemGuid.SnippetType.SMS.AsGuid();
+
+            var rockContext = new RockContext();
+            var snippetService = new SnippetService( rockContext );
+            var snippetsQry = snippetService.Queryable().AsNoTracking()
+                .Where( s => s.SnippetType.Guid == snippetTypeGuidSms );
+
+            var snippetCategoryGuid = GetAttributeValue( AttributeKey.SnippetCategory ).AsGuidOrNull();
+            if ( snippetCategoryGuid.HasValue )
+            {
+                var snippetCategoryId = CategoryCache.GetId( snippetCategoryGuid.Value );
+                if ( snippetCategoryId.HasValue )
+                {
+                    snippetsQry = snippetsQry.Where( s => s.CategoryId == snippetCategoryId );
+                }
+            }
+
+            var snippets = new List<Snippet>();
+            var usePersonal = tglUsePersonal.Checked;
+            if ( usePersonal )
+            {
+                snippetsQry = snippetsQry.Where( s => s.OwnerPersonAlias.PersonId == CurrentPersonId );
+                snippetsQry = snippetsQry.OrderBy( s => s.Order ).ThenBy( s => s.Name );
+                snippets = snippetsQry.ToList();
+            }
+            else
+            {
+                snippetsQry = snippetsQry.Where( s => s.OwnerPersonAliasId == null );
+                snippetsQry = snippetsQry.OrderBy( s => s.Order ).ThenBy( s => s.Name );
+                snippets = snippetsQry.ToList();
+                // check authorization if we're not using personal snippets.
+                snippets = snippets.Where( s => s.IsAuthorized( Authorization.VIEW, CurrentPerson ) ).ToList();
+            }
+
+            return snippets;
+        }
+
+        /// <summary>
+        /// Sets the SMS Snippet Text.
+        /// </summary>
+        /// <param name="selectedSnippetId">The snippet selected by the user</param>
+        private void SetSmsSnippet( string selectedSnippetId )
+        {
+            var snippetId = selectedSnippetId.AsIntegerOrNull();
+            if ( snippetId == null )
+            {
+                ResetSms();
+                DisplaySmsError( "The snippet could not be loaded." );
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var snippetService = new SnippetService( rockContext );
+            var personService = new PersonService( rockContext );
+
+            Guid personGuid = GetPersonGuid();
+            var person = personService.Queryable( true, true ).Include( a => a.PhoneNumbers ).Include( a => a.RecordStatusValue )
+                .FirstOrDefault( a => a.Guid == personGuid );
+
+            var snippet = snippetService.Get( snippetId.Value );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+            mergeFields.Add( "Person", person );
+
+            tbSmsMessage.Text = snippet.Content.ResolveMergeFields( mergeFields );
+        }
+
+        #endregion Methods
+
+        #region Helper Class
+
+        /// <summary>
+        /// The Person Information
+        /// </summary>
         private class PersonInfo
         {
+            /// <summary>
+            /// The Photo Tag
+            /// </summary>
             public string PhotoTag { get; set; }
 
+            /// <summary>
+            /// The Url
+            /// </summary>
             public string Url { get; set; }
 
+            /// <summary>
+            /// The Nick Name
+            /// </summary>
             public string NickName { get; set; }
 
+            /// <summary>
+            /// The Relationship Name
+            /// </summary>
             public string RelationshipName { get; set; }
         }
 
-        #endregion
+        #endregion Helper Class
     }
 }

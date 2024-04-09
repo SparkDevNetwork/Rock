@@ -49,6 +49,9 @@
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
+    <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />
+    <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowActionType.cs" />
+    <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowConfirmationStatus.cs" />
     <Compile Include="Blocks\Security\ForgotUserName\SendInstructionsResultType.cs" />
     <Compile Include="Blocks\Engagement\SignUp\RegisterMode.cs" />
     <Compile Include="Blocks\Group\GroupAttendanceDetail\GroupAttendanceDetailScheduleSelectionMode.cs" />
@@ -61,6 +64,7 @@
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
     <Compile Include="Cms\BlockLocation.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
+    <Compile Include="Cms\BotGuardianLevel.cs" />
     <Compile Include="Cms\ContentChannelDateType.cs" />
     <Compile Include="Cms\ContentChannelItemStatus.cs" />
     <Compile Include="Cms\ContentCollectionFilterControl.cs" />
@@ -81,7 +85,11 @@
     <Compile Include="Connection\ConnectionTypeViewMode.cs" />
     <Compile Include="Connection\ConnectionWorkflowTriggerType.cs" />
     <Compile Include="Connection\GroupRequirementsFilter.cs" />
+    <Compile Include="Controls\DetailPanelMode.cs" />
     <Compile Include="Controls\MediaSelectorMode.cs" />
+    <Compile Include="Controls\RockCacheabilityType.cs" />
+    <Compile Include="Controls\UniversalItemValuePickerDisplayStyle.cs" />
+    <Compile Include="Core\BenchmarkRepititionMode.cs" />
     <Compile Include="Core\Grid\BooleanFilterMethod.cs" />
     <Compile Include="Core\Grid\DateFilterMethod.cs" />
     <Compile Include="Core\Grid\NumberFilterMethod.cs" />
@@ -123,12 +131,14 @@
     <Compile Include="Crm\AuthenticationServiceType.cs" />
     <Compile Include="Crm\EmailPreference.cs" />
     <Compile Include="Crm\Gender.cs" />
+    <Compile Include="Core\KeyboardInputMode.cs" />
     <Compile Include="Crm\PersonalizationType.cs" />
     <Compile Include="Engagement\StreakOccurrenceFrequency.cs" />
     <Compile Include="Engagement\StreakStructureType.cs" />
     <Compile Include="EnumDomainAttribute.cs" />
     <Compile Include="Event\AttendanceGraphBy.cs" />
     <Compile Include="Event\AttendanceStatus.cs" />
+    <Compile Include="Event\CheckInStatus.cs" />
     <Compile Include="Event\InteractiveExperienceApprovalStatus.cs" />
     <Compile Include="Event\InteractiveExperienceCampusBehavior.cs" />
     <Compile Include="Event\InteractiveExperiencePushNotificationType.cs" />
@@ -160,6 +170,8 @@
     <Compile Include="Group\ParticipationType.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
     <Compile Include="Group\ScheduleConfirmationLogic.cs" />
+    <Compile Include="Net\CookieSameSiteMode.cs" />
+    <Compile Include="Net\ResponseElementLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
     <Compile Include="Reporting\FilterExpressionType.cs" />
@@ -174,6 +186,5 @@
     <Compile Include="Workflow\WorkflowTriggerType.cs" />
     <Compile Include="Workflow\WorkflowTriggerValueChangeType.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

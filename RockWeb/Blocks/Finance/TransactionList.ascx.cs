@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Utility;
+using System.Web.Util;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -148,6 +149,13 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.ShowDaysSinceLastTransaction
         )]
 
+    [BooleanField( "Hide Transactions in Pending Batches",
+        Description = "When enabled, transactions in a batch whose status is 'Pending' will be filtered out from the list.",
+        DefaultBooleanValue = false,
+        Order = 13,
+        Key = AttributeKey.HideTransactionsInPendingBatches
+        )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E04320BC-67C3-452D-9EF6-D74D8C177154" )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
@@ -232,6 +240,11 @@ namespace RockWeb.Blocks.Finance
             /// The show days since last transaction
             /// </summary>
             public const string ShowDaysSinceLastTransaction = "ShowDaysSinceLastTransaction";
+
+            /// <summary>
+            /// The hide transactions in pending batches
+            /// </summary>
+            public const string HideTransactionsInPendingBatches = "HideTransactionsInPendingBatches";
         }
 
         #endregion Keys
@@ -1246,6 +1259,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
+            gfTransactions.PreferenceKeyPrefix = hfTransactionViewMode.Value;
             drpDates.DelimitedValues = gfTransactions.GetFilterPreference( "Date Range" );
             nreAmount.DelimitedValues = gfTransactions.GetFilterPreference( "Amount Range" );
 
@@ -1339,7 +1353,16 @@ namespace RockWeb.Blocks.Finance
             // Parse the attribute filters
             _availableAttributes = new List<AttributeCache>();
 
-            int entityTypeId = new FinancialTransaction().TypeId;
+            int entityTypeId;
+            if ( hfTransactionViewMode.Value == "Transactions" )
+            {
+                entityTypeId = new FinancialTransaction().TypeId;
+            }
+            else
+            {
+                entityTypeId = new FinancialTransactionDetail().TypeId;
+            }
+
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
@@ -1511,14 +1534,9 @@ namespace RockWeb.Blocks.Finance
 
             // If configured for a person and person is null, return
             int personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
-            bool isContextPerson = false;
             if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
             {
                 return;
-            }
-            else if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person != null )
-            {
-                isContextPerson = true;
             }
 
             // If configured for a batch and batch is null, return
@@ -1545,6 +1563,7 @@ namespace RockWeb.Blocks.Finance
                 lDaysSinceLastTransactionGridField.Visible = GetAttributeValue( AttributeKey.ShowDaysSinceLastTransaction ).AsBoolean();
             }
 
+            var hideTransactionsInPendingBatches = GetAttributeValue( AttributeKey.HideTransactionsInPendingBatches ).AsBoolean();
             var rockContext = new RockContext();
 
             SortProperty sortProperty = gTransactions.SortProperty;
@@ -1568,8 +1587,8 @@ namespace RockWeb.Blocks.Finance
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.TransactionDateTime.HasValue );
                 }
-
-                if ( isContextPerson )
+               
+                if ( hideTransactionsInPendingBatches )
                 {
                     financialTransactionDetailQry = financialTransactionDetailQry.Where( a => a.Transaction.Batch == null || a.Transaction.Batch.Status != BatchStatus.Pending );
                 }
@@ -1607,45 +1626,46 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                qry = financialTransactionDetailQry.Select( a => new FinancialTransactionRow
-                {
-                    Id = a.TransactionId,
-                    BatchId = a.Transaction.BatchId,
-                    TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
-                    ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
-                    AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
-                    TransactionDateTime = a.Transaction.TransactionDateTime ?? a.Transaction.FutureProcessingDateTime.Value,
-                    FutureProcessingDateTime = a.Transaction.FutureProcessingDateTime,
-                    SourceTypeValueId = a.Transaction.SourceTypeValueId,
-                    TotalAmount = a.Amount,
-                    TransactionCode = a.Transaction.TransactionCode,
-                    ForeignKey = a.Transaction.ForeignKey,
-                    Status = a.Transaction.Status,
-                    SettledDate = a.Transaction.SettledDate,
-                    SettledGroupId = a.Transaction.SettledGroupId,
-                    FinancialGatewayId = a.Transaction.FinancialGatewayId,
-                    IsReconciled = a.Transaction.IsReconciled,
-                    IsSettled = a.Transaction.IsSettled,
-                    NonCashAssetTypeValueId = a.Transaction.NonCashAssetTypeValueId,
-                    ProcessedDateTime = a.Transaction.ProcessedDateTime,
-                    ShowAsAnonymous = a.Transaction.ShowAsAnonymous,
-                    StatusMessage = a.Transaction.StatusMessage,
-                    TransactionDetail = new DetailInfo
+                qry = financialTransactionDetailQry
+                    .Select( a => new FinancialTransactionRow
                     {
-                        AccountId = a.AccountId,
-                        Amount = a.Amount,
-                        EntityId = a.EntityId,
-                        EntityTypeId = a.EntityTypeId
-                    },
-                    Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
-                    FinancialPaymentDetail = new PaymentDetailInfo
-                    {
-                        Id = a.Transaction.FinancialPaymentDetail.Id,
-                        CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
-                        CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
-                    },
-                    ForeignCurrencyCodeValueId = a.Transaction.ForeignCurrencyCodeValueId
-                } );
+                        Id = a.TransactionId,
+                        BatchId = a.Transaction.BatchId,
+                        TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
+                        ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
+                        AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
+                        TransactionDateTime = a.Transaction.TransactionDateTime ?? a.Transaction.FutureProcessingDateTime.Value,
+                        FutureProcessingDateTime = a.Transaction.FutureProcessingDateTime,
+                        SourceTypeValueId = a.Transaction.SourceTypeValueId,
+                        TotalAmount = a.Amount,
+                        TransactionCode = a.Transaction.TransactionCode,
+                        ForeignKey = a.Transaction.ForeignKey,
+                        Status = a.Transaction.Status,
+                        SettledDate = a.Transaction.SettledDate,
+                        SettledGroupId = a.Transaction.SettledGroupId,
+                        FinancialGatewayId = a.Transaction.FinancialGatewayId,
+                        IsReconciled = a.Transaction.IsReconciled,
+                        IsSettled = a.Transaction.IsSettled,
+                        NonCashAssetTypeValueId = a.Transaction.NonCashAssetTypeValueId,
+                        ProcessedDateTime = a.Transaction.ProcessedDateTime,
+                        ShowAsAnonymous = a.Transaction.ShowAsAnonymous,
+                        StatusMessage = a.Transaction.StatusMessage,
+                        TransactionDetail = new DetailInfo
+                        {
+                            AccountId = a.AccountId,
+                            Amount = a.Amount,
+                            EntityId = a.EntityId,
+                            EntityTypeId = a.EntityTypeId
+                        },
+                        Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
+                        FinancialPaymentDetail = a.Transaction.FinancialPaymentDetailId != null ? new PaymentDetailInfo
+                        {
+                            Id = a.Transaction.FinancialPaymentDetail.Id,
+                            CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
+                            CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
+                        } : null,
+                        ForeignCurrencyCodeValueId = a.Transaction.ForeignCurrencyCodeValueId
+                    } );
             }
             else
             {
@@ -1665,7 +1685,7 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionQry = financialTransactionQry.Where( a => a.TransactionDateTime.HasValue );
                 }
 
-                if ( isContextPerson )
+                if ( hideTransactionsInPendingBatches )
                 {
                     financialTransactionQry = financialTransactionQry.Where( a => a.Batch == null || a.Batch.Status != BatchStatus.Pending );
                 }
@@ -2241,6 +2261,7 @@ namespace RockWeb.Blocks.Finance
             preferences.SetValue( "TransactionViewMode", hfTransactionViewMode.Value );
             preferences.Save();
 
+            BindFilter();
             BindGrid();
         }
 

@@ -712,13 +712,12 @@ namespace Rock.Model
             List<int> groupMemberIdsThatLackGroupRequirementsList = groupMemberList
                 .Where( a =>
                     !qryGroupRequirements
-                        .Where( r =>
-                            !r.GroupRoleId.HasValue ||
-                            r.GroupRoleId.Value == a.GroupRoleId )
+                        .Where( r => !r.GroupRoleId.HasValue || r.GroupRoleId.Value == a.GroupRoleId )
+                        .Where( r => r.AppliesToAgeClassification == AppliesToAgeClassification.All || r.AppliesToAgeClassification.ConvertToInt() == a.Person.AgeClassification.ConvertToInt() )
                         .Select( x => x.Id )
                         .All( r =>
                             a.GroupMemberRequirements
-                                .Where( mr => mr.RequirementMetDateTime.HasValue )
+                                .Where( mr => mr.RequirementMetDateTime.HasValue || mr.WasOverridden )
                                 .Select( x => x.GroupRequirementId )
                                 .Contains( r ) ) )
                 .Select( a => a.Id )
@@ -1210,7 +1209,9 @@ namespace Rock.Model
                                 newValue = newValues[attributeCache.Key].Value ?? string.Empty;
                             }
 
-                            if ( !oldValue.Equals( newValue ) )
+                            // Since we're adding a new entity/group we don't want to include empty attribute values.
+                            // The oldValue could be an Attribute.DefaultValue while the newValue could be empty.
+                            if ( !oldValue.Equals( newValue ) && newValue.IsNotNullOrWhiteSpace() )
                             {
                                 Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue, rockContext );
                             }
@@ -1842,6 +1843,16 @@ namespace Rock.Model
                 .Distinct();
 
             return groupLocationsQuery;
+        }
+
+        /// <summary>
+        /// Returns a queryable of Groups with the Communication List Group Type Id.
+        /// </summary>
+        /// <param name="groupQuery">The group query.</param>
+        public static IQueryable<Group> IsCommunicationList( this IQueryable<Group> groupQuery )
+        {
+            var groupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ) ?? -1;
+            return IsGroupType( groupQuery, groupTypeId );
         }
     }
 

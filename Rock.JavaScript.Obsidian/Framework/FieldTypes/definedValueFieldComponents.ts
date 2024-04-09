@@ -30,7 +30,7 @@ function parseModelValue(modelValue: string | undefined): string {
     try {
         const clientValue = JSON.parse(modelValue ?? "") as ClientValue;
 
-        return clientValue.value;
+        return clientValue.value ?? "";
     }
     catch {
         return "";
@@ -102,6 +102,8 @@ export const EditComponent = defineComponent({
                 attributes.enhanceForLongLists = asBoolean(enhancedConfig);
             }
 
+            attributes.multiple = isMultiple.value;
+
             return attributes;
         });
 
@@ -141,8 +143,9 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<DropDownList v-if="!isMultiple || configAttributes.enhanceForLongLists" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired" />
-<CheckBoxList v-else v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns" />
+<CheckBoxList v-if="isMultiple && !configAttributes.enhanceForLongLists" v-model="internalValues" :items="options" horizontal :repeatColumns="repeatColumns" />
+<DropDownList v-else-if="isMultiple && configAttributes.enhanceForLongLists" v-model="internalValues" v-bind="configAttributes" :items="options" />
+<DropDownList v-else v-model="internalValue" v-bind="configAttributes" :items="options" />
 `
 });
 

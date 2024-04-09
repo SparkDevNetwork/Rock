@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Net.Http;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -53,14 +54,14 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 1 )]
 
-    [BooleanField( "Are Requirements Publicly Hidden",
-        Description = "Set to true to publicly show the group member's requirements.",
+    [BooleanField( "Hide Requirements",
+        Description = "When set to 'Yes', the group member's requirements section will be hidden.",
         Key = AttributeKey.AreRequirementsPubliclyHidden,
         DefaultBooleanValue = false,
         Order = 2 )]
 
-    [BooleanField( "Is Requirement Summary Hidden",
-        Description = "Set to true to hide the \"Summary\" field.",
+    [BooleanField( "Hide Requirement Type Summary",
+        Description = "If requirements are being shown, setting this to 'Yes' will hide the requirement type's \"Summary\" value.",
         Key = AttributeKey.IsSummaryHidden,
         DefaultBooleanValue = false,
         Order = 3 )]
@@ -124,21 +125,10 @@ namespace RockWeb.Blocks.Groups
 
         private List<GroupMemberAssignmentStateObj> GroupMemberAssignmentsState { get; set; }
 
-        private int? LocationId
-        {
-            get
-            {
-                return hfLocationId.Value.AsIntegerOrNull();
-            }
-        }
-
-        private int? ScheduleId
-        {
-            get
-            {
-                return hfScheduleId.Value.AsIntegerOrNull();
-            }
-        }
+        private int? GroupId => hfGroupId.Value.AsIntegerOrNull();
+        private int? CampusId => hfCampusId.Value.AsIntegerOrNull();
+        private int? LocationId => hfLocationId.Value.AsIntegerOrNull();
+        private int? ScheduleId => hfScheduleId.Value.AsIntegerOrNull();
 
         private bool IsSignUpMode
         {
@@ -148,6 +138,8 @@ namespace RockWeb.Blocks.Groups
                     && this.ScheduleId.ToIntSafe() > 0;
             }
         }
+
+        private Dictionary<int, IEnumerable<GroupRequirementStatus>> GroupRequirementStatusesByPersonState { get; set; } = new Dictionary<int, IEnumerable<GroupRequirementStatus>>();
 
         #endregion
 
@@ -172,6 +164,7 @@ namespace RockWeb.Blocks.Groups
         private static class ViewStateKey
         {
             public const string GroupMemberAssignmentsStateJson = "GroupMemberAssignmentsStateJson";
+            public const string GroupRequirementStatusesByPerson = "GroupRequirementStatusesByPerson";
         }
 
         #endregion ViewStateKeys
@@ -227,6 +220,24 @@ namespace RockWeb.Blocks.Groups
             {
                 GroupMemberAssignmentsState = RockJsonTextReader.DeserializeObjectInSimpleMode<List<GroupMemberAssignmentStateObj>>( json );
             }
+
+            json = ViewState[ViewStateKey.GroupRequirementStatusesByPerson] as string;
+            if ( json.IsNotNullOrWhiteSpace() )
+            {
+                try
+                {
+                    this.GroupRequirementStatusesByPersonState = JsonConvert.DeserializeObject<Dictionary<int, IEnumerable<GroupRequirementStatus>>>( json );
+                }
+                catch
+                {
+                    // Intentionally ignore.
+                }
+            }
+
+            if ( this.GroupRequirementStatusesByPersonState == null )
+            {
+                this.GroupRequirementStatusesByPersonState = new Dictionary<int, IEnumerable<GroupRequirementStatus>>();
+            }
         }
 
         /// <summary>
@@ -244,6 +255,15 @@ namespace RockWeb.Blocks.Groups
             };
 
             ViewState[ViewStateKey.GroupMemberAssignmentsStateJson] = RockJsonTextWriter.SerializeObjectInSimpleMode( GroupMemberAssignmentsState, Formatting.None, jsonSetting );
+
+            try
+            {
+                ViewState[ViewStateKey.GroupRequirementStatusesByPerson] = JsonConvert.SerializeObject( this.GroupRequirementStatusesByPersonState, Formatting.None, jsonSetting );
+            }
+            catch
+            {
+                // Intentionally ignore.
+            }
 
             return base.SaveViewState();
         }
@@ -285,6 +305,18 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
+                /*
+                    2/17/2024 - JPH
+
+                    It seems odd to call this method on every postback, but if we don't call it,
+                    other sub-features within this block (group requirements cards, Etc.) stop
+                    working due to a complex ASP.NET control lifecycle. We've taken other steps
+                    to improve the block's performance, but removing this call on all postbacks
+                    will require more time than it may be worth to investigate, especially since
+                    we'll likely be converting this block to Obsidian soon.
+
+                    Reason: Group Member Detail block repeatedly recalculates group requirements.
+                 */
                 SetRequirementStatuses( new RockContext() );
             }
         }
@@ -321,16 +353,22 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
                 if ( groupMember != null )
                 {
-                    var parentPageReference = PageReference.GetParentPageReferences( this.RockPage, this.PageCache, pageReference ).LastOrDefault();
+                    // This should be replaced with a block setting when converted to Obsidian. -dsh
+                    var pageReferenceHistory = ( Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)> ) System.Web.HttpContext.Current.Session["RockPageReferenceHistory"];
 
-                    if ( parentPageReference != null )
+                    var queryString = pageReferenceHistory.Values
+                        .SelectMany( h => new List<BreadCrumb> { h.pageBreadCrumb }.Union( h.blockBreadCrumbs ) )
+                        .Where( bc => bc != null && bc.Url.IsNotNullOrWhiteSpace() && bc.Url.StartsWith( "/" ) )
+                        .Select( bc => Uri.TryCreate( "http://ignored" + bc.Url, UriKind.Absolute, out var uri ) ? uri : null )
+                        .Where( u => u != null && u.Query.IsNotNullOrWhiteSpace() && u.Query != "?" )
+                        .Select( u => u.ParseQueryString() )
+                        .FirstOrDefault( q => q.AllKeys.Contains( PageParameterKey.GroupId ) );
+
+                    var groupIdParam = queryString?[PageParameterKey.GroupId].AsIntegerOrNull();
+                    if ( !this.IsSignUpMode && !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
                     {
-                        var groupIdParam = parentPageReference.QueryString[PageParameterKey.GroupId].AsIntegerOrNull();
-                        if ( !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
-                        {
-                            // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
-                            breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
-                        }
+                        // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
+                        breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
                     }
 
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
@@ -408,7 +446,7 @@ namespace RockWeb.Blocks.Groups
         private bool LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
@@ -548,9 +586,6 @@ namespace RockWeb.Blocks.Groups
                 cbIsNotified.Visible = false;
             }
 
-            // render UI based on Authorized and IsSystem
-            bool readOnly = false;
-
             var group = groupMember.Group;
             var groupType = GroupTypeCache.Get( groupMember.Group.GroupTypeId );
             if ( !string.IsNullOrWhiteSpace( groupType.IconCssClass ) )
@@ -586,12 +621,16 @@ namespace RockWeb.Blocks.Groups
 
             hlArchived.Visible = groupMember.IsArchived;
 
-            // user has to have EDIT Auth to the Block OR the group
-            nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) && !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && !group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) )
+            bool readOnly = true;
+            nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
+
+            if ( IsUserAuthorized( Authorization.EDIT )
+                || group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson )
+                || ( IsSignUpMode && group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) ) )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
+                readOnly = false;
+                nbEditModeMessage.Text = string.Empty;
             }
 
             if ( groupMember.IsSystem )
@@ -601,6 +640,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             btnSave.Visible = !readOnly;
+            btnSaveThenAdd.Visible = !readOnly;
 
             if ( readOnly || groupMember.Id == 0 )
             {
@@ -639,6 +679,7 @@ namespace RockWeb.Blocks.Groups
             rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
             rblCommunicationPreference.SetValue( ( ( int ) groupMember.CommunicationPreference ).ToString() );
+            rblCommunicationPreference.Enabled = !readOnly;
 
             var registrations = new RegistrationRegistrantService( rockContext )
                 .Queryable().AsNoTracking()
@@ -713,46 +754,88 @@ namespace RockWeb.Blocks.Groups
 
             // Show the Group Member Attributes.
             groupMember.LoadAttributes();
-            avcAttributes.Visible = false;
-            avcAttributesReadOnly.Visible = false;
+            avcGroupMemberAttributes.Visible = false;
+            avcGroupMemberAttributesReadOnly.Visible = false;
 
-            List<string> editableAttributes;
-            List<string> viewableAttributes;
+            List<string> editableGroupMemberAttributes;
+            List<string> viewableGroupMemberAttributes;
 
             if ( group.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
             {
                 // If the Current User has Administrate permissions for the Group, show all Attributes.
-                editableAttributes = readOnly ? new List<string>()
+                editableGroupMemberAttributes = readOnly ? new List<string>()
                     : groupMember.Attributes.Select( a => a.Key ).ToList();
-                viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                viewableGroupMemberAttributes = groupMember.Attributes.Where( a => !editableGroupMemberAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
             }
             else
             {
-                editableAttributes = readOnly ? new List<string>()
+                editableGroupMemberAttributes = readOnly ? new List<string>()
                     : groupMember.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
-                viewableAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                viewableGroupMemberAttributes = groupMember.Attributes.Where( a => !editableGroupMemberAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
             }
 
-            if ( editableAttributes.Any() )
+            if ( editableGroupMemberAttributes.Any() )
             {
-                avcAttributes.Visible = true;
-                avcAttributes.ExcludedAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
-                avcAttributes.AddEditControls( groupMember );
+                avcGroupMemberAttributes.Visible = true;
+                avcGroupMemberAttributes.ExcludedAttributes = groupMember.Attributes.Where( a => !editableGroupMemberAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                avcGroupMemberAttributes.AddEditControls( groupMember );
             }
 
-            if ( viewableAttributes.Any() )
+            if ( viewableGroupMemberAttributes.Any() )
             {
-                avcAttributesReadOnly.Visible = true;
-                avcAttributesReadOnly.ExcludedAttributes = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
-                avcAttributesReadOnly.AddDisplayControls( groupMember );
+                avcGroupMemberAttributesReadOnly.Visible = true;
+                avcGroupMemberAttributesReadOnly.ExcludedAttributes = groupMember.Attributes.Where( a => !viewableGroupMemberAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                avcGroupMemberAttributesReadOnly.AddDisplayControls( groupMember );
             }
 
-            var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
-            pnlRequirements.Visible = groupHasRequirements;
-            btnRefreshRequirements.Visible = groupHasRequirements;
-            SetRequirementStatuses( rockContext );
+            // Show the Group Member Assignment Attributes.
+            avcGroupMemberAssignmentAttributes.Visible = false;
+            avcGroupMemberAssignmentAttributesReadOnly.Visible = false;
 
-            bool areRequirementsRefreshedOnLoad = this.GetAttributeValue( AttributeKey.AreRequirementsRefreshedOnLoad ).AsBooleanOrNull() ?? false;
+            if ( this.IsSignUpMode )
+            {
+                var groupMemberAssignment = new GroupMemberAssignmentService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .FirstOrDefault( gma =>
+                        gma.GroupMemberId == groupMemberId
+                        && gma.LocationId == this.LocationId.Value
+                        && gma.ScheduleId == this.ScheduleId.Value
+                    ) ?? new GroupMemberAssignment { GroupId = group.Id };
+
+                groupMemberAssignment.LoadAttributes();
+
+                List<string> editableGroupMemberAssignmentAttributes;
+                List<string> viewableGroupMemberAssignmentAttributes;
+
+                if ( group.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                {
+                    // If the Current User has Administrate permissions for the Group, show all Attributes.
+                    editableGroupMemberAssignmentAttributes = readOnly ? new List<string>()
+                        : groupMemberAssignment.Attributes.Select( a => a.Key ).ToList();
+                    viewableGroupMemberAssignmentAttributes = groupMemberAssignment.Attributes.Where( a => !editableGroupMemberAssignmentAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                }
+                else
+                {
+                    editableGroupMemberAssignmentAttributes = readOnly ? new List<string>()
+                        : groupMemberAssignment.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                    viewableGroupMemberAssignmentAttributes = groupMemberAssignment.Attributes.Where( a => !editableGroupMemberAssignmentAttributes.Contains( a.Key ) && a.Value.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                }
+
+                if ( editableGroupMemberAssignmentAttributes.Any() )
+                {
+                    avcGroupMemberAssignmentAttributes.Visible = true;
+                    avcGroupMemberAssignmentAttributes.ExcludedAttributes = groupMemberAssignment.Attributes.Where( a => !editableGroupMemberAssignmentAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                    avcGroupMemberAssignmentAttributes.AddEditControls( groupMemberAssignment );
+                }
+
+                if ( viewableGroupMemberAssignmentAttributes.Any() )
+                {
+                    avcGroupMemberAssignmentAttributesReadOnly.Visible = true;
+                    avcGroupMemberAssignmentAttributesReadOnly.ExcludedAttributes = groupMemberAssignment.Attributes.Where( a => !viewableGroupMemberAssignmentAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                    avcGroupMemberAssignmentAttributesReadOnly.AddDisplayControls( groupMemberAssignment );
+                }
+            }
 
             if ( groupType.IsSchedulingEnabled )
             {
@@ -800,13 +883,19 @@ namespace RockWeb.Blocks.Groups
                 BindGroupPreferenceAssignmentsGrid();
             }
 
+            var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
+            pnlRequirements.Visible = groupHasRequirements;
+            btnRefreshRequirements.Visible = groupHasRequirements;
+
+            bool areRequirementsRefreshedOnLoad = this.GetAttributeValue( AttributeKey.AreRequirementsRefreshedOnLoad ).AsBooleanOrNull() ?? false;
+
             if ( areRequirementsRefreshedOnLoad )
             {
-                CalculateRequirements( true );
+                CalculateRequirements();
             }
             else
             {
-                ShowGroupRequirementsStatuses( false );
+                ShowGroupRequirementsStatuses();
             }
         }
 
@@ -857,7 +946,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Shows the group requirements statuses.
         /// </summary>
-        private void ShowGroupRequirementsStatuses( bool forceRefreshRequirements )
+        private void ShowGroupRequirementsStatuses()
         {
             if ( !pnlRequirements.Visible )
             {
@@ -865,52 +954,19 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            var rockContext = new RockContext();
-            int groupMemberId = hfGroupMemberId.Value.AsInteger();
-            var groupId = hfGroupId.Value.AsInteger();
-            GroupMember groupMember = null;
-
-            if ( !groupMemberId.Equals( 0 ) )
+            if ( !ppGroupMemberPerson.PersonId.HasValue )
             {
-                groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
-            }
-            else
-            {
-                // only create a new one if person is selected
-                if ( ppGroupMemberPerson.PersonId.HasValue )
-                {
-                    groupMember = new GroupMember { Id = 0 };
-                    groupMember.GroupId = groupId;
-                    groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
-                    groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
-                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                    groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
-                }
-            }
-
-            if ( groupMember == null )
-            {
-                // no person selected yet, so don't show anything
+                // Don't check or show requirements until a person is selected.
                 gmrcRequirements.Visible = false;
+                nbRequirementsErrors.Visible = false;
                 return;
-            }
-
-            var selectedGroupRoleId = ddlGroupRole.SelectedValue.AsInteger();
-            if ( groupMember != null && selectedGroupRoleId != groupMember.GroupRoleId )
-            {
-                groupMember.GroupRoleId = selectedGroupRoleId;
             }
 
             bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
             gmrcRequirements.Visible = !areRequirementsPubliclyHidden;
 
-            // Force refreshing the requirements when loading the container.
-            if ( forceRefreshRequirements || groupMember.IsNewOrChangedGroupMember( rockContext ) )
-            {
-                SetRequirementStatuses( rockContext );
-            }
-
-            //gmrcRequirements.DataBind();
+            var rockContext = new RockContext();
+            SetRequirementStatuses( rockContext );
 
             var requirementsWithErrors = gmrcRequirements.RequirementStatuses?.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
             if ( requirementsWithErrors != null && requirementsWithErrors.Any() )
@@ -918,7 +974,7 @@ namespace RockWeb.Blocks.Groups
                 nbRequirementsErrors.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                 nbRequirementsErrors.Visible = true;
                 nbRequirementsErrors.Text = string.Format(
-                    "An error occurred in one or more of the requirement calculations" );
+                    "An error occurred in one or more of the requirement calculations." );
 
                 nbRequirementsErrors.Details = requirementsWithErrors.Select( a => string.Format( "{0}: {1}", a.GroupRequirement.GroupRequirementType.Name, a.CalculationException.Message ) ).ToList().AsDelimited( Environment.NewLine );
             }
@@ -1006,31 +1062,82 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Calculates (or re-calculates) the requirements, then updates the results on the UI
+        /// Calculates (or re-calculates) the requirements, then updates the results on the UI.
         /// </summary>
-        private void CalculateRequirements( bool forceRecheckRequirements )
+        private void CalculateRequirements()
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
 
-            if ( groupMember != null && !groupMember.IsNewOrChangedGroupMember( rockContext ) )
+            if ( groupMember != null )
             {
                 groupMember.CalculateRequirements( rockContext, true );
             }
 
-            ShowGroupRequirementsStatuses( forceRecheckRequirements );
+            // If this person's statuses are already in view state, remove them
+            // so a refreshed collection will be added for future postbacks.
+            var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
+            if ( this.GroupRequirementStatusesByPersonState.ContainsKey( personId ) )
+            {
+                this.GroupRequirementStatusesByPersonState.Remove( personId );
+            }
+
+            ShowGroupRequirementsStatuses();
         }
 
+        /// <summary>
+        /// Sets the requirement statuses on the group member requirements container.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         private void SetRequirementStatuses( RockContext rockContext )
         {
             var groupService = new GroupService( rockContext );
             var group = groupService.GetInclude( hfGroupId.ValueAsInt(), g => g.Members );
             var groupMemberId = hfGroupMemberId.ValueAsInt();
             gmrcRequirements.SelectedGroupRoleId = ddlGroupRole.SelectedValue.AsIntegerOrNull();
-            gmrcRequirements.RequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+
+            var personId = ppGroupMemberPerson.PersonId.GetValueOrDefault();
+
+            // Try to pull this person's requirement statuses out of view state.
+            this.GroupRequirementStatusesByPersonState.TryGetValue( personId, out var requirementStatuses );
+
+            if ( requirementStatuses == null )
+            {
+                // If we couldn't find the statuses in view state, get them from the db or
+                // calculate them now and put them into view state for future postbacks.
+                if ( groupMemberId > 0 )
+                {
+                    // Get the group member's persisted requirements rather than recalculating them every time.
+                    var groupMember = new GroupMemberService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Include( gm => gm.Group )
+                        .Include( gm => gm.GroupMemberRequirements )
+                        .Include( gm => gm.Person )
+                        .FirstOrDefault( gm => gm.Id == groupMemberId );
+
+                    // Update the group member to reflect the currently-selected role,
+                    // so the proper set of requirements are considered.
+                    groupMember.GroupRoleId = ddlGroupRole.SelectedValueAsInt() ?? 0;
+
+                    requirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
+                }
+                else if ( personId > 0 )
+                {
+                    // Since this person isn't yet a group member, we have no choice but to calculate the requirements on demand.
+                    requirementStatuses = group.PersonMeetsGroupRequirements( rockContext, personId, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+                }
+
+                if ( requirementStatuses != null )
+                {
+                    this.GroupRequirementStatusesByPersonState.AddOrReplace( personId, requirementStatuses );
+                }
+            }
+
+            gmrcRequirements.RequirementStatuses = requirementStatuses;
 
             // Determine whether the current person is a leader of the chosen group.
-            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupMemberId.ValueAsInt() );
+            var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupId( hfGroupId.ValueAsInt() );
             var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
                 groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
 
@@ -1585,6 +1692,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
+                GroupMemberAssignment signUpGroupMemberAssignment = null;
                 if ( this.IsSignUpMode )
                 {
                     /*
@@ -1596,7 +1704,7 @@ namespace RockWeb.Blocks.Groups
                      * 
                      * Reason: Sign-Up Feature
                      */
-                    var groupMemberAssignment = groupMemberAssignmentService
+                    signUpGroupMemberAssignment = groupMemberAssignmentService
                         .Queryable()
                         .AsNoTracking()
                         .FirstOrDefault( gma =>
@@ -1606,24 +1714,25 @@ namespace RockWeb.Blocks.Groups
                             && gma.ScheduleId == ScheduleId.Value
                         );
 
-                    if ( groupMemberAssignment == null )
+                    if ( signUpGroupMemberAssignment == null )
                     {
-                        groupMemberAssignment = new GroupMemberAssignment
+                        signUpGroupMemberAssignment = new GroupMemberAssignment
                         {
+                            GroupId = group.Id,
                             LocationId = LocationId.Value,
                             ScheduleId = ScheduleId.Value
                         };
 
                         if ( groupMember.Id == 0 )
                         {
-                            groupMemberAssignment.GroupMember = groupMember;
+                            signUpGroupMemberAssignment.GroupMember = groupMember;
                         }
                         else
                         {
-                            groupMemberAssignment.GroupMemberId = groupMember.Id;
+                            signUpGroupMemberAssignment.GroupMemberId = groupMember.Id;
                         }
 
-                        groupMemberAssignmentService.Add( groupMemberAssignment );
+                        groupMemberAssignmentService.Add( signUpGroupMemberAssignment );
                     }
                 }
                 else if ( pnlScheduling.Visible )
@@ -1718,7 +1827,13 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 groupMember.LoadAttributes();
-                avcAttributes.GetEditValues( groupMember );
+                avcGroupMemberAttributes.GetEditValues( groupMember );
+
+                if ( signUpGroupMemberAssignment != null )
+                {
+                    signUpGroupMemberAssignment.LoadAttributes();
+                    avcGroupMemberAssignmentAttributes.GetEditValues( signUpGroupMemberAssignment );
+                }
 
                 if ( !Page.IsValid )
                 {
@@ -1746,6 +1861,11 @@ namespace RockWeb.Blocks.Groups
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
                     groupMember.CalculateRequirements( rockContext, true );
+
+                    if ( signUpGroupMemberAssignment != null )
+                    {
+                        signUpGroupMemberAssignment.SaveAttributeValues( rockContext );
+                    }
                 } );
             }
 
@@ -1978,7 +2098,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlGroupRole_SelectedIndexChanged( object sender, EventArgs e )
         {
-            CalculateRequirements( true );
+            CalculateRequirements();
         }
 
         /// <summary>
@@ -1988,7 +2108,44 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppGroupMemberPerson_SelectPerson( object sender, EventArgs e )
         {
-            CalculateRequirements( true );
+            CalculateRequirements();
+            TryLoadExistingSignUpGroupMember();
+        }
+
+        /// <summary>
+        /// Tries to load an existing sign-up group member if one exists for the group/person combination.
+        /// </summary>
+        protected void TryLoadExistingSignUpGroupMember()
+        {
+            if ( !this.IsSignUpMode )
+            {
+                return;
+            }
+
+            var personId = ppGroupMemberPerson.PersonId;
+
+            if ( !GroupId.HasValue || !personId.HasValue )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMember = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .Where( gm =>
+                        gm.GroupId == GroupId.Value
+                        && gm.PersonId == personId.Value
+                    )
+                    .FirstOrDefault();
+
+                if ( groupMember == null )
+                {
+                    return;
+                }
+
+                ShowDetail( groupMember.Id, GroupId, CampusId, LocationId, ScheduleId );
+            }
         }
 
         /// <summary>
@@ -1998,7 +2155,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRefreshRequirements_Click( object sender, EventArgs e )
         {
-            CalculateRequirements( true );
+            CalculateRequirements();
             nbRecheckedNotification.Text = "Successfully refreshed requirements.";
             nbRecheckedNotification.Visible = true;
             bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
@@ -2348,7 +2505,7 @@ namespace RockWeb.Blocks.Groups
             else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
             {
                 hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
-                var smsPhoneNumbers = SystemPhoneNumberCache.All()
+                var smsPhoneNumbers = SystemPhoneNumberCache.All( false )
                     .Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson )
                         && v.Id == hfFromSMSNumber.Value.AsInteger() )
                     .ToList();

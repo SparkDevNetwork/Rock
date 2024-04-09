@@ -96,6 +96,35 @@ namespace RockWeb.Blocks.Core
         Order = 8,
         Key = AttributeKey.Alignment )]
 
+    [CampusField( name: "Default Campus",
+        description: "When there is no campus value, what campus should be displayed?",
+        required: false,
+        includeInactive: true,
+        order: 9,
+        key: AttributeKey.DefaultCampus )]
+
+    [BooleanField( "Update Family Campus on Change",
+        Description = "When the individual changes the selected campus, should their family's campus (primary family) be updated?",
+        DefaultBooleanValue = false,
+        Order = 10,
+        Key = AttributeKey.UpdateFamilyCampusOnChange )]
+
+    [DefinedValueField( "Campus Types",
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 11,
+        Key = AttributeKey.CampusTypes )]
+
+    [DefinedValueField( "Campus Statuses",
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 12,
+        Key = AttributeKey.CampusStatuses )]
+
     [Rock.SystemGuid.BlockTypeGuid( "4A5AAFFC-B1C7-4EFD-A9E4-84363242EA85" )]
     public partial class CampusContextSetter : RockBlock
     {
@@ -110,6 +139,10 @@ namespace RockWeb.Blocks.Core
             public const string IncludeInactiveCampuses = "IncludeInactiveCampuses";
             public const string DefaultToCurrentUser = "DefaultToCurrentUser";
             public const string Alignment = "Alignment";
+            public const string DefaultCampus = "DefaultCampus";
+            public const string UpdateFamilyCampusOnChange = "UpdateFamilyCampusOnChange";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
         }
 
         #region Base Control Methods
@@ -185,6 +218,17 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            // If currentCampus still isn't determined, and DefaultCampus is defined, use that as the campus context.
+            var defaultCampusGuid = GetAttributeValue( AttributeKey.DefaultCampus ).AsGuidOrNull();
+            if ( currentCampus == null && defaultCampusGuid.HasValue )
+            {
+                var defaultCampusId = CampusCache.GetId( defaultCampusGuid.Value );
+                if ( defaultCampusId.HasValue )
+                {
+                    currentCampus = SetCampusContext( defaultCampusId.Value, true );
+                }
+            }
+
             if ( currentCampus != null )
             {
                 var mergeObjects = new Dictionary<string, object>();
@@ -196,8 +240,27 @@ namespace RockWeb.Blocks.Core
                 lCurrentSelection.Text = GetAttributeValue( AttributeKey.NoCampusText );
             }
 
-            bool includeInactive = GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
+            var includeInactive = GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
+
+            var campusTypeIds = GetAttributeValues( AttributeKey.CampusTypes )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var campusStatusIds = GetAttributeValues( AttributeKey.CampusStatuses )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
             var campusList = CampusCache.All( includeInactive )
+                .Where( c => !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                .Where( c => !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) )
                 .Select( a => new CampusItem { Name = a.Name, Id = a.Id } )
                 .ToList();
 
@@ -258,7 +321,29 @@ namespace RockWeb.Blocks.Core
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "CampusId" ) ) || GetAttributeValue( AttributeKey.DisplayQueryStrings ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "CampusId", campusId.ToString() );
+
+                    /*
+                        11/28/2023 - JPH
+
+                        Only set the "CampusId" page parameter if the current campusId value is > 0.
+
+                        Otherwise, the old behavior of setting "CampusId=-1" can wreak havoc with the newly-added
+                        "Default Campus" block setting when the individual clears out the campus selection. In that
+                        scenario, the default campus would not be auto-selected because it would be overridden by the
+                        "-1" in the query string. Furthermore, if the current campusId value is <= 0, let's go so far
+                        as to try amd remove it from the query string to ensure a stale value doesn't stick around.
+
+                        Reason: Added "Default Campus" block setting.
+                     */
+                    if ( campusId > 0 )
+                    {
+                        queryString.Set( "CampusId", campusId.ToString() );
+                    }
+                    else
+                    {
+                        queryString.Remove( "CampusId" );
+                    }
+
                     Response.Redirect( string.Format( "{0}?{1}", Request.UrlProxySafe().AbsolutePath, queryString ), false );
                 }
                 else
@@ -283,11 +368,49 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptCampuses_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            var campusId = e.CommandArgument.ToString();
+            var campusId = e.CommandArgument.ToString().AsIntegerOrNull();
 
-            if ( campusId != null )
+            if ( !campusId.HasValue )
             {
-                SetCampusContext( campusId.AsInteger(), true );
+                return;
+            }
+
+            var campus = SetCampusContext( campusId.Value, true );
+
+            // If the campus context was set with the selected value, try to update the individual's primary family campus ID.
+            if ( campus != null && campus.Id == campusId.Value )
+            {
+                UpdateFamilyCampus( campusId.Value );
+            }
+        }
+
+        /// <summary>
+        /// Updates the individual's primary family campus if enabled in block settings.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        private void UpdateFamilyCampus( int campusId )
+        {
+            if ( !GetAttributeValue( AttributeKey.UpdateFamilyCampusOnChange ).AsBoolean() )
+            {
+                return;
+            }
+
+            var primaryFamilyId = this.CurrentPerson?.PrimaryFamilyId;
+            if ( !primaryFamilyId.HasValue )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var primaryFamily = new GroupService( rockContext ).Get( primaryFamilyId.Value );
+                if ( primaryFamily == null )
+                {
+                    return;
+                }
+
+                primaryFamily.CampusId = campusId;
+                rockContext.SaveChanges();
             }
         }
 

@@ -2099,7 +2099,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             {
                 // disable paging if no specific keys where selected (or if no select option is shown)
                 bool selectAll = !SelectedKeys.Any();
-                RebindGrid( e, selectAll, true, false );
+                RebindGrid( e, selectAll, true, false, true );
                 entitySetId = GetEntitySetFromGrid( e );
             }
 
@@ -2732,6 +2732,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// <returns></returns>
         private List<PropertyInfo> FilterDynamicObjectPropertiesCollection( Type dataSourceObjectType, List<PropertyInfo> additionalMergeProperties )
         {
+            additionalMergeProperties = additionalMergeProperties ?? new List<PropertyInfo>();
+
             if ( LavaService.RockLiquidIsEnabled )
             {
                 // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
@@ -2838,6 +2840,30 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             }
 
             var eventArg = new GridRebindEventArgs( isExporting, isCommunication );
+            OnGridRebind( eventArg );
+
+            this.AllowPaging = origPaging;
+        }
+
+        /// <summary>
+        /// Calls OnGridRebind with an option to disable paging so the entire datasource is loaded vs just what is needed for the current page
+        /// and other options to indicate if the event is part of the grid's data export process, if this event was triggered by a communication
+        /// button click, or if the data export is as a result of the MergeTemplate button click.
+        /// </summary>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="disablePaging">if set to <c>true</c> [disable paging].</param>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
+        /// <param name="isMergeExport">if set to <c>true</c> [is exporting] is due to the MergeTemplate buttom click.</param>
+        private void RebindGrid( EventArgs e, bool disablePaging, bool isExporting, bool isCommunication, bool isMergeExport )
+        {
+            var origPaging = this.AllowPaging;
+            if ( disablePaging )
+            {
+                this.AllowPaging = false;
+            }
+
+            var eventArg = new GridRebindEventArgs( isExporting, isCommunication, isMergeExport );
             OnGridRebind( eventArg );
 
             this.AllowPaging = origPaging;
@@ -3552,7 +3578,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 dataKeyField = this.PersonIdField;
             }
 
-            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>().FirstOrDefault( a => a.ColumnName == dataKeyField );
+            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>()
+                .FirstOrDefault( a => string.Equals( a.ColumnName, dataKeyField, StringComparison.OrdinalIgnoreCase ) );
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
             List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
@@ -3652,6 +3679,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 return null;
             }
 
+            // Determine the underlying Rock Entity Type for the entity set.
             int? entityTypeId = null;
 
             if ( this.EntityTypeId.HasValue )
@@ -3772,7 +3800,18 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 }
             }
 
-            List<PropertyInfo> additionalMergeProperties = null;
+            //
+            // Get the additional merge fields that should be stored with the entity set entries.
+            //
+            // If the Grid data source is associated with a Rock Entity, the EntitySet provides access to the properties of the referenced entity.
+            // If additional columns exists in the grid, they are stored as additional merge fields in the entity set.
+            // These columns may be defined as properties of the data source type, or as custom columns added to the grid. 
+            //
+            var mergeFields = new Dictionary<string, EntitySetMergeValueInfo>();
+
+            // If the grid data source item type is associated with a Rock Entity type, get the properties that are defined by the grid
+            // data source but are not properties of the Rock Entity.
+            var additionalMergeProperties = new List<PropertyInfo>();
 
             if ( entityTypeId.HasValue )
             {
@@ -3787,7 +3826,6 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     var entityType = EntityTypeCache.Get( entityTypeId.Value ).GetEntityType();
                     var entityTypePropertyNames = entityType.GetProperties().Select( a => a.Name ).ToList();
 
-                    additionalMergeProperties = new List<PropertyInfo>();
                     foreach ( var objProp in dataSourceObjectType.GetProperties().Where( a => !entityTypePropertyNames.Contains( a.Name ) ) )
                     {
                         additionalMergeProperties.Add( objProp );
@@ -3796,100 +3834,162 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             }
             else
             {
-                // we don't know the EntityType, so throw all the data into the AdditionalMergeFields
+                // This is not a Rock Entity type, so add all of the properties as additional merge fields
                 additionalMergeProperties = dataSourceObjectType.GetProperties().ToList();
             }
 
-            // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
+            // If this is a dynamic class, remove any properties that are inherited from the base class.
             additionalMergeProperties = FilterDynamicObjectPropertiesCollection( dataSourceObjectType, additionalMergeProperties );
 
-            // Create a lookup for the DataControlField corresponding to each of the merge fields.
-            // The control is used to render the field output.
-            var mergeKeyToControlFieldMap = new Dictionary<string, DataControlField>();
-            foreach ( DataControlField gridColumn in this.Columns )
-            {
-                var mergeFieldKey = string.Empty;
-                if ( gridColumn is LavaField lf )
-                {
-                    // The Lava field is not bound to the data source, so use the header as the field key.
-                    mergeFieldKey = lf.HeaderText.RemoveSpecialCharacters();
-                }
-                else if ( gridColumn is BoundField boundField )
-                {
-                    // Set the key that can be used to retrieve the value from the data source.
-                    mergeFieldKey = boundField.DataField;
-                }
+            // If the data source items are dynamically-typed, assume that this is a data source from a reporting component.
+            // Report data sources use a convention-based property naming scheme, so we will map these properties to a
+            // user-friendly merge key, using the column header text.
+            var dataSourceList = this.DataSourceAsList;
 
-                if ( string.IsNullOrWhiteSpace( mergeFieldKey )
-                     || mergeKeyToControlFieldMap.ContainsKey( mergeFieldKey ) )
+            bool useHeaderNamesIfAvailable = false;
+            if ( additionalMergeProperties.Any() && idProp != null )
+            {
+                // The datasources generated by the Reporting components are dynamic types, and use a convention-based property naming scheme.
+                // We need to map these properties to a user-friendly merge key, so use the column header text as the merge field name.
+                useHeaderNamesIfAvailable = dataSourceList.Count > 0 && dataSourceList[0].GetType().Assembly.IsDynamic;
+            }
+
+            // Add merge fields that are defined by grid columns.
+            var mergeKeyToControlFieldMap = new Dictionary<string, DataControlField>();
+            if ( useHeaderNamesIfAvailable )
+            {
+                // Create a mapping of databound grid controls to merge keys.
+                foreach ( DataControlField gridColumn in this.Columns )
+                {
+                    // Determine the appropriate merge field key.
+                    var mergeFieldKey = string.Empty;
+                    PropertyInfo propertyInfo = null;
+
+                    if ( gridColumn is LavaField lf )
+                    {
+                        // Use the column header as the merge key, because the Lava field does not map to a single data source property.
+                        mergeFieldKey = lf.HeaderText.RemoveSpecialCharacters();
+                        if ( string.IsNullOrWhiteSpace( mergeFieldKey ) )
+                        {
+                            mergeFieldKey = "Lava";
+                        }
+                    }
+                    else if ( gridColumn is BoundField boundField )
+                    {
+                        // Use the column name as the merge key.
+                        mergeFieldKey = boundField.HeaderText.RemoveSpecialCharacters();
+
+                        propertyInfo = additionalMergeProperties.FirstOrDefault( p => p.Name == boundField.DataField );
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    // If the merge key is already defined, ignore this entry.
+                    if ( mergeFields.ContainsKey( mergeFieldKey ) )
+                    {
+                        continue;
+                    }
+
+                    // Add the merge field.
+                    var fieldInfo = new EntitySetMergeValueInfo
+                    {
+                        MergeKey = mergeFieldKey,
+                        GridControl = gridColumn,
+                        DataSourcePropertyInfo = propertyInfo
+                    };
+
+                    mergeFields.Add( mergeFieldKey, fieldInfo );
+                }
+            }
+
+            // Add merge fields that are defined by data source properties.
+            foreach ( var additionalMergeProperty in additionalMergeProperties )
+            {
+                // If the field also exists as a grid column, ignore it.
+                var isMapped = mergeFields.Any( f => f.Value.DataSourcePropertyInfo?.Name == additionalMergeProperty.Name );
+                if ( isMapped )
                 {
                     continue;
                 }
-                mergeKeyToControlFieldMap.Add( mergeFieldKey, gridColumn );
+
+                var propertyName = additionalMergeProperty.Name;
+
+                if ( mergeFields.ContainsKey(propertyName))
+                {
+                    continue;
+                }
+
+                var fieldInfo = new EntitySetMergeValueInfo
+                {
+                    MergeKey = propertyName,
+                    DataSourcePropertyInfo = additionalMergeProperty
+                };
+                mergeFields.Add( propertyName, fieldInfo );
             }
 
+            // Get the value of the additional merge fields for each of the items in the grid.
             var itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>( this.DataSourceAsList.Count );
-            bool? useHeaderNamesIfAvailable = null;
             if ( additionalMergeProperties != null && additionalMergeProperties.Any() && idProp != null )
             {
-                var additionalMergePropertiesMap = additionalMergeProperties.ToDictionary( k => k.Name, v => v );
+                // Resolve the merge field values for each item in the data source.
                 foreach ( var item in this.DataSourceAsList )
                 {
-                    // since Reporting fieldnames are dynamic and can have special internal names, use the header text instead of the datafield name
-                    useHeaderNamesIfAvailable = useHeaderNamesIfAvailable ?? item.GetType().Assembly.IsDynamic;
-
                     var idVal = idProp.GetValue( item ) as int?;
-                    if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) && !itemMergeFieldsList.ContainsKey( idVal.Value ) )
-                    {
-                        var mergeFields = new Dictionary<string, object>();
-                        foreach ( var mergeFieldEntry in mergeKeyToControlFieldMap )
-                        {
-                            // Get the merge field.
-                            object objValue;
-                            string mergeFieldKey = null;
-                            string headerText = null;
 
-                            var mergeField = mergeFieldEntry.Value;
-                            if ( mergeField is LavaField lbf )
+                    // Ignore the item if it does not have an identifier, does not match the selection filter,
+                    // or is a duplicate entry.
+                    if ( !idVal.HasValue
+                         || !selectedKeys.Contains( idVal.Value )
+                         || itemMergeFieldsList.ContainsKey( idVal.Value ) )
+                    {
+                        continue;
+                    }
+
+                    var itemMergeFields = new Dictionary<string, object>();
+                    foreach ( var mergeFieldEntry in mergeFields.Values )
+                    {
+                        object objValue = null;
+                        var mergeFieldKey = mergeFieldEntry.MergeKey;
+
+                        if ( mergeFieldEntry.DataSourcePropertyInfo != null )
+                        {
+                            // Read the field value from the data source item.
+                            objValue = mergeFieldEntry.DataSourcePropertyInfo.GetValue( item );
+                        }
+                        else if ( mergeFieldEntry.GridControl != null )
+                        {
+                            // Read the field value from the grid control.
+                            var gridControl = mergeFieldEntry.GridControl;
+                            if ( gridControl is LavaField lbf )
                             {
                                 // A LavaField value is calculated by resolving the Lava template using the values from the current row of the datasource.
                                 objValue = lbf.LavaTemplate.ResolveMergeFields( LavaDataDictionary.FromAnonymousObject( item ) );
-
-                                headerText = lbf.HeaderText;
-                                if ( string.IsNullOrWhiteSpace( headerText ) )
-                                {
-                                    headerText = "Lava";
-                                }
                             }
-                            else if ( mergeField is BoundField bf )
+                            else if ( gridControl is BoundField bf )
                             {
-                                // Get the field value from the data source.
-                                mergeFieldKey = mergeFieldEntry.Key;
-
-                                var mergeProperty = additionalMergePropertiesMap[mergeFieldKey];
+                                // Read the field value from the data source item.
+                                var mergeProperty = mergeFieldEntry.DataSourcePropertyInfo;
                                 objValue = mergeProperty.GetValue( item );
-
-                                headerText = bf.HeaderText;
                             }
                             else
                             {
-                                objValue = null;
+                                mergeFieldKey = null;
                             }
-
-                            if ( useHeaderNamesIfAvailable.Value && !string.IsNullOrWhiteSpace( headerText ) )
-                            {
-                                mergeFieldKey = headerText.RemoveSpecialCharacters();
-                            }
-
-                            if ( mergeFieldKey == null )
-                            {
-                                continue;
-                            }
-                            mergeFields.AddOrIgnore( mergeFieldKey, objValue );
+                        }
+                        else
+                        {
+                            mergeFieldKey = null;
                         }
 
-                        itemMergeFieldsList.AddOrIgnore( idVal.Value, mergeFields );
+                        if ( mergeFieldKey != null )
+                        {
+                            itemMergeFields.AddOrIgnore( mergeFieldKey, objValue );
+                        }
                     }
+
+                    itemMergeFieldsList.AddOrIgnore( idVal.Value, itemMergeFields );
                 }
             }
 
@@ -3945,6 +4045,29 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Configuration data for a merge value in an EntitySet.
+        /// </summary>
+        private class EntitySetMergeValueInfo
+        {
+            /// <summary>
+            /// The merge field key.
+            /// </summary>
+            public string MergeKey;
+
+            /// <summary>
+            /// The property of the data source item type that holds the value for this merge field.
+            /// Null if the value is not derived from a property.
+            /// </summary>
+            public PropertyInfo DataSourcePropertyInfo;
+
+            /// <summary>
+            /// The grid control that supplies the configuration information or value for this merge field.
+            /// Null if the value is read directly from the data source.
+            /// </summary>
+            public DataControlField GridControl;
         }
 
         /// <summary>
@@ -4252,6 +4375,14 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         public bool IsExporting { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the export process was triggered by the merge document button click. 
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is merge document export; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMergeDocumentExport { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is communication.
         /// </summary>
         /// <value>
@@ -4286,6 +4417,19 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         {
             IsExporting = isExporting;
             IsCommunication = isCommunication;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridRebindEventArgs"/> class.
+        /// </summary>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
+        /// <param name="isMergeDocumentExport">if set to <c>true</c> [is export] is due to the MergeTemplate button click.</param>
+        public GridRebindEventArgs( bool isExporting, bool isCommunication, bool isMergeDocumentExport ) : base()
+        {
+            IsExporting = isExporting;
+            IsCommunication = isCommunication;
+            IsMergeDocumentExport = isMergeDocumentExport;
         }
     }
 

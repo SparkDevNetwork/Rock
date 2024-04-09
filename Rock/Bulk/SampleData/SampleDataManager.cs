@@ -792,7 +792,7 @@ namespace Rock.Utility
                         fee.DiscountApplies = GetBooleanValueSafe( feeElement, "discountApplies" );
                         fee.IsRequired = GetBooleanValueSafe( feeElement, "isRequired" );
                         fee.HideWhenNoneRemaining = GetBooleanValueSafe( feeElement, "hideWhenNoneRemaining" );
-                        fee.IsActive = GetBooleanValueSafe( feeElement, "isActive" );
+                        fee.IsActive = GetBooleanValueSafe( feeElement, "isActive", true );
                         registrationTemplate.Fees.Add( fee );
 
                         switch ( feeElement.Attribute( "type" ).Value.Trim().ToLowerInvariant() )
@@ -1018,9 +1018,9 @@ namespace Rock.Utility
             }
         }
 
-        private bool GetBooleanValueSafe( XElement element, string name )
+        private bool GetBooleanValueSafe( XElement element, string name, bool defaultValue = false)
         {
-            return element.Attribute( name ) != null && element.Attribute( name ).Value.AsBoolean();
+            return  element?.Attribute( name )?.Value?.AsBoolean() ?? defaultValue;
         }
 
         private int? GetNullableIntegerValueSafe( XElement element, string name )
@@ -1281,7 +1281,7 @@ namespace Rock.Utility
                         GroupTypeId = knownRelationshipGroup.GroupTypeId
                     };
 
-                    rockContext.GroupMembers.Add( groupMember );
+                    new GroupMemberService( rockContext ).Add( groupMember );
                 }
 
                 // Now create thee inverse relationship.
@@ -1322,7 +1322,7 @@ namespace Rock.Utility
             _personImageBinaryFileTypeSettings = settings.ToJson();
 
             GroupService groupService = new GroupService( rockContext );
-            var allFamilies = rockContext.Groups;
+            var attributeValueService = new AttributeValueService( rockContext );
 
             List<Group> allGroups = new List<Group>();
             var attendanceData = new Dictionary<Guid, List<Attendance>>();
@@ -1338,7 +1338,7 @@ namespace Rock.Utility
                 family.Guid = guid;
 
                 // add the family to the context's list of groups
-                allFamilies.Add( family );
+                groupService.Add( family );
 
                 // add the families address(es)
                 AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ), rockContext );
@@ -1387,7 +1387,7 @@ namespace Rock.Utility
                             attributeValue.Value = newValue.Value;
                             // PA: setting the dirty bit so that the Update Persisted Attribute Values job can populate the field related columns like ValueAsDateTime
                             attributeValue.IsPersistedValueDirty = true;
-                            rockContext.AttributeValues.Add( attributeValue );
+                            attributeValueService.Add( attributeValue );
                         }
                     }
                 }

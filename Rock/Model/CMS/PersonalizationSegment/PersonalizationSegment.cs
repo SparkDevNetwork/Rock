@@ -83,8 +83,18 @@ namespace Rock.Model
         [DataMember]
         public string AdditionalFilterJson { get; set; }
 
-        #endregion Entity Properties
+        /// <summary>
+        /// Gets or sets a value indicating whether the Personalization Segment values
+        /// is considered dirty. If it is dirty then it should be assumed that a calculation
+        /// is being run on it is yet to be completed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is dirty; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsDirty { get; set; }
 
+        #endregion Entity Properties
 
         #region Navigation Properties
 

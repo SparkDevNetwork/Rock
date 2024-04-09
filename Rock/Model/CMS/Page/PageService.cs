@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -235,6 +237,7 @@ namespace Rock.Model
             var blockService = new BlockService( rockContext );
             var pageGuid = Rock.SystemGuid.EntityType.PAGE.AsGuid();
             var blockGuid = Rock.SystemGuid.EntityType.BLOCK.AsGuid();
+            var newBlockAuths = new List<Auth>();
 
             Dictionary<Guid, int> pageIntDictionary = pageService.Queryable()
                 .Where( p => pageGuidDictionary.Keys.Contains( p.Guid ) || pageGuidDictionary.Values.Contains( p.Guid ) )
@@ -269,10 +272,17 @@ namespace Rock.Model
                 newBlockAuth.ModifiedByPersonAliasId = currentPersonAliasId;
                 newBlockAuth.EntityId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == blockAuth.EntityId.Value ).FirstOrDefault().Key]];
 
+                newBlockAuths.Add( newBlockAuth );
                 authService.Add( newBlockAuth );
             }
 
             rockContext.SaveChanges();
+
+            // Call RefreshEntity after auth Block data is persisted to add new Block Auths to RockCache.
+            foreach ( var blockAuth in newBlockAuths )
+            {
+                Authorization.RefreshEntity( blockAuth.EntityTypeId, blockAuth.EntityId ?? 0, rockContext );
+            }
         }
 
         /// <summary>
@@ -363,5 +373,29 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #region IHasAdditionalSettings Models
+
+        /// <summary>
+        /// Page intent settings.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        public class IntentSettings
+        {
+            /// <summary>
+            /// Interaction intent defined value identifiers.
+            /// </summary>
+            public List<int> InteractionIntentValueIds { get; set; }
+        }
+
+        #endregion IHasAdditionalSettings Models
     }
 }

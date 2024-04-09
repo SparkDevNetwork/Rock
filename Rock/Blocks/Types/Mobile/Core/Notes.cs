@@ -678,7 +678,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                     NoteTypeName = note.NoteType.Name,
                     NoteTypeGuid = note.NoteType.Guid,
                     IsAlert = note.IsAlert ?? false,
-                    IsPrivate = note.IsPrivateNote
+                    IsPrivate = note.IsPrivateNote,
+                    Date = note.CreatedDateTime.HasValue ? ( DateTimeOffset? ) new DateTimeOffset( note.CreatedDateTime.Value ) : null
                 } );
             }
         }
@@ -726,7 +727,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                         return ActionForbidden( "Not authorized to add note." );
                     }
 
-                    note = rockContext.Notes.Create();
+                    note = rockContext.Set<Note>().Create();
                     note.IsSystem = false;
                     note.EntityId = entity.Id;
                     note.ParentNoteId = parentNote?.Id;

@@ -643,6 +643,7 @@ namespace RockWeb.Blocks.Connection
             var badgeTypes = delimitedBadgeGuids.SplitDelimitedValues()
                 .AsGuidList()
                 .Select( BadgeCache.Get )
+                .Where( b => b != null ) // exclude the badge in case it has been deleted
                 .ToList();
 
             blRequestModalViewModeBadges.BadgeTypes.AddRange( badgeTypes );
@@ -1472,6 +1473,7 @@ namespace RockWeb.Blocks.Connection
             connectionRequest.SaveAttributeValues( rockContext );
 
             _connectionRequest = connectionRequest;
+            ConnectionRequestId = connectionRequest.Id;
 
             // Add an activity that the connector was assigned (or changed)
             if ( originalConnectorPersonAliasId != newConnectorPersonAliasId )
@@ -2246,7 +2248,7 @@ namespace RockWeb.Blocks.Connection
             get
             {
                 var connectionOpportunity = GetConnectionOpportunity();
-                return connectionOpportunity.ConnectionType.EnableRequestSecurity
+                return connectionOpportunity != null && connectionOpportunity.ConnectionType.EnableRequestSecurity
                         && connectionOpportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             }
         }
@@ -2264,7 +2266,7 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Get the grid panel.
         /// </summary>
-        private void BindRequestsGrid( bool isExporting = false )
+        private void BindRequestsGrid( bool isExporting = false, bool isMergeDocumentExport = false )
         {
             _isExporting = isExporting;
             var connectionRequestEntityId = ConnectionRequestEntityTypeId;
@@ -2301,7 +2303,18 @@ namespace RockWeb.Blocks.Connection
 
                 gRequests.ObjectList = new Dictionary<string, object>();
                 _ConnectionRequestViewModelsWithFullModel.ForEach( i => gRequests.ObjectList.Add( i.Id.ToString(), i.ConnectionRequest ) );
-                gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => ( ConnectionRequestViewModel ) a ).AsQueryable() );
+
+                if ( isMergeDocumentExport )
+                {
+                    // If the export is as a result of the MergeTemplate button click then the ConnectionRequest itself is used as the data source for the grid.
+                    // This is done to avoid any issues that may arise from the Grid trying to build additionalMergeProperties using the viewModel. see issue #5405 
+                    gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
+                }
+                else
+                {
+                    // If its an excel export the ConnectionRequestViewModel is used so the data exported is limited. 
+                    gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => ( ConnectionRequestViewModel ) a ).AsQueryable() );
+                }
             }
             else
             {
@@ -2334,7 +2347,7 @@ namespace RockWeb.Blocks.Connection
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gRequests_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindRequestsGrid( e.IsExporting );
+            BindRequestsGrid( e.IsExporting, e.IsMergeDocumentExport );
         }
 
         /// <summary>
@@ -2505,7 +2518,7 @@ namespace RockWeb.Blocks.Connection
                     CurrentActivity = c.Workflow.ActiveActivityNames,
                     Date = c.Workflow.ActivatedDateTime.Value.ToShortDateString(),
                     OrderByDate = c.Workflow.ActivatedDateTime.Value,
-                    Status = c.Workflow.Status == "Completed" ? "<span class='label label-success'>Complete</span>" : "<span class='label label-info'>Running</span>"
+                    Status = $"<span class='label label-{( c.Workflow.CompletedDateTime.HasValue ? "success" : "info" )}'>{( c.Workflow.Status == "Active" ? "Running" : c.Workflow.Status )}</span>"
                 } )
                 .OrderByDescending( c => c.OrderByDate )
                 .ToList();
@@ -4952,11 +4965,13 @@ namespace RockWeb.Blocks.Connection
 
             var rockContext = new RockContext();
             var connectionRequestService = new ConnectionRequestService( rockContext );
+
             _connectionRequestViewModel = connectionRequestService.GetConnectionRequestViewModel(
                 CurrentPersonAliasId.Value,
                 ConnectionRequestId.Value,
                 new ConnectionRequestViewModelQueryArgs(),
                 GetConnectionRequestStatusIconsTemplate() );
+
             return _connectionRequestViewModel;
         }
 
@@ -5154,12 +5169,19 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                _connectionTypeViewModels = _connectionTypeViewModels
-                    .Where( vm => vm.ConnectionOpportunities.Any() )
-                    .OrderBy( ct => ct.Order )
-                    .ThenBy( ct => ct.Name )
-                    .ThenBy( ct => ct.Id )
-                    .ToList();
+                if ( _connectionTypeViewModels != null )
+                {
+                    _connectionTypeViewModels = _connectionTypeViewModels
+                        .Where( vm => vm.ConnectionOpportunities.Any() )
+                        .OrderBy( ct => ct.Order )
+                        .ThenBy( ct => ct.Name )
+                        .ThenBy( ct => ct.Id )
+                        .ToList();
+                }
+                else
+                {
+                    _connectionTypeViewModels = new List<ConnectionTypeViewModel>();
+                }
             }
 
             return _connectionTypeViewModels;
@@ -5468,7 +5490,7 @@ namespace RockWeb.Blocks.Connection
             var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
             var query = connectionRequestActivityService.Queryable()
                 .AsNoTracking()
-                .Where( a => a.ConnectionRequest.PersonAliasId == connectionRequestViewModel.PersonAliasId );
+                .Where( a => a.ConnectionRequest.PersonAlias.PersonId == connectionRequestViewModel.PersonId );
 
             if ( connectionType.EnableFullActivityList )
             {

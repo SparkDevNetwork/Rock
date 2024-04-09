@@ -38,7 +38,7 @@ namespace Rock.Blocks.WebFarm
     [Category( "WebFarm" )]
     [Description( "Displays the details of a particular web farm node." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

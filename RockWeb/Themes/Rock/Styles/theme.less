@@ -13,7 +13,6 @@
 @import "_variables.less";
 @import "_variable-overrides.less";
 @import "_root.less";
-@import "_new-group-scheduler.less";
 
 @import "_navbar.less";
 @import "_legacy-profile.less";
@@ -1211,7 +1210,8 @@ td.grid-actions {
     }
 
     .zone-content > .reminder-links {
-      right: 44px
+      right: 44px;
+      z-index: 10;
     }
   }
 }
@@ -1694,8 +1694,8 @@ td.grid-actions {
 
 @media (max-width: @grid-float-breakpoint-max) {
   .main-content {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 16px;
+    padding-right: 16px;
 
     .page-header {
       margin-left: 0;

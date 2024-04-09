@@ -10,21 +10,62 @@
                 No locations available.
             </NotificationBox>
 
-            <Occurrence v-for="occurrence in occurrences" :key="occurrence.locationId"
-                        :occurrence="occurrence"
-                        :disabled="disabled"
-                        @resourceListUpdated="$emit('resourceListUpdated', $event)"
-                        @preferenceUpdated="$emit('preferenceUpdated', $event)"></Occurrence>
+            <template v-else>
+                <NotificationBox v-if="unassignedResourceCount"
+                                 :alertType="AlertType.Warning"
+                                 class="group-sched-unassigned-resources small">
+                    <div class="group-sched-unassigned-resources-text">
+                        {{ unassignedResourceText }}
+                    </div>
+                    <div v-no-drag-scroll
+                         class="group-sched-provide-locations"
+                         @click="isProvideLocationsModalVisible = true">
+                        {{ provideLocationText }}
+                    </div>
+                </NotificationBox>
+
+                <Occurrence v-for="occurrence in occurrences" :key="occurrence.locationId"
+                            :occurrence="occurrence"
+                            :disabled="disabled"
+                            @resourceListUpdated="$emit('resourceListUpdated', $event)"
+                            @preferenceUpdated="$emit('preferenceUpdated', $event)"></Occurrence>
+            </template>
         </div>
     </div>
+
+    <ProvideLocations v-if="unassignedResourceCount"
+                      v-model:isVisible="isProvideLocationsModalVisible"
+                      :unassignedResourceCount="unassignedResourceCount"
+                      :availableOccurrences="occurrences"
+                      @resourceListUpdated="$emit('resourceListUpdated', $event)" />
 </template>
 
+<style scoped>
+.group-sched-unassigned-resources {
+    margin: 8px 0;
+}
+
+.group-sched-provide-locations {
+    text-decoration: underline;
+    cursor: pointer;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, inject, PropType, ref } from "vue";
     import Occurrence from "./occurrence.partial.obs";
+    import ProvideLocations from "./provideLocations.partial.obs";
+    import {
+        OccurrenceDate,
+        ScheduleId,
+        UnassignedResourceCounts
+    } from "./types.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { NoDragScroll as vNoDragScroll } from "@Obsidian/Directives/dragScroll";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+    import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
 
     const props = defineProps({
         occurrences: {
@@ -43,21 +84,63 @@
         (e: "preferenceUpdated", personId: number): void
     }>();
 
+    // #region Values
+
+    const occurrenceDate = inject(OccurrenceDate, ref(""));
+    const scheduleId = inject(ScheduleId, ref(0));
+    const unassignedResourceCounts = inject(UnassignedResourceCounts, ref([]));
+
+    const isProvideLocationsModalVisible = ref(false);
+
+    // #endregion Values
+
     // #region Computed Values
+
+    const groupId = computed((): number => {
+        // It's assumed that all occurrences provided will belong to the same group;
+        // just grab the first groupId, since they should all be the same.
+        return props.occurrences?.[0]?.groupId ?? 0;
+    });
 
     const title = computed((): string => {
         // It's assumed that all occurrences provided will belong to the same group;
         // just grab the first groupName, since they should all be the same.
-        let groupName: string | null | undefined;
-        if (props.occurrences?.length) {
-            groupName = props.occurrences[0].groupName;
-        }
-
-        return groupName || "Group";
+        return props.occurrences?.[0]?.groupName || "Group";
     });
 
     const anyLocations = computed((): boolean => {
-        return !!Object.keys(props.occurrences?.length);
+        return !!props.occurrences?.length;
+    });
+
+    const unassignedResourceCount = computed((): GroupSchedulerUnassignedResourceCountBag | null | undefined => {
+        if (!occurrenceDate.value
+            || !scheduleId.value
+            || !groupId.value
+            || !unassignedResourceCounts.value?.length
+        ) {
+            return;
+        }
+
+        return unassignedResourceCounts.value
+            .find((bag: GroupSchedulerUnassignedResourceCountBag) =>
+                bag.occurrenceDate === occurrenceDate.value
+                && bag.scheduleId === scheduleId.value
+                && bag.groupId === groupId.value
+            );
+    });
+
+    const unassignedResourceText = computed((): string => {
+        const count = unassignedResourceCount.value?.resourceCount ?? 0;
+        return count
+            ? `Missing ${pluralize("location", count)} for ${count} ${pluralize("individual", count)}.`
+            : "";
+    });
+
+    const provideLocationText = computed((): string => {
+        const count = unassignedResourceCount.value?.resourceCount ?? 0;
+        return count
+            ? `Provide ${pluralize("Location", count)}`
+            : "";
     });
 
     // #endregion

@@ -2318,7 +2318,7 @@ namespace Rock.Lava
                     // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
                     if (qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ))
                     {
-                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                        return item.AttributeValues[attributeKey].PersistedHtmlValue;
                     }
 
                     // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
@@ -4525,7 +4525,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="dataObject">The data object.</param>
         /// <returns></returns>
-        public static object FilterNotFollowed( Context context, object dataObject )
+        public static object FilterUnfollowed( Context context, object dataObject )
         {
             return FilterFollowedOrNotFollowed( context, GetCurrentPerson( context ), dataObject, FollowFilterType.NotFollowed );
         }

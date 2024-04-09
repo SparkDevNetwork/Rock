@@ -48,4 +48,48 @@ namespace Rock.Tests.Integration.TestData
         /// </summary>
         public CreateExistingItemStrategySpecifier ExistingItemStrategy = CreateExistingItemStrategySpecifier.Fail;
     }
+
+    /// <summary>
+    /// A base class for actions that create Rock Entities.
+    /// </summary>
+    // TODO: Properties in this class should be moved to an EntityPropertiesInfoBase class, which should form part of the Properties<T> constraint.
+    public abstract class CreateEntityActionArgsBase<T>
+        where T : class, new()
+    {
+        /// <summary>
+        /// The unique identifier of the new entity.
+        /// If not specified, this value is automatically generated when the entity is saved.
+        /// </summary>
+        public Guid? Guid;
+
+        /// <summary>
+        /// A Foreign Key identifier for the entity.
+        /// This is used as a secondary identifier for the entity, to associate it with a specific batch of test data.
+        /// </summary>
+        public string ForeignKey;
+
+        /// <summary>
+        /// The strategy for handling existing data that has an identical unique identifier.
+        /// </summary>
+        public CreateExistingItemStrategySpecifier ExistingItemStrategy = CreateExistingItemStrategySpecifier.Fail;
+
+        /// <summary>
+        /// The entity properties.
+        /// </summary>
+        public T Properties { get; set; } = new T();
+    }
+
+    public abstract class UpdateEntityActionArgsBase<T>
+        where T : class, new()
+    {
+        /// <summary>
+        /// The unique identifier of the entity to be updated.
+        /// </summary>
+        public string UpdateTargetIdentifier { get; set; }
+
+        /// <summary>
+        /// The entity properties.
+        /// </summary>
+        public T Properties { get; set; } = new T();
+    }
 }

@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Rock.Chart;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -214,7 +215,8 @@ FROM (
                     DateTime? lastRunDateTime = metric.LastRunDateTime ?? startOfWeek;
 
                     // Get all the scheduled times that the Metric was scheduled to run since that last time it was run.
-                    var scheduledDateTimesToProcess = metric.Schedule.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList();
+                    var scheduledDateTimesToProcess = metric.Schedule?.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList() ?? new List<DateTime>();
+
                     if ( isManualRun )
                     {
                         // If this is a manual run, there should not be any scheduled date times to process.
@@ -317,7 +319,7 @@ FROM (
                                 if ( !string.IsNullOrWhiteSpace( metric.SourceSql ) )
                                 {
                                     string formattedSql = metric.SourceSql.ResolveMergeFields( metric.GetMergeObjects( scheduleDateTime ) );
-                                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
+                                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null, commandTimeout );
 
                                     if ( tableResult.Columns.Count >= 2 && tableResult.Columns[1].ColumnName == "MetricValueDateTime" )
                                     {
@@ -515,8 +517,8 @@ FROM (
                                         ).Distinct()
                                         .ToArray(); // the result needs to be collected in the memory as it is being used in the following two queries
 
-                                    rockContextForMetricValues.MetricValuePartitions.RemoveRange( metricsToBeDeleted.Select( m => m.metricValuePartition ) );
-                                    rockContextForMetricValues.MetricValues.RemoveRange( metricsToBeDeleted.Select( m => m.metricValue ) );
+                                    rockContextForMetricValues.Set<MetricValuePartition>().RemoveRange( metricsToBeDeleted.Select( m => m.metricValuePartition ) );
+                                    rockContextForMetricValues.Set<MetricValue>().RemoveRange( metricsToBeDeleted.Select( m => m.metricValue ) );
                                 }
 
                                 metricValueService.AddRange( metricValuesToAdd );
@@ -576,7 +578,7 @@ FROM (
         /// <param name="metricValueType">Type of the metric value.</param>
         /// <param name="partitionValues">
         /// A collection of identifiers that specify the metric partition values to be included.
-        /// If not specified, values from all parititions will be included.
+        /// If not specified, values from all partitions will be included.
         /// </param>
         /// <returns></returns>
         public IQueryable<MetricValue> GetMetricValuesQuery( List<int> metricIds, MetricValueType? metricValueType = null, DateTime? startDate = null, DateTime? endDate = null, List<EntityIdentifierByTypeAndId> partitionValues = null )
@@ -602,7 +604,7 @@ FROM (
                 qry = qry.Where( a => a.MetricValueDateTime < endDate.Value );
             }
 
-            // If partition filters are specified, ensure that the MetricValue has matches the entity instance and is for the same Entity Type as the partition.
+            // If partition filters are specified, ensure that the MetricValue matches the entity instance and is for the same Entity Type as the partition.
             if ( partitionValues != null )
             {
                 partitionValues = partitionValues.Where( pv => pv.EntityTypeId != 0 && pv.EntityId != 0 ).ToList();
@@ -616,7 +618,7 @@ FROM (
         }
 
         /// <summary>
-        /// Gets the summary.
+        /// Gets a set of values for the specified Metrics, and summarizes the values for all of the specified partitions.
         /// </summary>
         /// <param name="metricIds">The metric identifier list.</param>
         /// <param name="startDate">The start date.</param>
@@ -624,7 +626,7 @@ FROM (
         /// <param name="metricValueType">Type of the metric value.</param>
         /// <param name="partitionValues">
         /// A collection of identifiers that specify the metric partition values to be included.
-        /// If not specified, values from all parititions will be included.
+        /// If not specified, values from all partitions will be included.
         /// </param>
         /// <returns></returns>
         public List<MetricValueSummary> GetMetricValueSummaries( List<int> metricIds, MetricValueType? metricValueType = null, DateTime? startDate = null, DateTime? endDate = null, List<EntityIdentifierByTypeAndId> partitionValues = null )
@@ -786,7 +788,7 @@ FROM (
         }
 
         /// <summary>
-        /// Identifies an entity value that identifies a metric parition.
+        /// Identifies an entity value that identifies a metric partition.
         /// </summary>
         public class EntityIdentifierByTypeAndId
         {

@@ -15,7 +15,7 @@
                     </template>
                     <template v-else>
                         <div v-for="item in items" class="checkbox">
-                            <label :for="uniqueIdForItem(uniqueId, item)">
+                            <label :for="uniqueIdForItem(uniqueId, item)" :class="labelClasses(item)">
                                 <input :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                                 <span class="label-text">{{ textForItem(item) }}</span>
                             </label>
@@ -63,6 +63,11 @@
             default: false
         },
 
+        displayAsCheckList: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         compareValue: {
             type: Function as PropType<((value: string, itemValue: string) => boolean)>,
             default: defaultControlCompareValue
@@ -83,19 +88,21 @@
     const containerClasses = computed(() => {
         const classes: string[] = [];
 
-        if (props.horizontal) {
-            classes.push("rockcheckboxlist-horizontal");
-
-            if (props.repeatColumns > 0) {
-                classes.push(`in-columns in-columns-${props.repeatColumns}`);
-            }
-        }
-        else {
-            classes.push("rockcheckboxlist-vertical input-group");
+        if (props.repeatColumns > 0) {
+            classes.push(`in-columns in-columns-${props.repeatColumns}`);
         }
 
         return classes.join(" ");
     });
+
+    const labelClasses = (item: ListItemBag): string => {
+        const classes: string[] = [];
+        if (props.displayAsCheckList && internalValue.value.includes(item.value ?? "")) {
+            classes.push("text-linethrough");
+        }
+
+        return classes.join(" ");
+    };
 
     const syncInternalValue = (): void => {
         let value = [...props.modelValue];

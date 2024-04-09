@@ -1,0 +1,76 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList v-model="internalValue"
+                  :items="valueItems"
+                  v-bind="standardProps"
+                  :showBlankItem="false" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        modelValue: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number): void;
+    }>();
+
+    // #region Values
+
+    const validValues = [30, 60, 90, 180];
+    const valueItems: ListItemBag[] = [
+        { value: "30", text: "Past 30 days" },
+        { value: "60", text: "Past 60 days" },
+        { value: "90", text: "Past 90 days" },
+        { value: "180", text: "Past 6 months" },
+        { value: "0", text: "All" }
+    ];
+
+    const standardProps = useStandardRockFormFieldProps(props);
+    const internalValue = ref(validatedValue(props.modelValue));
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Validates the value and returns a string that matches one of the
+     * valueItems items.
+     */
+    function validatedValue(value: number): string {
+        if (value <= 0) {
+            return "0";
+        }
+
+        if (validValues.indexOf(value) !== -1) {
+            return value.toString();
+        }
+
+        return "180";
+    }
+
+    // #endregion
+
+    watch(internalValue, () => {
+        const value = toNumber(internalValue.value);
+
+        if (value !== props.modelValue) {
+            emit("update:modelValue", value);
+        }
+    });
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = validatedValue(props.modelValue);
+    });
+</script>

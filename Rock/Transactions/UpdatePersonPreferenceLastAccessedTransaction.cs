@@ -67,7 +67,7 @@ namespace Rock.Transactions
 
                         personPreferences.ForEach( pp => pp.LastAccessedDateTime = now );
 
-                        rockContext.SaveChanges();
+                        rockContext.SaveChanges( true );
                     }
                 }
                 catch ( Exception ex )

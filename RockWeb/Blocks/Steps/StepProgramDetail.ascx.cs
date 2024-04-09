@@ -1354,7 +1354,7 @@ namespace RockWeb.Blocks.Steps
                     stepTypeIds.Contains( x.StepTypeId ) &&
                     x.CompletedDateKey != null );
 
-            var campusContext = ContextEntity<Campus>();
+            var campusContext = GetCampusContextOrNull();
             if ( campusContext != null )
             {
                 query = query.Where( s => s.CampusId == campusContext.Id );
@@ -1414,7 +1414,7 @@ namespace RockWeb.Blocks.Steps
                 query = query.Where( x => x.CompletedDateTime < compareDate );
             }
 
-            var campusContext = ContextEntity<Campus>();
+            var campusContext = GetCampusContextOrNull();
             if ( campusContext != null )
             {
                 query = query.Where( s => s.CampusId == campusContext.Id );
@@ -1445,7 +1445,7 @@ namespace RockWeb.Blocks.Steps
                     stepTypeIds.Contains( x.StepTypeId ) &&
                     x.StartDateKey != null );
 
-            var campusContext = ContextEntity<Campus>();
+            var campusContext = GetCampusContextOrNull();
             if ( campusContext != null )
             {
                 query = query.Where( s => s.CampusId == campusContext.Id );
@@ -1568,6 +1568,17 @@ namespace RockWeb.Blocks.Steps
             }
 
             hfActiveDialog.Value = string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the campus context, returns null if there is only no more than one active campus.
+        /// This is to prevent to filtering out of Steps that are associated with currently inactive
+        /// campuses or no campus at all.
+        /// </summary>
+        /// <returns></returns>
+        private Campus GetCampusContextOrNull()
+        {
+            return ( CampusCache.All( false ).Count > 1 ) ? ContextEntity<Campus>() : null;
         }
 
         #endregion
@@ -1826,7 +1837,7 @@ namespace RockWeb.Blocks.Steps
                     && x.StepType.IsActive
                     && x.CompletedDateKey.HasValue );
 
-            var campusContext = ContextEntity<Campus>();
+            var campusContext = GetCampusContextOrNull();
             if ( campusContext != null )
             {
                 stepsCompletedQuery = stepsCompletedQuery.Where( s => s.CampusId == campusContext.Id );

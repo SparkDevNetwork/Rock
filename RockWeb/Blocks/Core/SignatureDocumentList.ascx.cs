@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Core
 
             if ( document != null )
             {
-                if ( !UserCanEdit && !document.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                if ( !document.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     mdGridWarningValues.Show( "Sorry, you're not authorized to delete this signature document.", ModalAlertType.Alert );
                     return;
@@ -152,6 +152,13 @@ namespace RockWeb.Blocks.Core
                 {
                     mdGridWarningValues.Show( errorMessage, ModalAlertType.Information );
                     return;
+                }
+
+                // Delete the binary file associated with the Signature Document
+                if(document.BinaryFile != null)
+                {
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    binaryFileService.Delete( document.BinaryFile );
                 }
 
                 signatureDocumentService.Delete( document );
@@ -193,9 +200,21 @@ namespace RockWeb.Blocks.Core
             else
             {
                 int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
-                if ( documentTypeId.HasValue )
+                if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
-                    var isLegacyTemplate = new SignatureDocumentTemplateService( new RockContext() ).GetSelect( documentTypeId.Value, s => s.ProviderEntityTypeId.HasValue );
+                    var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
+                    var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
+
+                    // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
+                    bool canEdit = signatureDocumentTemplate?.IsAuthorized( Authorization.EDIT, CurrentPerson ) ?? false;
+                    bool canView = canEdit || ( signatureDocumentTemplate?.IsAuthorized( Authorization.VIEW, CurrentPerson ) ?? false );
+
+                    if ( !canView )
+                    {
+                        pnlContent.Visible = false;
+                    }
+
+                    var isLegacyTemplate = signatureDocumentTemplateService.GetSelect( documentTypeId.Value, s => s.ProviderEntityTypeId.HasValue );
                     gSignatureDocuments.Actions.ShowAdd = isLegacyTemplate;
 
                     qry = qry.Where( d =>
@@ -228,9 +247,14 @@ namespace RockWeb.Blocks.Core
                 d.LastInviteDate,
                 d.SignedDateTime,
                 d.SignatureDocumentTemplate,
-                FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-text-o fa-lg'></i>" : "",
-                FileId = d.BinaryFileId ?? 0
-            } ).ToList();
+                FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "<i class='fa fa-exclamation-triangle text-danger' title='File deleted'></i>",
+                FileGuid = d.BinaryFile == null ? Guid.Empty : d.BinaryFile.Guid,
+            } )
+                .GroupBy( d => d.SignatureDocumentTemplate ) // grouping by the signature document template to avoid duplicate checks for authorization on the same
+                .ToList()
+                .Where( d => d.Key != null && d.Key.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                .SelectMany( d => d )
+                .ToList();
 
             gSignatureDocuments.DataBind();
         }

@@ -126,6 +126,7 @@ namespace Rock.Model
             target.ConfirmationFromEmail = source.ConfirmationFromEmail;
             target.ConfirmationFromName = source.ConfirmationFromName;
             target.ConfirmationSubject = source.ConfirmationSubject;
+            target.ConnectionStatusValueId = source.ConnectionStatusValueId;
             target.Cost = source.Cost;
             target.DefaultPayment = source.DefaultPayment;
             target.Description = source.Description;
@@ -138,12 +139,14 @@ namespace Rock.Model
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;
+            target.IsPaymentPlanAllowed = source.IsPaymentPlanAllowed;
             target.IsRegistrationMeteringEnabled = source.IsRegistrationMeteringEnabled;
             target.LoginRequired = source.LoginRequired;
             target.MaxRegistrants = source.MaxRegistrants;
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.Notify = source.Notify;
+            target.PaymentPlanFrequencyValueIds = source.PaymentPlanFrequencyValueIds;
             target.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
             target.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
             target.PaymentReminderFromName = source.PaymentReminderFromName;

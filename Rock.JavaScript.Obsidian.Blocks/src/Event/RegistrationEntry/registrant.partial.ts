@@ -29,7 +29,7 @@ import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
-import FeeField from "./feeField.partial";
+import FeeField from "./feeField.partial.obs";
 import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
 import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
@@ -39,6 +39,7 @@ import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { smoothScrollToTop } from "@Obsidian/Utility/page";
 
 const store = useStore();
 
@@ -87,7 +88,7 @@ export default defineComponent({
             required: true
         }
     },
-    setup() {
+    setup(props) {
         const invokeBlockAction = useInvokeBlockAction();
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
         const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
@@ -98,6 +99,14 @@ export default defineComponent({
         const formResetKey = ref("");
         const isNextDisabled = ref(false);
         const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
+
+        for (const fee of registrationEntryState.viewModel.fees) {
+            for (const feeItem of fee.items) {
+                if (typeof props.currentRegistrant.feeItemQuantities[feeItem.guid] !== "number") {
+                    props.currentRegistrant.feeItemQuantities[feeItem.guid] = 0;
+                }
+            }
+        }
 
         return {
             formResetKey,
@@ -126,7 +135,22 @@ export default defineComponent({
     },
     computed: {
         showPrevious(): boolean {
-            return this.registrationEntryState.firstStep !== this.registrationEntryState.steps.perRegistrantForms;
+            // Allow to navigate to other registrants
+            if(this.registrationEntryState.currentRegistrantIndex > 0) {
+                return true;
+            }
+
+            // Allow to navigate to registration attributes
+            if(this.registrationEntryState.viewModel?.registrationAttributesStart?.length > 0) {
+                return true;
+            }
+
+            // Allow back to intro page if this is not an existing registration
+            if(!this.registrationEntryState.viewModel.isExistingRegistration) {
+                return true;
+            }
+
+            return false;
         },
         viewModel(): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.viewModel;
@@ -168,9 +192,9 @@ export default defineComponent({
 
         /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
         currentFormFieldsAugmented(): RegistrationEntryBlockFormFieldViewModel[] {
-            const fields = JSON.parse(JSON.stringify(this.currentFormFields));
+            const fields = JSON.parse(JSON.stringify(this.currentFormFields)) as RegistrationEntryBlockFormFieldViewModel[];
 
-            fields.forEach((value, index) => {
+            fields.forEach(value => {
                 if (value.fieldSource != this.fieldSources.personField) {
                     let isVisible = true;
                     switch (value.visibilityRuleType) {
@@ -236,7 +260,7 @@ export default defineComponent({
                 const registrant = this.registrationEntryState.registrants[i];
                 const info = getRegistrantBasicInfo(registrant, this.viewModel.registrantForms);
 
-                if (!usedFamilyGuids[registrant.familyGuid] && info?.firstName && info?.lastName) {
+                if (registrant.familyGuid && !usedFamilyGuids[registrant.familyGuid] && info?.firstName && info?.lastName) {
                     options.push({
                         text: `${info.firstName} ${info.lastName}`,
                         value: registrant.familyGuid
@@ -256,7 +280,7 @@ export default defineComponent({
             }
 
             // Add the current person (registrant) if not already added
-            const familyGuid = usedFamilyGuids[this.currentRegistrant.familyGuid] == true
+            const familyGuid = !this.currentRegistrant.familyGuid || usedFamilyGuids[this.currentRegistrant.familyGuid] == true
                 ? newGuid()
                 : this.currentRegistrant.familyGuid;
             options.push({
@@ -309,8 +333,10 @@ export default defineComponent({
                 return;
             }
 
-
             this.registrationEntryState.currentRegistrantFormIndex--;
+
+            // Wait for the previous form to be rendered and then scroll to the top
+            setTimeout(() => smoothScrollToTop(), 10);
         },
         async onNext(): Promise<void> {
             this.clearFormErrors();
@@ -329,10 +355,17 @@ export default defineComponent({
                     });
 
                     if (result.isSuccess && result.data) {
-                        this.signatureSource = (result.data as Record<string, string>).documentHtml;
-                        this.signatureToken = (result.data as Record<string, string>).securityToken;
+                        const data = (result.data as Record<string, string>);
 
-                        lastFormIndex += 1;
+                        if (data.existingSignatureDocumentGuid) {
+                            this.currentRegistrant.existingSignatureDocumentGuid = data.existingSignatureDocumentGuid;
+                        }
+                        else {
+                            this.signatureSource = data.documentHtml;
+                            this.signatureToken = data.securityToken;
+
+                            lastFormIndex += 1;
+                        }
                     }
                     else {
                         console.error(result.data);
@@ -350,6 +383,9 @@ export default defineComponent({
             }
 
             this.registrationEntryState.currentRegistrantFormIndex++;
+
+            // Wait for the next form to be rendered and then scroll to the top
+            setTimeout(() => smoothScrollToTop(), 10);
         },
         updateFeeItemsRemaining(): void {
             // calculate fee items remaining
@@ -360,10 +396,6 @@ export default defineComponent({
 
             // Get all of the fee items in use for all registrants and add them to the combinedFeeItemQuantities Record
             for(const registrant of self.registrationEntryState.registrants) {
-                if(registrant.guid === this.currentRegistrant.guid) {
-                    continue;
-                }
-
                 for (const feeItemGuid in registrant.feeItemQuantities) {
 
                     if (registrant.feeItemQuantities[feeItemGuid] > 0) {
@@ -388,7 +420,7 @@ export default defineComponent({
                             continue;
                         }
 
-                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid];
+                        const usedFeeItemCount = combinedFeeItemQuantities[feeItem.guid] ?? 0;
                         if(usedFeeItemCount !== undefined && usedFeeItemCount !== null) {
                             feeItem.countRemaining = feeItem.originalCountRemaining - usedFeeItemCount;
                         }
@@ -431,7 +463,7 @@ export default defineComponent({
 
         /** Copy the values that are to have current values used */
         copyValuesFromFamilyMember(): void {
-            if (!this.familyMember || this.registrationEntryState.navBack) {
+            if (!this.familyMember || this.registrationEntryState.navBack || this.registrationEntryState.viewModel.isExistingRegistration) {
                 // Nothing to copy
                 return;
             }
@@ -439,6 +471,13 @@ export default defineComponent({
             // If the family member selection is made then set all form fields where use existing value is enabled
             for (const form of this.viewModel.registrantForms) {
                 for (const field of form.fields) {
+                    // Do not set common fields if they are of type
+                    // Registrant Attribute since there is no value to set.
+                    // Fixes issue #5610.
+                    if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                        continue;
+                    }
+
                     if (field.guid in this.familyMember.fieldValues) {
                         const familyMemberValue = this.familyMember.fieldValues[field.guid];
 
@@ -458,18 +497,80 @@ export default defineComponent({
                 }
             }
         },
+
+        async getFieldValues(): Promise<void> {
+            const result = await this.invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", {
+                args: this.getRegistrationEntryBlockArgs(),
+                forms: this.viewModel.registrantForms,
+                registrantGuid: this.currentRegistrant.guid
+            });
+
+            if (result.isSuccess && result.data) {
+                for (const form of this.viewModel.registrantForms) {
+                    for (const field of form.fields) {
+                        // Check if we gota value for the attribute
+                        if (field.guid in result.data) {
+                            const formFieldValue = result.data[field.guid];
+                            const currentFormFieldValue = this.currentRegistrant.fieldValues[field.guid];
+
+                            if(currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
+                                if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
+                                    this.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
+                                }
+                                else {
+                                    this.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        onUpdateRegistrantFee(values: Record<string, number>): void {
+            const newValue = {...this.currentRegistrant.feeItemQuantities};
+
+            for (const key of Object.keys(values)) {
+                newValue[key] = values[key];
+            }
+
+            this.currentRegistrant.feeItemQuantities = newValue;
+
+            this.updateFeeItemsRemaining();
+        },
+
+        onSetFamilyGuid(familyGuid: Guid): void {
+            if (familyGuid !== this.currentRegistrant.familyGuid) {
+                this.currentRegistrant.familyGuid = familyGuid;
+                this.currentRegistrant.personGuid = null;
+            }
+        },
+
+        onSetPersonGuid(guid: Guid): void {
+            if (guid !== this.currentRegistrant.personGuid) {
+                this.currentRegistrant.personGuid = guid;
+
+                if (this.familyMember) {
+                    this.currentRegistrant.familyGuid = this.familyMember.familyGuid;
+                }
+            }
+        }
     },
     watch: {
-        "currentRegistrant.familyGuid"(): void {
-            // Clear the person guid if the family changes
-            this.currentRegistrant.personGuid = null;
-        },
         familyMember: {
             handler(): void {
                 if (!this.familyMember) {
                     // If the family member selection is cleared then clear all form fields
                     for (const form of this.viewModel.registrantForms) {
                         for (const field of form.fields) {
+                            // Do not touch common fields if they are of type
+                            // Registrant Attribute since we don't set them when
+                            // selecting a family member either.
+                            // Fixes issue #5610.
+                            if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                                continue;
+                            }
+
                             delete this.currentRegistrant.fieldValues[field.guid];
                         }
                     }
@@ -482,19 +583,20 @@ export default defineComponent({
         }
     },
     created() {
+        this.getFieldValues();
         this.copyValuesFromFamilyMember();
     },
     template: `
-<div>
+<div class="registrationentry-registrant-details" >
     <RockForm @submit="onNext" :formResetKey="formResetKey">
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
                 <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
-                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :items="familyOptions" validationTitle="Family" />
+                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" :modelValue="currentRegistrant.familyGuid" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
                 </div>
                 <div v-if="familyMemberOptions.length" class="row">
                     <div class="col-md-6">
-                        <DropDownList v-model="currentRegistrant.personGuid" :items="familyMemberOptions" label="Family Member to Register" />
+                        <DropDownList :modelValue="currentRegistrant.personGuid" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" label="Family Member to Register" />
                     </div>
                 </div>
             </template>
@@ -510,7 +612,7 @@ export default defineComponent({
             <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
                 <h4>{{pluralFeeTerm}}</h4>
                 <template v-for="fee in viewModel.fees" :key="fee.guid">
-                    <FeeField :fee="fee" v-model="currentRegistrant.feeItemQuantities" />
+                    <FeeField :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
                 </template>
             </div>
         </template>

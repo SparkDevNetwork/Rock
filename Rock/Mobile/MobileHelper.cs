@@ -194,6 +194,7 @@ namespace Rock.Mobile
                 PersonGuid = person.Guid,
                 PersonId = person.Id,
                 AlternateId = alternateId,
+                IdKey = person.IdKey,
                 AttributeValues = GetMobileAttributeValues( person, personAttributes )
             };
         }
@@ -388,7 +389,9 @@ namespace Rock.Mobile
                 TimeZone = timeZoneName,
                 PushTokenUpdateValue = additionalSettings.PushTokenUpdateValue,
                 Auth0ClientId = additionalSettings.Auth0ClientId,
-                Auth0ClientDomain = additionalSettings.Auth0Domain
+                Auth0ClientDomain = additionalSettings.Auth0Domain,
+                EntraTenantId = additionalSettings.EntraTenantId,
+                EntraClientId = additionalSettings.EntraClientId
             };
 
             //
@@ -527,7 +530,8 @@ namespace Rock.Mobile
                 var mobileCampus = new MobileCampus
                 {
                     Guid = campus.Guid,
-                    Name = campus.Name
+                    Name = campus.Name,
+                    Id = campus.IdKey
                 };
 
                 if ( campus.Location != null )

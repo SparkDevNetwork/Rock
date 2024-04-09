@@ -47,10 +47,14 @@ export interface ITreeItemProvider {
     /**
      * Get the root items to be displayed in the tree list.
      *
+     * @param expandToValues The values that should be auto-expanded to. This will contain
+     * the nodes that should be visible when the data is returned, they should not be
+     * expanded themselves, only any ancestor nodes.
+     *
      * @returns A collection of TreeItem objects, optionally wrapped in a Promise
      * if the loading is being performed asynchronously.
      */
-    getRootItems(): Promise<TreeItemBag[]> | TreeItemBag[];
+    getRootItems(expandToValues: string[]): Promise<TreeItemBag[]> | TreeItemBag[];
 
     /**
      * Get the child items of the given tree item.
@@ -61,6 +65,17 @@ export interface ITreeItemProvider {
      * if the loading is being performed asynchronously.
      */
     getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> | TreeItemBag[];
+
+    /**
+     * Checks if the item can be selected by the individual. This function
+     * is optional.
+     *
+     * @param item The item that is about to be selected.
+     * @param isSelectable True if the tree view considers the item selectable.
+     *
+     * @returns A boolean that determines the final selectable state of the item.
+     */
+    canSelectItem?(item: TreeItemBag, isSelectable: boolean): boolean;
 }
 
 /**

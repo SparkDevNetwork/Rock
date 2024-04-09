@@ -51,6 +51,7 @@ namespace Rock.Jobs
 
             InsertAnalyitcsSourceDateData( commandTimeout );
             InsertIdentityVerificationCodeData( commandTimeout );
+            InsertAnalyticsSourceZipCodeData( commandTimeout );
 
             DeleteJob( this.ServiceJobId );
         }
@@ -71,16 +72,28 @@ namespace Rock.Jobs
             }
         }
 
-        private void InsertAnalyitcsSourceDateData( int commandTimeout )
+        internal void InsertAnalyitcsSourceDateData( int commandTimeout )
         {
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
-                if ( !rockContext.AnalyticsSourceDates.AsQueryable().Any() )
+                if ( !rockContext.Set<AnalyticsSourceDate>().AsQueryable().Any() )
                 {
                     var analyticsStartDate = new DateTime( RockDateTime.Today.AddYears( -150 ).Year, 1, 1 );
                     var analyticsEndDate = new DateTime( RockDateTime.Today.AddYears( 101 ).Year, 1, 1 ).AddDays( -1 );
                     Rock.Model.AnalyticsSourceDate.GenerateAnalyticsSourceDateData( 1, false, analyticsStartDate, analyticsEndDate );
+                }
+            }
+        }
+
+        private void InsertAnalyticsSourceZipCodeData( int commandTimeout )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+                if ( !rockContext.Set<AnalyticsSourceZipCode>().AsQueryable().Any() )
+                {
+                    Rock.Model.AnalyticsSourceZipCode.GenerateAnalyticsSourceZipCodeData();
                 }
             }
         }

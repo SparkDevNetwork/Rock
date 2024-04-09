@@ -27,6 +27,7 @@ using System.Dynamic;
 using System.Linq;
 using Rock;
 using System.Diagnostics;
+using System.ComponentModel.Composition.Primitives;
 
 namespace Rock.Lava.Helpers
 {
@@ -171,6 +172,7 @@ namespace Rock.Lava.Helpers
 
                 if ( mediaItem == null )
                 {
+                    item.MediaId = null;
                     continue;
                 }
 
@@ -254,6 +256,10 @@ namespace Rock.Lava.Helpers
 
                     mediaIds.Add( mediaId.Value );
                 }
+                else
+                {
+                    item.MediaId = null;
+                }
             }
 
             // Get watches for the items
@@ -290,8 +296,78 @@ namespace Rock.Lava.Helpers
 
                 AppendWatchDataToDynamic( source, mediaWatches );
             }
+            else
+            {
+                source.MediaId = null;
+            }
 
             return source;
+        }
+
+        /// <summary>
+        /// Appends watch data for a dictionary. The value of each dictionary item needs to have a property of MediaId.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="startDate"></param>
+        /// <param name="currentPerson"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        internal static dynamic AppendMediaForDictionary( IDictionary<string, object> source, DateTime? startDate, Person currentPerson, RockContext rockContext )
+        {
+            // Get list of media ids
+            var mediaIds = new List<int>();
+
+            // Cast dynamic as Dictionary
+            IDictionary<string, object> sourceDictionary = source;
+
+            // Harvest Media Ids
+            foreach( var media in sourceDictionary )
+            {
+                if ( media.Value is IDictionary<string, object> mediaObject )
+                {
+                    if ( !mediaObject.ContainsKey( "MediaId" ) )
+                    {
+                        continue;
+                    }
+
+                    var mediaId = ( int? ) ConvertDynamicToInt( mediaObject["MediaId"] );
+
+                    if ( mediaId.HasValue )
+                    {
+                        mediaIds.Add( mediaId.Value );
+                    }
+                }
+            }
+
+            // Get watch data
+            var mediaWatches = GetWatchInteractions( mediaIds, startDate, currentPerson, rockContext );
+
+            // Append the watch data to the dynamic object
+            foreach ( var media in sourceDictionary )
+            {
+                if ( media.Value is IDictionary<string, object> mediaObject )
+                {
+                    AppendWatchDataToDictionary( mediaObject, mediaWatches );
+                }
+            }
+
+            return source;
+        }
+
+        /// <summary>
+        /// Determines if the dynamic object has a specified key.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        internal static bool DynamicContainsKey( dynamic source, string key )
+        {
+            if ( ( ( IDictionary<String, object> ) source ).ContainsKey( key ) )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -329,6 +405,47 @@ namespace Rock.Lava.Helpers
         }
 
         /// <summary>
+        /// Appends the watch data to a dictionary media item.
+        /// </summary>
+        /// <param name="media"></param>
+        /// <param name="mediaWatches"></param>
+        private static void AppendWatchDataToDictionary( IDictionary<string, object> media, List<WatchInteractionSummary> mediaWatches )
+        {
+            // Return if the dictionary item does not have a MediaId
+            if ( !media.ContainsKey( "MediaId" ) )
+            {
+                return;
+            }
+
+            // Get relevant watch
+            var watch = mediaWatches.Where( w => w.MediaId == media["MediaId"].ToString().AsInteger() )
+                    .OrderByDescending( i => i.InteractionDateTime )
+                    .FirstOrDefault();
+
+            // If no watch
+            if ( watch == null )
+            {
+                media.AddOrReplace( "HasWatched", false );
+                return;
+            }
+
+            media.AddOrReplace( "WatchLength", watch.InteractionLength );
+            media.AddOrReplace( "HasWatched", true );
+            media.AddOrReplace( "WatchInteractionGuid", watch.InteractionGuid );
+            media.AddOrReplace( "WatchInteractionDateTime", watch.InteractionDateTime );
+
+            try
+            {
+                var watchData = ( dynamic ) watch.InteractionData.FromJsonDynamic();
+                media.AddOrReplace( "WatchMap", (object) watchData.WatchMap );
+            }
+            catch ( Exception ) { }
+
+            return;
+        }
+
+
+        /// <summary>
         /// Gets media watch information for a given set of media ids.
         /// </summary>
         /// <param name="mediaIds"></param>
@@ -338,6 +455,11 @@ namespace Rock.Lava.Helpers
         /// <returns></returns>
         private static List<WatchInteractionSummary> GetWatchInteractions( List<int> mediaIds, DateTime? startDate, Person currentPerson, RockContext rockContext )
         {
+            if ( currentPerson == null )
+            {
+                return new List<WatchInteractionSummary>();
+            }
+
             // Get watches for the items
             var mediaEventsInteractionChannelId = InteractionChannelCache.Get( SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() ).Id;
 

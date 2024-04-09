@@ -56,7 +56,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         Order = 1 )]
 
     [BooleanField( "Hide personal SMS numbers",
-        Description = "Only SMS Numbers that are not associated with a person. The numbers without an Assigned To Person value.",
+        Description = "When enabled, only SMS Numbers that are not 'Assigned to a person' will be shown.",
         DefaultBooleanValue = false,
         Key = AttributeKey.HidePersonalSmsNumbers,
         Order = 2 )]
@@ -150,11 +150,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
         private IEnumerable<PhoneNumberBag> LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )
-                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) );
+                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) && spn.IsSmsEnabled );
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             if ( selectedNumberGuids.Any() )

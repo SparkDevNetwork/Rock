@@ -1,6 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Documents.ascx.cs" Inherits="RockWeb.Blocks.Crm.Documents" %>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('.js-document-link').attr('rel', 'noopener noreferrer');
+            });
+        </script>
         <asp:Panel ID="pnlContent" runat="server">
             <Rock:NotificationBox ID="nbMessage" runat="server" Text="" Visible="false" NotificationBoxType="Warning" Mode="PassThrough"></Rock:NotificationBox>
 
@@ -33,13 +38,7 @@
                             <Rock:RockBoundField DataField="CreatedByPersonName" HeaderText="Created By"></Rock:RockBoundField>
                             <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Created On" FormatAsElapsedTime="true" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left"></Rock:DateTimeField>
 
-                            <Rock:RockTemplateField ShowHeader="false"  ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px" ItemStyle-CssClass="grid-select-field">
-                                <ItemTemplate>
-                                    <button class="btn btn-square btn-link text-color" data-toggle="tooltip" title="<%# Eval("Description") %>">
-                                        <i class="fa fa-sticky-note"></i>
-                                    </button>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
+                            <asp:HyperLinkField ShowHeader="false" Text="<i class='fa fa-file-alt'></i>" Target="_blank" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-columncommand" HeaderStyle-HorizontalAlign="Center" ControlStyle-CssClass="js-document-link btn btn-default"/>
 
                             <Rock:RockTemplateField ShowHeader="false" ItemStyle-CssClass="grid-columncommand">
                                 <ItemTemplate>
@@ -65,6 +64,7 @@
                     <%-- Edit Controls --%>
                         <div class="panel-body">
                         <asp:ValidationSummary ID="valAddEditDocumentSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" DisplayMode="BulletList" />
+                        <asp:CustomValidator ID="cvDocuement" runat="server" Display="None" />
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlAddEditDocumentType" runat="server" Label="Document Type" Required="true" OnSelectedIndexChanged="ddlAddEditDocumentType_SelectedIndexChanged" AutoPostBack="true"/>

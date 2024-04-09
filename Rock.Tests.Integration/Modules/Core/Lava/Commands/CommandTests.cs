@@ -18,15 +18,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Bus.Queue;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
     /// <summary>
     /// Tests for Lava-specific commands implemented as Liquid custom blocks and tags.
@@ -51,7 +53,7 @@ namespace Rock.Tests.Integration.Core.Lava
             var expectedOutput = @"
 <script>
     (function(){
-        alert('Message 1');    
+        alert('Message 1');
     })();
 </script>
 <script>
@@ -395,7 +397,7 @@ findme-interactiontest3
             var expectedOutput = @"
 <script>
     (function(){
-        alert('Hello world!');    
+        alert('Hello world!');
     })();
 </script>
 ";
@@ -731,6 +733,28 @@ Brian;Daniel;Nancy;William;
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
+
+        [TestMethod]
+        public void WorkflowActivateBlock_WithAttributeParameterNamesAsMixedCase_PassesAttributeValuesCorrectly()
+        {
+            // Activate Workflow: IT Support
+            var input = @"
+{% workflowactivate WorkflowType:'51FE9641-FB8F-41BF-B09E-235900C3E53E' summary:'Test Workflow' DETAILS:'Here are the details...' %}
+    Title: {{ Workflow | Attribute:'Summary' }}<br>
+    Details: {{ Workflow | Attribute:'Details' }}
+{% endworkflowactivate %}
+";
+
+            var expectedOutput = @"
+Title: Test Workflow<br>
+Details: Here are the details...
+";
+
+            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
         #endregion
 
 

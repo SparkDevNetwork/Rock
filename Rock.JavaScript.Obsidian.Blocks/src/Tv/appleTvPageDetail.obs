@@ -4,45 +4,67 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <DetailBlock v-if="!blockError"
-                 v-model:mode="panelMode"
-                 :name="panelName"
-                 :labels="blockLabels"
-                 :entityKey="entityKey"
-                 :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
-                 :isAuditHidden="false"
-                 :isBadgesVisible="true"
-                 :isDeleteVisible="false"
-                 :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
-                 :headerActions="headerActions"
-                 @cancelEdit="onCancelEdit"
-                 @delete="onDelete"
-                 @edit="onEdit"
-                 @save="onSave">
-        <template #view>
-            <ViewPanel :modelValue="appleTvPageViewBag" :options="options" />
-        </template>
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel type="block" :title="panelName" :headerSecondaryActions="headerSecondaryActions">
 
-        <template #edit>
-            <EditPanel v-model="appleTvPageEditBag" :options="options" @propertyChanged="onPropertyChanged" />
-        </template>
-    </DetailBlock>
+            <template #headerActions>
+                <span class="action clickable text-info" title="Copy Page Guid to Clipboard" @click="onExportClick">
+                    <i class="fa fa-clipboard"></i>
+                </span>
+            </template>
+
+            <template #default>
+                <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
+                           v-model="appleTvPageEditBag"
+                           :options="options"
+                           @propertyChanged="onPropertyChanged" />
+
+                <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                    <AuditDetail :entityTypeGuid="EntityType.Page" :entityKey="entityKey" />
+                </Modal>
+            </template>
+
+            <template #footerActions>
+                <div v-if="panelMode !== DetailPanelMode.View">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onSaveForm">
+                        Save
+                    </RockButton>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onSaveAndContinueEditingForm">
+                        Save Continue Editing
+                    </RockButton>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancelEdit">
+                        Cancel
+                    </RockButton>
+                </div>
+            </template>
+
+        </Panel>
+    </RockForm>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./AppleTvPageDetail/editPanel.partial.obs";
-    import ViewPanel from "./AppleTvPageDetail/viewPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { NavigationUrlKey } from "./AppleTvPageDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { AppleTvPageBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageBag";
@@ -57,12 +79,13 @@
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const appleTvPageViewBag = ref(config.entity);
-    const appleTvPageEditBag = ref<AppleTvPageBag>({} as AppleTvPageBag);
+    const appleTvPageEditBag = ref(config.entity ?? {} as AppleTvPageBag);
+    const submitForm = ref(false);
+    const redirectAfterSave = ref(true);
+    const resetKey = ref("");
+    const showAuditDetailsModal = ref(false);
 
-    const entityTypeGuid = EntityType.Site;
-
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -70,7 +93,9 @@
         "attributeValues",
         "name",
         "description",
-        "showInMenu"
+        "showInMenu",
+        "pageTVML",
+        "rockCacheability"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(appleTvPageEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -83,48 +108,28 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return appleTvPageViewBag.value?.name ?? "New Page";
+        return appleTvPageEditBag.value?.name ?? "New Application";
     });
 
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return appleTvPageViewBag.value?.idKey ?? "";
+        return appleTvPageEditBag.value?.idKey ?? "";
     });
 
-    const headerActions = computed((): PanelAction[] | undefined => {
+    const headerSecondaryActions = computed((): PanelAction[] | undefined => {
         const actions: PanelAction[] = [];
 
-        if (!appleTvPageViewBag.value?.pageGuid) {
-            return undefined;
+        if (appleTvPageEditBag.value.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
+            });
         }
-
-        actions.push({
-            iconCssClass: "fa fa-clipboard",
-            title: "Copy Page Guid to Clipboard",
-            type: "info",
-            handler: onExportClick
-        });
 
         return actions;
-    });
-
-    /**
-     * Additional labels to display in the block panel.
-     */
-    const blockLabels = computed((): PanelAction[] | undefined => {
-        const labels: PanelAction[] = [];
-
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
-        }
-
-        return labels;
-    });
-
-    const isEditable = computed((): boolean => {
-        return config.isEditable === true && appleTvPageViewBag.value?.isSystem !== true;
     });
 
     const options = computed((): AppleTvPageDetailOptionsBag => {
@@ -139,8 +144,12 @@
 
     // #region Event Handlers
 
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
     const onExportClick = (event: Event): void => {
-        navigator.clipboard.writeText(appleTvPageViewBag.value?.pageGuid ?? "");
+        navigator.clipboard.writeText(appleTvPageEditBag.value?.pageGuid ?? "");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const jquery = <any>window[<any>"$"];
@@ -156,59 +165,9 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onCancelEdit(): Promise<boolean | string> {
-        if (!appleTvPageEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Event handler for the Delete button being clicked. Sends the
-     * delete request to the server and then redirects to the target page.
-     *
-     * @returns false if it should stay on the page; or a string containing a redirect URL.
-     */
-    async function onDelete(): Promise<false | string> {
-        errorMessage.value = "";
-
-        const result = await invokeBlockAction<string>("Delete", {
-            key: appleTvPageViewBag.value?.idKey
-        });
-
-        if (result.isSuccess && result.data) {
-            return result.data;
-        }
-        else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete site.";
-
-            return false;
-        }
-    }
-
-    /**
-     * Event handler for the Edit button being clicked. Request the edit
-     * details from the server and then enter edit mode.
-     *
-     * @returns true if the panel should enter edit mode; otherwise false.
-     */
-    async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag>>("Edit", {
-            key: appleTvPageViewBag.value?.idKey
-        });
-
-        if (result.isSuccess && result.data && result.data.entity) {
-            appleTvPageEditBag.value = result.data.entity;
-
-            return true;
-        }
-        else {
-            return false;
+    async function onCancelEdit(): Promise<void> {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
         }
     }
 
@@ -235,7 +194,7 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onSave(): Promise<boolean | string> {
+    async function onSave(): Promise<void> {
         errorMessage.value = "";
 
         const data: DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> = {
@@ -249,20 +208,26 @@
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "object") {
-                appleTvPageViewBag.value = result.data;
-
-                return true;
-            }
-            else if (result.statusCode === 201 && typeof result.data === "string") {
-                return result.data;
+            if (result.statusCode === 201 && typeof result.data === "string" && redirectAfterSave.value) {
+                window.location.href = makeUrlRedirectSafe(result.data);
             }
         }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save page.";
+        }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save site.";
-
-        return false;
     }
+
+    function onSaveForm(): void {
+        redirectAfterSave.value = true;
+        submitForm.value = true;
+    }
+
+    function onSaveAndContinueEditingForm(): void {
+        redirectAfterSave.value = false;
+        submitForm.value = true;
+    }
+
 
     // #endregion
 
@@ -273,7 +238,7 @@
         blockError.value = config.errorMessage;
     }
     else if (!config.entity) {
-        blockError.value = "The specified site could not be viewed.";
+        blockError.value = "The specified page could not be viewed.";
     }
     else if (!config.entity.idKey) {
         appleTvPageEditBag.value = config.entity;

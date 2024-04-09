@@ -5,12 +5,20 @@
             {{ props.grid.itemTerm }} List
         </div>
 
-        <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchVisible }">
+        <div class="grid-badges mr-3">
+            <span v-if="countMessage && isCountMessageVisible" class="label label-default">{{ countMessage }}</span>
+        </div>
+
+        <!-- This causes a break on extra small and small devices. -->
+        <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none grid-header-separator"></div>
+        <div class="flex-grow-1 d-md-none grid-header-fill" style="min-width: 1px;"></div>
+
+        <div class="grid-quick-filter grid-actions" v-if="isSearchVisible" :class="{ 'active': isSearchExpanded }">
             <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
                 <i class="fa fa-search fa-fw"></i>
             </button>
 
-            <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchVisible }">
+            <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchExpanded }">
                 <TextBox v-model="quickFilterValue" placeholder="Search" />
             </div>
         </div>
@@ -58,7 +66,25 @@
         visibleColumnCount: {
             type: Number as PropType<number>,
             default: 0
-        }
+        },
+
+        /** The text to display inside the row count badge. */
+        countMessage: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** Determines if the count message is visible. */
+        isCountMessageVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        /** Determines if the search box is visible. */
+        isSearchVisible: {
+            type: Boolean,
+            default: true
+        },
     });
 
     const emit = defineEmits<{
@@ -68,7 +94,7 @@
     // #region Values
 
     const quickFilterContainerElement = ref<HTMLElement>();
-    const isSearchVisible = ref(false);
+    const isSearchExpanded = ref(false);
     const quickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);
 
     // #endregion
@@ -125,14 +151,14 @@
      */
     function onSearchClick(): void {
         // Don't allow hiding the search box if there is content in it.
-        if (isSearchVisible.value && quickFilterValue.value) {
+        if (isSearchExpanded.value && quickFilterValue.value) {
             return;
         }
 
-        isSearchVisible.value = !isSearchVisible.value;
+        isSearchExpanded.value = !isSearchExpanded.value;
 
         // Focus the search box if it is visible.
-        if (isSearchVisible.value) {
+        if (isSearchExpanded.value) {
             nextTick(() => {
                 const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
                 searchBox?.focus();
@@ -159,7 +185,7 @@
                     const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
 
                     searchBox?.blur();
-                    isSearchVisible.value = false;
+                    isSearchExpanded.value = false;
                 }
                 else {
                     quickFilterValue.value = "";
@@ -171,7 +197,7 @@
         // for searching, open the search bar and focus the search box.
         if (!isTreeFocusable(event.target)) {
             if (event.key === "F" && event.ctrlKey && event.shiftKey) {
-                isSearchVisible.value = true;
+                isSearchExpanded.value = true;
 
                 nextTick(() => {
                     const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;

@@ -30,6 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^4.29.0",
     "@typescript-eslint/parser": "^4.29.0",
     "@vue/test-utils": "^2.0.0-rc.17",
+    "@vue/vue3-jest": "^27.0.0",
     "clean-css-cli": "5.3.0",
     "copyfiles": "^2.4.1",
     "cssnano": "5.1.8",
@@ -73,6 +74,7 @@
     "luxon": "^2.0.2",
     "mitt": "^3.0.0",
     "systemjs": " ^6.8.3",
+    "tslib": "^2.6.2",
     "vue": "3.2.35"
   }
 }

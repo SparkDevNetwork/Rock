@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Web;
 using Microsoft.Ajax.Utilities;
 using Rock.Attribute;
@@ -110,28 +111,41 @@ namespace Rock.Web.HttpModules
             if ( context.Request.FilePath.EndsWith( ".ashx" ) )
             {
                 activity = ObservabilityHelper.StartActivity( $"HANDLER: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                activity?.AddTag( "rock-otel-type", "rock-handler" );
+                activity?.AddTag( "rock.otel_type", "rock-handler" );
+
+                RockMetricSource.HandlerRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
             else if ( context.Request.Headers["X-Rock-Mobile-Api-Key"] != null )
             {
                 activity = ObservabilityHelper.StartActivity( $"MOBILE: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                activity?.AddTag( "rock-otel-type", "rock-mobile" );
+                activity?.AddTag( "rock.otel_type", "rock-mobile" );
+
+                RockMetricSource.MobileAppRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
             else if ( context.Request.Url.PathAndQuery.StartsWith( "/api/v2/tv" ) )
             {
                 activity = ObservabilityHelper.StartActivity( $"TV: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                activity?.AddTag( "rock-otel-type", "rock-tv" );
+                activity?.AddTag( "rock.otel_type", "rock-tv" );
+
+                RockMetricSource.TvAppRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
             else if ( context.Request.Url.PathAndQuery.StartsWith( "/api" ) )
             {
                 activity = ObservabilityHelper.StartActivity( $"API: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                activity?.AddTag( "rock-otel-type", "rock-api" );
+                activity?.AddTag( "rock.otel_type", "rock-api" );
+
+                RockMetricSource.ApiRequestCounter?.Add( 1, RockMetricSource.CommonTags ); 
             }
             else
             {
                 activity = ObservabilityHelper.StartActivity( $"WEB: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
-                activity?.AddTag( "rock-otel-type", "rock-web" );
+                activity?.AddTag( "rock.otel_type", "rock-web" );
+
+                RockMetricSource.ApiRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
+
+            // Increment the HTTP request metric for all requests
+            RockMetricSource.AllRequestCounter?.Add( 1, RockMetricSource.CommonTags );
 
             if ( activity != null )
             {

@@ -188,12 +188,14 @@ namespace Rock.Blocks.Core
                 if ( GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending" )
                 {
                     notes = notes.OrderByDescending( n => n.IsAlert == true )
+                        .ThenByDescending( n => n.IsPinned == true )
                         .ThenByDescending( n => n.CreatedDateTime )
                         .ToList();
                 }
                 else
                 {
                     notes = notes.OrderByDescending( n => n.IsAlert == true )
+                        .ThenByDescending( n => n.IsPinned == true )
                         .ThenBy( n => n.CreatedDateTime )
                         .ToList();
                 }
@@ -261,7 +263,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Gets the identifiers of the notes currently being watched by the person.
         /// </summary>
-        /// <param name="notes">The notes that willbe displayed to the person.</param>
+        /// <param name="notes">The notes that will be displayed to the person.</param>
         /// <param name="currentPerson">The current person the notes will be displayed to.</param>
         /// <param name="rockContext">The rock context to use when accessing the database.</param>
         /// <returns>A list of identifiers representing which notes are currently being watched.</returns>
@@ -280,7 +282,7 @@ namespace Rock.Blocks.Core
                     && noteIds.Contains( nw.NoteId.Value )
                     && nw.WatcherPersonAlias.PersonId == currentPerson.Id
                     && nw.IsWatching )
-                .Select( n => n.Id )
+                .Select( nw => nw.NoteId.Value )
                 .ToList();
 
             return watchedNoteIds;
@@ -305,6 +307,7 @@ namespace Rock.Blocks.Core
                 Text = note.Text,
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
+                IsPinned = note.IsPinned,
                 IsPrivate = note.IsPrivateNote,
                 IsWatching = noteType.AllowsWatching && watchedNoteIds.Contains( note.Id ),
                 IsEditable = note.IsAuthorized( Authorization.EDIT, currentPerson ),
@@ -449,6 +452,7 @@ namespace Rock.Blocks.Core
                     Text = note.Text,
                     IsAlert = note.IsAlert ?? false,
                     IsPrivate = note.IsPrivateNote,
+                    IsPinned = note.IsPinned,
                     CreatedDateTime = note.CreatedDateTime?.ToRockDateTimeOffset(),
                     AttributeValues = note.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
                 };
@@ -566,6 +570,11 @@ namespace Rock.Blocks.Core
                     note.IsPrivateNote = request.Bag.IsPrivate;
 
                     note.UpdateCaption();
+                } );
+
+                request.IfValidProperty( nameof( request.Bag.IsPinned ), () =>
+                {
+                    note.IsPinned = request.Bag.IsPinned;
                 } );
 
                 if ( GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean() )

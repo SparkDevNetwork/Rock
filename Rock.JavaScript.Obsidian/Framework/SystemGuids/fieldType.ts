@@ -24,6 +24,8 @@
 /** Guids for Field Types. NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const FieldType = {
     /** Address field type */
+    AchievementType: "593132CF-BA5D-462F-97F6-94DCC0BFFE6F",
+    /** Address field type */
     Address: "0A495222-23B7-41D3-82C8-D484CDB75D17",
     /** Assessment field type */
     AssessmentType: "C263513A-30BE-4823-ABF1-AC12A56F9644",
@@ -233,6 +235,8 @@ export const FieldType = {
     PersonBadges: "3F1AE891-7DC8-46D2-865D-11543B34FB60",
     /** Phone Number field type */
     PhoneNumber: "6B1908EC-12A2-463A-A7BD-970CE0FAF097",
+    /** Prayer Request field type */
+    PrayerRequest: "E34A29A4-3787-4CF5-9C17-08EFB9E2FD23",
     /** Range Slider field type */
     RangeSlider: "C8B6C51A-DD7C-4B75-8604-F0580697088E",
     /** Rating field type */
@@ -267,6 +271,10 @@ export const FieldType = {
     SocialMediaAccount: "92C0E3A1-9F63-49D4-B23B-73624AC42546",
     /** Social Security Number */
     Ssn: "4722C99A-C078-464A-968F-13AB5E8E318F",
+    /** Streak Type field type */
+    StreakType: "F1411F4A-BD4B-4F80-9A83-94026C009F4D",
+    /** Streak Type field type */
+    StructureContentEditor: "92C88D02-CE12-4217-80FB-19422B758437",
     /** System Communication field type */
     SystemCommunication: "72ED40C7-4D64-4D60-9411-4FFB2B9E833E",
     /** System Email field type */

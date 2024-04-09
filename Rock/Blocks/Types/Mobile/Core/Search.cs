@@ -355,7 +355,8 @@ namespace Rock.Blocks.Types.Mobile.Core
                 DetailNavigationAction,
                 AutoFocusKeyboard,
                 HistoricalResultItemTemplate,
-                StoppedTypingBehaviorThreshold
+                StoppedTypingBehaviorThreshold,
+                PreferredKeyboardMode = SearchComponent?.PreferredKeyboardMode.ToMobile() ?? Rock.Common.Mobile.Enums.KeyboardInputMode.Default
             };
         }
 
@@ -431,7 +432,6 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                     return GetSearchResultItemViewModel( r, content );
                 } )
-                .OrderByDescending( r => r.ViewedCount )
                 .ToList();
                 
             return resultItems;

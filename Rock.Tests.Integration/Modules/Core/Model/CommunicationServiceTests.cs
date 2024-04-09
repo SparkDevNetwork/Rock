@@ -20,16 +20,19 @@ using System.Data;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Communications
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class CommunicationServiceTests
+    public class CommunicationServiceTests : DatabaseTestsBase
     {
         private const int _expirationDays = 3;
         private const int _delayMinutes = 5;
@@ -39,10 +42,6 @@ namespace Rock.Tests.Integration.Communications
         [ClassInitialize]
         public static void TestInitialize( TestContext context )
         {
-            TestDatabaseHelper.ResetDatabase();
-
-            RemoveTestData();
-
             CreateCommunicationsTestData( _expirationDays, _delayMinutes );
         }
 
@@ -207,9 +206,11 @@ namespace Rock.Tests.Integration.Communications
 
         private static void CreateCommunicationsTestData( int expirationDays, int delayMinutes )
         {
+            LogHelper.Log( "Create Communications test data: working..." );
+
             var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays ).AddDays( 0 - 2 );
             var endWindow = RockDateTime.Now.AddMinutes( 0 - delayMinutes ).AddDays( 2 );
-            var currentDateTime = beginWindow;
+
             var sender = GetNewPersonAlias();
 
             var communications = new List<Rock.Model.Communication>();
@@ -230,6 +231,8 @@ namespace Rock.Tests.Integration.Communications
                 communicationService.AddRange( communications );
                 rockContext.SaveChanges();
             }
+
+            LogHelper.Log( "Create Communications test data: complete." );
         }
 
         private static void RemoveTestData()
@@ -334,13 +337,25 @@ namespace Rock.Tests.Integration.Communications
                 {
                     continue;
                 }
-                communicationRecipients.Recipients.Add( new CommunicationRecipient
-                {
-                    Status = communicationRecipientStatus,
-                    PersonAliasId = GetNewPersonAlias(),
-                    MediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL ),
-                    ForeignKey = _testRecordForeignKey
-                } );
+
+                // Commented out 2024/02/03 by DSH. Does not seem to be
+                // required for the tests to work correctly.
+                //
+                // Issue 1) This takes a really long time, like minutes.
+                // Issue 2) When running this test class by itself everything
+                // is fine. But when running the full suite, this causes massive
+                // memory allocation until an out of memory error happens. This
+                // is likely an indication that some global state somewhere
+                // is being set a certain way by other tests that eventually is
+                // causing excessive memory allocation.
+
+                //communicationRecipients.Recipients.Add( new CommunicationRecipient
+                //{
+                //    Status = communicationRecipientStatus,
+                //    PersonAliasId = GetNewPersonAlias(),
+                //    MediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL ),
+                //    ForeignKey = _testRecordForeignKey
+                //} );
             }
 
             return new List<Rock.Model.Communication>

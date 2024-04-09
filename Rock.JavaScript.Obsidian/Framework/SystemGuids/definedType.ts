@@ -118,6 +118,8 @@ export const DefinedType = {
     GrouptypePurpose: "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3",
     /** Guid for the types of interaction service. */
     InteractionChannelMedium: "9bf5777a-961f-49a8-a834-45e5c2077967",
+    /** Guid for the types of interaction intent. */
+    InteractionIntent: "F0E9555C-9464-41BD-BED7-96ADB0B79879",
     /** Guid for the JSON Web Token Configuration */
     JwtConfiguration: "7D848CE3-F039-4CE1-A59B-F0D923F0C1A7",
     /** Languages */
