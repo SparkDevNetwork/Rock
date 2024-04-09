@@ -607,12 +607,14 @@ namespace Rock.WebStartup
             if ( themes != null && themes.Any() )
             {
                 var dbThemes = themeService.Queryable().ToList();
+                var websiteLegacyValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_LEGACY.AsGuid() );
                 foreach ( var theme in themes.Where( a => !dbThemes.Any( b => b.Name == a.Name ) ) )
                 {
                     var dbTheme = new Theme();
                     dbTheme.Name = theme.Name;
                     dbTheme.IsSystem = theme.IsSystem;
                     dbTheme.RootPath = theme.AbsolutePath.ToString();
+                    dbTheme.PurposeValueId = websiteLegacyValueId;
                     themeService.Add( dbTheme );
                     rockContext.SaveChanges();
                     anyThemesUpdated = true;
