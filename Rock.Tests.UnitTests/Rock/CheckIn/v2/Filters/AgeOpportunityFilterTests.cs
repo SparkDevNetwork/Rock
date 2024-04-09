@@ -11,12 +11,12 @@ using Rock.ViewModels.CheckIn;
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
     [TestClass]
-    public class AgeMonthOpportunityFilterTests
+    public class AgeOpportunityFilterTests
     {
         #region IsGroupValid Tests
 
         [TestMethod]
-        public void AgeFilter_WitNoConditions_IncludesAnyBirthdate()
+        public void AgeFilter_WithNoConditions_IncludesAnyBirthdate()
         {
             var birthdate = RockDateTime.Now.AddDays( -1277 ); // 3.5 years old
 
