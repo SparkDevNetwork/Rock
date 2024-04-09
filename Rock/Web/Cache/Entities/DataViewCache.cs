@@ -352,7 +352,7 @@ namespace Rock.Web.Cache
                     return _persistedEntityIds;
                 }
 
-                bool ownsContext = options.DbContext != null;
+                bool ownsContext = options.DbContext == null;
                 var rockContext = options.DbContext ?? new RockContext();
 
                 var idQry = rockContext.Set<DataViewPersistedValue>()
