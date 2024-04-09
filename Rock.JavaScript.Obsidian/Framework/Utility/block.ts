@@ -481,6 +481,12 @@ const emptyPreferences: IPersonPreferenceCollection = {
     },
     withPrefix(): IPersonPreferenceCollection {
         return emptyPreferences;
+    },
+    on(): void {
+        // Intentionally empty.
+    },
+    off(): void {
+        // Intentionally empty.
     }
 };
 
