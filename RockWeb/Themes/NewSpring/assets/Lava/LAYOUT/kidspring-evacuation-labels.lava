@@ -1,0 +1,26 @@
+{% assign status = 'Global' | PageParameter:'Status' | Default:'unmarked' %}
+{% assign locationId = 'Global' | PageParameter:'LocationId' | SanitizeSql %}
+
+{% sql locationid:'{{ locationId }}' %}
+    SELECT l.[Name]
+    FROM [Location] l
+    WHERE l.[Id] = @locationid
+{% endsql %}
+
+  {%- if status == 'marked' -%}
+    {% assign formattedStatus = 'Marked Safe' %}
+    {% assign statusLabelType = 'info progress-bar bg-info w-auto progress-bar-striped active' %}
+  {%- elseif status == 'checkedOut' -%}
+    {% assign formattedStatus = 'Checked Out' %}
+    {% assign statusLabelType = 'success' %}
+  {%- else -%}
+    {% assign formattedStatus = 'Not Marked Safe' %}
+    {% assign statusLabelType = 'danger progress-bar bg-danger w-auto progress-bar-striped active' %}
+  {%- endif -%}
+
+<div class="d-flex flex-wrap gap-1 mt-1">
+    <span class="label label-default">{{ Context.Campus.ShortCode }}</span>
+    <span class="label label-default">{{ Context.Schedule.Name | Replace:'09:','9:' }}</span>
+    <span class="label label-default">{{ results | First | Property:'Name' }}</span>
+    <span class="label label-{{ statusLabelType }}">{{ formattedStatus }}</span>
+</div>

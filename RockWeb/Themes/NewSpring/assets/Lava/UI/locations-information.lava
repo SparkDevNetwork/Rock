@@ -1,0 +1,188 @@
+{% assign getInvolvedDefinedTypeId = 2141 %}
+
+<div id="locations-detail" class="soft-sides xs-soft-half-sides">
+    <div class="row">
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+            {% assign getInvolvedOptions = 'All' | FromCache:'DefinedValue' | Where:'DefinedTypeId',getInvolvedDefinedTypeId | OrderBy:'Order' %}
+            {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
+            {% assign campusEntity = 'All' | FromCache:'Campus' | Where:'Id',campus.Id | First %}
+            {% assign mailingAddress = campus.MailingAddress %}
+            {% assign officeAddress = campus.OfficeAddress %}
+            {% assign getDirections = campus.GetDirectionsURL %}
+            {% assign fuseGetDirections = campus.FuseGetDirectionsURL %}
+
+            {% capture serviceTimes %}{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'NewSpring' ]}{% endcapture %}
+            {% capture fuseServiceTimes %}{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'Fuse' ]}{% endcapture %}
+
+            {% assign serviceTimes = serviceTimes | Trim %}
+            {% assign fuseServiceTimes = fuseServiceTimes | Trim %}
+
+
+            <div class="panel" data-column="none">
+                <div class="panel-body">
+
+                    <h2 class="h4">Sunday Gatherings</h2>
+                    <ul class="list-icons">
+                        <li>
+                            <i class="fal fa-fw fa-clock"></i>
+                            {{ campusEntity | Attribute:'SundayDetails' }}
+                        </li>
+                        {% comment %}
+                            <li>
+                                <i class="fal fa-fw fa-clock"></i>
+                                <b>Easter at NewSpring</b><br>
+                                {{ campusEntity | Attribute:'SpecialServiceDetails' }}
+                            </li>
+                        {% endcomment %}
+                        <li>
+                            <i class="fal fa-fw fa-map-marker-alt"></i>
+                            {% if getDirections %}<a href="{{ getDirections }}">{% endif %}
+                                {{ campus.LocationStreet1 }}<br>
+                                {% if campus.LocationStreet2 != empty %}
+                                    {{ campus.LocationStreet2 }}<br>
+                                {% endif %}
+                                {{ campus.LocationCity }}, {{ campus.LocationState }} {{ campus.LocationPostalCode | Slice: 0, 5 }}
+                                {% if getDirections %}</a>{% endif %}
+                        </li>
+                        <li>
+                            <i class="fal fa-fw fa-phone"></i>
+                            {% assign phoneNumber = campus.PhoneNumber | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' %}
+                            <a href="tel:+1{{ phoneNumber }}">({{ phoneNumber | Slice:0,3 }}) {{ phoneNumber | Slice:3,3 }}-{{ phoneNumber | Slice:6,4 }}</a>
+                        </li>
+                        <li>
+                            <i class="fal fa-fw fa-inbox"></i>
+                            <a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a>
+                        </li>
+                    </ul>
+
+                    {% assign fuseDetails = campusEntity | Attribute:'FuseDetails' | Trim %}
+                    {% if fuseDetails and fuseDetails != '' %}
+                    <h2 class="h4 push-half-bottom">Students</h2>
+                    <ul class="list-icons">
+                        <li>
+                            <i class="fal fa-fw fa-clock"></i>
+                            {{ fuseDetails }}
+                        </li>
+                        {% if fuseGetDirections %}
+                            <li>
+                                <i class="fal fa-fw fa-map-marker-alt"></i>
+                                <a href="{{ fuseGetDirections }}" target="_blank">Get Directions</a>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <i class="fal fa-fw fa-link"></i>
+                            <a href="/fuse">newspring.cc/fuse</a>
+                        </li>
+                    </ul>
+                    {% endif %}
+
+                    <div class="dropdown">
+                        <button class="btn btn-primary btn-block dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Get Involved
+                            <i class="fas fa-caret-down push-quarter-left"></i>
+                        </button>
+                        <ul class="dropdown-menu bring-forward width-full" aria-labelledby="dropdownMenu1">
+                            {% for option in getInvolvedOptions %}
+                                {% assign link = option | Attribute:'Link' %}
+                                <li><a href="{{ link }}"><i class="{{ option | Attribute:'IconCSSClass' }} fa-fw push-quarter-right"></i> {{ option.Description }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+
+            <style>
+                .list-icons {
+                    list-style: none;
+                    padding-left: 0;
+                }
+
+                .list-icons li {
+                    position: relative;
+                    padding-left: 40px;
+                    margin-bottom: 15px;
+                }
+
+                .list-icons li i {
+                    position: absolute;
+                    left: 0;
+                    margin-top: 5px;
+                }
+            </style>
+
+            {% if servicetype == 'NewSpring' %}
+                <script type="application/ld+json">
+                {
+                "@context": "http://schema.org/",
+                "@type": "Church",
+                "name": "{{ 'Global' | Attribute:'OrganizationName' }}",
+                "logo":"{{ 'Global' | Attribute:'NewSpringLogoSquare','RawValue' }}",
+                "image": "{{ campus.LandscapeImage }}",
+                "description": "{{ 'Global' | Attribute:'OrganizationVision' }}",
+                "branchCode": "{{ campus.ShortCode }}",
+                "telephone":"+1{{ campus.PhoneNumber | Remove:'-' }}",
+                "additionalProperty": {
+                    "@type": "PropertyValue",
+                    "propertyID": "email",
+                    "value":"{{ campus.Name | Remove:' ' | Downcase }}@newspring.cc"
+                },
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "{{ campus.Location.Street1 }}{% if campus.Location.Street2 != empty %} {{ campus.Location.Street2 }}{% endif %}",
+                    "addressLocality":"{{ campus.Location.City }}",
+                    "addressRegion":"{{ campus.Location.State }}",
+                    "postalCode":"{{ campus.Location.PostalCode | Slice:0,5 }}"
+                },
+                "latitude": "{{ campus.Location.Latitude }}",
+                "longitude": "{{ campus.Location.Longitude }}",
+                "url":"{{ 'Global' | Page:'Url' }}",
+                "isAccessibleForFree":"true",
+                "publicAccess":"true"
+                }
+                </script>
+            {% endif %}
+
+        </div><div class="col-md-8 col-sm-6 col-xs-12">
+            {% assign servicetype = 'NewSpring' %}
+
+            {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' %}
+            {% assign campusName = campusSlug | Replace:'-',' ' | Capitalize %}
+            {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusName | First %}
+
+            {% if servicetype == 'Fuse' %}
+                {% assign leader = campus.FusePastorPersonId | PersonById %}
+            {% else %}
+                {% assign leader = campus.CampusPastorPersonId | PersonById %}
+            {% endif %}
+
+            {% if leader != null %}
+            <div data-column="none">
+                <div class="panel">
+                    <div class="panel-body soft-double-ends soft-sides xs-text-center clearfix">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-4 xs-push-bottom soft">
+                                {% assign staffImage = leader | Attribute:'StaffImage','Url' %}
+                                <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ leader | Attribute:'StaffFamilyImage','Url' | Default:staffImage }}'); border: 5px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.4);"></div>
+                            </div><div class="col-xs-12 col-sm-12 col-md-8">
+                                <h4 class="h5 text-gray-light push-half-bottom">{{ leader | Attribute:'StaffTitle' }}</h4>
+                                <h2 class="h2 push-half-bottom">{{ leader.FullName }}</h2>
+                                <p>{{ leader | Attribute:'StaffBio' }}</p>
+                                <p class="flush"><a href="/staff/campus/{{ campusSlug }}">Meet the {{ campus.Name }} Team</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<style>
+    #locations-detail {
+        margin-top: -200px;
+    }
+</style>

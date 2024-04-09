@@ -1,0 +1,137 @@
+<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+</script>
+
+<!--
+ ######  ######    ##     ####
+   ##      ##      ##    ##
+   ##      ##       #     ####
+   ##      ##                ##
+ ######    ##             ####
+
+  ####   ##      ##
+ ##  ##  ##      ##
+ ######  ##      ##
+ ##  ##  ##      ##
+ ##  ##  ######  ######
+
+  ####   #####    ####   ##  ##  ######
+ ##  ##  ##  ##  ##  ##  ##  ##    ##
+ ######  #####   ##  ##  ##  ##    ##
+ ##  ##  ##  ##  ##  ##  ##  ##    ##
+ ##  ##  #####    ####    ####     ##
+
+ ######  ######   ####   ##  ##   ####
+     ##  ##      ##      ##  ##  ##
+     ##  ####     ####   ##  ##   ####
+ ##  ##  ##          ##  ##  ##      ##
+  ####   ######   ####    ####    ####
+-->
+
+<html class="no-js" lang="en">
+    <head runat="server">
+        <meta charset="utf-8">
+        <title></title>
+
+        <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+        <!-- Set the viewport width to device width for mobile -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
+
+        <!-- Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.0/js/swiper.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/cferdinandi/smooth-scroll@15/dist/smooth-scroll.polyfills.min.js"></script>
+
+        <script src="<%# ResolveRockUrl("~~/Scripts/skrollr.js", true) %>"></script>
+        <script src='<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>' ></script>
+        <script src='<%# ResolveRockUrl("~~/Scripts/theme.js", true) %>' ></script>
+
+        <asp:ContentPlaceHolder ID="css" runat="server" />
+
+        <!-- Included CSS Files -->
+        <Rock:Lava ID="newStyles" runat="server">
+            {% assign newStyles = CurrentPage | Attribute:'UseNewStyles' %}
+            {% if newStyles == 'Yes' %}
+                <!-- AOS -->
+                <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+                <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+                <script src="/Themes/NewSpring/Scripts/dynamic-aos.js"></script>
+
+                <link rel="stylesheet" href='/Themes/NewSpring/StylesNew/bootstrap.css'/>
+                <link rel="stylesheet" href='/Themes/NewSpring/StylesNew/theme.css'/>
+            {% else %}
+                <link rel="stylesheet" href='/Themes/NewSpring/Styles/bootstrap.css'/>
+                <link rel="stylesheet" href='/Themes/NewSpring/Styles/theme.css'/>
+            {% endif %}
+        </Rock:Lava>
+
+        <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+    </head>
+
+    <body runat="server" id="body">
+
+        <form id="form1" runat="server">
+
+            <Rock:Lava ID="AddClasses" runat="server">
+                {% assign hasRights = 'Global' | Page:'Id' | HasRightsTo:'Edit','Rock.Model.Page' %}
+                {% assign transparentNav = CurrentPage | Attribute:'TransparentNavigation','RawValue' %}
+
+                <div class="js-classes
+                    {% if hasRights == 'True' %}is-admin{% endif %}
+                    {% if transparentNav == 'True' %}nav-transparent{% endif %}
+                ">
+            </Rock:Lava>
+
+                <div id="navigation-wrapper">
+                    <div id="navigation">
+                        <Rock:Zone Name="Login" runat="server" />
+                        <Rock:Zone Name="Navigation" runat="server" />
+                    </div>
+
+                    <div id="navigation-secondary">
+                        <Rock:Zone Name="Header" runat="server" />
+                    </div>
+                </div>
+
+                <div class="js-dynamic-columns">
+                    <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+                </div>
+
+                <Rock:Zone Name="Footer" runat="server" />
+
+            </div>
+
+            <%-- controls for scriptmanager and update panel --%>
+            <asp:ScriptManager ID="sManager" runat="server"/>
+            <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+                    <ProgressTemplate>
+                        <div class="updateprogress-status">
+                            <div class="spinner">
+                              <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                            </div>
+                        </div>
+                        <div class="updateprogress-bg modal-backdrop"></div>
+                    </ProgressTemplate>
+            </asp:UpdateProgress>
+
+        </form>
+
+    </body>
+
+</html>

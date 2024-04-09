@@ -1,0 +1,11 @@
+<div class="position-relative bg-white soft-half push-bottom xs-push-half-bottom rounded shadowed {{ classes }}">
+
+  {% if type and type != empty %}
+    <div class="card-cap bg-{{ type }}"></div>
+  {% endif %}
+
+  <div class="soft-quarter">
+    {{ blockContent }}
+  </div>
+
+</div>

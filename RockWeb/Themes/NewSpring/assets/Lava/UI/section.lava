@@ -1,0 +1,53 @@
+{% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
+
+<section {% if id %}id="{{ id }}"{% endif %} class="position-relative shell bg-white {% if fullwidth == 'true' %}flush-sides{% endif %} push-bottom xs-push-half-bottom {% if fullwidth == 'false' %}rounded-lg{% else %}hard-sides{% endif %} overflow-hidden {% if imageurl and imageurl != empty or backgroundcolor and backgroundcolor != empty %}text-white{% endif %} {{ classes }}" style="{% if backgroundcolor and backgroundcolor != empty %}background-color: {{ backgroundcolor }} !important; {% endif %}">
+
+    {% if linkcolor and linkcolor != empty %}
+        <style>
+            #{{ id }} a {
+                color: {{ linkcolor }};
+            }
+
+            #{{ id }} a:hover,
+            #{{ id }} a:visited,
+            #{{ id }} a:active {
+                color: {{ linkcolor | Darken:'5%' }};
+            }
+
+            #{{ id }} .btn-primary {
+                background-color: {{ linkcolor }};
+            }
+
+            #{{ id }} .btn-primary:hover,
+            #{{ id }} .btn-primary:visited,
+            #{{ id }} .btn-primary:active {
+                background-color: {{ linkcolor | Darken:'5%' }};
+            }
+        </style>
+    {% endif %}
+
+    {% if imageurl and imageurl != empty %}
+        <div class="full-screen background-center background-cover" style="background-image:url('{{ imageurl }}');"></div>
+        <div class="bring-forward">
+    {% endif %}
+
+    <div class="text-center">
+        {% if title and title != empty %}
+            <h2 class="{{ titlesize }} {% if subtitle and subtitle != empty %}push-half-bottom{% endif %}">{{ title }}</h2>
+        {% endif %}
+
+        {% if subtitle and subtitle != empty %}
+            <p class="lead italic text-primary">{{ subtitle }}</p>
+        {% endif %}
+    </div>
+
+    {{ blockContent }}
+
+    {% if imageurl and imageurl != empty %}
+        </div>
+    {% endif %}
+
+</section>
+
+{[ endscripturize ]}

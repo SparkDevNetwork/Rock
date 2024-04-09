@@ -1,0 +1,11 @@
+{% contentchannel where:'Id != null' iterator:'channels' %}[
+    {% for channel in channels %}{
+        {% assign datasetId = channel | Attribute:'PersistedDataset','RawValue' | AsInteger %}
+        Id: {{ channel.Id }},
+        {% if datasetId and datasetId != empty %}
+        Dataset: {% persisteddataset where:'Id == {{ datasetId }}' iterator:'datasets' limit:'1' %}{{ datasets | First | Property:'AccessKey' | ToJSON }}{% endpersisteddataset %},
+        {% endif %}
+        HiddenAttributes: {%- assign attributeGuids = channel | Attribute:'HiddenAttributes','RawValue' | Split:',' -%}{%- capture hiddenAttributeIdsConditional -%}{% for attributeGuid in attributeGuids %}Guid == "{{ attributeGuid }}"{% unless forloop.last %} || {% endunless %}{% endfor %}{%- endcapture -%}{% attribute where:'{{ hiddenAttributeIdsConditional }}' iterator:'attributes' %}{{ attributes | Map:'Id' | Join:',' | ToJSON }}{% endattribute %},
+        Items: {{ channel.Items | Select:'Id' | Join:',' | ToJSON }}
+    }{% unless forloop.last %},{% endunless %}{% endfor %}
+]{% endcontentchannel %}

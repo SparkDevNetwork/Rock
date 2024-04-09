@@ -1,0 +1,81 @@
+{% assign path = 'Global' | Page:'Path' %}
+{% assign page = 'Global' | PageParameter:'Page' %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' %}
+{% assign campusName = campusSlug | Replace:'-',' ' |  Capitalize %}
+{% assign campusEntity = 'All' | FromCache:'Campus' | Where:'Name',campusName | First %}
+{% assign campusId = campusEntity.Id | AsInteger %}
+{% assign fallbackImage = 'Global' | Attribute:'EventsImageSquare','Url' %}
+{% assign Items = 'events' | PersistedDataset | OrderBy:'StartDateTime' %}
+{% capture featuredItems %}[]{% endcapture %}
+{% assign featuredItems = featuredItems | FromJSON %}
+
+//- Filter events by campus
+{% for item in Items %}
+    {% if item.Campus.Id == null or item.Campus.Id == campusId %}
+    {% else %}
+        {% assign Items = Items | RemoveFromArray:item %}
+    {% endif %}
+{% endfor %}
+
+//- Generate featured events array
+{% for event in Items %}
+    {% if event.IsFeatured == 'Yes' or event.IsFeaturedOccurrence == 'Yes' %}
+        {% assign featuredItems = featuredItems | AddToArray:event %}
+    {% endif %}
+{% endfor %}
+
+//- Group featured event occurrences by event item
+{% assign featuredEvents = featuredItems | GroupBy:'EventItemId' %}
+{% assign featuredEventsByEventItem = '' %}
+{% for featuredEventGroup in featuredEvents %}
+    {% assign featuredEvent = featuredEventGroup | Property:'Value' | First %}
+    {% assign featuredEventsByEventItem = featuredEventsByEventItem |  AddToArray:featuredEvent %}
+{% endfor %}
+
+{% assign featuredEventsByEventItem = featuredEventsByEventItem | OrderBy:'IsFeatured desc, StartDateTime' %}
+
+//- Remove any blank items from the array
+{% for item in featuredEventsByEventItem %}
+    {% if item == '' %}
+        {% assign featuredEventsByEventItem = featuredEventsByEventItem |  RemoveFromArray:item %}
+    {% endif %}
+{% endfor %}
+
+//- Reorder by StartDateTime
+{% assign featuredEventsByEventItem = featuredEventsByEventItem | OrderBy:'StartDateTime' %}
+
+<div data-column="none" class="soft-top soft-bottom">
+    <div class="soft-sides xs-soft-half-sides">
+        {% if path contains 'events' %}
+
+            //- Full campus events layout
+            {% if featuredEventsByEventItem != empty %}
+                {% assign Items = featuredEventsByEventItem %}
+                <h2>Featured Events</h2>
+                {[ eventsCards campusid:'{{ campusEntity.Id }}' ]}
+            {% endif %}
+
+            {% assign Items = Items %}
+            {[ eventsList campusid:'{{ campusEntity.Id }}' ]}
+
+        {% else %}
+
+            //- Campus events preview on locations pages
+            <div class="row">
+                <div class="col-md-6 col-xs-12 xs-text-center">
+                    <h3 class="h2 push-half-bottom">Events</h3>
+                </div><div class="col-md-6 col-xs-12 text-right xs-text-center">
+                    <p><a href="/locations/{{ campusSlug }}/events" class="btn btn-sm btn-primary">See All Events</a></p>
+                </div>
+            </div>
+
+            //- If there are featured items, display those, otherwise go chronological
+            {% assign featuredCount = featuredEventsByEventItem | Size %}
+            {% if featuredCount >= 1 %}
+                {% assign Items = featuredEventsByEventItem %}
+            {% endif %}
+            {[ eventsCards campusid:'{{ campusEntity.Id }}' ]}
+
+        {% endif %}
+    </div>
+</div>

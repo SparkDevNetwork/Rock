@@ -1,0 +1,24 @@
+{% sql %}
+    SELECT [Id],[NickName],[LastName],[Email],[BirthDate],[BirthDay],[BirthMonth],
+        DATEDIFF(dd, GETDATE(), DATEADD(YEAR, (YEAR( GETDATE() )-YEAR( [BirthDate] )), [BirthDate]) ) -1 as DaysFromToday
+    FROM [Person]
+    WHERE
+        DATEADD(YEAR, (YEAR( GETDATE() )-YEAR( [BirthDate] )), [BirthDate])
+        BETWEEN DATEADD(DAY,  -1 , GETDATE()) AND DATEADD(DAY,  6  ,GETDATE() ) AND
+        [Id] IN(SELECT[PersonId] FROM[GroupMember] gm INNER JOIN[Group] g ON g.[Id] = gm.[GroupId] INNER JOIN[GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId] WHERE gm.[GroupId] = 3 AND gm.[GroupMemberStatus] = 1 AND gm.[IsArchived] != 1 AND gtr.[Id] != 431 )
+    ORDER BY DATEADD(YEAR, (YEAR( GETDATE() )-YEAR( [BirthDate] )), [BirthDate]) ASC
+{% endsql %}
+[
+    {% for result in results %}
+        {
+            "Id": {{ result.Id }},
+            "NickName": {{ result.NickName | ToJSON }},
+            "LastName": {{ result.LastName | ToJSON }},
+            "Email": {{ result.Email | ToJSON }},
+            "BirthDate": {{ result.BirthDate | ToJSON }},
+            "BirthDay": {{ result.BirthDay }},
+            "BirthMonth": {{ result.BirthMonth }},
+            "DaysFromToday": {{ result.DaysFromToday }}
+        }{%- unless forloop.last -%},{%- endunless -%}
+    {% endfor %}
+]

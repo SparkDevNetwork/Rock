@@ -1,0 +1,3 @@
+<section class="shell bg-gray-dark text-white soft xs-soft-half flush text-left sm-text-center xs-text-center">
+    <h1 class="h4 xs-h6 stronger flush">{{ title | Replace:"'","’" }}</h1>
+</section>

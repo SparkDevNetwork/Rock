@@ -1,0 +1,16 @@
+pull_request_rules:
+  - name: automatic merge when CI passes, 1 review, and 1 label
+    conditions:
+      - label=merge
+      - label!=blocked
+    actions:
+      merge:
+        method: merge
+        strict: smart
+
+
+  - name: delete head branch after merge
+    conditions:
+      - merged
+    actions:
+      delete_head_branch: {}
