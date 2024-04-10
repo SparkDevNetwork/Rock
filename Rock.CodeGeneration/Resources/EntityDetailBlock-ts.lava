@@ -46,6 +46,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
     import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -57,20 +58,15 @@
     const errorMessage = ref("");
 
     const {{ EntityName | CamelCase }}ViewBag = ref(config.entity);
-    const {{ EntityName | CamelCase }}EditBag = ref<{{ EntityName }}Bag>({} as {{ EntityName }}Bag);
+    const {{ EntityName | CamelCase }}EditBag = ref<ValidPropertiesBox<{{ EntityName }}Bag>>({
+        bag: {} as {{ EntityName }}Bag
+    });
 
     const entityTypeGuid = EntityType.{{ EntityName }};
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);{% if UseAttributeValues == true %}
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [{% if UseAttributeValues == true %}
-        "attributeValues",{% endif %}{% for property in Properties %}{% if property.Name == "IsSystem" %}{% continue %}{% endif %}
-        "{{ property.Name | CamelCase }}"{% unless forloop.last %},{% endunless %}{% endfor %}
-    ];{% if UseAttributeValues == true %}
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes({{ EntityName | CamelCase }}EditBag, validProperties, invokeBlockAction), undefined, true);{% endif %}
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes({{ EntityName | CamelCase }}EditBag, invokeBlockAction), undefined, true);{% endif %}
 
     // #endregion
 
@@ -141,7 +137,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!{{ EntityName | CamelCase }}EditBag.value?.idKey) {
+        if (!{{ EntityName | CamelCase }}EditBag.value.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -187,7 +183,10 @@
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            {{ EntityName | CamelCase }}EditBag.value = result.data.entity;
+            {{ EntityName | CamelCase }}EditBag.value = {
+                bag: result.data.entity,
+                validProperties: Object.keys(result.data.entity)
+            };
 
             return true;
         }
@@ -223,9 +222,9 @@
         errorMessage.value = "";
 
         const data: DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> = {
-            entity: {{ EntityName | CamelCase }}EditBag.value,
+            entity: {{ EntityName | CamelCase }}EditBag.value.bag,
             isEditable: true,
-            validProperties: validProperties
+            validProperties: {{ EntityName | CamelCase }}EditBag.value.validProperties
         };
 
         const result = await invokeBlockAction<{{ EntityName }}Bag | string>("Save", {
@@ -260,7 +259,7 @@
         blockError.value = "The specified {{ EntityName | SplitCase | Downcase }} could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        {{ EntityName | CamelCase }}EditBag.value = config.entity;
+        {{ EntityName | CamelCase }}EditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

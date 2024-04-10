@@ -46,6 +46,7 @@
     import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { debounce } from "@Obsidian/Utility/util";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<CampusBag, CampusDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -57,31 +58,13 @@
     const errorMessage = ref("");
 
     const campusViewBag = ref(config.entity);
-    const campusEditBag = ref<CampusBag>({} as CampusBag);
+    const campusEditBag = ref<ValidPropertiesBox<CampusBag>>({
+        bag: {} as CampusBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "campusSchedules",
-        "campusStatusValue",
-        //"campusTopics",
-        "campusTypeValue",
-        "description",
-        "isActive",
-        "leaderPersonAlias",
-        "location",
-        "name",
-        "phoneNumber",
-        "serviceTimes",
-        "shortCode",
-        "timeZoneId",
-        "url"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(campusEditBag, validProperties, invokeBlockAction), undefined, true);
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(campusEditBag, invokeBlockAction), undefined, true);
 
     // #endregion
 
@@ -154,7 +137,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!campusEditBag.value?.idKey) {
+        if (!campusEditBag.value.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -200,7 +183,10 @@
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            campusEditBag.value = result.data.entity;
+            campusEditBag.value = {
+                bag: result.data.entity,
+                validProperties: Object.keys(result.data.entity)
+            };
 
             return true;
         }
@@ -236,9 +222,9 @@
         errorMessage.value = "";
 
         const data: DetailBlockBox<CampusBag, CampusDetailOptionsBag> = {
-            entity: campusEditBag.value,
+            entity: campusEditBag.value.bag,
             isEditable: true,
-            validProperties: validProperties
+            validProperties: campusEditBag.value.validProperties
         };
 
         const result = await invokeBlockAction<CampusBag | string>("Save", {
@@ -273,7 +259,7 @@
         blockError.value = "The specified campus could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        campusEditBag.value = config.entity;
+        campusEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>
