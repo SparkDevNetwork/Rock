@@ -9,8 +9,6 @@
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
-                 :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="{{ EntityName }}"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -26,7 +24,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="{{ EntityName | CamelCase }}EditBag" :options="options"{% if UseAttributeValues == true %} @propertyChanged="onPropertyChanged"{% endif %} />
+            <EditPanel v-model="{{ EntityName | CamelCase }}EditBag" :options="options"{% if UseAttributeValues == true %} @propertyChanged="baseBlock.onPropertyChanged"{% endif %} />
         </template>
     </DetailBlock>
 </template>
@@ -40,8 +38,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./{{ EntityName }}Detail/editPanel.partial.obs";
     import ViewPanel from "./{{ EntityName }}Detail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant{% if UseAttributeValues == true %}, refreshDetailAttributes{% endif %}, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";{% if UseAttributeValues == true %}
-    import { debounce } from "@Obsidian/Utility/util";{% endif %}
+    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./{{ EntityName }}Detail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
@@ -50,7 +47,6 @@
 
     const config = useConfigurationValues<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -64,9 +60,12 @@
 
     const entityTypeGuid = EntityType.{{ EntityName }};
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);{% if UseAttributeValues == true %}
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes({{ EntityName | CamelCase }}EditBag, invokeBlockAction), undefined, true);{% endif %}
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: campusEditBag
+    });
 
     // #endregion
 
@@ -193,24 +192,7 @@
         else {
             return false;
         }
-    }{% if UseAttributeValues == true %}
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     * 
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
-    }{% endif %}
+    }
 
     /**
      * Event handler for the panel's Save event. Send the data to the server
@@ -248,8 +230,6 @@
     }
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {

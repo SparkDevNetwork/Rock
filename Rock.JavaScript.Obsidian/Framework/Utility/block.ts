@@ -25,6 +25,7 @@ import { Guid } from "@Obsidian/Types";
 import { HttpBodyData, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
 import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+import { debounce } from "./util";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
@@ -266,6 +267,106 @@ export function isBlockEvent<TData = undefined>(event: Event): event is CustomEv
     return "guid" in event && "data" in event;
 }
 
+// #region Entity Detail Blocks
+
+const entityTypeNameSymbol = Symbol("EntityTypeName");
+const entityTypeGuidSymbol = Symbol("EntityTypeGuid");
+
+type UseEntityDetailBlockOptions = {
+    /** The block configuration. */
+    blockConfig: Record<string, unknown>;
+
+    /**
+     * The entity that will be used by the block, this will cause the
+     * onPropertyChanged logic to be generated.
+     */
+    entity?: Ref<ValidPropertiesBox<Record<string, unknown>>>;
+};
+
+type UseEntityDetailBlockResult = {
+    /** The onPropertyChanged handler for the edit panel. */
+    onPropertyChanged?(propertyName: string): void;
+};
+
+/**
+ * Performs any framework-level initialization of an entity detail block.
+ *
+ * @param options The options to use when initializing the detail block logic.
+ *
+ * @returns An object that contains information which can be used by the block.
+ */
+export function useEntityDetailBlock(options: UseEntityDetailBlockOptions): UseEntityDetailBlockResult {
+    const securityGrant = getSecurityGrant(options.blockConfig.securityGrantToken as string);
+
+    provideSecurityGrant(securityGrant);
+
+    if (options.blockConfig.entityTypeName) {
+        provideEntityTypeName(options.blockConfig.entityTypeName as string);
+    }
+
+    if (options.blockConfig.entityTypeGuid) {
+        provideEntityTypeGuid(options.blockConfig.entityTypeGuid as Guid);
+    }
+
+    const entity = options.entity;
+
+    const result: Record<string, unknown> = {};
+
+    if (entity) {
+        const invokeBlockAction = useInvokeBlockAction();
+        const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(entity, invokeBlockAction), undefined, true);
+
+        result.onPropertyChanged = (propertyName: string): void => {
+            // If we don't have any qualified attribute properties or this property
+            // is not one of them then do nothing.
+            if (!options.blockConfig.qualifiedAttributeProperties || !(options.blockConfig.qualifiedAttributeProperties as string[]).some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+                return;
+            }
+
+            refreshAttributesDebounce();
+        };
+    }
+
+    return result;
+}
+
+/**
+ * Provides the entity type name to child components.
+ *
+ * @param name The entity type name in PascalCase, such as `GroupMember`.
+ */
+export function provideEntityTypeName(name: string): void {
+    provide(entityTypeNameSymbol, name);
+}
+
+/**
+ * Gets the entity type name provided from a parent component.
+ *
+ * @returns The entity type name in PascalCase, such as `GroupMember` or undefined.
+ */
+export function useEntityTypeName(): string | undefined {
+    return inject<string | undefined>(entityTypeNameSymbol, undefined);
+}
+
+/**
+ * Provides the entity type unique identifier to child components.
+ *
+ * @param guid The entity type unique identifier.
+ */
+export function provideEntityTypeGuid(guid: Guid): void {
+    provide(entityTypeGuidSymbol, guid);
+}
+
+/**
+ * Gets the entity type unique identifier provided from a parent component.
+ *
+ * @returns The entity type unique identifier or undefined.
+ */
+export function useEntityTypeGuid(): Guid | undefined {
+    return inject<string | undefined>(entityTypeGuidSymbol, undefined);
+}
+
+// #endregion
 
 // #region Security Grants
 
