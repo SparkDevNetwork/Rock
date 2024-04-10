@@ -324,6 +324,61 @@ namespace Rock.SystemGuid
         public const string LAYOUT = "9DACC861-FED4-47FC-946D-D6A120FF6D56";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningActivity"/>
+        /// </summary>
+        public const string LEARNING_ACTIVITY = "E82F540C-F483-4D4A-898A-3AE7FF76F75A";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningActivityCompletion"/>
+        /// </summary>
+        public const string LEARNING_ACTIVITY_COMPLETION = "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClass"/>
+        /// </summary>
+        public const string LEARNING_CLASS = "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningCourse"/>
+        /// </summary>
+        public const string LEARNING_COURSE = "21870376-4A6E-4402-ACE3-42AA4441FC2E";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningCourseRequirement"/>
+        /// </summary>
+        public const string LEARNING_COURSE_REQUIREMENT = "576F54E1-CE70-43ED-A7D8-5169529C70E9";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningGradingSystem"/>
+        /// </summary>
+        public const string LEARNING_GRADING_SYSTEM = "0B693CAF-3718-4913-B7AC-61D31B4DF099";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningGradingSystem"/>
+        /// </summary>
+        public const string LEARNING_GRADING_SYSTEM_SCALE = "14BA9B5B-6B4A-4462-ACDF-898DCEC9EC0D";
+        
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningParticipant"/>
+        /// </summary>
+        public const string LEARNING_PARTICIPANT = "03195758-1770-4794-9487-7A4AA02930A7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningProgram"/>
+        /// </summary>
+        public const string LEARNING_PROGRAM = "AFD89885-6923-4FA1-B6FE-A1DF8D821BBC";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningProgramCompletion"/>
+        /// </summary>
+        public const string LEARNING_PROGRAM_COMPLETION = "B82813A7-E70E-4F04-8568-0D84EFB484B2";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningSemester"/>
+        /// </summary>
+        public const string LEARNING_SEMESTER = "F9A40931-0ACE-4B50-A507-0D1D75F92BC4";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.MediaAccount"/> 
         /// </summary>
         public const string MEDIA_ACCOUNT = "CD35F034-AC18-40D5-B703-6BF16D79C51C";
