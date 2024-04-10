@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 
 using Rock.Attribute;
@@ -28,7 +27,6 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StepProgramDetail;
 using Rock.ViewModels.Controls;
@@ -147,7 +145,7 @@ namespace Rock.Blocks.Engagement
                 SetBoxInitialEntityState( box, rockContext, entity );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext, entity?.Id );
+                box.Options = GetBoxOptions();
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StepProgram>();
 
                 return box;
@@ -158,24 +156,20 @@ namespace Rock.Blocks.Engagement
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="stepProgramId">The step program identifier.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private StepProgramDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext, int? stepProgramId )
+        private StepProgramDetailOptionsBag GetBoxOptions()
         {
-            var options = new StepProgramDetailOptionsBag();
-
-            options.ViewModes = typeof( StepProgram.ViewMode ).ToEnumListItemBag();
-
-            options.TriggerTypes = new List<ListItemBag>
+            var options = new StepProgramDetailOptionsBag
             {
-                new ListItemBag() { Text = "Step Completed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() },
-                new ListItemBag() { Text = "Status Changed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged.ToString() },
-                new ListItemBag() { Text = "Manual", Value = StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() }
-            };
+                ViewModes = typeof( StepProgram.ViewMode ).ToEnumListItemBag(),
 
-            options.StatusOptions = new StepStatusService( rockContext ).Queryable().Where( s => s.StepProgramId == stepProgramId ).AsEnumerable().ToListItemBagList();
+                TriggerTypes = new List<ListItemBag>
+                {
+                    new ListItemBag() { Text = "Step Completed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() },
+                    new ListItemBag() { Text = "Status Changed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged.ToString() },
+                    new ListItemBag() { Text = "Manual", Value = StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() }
+                }
+            };
 
             return options;
         }
@@ -263,6 +257,7 @@ namespace Rock.Blocks.Engagement
                 IconCssClass = entity.IconCssClass,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
+                DefaultListView = entity.DefaultListView.ConvertToInt(),
                 CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
             };
         }
@@ -321,10 +316,11 @@ namespace Rock.Blocks.Engagement
             }
 
             var bag = GetCommonEntityBag( entity );
+            var rockContext = GetRockContext();
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
-            bag.StepProgramAttributes = GetStepTypeAttributes( GetRockContext(), entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ) );
+            bag.StepProgramAttributes = GetStepTypeAttributes( rockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ) );
 
             bag.Statuses = entity.StepStatuses.Select( s => new StepStatusBag()
             {
@@ -336,15 +332,19 @@ namespace Rock.Blocks.Engagement
                 StatusColor = s.StatusColor
             } ).ToList();
 
-            bag.WorkflowTriggers = entity.StepWorkflowTriggers.Select( wt => new StepProgramWorkflowTriggerBag()
-            {
-                IdKey = wt.IdKey,
-                Guid = wt.Guid,
-                WorkflowTrigger = GetTriggerType( wt.TriggerType ),
-                WorkflowType = wt.WorkflowType.ToListItemBag(),
-                PrimaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
-                SecondaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
-            } ).ToList();
+            bag.WorkflowTriggers = entity.StepWorkflowTriggers
+                .OrderBy( c => c.TypeName ).ThenBy( c => c.TriggerType.ConvertToString() )
+                .Select( wt => new StepProgramWorkflowTriggerBag()
+                {
+                    IdKey = wt.IdKey,
+                    Guid = wt.Guid,
+                    WorkflowTrigger = GetTriggerType( wt.TriggerType, wt.TypeQualifier ),
+                    WorkflowType = wt.WorkflowType.ToListItemBag(),
+                    PrimaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
+                    SecondaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
+                } ).ToList();
+
+            bag.StatusOptions = new StepStatusService( rockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
 
             return bag;
         }
@@ -370,18 +370,15 @@ namespace Rock.Blocks.Engagement
         /// Gets the type of the trigger as a <see cref="ListItemBag"/>.
         /// </summary>
         /// <param name="condition">The condition.</param>
+        /// <param name="typeQualifier">The type qualifier.</param>
         /// <returns></returns>
-        private ListItemBag GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition condition )
+        private ListItemBag GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition condition, string typeQualifier )
         {
-            switch ( condition )
-            {
-                case StepWorkflowTrigger.WorkflowTriggerCondition.Manual:
-                    return new ListItemBag() { Text = "Manual", Value = nameof( StepWorkflowTrigger.WorkflowTriggerCondition.Manual ) };
-                case StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete:
-                    return new ListItemBag() { Text = "Step Completed", Value = nameof( StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete ) };
-                default:
-                    return new ListItemBag() { Text = "Status Changed", Value = nameof( StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged ) };
-            }
+            var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings( typeQualifier );
+            var text = new StepWorkflowTriggerService( GetRockContext() ).GetTriggerSettingsDescription( condition, qualifierSettings );
+            var value = condition.ToStringSafe();
+
+            return new ListItemBag() { Text = text, Value = value };
         }
 
         /// <summary>
@@ -433,6 +430,12 @@ namespace Rock.Blocks.Engagement
 
             box.IfValidProperty( nameof( box.Entity.DefaultListView ),
                 () => entity.DefaultListView = ( StepProgram.ViewMode ) box.Entity.DefaultListView );
+
+            box.IfValidProperty( nameof( box.Entity.Statuses ),
+                () => SaveStatuses( box.Entity, entity, rockContext ) );
+
+            box.IfValidProperty( nameof( box.Entity.WorkflowTriggers ),
+                () => SaveWorkflowTriggers( box.Entity, entity, rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -990,8 +993,6 @@ namespace Rock.Blocks.Engagement
         /// <summary>
         /// Gets the step program data model displayed by this page.
         /// </summary>
-        /// <param name="stepProgramId">The step program identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         private StepProgram GetStepProgram()
         {
@@ -1047,6 +1048,107 @@ namespace Rock.Blocks.Engagement
             return dateRangeBag;
         }
 
+        /// <summary>
+        /// Saves the workflow triggers from the client.
+        /// </summary>
+        /// <param name="bag">The Step program bag.</param>
+        /// <param name="entity">The entity to be updated.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private static void SaveWorkflowTriggers( StepProgramBag bag, StepProgram entity, RockContext rockContext )
+        {
+            var stepWorkflowService = new StepWorkflowService( rockContext );
+            var stepWorkflowTriggerService = new StepWorkflowTriggerService( rockContext );
+            // Workflow Triggers: Remove deleted triggers.
+            // Note that we need to be careful not to remove triggers related to a specific Step Type here, because they are managed separately in the Step Type Detail block.
+            var uiWorkflows = bag.WorkflowTriggers.Select( l => l.Guid );
+
+            var deletedTriggers = entity.StepWorkflowTriggers.Where( l => l.StepTypeId == null && !uiWorkflows.Contains( l.Guid ) ).ToList();
+
+            foreach ( var trigger in deletedTriggers )
+            {
+                // Remove the Step workflows associated with this trigger.
+                var stepWorkflows = stepWorkflowService.Queryable().Where( w => w.StepWorkflowTriggerId == trigger.Id );
+
+                foreach ( var requestWorkflow in stepWorkflows )
+                {
+                    stepWorkflowService.Delete( requestWorkflow );
+                }
+
+                // Remove the trigger.
+                entity.StepWorkflowTriggers.Remove( trigger );
+
+                stepWorkflowTriggerService.Delete( trigger );
+            }
+
+            // Workflow Triggers: Update modified triggers.
+            foreach ( var stateTrigger in bag.WorkflowTriggers )
+            {
+                var workflowTrigger = entity.StepWorkflowTriggers.FirstOrDefault( a => a.Guid == stateTrigger.Guid );
+
+                if ( workflowTrigger == null )
+                {
+                    workflowTrigger = new StepWorkflowTrigger();
+                    workflowTrigger.StepProgramId = entity.Id;
+                    entity.StepWorkflowTriggers.Add( workflowTrigger );
+                }
+
+                var primaryQualifier = new ListItemBag() { Value = stateTrigger.PrimaryQualifier };
+                var secondaryQualifier = new ListItemBag() { Value = stateTrigger.SecondaryQualifier };
+
+                var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
+                {
+                    FromStatusId = primaryQualifier.GetEntityId<StepStatus>( rockContext ),
+                    ToStatusId = secondaryQualifier.GetEntityId<StepStatus>( rockContext ),
+                };
+
+                workflowTrigger.WorkflowTypeId = stateTrigger.WorkflowType.GetEntityId<WorkflowType>( rockContext ) ?? 0;
+                workflowTrigger.TriggerType = stateTrigger.WorkflowTrigger.Value.ConvertToEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
+                workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
+                workflowTrigger.WorkflowName = stateTrigger.WorkflowType.Text;
+                workflowTrigger.StepTypeId = null;
+            }
+        }
+
+        /// <summary>
+        /// Saves the statuses from the Client.
+        /// </summary>
+        /// <param name="bag">The Step program bag.</param>
+        /// <param name="entity">The entity to be updated.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private static void SaveStatuses( StepProgramBag bag, StepProgram entity, RockContext rockContext )
+        {
+            var stepStatusService = new StepStatusService( rockContext );
+            var uiStatuses = bag.Statuses.Select( r => r.Guid );
+
+            // Step Statuses: Remove deleted Statuses
+            var deletedStatuses = entity.StepStatuses.Where( r => !uiStatuses.Contains( r.Guid ) ).ToList();
+
+            foreach ( var stepStatus in deletedStatuses )
+            {
+                entity.StepStatuses.Remove( stepStatus );
+                stepStatusService.Delete( stepStatus );
+            }
+
+            // Step Statuses: Update modified Statuses
+            foreach ( var stepStatusState in bag.Statuses )
+            {
+                var stepStatus = entity.StepStatuses.FirstOrDefault( a => a.Guid == stepStatusState.Guid );
+
+                if ( stepStatus == null )
+                {
+                    stepStatus = new StepStatus();
+                    entity.StepStatuses.Add( stepStatus );
+                }
+
+                stepStatus.Name = stepStatusState.Name;
+                stepStatus.IsActive = stepStatusState.IsActive;
+                stepStatus.IsCompleteStatus = stepStatusState.IsCompleteStatus;
+                stepStatus.StatusColor = stepStatusState.StatusColor;
+
+                stepStatus.StepProgramId = entity.Id;
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -1089,9 +1191,6 @@ namespace Rock.Blocks.Engagement
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new StepProgramService( rockContext );
-                var stepStatusService = new StepStatusService( rockContext );
-                var stepWorkflowService = new StepWorkflowService( rockContext );
-                var stepWorkflowTriggerService = new StepWorkflowTriggerService( rockContext );
 
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -1111,86 +1210,6 @@ namespace Rock.Blocks.Engagement
                 }
 
                 var isNew = entity.Id == 0;
-
-                // Step Statuses: Remove deleted Statuses
-                var uiStatuses = box.Entity.Statuses.Select( r => r.Guid );
-
-                var deletedStatuses = entity.StepStatuses.Where( r => !uiStatuses.Contains( r.Guid ) ).ToList();
-
-                foreach ( var stepStatus in deletedStatuses )
-                {
-                    entity.StepStatuses.Remove( stepStatus );
-                    stepStatusService.Delete( stepStatus );
-                }
-
-                // Step Statuses: Update modified Statuses
-                foreach ( var stepStatusState in box.Entity.Statuses )
-                {
-                    var stepStatus = entity.StepStatuses.FirstOrDefault( a => a.Guid == stepStatusState.Guid );
-
-                    if ( stepStatus == null )
-                    {
-                        stepStatus = new StepStatus();
-                        entity.StepStatuses.Add( stepStatus );
-                    }
-
-                    stepStatus.Name = stepStatusState.Name;
-                    stepStatus.IsActive = stepStatusState.IsActive;
-                    stepStatus.IsCompleteStatus = stepStatusState.IsCompleteStatus;
-                    stepStatus.StatusColor = stepStatusState.StatusColor;
-
-                    stepStatus.StepProgramId = entity.Id;
-                }
-
-                // Workflow Triggers: Remove deleted triggers.
-                // Note that we need to be careful not to remove triggers related to a specific Step Type here, because they are managed separately in the Step Type Detail block.
-                var uiWorkflows = box.Entity.WorkflowTriggers.Select( l => l.Guid );
-
-                var deletedTriggers = entity.StepWorkflowTriggers.Where( l => l.StepTypeId == null && !uiWorkflows.Contains( l.Guid ) ).ToList();
-
-                foreach ( var trigger in deletedTriggers )
-                {
-                    // Remove the Step workflows associated with this trigger.
-                    var stepWorkflows = stepWorkflowService.Queryable().Where( w => w.StepWorkflowTriggerId == trigger.Id );
-
-                    foreach ( var requestWorkflow in stepWorkflows )
-                    {
-                        stepWorkflowService.Delete( requestWorkflow );
-                    }
-
-                    // Remove the trigger.
-                    entity.StepWorkflowTriggers.Remove( trigger );
-
-                    stepWorkflowTriggerService.Delete( trigger );
-                }
-
-                // Workflow Triggers: Update modified triggers.
-                foreach ( var stateTrigger in box.Entity.WorkflowTriggers )
-                {
-                    var workflowTrigger = entity.StepWorkflowTriggers.FirstOrDefault( a => a.Guid == stateTrigger.Guid );
-
-                    if ( workflowTrigger == null )
-                    {
-                        workflowTrigger = new StepWorkflowTrigger();
-                        workflowTrigger.StepProgramId = entity.Id;
-                        entity.StepWorkflowTriggers.Add( workflowTrigger );
-                    }
-
-                    var primaryQualifier = new ListItemBag() { Value = stateTrigger.PrimaryQualifier };
-                    var secondaryQualifier = new ListItemBag() { Value = stateTrigger.SecondaryQualifier };
-
-                    var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
-                    {
-                        FromStatusId = primaryQualifier.GetEntityId<StepStatus>( rockContext ),
-                        ToStatusId = secondaryQualifier.GetEntityId<StepStatus>( rockContext ),
-                    };
-
-                    workflowTrigger.WorkflowTypeId = stateTrigger.WorkflowType.GetEntityId<WorkflowType>( rockContext ) ?? 0;
-                    workflowTrigger.TriggerType = stateTrigger.WorkflowTrigger.Value.ConvertToEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
-                    workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
-                    workflowTrigger.WorkflowName = stateTrigger.WorkflowType.Text;
-                    workflowTrigger.StepTypeId = null;
-                }
 
                 rockContext.WrapTransaction( () =>
                 {
@@ -1260,28 +1279,39 @@ namespace Rock.Blocks.Engagement
                     return actionError;
                 }
 
-                var stepTypes = entity.StepTypes.ToList();
-                var stepTypeService = new StepTypeService( rockContext );
-
-                foreach ( var stepType in stepTypes )
+                if ( !entity.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
                 {
-                    if ( !stepTypeService.CanDelete( stepType, out var errorMessageStepType ) )
+                    return ActionBadRequest( "You are not authorized to delete this item." );
+                }
+
+                string errorMessage = null;
+                rockContext.WrapTransaction( () =>
+                {
+                    var stepTypes = entity.StepTypes.ToList();
+                    var stepTypeService = new StepTypeService( rockContext );
+
+                    foreach ( var stepType in stepTypes )
                     {
-                        return ActionBadRequest( errorMessageStepType );
+                        if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
+                        {
+                            return;
+                        }
+
+                        stepTypeService.Delete( stepType );
                     }
 
-                    stepTypeService.Delete( stepType );
-                }
+                    rockContext.SaveChanges();
 
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
+                    if ( !entityService.CanDelete( entity, out errorMessage ) )
+                    {
+                        return;
+                    }
 
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
+                    entityService.Delete( entity );
+                    rockContext.SaveChanges();
+                } );
 
-                return ActionOk( this.GetParentPageUrl() );
+                return string.IsNullOrWhiteSpace( errorMessage ) ? ActionOk( this.GetParentPageUrl() ) : ActionBadRequest( errorMessage );
             }
         }
 
