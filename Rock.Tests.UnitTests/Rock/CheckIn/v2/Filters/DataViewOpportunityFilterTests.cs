@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,6 +15,11 @@ using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
+    /// <summary>
+    /// This suite checks the various combinations of filter settings related to
+    /// a person's membership in a dataview for the check-in process.
+    /// </summary>
+    /// <seealso cref="AgeOpportunityFilter"/>
     [TestClass]
     public class DataViewOpportunityFilterTests : CheckInMockDatabase
     {

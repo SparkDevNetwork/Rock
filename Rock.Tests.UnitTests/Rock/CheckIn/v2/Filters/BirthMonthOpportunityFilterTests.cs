@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,69 +7,61 @@ using Moq;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
 using Rock.ViewModels.CheckIn;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
+    /// <summary>
+    /// This suite checks the various combinations of filter settings related to
+    /// a person's birth month for the check-in process.
+    /// </summary>
+    /// <seealso cref="BirthMonthOpportunityFilter"/>
     [TestClass]
     public class BirthMonthOpportunityFilterTests
     {
         #region IsGroupValid Tests
 
         [TestMethod]
-        public void IsGroupValid_BlankFilterWithBirthdate_IsTrue()
+        public void BirthMonthFilter_WithNoConditions_IncludesBirthdate()
         {
-            // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, 4, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( null, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_BlankFilterWithoutBirthdate_IsTrue()
+        public void BirthMonthFilter_WithNoConditions_IncludesEmptyBirthdate()
         {
-            // Arrange
             var filter = CreateBirthMonthFilter();
             var groupOpportunity = CreateGroupOpportunity( null, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MinMonthFilterWithoutBirthdate_IsFalse()
+        public void BirthMonthFilter_WithMinMonth_ExcludesEmptyBirthdate()
         {
-            // Arrange
             var filter = CreateBirthMonthFilter();
             var groupOpportunity = CreateGroupOpportunity( 3, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MaxMonthFilterWithoutBirthdate_IsFalse()
+        public void BirthMonthFilter_WithMaxMonth_ExcludesEmptyBirthdate()
         {
-            // Arrange
             var filter = CreateBirthMonthFilter();
             var groupOpportunity = CreateGroupOpportunity( null, 3 );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
@@ -82,48 +73,39 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 6 )]
         [DataRow( 7 )]
         [DataRow( 8 )]
-        public void IsGroupValid_MinMonthFilterWithLessThanBirthMonth_IsFalse( int month )
+        public void BirthMonthFilter_WithMinMonth_ExcludesLowerBirthMonth( int month )
         {
-            // Arrange
-            var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, 4, 12 ) );
+            var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( 9, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MinMonthFilterWithEqualBirthMonth_IsTrue()
+        public void BirthMonthFilter_WithMinMonth_IncludesEqualBirthMonth()
         {
-            // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, 9, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( 9, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
         [DataRow( 10 )]
         [DataRow( 11 )]
         [DataRow( 12 )]
-        public void IsGroupValid_MinMonthFilterWithGreaterThanBirthMonth_IsTrue( int month )
+        public void BirthMonthFilter_WithMinMonth_IncludesHigherBirthMonth( int month )
         {
-            // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( 9, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
@@ -135,48 +117,39 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 6 )]
         [DataRow( 7 )]
         [DataRow( 8 )]
-        public void IsGroupValid_MaxMonthFilterWithLessThanBirthMonth_IsTrue( int month )
+        public void BirthMonthFilter_WithMaxMonth_IncludesLowerBirthMonth( int month )
         {
-            // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( null, 9 );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MaxMonthFilterWithEqualBirthMonth_IsTrue()
+        public void BirthMonthFilter_WithMaxMonth_IncludesEqualBirthMonth()
         {
-            // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, 9, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( null, 9 );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
         [DataRow( 10 )]
         [DataRow( 11 )]
         [DataRow( 12 )]
-        public void IsGroupValid_MaxMonthFilterWithGreaterThanBirthMonth_IsFalse( int month )
+        public void BirthMonthFilter_WithMaxMonth_ExcludesHigherBirthMonth( int month )
         {
-            // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( null, 9 );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
@@ -187,17 +160,14 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 7 )]
         [DataRow( 8 )]
         [DataRow( 9 )]
-        public void IsGroupValid_MinMaxMonthFilterWithInRangeBirthMonth_IsTrue( int month )
+        public void BirthMonthFilter_WithMinAndMaxMonth_IncludesInRangeBirthMonth( int month )
         {
-            // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( 3, 9 );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
@@ -206,17 +176,14 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 10 )]
         [DataRow( 11 )]
         [DataRow( 12 )]
-        public void IsGroupValid_MinMaxMonthFilterWithOutOfRangeBirthMonth_IsFalse( int month )
+        public void BirthMonthFilter_WithMinAndMaxMonth_ExcludesOutOfRangeBirthMonth( int month )
         {
-            // Arrange
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( 3, 9 );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
@@ -227,17 +194,17 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 10 )]
         [DataRow( 11 )]
         [DataRow( 12 )]
-        public void IsGroupValid_InvertedMinMaxMonthFilterWithInRangeBirthMonth_IsTrue( int month )
+        public void BirthMonthFilter_WithInvertedMinAndMaxMonth_IncludesInRangeBirthMonth( int month )
         {
-            // Arrange
+            // An inverted min and max value means between "October and March".
+            // So the months starting in October and ending in March should be
+            // included.
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( 9, 3 );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
@@ -246,17 +213,17 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 6 )]
         [DataRow( 7 )]
         [DataRow( 8 )]
-        public void IsGroupValid_InvertedMinMaxMonthFilterWithOutOfRangeBirthMonth_IsFalse( int month )
+        public void BirthMonthFilter_WithInvertedMinAndMaxMonth_ExcludesOutOfRangeBirthMonth( int month )
         {
-            // Arrange
+            // An inverted min and max value means between "October and March".
+            // So the months starting in April and ending in September should be
+            // excluded.
             var filter = CreateBirthMonthFilter( RockDateTime.New( 2019, month, 12 ) );
             var groupOpportunity = CreateGroupOpportunity( 9, 3 );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            Assert.IsFalse( isIncluded );
         }
 
         #endregion

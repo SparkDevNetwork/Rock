@@ -11,6 +11,11 @@ using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
+    /// <summary>
+    /// This suite checks the various combinations of filter settings related to
+    /// a person already being checked in for the check-in process.
+    /// </summary>
+    /// <seealso cref="DuplicateCheckInOpportunityFilter"/>
     [TestClass]
     public class DuplicateCheckInOpportunityFilterTests
     {

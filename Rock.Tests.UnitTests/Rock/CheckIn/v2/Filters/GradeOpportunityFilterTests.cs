@@ -1,200 +1,191 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
 using Rock.ViewModels.CheckIn;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
+    /// <summary>
+    /// This suite checks the various combinations of filter settings related to
+    /// a person's grade for the check-in process.
+    /// </summary>
+    /// <seealso cref="GradeOpportunityFilter"/>
     [TestClass]
     public class GradeOpportunityFilterTests
     {
         #region IsGroupValid Tests
 
         [TestMethod]
-        public void IsGroupValid_BlankFilterWithGrade_IsTrue()
+        public void GradeFilter_WithNoConditions_IncludesAnyGrade()
         {
-            // Arrange
-            var filter = CreateGradeFilter( 5, false );
+            var personGrade = 5;
+
+            var filter = CreateGradeFilter( personGrade, false );
             var groupOpportunity = CreateGroupOpportunity( null, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_BlankFilterWithoutGrade_IsTrue()
+        public void GradeFilter_WithNoConditions_IncludesUnknownGrade()
         {
-            // Arrange
-            var filter = CreateGradeFilter( null, false );
+            int? personGrade = null;
+
+            var filter = CreateGradeFilter( personGrade, false );
             var groupOpportunity = CreateGroupOpportunity( null, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MinGradeRequiredFilterWithoutGrade_IsFalse()
+        public void GradeFilter_WithRequiredMinGrade_ExcludesUnknownGrade()
         {
-            // Arrange
+            var minGrade = 3;
+
             var filter = CreateGradeFilter( null, true );
-            var groupOpportunity = CreateGroupOpportunity( 3, null );
+            var groupOpportunity = CreateGroupOpportunity( minGrade, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MinGradeNotRequiredFilterWithoutGrade_IsTrue()
+        public void GradeFilter_WithOptionalMinGrade_IncludesUnknownGrade()
         {
-            // Arrange
+            var minGrade = 3;
+
             var filter = CreateGradeFilter( null, false );
-            var groupOpportunity = CreateGroupOpportunity( 3, null );
+            var groupOpportunity = CreateGroupOpportunity( minGrade, null );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MaxGradeRequiredFilterWithoutGrade_IsFalse()
+        public void GradeFilter_WithRequiredMaxGrade_ExcludesUnknownGrade()
         {
-            // Arrange
+            var maxGrade = 3;
+
             var filter = CreateGradeFilter( null, true );
-            var groupOpportunity = CreateGroupOpportunity( null, 3 );
+            var groupOpportunity = CreateGroupOpportunity( null, maxGrade );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MaxGradeNotRequiredFilterWithoutGrade_IsTrue()
+        public void GradeFilter_WithOptionalMaxGrade_IncludesUnknownGrade()
         {
-            // Arrange
+            var maxGrade = 3;
+
             var filter = CreateGradeFilter( null, false );
-            var groupOpportunity = CreateGroupOpportunity( null, 3 );
+            var groupOpportunity = CreateGroupOpportunity( null, maxGrade );
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
         [DataRow( 0 )]
         [DataRow( 1 )]
         [DataRow( 2 )]
-        public void IsGroupValid_MinGradeFilterWithLessThanGrade_IsFalse( int grade )
+        public void GradeFilter_WithOptionalMinGrade_ExcludesLowerGrade( int personGrade )
         {
-            // Arrange
-            var filter = CreateGradeFilter( grade, false );
-            var groupOpportunity = CreateGroupOpportunity( 3, null );
+            var minGrade = 3;
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var filter = CreateGradeFilter( personGrade, false );
+            var groupOpportunity = CreateGroupOpportunity( minGrade, null );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MinGradeFilterWithEqualGrade_IsTrue()
+        public void GradeFilter_WithOptionalMinGrade_IncludesEqualGrade()
         {
-            // Arrange
-            var filter = CreateGradeFilter( 3, false );
-            var groupOpportunity = CreateGroupOpportunity( 3, null );
+            var personGrade = 3;
+            var minGrade = 3;
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var filter = CreateGradeFilter( personGrade, false );
+            var groupOpportunity = CreateGroupOpportunity( minGrade, null );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
         [DataRow( 4 )]
         [DataRow( 5 )]
         [DataRow( 6 )]
-        public void IsGroupValid_MinGradeFilterWithGreaterThanGrade_IsTrue( int grade )
+        public void GradeFilter_WithOptionalMinGrade_IncludesHigherGrade( int personGrade )
         {
-            // Arrange
-            var filter = CreateGradeFilter( grade, false );
-            var groupOpportunity = CreateGroupOpportunity( 3, null );
+            var minGrade = 3;
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var filter = CreateGradeFilter( personGrade, false );
+            var groupOpportunity = CreateGroupOpportunity( minGrade, null );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
         [DataRow( 0 )]
         [DataRow( 1 )]
         [DataRow( 2 )]
-        public void IsGroupValid_MaxGradeFilterWithLessThanGrade_IsTrue( int month )
+        public void GradeFilter_WithOptionalMaxGrade_IncludesLowerGrade( int personGrade )
         {
-            // Arrange
-            var filter = CreateGradeFilter( 3, false );
-            var groupOpportunity = CreateGroupOpportunity( null, 3 );
+            var maxGrade = 3;
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var filter = CreateGradeFilter( personGrade, false );
+            var groupOpportunity = CreateGroupOpportunity( null, maxGrade );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
-        public void IsGroupValid_MaxGradeFilterWithEqualGrade_IsTrue()
+        public void GradeFilter_WithOptionalMAxGrade_IncludesEqualGrade()
         {
-            // Arrange
-            var filter = CreateGradeFilter( 3, false );
-            var groupOpportunity = CreateGroupOpportunity( null, 3 );
+            var personGrade = 3;
+            var maxGrade = 3;
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var filter = CreateGradeFilter( personGrade, false );
+            var groupOpportunity = CreateGroupOpportunity( null, maxGrade );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
         [DataRow( 4 )]
         [DataRow( 5 )]
         [DataRow( 6 )]
-        public void IsGroupValid_MaxGradeFilterWithGreaterThanGrade_IsFalse( int grade )
+        public void GradeFilter_WithOptionalMaxGrade_ExcludesHigherGrade( int personGrade )
         {
-            // Arrange
-            var filter = CreateGradeFilter( grade, false );
-            var groupOpportunity = CreateGroupOpportunity( null, 3 );
+            var maxGrade = 3;
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var filter = CreateGradeFilter( personGrade, false );
+            var groupOpportunity = CreateGroupOpportunity( null, maxGrade );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsFalse( isIncluded );
         }
 
         [TestMethod]
@@ -205,17 +196,17 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 7 )]
         [DataRow( 8 )]
         [DataRow( 9 )]
-        public void IsGroupValid_MinMaxGradeFilterWithInRangeGrade_IsTrue( int grade )
+        public void GradeFilter_WithOptionalMinAndMaxGrade_IncludesInRangeGrade( int personGrade )
         {
-            // Arrange
-            var filter = CreateGradeFilter( grade, false );
-            var groupOpportunity = CreateGroupOpportunity( 3, 9 );
+            var minGrade = 3;
+            var maxGrade = 9;
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var filter = CreateGradeFilter( personGrade, false );
+            var groupOpportunity = CreateGroupOpportunity( minGrade, maxGrade );
 
-            // Assert
-            Assert.IsTrue( isValid );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsTrue( isIncluded );
         }
 
         [TestMethod]
@@ -224,17 +215,17 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [DataRow( 10 )]
         [DataRow( 11 )]
         [DataRow( 12 )]
-        public void IsGroupValid_MinMaxGradeFilterWithOutOfRangeGrade_IsFalse( int grade )
+        public void GradeFilter_WithOptionalMinAndMaxGrade_ExcludesOutOfRangeGrade( int personGrade )
         {
-            // Arrange
-            var filter = CreateGradeFilter( grade, false );
-            var groupOpportunity = CreateGroupOpportunity( 3, 9 );
+            var minGrade = 3;
+            var maxGrade = 9;
 
-            // Act
-            var isValid = filter.IsGroupValid( groupOpportunity );
+            var filter = CreateGradeFilter( personGrade, false );
+            var groupOpportunity = CreateGroupOpportunity( minGrade, maxGrade );
 
-            // Assert
-            Assert.IsFalse( isValid );
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsFalse( isIncluded );
         }
 
         #endregion

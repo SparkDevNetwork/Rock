@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
@@ -12,6 +9,11 @@ using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
+    /// <summary>
+    /// This suite checks the various combinations of filter settings related to
+    /// a person's gender for the check-in process.
+    /// </summary>
+    /// <seealso cref="GenderOpportunityFilter"/>
     [TestClass]
     public class GenderOpportunityFilterTests
     {

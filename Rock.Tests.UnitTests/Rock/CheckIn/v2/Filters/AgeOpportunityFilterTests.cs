@@ -10,6 +10,11 @@ using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
+    /// <summary>
+    /// This suite checks the various combinations of filter settings related to
+    /// a person's age and birthdate for the check-in process.
+    /// </summary>
+    /// <seealso cref="AgeOpportunityFilter"/>
     [TestClass]
     public class AgeOpportunityFilterTests
     {

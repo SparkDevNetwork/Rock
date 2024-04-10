@@ -1,27 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
-using Rock.Model;
 using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
+    /// <summary>
+    /// This suite checks the various combinations of filter settings related to
+    /// a location being open or closed for the check-in process.
+    /// </summary>
+    /// <seealso cref="LocationClosedOpportunityFilter"/>
     [TestClass]
     public class LocationClosedOpportunityFilterTests
     {
         #region IsGroupValid Tests
 
         [TestMethod]
-        public void LocationFilter_IncludesOpenLocation()
+        public void LocationFilter_WithNoConditions_IncludesOpenLocation()
         {
+            var locationIsClosed = false;
+
             var filter = CreateLocationClosedFilter();
-            var locationOpportunity = CreateLocationOpportunity( false );
+            var locationOpportunity = CreateLocationOpportunity( locationIsClosed );
 
             var isIncluded = filter.IsLocationValid( locationOpportunity );
 
@@ -29,10 +32,12 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         }
 
         [TestMethod]
-        public void LocationFilter_ExcludesClosedLocation()
+        public void LocationFilter_WithNoConditions_ExcludesClosedLocation()
         {
+            var locationIsClosed = true;
+
             var filter = CreateLocationClosedFilter();
-            var locationOpportunity = CreateLocationOpportunity( true );
+            var locationOpportunity = CreateLocationOpportunity( locationIsClosed );
 
             var isIncluded = filter.IsLocationValid( locationOpportunity );
 
