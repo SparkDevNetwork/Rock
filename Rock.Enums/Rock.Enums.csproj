@@ -173,6 +173,13 @@
     <Compile Include="Group\ParticipationType.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
     <Compile Include="Group\ScheduleConfirmationLogic.cs" />
+    <Compile Include="Lms\AvailableDateCalculationMethod.cs" />
+    <Compile Include="Lms\DueDateCalculationMethod.cs" />
+    <Compile Include="Lms\AssignTo.cs" />
+    <Compile Include="Lms\LearningCompletionStatus.cs" />
+    <Compile Include="Lms\CompletionStatus.cs" />
+    <Compile Include="Lms\RequirementType.cs" />
+    <Compile Include="Lms\ConfigurationMode.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />
     <Compile Include="Net\ResponseElementLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
