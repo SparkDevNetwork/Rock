@@ -452,26 +452,40 @@
      * @returns An array of objects representing the donation percentages
      */
     const calculateDonationPercentages = (): { month: string; donatedPercentage: number; notDonatedPercentage: number }[] => {
+        // Initialize an object to hold donation data for each month
         const donationData = last13Months.reduce((acc, month) => {
-            acc[month] = { donated: 0, total: gridData?.rows?.length || 0 };
+            acc[month] = { donated: new Set(), total: new Set() };
             return acc;
         }, {});
 
+        // Group donations by giving ID and track the months each group donated
         gridData?.rows?.forEach(person => {
-            last13Months.forEach(month => {
-                if ((person as { givingMonths: string[] }).givingMonths.includes(month)) {
-                    donationData[month].donated++;
-                }
+            const givingId = person.givingId;
+            if (typeof person.givingMonths === "string") {
+                person.givingMonths.toString().split(", ").forEach((monthYear: string) => {
+                    if (last13Months.includes(monthYear)) {
+                        donationData[monthYear].donated.add(givingId); // Add giving ID to the set of donors for the month
+                    }
+                });
+            }
+
+            // Add giving ID to the total set of potential donors for all months
+            Object.values(donationData).forEach((monthData: any) => {
+                monthData.total.add(givingId);
             });
         });
 
-        const donationPercentages = Object.keys(donationData).map(month => {
+        // Calculate donation percentages for each month
+        const donationPercentages = last13Months.map(month => {
             const { donated, total } = donationData[month];
-            const notDonated = total - donated;
+            const donatedCount = donated.size;
+            const totalCount = total.size;
+            const notDonatedCount = totalCount - donatedCount;
+
             return {
                 month,
-                donatedPercentage: (donated / total) * 100,
-                notDonatedPercentage: (notDonated / total) * 100
+                donatedPercentage: (donatedCount / totalCount) * 100,
+                notDonatedPercentage: (notDonatedCount / totalCount) * 100
             };
         });
 

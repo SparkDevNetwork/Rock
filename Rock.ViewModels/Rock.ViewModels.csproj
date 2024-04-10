@@ -87,6 +87,7 @@
     <Compile Include="Blocks\Cms\PersonalLinkList\SavePersonalLinkRequestBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonMergeRequestList\PersonMergeRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestControllerList\RestControllerListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
@@ -244,6 +245,8 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpOccurrenceLocationBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpsBag.cs" />
     <Compile Include="Blocks\Reporting\InteractionComponentDetail\InteractionComponentDetailInitializationBox.cs" />
+    <Compile Include="Blocks\Internal\IBlockBox.cs" />
+    <Compile Include="Blocks\Internal\IDetailBlockBox.cs" />
     <Compile Include="Blocks\Prayer\PrayerRequestList\PrayerRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />

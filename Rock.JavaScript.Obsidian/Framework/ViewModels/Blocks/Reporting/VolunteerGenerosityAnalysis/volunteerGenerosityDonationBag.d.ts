@@ -21,16 +21,11 @@
 // </copyright>
 //
 
-export type VolunteerGenerosityMonthlyGivingDataBag = {
-    /** Gets or sets the group identifier. */
-    groupId?: string | null;
-
-    /** Gets or sets the month. */
+/** Bag for donation data within the Volunteer Generosity Analysis block. */
+export type VolunteerGenerosityDonationBag = {
     month?: string | null;
 
-    /** Gets or sets themonth abrreviated name. */
     monthNameAbbreviated?: string | null;
 
-    /** Gets or sets the year. */
     year?: string | null;
 };

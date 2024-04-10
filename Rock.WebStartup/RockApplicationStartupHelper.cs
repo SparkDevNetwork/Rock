@@ -613,7 +613,7 @@ namespace Rock.WebStartup
                     var dbTheme = new Theme();
                     dbTheme.Name = theme.Name;
                     dbTheme.IsSystem = theme.IsSystem;
-                    dbTheme.RootPath = theme.AbsolutePath.ToString();
+                    dbTheme.RootPath = theme.RelativePath;
                     dbTheme.PurposeValueId = websiteLegacyValueId;
                     themeService.Add( dbTheme );
                     rockContext.SaveChanges();

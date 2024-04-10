@@ -21,25 +21,14 @@
 // </copyright>
 //
 
+import { VolunteerGenerosityDonationBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDonationBag";
+import { VolunteerGenerosityPersonDetailsBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityPersonDetailsBag";
+
+/** Bag for person-related data in the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityPersonDataBag = {
-    /** Gets or sets the giving identifier. */
-    givingId?: string | null;
+    donations?: VolunteerGenerosityDonationBag[] | null;
 
-    /** Gets or sets the group identifier. */
-    groupIds?: string[] | null;
+    personDetails?: VolunteerGenerosityPersonDetailsBag | null;
 
-    /** Gets or sets the last attendance date. */
-    lastAttendanceDate?: string | null;
-
-    /** Gets or sets the last name. */
-    lastName?: string | null;
-
-    /** Gets or sets the nick name. */
-    nickName?: string | null;
-
-    /** Gets or sets the person identifier. */
-    personId: number;
-
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
+    personGroupKey?: string | null;
 };

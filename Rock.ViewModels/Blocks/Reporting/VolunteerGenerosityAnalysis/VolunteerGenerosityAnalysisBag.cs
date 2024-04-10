@@ -24,116 +24,57 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
     /// <summary>
     /// A bag that contains all data for the Volunteer Generosity Analysis block.
     /// </summary>
+    /// <summary>
+    /// A ViewModel representing the overall data for the Volunteer Generosity Analysis block.
+    /// </summary>
     public class VolunteerGenerosityDataBag
     {
-        /// <summary>
-        /// Gets or sets the people data.
-        /// </summary>
         public List<VolunteerGenerosityPersonDataBag> PeopleData { get; set; } = new List<VolunteerGenerosityPersonDataBag>();
-        /// <summary>
-        /// Gets or sets the giving data.
-        /// </summary>
-        public List<VolunteerGenerosityGivingDataItemBag> GivingData { get; set; } = new List<VolunteerGenerosityGivingDataItemBag>();
-        /// <summary>
-        /// Gets or sets the group data.
-        /// </summary>
-        public List<VolunteerGenerosityGroupDataBag> GroupData { get; set; } = new List<VolunteerGenerosityGroupDataBag>();
     }
 
     /// <summary>
-    /// A bag that contains all data for a person in the Volunteer Generosity Analysis block.
+    /// Bag for person-related data in the Volunteer Generosity Analysis block.
     /// </summary>
     public class VolunteerGenerosityPersonDataBag
     {
-        /// <summary>
-        /// Gets or sets the person identifier.
-        /// </summary>
-        public int PersonId { get; set; }
-        /// <summary>
-        /// Gets or sets the last name.
-        /// </summary>
+        public string PersonGroupKey { get; set; }
+        public VolunteerGenerosityPersonDetailsBag PersonDetails { get; set; }
+        public List<VolunteerGenerosityDonationBag> Donations { get; set; } = new List<VolunteerGenerosityDonationBag>();
+    }
+
+    /// <summary>
+    /// Bag for detailed information about a person in the Volunteer Generosity Analysis block.
+    /// </summary>
+    public class VolunteerGenerosityPersonDetailsBag
+    {
+        public string PersonId { get; set; }
         public string LastName { get; set; }
-        /// <summary>
-        /// Gets or sets the nick name.
-        /// </summary>
         public string NickName { get; set; }
-        /// <summary>
-        /// Gets or sets the photo URL.
-        /// </summary>
         public string PhotoUrl { get; set; }
-        /// <summary>
-        /// Gets or sets the giving identifier.
-        /// </summary>
         public string GivingId { get; set; }
-        /// <summary>
-        /// Gets or sets the group identifier.
-        /// </summary>
-        public List<string> GroupIds { get; set; } = new List<string>();
-        /// <summary>
-        /// Gets or sets the last attendance date.
-        /// </summary>
         public string LastAttendanceDate { get; set; }
-    }
-
-    /// <summary>
-    /// A bag that contains all data for a giving item in the Volunteer Generosity Analysis block.
-    /// </summary>
-    public class VolunteerGenerosityGivingDataItemBag
-    {
-        /// <summary>
-        /// Gets or sets the giving identifier.
-        /// </summary>
-        public string GivingId { get; set; }
-        /// <summary>
-        /// Gets or sets the giving amount.
-        /// </summary>
-        public List<VolunteerGenerosityMonthlyGivingDataBag> Donations { get; set; } = new List<VolunteerGenerosityMonthlyGivingDataBag>();
-    }
-
-    /// <summary>
-    /// A bag that contains all data for a monthly giving item in the Volunteer Generosity Analysis block.
-    /// </summary>
-    public class VolunteerGenerosityMonthlyGivingDataBag
-    {
-        /// <summary>
-        /// Gets or sets the group identifier.
-        /// </summary>
         public string GroupId { get; set; }
-        /// <summary>
-        /// Gets or sets themonth abrreviated name.
-        /// </summary>
+        public string GroupName { get; set; }
+        public string CampusId { get; set; }
+        public string CampusShortCode { get; set; }
+    }
+
+    /// <summary>
+    /// Bag for donation data within the Volunteer Generosity Analysis block.
+    /// </summary>
+    public class VolunteerGenerosityDonationBag
+    {
         public string MonthNameAbbreviated { get; set; }
-        /// <summary>
-        /// Gets or sets the year.
-        /// </summary>
         public string Year { get; set; }
-        /// <summary>
-        /// Gets or sets the month.
-        /// </summary>
         public string Month { get; set; }
     }
 
-    /// <summary>
-    /// A bag that contains all data for a group in the Volunteer Generosity Analysis block.
-    /// </summary>
-    public class VolunteerGenerosityGroupDataBag
+    public class VolunteerGenerosityPersonBag
     {
-        /// <summary>
-        /// Gets or sets the group identifier.
-        /// </summary>
-        public string GroupId { get; set; }
-        /// <summary>
-        /// Gets or sets the group name.
-        /// </summary>
-        public string GroupName { get; set; }
-        /// <summary>
-        /// Gets or sets the campus identifier.
-        /// </summary>
-        public int CampusId { get; set; }
-        /// <summary>
-        /// Gets or sets the campus name.
-        /// </summary>
-        public string CampusShortCode { get; set; }
+        public string PersonId { get; set; }
+        public string LastName { get; set; }
+        public string NickName { get; set; }
+        public string PhotoUrl { get; set; }
     }
 
     /// <summary>

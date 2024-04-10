@@ -9,8 +9,6 @@
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
-                 :entityTypeGuid="EntityType.Campus"
-                 entityTypeName="Campus"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -26,7 +24,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="campusEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="campusEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -34,22 +32,20 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import EditPanel from "./CampusDetail/editPanel.partial.obs";
     import ViewPanel from "./CampusDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./CampusDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
     import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<CampusBag, CampusDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -57,31 +53,16 @@
     const errorMessage = ref("");
 
     const campusViewBag = ref(config.entity);
-    const campusEditBag = ref<CampusBag>({} as CampusBag);
+    const campusEditBag = ref<ValidPropertiesBox<CampusBag>>({
+        bag: {} as CampusBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "campusSchedules",
-        "campusStatusValue",
-        //"campusTopics",
-        "campusTypeValue",
-        "description",
-        "isActive",
-        "leaderPersonAlias",
-        "location",
-        "name",
-        "phoneNumber",
-        "serviceTimes",
-        "shortCode",
-        "timeZoneId",
-        "url"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(campusEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: campusEditBag
+    });
 
     // #endregion
 
@@ -154,7 +135,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!campusEditBag.value?.idKey) {
+        if (!campusEditBag.value.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -200,30 +181,16 @@
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            campusEditBag.value = result.data.entity;
+            campusEditBag.value = {
+                bag: result.data.entity,
+                validProperties: Object.keys(result.data.entity)
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -236,9 +203,9 @@
         errorMessage.value = "";
 
         const data: DetailBlockBox<CampusBag, CampusDetailOptionsBag> = {
-            entity: campusEditBag.value,
+            entity: campusEditBag.value.bag,
             isEditable: true,
-            validProperties: validProperties
+            validProperties: campusEditBag.value.validProperties
         };
 
         const result = await invokeBlockAction<CampusBag | string>("Save", {
@@ -263,8 +230,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -273,7 +238,7 @@
         blockError.value = "The specified campus could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        campusEditBag.value = config.entity;
+        campusEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

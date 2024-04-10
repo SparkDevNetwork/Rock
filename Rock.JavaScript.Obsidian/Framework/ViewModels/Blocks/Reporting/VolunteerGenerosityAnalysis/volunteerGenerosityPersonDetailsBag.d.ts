@@ -21,12 +21,25 @@
 // </copyright>
 //
 
-import { VolunteerGenerosityMonthlyGivingDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityMonthlyGivingDataBag";
+/** Bag for detailed information about a person in the Volunteer Generosity Analysis block. */
+export type VolunteerGenerosityPersonDetailsBag = {
+    campusId?: string | null;
 
-export type VolunteerGenerosityGivingDataItemBag = {
-    /** Gets or sets the giving amount. */
-    donations?: VolunteerGenerosityMonthlyGivingDataBag[] | null;
+    campusShortCode?: string | null;
 
-    /** Gets or sets the giving identifier. */
     givingId?: string | null;
+
+    groupId?: string | null;
+
+    groupName?: string | null;
+
+    lastAttendanceDate?: string | null;
+
+    lastName?: string | null;
+
+    nickName?: string | null;
+
+    personId?: string | null;
+
+    photoUrl?: string | null;
 };
