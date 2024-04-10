@@ -88,6 +88,18 @@
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403282045457_CodeGenerated_20240328.Designer.cs">
       <DependentUpon>202403282045457_CodeGenerated_20240328.cs</DependentUpon>
     </Compile>
+	<Compile Include="Migrations\Version 16.0\Version 1.16.4\202403140604035_AddSignUpAttributes.cs" />
+	<Compile Include="Migrations\Version 16.0\Version 1.16.4\202403140604035_AddSignUpAttributes.Designer.cs">
+	  <DependentUpon>202403140604035_AddSignUpAttributes.cs</DependentUpon>
+	</Compile>
+	<Compile Include="Migrations\Version 16.0\Version 1.16.4\202403141934502_CodeGenerated_20240314.cs" />
+	<Compile Include="Migrations\Version 16.0\Version 1.16.4\202403141934502_CodeGenerated_20240314.Designer.cs">
+	  <DependentUpon>202403141934502_CodeGenerated_20240314.cs</DependentUpon>
+	</Compile>
+	<Compile Include="Migrations\Version 16.0\Version 1.16.4\202403151756104_Rollup_20240315.cs" />
+	<Compile Include="Migrations\Version 16.0\Version 1.16.4\202403151756104_Rollup_20240315.Designer.cs">
+	  <DependentUpon>202403151756104_Rollup_20240315.cs</DependentUpon>
+	</Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202402151659503_Rollup_20240215.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202402151659503_Rollup_20240215.designer.cs">
       <DependentUpon>202402151659503_Rollup_20240215.cs</DependentUpon>
