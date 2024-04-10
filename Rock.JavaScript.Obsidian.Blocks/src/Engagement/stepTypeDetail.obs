@@ -7,10 +7,11 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
+                 entityTypeName="Step Type"
                  :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -18,6 +19,7 @@
                  :isFollowVisible="false"
                  :isSecurityHidden="!isEditable"
                  :footerSecondaryActions="footerSecondaryActions"
+                 additionalDeleteMessage="This will also delete the associated step participants."
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -48,6 +50,7 @@
     import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
     import { StepTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
 
     const config = useConfigurationValues<DetailBlockBox<StepTypeBag, StepTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();

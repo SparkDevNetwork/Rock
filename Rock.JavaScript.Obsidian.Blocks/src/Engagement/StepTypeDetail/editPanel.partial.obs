@@ -230,6 +230,7 @@
     import { StepTypeWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeWorkflowTriggerBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -302,7 +303,27 @@
     // #endregion
 
     // #region Functions
+    function getTriggerDescription(triggerType: string, primaryQualifier: string | null | undefined, secondaryQualifier: string | null | undefined): string {
+        if (triggerType == "StatusChanged") {
 
+            let status = stepStatuses.value.find(x => x.value == primaryQualifier);
+            const fromStatus = !status?.text ? "[Any]" : status.text;
+
+            status = stepStatuses.value.find(x => x.value == secondaryQualifier);
+
+            const toStatus = !status?.text ? "[Any]" : status.text;
+
+            const description = `Status Change: ${fromStatus} to ${toStatus}`;
+
+            return description;
+        }
+        else if (triggerType == "IsComplete") {
+            return "Step Completed";
+        }
+        else {
+            return triggerType;
+        }
+    }
     // #endregion
 
     // #region Event Handlers
@@ -346,8 +367,12 @@
         isWorkflowModalOpen.value = false;
         const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
 
-        if (triggerType.value && stepWorkflowTrigger.value.workflowType?.value && workflowTriggersGridData.rows) {
+        if (triggerType.value && stepWorkflowTrigger.value.workflowType?.value && workflowTriggersGridData.rows && selectedTriggerType?.value) {
             const index = stepWorkflowTriggers.value.findIndex(a => (a.idKey === stepWorkflowTrigger.value.idKey));
+            const workflowTrigger: ListItemBag = {
+                text: getTriggerDescription(triggerType.value, primaryQualifier.value, secondaryQualifier.value),
+                value: selectedTriggerType.value
+            };
 
             if (index !== -1) {
                 // Get the updated WorkflowTrigger and RowItem.
@@ -356,7 +381,7 @@
 
                 if (editedWorkflowTrigger && rowItem) {
                     // Replace old WorkflowTrigger with updated WorkflowTrigger.
-                    editedWorkflowTrigger.workflowTrigger = selectedTriggerType;
+                    editedWorkflowTrigger.workflowTrigger = workflowTrigger;
                     editedWorkflowTrigger.primaryQualifier = primaryQualifier.value;
                     editedWorkflowTrigger.secondaryQualifier = secondaryQualifier.value;
                     stepWorkflowTriggers.value.splice(index, 1, editedWorkflowTrigger);
@@ -372,7 +397,7 @@
                 // it can be tracked for frontend edits and deletes
                 const currentLength = stepWorkflowTriggers.value.length + 1;
                 const newWorkflowTrigger: StepTypeWorkflowTriggerBag = {
-                    workflowTrigger: selectedTriggerType,
+                    workflowTrigger: workflowTrigger,
                     workflowType: stepWorkflowTrigger.value.workflowType,
                     primaryQualifier: primaryQualifier.value,
                     secondaryQualifier: secondaryQualifier.value,
