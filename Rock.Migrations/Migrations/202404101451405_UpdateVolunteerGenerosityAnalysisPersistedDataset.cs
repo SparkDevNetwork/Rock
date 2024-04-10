@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -159,8 +159,12 @@ FROM
             Sql( $@"UPDATE [PersistedDataset]
            SET [BuildScript] = '{newBuildScript.Replace( "'", "''" )}'
            WHERE [Guid] = '10539E72-B5D3-48E2-B9C6-DB43AFDAD55F'" );
+
+            Sql( $@"UPDATE [PersistedDataset]
+           SET [ResultData] = null
+           WHERE [Guid] = '10539E72-B5D3-48E2-B9C6-DB43AFDAD55F'" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
