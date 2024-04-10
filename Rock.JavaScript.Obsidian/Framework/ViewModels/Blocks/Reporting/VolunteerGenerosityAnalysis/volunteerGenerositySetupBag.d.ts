@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** A bag that contains all data for the Volunteer Generosity Analysis block. */
 export type VolunteerGenerositySetupBag = {
     /** Gets or sets the estimated refresh time of the persisted dataset.  */
     estimatedRefreshTime: number;

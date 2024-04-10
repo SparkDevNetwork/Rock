@@ -72,6 +72,10 @@
     <Compile Include="Migrations\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.Designer.cs">
       <DependentUpon>202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs" />
+    <Compile Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.designer.cs">
+      <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.Designer.cs">
       <DependentUpon>202403222154517_Rollup_20240322.cs</DependentUpon>
@@ -2011,6 +2015,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.resx">
       <DependentUpon>202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.resx">
+      <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.resx">
       <DependentUpon>202403222154517_Rollup_20240322.cs</DependentUpon>

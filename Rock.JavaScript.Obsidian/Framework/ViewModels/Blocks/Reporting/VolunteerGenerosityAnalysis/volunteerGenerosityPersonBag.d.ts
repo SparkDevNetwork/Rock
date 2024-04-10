@@ -21,16 +21,12 @@
 // </copyright>
 //
 
-export type VolunteerGenerosityGroupDataBag = {
-    /** Gets or sets the campus identifier. */
-    campusId: number;
+export type VolunteerGenerosityPersonBag = {
+    lastName?: string | null;
 
-    /** Gets or sets the campus name. */
-    campusShortCode?: string | null;
+    nickName?: string | null;
 
-    /** Gets or sets the group identifier. */
-    groupId?: string | null;
+    personId?: string | null;
 
-    /** Gets or sets the group name. */
-    groupName?: string | null;
+    photoUrl?: string | null;
 };

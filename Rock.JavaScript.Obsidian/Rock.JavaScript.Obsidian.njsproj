@@ -1054,10 +1054,13 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityAnalysisBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityDonationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityGivingDataItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityGroupDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityMonthlyGivingDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityPersonBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityPersonDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityPersonDetailsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerositySetupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGivingDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGroupDataBag.d.ts" />
