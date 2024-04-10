@@ -163,7 +163,7 @@ namespace Rock.Client.Enums
         Specific = 0x1,
         ClassStartOffset = 0x2,
         EnrollmentOffset = 0x3,
-        NoDate = 0x4,
+        AfterPreviousCompleted = 0x4,
         AlwaysAvailable = 0x5,
     }
 

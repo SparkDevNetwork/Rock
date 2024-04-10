@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <TabbedBar  v-model="selectedTab" :tabs="tabs" />
+        <TabbedBar v-model="selectedTab" :tabs="tabs" />
 
         <div class="tab-content mt-4">
             <div v-for="(item, i) in tabs" :key="i" :class="classes[i]">
-                <slot name="tabpane" :item="item" />
+                <slot v-if="tabHasBeenViewed[i]" name="tabpane" :item="item" />
             </div>
         </div>
     </div>
@@ -24,10 +24,13 @@
 
     const selectedTab = ref(props.tabs.length > 0 ? props.tabs[0] : "");
     const classes = ref<string[]>([]);
+    const tabHasBeenViewed = ref<boolean[]>([]);
+
     let timeout: number;
 
     watch(() => props.tabs, () => {
-        selectedTab.value = props.tabs.length > 0 ? props.tabs[0] : "";
+        const tabsLength = props.tabs.length;
+        selectedTab.value = tabsLength > 0 ? props.tabs[0] : "";
 
         classes.value = props.tabs.map(item => {
             let list = "tab-pane fade";
@@ -38,14 +41,17 @@
 
             return list;
         });
+
+        const falseValuesArray = tabsLength > 1 ? new Array(tabsLength - 1).fill(false) : [];
+        tabHasBeenViewed.value = [true].concat(falseValuesArray);
     }, { immediate: true });
 
     watch(selectedTab, (current, previous) => {
         const previousIndex = props.tabs.indexOf(previous);
         const currentIndex = props.tabs.indexOf(current);
+        tabHasBeenViewed.value[currentIndex] = true;
 
         classes.value[previousIndex] = "tab-pane fade active";
-
         clearTimeout(timeout);
         timeout = window.setTimeout(() => {
             classes.value[previousIndex] = "tab-pane fade";

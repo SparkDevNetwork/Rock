@@ -114,6 +114,7 @@
                 </div>
             </TransitionVerticalCollapse>
         </div>
+
     </Fullscreen>
 </template>
 
@@ -250,7 +251,7 @@
 
     /** The CSS class names to be applied to the full screen wrapper. */
     const fullScreenClass = computed((): string[] => {
-        return hasSidebar.value ? ["panel-with-sidebar"] : [];
+        return hasSidebar.value ? ["panel", "panel-with-sidebar"] : [];
     });
 
     /** The CSS class names to be applied to the panel. */

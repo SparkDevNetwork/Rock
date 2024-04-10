@@ -228,7 +228,7 @@ namespace Rock.Model
         public LearningActivityCompletionConfiguration()
         {
             this.HasRequired( a => a.LearningActivity ).WithMany( a => a.LearningActivityCompletions ).HasForeignKey( a => a.LearningActivityId ).WillCascadeOnDelete( true ); 
-            this.HasRequired( a => a.Student ).WithMany().HasForeignKey( a => a.StudentId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.Student ).WithMany( a => a.LearningActivities ).HasForeignKey( a => a.StudentId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.CompletedByPersonAlias ).WithMany().HasForeignKey( a => a.CompletedByPersonAliasId ).WillCascadeOnDelete( false );
         }
     }

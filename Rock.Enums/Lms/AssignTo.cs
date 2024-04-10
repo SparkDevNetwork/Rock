@@ -17,7 +17,7 @@
 namespace Rock.Model
 {
     /// <summary>
-    /// Determines the completion status of a LearningProgramCompletion.
+    /// Determines the party responsible for completing an activity.
     /// </summary>
     [Enums.EnumDomain( "Lms" )]
     public enum AssignTo

@@ -1,0 +1,154 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TabbedContent :tabs="onDemandCourseListTabs">
+        <template #tabpane="{ item }">
+            <div v-if="item === 'Learning Plan'">
+                <LearningPlanGrid :isAddEnabled="config.isEditable"
+                                  :isDeleteEnabled="config.isEditable"
+                                  getDataActionName="GetLearningPlan"
+                                  @addClick="onAddActivityClick"
+                                  @deleteClick="onDeleteActivityClick"
+                                  @reorderClick="onReorderActivity" />
+            </div>
+            <div v-else-if="item === 'Students'">
+                <StudentGrid :isAddEnabled="config.isEditable"
+                             :isDeleteEnabled="config.isEditable"
+                             :showAbsences="config.options?.takesAttendance"
+                             @addClick="onStudentClick('0')"
+                             @rowClick="onStudentClick"
+                             @deleteClick="onDeleteParticipantClick" />
+            </div>
+            <div v-else-if="item === 'Facilitators'">
+                <FacilitatorGrid :isAddEnabled="config.isEditable"
+                                 :isDeleteEnabled="config.isEditable"
+                                 @addClick="onAddFacilitatorClick"
+                                 @deleteClick="onDeleteParticipantClick" />
+            </div>
+        </template>
+    </TabbedContent>
+</template>
+
+<script setup lang="ts">
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import LearningPlanGrid from "../../LearningPlanGrid/learningPlanGrid.partial.obs";
+    import StudentGrid from "../../StudentGrid/studentGrid.partial.obs";
+    import FacilitatorGrid from "../../FacilitatorGrid/facilitatorGrid.partial.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
+    import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "../types.partial";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
+    const onDemandCourseListTabs: Array<string> = ["Learning Plan", "Students", "Facilitators"];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add activity button has been clicked by the individual.
+     */
+    function onAddActivityClick(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ActivityDetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.ActivityDetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a student row or the Add student button has been clicked by the individual.
+     */
+    function onStudentClick(key: string | null): void {
+        if (config.navigationUrls?.[NavigationUrlKey.StudentDetailPage]) {
+            const idKey = !key ? "0" : key;
+            window.location.href = config.navigationUrls[NavigationUrlKey.StudentDetailPage].replace("((Key))", idKey);
+        }
+    }
+
+    /**
+     * Called when the Add facilitator button has been clicked by the individual.
+     */
+    function onAddFacilitatorClick(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.FacilitatorDetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.FacilitatorDetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when an activity row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteActivityClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteActivity", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
+        }
+    }
+
+    /**
+     * Called when an activity row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onReorderActivity(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderActivity", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    /**
+     * Called when a student or faciliator row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteParticipantClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteParticipant", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
+        }
+    }
+
+    // #endregion
+</script>

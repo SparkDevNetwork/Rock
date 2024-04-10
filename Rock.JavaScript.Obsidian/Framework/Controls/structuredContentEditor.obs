@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue">
+    <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue" >
         <div class="control-wrapper">
             <div class="structured-content-container" :id="uniqueId" ref="containerRef"></div>
         </div>
@@ -39,6 +39,9 @@
 
     const editorJsWindow: IEditorJsWindow & Window = window;
 
+    // The intialized editor control.
+    let editor;
+
     // Load the JS dependencies first.
     // We'll await them in the onMounted handler.
     const editorjsPromise = loadJavaScriptAsync("/Scripts/Rock/UI/structuredcontenteditor/editor.js", () => !!editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorJS);
@@ -66,6 +69,11 @@
             default: null
         },
 
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -81,6 +89,11 @@
     //#endregion
 
     //#region Computed Values
+
+    /** Determines if the control should be in a disabled state. */
+    const isDisabled = computed((): boolean => {
+        return props.disabled;
+    });
 
     const containerId = computed<string>(() => containerRef.value?.id ?? "");
     const internalRules = computed<ValidationRule | ValidationRule[]>(() => {
@@ -172,13 +185,14 @@
         }
 
         // Initialize the editor.js control.
-        const editor = new EditorJS({
+        editor = new EditorJS({
             holder: containerId.value,
             tools: config?.toolsScript ? saferEval(config.toolsScript) : undefined,
             defaultBlock: "paragraph",
             data: JSON.parse(props.modelValue || "{}"),
             logLevel: EditorJsLogLevel.Error,
-            onReady: function () {
+            readOnly: isDisabled.value,
+            onReady: function() {
                 new EditorDragDrop(editor);
             },
             onChange: debounce(() => {
@@ -191,9 +205,28 @@
         });
     }
 
+    /** Toggle the readOnly state of editor control. Initializes if the control if necessary. */
+    async function toggleReadOnly(): Promise<void> {
+        if (!editor) {
+            // If the editor hasn't been initialized then initialization will
+            // take care of setting the proper disabled status.
+            await initialize();
+        }
+        else {
+            // If the editor has been initialized just toggle the readOnly setting.
+            editor.readOnly.toggle();
+        }
+    }
+
     //#endregion
 
     //#region Watchers
+
+    watch(() => props.disabled, async (newValue, oldValue) => {
+        if (newValue !== oldValue) {
+            toggleReadOnly();
+        }
+    });
 
     watch(() => props.toolsGuid, async (newValue, oldValue) => {
         newValue = toGuidOrNull(newValue);

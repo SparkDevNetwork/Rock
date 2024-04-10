@@ -192,6 +192,15 @@
     <Compile Include="Reporting\InteractionDetail.cs" />
     <Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
+    <Compile Include="Lms\LearningActivityList.cs" />
+    <Compile Include="Lms\LearningClassList.cs" />
+    <Compile Include="Lms\LearningCourseDetail.cs" />
+    <Compile Include="Lms\LearningCourseList.cs" />
+    <Compile Include="Lms\LearningParticipantDetail.cs" />
+    <Compile Include="Lms\LearningProgramCompletionList.cs" />
+    <Compile Include="Lms\LearningProgramDetail.cs" />
+    <Compile Include="Lms\LearningProgramList.cs" />
+    <Compile Include="Lms\LearningSemesterList.cs" />
     <Compile Include="Reporting\MetricValueDetail.cs" />
     <Compile Include="Reporting\InteractionComponentDetail.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />

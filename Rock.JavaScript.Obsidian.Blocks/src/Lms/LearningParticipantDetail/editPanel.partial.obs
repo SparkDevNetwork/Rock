@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <PersonPicker
+                formControlClasses="input-width-md margin-l-sm"
+                v-model="personAlias"
+                :label="participantRole.text"
+                rules="required" />
+        <DropDownList :show-blank-item="false"
+                    formControlClasses="input-width-md margin-l-sm"
+                    v-model="roleValue"
+                    label="Participant Role"
+                    help="The role the participant will play in the class."
+                    :items="classRoles"
+                    horizontal
+                    rules="required" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
+    import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LearningParticipantBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningParticipantDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const classRoles = ref(props.options?.classRoles);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: LearningParticipantBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+
+    const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAlias");
+    const participantRole = propertyRef(props.modelValue?.participantRole ?? {}, "ParticipantRole");
+    const isFacilitator = propertyRef(props.modelValue?.isFacilitator ?? {}, "IsFacilitator");
+
+    const roleValue = ref(participantRole.value.value ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(personAlias, props.modelValue.personAlias?.value ?? {});
+        updateRefValue(roleValue, props.modelValue.participantRole?.value ?? "");
+        updateRefValue(isFacilitator, props.modelValue.isFacilitator ?? false);
+    });
+
+    watch(roleValue, () => {
+        if (participantRole.value?.value !== roleValue.value) {
+
+            participantRole.value = {
+                value: roleValue.value,
+                category: participantRole.value?.category,
+                text: participantRole.value?.text,
+                disabled: participantRole.value?.disabled
+            };
+        }
+    });
+
+    // Watch for changes to our monitored values and emit a modelValue change event when necessary.
+    watch([personAlias, roleValue], () => {
+        const newValue: LearningParticipantBag = {
+            ...props.modelValue,
+            personAlias: personAlias.value,
+            participantRole: participantRole.value,
+            isFacilitator: isFacilitator.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+</script>

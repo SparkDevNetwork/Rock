@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -111,7 +113,21 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public virtual LearningClass LearningClass { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a collection of <see cref="Rock.Model.LearningActivityCompletion">activities</see> for this participant.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.LearningActivityCompletion">activities</see> for this participant.
+        /// </value>
+        public virtual ICollection<LearningActivityCompletion> LearningActivities
+        {
+            get { return _learningActivities ?? ( _learningActivities = new Collection<LearningActivityCompletion>() ); }
+            set { _learningActivities = value; }
+        }
+
+        private ICollection<LearningActivityCompletion> _learningActivities;
+
         #endregion
 
         #region Public Methods

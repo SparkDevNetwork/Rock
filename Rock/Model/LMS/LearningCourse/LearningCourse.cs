@@ -260,7 +260,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.PublicName;
+            return $"{Name}: {CourseCode}";
         }
 
         #endregion

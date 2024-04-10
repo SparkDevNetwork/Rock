@@ -38,9 +38,9 @@ namespace Rock.Model
         EnrollmentOffset = 3,
 
         /// <summary>
-        /// No calculation.
+        /// No calculation (becomes available after previous is completed).
         /// </summary>
-        NoDate = 4,
+        AfterPreviousCompleted = 4,
 
         /// <summary>
         /// Always available.
