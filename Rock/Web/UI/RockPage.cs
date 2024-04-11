@@ -2540,6 +2540,9 @@ Sys.Application.add_load(function () {
 
             var rockSessionGuid = Session["RockSessionId"]?.ToString().AsGuidOrNull() ?? Guid.Empty;
 
+            // Construct the page interaction data object that will be returned to the client.
+            // This object is serialized into the page script, so we must be sure to sanitize values
+            // extracted from the request header to prevent cross-site scripting (XSS) issues.
             var pageInteraction = new PageInteractionInfo
             {
                 ActionName = "View",
@@ -2550,8 +2553,8 @@ Sys.Application.add_load(function () {
                 PageRequestTimeToServe = _tsDuration.TotalSeconds,
                 UrlReferrerHostAddress = Request.UrlReferrerNormalize(),
                 UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
-                UserAgent = Request.UserAgent,
-                UserHostAddress = Request.UserHostAddress,
+                UserAgent = Request.UserAgent.SanitizeHtml(),
+                UserHostAddress = Request.UserHostAddress.SanitizeHtml(),
                 UserIdKey = CurrentPersonAlias?.IdKey
             };
 
@@ -2561,18 +2564,18 @@ Sys.Application.add_load(function () {
             // UserIdKey supplied to them. For a first visit, the cookie is set in this response.
             string script = @"
 Sys.Application.add_load(function () {
-const getCookieValue = (name) => {
-    return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
-};
-var interactionArgs = <jsonData>;
-if (!interactionArgs.<userIdProperty>) {
-    interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
-}
-$.ajax({
-    url: '/api/Interactions/RegisterPageInteraction',
-    type: 'POST',
-    data: interactionArgs
-    });
+    const getCookieValue = (name) => {
+        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
+    };
+    var interactionArgs = <jsonData>;
+    if (!interactionArgs.<userIdProperty>) {
+        interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+    }
+    $.ajax({
+        url: '/api/Interactions/RegisterPageInteraction',
+        type: 'POST',
+        data: interactionArgs
+        });
 });
 ";
 
