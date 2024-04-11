@@ -81,10 +81,10 @@ namespace Rock.Lava.DotLiquid
                 NOTE: This means that all the built in template filters,
                 and the RockFilters, will use CSharpNamingConvention.
 
-                For example the dotliquid documentation says to do this for formatting dates: 
+                For example the dotliquid documentation says to do this for formatting dates:
                 {{ some_date_value | date:"MMM dd, yyyy" }}
 
-                However, if CSharpNamingConvention is enabled, it needs to be: 
+                However, if CSharpNamingConvention is enabled, it needs to be:
                 {{ some_date_value | Date:"MMM dd, yyyy" }}
             */
 
@@ -196,7 +196,7 @@ namespace Rock.Lava.DotLiquid
                     }
                     else
                     {
-                        // Find the method that best matches the provided list of arguments.                                
+                        // Find the method that best matches the provided list of arguments.
                         filterMethodInfo = GetMatchedFilterFunction( filterMethodInfos, args.Count );
                     }
 
@@ -580,7 +580,7 @@ namespace Rock.Lava.DotLiquid
 
             var template = Template.Parse( liquidTemplate );
 
-            /* 
+            /*
              * 2/19/2020 - JPH
              * The DotLiquid library's Template object was not originally designed to be thread safe, but a PR has since
              * been merged into that repository to add this functionality (https://github.com/dotliquid/dotliquid/pull/220).

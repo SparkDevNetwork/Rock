@@ -1,0 +1,51 @@
+{% sql return:'tags' %}
+    SELECT
+    t.Id,
+    t.Name,
+    (STUFF((SELECT CAST(',{ "Index": ' + CAST(ami.[Order] as varchar(10)) + ', "Id": ' + CAST(cci.Id as varchar(10)) + ', "Dataset": "' + pd.AccessKey + '" }' AS VARCHAR(MAX))
+        FROM AttributeValue av
+        JOIN AttributeMatrix am
+        ON av.Value = convert(nvarchar(50), am.Guid)
+        JOIN AttributeMatrixItem ami
+        ON ami.AttributeMatrixId = am.Id
+        JOIN AttributeValue av2
+        ON av2.EntityId = ami.Id
+        JOIN ContentChannelItem cci
+        ON av2.Value = convert(nvarchar(50), cci.Guid)
+        JOIN AttributeValue av3
+        ON av3.EntityId = cci.ContentChannelId
+        JOIN PersistedDataset pd
+        ON av3.Value = pd.Id
+        WHERE av.EntityId = t.Id
+        AND av.AttributeId = 90587
+        AND av2.AttributeId = 90586
+        AND av3.AttributeId = 107096
+        ORDER BY ami.[Order]
+        FOR XML PATH ('')), 1, 1, '')) AS FeaturedItems,
+    (STUFF((SELECT CAST(',{ "Id": ' + CAST(cci.Id as varchar(10)) + ', "Dataset": "' + pd.AccessKey + '" }' AS VARCHAR(MAX))
+        FROM TaggedItem ti
+        JOIN ContentChannelItem cci
+        ON ti.EntityGuid = cci.Guid
+        JOIN AttributeValue av
+        ON av.EntityId = cci.ContentChannelId
+        JOIN PersistedDataset pd
+        ON av.Value = pd.Id
+        WHERE (ti.TagId = t.Id AND av.AttributeId = 107096)
+        ORDER BY cci.StartDateTime desc
+        FOR XML PATH ('')), 1, 1, '')) AS TaggedItems
+    FROM Tag t
+    WHERE t.CategoryId = 979
+    AND t.Name NOT LIKE '%#%'
+    AND t.OwnerPersonAliasId IS NULL
+    ORDER BY t.Name
+    {% endsql %}
+    [
+    {% for tag in tags %}{
+        {% assign taggedItems = tag.TaggedItems | Split:',' %}
+        "Id": {{ tag.Id }},
+        "Name": {{ tag.Name | Capitalize | ToJSON }},
+        "Slug": {{ tag.Name | Replace:"'","" | Replace:' ','-' | ToJSON }},
+        "FeaturedItems": [{{ tag.FeaturedItems }}],
+        "TaggedItems": [{{ tag.TaggedItems }}]
+    }{%- unless forloop.last -%},{%- endunless -%}{% endfor %}
+    ]

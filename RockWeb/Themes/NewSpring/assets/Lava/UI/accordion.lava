@@ -1,0 +1,39 @@
+{%- assign wrapperId = uniqueid -%}
+<div class="accordion panel-group text-left push-bottom xs-push-half-bottom" id="accordion-{{ wrapperId }}" role="tablist" aria-multiselectable="true">
+
+    {%- for item in items -%}
+        {% if item.cssclasses and item.cssclasses != empty and item.cssclasses != '' %}<div class="{{ item.cssclasses }}">{% endif %}
+            <div class="panel panel-primary" data-aos="fade-up" data-aos-offset="40">
+                <a id="heading-{{ wrapperId }}-{{ forloop.index }}" role="button" data-toggle="collapse" data-parent="#accordion-{{ wrapperId }}" href="#{{ wrapperId }}-{{ forloop.index }}" aria-expanded="true" aria-controls="{{ wrapperId }}-{{ forloop.index }}" class="position-relative panel-heading display-block sans-serif strong text-decoration-none text-white pr-5">
+                    {{ item.title }} <i class="fal js-accordion-icon fa-{% if forloop.index == 1 %}minus{% else %}plus{% endif %} pull-right" style="position:absolute; top:50%; right:15px; margin-top: -8px;"></i>
+                </a>
+                <div id="{{ wrapperId }}-{{ forloop.index }}" class="panel-collapse collapse {% if forloop.index == 1 %}in{% endif %}" role="tabpanel" aria-labelledby="heading-{{ wrapperId }}-{{ forloop.index }}">
+                    <div class="panel-body text-gray-darker hard-bottom xs-soft xs-hard-bottom">
+                        {{ item.content | Replace:"'","’" | Trim }}
+                    </div>
+                </div>
+            </div>
+        {% if item.cssclasses and item.cssclasses != empty and item.cssclasses != '' %}</div>{% endif %}
+    {%- endfor -%}
+
+</div>
+
+<script>
+$('.accordion .panel-heading').on('click',function(){
+    var arrow = $(this).find('.js-accordion-icon');
+
+    if(arrow.hasClass('fa-minus')) {
+        var openPanelWasClosed = true;
+    };
+
+    arrow.closest('.accordion').find('.fa-minus').each(function(){
+        $(this).removeClass('fa-minus');
+        $(this).addClass('fa-plus');
+    });
+
+    if(!openPanelWasClosed) {
+        arrow.removeClass('fa-plus');
+        arrow.addClass('fa-minus');
+    }
+});
+</script>

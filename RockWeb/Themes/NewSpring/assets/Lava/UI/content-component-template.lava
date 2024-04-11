@@ -1,0 +1,46 @@
+{% if component and component != empty %}
+    {%- for item in Items -%}
+
+        {% capture title %}{{ item.Title | Replace:"'","’" }}{% endcapture %}
+        {% capture content %}{{ item.Content | Replace:"'","’" }}{% endcapture %}
+        {% capture id %}{{ item | Attribute:'SectionID' }}{% endcapture %}
+        {% capture textalignment %}{{ item | Attribute:'TextAlignment' | Trim }}{% endcapture %}
+        {% capture label %}{{ item | Attribute:'Label' }}{% endcapture %}
+        {% capture subtitle %}{{ item | Attribute:'Subtitle' }}{% endcapture %}
+        {% capture imageurl %}{{ item | Attribute:'Image','Url' }}{% endcapture %}
+        {% capture imageoverlayurl %}{{ item | Attribute:'OverlayImage','Url' }}{% endcapture %}
+        {% capture imagealignment %}{{ item | Attribute:'ImageAlignment' }}{% endcapture %}
+        {% capture imageopacity %}{{ item | Attribute:'ImageOpacity' | DividedBy: 100 }}{% endcapture %}
+        {% capture imageflip %}{{ item | Attribute:'ImageFlip' }}{% endcapture %}
+        {% capture imageblur %}{{ item | Attribute:'ImageBlur' }}{% endcapture %}
+        {% capture grayscale %}{{ item | Attribute:'Grayscale' }}{% endcapture %}
+        {% capture backgroundvideourl %}{{ item | Attribute:'BackgroundVideo' }}{% endcapture %}
+        {% capture linkurl %}{{ item | Attribute:'LinkUrl','RawValue' }}{% endcapture %}
+        {% capture linktext %}{{ item | Attribute:'LinkText' }}{% endcapture %}
+        {% capture video %}{{ item | Attribute:'Video','RawValue' }}{% endcapture %}
+        {% capture ratio %}{{ item | Attribute:'Ratio','Value' | Downcase }}{% endcapture %}
+        {% capture mobileratio %}{{ item | Attribute:'MobileRatio','Value' | Downcase }}{% endcapture %}
+        {% capture hideforegroundelements %}{{ item | Attribute:'HideForegroundElements' }}{% endcapture %}
+        {% capture trimcopy %}{{ item | Attribute:'TrimCopy' }}{% endcapture %}
+        {% capture lava %}{{ item | Attribute:'Lava' | Escape }}{% endcapture %}
+        {% capture contentalignment %}{{ item | Attribute:'ContentAlignment','RawValue' }}{% endcapture %}
+        {% capture backgroundcolor %}{{ item | Attribute:'BackgroundColor' }}{% endcapture %}
+        {% capture foregroundcolor %}{{ item | Attribute:'ForegroundColor' | Replace:' ','-' | Downcase }}{% endcapture %}
+        {% capture blockwidth %}{{ item | Attribute:'BlockWidth','Value' }}{% endcapture %}
+        {% capture fullheight %}{{ item | Attribute:'FullHeight','Value' }}{% endcapture %}
+        {% capture gradientamount %}{{ item | Attribute:'GradientAmount' }}{% endcapture %}
+
+        {% if component == 'hero' %}
+            {[ hero title:'{{ title }}' content:'{{ content }}' id:'{{ id }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' linkurl:'{{ linkurl }}' linktext:'{{ linktext }}' video:'{{ video }}' ratio:'{{ ratio }}' mobileratio:'{{ mobileratio }}' hideforegroundelements:'{{ hideforegroundelements }}' trimcopy:'{{ trimcopy }}' lava:'{{ lava }}' contentalignment:'{{ contentalignment }}' backgroundcolor:'{{ backgroundcolor }}' foregroundcolor:'{{ foregroundcolor }}' blockwidth:'{{ blockwidth }}' fullheight:'{{ fullheight }}' gradientamount:'{{ gradientamount }}' ]}
+        {% elseif component == 'adUnit' %}
+            {[ adUnit title:'{{ title }}' content:'{{ content }}' id:'{{ id }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' linkurl:'{{ linkurl }}' linktext:'{{ linktext }}' video:'{{ video }}' ratio:'{{ ratio }}' mobileratio:'{{ mobileratio }}' hideforegroundelements:'{{ hideforegroundelements }}' trimcopy:'{{ trimcopy }}' lava:'{{ lava }}' contentalignment:'{{ contentalignment }}' backgroundcolor:'{{ backgroundcolor }}' foregroundcolor:'{{ foregroundcolor }}' blockwidth:'{{ blockwidth }}' fullheight:'{{ fullheight }}' gradientamount:'{{ gradientamount }}' ]}
+        {% elseif component == 'sideBySide' %}
+            {[ sideBySide title:'{{ title }}' content:'{{ content }}' id:'{{ id }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' linkurl:'{{ linkurl }}' linktext:'{{ linktext }}' video:'{{ video }}' ratio:'{{ ratio }}' mobileratio:'{{ mobileratio }}' hideforegroundelements:'{{ hideforegroundelements }}' trimcopy:'{{ trimcopy }}' lava:'{{ lava }}' contentalignment:'{{ contentalignment }}' backgroundcolor:'{{ backgroundcolor }}' foregroundcolor:'{{ foregroundcolor }}' blockwidth:'{{ blockwidth }}' fullheight:'{{ fullheight }}' gradientamount:'{{ gradientamount }}' ]}
+        {% elseif component == 'card' %}
+            {[ card title:'{{ title }}' content:'{{ content }}' id:'{{ id }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' linkurl:'{{ linkurl }}' linktext:'{{ linktext }}' video:'{{ video }}' ratio:'{{ ratio }}' mobileratio:'{{ mobileratio }}' hideforegroundelements:'{{ hideforegroundelements }}' trimcopy:'{{ trimcopy }}' lava:'{{ lava }}' contentalignment:'{{ contentalignment }}' backgroundcolor:'{{ backgroundcolor }}' foregroundcolor:'{{ foregroundcolor }}' blockwidth:'{{ blockwidth }}' fullheight:'{{ fullheight }}' gradientamount:'{{ gradientamount }}' ]}
+        {% elseif component == 'image' %}
+            {[ image title:'{{ title }}' content:'{{ content }}' id:'{{ id }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' linkurl:'{{ linkurl }}' linktext:'{{ linktext }}' video:'{{ video }}' ratio:'{{ ratio }}' mobileratio:'{{ mobileratio }}' hideforegroundelements:'{{ hideforegroundelements }}' trimcopy:'{{ trimcopy }}' lava:'{{ lava }}' contentalignment:'{{ contentalignment }}' backgroundcolor:'{{ backgroundcolor }}' foregroundcolor:'{{ foregroundcolor }}' blockwidth:'{{ blockwidth }}' fullheight:'{{ fullheight }}' gradientamount:'{{ gradientamount }}' ]}
+        {% endif %}
+
+    {%- endfor -%}
+{% endif %}

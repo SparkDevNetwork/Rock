@@ -1,0 +1,17 @@
+{% if imageurl and imageurl != empty %}
+    <div class="ratio-square background-center background-cover circular push-half-bottom xs-mx-auto" style="background-image:url('{{ imageurl }}'); max-width: 150px; border: 5px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.4);"></div>
+{% endif %}
+
+{% if title and title != empty %}
+    <h3 class="push-half-bottom">{{ title }}</h3>
+{% endif %}
+
+{% if subtitle and subtitle != empty %}
+    <h4 class="h5 text-gray-light">{{ subtitle }}</h4>
+{% endif %}
+
+{{ blockContent }}
+
+{% if linkurl and linkurl != empty %}
+    <p><a href="mailto:{{ linkurl }}" class="btn btn-primary">{{ linktext }}</a></p>
+{% endif %}

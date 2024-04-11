@@ -1,0 +1,21 @@
+<div id="locations-detail" class="soft-sides xs-soft-half-sides">
+    <div class="row">
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            {% include '~~/Assets/Lava/UI/locations-information.lava' %}
+        </div><div class="col-md-8 col-sm-6 col-xs-12">
+            {% include '~~/Assets/Lava/UI/locations-leader.lava' %}
+        </div>
+    </div>
+</div>
+
+<style>
+    #locations-detail {
+        margin-top: -200px;
+    }
+
+    @media only screen and (max-width: 668px) {
+        #locations-detail {
+            margin-top: -100px;
+        }
+    }
+</style>

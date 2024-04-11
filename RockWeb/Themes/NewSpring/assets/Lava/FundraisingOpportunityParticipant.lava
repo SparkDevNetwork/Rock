@@ -1,0 +1,28 @@
+{% assign percentWidth = PercentMet %}
+{% if percentWidth > 100 %}
+  {% assign percentWidth = 100 %}
+{% endif %}
+{% assign percentRounded = PercentMet | Floor %}
+<section class="bg-white soft xs-soft-half hard-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
+    <div class='row'>
+        <div class='col-xs-12 col-sm-12 col-md-9 push-bottom xs-push-half-bottom'>
+            <img src='{{ GroupMember.Person.PhotoUrl }}' width='75px' class='pull-left margin-r-md img-circle' />
+            <label>Fundraising Progress</label>
+            <label class='pull-right'>
+                {% if AmountLeft >= 0 %}
+                {{ AmountLeft | FormatAsCurrency }}
+                {% else %}
+                {{ percentRounded }}%
+                {% endif %}
+            </label>
+            <div class='progress'>
+                <div class='progress-bar progress-bar-striped active' role='progressbar' aria-valuenow='{{ percentRounded }}}' aria-valuemin='0' aria-valuemax='100' style='width: {{ percentWidth }}%;'>
+                    <span >{{ percentRounded }}% Complete</span>
+                </div>
+            </div>
+        </div><div class='col-xs-12 col-sm-12 col-md-3 push-bottom xs-flush-bottom'>
+                <a href='{{ ParticipantPageUrl }}' class='btn btn-sm btn-block btn-primary'>Participant Page</a>
+                <a href='{{ MakeDonationUrl }}' class='btn btn-sm btn-block btn-default'>{{ MakeDonationButtonText }}</a>
+        </div>
+    </div>
+</section>

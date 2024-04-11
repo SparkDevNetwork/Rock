@@ -1,0 +1,50 @@
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="soft-double-ends soft-sides xs-soft-half-sides xs-hard-bottom">
+    <div class="soft-double-top xs-hard">
+        <div class="bring-forward text-center push-bottom">
+            <h2>{{ title }}</h2>
+        </div>
+
+        <div class="row push-bottom">
+            <div class="col-md-6 col-xs-12 flush">
+                {% for id in contentChannelItemIds limit:1 %}
+                    {% assign idInt = id | AsInteger %}
+                    {% assign item = 'content_channel_items' | PersistedDataset | Where:'Id',idInt | First | Property:'PersistedDataset' |  PersistedDataset | Where:'Id',idInt | First %}
+
+                    {[ image id:'id{{ id }}' title:'{{ item.Title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ item.ImageSquare | WithFallback:'', item.ImageLandscape }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' contentalignment:'end' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'square' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' foregroundcolor:'white' backgroundcolor:'#000' linktext:'{{ item.ChannelVerb }} Now' linkurl:'{{ item.Permalink | Split:".cc/" | Last | Prepend:"/" }}' hideforegroundelements:'' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' blockwidth:'{{ blockwidth }}' gradientamount:'75' ]}
+                {% endfor %}
+
+            </div>
+            <div class="col-md-6 col-xs-12">
+
+                <div class="row xs-row-condensed">
+                    {% for id in contentChannelItemIds offset:1 limit:4 %}
+                        {% assign idInt = id | AsInteger %}
+                        {% assign item = 'content_channel_items' | PersistedDataset | Where:'Id',idInt | First | Property:'PersistedDataset' |  PersistedDataset | Where:'Id',idInt | First %}
+
+                    <div class="col-md-6 col-sm-6 col-xs-6">
+                        <a href="{{ item.Permalink | Split:'.cc/' | Last | Prepend:'/' }}" class="text-decoration-none">
+                            <div class="ratio ratio-shuare rounded-lg overflow-hidden push-half-bottom">
+                                <div class="ratio-item background-cover background-center" style="background-image:url('{{ item.ImageSquare | WithFallback:'', item.ImageLandscape }}');"></div>
+                            </div>
+                            <h4 class="h5 xs-h6">{{ item.Title }}</h4>
+                        </a>
+                    </div>
+
+                    {% assign isEven = forloop.index0 | Modulo:2 %}
+                    {% if isEven == 0 %}
+                        </div><div class="row xs-row-condensed">
+                    {% endif %}
+
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+
+        <div class="bring-forward text-center push-double-bottom">
+            {% if linkurl and linkurl != empty %}
+                <a class="btn btn-primary" href="{{ linkurl }}">{{ linktext }} &nbsp;<i class="fas fa-sm fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+    </div>
+</section>

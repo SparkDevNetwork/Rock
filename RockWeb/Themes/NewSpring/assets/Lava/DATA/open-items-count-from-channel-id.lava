@@ -1,0 +1,11 @@
+{%- capture openItemsCount %}
+{% sql %}
+SELECT COUNT(Id) 'Count'
+FROM ContentChannelItem cci
+WHERE cci.ContentChannelId = {{ ccid }}
+AND cci.Status = 2
+AND (ExpireDateTime IS NULL OR ExpireDateTime > GETDATE())
+{% endsql %}
+{% for item in results %}
+    {{ item.Count }}
+{% endfor %}{% endcapture -%}{{ openItemsCount | Replace:' ','' }}

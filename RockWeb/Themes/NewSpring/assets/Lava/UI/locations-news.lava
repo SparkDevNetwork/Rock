@@ -1,0 +1,61 @@
+{% assign path = 'Global' | Page:'Path' %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' %}
+{% assign campusName = campusSlug | Replace:'-',' ' | Capitalize %}
+{% assign datasetItems = 'newspring_news' | PersistedDataset %}
+
+//- This loops through the items from the dataset and strips out anything that is future-dated or expired.
+{%- assign now = 'Now' | Date:'yyyyMMddHHmmss' -%}
+{%- for item in datasetItems -%}
+	{%- assign status = item.Status %}
+	{%- assign publishDateTime = item.PublishDateTime | Date:'yyyyMMddHHmmss' -%}
+	{%- assign expireDateTime = item.ExpireDateTime | Date:'yyyyMMddHHmmss' -%}
+	{% if publishDateTime > now or expireDateTime < now or status != 2 %}
+		{% assign datasetItems = datasetItems | RemoveFromArray:item %}
+	{% endif %}
+{%- endfor -%}
+
+//- Filter news by campus
+{% for item in datasetItems %}
+
+    {% assign campusesArray = item.Campuses | Split:',' | RemoveFromArray:'' %}
+    {% assign campusCount = campusesArray | Size %}
+    {% if campusCount == 0 or campusesArray contains campusName %}
+    {% else %}
+        {% assign datasetItems = datasetItems | RemoveFromArray:item %}
+    {% endif %}
+{% endfor %}
+
+{% if path contains 'news' %}
+
+    //- Full campus news layout
+    {% assign Items = datasetItems %}
+    <div data-column="none">
+        {[ cardList itemcount:'{{ Items | Size }}' type:'' pagesize:'12' target:'' disablecampuses:'true' ]}
+    </div>
+
+{% else %}
+
+    //- Campus news preview for locations pages
+
+    //- Limit to three items
+    {% for item in datasetItems %}
+        {% if forloop.index < 4 %}
+            {% assign Items = Items | AddToArray:item %}
+        {% endif %}
+    {% endfor %}
+
+    <div data-column="none" class="soft-double-top soft-bottom">
+        <div class="soft-sides xs-soft-half-sides xs-text-center">
+            <div class="row">
+                <div class="col-md-6 col-xs-12 xs-text-center">
+                    <h3 class="h2 push-half-bottom">News</h3>
+                </div><div class="col-md-6 col-xs-12 text-right xs-text-center">
+                    <p class="push-half-bottom"><a href="/locations/{{ campusSlug }}/news" class="btn btn-sm btn-primary">See All News</a></p>
+                </div>
+            </div>
+        </div>
+
+        {[ cardList itemcount:'{{ Items | Size }}' type:'' pagesize:'12' target:'' disablecampuses:'true' ]}
+    </div>
+
+{% endif %}

@@ -328,7 +328,7 @@ namespace Rock.Lava
             {
                 context.SetMergeFields( parms );
 
-                // If the shortcode specifies a set of Lava commands, add these to the child context.
+                // If the shortcode specifies a set of Lava commands, add these to the context.
                 // The set of permitted entity commands is the union of the parent scope and the specific shortcode settings.
                 if ( _shortcode.EnabledLavaCommands != null )
                 {
