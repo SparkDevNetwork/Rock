@@ -82,7 +82,8 @@ namespace Rock.Blocks.Reporting
                                 UniqueCampuses = uniqueCampuses,
                                 UniqueGroups = uniqueGroups,
                                 LastUpdated = lastUpdated,
-                                EstimatedRefreshTime = estimatedRefreshTime
+                                EstimatedRefreshTime = estimatedRefreshTime,
+                                ShowCampusFilter = uniqueCampuses.Count > 1
                             };
 
                             return bag;
@@ -133,15 +134,11 @@ namespace Rock.Blocks.Reporting
             {
                 var cutoffDate = DateTime.Today.AddDays( -FilterDateRange.Value );
                 filteredPeople = filteredPeople.Where( person =>
-                    person.Donations.Any( d =>
-                        int.TryParse( d.Year, out int year ) &&
-                        int.TryParse( d.Month, out int month ) &&
-                        year != 0 &&
-                        month != 0 &&
-                        new DateTime( year, month, 1 ) >= cutoffDate
-                    )
+                    DateTime.TryParse( person.PersonDetails.LastAttendanceDate, out DateTime lastAttendanceDate ) &&
+                    lastAttendanceDate >= cutoffDate
                 );
             }
+
 
             return filteredPeople.AsQueryable();
         }

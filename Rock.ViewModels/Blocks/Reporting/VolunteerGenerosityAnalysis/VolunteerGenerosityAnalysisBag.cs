@@ -98,6 +98,10 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// Gets or sets the estimated refresh time of the persisted dataset. 
         /// </summary>
         public double EstimatedRefreshTime { get; set; }
+        /// <summary>
+        /// Gets or sets the bool that shows/hides the campus filter.
+        /// </summary>
+        public bool ShowCampusFilter { get; set; }
     }
 }
 
