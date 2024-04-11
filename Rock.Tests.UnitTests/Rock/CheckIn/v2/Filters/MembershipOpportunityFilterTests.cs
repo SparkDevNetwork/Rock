@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -9,9 +8,7 @@ using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility;
 using Rock.ViewModels.CheckIn;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 {
