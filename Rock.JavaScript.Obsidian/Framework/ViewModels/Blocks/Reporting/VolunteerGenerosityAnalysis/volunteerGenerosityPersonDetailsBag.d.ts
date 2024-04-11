@@ -23,23 +23,33 @@
 
 /** Bag for detailed information about a person in the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityPersonDetailsBag = {
+    /** Gets or sets the Campus ID. */
     campusId?: string | null;
 
+    /** Gets or sets the Campus Short Code */
     campusShortCode?: string | null;
 
+    /** Gets or sets the person's giving identifier. */
     givingId?: string | null;
 
+    /** Gets or sets the Group ID. */
     groupId?: string | null;
 
+    /** Gets or sets the Group Name. */
     groupName?: string | null;
 
+    /** Gets or sets the person's last attendance date. */
     lastAttendanceDate?: string | null;
 
+    /** Gets or sets the person's last name. */
     lastName?: string | null;
 
+    /** Gets or sets the person's nickname. */
     nickName?: string | null;
 
+    /** Gets or sets the person identifier. */
     personId?: string | null;
 
+    /** Gets or sets the person's photo URL. */
     photoUrl?: string | null;
 };

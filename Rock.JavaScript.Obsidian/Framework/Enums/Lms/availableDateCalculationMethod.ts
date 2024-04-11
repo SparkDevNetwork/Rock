@@ -21,22 +21,36 @@
 // </copyright>
 //
 
-import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+/** Determines the completion status of a LearningProgramCompletion. */
+export const AvailableDateCalculationMethod = {
+    /** A specific date. */
+    Specific: 1,
 
-/** Contains details about the person preferences associated with a block. */
-export type ObsidianBlockPreferencesBag = {
-    /** Gets or sets the entity key that these preferences are scoped to. */
-    entityKey?: string | null;
+    /** An offset of the class start date. */
+    ClassStartOffset: 2,
 
-    /** Gets or sets the entity type key that these preferences are scoped to. */
-    entityTypeKey?: string | null;
+    /** An offset of the class enrollment date. */
+    EnrollmentOffset: 3,
 
-    /**
-     * Gets or sets the time stamp at which the preferences were fetched from the database.
-     * The remote device may use this field to aid caching of the preference.
-     */
-    timeStamp: number;
+    /** No calculation. */
+    NoDate: 4,
 
-    /** Gets or sets the person preference values. */
-    values?: PersonPreferenceValueBag[] | null;
+    /** Always available. */
+    AlwaysAvailable: 5
+} as const;
+
+/** Determines the completion status of a LearningProgramCompletion. */
+export const AvailableDateCalculationMethodDescription: Record<number, string> = {
+    1: "Specific",
+
+    2: "Class Start Offset",
+
+    3: "Enrollment Offset",
+
+    4: "No Date",
+
+    5: "Always Available"
 };
+
+/** Determines the completion status of a LearningProgramCompletion. */
+export type AvailableDateCalculationMethod = typeof AvailableDateCalculationMethod[keyof typeof AvailableDateCalculationMethod];

@@ -47,7 +47,9 @@ namespace Rock.Migrations
         private void ChopBlocksUp()
         {
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Chop Block Types - Group 1",
                 blockTypeReplacements: new Dictionary<string, string> {
                     { "59C9C862-570C-4410-99B6-DD9064B5E594", "7C10240A-7EE5-4720-AAC9-5C162E9F5AAC" }, // Schedule Detail
@@ -78,7 +80,9 @@ namespace Rock.Migrations
             // Webforms 2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3
             // Obsidian D87B84DC-7AD9-42A2-B18D-88B7E71DADA8
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Swap Note Block Type",
                 blockTypeReplacements: new Dictionary<string, string> {
                     { "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3", "D87B84DC-7AD9-42A2-B18D-88B7E71DADA8" }

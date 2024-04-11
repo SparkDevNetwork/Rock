@@ -26,9 +26,12 @@ import { VolunteerGenerosityPersonDetailsBag } from "@Obsidian/ViewModels/Blocks
 
 /** Bag for person-related data in the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityPersonDataBag = {
+    /** Gets or sets the list of donations. */
     donations?: VolunteerGenerosityDonationBag[] | null;
 
+    /** Gets or sets the person details. */
     personDetails?: VolunteerGenerosityPersonDetailsBag | null;
 
+    /** Gets or sets the person group key. */
     personGroupKey?: string | null;
 };

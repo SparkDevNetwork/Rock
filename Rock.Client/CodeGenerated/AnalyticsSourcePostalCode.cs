@@ -27,12 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for AnalyticsSourceZipCode that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for AnalyticsSourcePostalCode that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class AnalyticsSourceZipCodeEntity
+    public partial class AnalyticsSourcePostalCodeEntity
     {
         /// <summary />
         public string City { get; set; }
+
+        /// <summary />
+        public string CountryCode { get; set; } = @"US";
 
         /// <summary />
         public decimal Families100kTo149kPercent { get; set; }
@@ -101,12 +104,13 @@ namespace Rock.Client
         public string State { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source AnalyticsSourceZipCode object
+        /// Copies the base properties from a source AnalyticsSourcePostalCode object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( AnalyticsSourceZipCode source )
+        public void CopyPropertiesFrom( AnalyticsSourcePostalCode source )
         {
             this.City = source.City;
+            this.CountryCode = source.CountryCode;
             this.Families100kTo149kPercent = source.Families100kTo149kPercent;
             this.Families10kTo14kPercent = source.Families10kTo14kPercent;
             this.Families150kTo199kPercent = source.Families150kTo199kPercent;
@@ -134,12 +138,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for AnalyticsSourceZipCode that includes all the fields that are available for GETs. Use this for GETs (use AnalyticsSourceZipCodeEntity for POST/PUTs)
+    /// Client model for AnalyticsSourcePostalCode that includes all the fields that are available for GETs. Use this for GETs (use AnalyticsSourcePostalCodeEntity for POST/PUTs)
     /// </summary>
-    public partial class AnalyticsSourceZipCode : AnalyticsSourceZipCodeEntity
+    public partial class AnalyticsSourcePostalCode : AnalyticsSourcePostalCodeEntity
     {
         /// <summary />
-        public string ZipCode { get; set; }
+        public string PostalCode { get; set; }
 
     }
 }

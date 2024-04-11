@@ -26,6 +26,9 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
     /// </summary>
     public class VolunteerGenerosityDataBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public List<VolunteerGenerosityPersonDataBag> PeopleData { get; set; } = new List<VolunteerGenerosityPersonDataBag>();
     }
 
