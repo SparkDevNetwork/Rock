@@ -39,17 +39,27 @@ namespace Rock.CheckIn.v2
         /// Gets the attendance rule used for check-in.
         /// </summary>
         /// <value>The attendance rule.</value>
-        public AttendanceRule AttendanceRule { get; }
+        public virtual AttendanceRule AttendanceRule { get; }
 
         /// <summary>
         /// Gets where labels should be printed for groups in this area.
         /// </summary>
         /// <value>The printed label destination.</value>
-        public PrintTo PrintTo { get; }
+        public virtual PrintTo PrintTo { get; }
 
         #endregion
 
         #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AreaConfigurationData"/> class.
+        /// </summary>
+        /// <remarks>
+        /// This is meant to be used by unit tests only.
+        /// </remarks>
+        protected AreaConfigurationData()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AreaConfigurationData"/> class.

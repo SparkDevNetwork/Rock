@@ -147,6 +147,7 @@
     <Compile Include="Rock\CheckIn\v2\Filters\GenderOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\GradeOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\LocationClosedOpportunityFilterTests.cs" />
+    <Compile Include="Rock\CheckIn\v2\Filters\MembershipOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\TestExtensions.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />

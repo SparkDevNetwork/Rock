@@ -25,6 +25,7 @@ namespace Rock.CheckIn.v2.Filters
     /// <summary>
     /// A basic check-in filter.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     internal abstract class OpportunityFilter
     {
         #region Properties
