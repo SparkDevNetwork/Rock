@@ -1206,7 +1206,7 @@
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\AnalyticsSourcePostalCode.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\AnalyticsSourcePostalCode.Logic.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\ZipCodeBoundary.cs" />
-	<Compile Include="Model\Group\Group\Options\CopyGroupOptions.cs" />
+    <Compile Include="Model\Group\Group\Options\CopyGroupOptions.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.SaveHook.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
@@ -1290,7 +1290,8 @@
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
-	<Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
+    <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
+    <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
