@@ -50,7 +50,7 @@
                                     </div>
                                     <div class="col-sm-6">
                                         <DropDownList
-                                                      v-model="scheduleGuid"
+                                                      v-model="scheduleGuidOrEmptyString"
                                                       :disabled="isSaving || isNavigating"
                                                       :items="scheduleTimeItems"
                                                       label="Planned Visit Time"
@@ -517,6 +517,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -534,7 +535,7 @@
     const isCampusPickerVisible = ref(false);
     const internalCampusListItemBag = ref<ListItemBag | null | undefined>(config.campusGuid ? { value: config.campusGuid } : undefined);
     const plannedVisitDate = ref<string>("");
-    const scheduleGuid = ref<string>("");
+    const scheduleGuidOrEmptyString = ref<string>("");
     const scheduleDateItems = ref<FamilyPreRegistrationScheduleDateBag[]>([]);
     const isUsernameAvailable = ref<boolean | null | undefined>();
     const confirmPassword = ref<string>("");
@@ -643,13 +644,13 @@
                 address: address.value,
                 adult1: isAdult1Entered.value ? adult1Request.value : undefined,
                 adult2: isAdult2Entered.value ? adult2Request.value : undefined,
-                campusGuid: internalCampusListItemBag.value?.value || null,
+                campusGuid: toGuidOrNull(internalCampusListItemBag.value?.value),
                 children: children.value,
                 createAccount: createAccount.value,
                 familyAttributeValues: familyAttributeValues.value,
-                familyGuid: config.familyGuid,
+                familyGuid: toGuidOrNull(config.familyGuid),
                 plannedVisitDate: plannedVisitDate.value,
-                scheduleGuid: scheduleGuid.value
+                scheduleGuid: toGuidOrNull(scheduleGuidOrEmptyString.value)
             };
 
             clearErrors();
@@ -847,7 +848,7 @@
         }
 
         const bag: FamilyPreRegistrationGetScheduleDatesRequestBag = {
-            campusGuid: campusListItemBag.value?.value
+            campusGuid: toGuidOrNull(campusListItemBag.value?.value)
         };
 
         clearErrors();

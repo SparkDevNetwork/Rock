@@ -1,11 +1,12 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
-import RegistrationEntry from "../../src/Event/registrationEntry";
-import { RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
 
-function getConfigurationValues(): RegistrationEntryBlockViewModel {
+function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
     // modifies the configuration values which is non-standard.
     return JSON.parse(JSON.stringify(configurationValues));
@@ -97,7 +98,7 @@ describe("Issue 5612", () => {
 
     test("Moving to second form scrolls to top", async () => {
         const configuration = getConfigurationValues();
-        configuration.registrantForms.push(JSON.parse(JSON.stringify(secondFormConfiguration)));
+        configuration.registrantForms?.push(JSON.parse(JSON.stringify(secondFormConfiguration)));
 
         const blockActions = mockBlockActions({
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
@@ -148,7 +149,7 @@ describe("Issue 5612", () => {
 /**
  * Configuration values returned by the block to replicate this issue.
  */
-const configurationValues: RegistrationEntryBlockViewModel = {
+const configurationValues: RegistrationEntryInitializationBox = {
     "allowRegistrationUpdates": true,
     "timeoutMinutes": null,
     "session": {
@@ -175,7 +176,6 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountAmount": 0.0,
         "discountPercentage": 0.0,
         "previouslyPaid": 0.0,
-        "savedAccountGuid": null,
         "discountMaxRegistrants": 0
     },
     "isUnauthorized": false,
@@ -455,7 +455,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
     "disableCaptchaSupport": true
 };
 
-const secondFormConfiguration: RegistrationEntryBlockFormViewModel = {
+const secondFormConfiguration: RegistrationEntryFormBag = {
     "fields": [
         {
             "guid": "3db902c3-4c74-4059-9563-d97bf4017fd7",

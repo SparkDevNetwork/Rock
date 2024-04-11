@@ -13,16 +13,17 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null | undefined>,
             required: false
         },
 
         entityTypeGuid: {
-            type: String as PropType<Guid>,
-            default: null
+            type: String as PropType<Guid | undefined>,
+            required: false
         },
 
         ...standardAsyncPickerProps
@@ -60,7 +61,7 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: BadgeComponentPickerGetBadgeComponentsOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid)
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/BadgeComponentPickerGetBadgeComponents", undefined, options);
 

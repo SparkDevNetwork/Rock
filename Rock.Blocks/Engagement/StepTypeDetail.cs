@@ -203,12 +203,13 @@ namespace Rock.Blocks.Engagement
             var options = new StepTypeDetailOptionsBag()
             {
                 StepStatuses = GetStepStatuses().ToListItemBagList(),
-                TriggerTypes = new List<ListItemBag>(),
+                TriggerTypes = new List<ListItemBag>
+                {
+                    new ListItemBag() { Text = "Step Completed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() },
+                    new ListItemBag() { Text = "Status Changed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged.ToString() },
+                    new ListItemBag() { Text = "Manual", Value = StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() }
+                }
             };
-
-            options.TriggerTypes.Add( GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged ) );
-            options.TriggerTypes.Add( GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete ) );
-            options.TriggerTypes.Add( GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition.Manual ) );
 
             return options;
         }
@@ -444,7 +445,7 @@ namespace Rock.Blocks.Engagement
             {
                 IdKey = wt.IdKey,
                 Guid = wt.Guid,
-                WorkflowTrigger = GetTriggerType( wt.TriggerType ),
+                WorkflowTrigger = GetTriggerType( wt.TriggerType, wt.TypeQualifier ),
                 WorkflowType = wt.WorkflowType.ToListItemBag(),
                 PrimaryQualifier = GetStepStatuses().Find(ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
                 SecondaryQualifier = GetStepStatuses().Find(ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
@@ -728,18 +729,15 @@ namespace Rock.Blocks.Engagement
         /// Gets the type of the trigger as a <see cref="ListItemBag"/>.
         /// </summary>
         /// <param name="condition">The condition.</param>
+        /// <param name="typeQualifier">The type qualifier.</param>
         /// <returns></returns>
-        private ListItemBag GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition condition )
+        private ListItemBag GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition condition, string typeQualifier )
         {
-            switch ( condition )
-            {
-                case StepWorkflowTrigger.WorkflowTriggerCondition.Manual:
-                    return new ListItemBag() { Text = "Manual", Value = nameof( StepWorkflowTrigger.WorkflowTriggerCondition.Manual ) };
-                case StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete:
-                    return new ListItemBag() { Text = "Step Completed", Value = nameof( StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete ) };
-                default:
-                    return new ListItemBag() { Text = "Status Changed", Value = nameof( StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged ) };
-            }
+            var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings( typeQualifier );
+            var text = new StepWorkflowTriggerService( GetRockContext() ).GetTriggerSettingsDescription( condition, qualifierSettings );
+            var value = condition.ToStringSafe();
+
+            return new ListItemBag() { Text = text, Value = value };
         }
 
         /// <summary>

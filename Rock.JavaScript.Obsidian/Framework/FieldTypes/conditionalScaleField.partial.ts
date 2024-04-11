@@ -18,6 +18,8 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { Guid } from "@Obsidian/Types";
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 
 export const enum ConfigurationValueKey {
     ConfigurationJSON = "ConfigurationJSON"
@@ -56,7 +58,7 @@ export class ConditionalScaleFieldType extends FieldTypeBase {
         return configurationComponent;
     }
 
-    public override isFilterable(): boolean {
-        return false;
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return numericComparisonTypes;
     }
 }

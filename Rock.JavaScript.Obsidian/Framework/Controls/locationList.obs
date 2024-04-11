@@ -60,11 +60,11 @@
     import { validateAddress } from "@Obsidian/Utility/address";
     import { FormError } from "@Obsidian/Utility/form";
     import RockValidation from "./rockValidation.obs";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null | undefined>,
             required: false
         },
 
@@ -74,13 +74,13 @@
         },
 
         locationTypeValueGuid: {
-            type: String as PropType<Guid>,
-            default: ""
+            type: String as PropType<Guid | null>,
+            default: null
         },
 
         parentLocationGuid: {
-            type: String as PropType<Guid>,
-            default: ""
+            type: String as PropType<Guid | null>,
+            default: null
         },
 
         showCityState: {
@@ -113,8 +113,8 @@
         const options: LocationListGetLocationsOptionsBag = {
             showCityState: props.showCityState,
             securityGrantToken: securityGrantToken.value,
-            locationTypeValueGuid: props.locationTypeValueGuid || emptyGuid,
-            parentLocationGuid: props.parentLocationGuid || emptyGuid,
+            locationTypeValueGuid: toGuidOrNull(props.locationTypeValueGuid) ?? emptyGuid,
+            parentLocationGuid: toGuidOrNull(props.parentLocationGuid) ?? emptyGuid,
         };
 
         //var locationTypeValueGuid = "C0D7AE35-7901-4396-870E-3AAF472AAE88";
@@ -217,8 +217,8 @@
             name: newLocationName.value,
             showCityState: props.showCityState,
             attributeValues: attributeValues.value,
-            locationTypeValueGuid: props.locationTypeValueGuid || emptyGuid,
-            parentLocationGuid: props.parentLocationGuid || emptyGuid,
+            locationTypeValueGuid: toGuidOrNull(props.locationTypeValueGuid) ?? emptyGuid,
+            parentLocationGuid: toGuidOrNull(props.parentLocationGuid) ?? emptyGuid,
         };
 
         if (newLocationAddress.value.street1 || props.isAddressRequired) {
@@ -264,5 +264,5 @@
         return props.isAddressRequired ? "required" : "";
     });
 
-                    // #endregion
+    // #endregion
 </script>

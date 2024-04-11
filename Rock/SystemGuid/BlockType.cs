@@ -315,9 +315,9 @@ namespace Rock.SystemGuid
         public const string MOBILE_CORE_SEARCH = "41174BEA-6567-430C-AAD4-A89A5CF70FB0";
 
         /// <summary>
-        /// The mobile Core &gt; <see cref="Rock.Blocks.Types.Mobile.SmartSearch"/> block type.
+        /// The mobile Core &gt; <see cref="Rock.Blocks.Types.Mobile.Core.SmartSearch"/> block type.
         /// </summary>
-        public const string MOBILE_CORE_SEARCH_V2 = "9AA64485-9641-4A06-9450-B5244BC1464A";
+        public const string MOBILE_CORE_SMART_SEARCH = "9AA64485-9641-4A06-9450-B5244BC1464A";
 
         /// <summary>
         /// The mobile Groups &gt; <see cref="Rock.Blocks.Types.Mobile.Groups.GroupRegistration">Group Registration</see> block type.

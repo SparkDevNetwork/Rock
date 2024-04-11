@@ -50,7 +50,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "A61EAF51-5DB4-451E-9F88-9D4C6ACCE73B")]
     [Rock.SystemGuid.BlockTypeGuid( "507F5108-FB55-48F0-A66E-CC3D5185D35D")]
-    public class CampusDetail : RockDetailBlockType
+    public class CampusDetail : RockEntityDetailBlockType<Campus>
     {
         #region Keys
 
@@ -77,7 +77,6 @@ namespace Rock.Blocks.Core
 
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions( box.IsEditable );
-            box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Campus>();
 
             return box;
         }
@@ -379,7 +378,6 @@ namespace Rock.Blocks.Core
                     if ( isViewable )
                     {
                         box.Entity = GetEntityBagForView( entity, loadAttributes );
-                        box.SecurityGrantToken = GetSecurityGrantToken( entity );
                     }
                     else
                     {
@@ -392,7 +390,6 @@ namespace Rock.Blocks.Core
                     if ( box.IsEditable )
                     {
                         box.Entity = GetEntityBagForEdit( entity, loadAttributes );
-                        box.SecurityGrantToken = GetSecurityGrantToken( entity );
                     }
                     else
                     {
@@ -404,6 +401,8 @@ namespace Rock.Blocks.Core
             {
                 box.ErrorMessage = $"The {Campus.FriendlyTypeName} was not found.";
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -560,12 +559,8 @@ namespace Rock.Blocks.Core
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <returns>The <see cref="Campus"/> to be viewed or edited on the page.</returns>
-        private Campus GetInitialEntity()
+        /// <inheritdoc/>
+        protected override Campus GetInitialEntity()
         {
             return GetInitialEntity<Campus, CampusService>( RockContext, PageParameterKey.CampusId );
         }
@@ -580,32 +575,6 @@ namespace Rock.Blocks.Core
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
             };
-        }
-
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
-        {
-            var entity = GetInitialEntity();
-
-            if ( entity != null )
-            {
-                entity.LoadAttributes( RockContext );
-            }
-
-            return GetSecurityGrantToken( entity );
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <param name="entity">The entity being viewed or edited on this block.</param>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( IHasAttributes entity )
-        {
-            return new Rock.Security.SecurityGrant()
-                .AddRulesForAttributes( entity, RequestContext.CurrentPerson )
-                .ToToken();
         }
 
         /// <summary>

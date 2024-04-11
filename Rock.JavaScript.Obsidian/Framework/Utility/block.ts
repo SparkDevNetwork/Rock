@@ -24,6 +24,8 @@ import { RockDateTime } from "./rockDateTime";
 import { Guid } from "@Obsidian/Types";
 import { HttpBodyData, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
 import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+import { debounce } from "./util";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
@@ -79,7 +81,7 @@ export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, bloc
         let context: BlockActionContextBag = {};
 
         if (actionContext) {
-            context = {...actionContext};
+            context = { ...actionContext };
         }
 
         context.pageParameters = pageParameters;
@@ -179,11 +181,11 @@ type ChildKeys<T extends Record<string, unknown>, PropertyName extends string> =
 /**
  * A valid properties box that uses the specified name for the content bag.
  */
-type ValidPropertiesBox<PropertyName extends string> = {
+type ValidPropertiesSettingsBox = {
     validProperties?: string[] | null;
 } & {
-        [P in PropertyName]?: Record<string, unknown> | null;
-    };
+    settings?: Record<string, unknown> | null;
+};
 
 /**
  * Sets the a value for a custom settings box. This will set the value and then
@@ -193,7 +195,7 @@ type ValidPropertiesBox<PropertyName extends string> = {
  * @param propertyName The name of the custom setting property to set.
  * @param value The new value of the custom setting.
  */
-export function setCustomSettingsBoxValue<T extends ValidPropertiesBox<"settings">, S extends NonNullable<T["settings"]>, K extends ChildKeys<T, "settings">>(box: T, propertyName: K, value: S[K]): void {
+export function setCustomSettingsBoxValue<T extends ValidPropertiesSettingsBox, S extends NonNullable<T["settings"]>, K extends ChildKeys<T, "settings">>(box: T, propertyName: K, value: S[K]): void {
     if (!box.settings) {
         box.settings = {} as Record<string, unknown>;
     }
@@ -217,9 +219,9 @@ export function setCustomSettingsBoxValue<T extends ValidPropertiesBox<"settings
  * @param propertyName The name of the property on the bag to set.
  * @param value The new value of the property.
  */
-export function setPropertiesBoxValue<T extends ValidPropertiesBox<"bag">, S extends NonNullable<T["bag"]>, K extends ChildKeys<T, "bag">>(box: T, propertyName: K, value: S[K]): void {
+export function setPropertiesBoxValue<T extends Record<string, unknown>, K extends keyof T & string>(box: ValidPropertiesBox<T>, propertyName: K, value: T[K]): void {
     if (!box.bag) {
-        box.bag = {} as Record<string, unknown>;
+        box.bag = {} as Record<string, unknown> as T;
     }
 
     box.bag[propertyName] = value;
@@ -268,6 +270,106 @@ export function isBlockEvent<TData = undefined>(event: Event): event is CustomEv
         && "data" in event.detail;
 }
 
+// #region Entity Detail Blocks
+
+const entityTypeNameSymbol = Symbol("EntityTypeName");
+const entityTypeGuidSymbol = Symbol("EntityTypeGuid");
+
+type UseEntityDetailBlockOptions = {
+    /** The block configuration. */
+    blockConfig: Record<string, unknown>;
+
+    /**
+     * The entity that will be used by the block, this will cause the
+     * onPropertyChanged logic to be generated.
+     */
+    entity?: Ref<ValidPropertiesBox<Record<string, unknown>>>;
+};
+
+type UseEntityDetailBlockResult = {
+    /** The onPropertyChanged handler for the edit panel. */
+    onPropertyChanged?(propertyName: string): void;
+};
+
+/**
+ * Performs any framework-level initialization of an entity detail block.
+ *
+ * @param options The options to use when initializing the detail block logic.
+ *
+ * @returns An object that contains information which can be used by the block.
+ */
+export function useEntityDetailBlock(options: UseEntityDetailBlockOptions): UseEntityDetailBlockResult {
+    const securityGrant = getSecurityGrant(options.blockConfig.securityGrantToken as string);
+
+    provideSecurityGrant(securityGrant);
+
+    if (options.blockConfig.entityTypeName) {
+        provideEntityTypeName(options.blockConfig.entityTypeName as string);
+    }
+
+    if (options.blockConfig.entityTypeGuid) {
+        provideEntityTypeGuid(options.blockConfig.entityTypeGuid as Guid);
+    }
+
+    const entity = options.entity;
+
+    const result: Record<string, unknown> = {};
+
+    if (entity) {
+        const invokeBlockAction = useInvokeBlockAction();
+        const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(entity, invokeBlockAction), undefined, true);
+
+        result.onPropertyChanged = (propertyName: string): void => {
+            // If we don't have any qualified attribute properties or this property
+            // is not one of them then do nothing.
+            if (!options.blockConfig.qualifiedAttributeProperties || !(options.blockConfig.qualifiedAttributeProperties as string[]).some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+                return;
+            }
+
+            refreshAttributesDebounce();
+        };
+    }
+
+    return result;
+}
+
+/**
+ * Provides the entity type name to child components.
+ *
+ * @param name The entity type name in PascalCase, such as `GroupMember`.
+ */
+export function provideEntityTypeName(name: string): void {
+    provide(entityTypeNameSymbol, name);
+}
+
+/**
+ * Gets the entity type name provided from a parent component.
+ *
+ * @returns The entity type name in PascalCase, such as `GroupMember` or undefined.
+ */
+export function useEntityTypeName(): string | undefined {
+    return inject<string | undefined>(entityTypeNameSymbol, undefined);
+}
+
+/**
+ * Provides the entity type unique identifier to child components.
+ *
+ * @param guid The entity type unique identifier.
+ */
+export function provideEntityTypeGuid(guid: Guid): void {
+    provide(entityTypeGuidSymbol, guid);
+}
+
+/**
+ * Gets the entity type unique identifier provided from a parent component.
+ *
+ * @returns The entity type unique identifier or undefined.
+ */
+export function useEntityTypeGuid(): Guid | undefined {
+    return inject<string | undefined>(entityTypeGuidSymbol, undefined);
+}
+
+// #endregion
 
 // #region Security Grants
 
@@ -401,18 +503,60 @@ export function watchPropertyChanges<E extends "propertyChanged">(propertyRefs: 
  * Requests an updated attribute list from the server based on the
  * current UI selections made.
  *
+ * @param box The valid properties box that will be used to determine current
+ * property values and then updated with the new attributes and values.
+ * @param invokeBlockAction The function to use when calling the block action.
+ */
+export async function refreshDetailAttributes<TEntityBag>(box: Ref<ValidPropertiesBox<TEntityBag>>, invokeBlockAction: InvokeBlockActionFunc): Promise<void>;
+
+/**
+ * Requests an updated attribute list from the server based on the
+ * current UI selections made.
+ *
  * @param bag The entity bag that will be used to determine current property values
  * and then updated with the new attributes and values.
  * @param validProperties The properties that are considered valid on the bag when
  * the server will read the bag.
  * @param invokeBlockAction The function to use when calling the block action.
  */
-export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, validProperties: string[], invokeBlockAction: InvokeBlockActionFunc): Promise<void> {
-    const data: DetailBlockBox<unknown, unknown> = {
-        entity: bag.value,
-        isEditable: true,
-        validProperties: validProperties
-    };
+export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, validProperties: string[], invokeBlockAction: InvokeBlockActionFunc): Promise<void>;
+
+/**
+ * Requests an updated attribute list from the server based on the
+ * current UI selections made.
+ *
+ * @param bag The entity bag or properties box that will be used to determine
+ * current property values and then updated with the new attributes and values.
+ * @param validPropertiesOrAction The properties that are considered valid on the bag when
+ * the server will read the bag, or the invoke action.
+ * @param invokeBlockAction The function to use when calling the block action.
+ */
+export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag> | Ref<ValidPropertiesBox<TEntityBag>>, validPropertiesOrAction: string[] | InvokeBlockActionFunc, invokeBlockAction?: InvokeBlockActionFunc): Promise<void> {
+    let data: DetailBlockBox<TEntityBag, unknown>;
+
+    if (typeof bag.value === "object" && bag.value && "bag" in bag.value && "validProperties" in bag.value) {
+        data = {
+            entity: bag.value.bag,
+            isEditable: true,
+            validProperties: bag.value.validProperties
+        };
+    }
+    else {
+        data = {
+            entity: bag.value as TEntityBag,
+            isEditable: true,
+            validProperties: Array.isArray(validPropertiesOrAction) ? validPropertiesOrAction : []
+        };
+    }
+
+    if (!invokeBlockAction) {
+        if (typeof validPropertiesOrAction === "function") {
+            invokeBlockAction = validPropertiesOrAction;
+        }
+        else {
+            throw new Error("Missing invokeBlockAction parameter.");
+        }
+    }
 
     const result = await invokeBlockAction<DetailBlockBox<Record<string, unknown>, unknown>>("RefreshAttributes", {
         box: data
@@ -420,13 +564,27 @@ export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, 
 
     if (result.isSuccess) {
         if (result.statusCode === 200 && result.data && bag.value) {
-            const newBag: TEntityBag = {
-                ...bag.value,
-                attributes: result.data.entity?.attributes,
-                attributeValues: result.data.entity?.attributeValues
-            };
+            if (typeof bag.value === "object" && bag.value && "bag" in bag.value && "validProperties" in bag.value) {
+                const newBag: ValidPropertiesBox<TEntityBag> = {
+                    ...bag.value,
+                    bag: {
+                        ...bag.value.bag as TEntityBag,
+                        attributes: result.data.entity?.attributes,
+                        attributeValues: result.data.entity?.attributeValues
+                    }
+                };
 
-            bag.value = newBag;
+                bag.value = newBag;
+            }
+            else {
+                const newBag: TEntityBag = {
+                    ...bag.value as TEntityBag,
+                    attributes: result.data.entity?.attributes,
+                    attributeValues: result.data.entity?.attributeValues
+                };
+
+                bag.value = newBag;
+            }
         }
     }
 }
@@ -481,6 +639,12 @@ const emptyPreferences: IPersonPreferenceCollection = {
     },
     withPrefix(): IPersonPreferenceCollection {
         return emptyPreferences;
+    },
+    on(): void {
+        // Intentionally empty.
+    },
+    off(): void {
+        // Intentionally empty.
     }
 };
 

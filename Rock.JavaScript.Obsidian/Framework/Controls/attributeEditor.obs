@@ -147,8 +147,7 @@
         },
 
         attributeEntityTypeGuid: {
-            type: String as PropType<Guid>,
-            default: ""
+            type: String as PropType<Guid | undefined>
         },
 
         isAnalyticsVisible: {

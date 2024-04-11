@@ -9,8 +9,6 @@
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
-                 :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="{{ EntityName }}"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -26,7 +24,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="{{ EntityName | CamelCase }}EditBag" :options="options"{% if UseAttributeValues == true %} @propertyChanged="onPropertyChanged"{% endif %} />
+            <EditPanel v-model="{{ EntityName | CamelCase }}EditBag" :options="options"{% if UseAttributeValues == true %} @propertyChanged="baseBlock.onPropertyChanged"{% endif %} />
         </template>
     </DetailBlock>
 </template>
@@ -40,16 +38,15 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./{{ EntityName }}Detail/editPanel.partial.obs";
     import ViewPanel from "./{{ EntityName }}Detail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant{% if UseAttributeValues == true %}, refreshDetailAttributes{% endif %}, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";{% if UseAttributeValues == true %}
-    import { debounce } from "@Obsidian/Utility/util";{% endif %}
+    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./{{ EntityName }}Detail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
     import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -57,20 +54,18 @@
     const errorMessage = ref("");
 
     const {{ EntityName | CamelCase }}ViewBag = ref(config.entity);
-    const {{ EntityName | CamelCase }}EditBag = ref<{{ EntityName }}Bag>({} as {{ EntityName }}Bag);
+    const {{ EntityName | CamelCase }}EditBag = ref<ValidPropertiesBox<{{ EntityName }}Bag>>({
+        bag: {} as {{ EntityName }}Bag
+    });
 
     const entityTypeGuid = EntityType.{{ EntityName }};
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [{% if UseAttributeValues == true %}
-        "attributeValues",{% endif %}{% for property in Properties %}{% if property.Name == "IsSystem" %}{% continue %}{% endif %}
-        "{{ property.Name | CamelCase }}"{% unless forloop.last %},{% endunless %}{% endfor %}
-    ];{% if UseAttributeValues == true %}
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes({{ EntityName | CamelCase }}EditBag, validProperties, invokeBlockAction), undefined, true);{% endif %}
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: campusEditBag
+    });
 
     // #endregion
 
@@ -141,7 +136,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!{{ EntityName | CamelCase }}EditBag.value?.idKey) {
+        if (!{{ EntityName | CamelCase }}EditBag.value.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -187,31 +182,17 @@
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            {{ EntityName | CamelCase }}EditBag.value = result.data.entity;
+            {{ EntityName | CamelCase }}EditBag.value = {
+                bag: result.data.entity,
+                validProperties: Object.keys(result.data.entity)
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }{% if UseAttributeValues == true %}
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     * 
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
-    }{% endif %}
+    }
 
     /**
      * Event handler for the panel's Save event. Send the data to the server
@@ -223,9 +204,9 @@
         errorMessage.value = "";
 
         const data: DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> = {
-            entity: {{ EntityName | CamelCase }}EditBag.value,
+            entity: {{ EntityName | CamelCase }}EditBag.value.bag,
             isEditable: true,
-            validProperties: validProperties
+            validProperties: {{ EntityName | CamelCase }}EditBag.value.validProperties
         };
 
         const result = await invokeBlockAction<{{ EntityName }}Bag | string>("Save", {
@@ -250,8 +231,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -260,7 +239,7 @@
         blockError.value = "The specified {{ EntityName | SplitCase | Downcase }} could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        {{ EntityName | CamelCase }}EditBag.value = config.entity;
+        {{ EntityName | CamelCase }}EditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

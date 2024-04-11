@@ -85,7 +85,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return "Streak";
+        return streakViewBag.value?.streakType?.text ?? "";
     });
 
     /**
@@ -132,6 +132,9 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
+        if(panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
         return [
                 {
                     iconCssClass: "fa fa-refresh",

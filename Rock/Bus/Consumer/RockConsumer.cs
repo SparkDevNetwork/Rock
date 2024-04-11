@@ -107,7 +107,18 @@ namespace Rock.Bus.Consumer
         {
             Logger.LogDebug( "Rock Task Consumer: {0} TMessage Type: {1} Context: {@context}", GetType(), typeof( TMessage ), context );
             ConsumeContext = context;
-            Consume( context.Message );
+            var oldActivity = System.Diagnostics.Activity.Current;
+            try
+            {
+                // Bus messages should not inherit the parent activity, but this
+                // can happen if the bus message comes from the same server.
+                System.Diagnostics.Activity.Current = null;
+                Consume( context.Message );
+            }
+            finally
+            {
+                System.Diagnostics.Activity.Current = oldActivity;
+            }
             return RockMessageBus.GetCompletedTask();
         }
 

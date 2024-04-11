@@ -1139,7 +1139,29 @@ namespace RockWeb.Blocks.Crm
 
         private void SetGroupControls()
         {
+            nbGroupMessage.Visible = false;
+            var rockContext = new RockContext();
+            Group group = null;
+
+            int? groupId = gpGroup.SelectedValueAsId();
+            if ( groupId.HasValue )
+            {
+                group = new GroupService( rockContext ).Get( groupId.Value );
+            }
+
             string action = ddlGroupAction.SelectedValue;
+
+            // If the person is not authorized to update/edit the group members...
+            if ( group != null && !( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson ) ) )
+            {
+                nbGroupMessage.Visible = true;
+                nbGroupMessage.Text = $"You are not authorized to {action.ToLowerInvariant()} members for {group.Name}";
+                gpGroup.SetValue( null );
+                ddlGroupMemberStatus.Visible = false;
+                ddlGroupRole.Visible = false;
+                return;
+            }
+
             if ( action == "Remove" )
             {
                 ddlGroupMemberStatus.Visible = false;
@@ -1147,10 +1169,6 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                var rockContext = new RockContext();
-                Group group = null;
-
-                int? groupId = gpGroup.SelectedValueAsId();
                 if ( groupId.HasValue )
                 {
                     group = new GroupService( rockContext ).Get( groupId.Value );

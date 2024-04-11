@@ -261,7 +261,8 @@
     import { SiteBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteBag";
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
-import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -313,7 +314,7 @@ import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
     const siteAttribute = ref<PublicEditableAttributeBag | null>(null);
     const siteAttributes = ref(props.modelValue.siteAttributes ?? []);
-    const binaryFileTypeGuid = ref(props.modelValue.binaryFileTypeGuid ?? BinaryFiletype.Default);
+    const binaryFileTypeGuid = ref(toGuidOrNull(props.modelValue.binaryFileTypeGuid) ?? BinaryFiletype.Default);
     const submitEditAttribute = ref<boolean>(false);
     const attributeErrors = ref<string[]>([]);
     const isSystem = props.modelValue.isSystem;

@@ -177,7 +177,7 @@
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { areEqual, emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { InteractiveExperienceActionBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionBag";
     import { InteractiveExperienceActionTypeBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceDetail/interactiveExperienceActionTypeBag";
@@ -451,17 +451,23 @@
         if (!await confirmDelete("Action")) {
             return;
         }
+        const actionGuid = toGuidOrNull(action.guid);
 
-        const result = await invokeBlockAction<void>("DeleteAction", {
+        const request: {
+            idKey: string | null | undefined;
+            actionGuid: Guid;
+        } = {
             idKey: props.interactiveExperienceIdKey,
-            actionGuid: action.guid || emptyGuid
-        });
+            actionGuid: actionGuid ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction<void>("DeleteAction", request);
 
         if (!result.isSuccess) {
             alert(result.errorMessage || "Unable to delete the action.");
         }
         else {
-            const index = internalValue.value.findIndex(a => areEqual(a.guid, action.guid));
+            const index = internalValue.value.findIndex(a => areEqual(a.guid, actionGuid));
 
             if (index !== -1) {
                 const newValue = [...internalValue.value];
@@ -484,11 +490,17 @@
         // Force an update so the detail block updates the value.
         internalValue.value = [...internalValue.value];
 
-        const result = await invokeBlockAction<void>("ReorderAction", {
+        const request: {
+            idKey: string | null | undefined;
+            actionGuid: Guid;
+            beforeActionGuid: Guid | null | undefined;
+        } = {
             idKey: props.interactiveExperienceIdKey,
-            actionGuid: action.guid || emptyGuid,
-            beforeActionGuid: beforeAction?.guid ?? null
-        });
+            actionGuid: toGuidOrNull(action.guid) ?? emptyGuid,
+            beforeActionGuid: toGuidOrNull(beforeAction?.guid)
+        };
+
+        const result = await invokeBlockAction<void>("ReorderAction", request);
 
         if (!result.isSuccess) {
             alert(result.errorMessage || "Unable to re-order actions, you might need to reload the page.");

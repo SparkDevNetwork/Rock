@@ -302,9 +302,9 @@ namespace Rock.SystemGuid
         public const string UPDATE_PERSISTED_ATTRIBUTE_VALUE = "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70";
 
         /// <summary>
-        /// The <see cref="Rock.Jobs.UpdateAnalyticsSourceZipCode" /> job.
+        /// The <see cref="Rock.Jobs.UpdateAnalyticsSourcePostalCode" /> job.
         /// </summary>
-        public const string UPDATE_ANALYTICS_SOURCE_ZIPCODE = "29731D97-699D-4D34-A9F4-50C7C33D5C48";
+        public const string UPDATE_ANALYTICS_SOURCE_POSTAL_CODE = "29731D97-699D-4D34-A9F4-50C7C33D5C48";
 
         /// <summary>
         /// The Post Update Data Migration Job to swap the Notes Block

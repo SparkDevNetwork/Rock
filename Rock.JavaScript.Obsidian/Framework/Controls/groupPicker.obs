@@ -37,7 +37,7 @@
 
         /** GUID of the group you want to use as the root. */
         rootGroupGuid: {
-            type: Object as PropType<Guid | null>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 

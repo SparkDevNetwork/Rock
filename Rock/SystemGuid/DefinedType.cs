@@ -361,6 +361,11 @@ namespace Rock.SystemGuid
         public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
 
         /// <summary>
+        /// Theme Purpose
+        /// </summary>
+        public const string THEME_PURPOSE = "05189496-F60C-4563-8F10-42CEBB470C59";
+
+        /// <summary>
         /// Campus Topic Type
         /// </summary>
         public const string TOPIC_TYPE = "41141100-8fc6-44bb-aa36-9778eeda7f62";
@@ -389,6 +394,12 @@ namespace Rock.SystemGuid
         /// The REST allowed domains
         /// </summary>
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
+
+        /// <summary>
+        /// The "Saved Check-in Configurations" defined type that provides a list
+        /// of saved configuration settings for quickly starting up kiosks.
+        /// </summary>
+        public const string SAVED_CHECKIN_CONFIGURATIONS = "F986008C-99BB-4C48-8A6E-38C8A121D75B";
 
         /// <summary>
         /// The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset.

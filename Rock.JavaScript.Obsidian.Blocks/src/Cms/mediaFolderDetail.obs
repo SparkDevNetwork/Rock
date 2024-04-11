@@ -84,7 +84,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return mediaFolderViewBag.value?.name ?? "Add Media Folder";
+        return mediaFolderViewBag.value?.name ?? "";
     });
 
     /**

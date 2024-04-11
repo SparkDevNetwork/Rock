@@ -51,11 +51,14 @@ export function isNullOrWhiteSpace(val: unknown): boolean {
 }
 
 /**
- * Turns "MyCamelCaseString" into "My Camel Case String"
+ * Turns camelCase or PascalCase strings into separate strings - "MyCamelCaseString" turns into "My Camel Case String"
  * @param val
  */
-export function splitCamelCase(val: string): string {
-    return val.replace(/([a-z])([A-Z])/g, "$1 $2");
+export function splitCase(val: string): string {
+    // First, insert a space before sequences of capital letters followed by a lowercase letter (e.g., "RESTKey" -> "REST Key")
+    val = val.replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+    // Then, insert a space before sequences of a lowercase letter or number followed by a capital letter (e.g., "myKey" -> "my Key")
+    return val.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
 }
 
 /**
@@ -305,7 +308,7 @@ export default {
     asCommaAnd,
     containsHtmlTag,
     escapeHtml,
-    splitCamelCase,
+    splitCase,
     isNullOrWhiteSpace,
     isWhiteSpace,
     isEmpty,

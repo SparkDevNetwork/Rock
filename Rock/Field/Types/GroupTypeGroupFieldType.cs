@@ -95,16 +95,14 @@ namespace Rock.Field.Types
             {
                 return base.GetPublicEditValue( privateValue, privateConfigurationValues );
             }
-            var groupType = GroupTypeCache.Get( groupTypeGuid.Value )
-                    .ToListItemBag();
+            var groupType = GroupTypeCache.Get( groupTypeGuid.Value )?.ToListItemBag();
 
             ViewModels.Utility.ListItemBag group = null;
             if ( groupGuid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    group = new GroupService( rockContext ).Get( groupGuid.Value )
-                        .ToListItemBag();
+                    group = new GroupService( rockContext ).Get( groupGuid.Value )?.ToListItemBag();
                 }
             }
             return new GroupAndGroupType { GroupType = groupType, Group = group }
@@ -116,7 +114,7 @@ namespace Rock.Field.Types
         {
             var privateValue = base.GetPrivateEditValue( publicValue, privateConfigurationValues );
             var groupAndGroupType = privateValue.FromJsonOrNull<GroupAndGroupType>();
-            if ( groupAndGroupType.GroupType == null )
+            if ( groupAndGroupType == null || groupAndGroupType.GroupType == null )
             {
                 return string.Empty;
             }

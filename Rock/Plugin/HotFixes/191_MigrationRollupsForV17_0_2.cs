@@ -60,7 +60,10 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         private void ChopLegacyCommunicationRecipientList()
         {
+
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Chop CommunicationRecipientList",
                 blockTypeReplacements: new Dictionary<string, string> {
                     { "EBEA5996-5695-4A42-A21C-29E11E711BE8", "3F294916-A02D-48D5-8FE4-E8D7B98F61F7" }

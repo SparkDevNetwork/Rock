@@ -27,80 +27,84 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
     public class VolunteerGenerosityDataBag
     {
         /// <summary>
-        /// Gets or sets the people data.
+        /// 
         /// </summary>
-        public List<PersonData> PeopleData { get; set; } = new List<PersonData>();
-        /// <summary>
-        /// Gets or sets the giving data.
-        /// </summary>
-        public List<GivingDataItem> GivingData { get; set; } = new List<GivingDataItem>();
-        /// <summary>
-        /// Gets or sets the group data.
-        /// </summary>
-        public List<GroupData> GroupData { get; set; } = new List<GroupData>();
+        public List<VolunteerGenerosityPersonDataBag> PeopleData { get; set; } = new List<VolunteerGenerosityPersonDataBag>();
     }
 
     /// <summary>
-    /// 
+    /// Bag for person-related data in the Volunteer Generosity Analysis block.
     /// </summary>
-    public class PersonData
+    public class VolunteerGenerosityPersonDataBag
+    {
+        /// <summary>
+        /// Gets or sets the person group key.
+        /// </summary>
+        public string PersonGroupKey { get; set; }
+        /// <summary>
+        /// Gets or sets the person details.
+        /// </summary>
+        public VolunteerGenerosityPersonDetailsBag PersonDetails { get; set; }
+        /// <summary>
+        /// Gets or sets the list of donations.
+        /// </summary>
+        public List<VolunteerGenerosityDonationBag> Donations { get; set; } = new List<VolunteerGenerosityDonationBag>();
+    }
+
+    /// <summary>
+    /// Bag for detailed information about a person in the Volunteer Generosity Analysis block.
+    /// </summary>
+    public class VolunteerGenerosityPersonDetailsBag
     {
         /// <summary>
         /// Gets or sets the person identifier.
         /// </summary>
-        public int PersonId { get; set; }
+        public string PersonId { get; set; }
         /// <summary>
-        /// Gets or sets the last name.
+        /// Gets or sets the person's last name.
         /// </summary>
         public string LastName { get; set; }
         /// <summary>
-        /// Gets or sets the nick name.
+        /// Gets or sets the person's nickname.
         /// </summary>
         public string NickName { get; set; }
         /// <summary>
-        /// Gets or sets the photo URL.
+        /// Gets or sets the person's photo URL.
         /// </summary>
         public string PhotoUrl { get; set; }
         /// <summary>
-        /// Gets or sets the giving identifier.
+        /// Gets or sets the person's giving identifier.
         /// </summary>
         public string GivingId { get; set; }
         /// <summary>
-        /// Gets or sets the group identifier.
-        /// </summary>
-        public List<string> GroupIds { get; set; } = new List<string>();
-        /// <summary>
-        /// Gets or sets the last attendance date.
+        /// Gets or sets the person's last attendance date.
         /// </summary>
         public string LastAttendanceDate { get; set; }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class GivingDataItem
-    {
         /// <summary>
-        /// Gets or sets the giving identifier.
-        /// </summary>
-        public string GivingId { get; set; }
-        /// <summary>
-        /// Gets or sets the giving amount.
-        /// </summary>
-        public List<MonthlyGivingData> Donations { get; set; } = new List<MonthlyGivingData>();
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class MonthlyGivingData
-    {
-        /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the Group ID.
         /// </summary>
         public string GroupId { get; set; }
         /// <summary>
-        /// Gets or sets themonth abrreviated name.
+        /// Gets or sets the Group Name.
+        /// </summary>
+        public string GroupName { get; set; }
+        /// <summary>
+        /// Gets or sets the Campus ID.
+        /// </summary>
+        public string CampusId { get; set; }
+        /// <summary>
+        /// Gets or sets the Campus Short Code
+        /// </summary>
+        public string CampusShortCode { get; set; }
+    }
+
+    /// <summary>
+    /// Bag for donation data within the Volunteer Generosity Analysis block.
+    /// </summary>
+    public class VolunteerGenerosityDonationBag
+    {
+        /// <summary>
+        /// Gets or sets the month name.
         /// </summary>
         public string MonthNameAbbreviated { get; set; }
         /// <summary>
@@ -114,26 +118,53 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
     }
 
     /// <summary>
-    /// 
+    /// Bag for person-related data in the Volunteer Generosity Analysis block.
     /// </summary>
-    public class GroupData
+    public class VolunteerGenerosityPersonBag
     {
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the person ID.
         /// </summary>
-        public string GroupId { get; set; }
+        public string PersonId { get; set; }
         /// <summary>
-        /// Gets or sets the group name.
+        /// Gets or sets the person's last name.
         /// </summary>
-        public string GroupName { get; set; }
+        public string LastName { get; set; }
         /// <summary>
-        /// Gets or sets the campus identifier.
+        /// Gets or sets the person's nickname.
         /// </summary>
-        public int CampusId { get; set; }
+        public string NickName { get; set; }
         /// <summary>
-        /// Gets or sets the campus name.
+        /// Gets or sets the person's photo URL.
         /// </summary>
-        public string CampusShortCode { get; set; }
+        public string PhotoUrl { get; set; }
+    }
+
+    /// <summary>
+    /// A bag that contains all data for the Volunteer Generosity Analysis block.
+    /// </summary>
+    public class VolunteerGenerositySetupBag
+    {
+        /// <summary>
+        /// Gets or sets the list of unique campuses.
+        /// </summary>
+        public List<string> UniqueCampuses { get; set; }
+        /// <summary>
+        /// Gets or sets the list of unique groups 
+        /// </summary>
+        public List<string> UniqueGroups { get; set; }
+        /// <summary>
+        /// Gets or sets the last updated date time. 
+        /// </summary>
+        public string LastUpdated { get; set; }
+        /// <summary>
+        /// Gets or sets the estimated refresh time of the persisted dataset. 
+        /// </summary>
+        public double EstimatedRefreshTime { get; set; }
+        /// <summary>
+        /// Gets or sets the bool that shows/hides the campus filter.
+        /// </summary>
+        public bool ShowCampusFilter { get; set; }
     }
 }
 

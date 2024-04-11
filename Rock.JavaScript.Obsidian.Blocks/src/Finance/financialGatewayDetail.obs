@@ -7,12 +7,11 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Financial Gateway"
-                 :isAuditHidden="isAuditHidden"
+                 entityTypeName="FinancialGateway"
+                 :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
@@ -89,7 +88,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return financialGatewayViewBag.value?.name ?? "Add Financial Gateway";
+        return financialGatewayViewBag.value?.name ?? "";
     });
 
     /**

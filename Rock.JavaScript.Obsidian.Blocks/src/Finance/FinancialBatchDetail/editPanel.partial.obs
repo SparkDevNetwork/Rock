@@ -72,6 +72,7 @@
     import { FinancialBatchBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchBag";
     import { FinancialBatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialBatchDetail/financialBatchDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -119,7 +120,7 @@
 
     // #region Computed Values
     const isStatusClosed = computed((): boolean => props.modelValue.status == 2);
-    const shouldGetNameFromDefinedType = computed((): boolean => props.modelValue.id == 0 && props.options.batchNameDefinedTypeGuid != "");
+    const shouldGetNameFromDefinedType = computed((): boolean => props.modelValue.id == 0 && !!toGuidOrNull(props.options.batchNameDefinedTypeGuid));
 
     // #endregion
 

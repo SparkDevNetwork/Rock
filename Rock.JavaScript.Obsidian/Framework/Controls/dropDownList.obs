@@ -23,6 +23,7 @@
                                :mode="mode"
                                :getPopupContainer="getPopupContainer"
                                showArrow
+                               :virtual="false"
                                @dropdownVisibleChange="onDropdownVisibleChange">
                         <template #clearIcon>
                             <i class="fa fa-times"></i>
@@ -75,7 +76,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<string | string[]>,
+            type: [String, Array] as PropType<string | string[]>,
             required: true
         },
 

@@ -15,12 +15,14 @@
 // </copyright>
 //
 
-import { defineComponent, ref, watch } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
 import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./groupRoleField.partial";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
+import { Guid } from "@Obsidian/Types";
 
 export const EditComponent = defineComponent({
     name: "GroupRoleField.Edit",
@@ -32,8 +34,10 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        const internalValue = ref({} as ListItemBag);
-        const groupTypeValue = ref({} as ListItemBag);
+        const internalValue = ref<ListItemBag>({});
+        const groupTypeValue = ref<ListItemBag>({});
+
+        const groupTypeGuid = computed<Guid | null>(() => toGuidOrNull(groupTypeValue.value?.value));
 
         watch(() => props.modelValue, () => {
             internalValue.value = JSON.parse(props.modelValue || "{}");
@@ -49,12 +53,13 @@ export const EditComponent = defineComponent({
 
         return {
             internalValue,
-            groupTypeValue
+            groupTypeValue,
+            groupTypeGuid
         };
     },
 
     template: `
-<GroupRolePicker v-model="internalValue" :groupTypeGuid="groupTypeValue.value" showBlankItem />
+<GroupRolePicker v-model="internalValue" :groupTypeGuid="groupTypeGuid" />
 `
 });
 

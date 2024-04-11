@@ -10,7 +10,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
+                 entityTypeName="LavaShortcode"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isDeletable"

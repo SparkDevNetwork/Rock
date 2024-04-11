@@ -116,7 +116,7 @@ import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { newGuid } from "@Obsidian/Utility/guid";
+import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { AssessmentType } from "@Obsidian/SystemGuids/assessmentType";
 import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -263,6 +263,7 @@ import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partia
 import JsonFieldsBuilderGallery from "./ControlGallery/jsonFieldsBuilderGallery.partial.obs";
 import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
 import TextBoxGallery from "./ControlGallery/textBoxGallery.partial.obs";
+import { Guid } from "@Obsidian/Types";
 
 
 // #region Control Gallery
@@ -1691,9 +1692,9 @@ const addressControlGallery = defineComponent({
             showCountry,
             showCountrySelected,
             showCountryOptions: [
-                {text: "Default", value: "default"},
-                {text: "Yes", value: "true"},
-                {text: "No", value: "false"},
+                { text: "Default", value: "default" },
+                { text: "Yes", value: "true" },
+                { text: "No", value: "false" },
             ],
             importCode: getSfcControlImportPath("addressControl"),
             exampleCode: `<AddressControl label="Address" v-model="value" />`
@@ -2124,7 +2125,7 @@ const fileUploaderGallery = defineComponent({
     },
     setup() {
         return {
-            binaryFileTypeGuid: ref(BinaryFiletype.Default),
+            binaryFileTypeGuid: ref<Guid>(BinaryFiletype.Default),
             showDeleteButton: ref(true),
             uploadAsTemporary: ref(true),
             uploadButtonText: ref("Upload"),
@@ -2246,7 +2247,7 @@ const definedValuePickerGallery = defineComponent({
         return {
             onsubmit,
             allowAdd: ref(false),
-            definedTypeGuid: ref(DefinedType.PersonConnectionStatus),
+            definedTypeGuid: ref<Guid>(DefinedType.PersonConnectionStatus),
             enhanceForLongLists,
             multiple,
             displayStyle,
@@ -2614,12 +2615,8 @@ const categoryPickerGallery = defineComponent({
     },
     setup() {
         const entityType = ref<ListItemBag | null>(null);
-        const entityTypeGuid = computed(() => {
-            if (entityType?.value?.value) {
-                return entityType.value.value;
-            }
-
-            return null;
+        const entityTypeGuid = computed<Guid | undefined>(() => {
+            return toGuidOrNull(entityType?.value?.value) ?? undefined;
         });
 
         return {
@@ -2871,7 +2868,7 @@ const followingGallery = defineComponent({
 
         return {
             disabled: ref(false),
-            entityTypeGuid: ref(EntityType.Person),
+            entityTypeGuid: ref<Guid>(EntityType.Person),
             entityKey: ref(store.state.currentPerson?.idKey ?? ""),
             importCode: getControlImportPath("following"),
             exampleCode: `<Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
@@ -3131,7 +3128,7 @@ const campusPickerGallery = defineComponent({
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(true),
-            value: ref({}),
+            value: ref<ListItemBag>({}),
             forceVisible: ref(false),
             includeInactive: ref(false),
             campusStatusFilter: ref(null),
@@ -3398,7 +3395,7 @@ const dataViewPickerGallery = defineComponent({
     },
     setup() {
         return {
-            entityTypeGuid: ref(null),
+            entityTypeGuid: ref<ListItemBag | null>(null),
             multiple: ref(false),
             value: ref(null),
             displayPersistedOnly: ref(false),
@@ -3699,7 +3696,7 @@ const auditDetailGallery = defineComponent({
         const store = useStore();
 
         return {
-            entityTypeGuid: ref(EntityType.Person),
+            entityTypeGuid: ref<Guid>(EntityType.Person),
             entityKey: ref(store.state.currentPerson?.idKey ?? ""),
             importCode: getControlImportPath("auditDetail"),
             exampleCode: `<AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
@@ -3942,15 +3939,14 @@ const groupMemberPickerGallery = defineComponent({
         DropDownList,
         GroupMemberPicker,
         NumberUpDown,
-        TextBox,
-        NumberBox
+        TextBox
     },
     setup() {
         return {
             columnCount: ref(0),
             displayStyle: ref(PickerDisplayStyle.Auto),
             displayStyleItems,
-            groupGuid: ref("62DC3753-01D5-48B5-B22D-D2825D92900B"), // use a groupPicker eventually...
+            groupGuid: ref<Guid | null>("62DC3753-01D5-48B5-B22D-D2825D92900B"), // use a groupPicker eventually...
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
@@ -3993,7 +3989,7 @@ const groupMemberPickerGallery = defineComponent({
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
             <div class="col-md-4">
-                <NumberBox label="Group ID" v-model="groupGuid" />
+                <TextBox label="Group GUID" v-model="groupGuid" />
             </div>
         </div>
     </template>
@@ -4080,7 +4076,7 @@ const interactionComponentPickerGallery = defineComponent({
             columnCount: ref(0),
             displayStyle: ref(PickerDisplayStyle.Auto),
             displayStyleItems,
-            interactionChannelGuid: ref(null),
+            interactionChannelGuid: ref<Guid | null>(null),
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
@@ -4326,10 +4322,14 @@ const stepProgramStepTypePickerGallery = defineComponent({
         CheckBox,
     },
     setup() {
+        const defaultProgram = ref<ListItemBag>({});
+        const defaultProgramGuid = computed<Guid | null>(() => toGuidOrNull(defaultProgram.value?.value));
+
         return {
             value: ref({}),
             stepProgram: ref({}),
-            defaultProgramGuid: ref(""),
+            defaultProgram,
+            defaultProgramGuid,
             required: ref(false),
             disabled: ref(false),
             importCode: getSfcControlImportPath("stepProgramStepTypePicker"),
@@ -4347,14 +4347,14 @@ const stepProgramStepTypePickerGallery = defineComponent({
     <StepProgramStepTypePicker label="Step Program > Step Type"
         v-model="value"
         v-model:stepProgram="stepProgram"
-        :defaultStepProgramGuid="defaultProgramGuid?.value"
+        :defaultStepProgramGuid="defaultProgramGuid"
         :rules="required ? 'required' : ''"
         :disabled="disabled" />
 
     <template #settings>
         <div class="row">
             <div class="col-md-4">
-                <StepProgramPicker label="Default Step Program" v-model="defaultProgramGuid" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+                <StepProgramPicker label="Default Step Program" v-model="defaultProgram" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
@@ -4377,10 +4377,14 @@ const stepProgramStepStatusPickerGallery = defineComponent({
         CheckBox,
     },
     setup() {
+        const defaultProgram = ref<ListItemBag>({});
+        const defaultProgramGuid = computed<Guid | null>(() => toGuidOrNull(defaultProgram.value?.value));
+
         return {
-            value: ref({}),
-            stepProgram: ref({}),
-            defaultProgramGuid: ref(""),
+            value: ref<ListItemBag>({}),
+            stepProgram: ref<ListItemBag>({}),
+            defaultProgram,
+            defaultProgramGuid,
             required: ref(false),
             disabled: ref(false),
             importCode: getSfcControlImportPath("stepProgramStepStatusPicker"),
@@ -4398,14 +4402,14 @@ const stepProgramStepStatusPickerGallery = defineComponent({
     <StepProgramStepStatusPicker label="Step Program > Step Status"
         v-model="value"
         v-model:stepProgram="stepProgram"
-        :defaultStepProgramGuid="defaultProgramGuid?.value"
+        :defaultStepProgramGuid="defaultProgramGuid"
         :rules="required ? 'required' : ''"
         :disabled="disabled" />
 
     <template #settings>
         <div class="row">
             <div class="col-md-4">
-                <StepProgramPicker label="Default Step Program" v-model="defaultProgramGuid" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
+                <StepProgramPicker label="Default Step Program" v-model="defaultProgram" showBlankItem help="If this defaultStepProgramGuid prop is set, the Step Program selector will not be shown and the Step Types will be based on that Program." />
             </div>
             <div class="col-md-4">
                 <CheckBox label="Required" v-model="required" />
@@ -4432,6 +4436,9 @@ const stepStatusPickerGallery = defineComponent({
         NumberBox
     },
     setup() {
+        const stepProgram = ref<ListItemBag>({});
+        const stepProgramGuid = computed<Guid | null>(() => toGuidOrNull(stepProgram.value?.value));
+
         return {
             columnCount: ref(0),
             displayStyle: ref(PickerDisplayStyle.Auto),
@@ -4439,7 +4446,8 @@ const stepStatusPickerGallery = defineComponent({
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            stepProgramGuid: ref(null),
+            stepProgram,
+            stepProgramGuid,
             value: ref({}),
             importCode: getSfcControlImportPath("stepStatusPicker"),
             exampleCode: `<StepStatusPicker label="Step Status" v-model="value" />`
@@ -4458,7 +4466,7 @@ const stepStatusPickerGallery = defineComponent({
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
         :showBlankItem="showBlankItem"
-        :stepProgramGuid="stepProgramGuid?.value" />
+        :stepProgramGuid="stepProgramGuid" />
     <template #settings>
         <div class="row">
             <div class="col-md-4">
@@ -4479,7 +4487,7 @@ const stepStatusPickerGallery = defineComponent({
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
             <div class="col-md-4">
-                <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
+                <StepProgramPicker label="Step Program" v-model="stepProgram" />
             </div>
         </div>
     </template>
@@ -4500,6 +4508,9 @@ const stepTypePickerGallery = defineComponent({
         NumberBox
     },
     setup() {
+        const stepProgram = ref<ListItemBag>({});
+        const stepProgramGuid = computed<Guid | null>(() => toGuidOrNull(stepProgram.value?.value));
+
         return {
             columnCount: ref(0),
             displayStyle: ref(PickerDisplayStyle.Auto),
@@ -4507,7 +4518,8 @@ const stepTypePickerGallery = defineComponent({
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            stepProgramGuid: ref(null),
+            stepProgram,
+            stepProgramGuid,
             value: ref({}),
             importCode: getSfcControlImportPath("stepTypePicker"),
             exampleCode: `<StepTypePicker label="Step Type" v-model="value" />`
@@ -4526,7 +4538,7 @@ const stepTypePickerGallery = defineComponent({
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
         :showBlankItem="showBlankItem"
-        :stepProgramGuid="stepProgramGuid?.value" />
+        :stepProgramGuid="stepProgramGuid" />
     <template #settings>
         <div class="row">
             <div class="col-md-4">
@@ -4547,7 +4559,7 @@ const stepTypePickerGallery = defineComponent({
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
             <div class="col-md-4">
-                <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
+                <StepProgramPicker label="Step Program" v-model="stepProgram" />
             </div>
         </div>
     </template>
@@ -6583,7 +6595,7 @@ const locationPickerGallery = defineComponent({
             value: "8"
         }];
 
-        const selectedOptions = ref(["1","2","4","8"]);
+        const selectedOptions = ref(["1", "2", "4", "8"]);
 
         const selectedAsNumber = computed(() => {
             if (selectedOptions.value.length === 0) {
@@ -6640,14 +6652,14 @@ const locationListGallery = defineComponent({
     setup() {
         return {
             value: ref(null),
-            locationType: ref(""),
+            locationType: ref<Guid | null>(null),
             parentLocation: ref(""),
             showCityState: ref(false),
             multiple: ref(false),
             allowAdd: ref(false),
             showBlankItem: ref(false),
             isAddressRequired: ref(false),
-            parentLocationGuid: ref("e0545b4d-4f97-43b0-971f-94b593ae2134"),
+            parentLocationGuid: ref<Guid | null>("e0545b4d-4f97-43b0-971f-94b593ae2134"),
             importCode: getSfcControlImportPath("locationList"),
             exampleCode: `<LocationList label="Location" v-model="value" :multiple="false" />`
         };
@@ -6965,7 +6977,7 @@ const categorizedValuePickerGallery = defineComponent({
             multiple: ref(true),
             value: ref(null),
             required: ref(false),
-            definedType: ref(DefinedType.PowerbiAccounts),
+            definedType: ref<Guid>(DefinedType.PowerbiAccounts),
             importCode: getSfcControlImportPath("categorizedValuePicker"),
             exampleCode: `<CategorizedValuePicker label="Categorized Defined Value" v-model="value" :definedTypeGuid="DefinedType.PowerbiAccounts" />`
         };
@@ -7020,7 +7032,7 @@ const reminderTypePickerGallery = defineComponent({
             showBlankItem: ref(false),
             value: ref(null),
             required: ref(false),
-            entityTypeGuid: ref(null),
+            entityTypeGuid: ref<Guid | null>(null),
             importCode: getSfcControlImportPath("reminderTypePicker"),
             exampleCode: `<ReminderTypePicker label="Reminder Type" v-model="value" />`
         };
@@ -7035,7 +7047,7 @@ const reminderTypePickerGallery = defineComponent({
     <ReminderTypePicker
         label="Reminder Type"
         v-model="value"
-        :entityTypeGuid="entityTypeGuid?.value"
+        :entityTypeGuid="entityTypeGuid"
         :multiple="multiple"
         :columnCount="columnCount"
         :enhanceForLongLists="enhanceForLongLists"
@@ -7648,7 +7660,7 @@ const structuredContentEditorGallery = defineComponent({
         const toolsItemBag = ref<ListItemBag | undefined>({
             value: DefinedValue.StructureContentEditorDefault
         });
-        const toolsGuid = computed(() => toolsItemBag.value?.value);
+        const toolsGuid = computed<Guid | null>(() => toGuidOrNull(toolsItemBag.value?.value));
         const toolsTypeGuid = DefinedType.StructuredContentEditorTools;
 
         return {
@@ -7699,7 +7711,7 @@ const registrationInstancePickerGallery = defineComponent({
     },
     setup() {
         return {
-            registrationTemplateGuid: ref(null),
+            registrationTemplateGuid: ref<Guid | null>(null),
             value: ref({
                 "value": "eefe4ad9-bfa9-405c-b732-ccb4d857ab73",
                 "text": "Joe's Test Registration",
@@ -7721,7 +7733,7 @@ const registrationInstancePickerGallery = defineComponent({
     <RegistrationInstancePicker
         v-model="value"
         label="Registration Instance"
-        :registrationTemplateGuid="registrationTemplateGuid?.value"
+        :registrationTemplateGuid="registrationTemplateGuid"
         :disabled="disabled"
         :rules="required ? 'required' : ''" />
 
@@ -7757,7 +7769,7 @@ const interactionChannelInteractionComponentPickerGallery = defineComponent({
     },
     setup() {
         return {
-            interactionChannelGuid: ref(null),
+            interactionChannelGuid: ref<Guid | null>(null),
             value: ref({
                 "value": "1d6d3e3c-131c-4ed9-befe-b34f3c3da7d3",
                 "text": "Calendar",
@@ -7810,7 +7822,7 @@ const workflowPickerGallery = defineComponent({
                 "category": null
             }),
             workflowType: ref({}),
-            workflowTypeGuid: ref(""),
+            workflowTypeGuid: ref<Guid | null>(null),
             required: ref(false),
             disabled: ref(false),
             importCode: getSfcControlImportPath("workflowPicker"),
@@ -7826,7 +7838,7 @@ const workflowPickerGallery = defineComponent({
 
     <WorkflowPicker label="Choose a Workflow"
         v-model="value"
-        :workflowTypeGuid="workflowTypeGuid?.value"
+        :workflowTypeGuid="workflowTypeGuid"
         :rules="required ? 'required' : ''"
         :disabled="disabled" />
 

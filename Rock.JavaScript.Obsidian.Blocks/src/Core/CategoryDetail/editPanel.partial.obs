@@ -42,6 +42,8 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";
     import { CategoryDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryDetailOptionsBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -69,10 +71,10 @@
     const parentCategory = propertyRef(props.modelValue.parentCategory ?? null, "ParentCategoryId");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
     const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
-    const entityTypeGuid = ref(props.modelValue.entityType?.value ?? "");
+    const entityTypeGuid = ref<Guid | undefined>(toGuidOrNull(props.modelValue.entityType?.value) ?? undefined);
     const entityTypeQualifierColumn = ref(props.modelValue.entityTypeQualifierColumn ?? undefined);
     const entityTypeQualifierValue = ref(props.modelValue.entityTypeQualifierValue ?? undefined);
-    const rootCategoryGuid = ref(props.modelValue.rootCategoryGuid ?? undefined);
+    const rootCategoryGuid = ref<Guid | undefined>(toGuidOrNull(props.modelValue.rootCategoryGuid) ?? undefined);
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, name, parentCategory, iconCssClass, highlightColor];

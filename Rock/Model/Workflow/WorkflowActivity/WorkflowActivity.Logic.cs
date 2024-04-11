@@ -144,7 +144,7 @@ namespace Rock.Model
         {
             AddLogEntry( "Processing..." );
 
-            using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW ACTIVITY {ActivityTypeCache?.Name}" ) )
+            using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW: Activity '{ActivityTypeCache?.Name}'" ) )
             {
                 diagnosticActivity?.AddTag( "rock.workflow.activitytype.id", ActivityTypeId );
                 diagnosticActivity?.AddTag( "rock.workflow.activitytype.name", ActivityTypeCache?.Name ?? string.Empty );

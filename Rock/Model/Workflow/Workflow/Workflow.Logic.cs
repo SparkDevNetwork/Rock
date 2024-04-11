@@ -193,7 +193,7 @@ namespace Rock.Model
         {
             AddLogEntry( "Workflow Processing..." );
 
-            using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW {WorkflowTypeCache?.Name}" ) )
+            using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW: Type '{WorkflowTypeCache?.Name}'" ) )
             {
                 diagnosticActivity?.AddTag( "rock.workflow.id", Id );
                 diagnosticActivity?.AddTag( "rock.workflow.name", Name );

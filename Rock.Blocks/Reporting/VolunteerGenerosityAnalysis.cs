@@ -17,7 +17,7 @@ namespace Rock.Blocks.Reporting
     [Rock.SystemGuid.BlockTypeGuid( "586A26F1-8A9C-4AB4-B788-9B44895B9D40" )]
     [Rock.SystemGuid.EntityTypeGuid( "4C55BFE1-7E97-4CFB-BCB7-2015AA25D9B9" )]
 
-    public class VolunteerGenerosityAnalysis : RockListBlockType<PersonData>
+    public class VolunteerGenerosityAnalysis : RockListBlockType<VolunteerGenerosityPersonDataBag>
     {
         #region Keys
 
@@ -63,21 +63,27 @@ namespace Rock.Blocks.Reporting
                 {
                     try
                     {
+                        var lastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToString( "yyyy-MM-dd HH:mm:ss" ) : "N/A";
+                        var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0;
                         var dataBag = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityDataBag>();
 
                         if ( dataBag != null )
                         {
-                            var uniqueCampuses = dataBag.GroupData.Select( g => g.CampusShortCode ).Distinct().ToList();
-                            var uniqueGroups = dataBag.GroupData.Select( g => g.GroupName ).Distinct().ToList();
-                            var lastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToString( "yyyy-MM-dd" ) : "N/A";
-                            var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? dataset.TimeToBuildMS : 0;
+                            var uniqueCampuses = dataBag.PeopleData
+                                .Where( p => !string.IsNullOrEmpty( p.PersonDetails.CampusShortCode ) )
+                                .Select( p => p.PersonDetails.CampusShortCode )
+                                .Distinct()
+                                .ToList();
 
-                            var bag = new
+                            var uniqueGroups = dataBag.PeopleData.Select( p => p.PersonDetails.GroupName ).Distinct().ToList();
+
+                            var bag = new VolunteerGenerositySetupBag
                             {
                                 UniqueCampuses = uniqueCampuses,
                                 UniqueGroups = uniqueGroups,
                                 LastUpdated = lastUpdated,
-                                EstimatedRefreshTime = estimatedRefreshTime
+                                EstimatedRefreshTime = estimatedRefreshTime,
+                                ShowCampusFilter = uniqueCampuses.Count > 1
                             };
 
                             return bag;
@@ -93,42 +99,34 @@ namespace Rock.Blocks.Reporting
             }
         }
 
-        protected override IQueryable<PersonData> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<VolunteerGenerosityPersonDataBag> GetListQueryable( RockContext rockContext )
         {
             var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
             var dataset = PersistedDatasetCache.Get( datasetGuid );
 
             if ( dataset == null || string.IsNullOrWhiteSpace( dataset.ResultData ) )
             {
-                return Enumerable.Empty<PersonData>().AsQueryable();
+                return Enumerable.Empty<VolunteerGenerosityPersonDataBag>().AsQueryable();
             }
 
             var dataBag = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityDataBag>();
             if ( dataBag == null )
             {
-                return Enumerable.Empty<PersonData>().AsQueryable();
+                return Enumerable.Empty<VolunteerGenerosityPersonDataBag>().AsQueryable();
             }
 
-            IEnumerable<PersonData> filteredPeople = dataBag.PeopleData;
+            IEnumerable<VolunteerGenerosityPersonDataBag> filteredPeople = dataBag.PeopleData;
 
             // Filter by Campus
             if ( !string.IsNullOrWhiteSpace( FilterCampus ) && FilterCampus != "All" )
             {
-                var campusGroupIds = dataBag.GroupData
-                    .Where( g => g.CampusShortCode.Equals( FilterCampus, StringComparison.OrdinalIgnoreCase ) )
-                    .Select( g => g.GroupId.ToString() );
-
-                filteredPeople = filteredPeople.Where( p => p.GroupIds.Intersect( campusGroupIds ).Any() );
+                filteredPeople = filteredPeople.Where( person => person.PersonDetails.CampusShortCode == FilterCampus );
             }
 
             // Filter by Team
             if ( !string.IsNullOrWhiteSpace( FilterTeam ) && FilterTeam != "All" )
             {
-                var teamGroupIds = dataBag.GroupData
-                    .Where( g => g.GroupName.Equals( FilterTeam, StringComparison.OrdinalIgnoreCase ) )
-                    .Select( g => g.GroupId.ToString() );
-
-                filteredPeople = filteredPeople.Where( p => p.GroupIds.Intersect( teamGroupIds ).Any() );
+                filteredPeople = filteredPeople.Where( person => person.PersonDetails.GroupName == FilterTeam );
             }
 
             // Filter by Date Range
@@ -136,61 +134,47 @@ namespace Rock.Blocks.Reporting
             {
                 var cutoffDate = DateTime.Today.AddDays( -FilterDateRange.Value );
                 filteredPeople = filteredPeople.Where( person =>
-                    dataBag.GivingData.Any( gd => gd.GivingId == person.GivingId &&
-                                                 gd.Donations.Any( d => !string.IsNullOrEmpty( d.Year ) &&
-                                                                       !string.IsNullOrEmpty( d.Month ) &&
-                                                                       int.TryParse( d.Year, out int year ) &&
-                                                                       int.TryParse( d.Month, out int month ) &&
-                                                                       new DateTime( year, month, 1 ) >= cutoffDate ) ) );
+                    DateTime.TryParse( person.PersonDetails.LastAttendanceDate, out DateTime lastAttendanceDate ) &&
+                    lastAttendanceDate >= cutoffDate
+                );
             }
+
 
             return filteredPeople.AsQueryable();
         }
 
-        protected override GridBuilder<PersonData> GetGridBuilder()
+        protected override GridBuilder<VolunteerGenerosityPersonDataBag> GetGridBuilder()
         {
-            var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
-            var dataset = PersistedDatasetCache.Get( datasetGuid );
-            VolunteerGenerosityDataBag dataBag = null;
-
-            if ( dataset != null && !string.IsNullOrWhiteSpace( dataset.ResultData ) )
-            {
-                dataBag = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityDataBag>();
-            }
-
-            return new GridBuilder<PersonData>()
-                .AddField( "id", d => d.PersonId )
-                .AddTextField( "campus", d =>
-                {
-                    var firstGroup = d.GroupIds
-                        .Select( groupId => dataBag?.GroupData.FirstOrDefault( g => g.GroupId == groupId ) )
-                        .FirstOrDefault();
-                    return firstGroup?.CampusShortCode ?? string.Empty;
-                } )
+            return new GridBuilder<VolunteerGenerosityPersonDataBag>()
+                .AddField( "id", d => d.PersonDetails.PersonId )
+                .AddTextField( "campus", d => d.PersonDetails.CampusShortCode )
                 .AddTextField( "lastAttendanceDate", d =>
                 {
                     DateTime lastAttendanceDate;
-                    if ( DateTime.TryParse( d.LastAttendanceDate, out lastAttendanceDate ) )
+                    if ( DateTime.TryParse( d.PersonDetails.LastAttendanceDate, out lastAttendanceDate ) )
                     {
                         return lastAttendanceDate.ToString( "M/d/yyyy" );
                     }
-                    return "N/A"; 
+                    return "N/A";
                 } )
-                .AddTextField( "team", d =>
-                {
-                    var firstGroup = d.GroupIds
-                        .Select( groupId => dataBag?.GroupData.FirstOrDefault( g => g.GroupId == groupId ) )
-                        .FirstOrDefault();
-                    return firstGroup?.GroupName ?? string.Empty;
-                } )
+                .AddTextField( "team", d => d.PersonDetails.GroupName )
                 .AddTextField( "givingMonths", d =>
                 {
-                    var givingDataItem = dataBag?.GivingData.FirstOrDefault( g => g.GivingId == d.GivingId );
-                    return string.Join( ", ", givingDataItem?.Donations.Select( gd => $"{gd.MonthNameAbbreviated} {gd.Year}" ) );
+                    return string.Join( ", ", d.Donations.Select( donation =>
+                    {
+                        int.TryParse( donation.Year, out int year );
+                        return $"{donation.MonthNameAbbreviated} {year}";
+                    } ) );
                 } )
-                .AddTextField( "lastUpdated", d => "N/A" ) 
-                .AddTextField( "estimatedRefreshTime", d => "N/A" )
-                .AddField( "person", d => d );
+                .AddField( "person", d => new VolunteerGenerosityPersonBag
+                {
+                    PersonId = d.PersonDetails.PersonId,
+                    LastName = d.PersonDetails.LastName,
+                    NickName = d.PersonDetails.NickName,
+                    PhotoUrl = d.PersonDetails.PhotoUrl
+                } )
+                .AddField( "givingId", d => d.PersonDetails.GivingId )
+                .AddField( "groupName", d => d.PersonDetails.GroupName );
         }
 
         [BlockAction]
@@ -213,7 +197,10 @@ namespace Rock.Blocks.Reporting
 
                 PersistedDatasetCache.UpdateCachedEntity( dataset.Id, System.Data.Entity.EntityState.Modified );
 
-                return ActionOk();
+                var lastUpdated = DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
+                var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0; // Convert to seconds and round to 2 decimal places
+
+                return ActionOk( new { LastUpdated = lastUpdated, EstimatedRefreshTime = estimatedRefreshTime } );
             }
         }
 

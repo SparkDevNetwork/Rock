@@ -19,13 +19,13 @@
                           displayValueFirst
                           fullWidth />
 
-            <DropDownList v-model="themeGuid"
+            <DropDownList v-model="themeGuidOrEmptyString"
                           label="Theme"
                           rules="required"
                           :items="themeItems"
                           showBlankItem />
 
-            <div v-if="themeGuid === customThemeGuid">
+            <div v-if="themeGuidOrEmptyString === customThemeGuid">
                 <CodeEditor v-model="pageTemplate"
                             label="Page Template"
                             mode="lava"
@@ -40,7 +40,7 @@
                             mode="javascript" />
             </div>
 
-            <div v-else-if="themeGuid">
+            <div v-else-if="themeGuidOrEmptyString">
                 <div v-if="themeHelpContent" class="mb-3">
                     <div class="d-flex clickable"
                          style="background-color: #f5f5f5; padding: 4px 16px;"
@@ -89,7 +89,7 @@
     import { ThemeListItemBag } from "@Obsidian/ViewModels/Blocks/Utility/RealTimeVisualizer/themeListItemBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
 
     const emit = defineEmits<{
@@ -109,7 +109,8 @@
     const topicConfiguration = ref<KeyValueItem[]>([]);
     const topicConfigurationItems = ref<ListItemBag[]>([]);
     const customThemeGuid = newGuid();
-    const themeGuid = ref("");
+    /** The selected theme guid (or empty string if none selected). */
+    const themeGuidOrEmptyString = ref<string>("");
     const systemThemes = ref<ThemeListItemBag[]>([]);
     const pageTemplate = ref("");
     const style = ref("");
@@ -118,7 +119,8 @@
     const themeSettingsItems = ref<ListItemBag[]>([]);
     const isThemeHelpVisible = ref(false);
     const themeHelpContent = ref("");
-    let originalSelectedThemeGuid: string = "";
+    /** The original selected theme guid (or empty string if none selected). */
+    let originalSelectedThemeGuidOrEmptyString: string = "";
     let originalSelectedThemeSettings: KeyValueItem[] = [];
 
     // #endregion
@@ -154,7 +156,7 @@
 
         if (result.isSuccess && result.data && result.data.settings && result.data.options) {
             // Set the values for the UI.
-            themeGuid.value = result.data.settings.themeGuid ?? "";
+            themeGuidOrEmptyString.value = toGuidOrNull(result.data.settings.themeGuid) ?? "";
             pageTemplate.value = result.data.settings.pageTemplate ?? "";
             style.value = result.data.settings.style ?? "";
             script.value = result.data.settings.script ?? "";
@@ -165,7 +167,7 @@
 
             // Configure the original theme settings. These will be used
             // when switching back to the original theme.
-            originalSelectedThemeGuid = result.data.settings.themeGuid ?? "";
+            originalSelectedThemeGuidOrEmptyString = toGuidOrNull(result.data.settings.themeGuid) ?? "";
             originalSelectedThemeSettings = [];
             if (result.data.settings.themeSettings) {
                 for (const key in result.data.settings.themeSettings) {
@@ -198,9 +200,9 @@
     };
 
     function updateSelectedTheme(): void {
-        const theme = systemThemes.value.find(t => areEqual(t.value, themeGuid.value));
+        const theme = systemThemes.value.find(t => areEqual(t.value, themeGuidOrEmptyString.value));
 
-        if (!themeGuid.value || !theme || areEqual(themeGuid.value, customThemeGuid)) {
+        if (!themeGuidOrEmptyString.value || !theme || areEqual(themeGuidOrEmptyString.value, customThemeGuid)) {
             themeSettings.value = [];
             themeSettingsItems.value = [];
             themeHelpContent.value = "";
@@ -215,7 +217,7 @@
             text: s
         })) ?? [];
 
-        if (areEqual(themeGuid.value, originalSelectedThemeGuid)) {
+        if (areEqual(themeGuidOrEmptyString.value, originalSelectedThemeGuidOrEmptyString)) {
             themeSettings.value = originalSelectedThemeSettings;
         }
     }
@@ -244,7 +246,7 @@
             channel: tc.key
         }));
 
-        setCustomSettingsBoxValue(box, "themeGuid", themeGuid.value);
+        setCustomSettingsBoxValue(box, "themeGuid", themeGuidOrEmptyString.value);
         setCustomSettingsBoxValue(box, "pageTemplate", pageTemplate.value);
         setCustomSettingsBoxValue(box, "style", style.value);
         setCustomSettingsBoxValue(box, "script", script.value);
@@ -276,7 +278,7 @@
         }
     });
 
-    watch(themeGuid, () => {
+    watch(themeGuidOrEmptyString, () => {
         updateSelectedTheme();
     });
 

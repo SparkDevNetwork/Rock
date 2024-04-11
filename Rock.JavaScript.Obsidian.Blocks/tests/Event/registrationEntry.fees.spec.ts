@@ -1,12 +1,12 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
-import RegistrationEntry from "../../src/Event/registrationEntry";
-import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { Guid } from "@Obsidian/Types";
 import { getMatching, waitFor } from "../utils";
 import { flushPromises } from "@vue/test-utils";
 
-function getConfigurationValues(): RegistrationEntryBlockViewModel {
+function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
     // modifies the configuration values which is non-standard. And
     // also so we can modify the configuration per test.
@@ -38,7 +38,7 @@ describe("RegistrationEntry Fees", () => {
         it("Auto-selects when required and available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -89,7 +89,7 @@ describe("RegistrationEntry Fees", () => {
         it("Does not auto-select when not required", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -140,7 +140,7 @@ describe("RegistrationEntry Fees", () => {
         it("Does not auto-select when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -226,7 +226,7 @@ describe("RegistrationEntry Fees", () => {
         it("Disables when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -311,7 +311,7 @@ describe("RegistrationEntry Fees", () => {
             // be considered a bug and if so the unit test should be updated.
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -375,7 +375,7 @@ describe("RegistrationEntry Fees", () => {
         it("Auto-sets when required and available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -426,7 +426,7 @@ describe("RegistrationEntry Fees", () => {
         it("Does not auto-set when not required", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -484,7 +484,7 @@ describe("RegistrationEntry Fees", () => {
         it("Does not auto-set when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -535,7 +535,7 @@ describe("RegistrationEntry Fees", () => {
         it("Disables up button when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -618,7 +618,7 @@ describe("RegistrationEntry Fees", () => {
         it("Prevents moving forward when no value entered but is required", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -683,7 +683,7 @@ describe("RegistrationEntry Fees", () => {
         it("Hides Checkbox when no quantity remaining", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -762,7 +762,7 @@ describe("RegistrationEntry Fees", () => {
         it("Hides NumberUpDown when no quantity remaining", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -841,7 +841,7 @@ describe("RegistrationEntry Fees", () => {
         it("Hides DropDownList item when no quantity remaining", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -946,7 +946,7 @@ describe("RegistrationEntry Fees", () => {
         it("Hides DropDownList when no item quantities remaining", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -1041,7 +1041,7 @@ describe("RegistrationEntry Fees", () => {
         it("Hides NumberUpDownGroup item when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -1137,7 +1137,7 @@ describe("RegistrationEntry Fees", () => {
         it("Hides NumberUpDownGroup item when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees.push({
+            configuration.fees?.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -1223,7 +1223,7 @@ describe("RegistrationEntry Fees", () => {
 });
 
 
-const configurationValues: RegistrationEntryBlockViewModel = {
+const configurationValues: RegistrationEntryInitializationBox = {
     "allowRegistrationUpdates": true,
     "timeoutMinutes": null,
     "session": {
@@ -1249,8 +1249,7 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountAmount": 0.0,
         "discountMaxRegistrants": 0.0,
         "discountPercentage": 0.0,
-        "previouslyPaid": 0.0,
-        "savedAccountGuid": null
+        "previouslyPaid": 0.0
     },
     "isUnauthorized": false,
     "instructionsHtml": "",
