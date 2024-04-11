@@ -21,22 +21,21 @@
 // </copyright>
 //
 
-import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+/** Determines the completion status of a LearningProgramCompletion. */
+export const AssignTo = {
+    /** The responsible party is the facilitator. */
+    Facilitator: 1,
 
-/** Contains details about the person preferences associated with a block. */
-export type ObsidianBlockPreferencesBag = {
-    /** Gets or sets the entity key that these preferences are scoped to. */
-    entityKey?: string | null;
+    /** The responsible party is the student. */
+    Student: 2
+} as const;
 
-    /** Gets or sets the entity type key that these preferences are scoped to. */
-    entityTypeKey?: string | null;
+/** Determines the completion status of a LearningProgramCompletion. */
+export const AssignToDescription: Record<number, string> = {
+    1: "Facilitator",
 
-    /**
-     * Gets or sets the time stamp at which the preferences were fetched from the database.
-     * The remote device may use this field to aid caching of the preference.
-     */
-    timeStamp: number;
-
-    /** Gets or sets the person preference values. */
-    values?: PersonPreferenceValueBag[] | null;
+    2: "Student"
 };
+
+/** Determines the completion status of a LearningProgramCompletion. */
+export type AssignTo = typeof AssignTo[keyof typeof AssignTo];

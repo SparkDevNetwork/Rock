@@ -21,22 +21,26 @@
 // </copyright>
 //
 
-import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+/** Determines the learning completion status for a ( learning ) class. */
+export const LearningCompletionStatus = {
+    /** The class is not yet complete. */
+    Incomplete: 1,
 
-/** Contains details about the person preferences associated with a block. */
-export type ObsidianBlockPreferencesBag = {
-    /** Gets or sets the entity key that these preferences are scoped to. */
-    entityKey?: string | null;
+    /** The class has been compelted with a failing grade. */
+    Fail: 2,
 
-    /** Gets or sets the entity type key that these preferences are scoped to. */
-    entityTypeKey?: string | null;
+    /** The class has been completed with a passing grade. */
+    Pass: 3
+} as const;
 
-    /**
-     * Gets or sets the time stamp at which the preferences were fetched from the database.
-     * The remote device may use this field to aid caching of the preference.
-     */
-    timeStamp: number;
+/** Determines the learning completion status for a ( learning ) class. */
+export const LearningCompletionStatusDescription: Record<number, string> = {
+    1: "Incomplete",
 
-    /** Gets or sets the person preference values. */
-    values?: PersonPreferenceValueBag[] | null;
+    2: "Fail",
+
+    3: "Pass"
 };
+
+/** Determines the learning completion status for a ( learning ) class. */
+export type LearningCompletionStatus = typeof LearningCompletionStatus[keyof typeof LearningCompletionStatus];

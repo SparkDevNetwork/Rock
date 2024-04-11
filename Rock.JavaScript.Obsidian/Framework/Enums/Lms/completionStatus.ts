@@ -21,22 +21,26 @@
 // </copyright>
 //
 
-import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+/** Determines the completion status of a LearningProgramCompletion. */
+export const CompletionStatus = {
+    /** The program is pending completion. */
+    Pending: 1,
 
-/** Contains details about the person preferences associated with a block. */
-export type ObsidianBlockPreferencesBag = {
-    /** Gets or sets the entity key that these preferences are scoped to. */
-    entityKey?: string | null;
+    /** The program was completed. */
+    Completed: 2,
 
-    /** Gets or sets the entity type key that these preferences are scoped to. */
-    entityTypeKey?: string | null;
+    /** The program not completed before expiring. */
+    Expired: 3
+} as const;
 
-    /**
-     * Gets or sets the time stamp at which the preferences were fetched from the database.
-     * The remote device may use this field to aid caching of the preference.
-     */
-    timeStamp: number;
+/** Determines the completion status of a LearningProgramCompletion. */
+export const CompletionStatusDescription: Record<number, string> = {
+    1: "Pending",
 
-    /** Gets or sets the person preference values. */
-    values?: PersonPreferenceValueBag[] | null;
+    2: "Completed",
+
+    3: "Expired"
 };
+
+/** Determines the completion status of a LearningProgramCompletion. */
+export type CompletionStatus = typeof CompletionStatus[keyof typeof CompletionStatus];

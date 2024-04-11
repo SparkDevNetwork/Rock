@@ -21,22 +21,26 @@
 // </copyright>
 //
 
-import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+/** The type of course requirement. */
+export const RequirementType = {
+    /** Prior completion of the LearningCourse. */
+    Prerequisite: 1,
 
-/** Contains details about the person preferences associated with a block. */
-export type ObsidianBlockPreferencesBag = {
-    /** Gets or sets the entity key that these preferences are scoped to. */
-    entityKey?: string | null;
+    /** Simultaneous enrollment of the LearningCourse. */
+    Corequisite: 2,
 
-    /** Gets or sets the entity type key that these preferences are scoped to. */
-    entityTypeKey?: string | null;
+    /** Completion of an equivalent LearningCourse. */
+    Equivalent: 3
+} as const;
 
-    /**
-     * Gets or sets the time stamp at which the preferences were fetched from the database.
-     * The remote device may use this field to aid caching of the preference.
-     */
-    timeStamp: number;
+/** The type of course requirement. */
+export const RequirementTypeDescription: Record<number, string> = {
+    1: "Prerequisite",
 
-    /** Gets or sets the person preference values. */
-    values?: PersonPreferenceValueBag[] | null;
+    2: "Corequisite",
+
+    3: "Equivalent"
 };
+
+/** The type of course requirement. */
+export type RequirementType = typeof RequirementType[keyof typeof RequirementType];

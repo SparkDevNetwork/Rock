@@ -21,22 +21,21 @@
 // </copyright>
 //
 
-import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+/** Determines the configuration mode of a LearningProgram. */
+export const ConfigurationMode = {
+    /** Academic calendar mode. */
+    AcademicCalendar: 1,
 
-/** Contains details about the person preferences associated with a block. */
-export type ObsidianBlockPreferencesBag = {
-    /** Gets or sets the entity key that these preferences are scoped to. */
-    entityKey?: string | null;
+    /** On-demand learning mode. */
+    OnDemandLearning: 2
+} as const;
 
-    /** Gets or sets the entity type key that these preferences are scoped to. */
-    entityTypeKey?: string | null;
+/** Determines the configuration mode of a LearningProgram. */
+export const ConfigurationModeDescription: Record<number, string> = {
+    1: "Academic Calendar",
 
-    /**
-     * Gets or sets the time stamp at which the preferences were fetched from the database.
-     * The remote device may use this field to aid caching of the preference.
-     */
-    timeStamp: number;
-
-    /** Gets or sets the person preference values. */
-    values?: PersonPreferenceValueBag[] | null;
+    2: "On Demand Learning"
 };
+
+/** Determines the configuration mode of a LearningProgram. */
+export type ConfigurationMode = typeof ConfigurationMode[keyof typeof ConfigurationMode];
