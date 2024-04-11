@@ -52,6 +52,7 @@ DECLARE @StartingDateKeyForGiving INT = (SELECT [DateKey] FROM [AnalyticsSourceD
         g.Name AS GroupName,
         ISNULL(c.Id, 0) AS CampusId,
         ISNULL(c.ShortCode, '') AS CampusShortCode,
+        c.Name AS CampusName,
         MAX(ao.OccurrenceDate) AS LastAttendanceDate,
         gm.GroupRoleId,
         gr.Name AS GroupRoleName
@@ -70,7 +71,7 @@ DECLARE @StartingDateKeyForGiving INT = (SELECT [DateKey] FROM [AnalyticsSourceD
         ao.OccurrenceDateKey >= @StartDateKey
         AND a.DidAttend = 1
     GROUP BY
-        p.Id, p.LastName, p.NickName, p.PhotoId, p.GivingId, g.Id, g.Name, c.Id, c.ShortCode, gm.GroupRoleId, gr.Name
+        p.Id, p.LastName, p.NickName, p.PhotoId, p.GivingId, g.Id, g.Name, c.Id, c.ShortCode, c.Name, gm.GroupRoleId, gr.Name
 ),
 CTE_Giving AS (
     SELECT
@@ -102,6 +103,7 @@ SELECT
     AD.GroupName,
     AD.CampusId,
     AD.CampusShortCode,
+    AD.CampusName,
     AD.LastAttendanceDate,
     AD.GroupRoleId,
     AD.GroupRoleName,
@@ -139,7 +141,7 @@ FROM
           ""GroupId"": ""{{ result.GroupId }}"",
           ""GroupName"": ""{{ result.GroupName | Escape }}"",
           ""CampusId"": ""{{ result.CampusId | Append: '' }}"",
-          ""CampusShortCode"": ""{{ result.CampusShortCode }}""
+          ""CampusShortCode"": ""{% if result.CampusShortCode != '' %}{{ result.CampusShortCode }}{% else %}{{ result.CampusName | Escape }}{% endif %}""
         },
         ""Donations"": [{{ donationsJson | Strip_Newlines }}]
       }
