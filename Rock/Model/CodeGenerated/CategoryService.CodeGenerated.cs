@@ -106,18 +106,6 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<LearningCourse>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, LearningCourse.FriendlyTypeName );
-                return false;
-            }
-
-            if ( new Service<LearningProgram>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, LearningProgram.FriendlyTypeName );
-                return false;
-            }
-
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
