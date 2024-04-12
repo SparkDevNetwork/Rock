@@ -76,10 +76,6 @@
     <Compile Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.designer.cs">
       <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202404102128185_LearningManagementSystemModels.cs" />
-    <Compile Include="Migrations\202404102128185_LearningManagementSystemModels.Designer.cs">
-      <DependentUpon>202404102128185_LearningManagementSystemModels.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\202404111721576_Rollup_20240411.cs" />
     <Compile Include="Migrations\202404111721576_Rollup_20240411.Designer.cs">
       <DependentUpon>202404111721576_Rollup_20240411.cs</DependentUpon>
@@ -2030,9 +2026,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.resx">
       <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202404102128185_LearningManagementSystemModels.resx">
-      <DependentUpon>202404102128185_LearningManagementSystemModels.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202404111721576_Rollup_20240411.resx">
       <DependentUpon>202404111721576_Rollup_20240411.cs</DependentUpon>
