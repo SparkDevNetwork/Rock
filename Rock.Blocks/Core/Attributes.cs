@@ -272,7 +272,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "guid", a => a.Guid )
                 .AddField( "key", a => a.Key )
-                .AddField( "entityTypeGuid", a => EntityTypeCache.Get( a.EntityTypeId ?? 0 )?.Guid )
+                .AddField( "entityTypeGuid", a => EntityTypeCache.Get( a.EntityTypeId ?? 0 )?.Guid ?? Guid.Empty )
                 .AddTextField( "name", a => a.Name )
                 .AddField( "categories", a => a.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ) )
                 .AddField( "order", a => a.Order )
@@ -518,7 +518,7 @@ namespace Rock.Blocks.Core
                     Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
                     EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
-                    EntityTypeGuid = attribute.EntityType.Guid
+                    EntityTypeGuid = attribute.EntityType?.Guid ?? Guid.Empty
                 } );
             }
         }
