@@ -115,6 +115,7 @@
     <Compile Include="Rock\Blocks\Mobile\Cms\DailyChallengeEntryTests.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />
+    <Compile Include="Rock\Lava\Filters\ConversionFilterTests.cs" />
     <Compile Include="Rock\Lava\Filters\StructuredContentFilterTests.cs" />
     <Compile Include="Rock\Lava\LavaTestHelper.cs" />
     <Compile Include="Rock\Lava\LiquidFilterTests.cs" />
