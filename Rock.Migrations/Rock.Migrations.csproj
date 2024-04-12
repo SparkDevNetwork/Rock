@@ -76,13 +76,13 @@
     <Compile Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.designer.cs">
       <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202404111721576_Rollup_20240411.cs" />
-    <Compile Include="Migrations\202404111721576_Rollup_20240411.Designer.cs">
-      <DependentUpon>202404111721576_Rollup_20240411.cs</DependentUpon>
+    <Compile Include="Migrations\202404112335123_Rollup_20240411.cs" />
+    <Compile Include="Migrations\202404112335123_Rollup_20240411.Designer.cs">
+      <DependentUpon>202404112335123_Rollup_20240411.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202404111945088_CodeGenerated_20240411.cs" />
-    <Compile Include="Migrations\202404111945088_CodeGenerated_20240411.Designer.cs">
-      <DependentUpon>202404111945088_CodeGenerated_20240411.cs</DependentUpon>
+    <Compile Include="Migrations\202404112355222_CodeGenerated_20240411.cs" />
+    <Compile Include="Migrations\202404112355222_CodeGenerated_20240411.Designer.cs">
+      <DependentUpon>202404112355222_CodeGenerated_20240411.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.Designer.cs">
@@ -2027,11 +2027,11 @@
     <EmbeddedResource Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.resx">
       <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202404111721576_Rollup_20240411.resx">
-      <DependentUpon>202404111721576_Rollup_20240411.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202404112335123_Rollup_20240411.resx">
+      <DependentUpon>202404112335123_Rollup_20240411.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202404111945088_CodeGenerated_20240411.resx">
-      <DependentUpon>202404111945088_CodeGenerated_20240411.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202404112355222_CodeGenerated_20240411.resx">
+      <DependentUpon>202404112355222_CodeGenerated_20240411.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.resx">
       <DependentUpon>202403222154517_Rollup_20240322.cs</DependentUpon>

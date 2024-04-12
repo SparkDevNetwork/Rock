@@ -16,6 +16,9 @@
 //
 namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    using Rock.Data;
     using Rock.SystemGuid;
 
     /// <summary>
@@ -23,7 +26,6 @@ namespace Rock.Migrations
     /// </summary>
     public partial class Rollup_20240411 : Rock.Migrations.RockMigration
     {
-
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
@@ -35,7 +37,7 @@ namespace Rock.Migrations
             AddSavedCheckInConfigurationsDefinedTypeUp();
             AddDeviceAdsContentChannelType();
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -113,7 +115,7 @@ END
 CLOSE block_cursor
 DEALLOCATE block_cursor
 " );
-            }
+        }
 
         /// <summary>
         /// PA: Add BlockAttributeKeysToIgnore Attribute to PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks Job.
@@ -383,6 +385,13 @@ INSERT INTO [dbo].[ContentChannel]
            ( @DeviceAdsContentChannelTypeId, 'Default Check-in Kiosk Ads', 'The default collection of advertisements to display on check-in kiosks. These will appear on the welcome screen while waiting for somebody to start the check-in process.', '', 0, 0, '', '', 0, 'A57BDBCD-FA77-4A6E-967D-1C5ACE962587', 0, '', 1, 0, 0, 0, null, 0)
 
 END" );
+            // Because an EF migration had to be reverted before deployment, but after commit 
+            // Some developers who've pulled these commits may need delete these attributes
+            // if they exist before being able to execute this EF migration.
+            RockMigrationHelper.DeleteAttribute( "268220a5-01b2-4aa9-a75d-94a4ac7a30f6" );
+            RockMigrationHelper.DeleteAttribute( "53304137-7C16-4DBD-B5FB-EA68B7E7DDA2" );
+            RockMigrationHelper.DeleteAttribute( "AF39FF1E-A3B9-4C8B-B135-C479CD57574E" );
+
             // Entity: Rock.Model.ContentChannelItem Attribute: Image
             RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Model.ContentChannelItem", "97F8157D-A8C8-4AB3-96A2-9CB2A9049E6D", "ContentChannelTypeId", "", "Image", "Image", @"This image will be displayed on the check-in device screen. We recommend a resolution of 2200x1400 for best results.", 0, @"", "268220A5-01B2-4AA9-A75D-94A4AC7A30F6", "Image" );
             // Entity: Rock.Model.ContentChannelItem Attribute: Display Duration

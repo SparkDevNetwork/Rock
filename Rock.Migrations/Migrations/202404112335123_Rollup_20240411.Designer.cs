@@ -9,11 +9,11 @@ namespace Rock.Migrations
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
     public sealed partial class Rollup_20240411 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(LearningManagementSystemModels));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Rollup_20240411));
         
         string IMigrationMetadata.Id
         {
-            get { return "202404111721576_Rollup_20240411"; }
+            get { return "202404112335123_Rollup_20240411"; }
         }
         
         string IMigrationMetadata.Source
