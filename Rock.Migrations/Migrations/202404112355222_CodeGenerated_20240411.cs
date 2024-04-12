@@ -29,6 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Update the namespace for the Mobile.Core.SmartSearch so the UpdateEntityType will correctly find it.
+            Sql( "UPDATE [dbo].[EntityType] SET [Name] = 'Rock.Blocks.Types.Mobile.Core.SmartSearch' where [Guid] = '45BE4816-3F5B-4AD1-BA89-819325D7E8CF'" );
+
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.Types.Mobile.Core.SmartSearch
             RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Types.Mobile.Core.SmartSearch", "Smart Search", "Rock.Blocks.Types.Mobile.Core.SmartSearch, Rock, Version=1.16.4.4, Culture=neutral, PublicKeyToken=null", false, false, "45BE4816-3F5B-4AD1-BA89-819325D7E8CF" );
