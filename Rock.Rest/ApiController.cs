@@ -555,8 +555,7 @@ namespace Rock.Rest
              *
              */
 
-            var rockContext = new RockContext();
-            var dataView = new DataViewService( rockContext ).Get( id );
+            var dataView = DataViewCache.Get( id );
 
             ValidateDataView( dataView );
 
@@ -586,10 +585,7 @@ namespace Rock.Rest
              * See: https://app.asana.com/0/495431846745457/1201138340787294/f
              *
              */
-
-            var rockContext = new RockContext();
-
-            var dataView = new DataViewService( rockContext ).Get( dataViewId );
+            var dataView = DataViewCache.Get( dataViewId );
 
             ValidateDataView( dataView );
 
@@ -605,7 +601,7 @@ namespace Rock.Rest
         /// <param name="dataView">The data view.</param>
         /// <exception cref="HttpResponseException">
         /// </exception>
-        private void ValidateDataView( DataView dataView )
+        private void ValidateDataView( DataViewCache dataView )
         {
             if ( dataView == null )
             {

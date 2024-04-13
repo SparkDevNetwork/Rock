@@ -501,7 +501,7 @@ namespace RockWeb.Blocks.Finance
             lHeaderHtml.Text = headers.ToString();
 
             int? transactionId = this.PageParameter( "TransactionId" ).AsIntegerOrNull();
-            DataView dataView = null;
+            DataViewCache dataView = null;
 
             if ( batchId.HasValue || dataViewId.HasValue || transactionId.HasValue )
             {
@@ -518,8 +518,8 @@ namespace RockWeb.Blocks.Finance
 
                     if ( dataViewId.HasValue && dataViewId > 0 )
                     {
-                        dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
-                        var transactionDetailIdsQry = dataView.GetQuery( new DataViewGetQueryArgs { DbContext = rockContext } ).Select( a => a.Id );
+                        dataView = DataViewCache.Get( dataViewId.Value );
+                        var transactionDetailIdsQry = dataView.GetQuery( new GetQueryableOptions { DbContext = rockContext } ).Select( a => a.Id );
                         financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionDetailIdsQry.Contains( a.Id ) );
                     }
 
