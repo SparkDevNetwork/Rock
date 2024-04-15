@@ -94,7 +94,7 @@ namespace Rock.Blocks.Crm
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<PersonMergeRequestList.RequestData> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<RequestData> GetListQueryable( RockContext rockContext )
         {
             var entitySetService = new EntitySetService( rockContext );
 
@@ -119,15 +119,16 @@ namespace Rock.Blocks.Crm
             return joinQry;
         }
 
-        protected override IQueryable<PersonMergeRequestList.RequestData> GetOrderedListQueryable( IQueryable<PersonMergeRequestList.RequestData> queryable, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override IQueryable<RequestData> GetOrderedListQueryable( IQueryable<RequestData> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( s => s.Date );
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<PersonMergeRequestList.RequestData> GetGridBuilder()
+        protected override GridBuilder<RequestData> GetGridBuilder()
         {
-            return new GridBuilder<PersonMergeRequestList.RequestData>()
+            return new GridBuilder<RequestData>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.EntitySet.IdKey )
                 .AddTextField( "note", a => a.Note )
@@ -179,6 +180,9 @@ namespace Rock.Blocks.Crm
 
         #region Support Classes
 
+        /// <summary>
+        /// Contains the Merge Request details for the Person Merge Request List block.
+        /// </summary>
         public class RequestData
         {
             /// <summary>
