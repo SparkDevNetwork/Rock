@@ -32,7 +32,6 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
@@ -58,13 +57,11 @@
         bag: {} as {{ EntityName }}Bag
     });
 
-    const entityTypeGuid = EntityType.{{ EntityName }};
-
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
-        entity: campusEditBag
+        entity: {{ EntityName | CamelCase }}EditBag
     });
 
     // #endregion
@@ -177,14 +174,14 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<{{ EntityName }}Bag>>("Edit", {
             key: {{ EntityName | CamelCase }}ViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
+        if (result.isSuccess && result.data && result.data.bag) {
             {{ EntityName | CamelCase }}EditBag.value = {
-                bag: result.data.entity,
-                validProperties: Object.keys(result.data.entity)
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
 
             return true;
@@ -203,19 +200,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> = {
-            entity: {{ EntityName | CamelCase }}EditBag.value.bag,
-            isEditable: true,
-            validProperties: {{ EntityName | CamelCase }}EditBag.value.validProperties
-        };
-
-        const result = await invokeBlockAction<{{ EntityName }}Bag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<{{ EntityName }}Bag> | string>("Save", {
+            box: {{ EntityName | CamelCase }}EditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                {{ EntityName | CamelCase }}ViewBag.value = result.data;
+                {{ EntityName | CamelCase }}ViewBag.value = result.data.bag;
 
                 return true;
             }

@@ -15,9 +15,12 @@
 // </copyright>
 //
 
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.ViewModels.Blocks.Internal;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks
@@ -26,8 +29,9 @@ namespace Rock.Blocks
     /// Base for a standard Detail block type for an entity. This is a block that
     /// will display an entity with the option to edit and save changes.
     /// </summary>
-    public abstract class RockEntityDetailBlockType<TEntity> : RockDetailBlockType
+    public abstract class RockEntityDetailBlockType<TEntity, TEntityBag> : RockDetailBlockType
         where TEntity : Rock.Data.Entity<TEntity>, new()
+        where TEntityBag : class
     {
         /// <summary>
         /// Gets the initial entity from page parameters or creates a new entity
@@ -85,6 +89,99 @@ namespace Rock.Blocks
             {
                 box.SecurityGrantToken = GetSecurityGrant( entity ).ToToken();
             }
+        }
+
+        /// <summary>
+        /// Attempts to load an entity to be used for an edit action.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the entity to load.</param>
+        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
+        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
+        protected abstract bool TryGetEntityForEditAction( string idKey, out TEntity entity, out BlockActionResult error );
+
+        /// <summary>
+        /// Updates the entity from the data in the save box.
+        /// </summary>
+        /// <param name="entity">The entity to be updated.</param>
+        /// <param name="box">The box containing the information to be updated.</param>
+        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
+        protected abstract bool UpdateEntityFromBox( TEntity entity, ValidPropertiesBox<TEntityBag> box );
+
+        /// <summary>
+        /// Gets the bag for viewing the specied entity.
+        /// </summary>
+        /// <param name="entity">The entity to be represented for view purposes.</param>
+        /// <returns>A <see cref="TEntityBag"/> that represents the entity.</returns>
+        protected abstract TEntityBag GetEntityBagForView( TEntity entity );
+
+        /// <summary>
+        /// Gets the bag for editing the specied entity.
+        /// </summary>
+        /// <param name="entity">The entity to be represented for edit purposes.</param>
+        /// <returns>A <see cref="TEntityBag"/> that represents the entity.</returns>
+        protected abstract TEntityBag GetEntityBagForEdit( TEntity entity );
+
+        /// <summary>
+        /// Refreshes the list of attributes that can be displayed for editing
+        /// purposes based on any modified values on the entity.
+        /// </summary>
+        /// <param name="box">The box that contains all the information about the entity being edited.</param>
+        /// <returns>A box that contains the entity and attribute information.</returns>
+        [BlockAction]
+        public BlockActionResult RefreshAttributes( ValidPropertiesBox<TEntityBag> box )
+        {
+            if ( !( box.Bag is EntityBagBase entityBag ) )
+            {
+                return ActionBadRequest( "Attributes are not supported by this block." );
+            }
+
+            if ( !TryGetEntityForEditAction( entityBag.IdKey, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            if ( !( entity is IHasAttributes attributeEntity ) )
+            {
+                return ActionBadRequest( "Attributes are not supported by this block." );
+            }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            attributeEntity.LoadAttributes( RockContext );
+
+            var refreshedBox = new ValidPropertiesBox<TEntityBag>
+            {
+                Bag = GetEntityBagForEdit( entity )
+            };
+
+            var refreshedBag = refreshedBox.Bag as EntityBagBase;
+
+            var oldAttributeGuids = entityBag.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
+            var newAttributeGuids = refreshedBag.Attributes.Values.Select( a => a.AttributeGuid );
+
+            // If the attributes haven't changed then return a 204 status code.
+            if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
+            {
+                return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
+            }
+
+            // Replace any values for attributes that haven't changed with
+            // the value sent by the client. This ensures any unsaved attribute
+            // value changes are not lost.
+            foreach ( var kvp in refreshedBag.Attributes )
+            {
+                if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
+                {
+                    refreshedBag.AttributeValues[kvp.Key] = entityBag.AttributeValues[kvp.Key];
+                }
+            }
+
+            return ActionOk( refreshedBox );
         }
     }
 }
