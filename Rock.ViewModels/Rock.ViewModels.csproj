@@ -451,6 +451,8 @@
     <Compile Include="CheckIn\AttendeeBag.cs" />
     <Compile Include="CheckIn\FamilyBag.cs" />
     <Compile Include="CheckIn\RecordedAttendanceBag.cs" />
+    <Compile Include="CheckIn\SavedCheckInConfigurationBag.cs" />
+    <Compile Include="CheckIn\SavedCheckInConfigurationSettingsBag.cs" />
     <Compile Include="CheckIn\ScheduleOpportunityBag.cs" />
     <Compile Include="CheckIn\OpportunitySelectionBag.cs" />
     <Compile Include="Cms\ContentCollectionCustomFieldBag.cs" />

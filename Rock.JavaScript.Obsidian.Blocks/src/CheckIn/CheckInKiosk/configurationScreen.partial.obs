@@ -36,7 +36,8 @@
                     <div class="button-list">
                         <RockButton v-for="cfg in savedConfigurations"
                                     btnType="primary"
-                                    class="saved-configuration-button">
+                                    class="saved-configuration-button"
+                                    @click="onSavedConfigurationClick(cfg)">
                             <span class="title">{{ cfg.name }}</span>
                             <span class="subtitle">{{ cfg.description }}</span>
                         </RockButton>
@@ -48,8 +49,9 @@
                         <h2>Check-in Setup Options</h2>
 
                         <RockButton btnType="default"
-                                    class="save-configuration-button"
-                                    @click="onSaveConfiguration">
+                                    class="save-new-configuration-button"
+                                    :disabled="!isCustomConfigurationValid"
+                                    @click="onSaveNewConfigurationClick">
                             Save New Configuration
                         </RockButton>
 
@@ -115,29 +117,54 @@
                 {{ errorMessage }}
             </NotificationBox>
         </div>
+
+        <Modal v-model="isSaveNewConfigurationVisible"
+               title="Save New Configuration"
+               saveText="Save"
+               @save="onSaveNewConfigurationSaveClick">
+            <TextBox v-model="saveNewConfigurationName"
+                     label="Name"
+                     rules="required" />
+
+            <TextBox v-model="saveNewConfigurationDescription"
+                     label="Description"
+                     textMode="multiline" />
+
+            <CampusPicker v-model="saveNewConfigurationCampuses"
+                          label="Campuses"
+                          help="The campuses this configuration can be used at. If none are specified then all campuses can use the configuration."
+                          multiple />
+        </Modal>
     </div>
 </template>
 
 <script setup lang="ts">
     import { PropType, computed, ref, toRaw, watch, onMounted } from "vue";
     import MainPanel from "./mainPanel.partial.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ContentTransition from "./contentTransition.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getCameraItems, getCurrentPosition, isHtmlCameraAvailable } from "./utils.partial";
     import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { alert } from "@Obsidian/Utility/dialogs";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
     import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { onConfigurationValuesChanged, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, setPropertiesBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
-    import { CheckInKioskOptionsBag, KioskButton, SavedConfigurationBag } from "./types.partial";
+    import { CheckInKioskOptionsBag, KioskButton } from "./types.partial";
+    import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { SavedCheckInConfigurationSettingsBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationSettingsBag";
 
     type TemporaryConfig = {
         timestamp?: number;
@@ -192,20 +219,10 @@
     const documentBody = document.body;
     let hasGeoError = false;
 
-    const savedConfigurations = ref<SavedConfigurationBag[]>([
-        {
-            name: "Weekend Services",
-            description: "Used for checking in children for the weekend services."
-        },
-        {
-            name: "Mid-Week Services",
-            description: "Used for checking in children for the mid-week services."
-        },
-        {
-            name: "Volunteer Check-in",
-            description: "Used for volunteer check-in"
-        }
-    ]);
+    const isSaveNewConfigurationVisible = ref(false);
+    const saveNewConfigurationName = ref("");
+    const saveNewConfigurationDescription = ref("");
+    const saveNewConfigurationCampuses = ref<ListItemBag[]>([]);
 
     // #region Computed Values
 
@@ -258,6 +275,18 @@
                 value: t.guid,
                 text: t.name
             }));
+    });
+
+    const savedConfigurations = computed((): SavedCheckInConfigurationBag[] => {
+        if (!props.blockConfiguration.savedConfigurations) {
+            return [];
+        }
+
+        return props.blockConfiguration
+            .savedConfigurations
+            .filter(cfg => !cfg.campuses
+                || cfg.campuses.length === 0
+                || cfg.campuses.some(c => areEqual(c.value, campusGuid.value)));
     });
 
     /** True if the saved configurations panel is visible on screen. */
@@ -480,7 +509,7 @@
      * redirect. If the temporary configuration was found then the UI state is
      * restored.
      */
-    function attemptRestoreTemporaryConfiguration(): void {
+    function attemptRestoreOfTemporaryConfiguration(): void {
         try {
             const json = localStorage.getItem("Rock.CheckIn.CheckInKiosk.TemporaryConfiguration");
             localStorage.removeItem("Rock.CheckIn.CheckInKiosk.TemporaryConfiguraiton");
@@ -528,8 +557,69 @@
     /**
      * Event handler for when the Save Configuration button is clicked.
      */
-    function onSaveConfiguration(): void {
-        alert("Not Implemented");
+    function onSaveNewConfigurationClick(): void {
+        isSaveNewConfigurationVisible.value = true;
+        saveNewConfigurationName.value = "";
+        saveNewConfigurationDescription.value = "";
+        saveNewConfigurationCampuses.value = [];
+    }
+
+    /**
+     * Handles the Save button inside the Save New Configuration modal.
+     * Construct the box that contains the data and thens end it to the block
+     * action to perform the save.
+     */
+    async function onSaveNewConfigurationSaveClick(): Promise<void> {
+        const box: ValidPropertiesBox<SavedCheckInConfigurationBag> = {};
+        const settings: SavedCheckInConfigurationSettingsBag = {
+            templateGuid: templateGuid.value,
+            themeName: theme.value,
+            areaGuids: [...primaryAreaGuids.value, ...secondaryAreaGuids.value]
+        };
+
+        setPropertiesBoxValue(box, "guid", emptyGuid);
+        setPropertiesBoxValue(box, "name", saveNewConfigurationName.value);
+        setPropertiesBoxValue(box, "description", saveNewConfigurationDescription.value);
+        setPropertiesBoxValue(box, "campuses", saveNewConfigurationCampuses.value);
+        setPropertiesBoxValue(box, "settings", settings);
+
+        const result = await invokeBlockAction("SaveConfiguration", { box: box });
+
+        if (result.isSuccess) {
+            onNextClick();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save the configuration.");
+        }
+    }
+
+    /**
+     * Handles the click event for the list of saved configuration buttons.
+     *
+     * @param config The saved configuration item that was selected.
+     */
+    function onSavedConfigurationClick(config: SavedCheckInConfigurationBag): void {
+        const kiosk = selectedKiosk.value;
+        const template = props.blockConfiguration.templates
+            ?.find(a => areEqual(a.guid, config.settings?.templateGuid));
+        const areas = areaItems.value
+            .filter(a => config.settings?.areaGuids?.some(b => areEqual(a.guid, b)))
+            .map(a => toRaw(a));
+
+        // Validate all our configuration, it's possible that the saved
+        // configuration is no longer valid.
+        if (!kiosk || !template || areas.length === 0) {
+            alert("Saved configuration is not valid.");
+            return;
+        }
+
+        const configuration: KioskConfigurationBag = {
+            kiosk: kiosk,
+            template: toRaw(template),
+            areas: areas
+        };
+
+        emit("configured", configuration);
     }
 
     /**
@@ -537,8 +627,6 @@
      */
     function onNextClick(): void {
         const kiosk = selectedKiosk.value;
-        const selectedTheme = props.blockConfiguration.themes
-            ?.find(a => a.value === theme.value);
         const template = props.blockConfiguration.templates
             ?.find(a => areEqual(a.guid, templateGuid.value));
         const areas = areaItems.value
@@ -548,14 +636,13 @@
 
         // Validate all our configuration. This should never be possible
         // but it also makes TypeScript happy.
-        if (!kiosk || !selectedTheme || !template || areas.length === 0) {
+        if (!kiosk || !template || areas.length === 0) {
+            alert("Invalid configuration selections.");
             return;
         }
 
         const configuration: KioskConfigurationBag = {
             kiosk: kiosk,
-            // TODO: Need to redirect when the theme changes.
-            //theme: toRaw(selectedTheme),
             template: toRaw(template),
             areas: areas
         };
@@ -565,7 +652,7 @@
 
     // #endregion
 
-    attemptRestoreTemporaryConfiguration();
+    attemptRestoreOfTemporaryConfiguration();
 
     watch(kioskGuid, () => {
         updateAreaItems();

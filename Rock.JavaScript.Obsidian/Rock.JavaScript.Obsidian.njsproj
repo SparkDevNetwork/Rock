@@ -1172,6 +1172,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\opportunitySelectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\personBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\recordedAttendanceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\savedCheckInConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\savedCheckInConfigurationSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\scheduleOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\blockCustomActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Cms\contentCollectionAttributeFilterSettingsBag.d.ts" />

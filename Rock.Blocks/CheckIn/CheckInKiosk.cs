@@ -156,7 +156,8 @@ namespace Rock.Blocks.CheckIn
                 CurrentTheme = PageParameter( PageParameterKey.Theme )?.ToLower()
                     .IfEmpty( PageCache.Layout?.Site?.Theme?.ToLower() ),
                 Templates = director.GetConfigurationTemplateBags(),
-                Themes = GetThemes()
+                Themes = GetThemes(),
+                SavedConfigurations = GetSavedConfigurations()
             };
         }
 
@@ -456,11 +457,51 @@ namespace Rock.Blocks.CheckIn
         /// <param name="latitude">The latitude of the physical device.</param>
         /// <param name="longitude">The longitude of the physical device.</param>
         /// <returns></returns>
-        public DeviceCache GetCurrentKioskByGeoFencing( double latitude, double longitude )
+        private DeviceCache GetCurrentKioskByGeoFencing( double latitude, double longitude )
         {
             var checkInDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
 
             return DeviceCache.GetByGeocode( latitude, longitude, checkInDeviceTypeId, RockContext );
+        }
+
+        /// <summary>
+        /// Gets the saved check-in configurations.
+        /// </summary>
+        /// <returns>A collection of <see cref="SavedCheckInConfigurationBag"/> objects.</returns>
+        private IReadOnlyCollection<SavedCheckInConfigurationBag> GetSavedConfigurations()
+        {
+            var savedConfigurationCache = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext );
+
+            if ( savedConfigurationCache == null )
+            {
+                return Array.Empty<SavedCheckInConfigurationBag>();
+            }
+
+            return savedConfigurationCache.DefinedValues
+                .Select( GetSavedConfigurationBag )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the saved configuration bag from the defined value.
+        /// </summary>
+        /// <param name="definedValue">The defined value.</param>
+        /// <returns>A new <see cref="SavedCheckInConfigurationBag"/> instance.</returns>
+        private SavedCheckInConfigurationBag GetSavedConfigurationBag( DefinedValueCache definedValue )
+        {
+            return new SavedCheckInConfigurationBag
+            {
+                Guid = definedValue.Guid,
+                Name = definedValue.Value,
+                Description = definedValue.Description,
+                Campuses = definedValue.GetAttributeValue( "Campuses" )
+                    .SplitDelimitedValues()
+                    .AsGuidList()
+                    .Select( g => CampusCache.Get( g, RockContext ) )
+                    .Where( c => c != null )
+                    .ToListItemBagList(),
+                Settings = definedValue.GetAttributeValue( "SettingsJson" ).FromJsonOrNull<SavedCheckInConfigurationSettingsBag>()
+            };
         }
 
         #endregion
@@ -557,6 +598,57 @@ namespace Rock.Blocks.CheckIn
                 .ToList();
 
             return ActionOk( promotions );
+        }
+
+        /// <summary>
+        /// Saves the configuration as a new saved configuration item.
+        /// </summary>
+        /// <param name="box">The box that contains the configuration data.</param>
+        /// <returns>A response that indicates success or failure.</returns>
+        [BlockAction]
+        public BlockActionResult SaveConfiguration( ValidPropertiesBox<SavedCheckInConfigurationBag> box )
+        {
+            var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext )?.Id;
+
+            if ( box.Bag.Guid != Guid.Empty )
+            {
+                return ActionBadRequest( "Editing existing saved configurations is not supported." );
+            }
+
+            if ( !savedConfigurationDefinedTypeId.HasValue )
+            {
+                return ActionInternalServerError( "Saved configuration data does not exist in the database yet." );
+            }
+
+            var definedValueService = new DefinedValueService( RockContext );
+            var definedValue = new DefinedValue
+            {
+                DefinedTypeId = savedConfigurationDefinedTypeId.Value
+            };
+
+            definedValue.LoadAttributes( RockContext );
+
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => definedValue.Value = box.Bag.Name );
+
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => definedValue.Description = box.Bag.Description );
+
+            box.IfValidProperty( nameof( box.Bag.Campuses ),
+                () => definedValue.SetAttributeValue( "Campuses", box.Bag.Campuses.Select( c => c.Value ).JoinStrings( "," ) ) );
+
+            box.IfValidProperty( nameof( box.Bag.Settings ),
+                () => definedValue.SetAttributeValue( "SettingsJson", box.Bag.Settings.ToJson() ) );
+
+            definedValueService.Add( definedValue );
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                definedValue.SaveAttributeValues( RockContext );
+            } );
+
+            return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
         }
 
         #endregion

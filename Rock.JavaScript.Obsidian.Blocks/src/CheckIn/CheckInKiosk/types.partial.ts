@@ -21,6 +21,7 @@ import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configura
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
+import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationBag";
 
 // #region Temporary Types
 
@@ -44,12 +45,8 @@ export type CheckInKioskOptionsBag = {
     templates?: ConfigurationTemplateBag[] | null;
 
     themes?: ListItemBag[] | null;
-};
 
-export type SavedConfigurationBag = {
-    name?: string | null;
-
-    description?: string | null;
+    savedConfigurations?: SavedCheckInConfigurationBag[] | null;
 };
 
 // #endregion
