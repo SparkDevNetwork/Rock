@@ -25,6 +25,7 @@ import { Guid } from "@Obsidian/Types";
 import { HttpBodyData, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
 import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+import { IEntity } from "@Obsidian/ViewModels/entity";
 import { debounce } from "./util";
 
 const blockReloadSymbol = Symbol();
@@ -230,7 +231,7 @@ export function setPropertiesBoxValue<T extends Record<string, unknown>, K exten
         box.validProperties = [];
     }
 
-    if (!box.validProperties.includes(propertyName)) {
+    if (!box.validProperties.some(p => p.toLowerCase() === propertyName.toLowerCase())) {
         box.validProperties.push(propertyName);
     }
 }
@@ -283,7 +284,7 @@ type UseEntityDetailBlockOptions = {
      * The entity that will be used by the block, this will cause the
      * onPropertyChanged logic to be generated.
      */
-    entity?: Ref<ValidPropertiesBox<Record<string, unknown>>>;
+    entity?: Ref<ValidPropertiesBox<IEntity>>;
 };
 
 type UseEntityDetailBlockResult = {
@@ -317,7 +318,7 @@ export function useEntityDetailBlock(options: UseEntityDetailBlockOptions): UseE
 
     if (entity) {
         const invokeBlockAction = useInvokeBlockAction();
-        const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(entity, invokeBlockAction), undefined, true);
+        const refreshAttributesDebounce = debounce(() => refreshEntityDetailAttributes(entity, invokeBlockAction), undefined, true);
 
         result.onPropertyChanged = (propertyName: string): void => {
             // If we don't have any qualified attribute properties or this property
@@ -507,7 +508,26 @@ export function watchPropertyChanges<E extends "propertyChanged">(propertyRefs: 
  * property values and then updated with the new attributes and values.
  * @param invokeBlockAction The function to use when calling the block action.
  */
-export async function refreshDetailAttributes<TEntityBag>(box: Ref<ValidPropertiesBox<TEntityBag>>, invokeBlockAction: InvokeBlockActionFunc): Promise<void>;
+async function refreshEntityDetailAttributes<TEntityBag extends IEntity>(box: Ref<ValidPropertiesBox<TEntityBag>>, invokeBlockAction: InvokeBlockActionFunc): Promise<void> {
+    const result = await invokeBlockAction<ValidPropertiesBox<TEntityBag>>("RefreshAttributes", {
+        box: box.value
+    });
+
+    if (result.isSuccess) {
+        if (result.statusCode === 200 && result.data && box.value) {
+            const newBox: ValidPropertiesBox<TEntityBag> = {
+                ...box.value,
+                bag: {
+                    ...box.value.bag as TEntityBag,
+                    attributes: result.data.bag?.attributes,
+                    attributeValues: result.data.bag?.attributeValues
+                }
+            };
+
+            box.value = newBox;
+        }
+    }
+}
 
 /**
  * Requests an updated attribute list from the server based on the
@@ -519,44 +539,12 @@ export async function refreshDetailAttributes<TEntityBag>(box: Ref<ValidProperti
  * the server will read the bag.
  * @param invokeBlockAction The function to use when calling the block action.
  */
-export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, validProperties: string[], invokeBlockAction: InvokeBlockActionFunc): Promise<void>;
-
-/**
- * Requests an updated attribute list from the server based on the
- * current UI selections made.
- *
- * @param bag The entity bag or properties box that will be used to determine
- * current property values and then updated with the new attributes and values.
- * @param validPropertiesOrAction The properties that are considered valid on the bag when
- * the server will read the bag, or the invoke action.
- * @param invokeBlockAction The function to use when calling the block action.
- */
-export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag> | Ref<ValidPropertiesBox<TEntityBag>>, validPropertiesOrAction: string[] | InvokeBlockActionFunc, invokeBlockAction?: InvokeBlockActionFunc): Promise<void> {
-    let data: DetailBlockBox<TEntityBag, unknown>;
-
-    if (typeof bag.value === "object" && bag.value && "bag" in bag.value && "validProperties" in bag.value) {
-        data = {
-            entity: bag.value.bag,
-            isEditable: true,
-            validProperties: bag.value.validProperties
-        };
-    }
-    else {
-        data = {
-            entity: bag.value as TEntityBag,
-            isEditable: true,
-            validProperties: Array.isArray(validPropertiesOrAction) ? validPropertiesOrAction : []
-        };
-    }
-
-    if (!invokeBlockAction) {
-        if (typeof validPropertiesOrAction === "function") {
-            invokeBlockAction = validPropertiesOrAction;
-        }
-        else {
-            throw new Error("Missing invokeBlockAction parameter.");
-        }
-    }
+export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, validProperties: string[], invokeBlockAction: InvokeBlockActionFunc): Promise<void> {
+    const data: DetailBlockBox<unknown, unknown> = {
+        entity: bag.value,
+        isEditable: true,
+        validProperties: validProperties
+    };
 
     const result = await invokeBlockAction<DetailBlockBox<Record<string, unknown>, unknown>>("RefreshAttributes", {
         box: data
@@ -564,27 +552,13 @@ export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag> |
 
     if (result.isSuccess) {
         if (result.statusCode === 200 && result.data && bag.value) {
-            if (typeof bag.value === "object" && bag.value && "bag" in bag.value && "validProperties" in bag.value) {
-                const newBag: ValidPropertiesBox<TEntityBag> = {
-                    ...bag.value,
-                    bag: {
-                        ...bag.value.bag as TEntityBag,
-                        attributes: result.data.entity?.attributes,
-                        attributeValues: result.data.entity?.attributeValues
-                    }
-                };
+            const newBag: TEntityBag = {
+                ...bag.value,
+                attributes: result.data.entity?.attributes,
+                attributeValues: result.data.entity?.attributeValues
+            };
 
-                bag.value = newBag;
-            }
-            else {
-                const newBag: TEntityBag = {
-                    ...bag.value as TEntityBag,
-                    attributes: result.data.entity?.attributes,
-                    attributeValues: result.data.entity?.attributeValues
-                };
-
-                bag.value = newBag;
-            }
+            bag.value = newBag;
         }
     }
 }

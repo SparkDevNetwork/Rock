@@ -50,7 +50,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "A61EAF51-5DB4-451E-9F88-9D4C6ACCE73B")]
     [Rock.SystemGuid.BlockTypeGuid( "507F5108-FB55-48F0-A66E-CC3D5185D35D")]
-    public class CampusDetail : RockEntityDetailBlockType<Campus>
+    public class CampusDetail : RockEntityDetailBlockType<Campus, CampusBag>
     {
         #region Keys
 
@@ -73,7 +73,7 @@ namespace Rock.Blocks.Core
         {
             var box = new DetailBlockBox<CampusBag, CampusDetailOptionsBag>();
 
-            SetBoxInitialEntityState( box, true );
+            SetBoxInitialEntityState( box );
 
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions( box.IsEditable );
@@ -357,8 +357,7 @@ namespace Rock.Blocks.Core
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="loadAttributes"><c>true</c> if attributes and values should be loaded; otherwise <c>false</c>.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<CampusBag, CampusDetailOptionsBag> box, bool loadAttributes )
+        private void SetBoxInitialEntityState( DetailBlockBox<CampusBag, CampusDetailOptionsBag> box )
         {
             var entity = GetInitialEntity();
 
@@ -367,17 +366,14 @@ namespace Rock.Blocks.Core
                 var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
                 box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-                if ( loadAttributes )
-                {
-                    entity.LoadAttributes( RockContext );
-                }
+                entity.LoadAttributes( RockContext );
 
                 if ( entity.Id != 0 )
                 {
                     // Existing entity was found, prepare for view mode by default.
                     if ( isViewable )
                     {
-                        box.Entity = GetEntityBagForView( entity, loadAttributes );
+                        box.Entity = GetEntityBagForView( entity );
                     }
                     else
                     {
@@ -389,7 +385,7 @@ namespace Rock.Blocks.Core
                     // New entity is being created, prepare for edit mode by default.
                     if ( box.IsEditable )
                     {
-                        box.Entity = GetEntityBagForEdit( entity, loadAttributes );
+                        box.Entity = GetEntityBagForEdit( entity );
                     }
                     else
                     {
@@ -438,13 +434,8 @@ namespace Rock.Blocks.Core
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specied entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <param name="loadAttributes"><c>true</c> if attributes and values should be loaded; otherwise <c>false</c>.</param>
-        /// <returns>A <see cref="CampusBag"/> that represents the entity.</returns>
-        private CampusBag GetEntityBagForView( Campus entity, bool loadAttributes )
+        /// <inheritdoc/>
+        protected override CampusBag GetEntityBagForView( Campus entity )
         {
             if ( entity == null )
             {
@@ -453,21 +444,13 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            if ( loadAttributes )
-            {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-            }
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specied entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="loadAttributes"><c>true</c> if attributes and values should be loaded; otherwise <c>false</c>.</param>
-        /// <returns>A <see cref="CampusBag"/> that represents the entity.</returns>
-        private CampusBag GetEntityBagForEdit( Campus entity, bool loadAttributes )
+        /// <inheritdoc/>
+        protected override CampusBag GetEntityBagForEdit( Campus entity )
         {
             if ( entity == null )
             {
@@ -476,29 +459,21 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            if ( loadAttributes )
-            {
-                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
-            }
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Campus entity, DetailBlockBox<CampusBag, CampusDetailOptionsBag> box )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Campus entity, ValidPropertiesBox<CampusBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            var isSchedulesValid = box.IfValidProperty( nameof( box.Entity.CampusSchedules ),
-                () => UpdateCampusSchedulesFromBags( entity, box.Entity.CampusSchedules ),
+            var isSchedulesValid = box.IfValidProperty( nameof( box.Bag.CampusSchedules ),
+                () => UpdateCampusSchedulesFromBags( entity, box.Bag.CampusSchedules ),
                 true );
 
             if ( !isSchedulesValid )
@@ -506,54 +481,54 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.CampusStatusValue ),
-                () => entity.CampusStatusValueId = box.Entity.CampusStatusValue.GetEntityId<DefinedValue>( RockContext ) );
+            box.IfValidProperty( nameof( box.Bag.CampusStatusValue ),
+                () => entity.CampusStatusValueId = box.Bag.CampusStatusValue.GetEntityId<DefinedValue>( RockContext ) );
 
             //box.IfValidProperty( nameof( box.Entity.CampusTopics ),
             //    () => entity.CampusTopics = box.Entity./* TODO: Unknown property type 'ICollection<CampusTopic>' for conversion to bag. */ );
 
-            box.IfValidProperty( nameof( box.Entity.CampusTypeValue ),
-                () => entity.CampusTypeValueId = box.Entity.CampusTypeValue.GetEntityId<DefinedValue>( RockContext ) );
+            box.IfValidProperty( nameof( box.Bag.CampusTypeValue ),
+                () => entity.CampusTypeValueId = box.Bag.CampusTypeValue.GetEntityId<DefinedValue>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.IsSystem ),
-                () => entity.IsSystem = box.Entity.IsSystem );
+            box.IfValidProperty( nameof( box.Bag.IsSystem ),
+                () => entity.IsSystem = box.Bag.IsSystem );
 
-            box.IfValidProperty( nameof( box.Entity.LeaderPersonAlias ),
-                () => entity.LeaderPersonAliasId = box.Entity.LeaderPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
+            box.IfValidProperty( nameof( box.Bag.LeaderPersonAlias ),
+                () => entity.LeaderPersonAliasId = box.Bag.LeaderPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Location ),
-                () => entity.LocationId = box.Entity.Location.GetEntityId<Location>( RockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Location ),
+                () => entity.LocationId = box.Bag.Location.GetEntityId<Location>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.PhoneNumber ),
-                () => entity.PhoneNumber = box.Entity.PhoneNumber );
+            box.IfValidProperty( nameof( box.Bag.PhoneNumber ),
+                () => entity.PhoneNumber = box.Bag.PhoneNumber );
 
-            box.IfValidProperty( nameof( box.Entity.ServiceTimes ),
-                () => entity.ServiceTimes = ConvertServiceTimesFromBags( box.Entity.ServiceTimes ) );
+            box.IfValidProperty( nameof( box.Bag.ServiceTimes ),
+                () => entity.ServiceTimes = ConvertServiceTimesFromBags( box.Bag.ServiceTimes ) );
 
-            box.IfValidProperty( nameof( box.Entity.ShortCode ),
-                () => entity.ShortCode = box.Entity.ShortCode );
+            box.IfValidProperty( nameof( box.Bag.ShortCode ),
+                () => entity.ShortCode = box.Bag.ShortCode );
 
-            box.IfValidProperty( nameof( box.Entity.TimeZoneId ),
-                () => entity.TimeZoneId = box.Entity.TimeZoneId );
+            box.IfValidProperty( nameof( box.Bag.TimeZoneId ),
+                () => entity.TimeZoneId = box.Bag.TimeZoneId );
 
-            box.IfValidProperty( nameof( box.Entity.Url ),
-                () => entity.Url = box.Entity.Url );
+            box.IfValidProperty( nameof( box.Bag.Url ),
+                () => entity.Url = box.Bag.Url );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
@@ -584,7 +559,7 @@ namespace Rock.Blocks.Core
         /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
         /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
         /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, out Campus entity, out BlockActionResult error )
+        protected override bool TryGetEntityForEditAction( string idKey, out Campus entity, out BlockActionResult error )
         {
             var entityService = new CampusService( RockContext );
             error = null;
@@ -644,12 +619,13 @@ namespace Rock.Blocks.Core
 
             entity.LoadAttributes( RockContext );
 
-            var box = new DetailBlockBox<CampusBag, CampusDetailOptionsBag>
-            {
-                Entity = GetEntityBagForEdit( entity, true )
-            };
+            var bag = GetEntityBagForEdit( entity );
 
-            return ActionOk( box );
+            return ActionOk( new ValidPropertiesBox<CampusBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -658,11 +634,11 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<CampusBag, CampusDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<CampusBag> box )
         {
             var entityService = new CampusService( RockContext );
 
-            if ( !TryGetEntityForEditAction( box.Entity.IdKey, out var entity, out var actionError ) )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
             }
@@ -699,7 +675,13 @@ namespace Rock.Blocks.Core
             entity = entityService.Get( entity.Id );
             entity.LoadAttributes( RockContext );
 
-            return ActionOk( GetEntityBagForView( entity, true ) );
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<CampusBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -732,56 +714,6 @@ namespace Rock.Blocks.Core
             RockContext.SaveChanges();
 
             return ActionOk( this.GetParentPageUrl() );
-        }
-
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<CampusBag, CampusDetailOptionsBag> box )
-        {
-            if ( !TryGetEntityForEditAction( box.Entity.IdKey, out var entity, out var actionError ) )
-            {
-                return actionError;
-            }
-
-            // Update the entity instance from the information in the bag.
-            if ( !UpdateEntityFromBox( entity, box ) )
-            {
-                return ActionBadRequest( "Invalid data." );
-            }
-
-            entity.LoadAttributes( RockContext );
-
-            var refreshedBox = new DetailBlockBox<CampusBag, CampusDetailOptionsBag>
-            {
-                Entity = GetEntityBagForEdit( entity, true )
-            };
-
-            var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-            var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-            // If the attributes haven't changed then return a 204 status code.
-            if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-            {
-                return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-            }
-
-            // Replace any values for attributes that haven't changed with
-            // the value sent by the client. This ensures any unsaved attribute
-            // value changes are not lost.
-            foreach ( var kvp in refreshedBox.Entity.Attributes )
-            {
-                if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                {
-                    refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                }
-            }
-
-            return ActionOk( refreshedBox );
         }
 
         #endregion
