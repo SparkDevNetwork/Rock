@@ -1,0 +1,124 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <SlidingDateRangePicker v-model="dateRange"
+                                        label="Fee Date Range"
+                                        :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                        :enabledTimeUnits="[TimeUnit.Hour, TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                        previewLocation="None" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="feeName"
+                              label="Fee Name"
+                              :items="feeNameItems" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBoxList v-model="feeOptions"
+                              label="Fee Options"
+                              :items="feeOptionsItems" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString, parseSlidingDateRangeString } from "@Obsidian/Utility/slidingDateRange";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        feeNameItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        feeOptionsItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const dateRange = ref(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+    const feeName = ref(props.modelValue.feeName ?? "");
+    const feeOptions = ref(props.modelValue.feeOptions);
+    const feeOptionsItems = ref<ListItemBag[]>(props.feeOptionsItems);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value ? slidingDateRangeToString(dateRange.value as SlidingDateRange) : "",
+            feeName: feeName.value,
+            feeOptions: feeOptions.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    async function fetchFeeOptions(): Promise<void> {
+        if (feeName.value || feeOptions.value.length === 0) {
+            const result = await invokeBlockAction<ListItemBag[]>("FeeItems", {
+                templateFeeGuid: feeName.value
+            });
+
+            if (result.isSuccess && result.data) {
+                feeOptionsItems.value = result.data;
+            }
+            else {
+                feeOptionsItems.value = [];
+            }
+        }
+    }
+
+    watch(() => feeName.value, fetchFeeOptions);
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = parseSlidingDateRangeString(props.modelValue.dateRange ?? "");
+        feeName.value = props.modelValue.feeName ?? "";
+        feeOptions.value = props.modelValue.feeOptions;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

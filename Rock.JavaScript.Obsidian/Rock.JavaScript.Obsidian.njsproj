@@ -376,6 +376,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\RegistrationInstanceFeeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessContactList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessDetail\" />
@@ -927,6 +928,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\interactiveExperienceVisualizerTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\liveExperienceOccurrencesInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\LiveExperience\liveExperienceInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationInstanceFeeList\registrationInstanceFeeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessContactList\businessContactBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BusinessContactList\businessContactListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrantBag.d.ts" />
