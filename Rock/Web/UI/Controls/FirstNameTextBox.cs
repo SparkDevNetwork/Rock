@@ -31,7 +31,7 @@ namespace Rock.Web.UI.Controls
     {
         private CustomValidator _customValidator;
         private readonly List<string> _notAllowedStrings = new List<string> { "&", " & ", " and ", "-and-", "_and_", " plus ", "+" };
-        private readonly string _defaultDelimter = "^";
+        private readonly string _defaultDelimiter = "^";
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
@@ -62,7 +62,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public string Delimiter
         {
-            get { return ViewState["Delimiter"] as string ?? _defaultDelimter; }
+            get { return ViewState["Delimiter"] as string ?? _defaultDelimiter; }
             set { ViewState["Delimiter"] = value; }
         }
 
@@ -74,8 +74,13 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public CustomValidator CustomValidator
         {
-            get
-            { return _customValidator; }
+            get { return _customValidator; }
+        }
+
+        /// <inheritdoc/>
+        public FirstNameTextBox()
+        {
+            CssClass = "js-firstNameTextBox";
         }
 
         /// <summary>
@@ -90,25 +95,69 @@ namespace Rock.Web.UI.Controls
             _customValidator.ControlToValidate = this.ID;
             _customValidator.Display = ValidatorDisplay.Dynamic;
             _customValidator.CssClass = "validation-error help-inline";
+            _customValidator.ClientValidationFunction = "Rock.controls.firstNameTextBox.clientValidate";
+            _customValidator.ValidationGroup = this.ValidationGroup;
             _customValidator.ServerValidate += ServerValidation;
+
+            this.Attributes["data-item-label"] = this.Label.IsNotNullOrWhiteSpace() ? this.Label : "FirstName";
 
             Controls.Add( _customValidator );
         }
 
-        private void ServerValidation(object source, ServerValidateEventArgs args)
+        /// <inheritdoc/>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            base.RenderControl( writer );
+
+            RegisterJavaScript();
+
+            _customValidator.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Registers the custom validator java script.
+        /// </summary>
+        private void RegisterJavaScript()
+        {
+            var script = $@"Rock.controls.firstNameTextBox.initialize(
+                {{
+                    id: '{this.ClientID}',
+                    notAllowedStrings: {GetNotAllowedStrings().ToJson()}
+                }});";
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "first_name_textbox-" + this.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// The validation logic for the Custom Validator.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
+        private void ServerValidation( object source, ServerValidateEventArgs args )
         {
             var value = args.Value;
+            var notAllowedStrings = GetNotAllowedStrings();
+
+            var invalidStrings = notAllowedStrings.FindAll( notAllowedString => value.IndexOf( notAllowedString, StringComparison.InvariantCultureIgnoreCase ) >= 0 );
+            if ( invalidStrings.Count > 0 )
+            {
+                _customValidator.ErrorMessage = string.Format("{0} cannot contain {1}", Label, Humanizer.CollectionHumanizeExtensions.Humanize( invalidStrings.Select(m => m.Trim()).Distinct() ) );
+            }
+            args.IsValid = invalidStrings.Count == 0;
+        }
+
+        /// <summary>
+        /// Gets the list of string characters not allowed in the entered value..
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetNotAllowedStrings()
+        {
             if ( !string.IsNullOrWhiteSpace( NotAllowed ) )
             {
                 _notAllowedStrings.AddRange( NotAllowed.Split( new string[] { Delimiter }, StringSplitOptions.RemoveEmptyEntries ) );
             }
 
-            var invalidStrings = _notAllowedStrings.FindAll( notAllowedString => value.IndexOf( notAllowedString, StringComparison.InvariantCultureIgnoreCase ) >= 0 );
-            if ( invalidStrings.Count > 0 )
-            {
-                _customValidator.ErrorMessage = string.Format("FirstName cannot contain {0}", Humanizer.CollectionHumanizeExtensions.Humanize( invalidStrings.Select(m => m.Trim()).Distinct() ) );
-            }
-            args.IsValid = invalidStrings.Count == 0;
+            return _notAllowedStrings;
         }
     }
 }
