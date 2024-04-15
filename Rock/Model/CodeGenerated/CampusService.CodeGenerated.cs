@@ -203,6 +203,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CampusStatusValueId = source.CampusStatusValueId;
             target.CampusTypeValueId = source.CampusTypeValueId;
+            target.ClosedDate = source.ClosedDate;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -211,12 +212,14 @@ namespace Rock.Model
             target.LeaderPersonAliasId = source.LeaderPersonAliasId;
             target.LocationId = source.LocationId;
             target.Name = source.Name;
+            target.OpenedDate = source.OpenedDate;
             target.Order = source.Order;
             target.PhoneNumber = source.PhoneNumber;
             target.ServiceTimes = source.ServiceTimes;
             target.ShortCode = source.ShortCode;
             target.TeamGroupId = source.TeamGroupId;
             target.TimeZoneId = source.TimeZoneId;
+            target.TitheMetric = source.TitheMetric;
             target.Url = source.Url;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

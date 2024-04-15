@@ -43,6 +43,7 @@
 
                 <EntityTypePicker v-model="entityType"
                                   :multiple="false"
+                                  :enhanceForLongLists="true"
                                   label="Entity Type" />
 
                 <TextBox v-model="entityTypeQualifierColumn"
@@ -102,7 +103,7 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const category = propertyRef(props.modelValue.category ?? null, "CategoryId");
+    const category = propertyRef(props.modelValue.category ?? undefined, "CategoryId");
     const scope = ref(props.modelValue.ownerPersonAlias ? "personal" : "organizational");
     const owner = propertyRef(props.modelValue.ownerPersonAlias ?? undefined, "OwnerPersonAliasId");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
@@ -154,7 +155,7 @@
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(category, props.modelValue.category ?? {});
+        updateRefValue(category, props.modelValue.category ?? undefined);
         updateRefValue(owner, props.modelValue.ownerPersonAlias ?? undefined);
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(entityType, props.modelValue.entityType ?? {});

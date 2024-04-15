@@ -24,7 +24,7 @@
                 <CategoryPicker v-model="category" label="Category" :entityTypeGuid="EntityType.StepProgram" />
             </div>
             <div class="col-md-6">
-                <RadioButtonList label="Radio List" v-model="defaultListView" :items="viewModes" horizontal />
+                <RadioButtonList label="Default List View" v-model="defaultListView" :items="viewModes" horizontal />
             </div>
         </div>
 
@@ -197,6 +197,7 @@
     import { StepStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepStatusBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -223,7 +224,7 @@
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "iconCssClass");
-    const category = propertyRef(props.modelValue.category ?? {}, "Category");
+    const category = propertyRef(props.modelValue.category, "Category");
     const defaultListView = propertyRef(props.modelValue.defaultListView?.toString() ?? {}, "DefaultListView");
     const viewModes = ref(props.options.viewModes ?? []);
 
@@ -239,7 +240,7 @@
     const isWorkflowModalOpen = ref(false);
     const triggerType = ref("");
     const triggerTypes = ref(props.options.triggerTypes ?? []);
-    const stepStatusOptions = ref(props.options.statusOptions ?? []);
+    const stepStatusOptions = ref(props.modelValue.statusOptions ?? []);
     const primaryQualifier = ref("");
     const secondaryQualifier = ref("");
     const workflow = ref<StepProgramWorkflowTriggerBag>({});
@@ -327,6 +328,28 @@
         isActiveStepStatus.value = true;
         isCompleteStepStatus.value = false;
         stepStatusDisplayColor.value = "";
+    }
+
+    function getTriggerDescription(triggerType: string, primaryQualifier: string | null | undefined, secondaryQualifier: string | null | undefined): string {
+        if (triggerType == "StatusChanged") {
+
+            let status = stepStatusOptions.value.find(x => x.value == primaryQualifier);
+            const fromStatus = !status?.text ? "[Any]" : status.text;
+
+            status = stepStatusOptions.value.find(x => x.value == secondaryQualifier);
+
+            const toStatus = !status?.text ? "[Any]" : status.text;
+
+            const description = `Status Change: ${fromStatus} to ${toStatus}`;
+
+            return description;
+        }
+        else if (triggerType == "IsComplete") {
+            return "Step Completed";
+        }
+        else {
+            return triggerType;
+        }
     }
 
     // #endregion
@@ -460,8 +483,12 @@
         isWorkflowModalOpen.value = false;
         const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
 
-        if (triggerType.value && workflow.value.workflowType?.value && workflowGridData.rows) {
+        if (triggerType.value && workflow.value.workflowType?.value && workflowGridData.rows && selectedTriggerType?.value) {
             const index = workflows.value.findIndex(a => (a.idKey === workflow.value.idKey));
+            const workflowTrigger: ListItemBag = {
+                text: getTriggerDescription(triggerType.value, primaryQualifier.value, secondaryQualifier.value),
+                value: selectedTriggerType.value
+            };
 
             if (index !== -1) {
                 // Get the updated WorkflowTrigger and RowItem.
@@ -470,7 +497,7 @@
 
                 if (editedWorkflowTrigger && rowItem) {
                     // Replace old WorkflowTrigger with updated WorkflowTrigger.
-                    editedWorkflowTrigger.workflowTrigger = selectedTriggerType;
+                    editedWorkflowTrigger.workflowTrigger = workflowTrigger;
                     editedWorkflowTrigger.primaryQualifier = primaryQualifier.value;
                     editedWorkflowTrigger.secondaryQualifier = secondaryQualifier.value;
                     workflows.value.splice(index, 1, editedWorkflowTrigger);
@@ -486,7 +513,7 @@
                 // it can be tracked for frontend edits and deletes
                 const currentLength = workflows.value.length + 1;
                 const newWorkflow: StepProgramWorkflowTriggerBag = {
-                    workflowTrigger: selectedTriggerType,
+                    workflowTrigger: workflowTrigger,
                     workflowType: workflow.value.workflowType,
                     primaryQualifier: primaryQualifier.value,
                     secondaryQualifier: secondaryQualifier.value,
@@ -622,7 +649,7 @@
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(defaultListView, props.modelValue.defaultListView.toString() ?? "");
-        updateRefValue(category, props.modelValue.category ?? {});
+        updateRefValue(category, props.modelValue.category);
     });
 
     // Determines which values we want to track changes on (defined in the

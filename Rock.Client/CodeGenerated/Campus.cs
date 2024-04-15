@@ -41,6 +41,9 @@ namespace Rock.Client
         public int? CampusTypeValueId { get; set; }
 
         /// <summary />
+        public DateTime? ClosedDate { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -70,6 +73,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public DateTime? OpenedDate { get; set; }
+
+        /// <summary />
         public int Order { get; set; }
 
         /// <summary />
@@ -86,6 +92,9 @@ namespace Rock.Client
 
         /// <summary />
         public string TimeZoneId { get; set; }
+
+        /// <summary />
+        public decimal? TitheMetric { get; set; }
 
         /// <summary />
         public string Url { get; set; }
@@ -125,6 +134,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.CampusStatusValueId = source.CampusStatusValueId;
             this.CampusTypeValueId = source.CampusTypeValueId;
+            this.ClosedDate = source.ClosedDate;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -134,12 +144,14 @@ namespace Rock.Client
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.OpenedDate = source.OpenedDate;
             this.Order = source.Order;
             this.PhoneNumber = source.PhoneNumber;
             this.ServiceTimes = source.ServiceTimes;
             this.ShortCode = source.ShortCode;
             this.TeamGroupId = source.TeamGroupId;
             this.TimeZoneId = source.TimeZoneId;
+            this.TitheMetric = source.TitheMetric;
             this.Url = source.Url;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

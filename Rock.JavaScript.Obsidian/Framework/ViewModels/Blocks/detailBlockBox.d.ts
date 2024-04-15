@@ -21,10 +21,21 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** The information required to render a standard detail block. */
 export type DetailBlockBox<TEntityBag, TOptions> = {
     /** Gets or sets the entity. */
     entity?: TEntityBag | null;
+
+    /**
+     * Gets or sets the unique identifier of the type of entity being
+     * viewed or edited.
+     */
+    entityTypeGuid?: Guid | null;
+
+    /** Gets or sets the name of the type of entity being viewed or edited. */
+    entityTypeName?: string | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that

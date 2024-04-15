@@ -387,6 +387,28 @@ export const EntityType = {
     LavaShortcodeCategory: "6CFE20AD-F883-4F53-A678-0D048406299D",
     /** The EntityType Guid for Rock.Model.Layout */
     Layout: "9DACC861-FED4-47FC-946D-D6A120FF6D56",
+    /** The EntityType Guid for Rock.Model.LearningActivity */
+    LearningActivity: "E82F540C-F483-4D4A-898A-3AE7FF76F75A",
+    /** The EntityType Guid for Rock.Model.LearningActivityCompletion */
+    LearningActivityCompletion: "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1",
+    /** The EntityType Guid for Rock.Model.LearningClass */
+    LearningClass: "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9",
+    /** The EntityType Guid for Rock.Model.LearningCourse */
+    LearningCourse: "21870376-4A6E-4402-ACE3-42AA4441FC2E",
+    /** The EntityType Guid for Rock.Model.LearningCourseRequirement */
+    LearningCourseRequirement: "576F54E1-CE70-43ED-A7D8-5169529C70E9",
+    /** The EntityType Guid for Rock.Model.LearningGradingSystem */
+    LearningGradingSystem: "0B693CAF-3718-4913-B7AC-61D31B4DF099",
+    /** The EntityType Guid for Rock.Model.LearningGradingSystem */
+    LearningGradingSystemScale: "14BA9B5B-6B4A-4462-ACDF-898DCEC9EC0D",
+    /** The EntityType Guid for Rock.Model.LearningParticipant */
+    LearningParticipant: "03195758-1770-4794-9487-7A4AA02930A7",
+    /** The EntityType Guid for Rock.Model.LearningProgram */
+    LearningProgram: "AFD89885-6923-4FA1-B6FE-A1DF8D821BBC",
+    /** The EntityType Guid for Rock.Model.LearningProgramCompletion */
+    LearningProgramCompletion: "B82813A7-E70E-4F04-8568-0D84EFB484B2",
+    /** The EntityType Guid for Rock.Model.LearningSemester */
+    LearningSemester: "F9A40931-0ACE-4B50-A507-0D1D75F92BC4",
     /** The EntityType Guid for Rock.Model.Location  */
     Location: "0D6410AD-C83C-47AC-AF3D-616D09EDF63B",
     /** The EntityType Guid for Rock.Model.MediaAccount  */
@@ -448,7 +470,7 @@ export const EntityType = {
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Search. */
     MobileCoreSearchBlockType: "F81015CD-EBA9-4358-B930-4F1AB29AF879",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.SmartSearch. */
-    MobileCoreSearchV2BlockType: "45BE4816-3F5B-4AD1-BA89-819325D7E8CF",
+    MobileCoreSmartSearchBlockType: "45BE4816-3F5B-4AD1-BA89-819325D7E8CF",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.GroupMembers. */
     MobileCrmGroupMembers: "592242ED-7536-49EA-94DE-7B4EBA7E87A6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */
@@ -737,6 +759,8 @@ export const EntityType = {
     Tag: "d34258d0-d366-4efb-aa76-84b059fb5434",
     /** The EntityType Guid for Rock.Model.TaggedItem  */
     TaggedItem: "AB97403A-206E-4E0C-AC42-856A010FA6DD",
+    /** The EntityType Guid for Rock.Model.Theme  */
+    Theme: "D02B63B9-E945-45BC-9D41-2C3E72B85F46",
     /** The EntityType Guid for Rock.Model.UserLogin  */
     UserLogin: "0FA592F1-728C-4885-BE38-60ED6C0D834F",
     /** The EntityType Guid for Rock.Model.WebFarmNode  */

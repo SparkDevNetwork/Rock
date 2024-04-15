@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -27,6 +26,7 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.TagDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -48,7 +48,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "919345d6-6e20-4501-b956-ebcb35d0b16e" )]
     [Rock.SystemGuid.BlockTypeGuid( "b150e767-e964-460c-9ed1-b293474c5f5d" )]
-    public class TagDetail : RockDetailBlockType
+    public class TagDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -151,10 +151,8 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            var canConfigure = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, GetCurrentPerson() );
-
-            var isViewable = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = IsAuthorized( entity, Rock.Security.Authorization.VIEW );
+            box.IsEditable = IsAuthorized( entity, Rock.Security.Authorization.EDIT );
 
             entity.LoadAttributes( rockContext );
 
@@ -165,7 +163,7 @@ namespace Rock.Blocks.Core
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    box.Entity.CanAdministrate = canConfigure || entity.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson() );
+                    box.Entity.CanAdministrate = IsAuthorized( entity, Rock.Security.Authorization.ADMINISTRATE );
                 }
                 else
                 {
@@ -195,6 +193,13 @@ namespace Rock.Blocks.Core
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Tag.FriendlyTypeName );
                 }
             }
+        }
+
+        private bool IsAuthorized( Tag entity, string action )
+        {
+            var currentPerson = GetCurrentPerson();
+            var canConfigure = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson );
+            return canConfigure || entity.IsAuthorized( action, currentPerson );
         }
 
         /// <summary>
@@ -404,13 +409,42 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !IsAuthorized( entity, Rock.Security.Authorization.EDIT ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Tag.FriendlyTypeName}." );
                 return false;
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var breadCrumbs = new List<IBreadCrumb>();
+                var key = pageReference.GetPageParameter( PageParameterKey.TagId );
+
+                if ( !string.IsNullOrWhiteSpace( key ) )
+                {
+                    var pageParameters = new Dictionary<string, string>();
+                    var name = new TagService( rockContext ).GetSelect( key, t => t.Name );
+
+                    if ( name != null )
+                    {
+                        pageParameters.Add( PageParameterKey.TagId, key );
+                        var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                        var breadCrumb = new BreadCrumbLink( name, breadCrumbPageRef );
+                        breadCrumbs.Add( breadCrumb );
+                    }
+                }
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = breadCrumbs
+                };
+            }
         }
 
         #endregion

@@ -75,6 +75,9 @@ export type StepProgramBag = {
     /** Gets or sets the statuses. */
     statuses?: StepStatusBag[] | null;
 
+    /** Gets or sets the status options. */
+    statusOptions?: ListItemBag[] | null;
+
     /** Gets or sets the step flow page URL. */
     stepFlowPageUrl?: string | null;
 

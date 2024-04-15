@@ -28,7 +28,7 @@
             <div v-html="kpi"></div>
             <div>
                 <NotificationBox v-if="notificationMessage && showChart" alertType="info">{{ notificationMessage }}</NotificationBox>
-                <div v-if="showChart" style="height: 350px;" class="col-md-12">
+                <div v-if="showChart && !notificationMessage" style="height: 350px;" class="col-md-12">
                     <Chart type="line" :data="chartData" :options="options" />
                 </div>
             </div>
@@ -110,7 +110,7 @@
                     },
                     stepSize: 1
                 },
-                stacked: false,
+                stacked: true,
                 beginAtZero: true,
                 suggestedMax: 2
             },
@@ -135,7 +135,7 @@
         notificationMessage.value = "";
 
         const result = await invokeBlockAction<StepProgramBag>("RefreshChart", {
-            dateRange: slidingDateRangeToString(filterDate.value as SlidingDateRange)
+            dateRange: filterDate.value ? slidingDateRangeToString(filterDate.value as SlidingDateRange) : "DateRange||||"
         });
 
         isRefreshLoading.value = false;

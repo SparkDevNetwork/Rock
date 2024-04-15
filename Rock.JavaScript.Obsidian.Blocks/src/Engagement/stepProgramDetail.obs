@@ -123,6 +123,8 @@
         "isActive",
         "name",
         "defaultListView",
+        "statuses",
+        "workflowTriggers"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(stepProgramEditBag, validProperties, invokeBlockAction), undefined, true);

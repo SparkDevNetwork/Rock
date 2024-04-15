@@ -30,10 +30,10 @@
 
     const validValues = [30, 60, 90, 180];
     const valueItems: ListItemBag[] = [
-        { value: "30", text: "Past 30 days" },
-        { value: "60", text: "Past 60 days" },
-        { value: "90", text: "Past 90 days" },
-        { value: "180", text: "Past 6 months" },
+        { value: "30", text: "Last 30 days" },
+        { value: "60", text: "Last 60 days" },
+        { value: "90", text: "Last 90 days" },
+        { value: "180", text: "Last 6 months" },
         { value: "0", text: "All" }
     ];
 

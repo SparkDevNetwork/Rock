@@ -37,6 +37,7 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+import { useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -72,13 +73,13 @@ export default defineComponent({
         /** The unique identifier of the entity type that this detail block represents. */
         entityTypeGuid: {
             type: String as PropType<Guid>,
-            required: true
+            required: false
         },
 
         /** The friendly name of the entity type that this block represents. */
         entityTypeName: {
             type: String as PropType<string>,
-            required: true
+            required: false
         },
 
         /** The identifier key of the entity being displayed by this block. */
@@ -259,6 +260,8 @@ export default defineComponent({
         const isEntityFollowed = ref<boolean | null>(null);
         const showAuditDetailsModal = ref(false);
         const isPanelVisible = ref(true);
+        const providedEntityTypeName = useEntityTypeName();
+        const providedEntityTypeGuid = useEntityTypeGuid();
 
         let formSubmissionSource: PromiseCompletionSource | null = null;
         let editModeReadyCompletionSource: PromiseCompletionSource | null = null;
@@ -276,6 +279,20 @@ export default defineComponent({
         // #region Computed Values
 
         /**
+         * The entity type name for this block.
+         */
+        const entityTypeName = computed((): string => {
+            return props.entityTypeName ?? providedEntityTypeName ?? "EntityTypeNotConfigured";
+        });
+
+        /**
+         * The entity type unique identifier for this block.
+         */
+        const entityTypeGuid = computed((): Guid => {
+            return props.entityTypeGuid ?? providedEntityTypeGuid ?? emptyGuid;
+        });
+
+        /**
          * Contains the title to be displayed in the panel depending on the
          * property values and the current state of the panel.
          */
@@ -288,19 +305,19 @@ export default defineComponent({
                 // If we are in view mode then we should be display the entity name.
                 // If not, fall back on the entity type name.
                 case DetailPanelMode.View:
-                    return props.name ?? splitCase(props.entityTypeName);
+                    return props.name ?? splitCase(entityTypeName.value);
 
                 // If we are in Add mode then display "Add {Entity Type Name}"
                 case DetailPanelMode.Add:
-                    return `Add ${splitCase(props.entityTypeName)}`;
+                    return `Add ${splitCase(entityTypeName.value)}`;
 
                 // If we are in edit mode then we should be displaying the entity name.
                 // If not, fall back on the entity type name.
                 case DetailPanelMode.Edit:
-                    return props.name ?? splitCase(props.entityTypeName);
+                    return props.name ?? splitCase(entityTypeName.value);
 
                 default:
-                    return splitCase(props.entityTypeName);
+                    return splitCase(entityTypeName.value);
             }
         });
 
@@ -471,18 +488,15 @@ export default defineComponent({
          * this detail block.
          */
         const getEntityFollowedState = async (): Promise<void> => {
-            const entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
-
             // If we don't have an entity then mark the state as "unknown".
-            if (!entityTypeGuid
-                || areEqual(props.entityTypeGuid, emptyGuid)
+            if (areEqual(entityTypeGuid.value, emptyGuid)
                 || !props.entityKey) {
                 isEntityFollowed.value = null;
                 return;
             }
 
             const data: FollowingGetFollowingOptionsBag = {
-                entityTypeGuid,
+                entityTypeGuid: entityTypeGuid.value,
                 entityKey: props.entityKey
             };
 
@@ -503,7 +517,7 @@ export default defineComponent({
          */
         const onSecurityClick = (): void => {
             if (props.entityKey) {
-                showSecurity(props.entityTypeGuid, props.entityKey, props.entityTypeName);
+                showSecurity(entityTypeGuid.value, props.entityKey, props.entityTypeName);
             }
         };
 
@@ -665,7 +679,7 @@ export default defineComponent({
          */
         const onDeleteClick = async (): Promise<void> => {
             if (props.onDelete) {
-                if (!await confirmDelete(props.entityTypeName, props.additionalDeleteMessage ?? "")) {
+                if (!await confirmDelete(entityTypeName.value, props.additionalDeleteMessage ?? "")) {
                     return;
                 }
 
@@ -703,18 +717,15 @@ export default defineComponent({
          * toggle the followed state of the entity.
          */
         const onFollowClick = async (): Promise<void> => {
-            const entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
-
             // Shouldn't really happen, but just make sure we have everything.
             if (isEntityFollowed.value === null
-                || !entityTypeGuid
-                || areEqual(entityTypeGuid, emptyGuid)
+                || areEqual(entityTypeGuid.value, emptyGuid)
                 || !props.entityKey) {
                 return;
             }
 
             const data: FollowingSetFollowingOptionsBag = {
-                entityTypeGuid,
+                entityTypeGuid: entityTypeGuid.value,
                 entityKey: props.entityKey,
                 isFollowing: !isEntityFollowed.value
             };
@@ -765,6 +776,8 @@ export default defineComponent({
         }
 
         return {
+            entityTypeName,
+            entityTypeGuid,
             hasLabels,
             internalFooterSecondaryActions,
             internalHeaderSecondaryActions,

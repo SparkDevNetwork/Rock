@@ -21,16 +21,31 @@
 // </copyright>
 //
 
-export type VolunteerGenerosityMonthlyGivingDataBag = {
-    /** Gets or sets the group identifier. */
-    groupId?: string | null;
+/** Determines the completion status of a LearningProgramCompletion. */
+export const DueDateCalculationMethod = {
+    /** A specific date. */
+    Specific: 1,
 
-    /** Gets or sets the month. */
-    month?: string | null;
+    /** An offset of the class start date. */
+    ClassStartOffset: 2,
 
-    /** Gets or sets themonth abrreviated name. */
-    monthNameAbbreviated?: string | null;
+    /** An offset of the class enrollment date. */
+    EnrollmentOffset: 3,
 
-    /** Gets or sets the year. */
-    year?: string | null;
+    /** No calculation. */
+    NoDate: 4
+} as const;
+
+/** Determines the completion status of a LearningProgramCompletion. */
+export const DueDateCalculationMethodDescription: Record<number, string> = {
+    1: "Specific",
+
+    2: "Class Start Offset",
+
+    3: "Enrollment Offset",
+
+    4: "No Date"
 };
+
+/** Determines the completion status of a LearningProgramCompletion. */
+export type DueDateCalculationMethod = typeof DueDateCalculationMethod[keyof typeof DueDateCalculationMethod];
