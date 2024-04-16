@@ -101,6 +101,7 @@
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
+    <Compile Include="Finance\FinancialPersonBankAccountList.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
@@ -109,8 +110,8 @@
     <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
-	<Compile Include="Cms\PageRouteList.cs" />
-	<Compile Include="Crm\PersonMergeRequestList.cs" />
+    <Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
 	<Compile Include="Event\RegistrationInstanceFeeList.cs" />
@@ -150,7 +151,7 @@
     <Compile Include="Crm\AssessmentTypeList.cs" />
     <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />
-	<Compile Include="Core\ScheduledJobList.cs" />
+    <Compile Include="Core\ScheduledJobList.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
