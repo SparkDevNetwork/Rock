@@ -182,16 +182,19 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
         }
 
         [TestMethod]
-        public void GuidToId_WithInvalidInput_ReturnsErrorMessage()
+        public void GuidToId_WithInvalidInput_ThrowsErrorMessage()
         {
             var template = @"
 {% assign personEntityTypeId = '#invalid#' | GuidToId:'EntityType' %}
 ";
-            var expectedOutput = "Lava Error: Invalid Input Guid Value.";
+            var expectedMessage = "Lava Error: Invalid Input Guid Value.";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
-                expectedOutput,
-                template );
+            var exception = Assert.ThrowsException<LavaException>( () =>
+            {
+                TestHelper.GetTemplateOutput( typeof( FluidEngine ), template );
+            } );
+
+            Assert.AreEqual( expectedMessage, exception.Message );
         }
 
         [TestMethod]
@@ -249,17 +252,19 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
         }
 
         [TestMethod]
-        public void GuidToId_WithInvalidEntityId_ReturnsErrorMessage()
+        public void GuidToId_WithInvalidEntityId_ThrowsErrorMessage()
         {
             var template = @"
 {% assign entityTypeId = '94FF79FE-4BB0-4F9E-AD74-14766433FC06' | GuidToId:'#InvalidEntityType#' %}
 ";
-            var expectedOutput = @"
-LavaError: Invalid EntityType. [entityType=""#InvalidEntityType#""]
-";
+            var expectedMessage = "Lava Error: Invalid Entity Type.";
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput,
-                template );
+            var exception = Assert.ThrowsException<LavaException>( () =>
+            {
+                TestHelper.GetTemplateOutput( typeof( FluidEngine ), template );
+            } );
+
+            Assert.AreEqual( expectedMessage, exception.Message );
         }
 
         private Dictionary<string, string> GetEntityTypeGuidToIdMap()
