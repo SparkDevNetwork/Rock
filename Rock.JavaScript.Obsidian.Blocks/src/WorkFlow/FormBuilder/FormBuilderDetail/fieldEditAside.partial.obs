@@ -94,6 +94,7 @@
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import { FormField, FormFieldType } from "../Shared/types.partial";
     import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils.partial";
+    import { Guid } from "@Obsidian/Types";
 
     /**
      * Check if the two records are equal. This makes sure all the key names match
@@ -195,6 +196,18 @@
 
     /** True if the conditional modal should be open; otherwise false. */
     const conditionalModalOpen = ref(false);
+
+    // Variables used by the edit configuraiton value update process so that
+    // we can update only once every 250ms so we don't flood the server when
+    // people are typing in text boxes.
+    let pendingEditConfigurationValueUpdate: {
+        fieldGuid: Guid;
+        fieldTypeGuid: Guid;
+        configurationValues: Record<string, string>;
+    } | undefined = undefined;
+    let editConfigurationValuesLastUpdate = 0;
+    let pendingEditConfigurationValueUpdateTimer: number | undefined = undefined;
+    let isUpdatingEditConfigurationValues = false;
 
     // #endregion
 
@@ -316,6 +329,84 @@
         conditionalSources.value = result.data;
     }
 
+    /**
+     * Requests an update to the editConfigurationValues property of the field.
+     * This is what causes the preview UI to update correctly.
+     *
+     * @param fieldGuid The field unique identifier, used to prevent updating the wrong field.
+     * @param fieldTypeGuid The field type unique identifier.
+     * @param configurationValues The configuration values for the field.
+     */
+    function requestUpdateEditConfigurationValues(fieldGuid: Guid, fieldTypeGuid: Guid, configurationValues: Record<string, string>): void {
+        pendingEditConfigurationValueUpdate = {
+            fieldGuid,
+            fieldTypeGuid,
+            configurationValues
+        };
+
+        // If we are currently updating or updated within the last 250ms then
+        // schedule an update in 250ms.
+        if (isUpdatingEditConfigurationValues || editConfigurationValuesLastUpdate + 250 > Date.now()) {
+            if (pendingEditConfigurationValueUpdateTimer === undefined) {
+                pendingEditConfigurationValueUpdateTimer = window.setTimeout(() => {
+                    pendingEditConfigurationValueUpdateTimer = undefined;
+                    updateEditConfigurationValues();
+                }, 250);
+            }
+
+            return;
+        }
+        else {
+            updateEditConfigurationValues();
+        }
+    }
+
+    /**
+     * Call the server to get the edit configuration values for the field.
+     */
+    async function updateEditConfigurationValues(): Promise<void> {
+        if (!pendingEditConfigurationValueUpdate) {
+            return;
+        }
+
+        // Prevent simultaneous updates.
+        isUpdatingEditConfigurationValues = true;
+
+        try {
+            const fieldGuid = pendingEditConfigurationValueUpdate.fieldGuid;
+            const fieldTypeGuid = pendingEditConfigurationValueUpdate.fieldTypeGuid;
+            const configurationValues = pendingEditConfigurationValueUpdate.configurationValues;
+
+            // Clear out the old update request now that we are processing it.
+            pendingEditConfigurationValueUpdate = undefined;
+
+            const configurationValuesJson = JSON.stringify(configurationValues);
+
+            const data = {
+                fieldTypeGuid: fieldTypeGuid,
+                configurationValues
+            };
+
+            const result = await invokeBlockAction<Record<string, string>>("GetEditConfigurationValues", data);
+
+            // Make sure we are still processing the same field and values.
+            if (fieldGuid !== props.modelValue.guid || JSON.stringify(props.modelValue.configurationValues) !== configurationValuesJson) {
+                return;
+            }
+
+            if (result.isSuccess && result.data) {
+                emit("update:modelValue", {
+                    ...props.modelValue,
+                    editConfigurationValues: result.data
+                });
+            }
+        }
+        finally {
+            isUpdatingEditConfigurationValues = false;
+            editConfigurationValuesLastUpdate = Date.now();
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -339,6 +430,8 @@
             configurationValues: value?.configurationValues,
             defaultValue: value?.defaultValue
         });
+
+        requestUpdateEditConfigurationValues(props.modelValue.guid, props.modelValue.fieldTypeGuid, value?.configurationValues ?? {});
     }
 
     /**
