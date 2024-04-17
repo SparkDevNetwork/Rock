@@ -34,7 +34,7 @@
                                                 v-model="selectedDateRange"
                                                 label="Attendance Date Range" />
 
-                        <DropDownList v-if="!bag.showCampusFilter" :style="'width: 26vw'"
+                        <DropDownList v-if="bag.showCampusFilter" :style="'width: 26vw'"
                                       v-model="campusValue"
                                       :items="uniqueCampuses"
                                       :onUpdate:modelValue="onCampusSelected"
@@ -73,14 +73,38 @@
             </template>
 
             <!-- Grid Section -->
-            <PersonColumn name="Name"
-                          title="Name"
-                          field="person"
-                          :filter="pickExistingValueFilter"
-                          visiblePriority="xs"
-                          width="15%" />
+            <Column name="name"
+                    title="Name"
+                    sortValue="{{ row.person.lastName }} {{ row.person.nickName }}"
+                    :filter="textValueFilter"
+                    filterValue="{{ row.person.nickName }} {{ row.person.lastName }}"
+                    quickFilterValue="{{ row.person.nickName }} {{ row.person.lastName }}">
+                <template #format="{ row }">
+                    <div class="d-flex flex-fill align-items-center">
+                        <div class="mr-2 flex-shrink-0"
+                             :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${row.person.photoUrl}')`, 'background-size': 'cover' }">
+                        </div>
+                        <div class="flex-grow-1">
+                            {{ row.person.nickName }} {{ row.person.lastName }}
+                        </div>
+                    </div>
+                </template>
 
-            <TextColumn name="campus"
+                <template #skeleton>
+                    <div class="d-flex flex-fill align-items-center">
+                        <div class="mr-2 flex-shrink-0 skeleton skeleton-xs"
+                             style="width: 24px; height: 24px; border-radius: 12px;" />
+                        <div class="skeleton skeleton-text skeleton-sm skeleton-rounded flex-grow-1" />
+                    </div>
+                </template>
+
+                <template #export="{ row }">
+                    {{ row.person.nickName }} {{ row.person.lastName }}
+                </template>
+            </Column>
+
+            <TextColumn v-if="bag.showCampusFilter"
+                        name="campus"
                         title="Campus"
                         field="campus"
                         visiblePriority="xs"
@@ -111,6 +135,7 @@
             <Column name="givingMonths"
                     title="Giving Months"
                     field="givingMonths"
+                    :sortField="'false'"
                     width="30%">
                 <template #format="{ row }">
                     <div class="bar-chart">
@@ -604,7 +629,6 @@
             dataRefreshed.value = true;
             lastUpdated.value = (result.data as { lastUpdated: string }).lastUpdated;
             estimatedRefreshTime.value = (result.data as { estimatedRefreshTime: number }).estimatedRefreshTime;
-            console.log("Data refreshed successfully", lastUpdated.value, estimatedRefreshTime.value);
         }
 
         isRefreshing.value = false;
@@ -677,4 +701,3 @@
     const last13Months = generateLast13Months();
     gridDataSource.value = loadGridData() as Promise<GridDataBag>;
 </script>
-
