@@ -3,7 +3,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
-using Rock.CheckIn.v2.Filters;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -14,7 +13,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
     /// they continue to work as expected. This primarily covers just the
     /// constructors as they currently have no other logic.
     /// </summary>
-    /// <seealso cref="BirthMonthOpportunityFilter"/>
+    /// <seealso cref="AreaConfigurationData"/>
     [TestClass]
     public class AreaConfigurationDataTests : CheckInMockDatabase
     {
@@ -39,6 +38,20 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
 
             Assert.AreEqual( expectedAttendanceRule, instance.AttendanceRule );
             Assert.AreEqual( expectedPrintTo, instance.PrintTo );
+        }
+
+        [TestMethod]
+        public void DeclaredType_HasExpectedPropertyCount()
+        {
+            // This is a simple test to help us know when new properties are
+            // added so we can update the other tests to check for those
+            // properties.
+            var type = typeof( AreaConfigurationData );
+            var expectedPropertyCount = 2;
+
+            var propertyCount = type.GetProperties().Length;
+
+            Assert.AreEqual( expectedPropertyCount, propertyCount );
         }
 
         #endregion

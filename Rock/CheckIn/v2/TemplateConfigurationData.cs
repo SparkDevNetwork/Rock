@@ -250,7 +250,7 @@ namespace Rock.CheckIn.v2
         /// will be displayed at the end of the check-in session.
         /// </summary>
         /// <value>A value that determines how the custom success lava tempalte will be displayed.</value>
-        public virtual SuccessLavaTemplateDisplayMode SuccessLavaTemplateDisplay { get; }
+        public virtual Enums.CheckIn.SuccessLavaTemplateDisplayMode SuccessLavaTemplateDisplay { get; }
 
         #endregion
 
@@ -437,6 +437,13 @@ namespace Rock.CheckIn.v2
         public virtual RequirementLevel DisplayRaceForAdults { get; }
 
         /// <summary>
+        /// Gets a value indicating if the race field is visible and/or
+        /// required for children on the kiosk registration screen.
+        /// </summary>
+        /// <value>A value indicating how to display the race field for children.</value>
+        public virtual RequirementLevel DisplayRaceForChildren { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the alternate identifier field
         /// is visible for adults on the kiosk registration screen.
         /// </summary>
@@ -578,7 +585,7 @@ namespace Rock.CheckIn.v2
             SecurityCodeAlphaLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" ).AsInteger();
             SecurityCodeAlphaNumericLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeLength" ).AsInteger();
             SecurityCodeNumericLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" ).AsInteger();
-            SuccessLavaTemplateDisplay = ( SuccessLavaTemplateDisplayMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE ).AsInteger();
+            SuccessLavaTemplateDisplay = ( Enums.CheckIn.SuccessLavaTemplateDisplayMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE ).AsInteger();
 
             // Lava templates.
             AbilityLevelSelectHeaderLavaTemplate = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE ) ?? string.Empty;
@@ -604,8 +611,9 @@ namespace Rock.CheckIn.v2
             DisplayBirthdateForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN ) );
             DisplayGradeForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN ) );
             DisplayEthnicityForAdults = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS ) );
-            DisplayEthnicityForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN ) );
+            DisplayEthnicityForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN ) );
             DisplayRaceForAdults = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS ) );
+            DisplayRaceForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN ) );
             IsAlternateIdFieldVisibleForAdults = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS ).AsBoolean();
             IsAlternateIdFieldVisibleForChildren = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN ).AsBoolean();
             IsCheckInAfterRegistrationAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_ENABLECHECKINAFTERREGISTRATION ).AsBoolean();

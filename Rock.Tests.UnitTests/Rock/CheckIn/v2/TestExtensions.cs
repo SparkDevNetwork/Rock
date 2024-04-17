@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
 using Moq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
 {
@@ -50,6 +54,24 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             dbSet.As<IQueryable<T>>().Setup( m => m.GetEnumerator() ).Returns( () => queryable.GetEnumerator() );
 
             return dbSet;
+        }
+
+        public static void SetMockAttributeValue<TEntity>( this Mock<TEntity> entity, string key, string value )
+            where TEntity : class, IHasAttributes
+        {
+            //if ( !entity.Object.Attributes.ContainsKey( key ) )
+            //{
+            //    var attribute = MockDatabaseHelper.CreateEntityMock<global::Rock.Model.Attribute>( 0, Guid.Empty );
+            //    attribute.Object.Key = key;
+            //    attribute.Object.Categories = new List<Category>();
+
+            //    var attributeCache = new AttributeCache();
+            //    attributeCache.SetFromEntity( attribute.Object );
+
+            //    entity.Object.Attributes.Add( key, attributeCache );
+            //}
+
+            entity.Object.AttributeValues[key] = new AttributeValueCache( 0, 0, value );
         }
     }
 }
