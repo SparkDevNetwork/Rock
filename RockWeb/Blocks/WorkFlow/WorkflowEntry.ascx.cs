@@ -2076,7 +2076,7 @@ namespace RockWeb.Blocks.WorkFlow
                 var attribute = AttributeCache.Get( formAttribute.AttributeId );
                 var control = phWorkflowFormAttributes.FindControl( string.Format( "attribute_field_{0}", formAttribute.AttributeId ) );
 
-                if ( attribute != null && control != null )
+                if ( attribute != null && control != null && control.Visible )
                 {
                     var editValue = attribute.FieldType.Field.GetEditValue( attribute.GetControl( control ), attribute.QualifierValues );
                     result.Add( attribute.Id, new AttributeValueCache( attribute.Id, null, editValue ) );
