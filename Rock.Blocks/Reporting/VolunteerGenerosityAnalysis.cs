@@ -117,6 +117,9 @@ namespace Rock.Blocks.Reporting
 
             IEnumerable<VolunteerGenerosityPersonDataBag> filteredPeople = dataBag.PeopleData;
 
+            // Filter out all of the inactive or archived people
+            filteredPeople = filteredPeople.Where( p => p.PersonDetails.IsActive );
+
             // Filter by Campus
             if ( !string.IsNullOrWhiteSpace( FilterCampus ) && FilterCampus != "All" )
             {
@@ -138,7 +141,6 @@ namespace Rock.Blocks.Reporting
                     lastAttendanceDate >= cutoffDate
                 );
             }
-
 
             return filteredPeople.AsQueryable();
         }

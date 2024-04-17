@@ -38,6 +38,9 @@ export type VolunteerGenerosityPersonDetailsBag = {
     /** Gets or sets the Group Name. */
     groupName?: string | null;
 
+    /** Gets or sets the IsActive flag. */
+    isActive: boolean;
+
     /** Gets or sets the person's last attendance date. */
     lastAttendanceDate?: string | null;
 

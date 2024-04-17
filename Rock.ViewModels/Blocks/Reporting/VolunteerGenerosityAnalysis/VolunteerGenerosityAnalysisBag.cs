@@ -96,6 +96,10 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// Gets or sets the Campus Short Code
         /// </summary>
         public string CampusShortCode { get; set; }
+        /// <summary>
+        /// Gets or sets the IsActive flag.
+        /// </summary>
+        public bool IsActive { get; set; }
     }
 
     /// <summary>
