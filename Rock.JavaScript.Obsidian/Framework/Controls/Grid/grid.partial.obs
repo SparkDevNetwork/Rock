@@ -8,6 +8,7 @@
                              :gridActions="gridActions"
                              :visibleColumnCount="visibleColumnCount"
                              :countMessage="countMessage"
+                             :selectedRowCount="selectedRowCount"
                              :isCountMessageVisible="isCountMessageVisible"
                              :isSearchVisible="isSearchVisible" />
 
@@ -865,6 +866,7 @@
     const visibleRows = ref<Record<string, unknown>[]>([]);
     const pageCount = ref(0);
     const countMessage = ref("");
+    const selectedRowCount = ref(0);
     const visibleColumnDefinitions = shallowRef<ReadonlyArray<ColumnDefinition>>([]);
     const dragOptions = ref<IDragSourceOptions | undefined>();
     const isRowSelectionInProgress = ref(false);
@@ -1949,6 +1951,16 @@
     }
 
     /**
+     * Called when the {@link gridState.selectedKeys} value has changed.
+     * Update the UI to reflect the selection count.
+     */
+    function onSelectedKeysChanged(): void {
+        selectedRowCount.value = gridState.selectedKeys.length;
+
+        emit("selectedKeysChanged", gridState);
+    }
+
+    /**
      * Called when a row has been clicked if selection is enabled.
      *
      * @param key The key of the row that was clicked.
@@ -2027,9 +2039,10 @@
     gridState.on("sortedRowsChanged", onSortedRowsChanged);
     gridState.on("visibleColumnsChanged", () => visibleColumnDefinitions.value = gridState.visibleColumns);
     gridState.on("filteredRowsChanged", () => emit("filteredRowsChanged", gridState));
-    gridState.on("selectedKeysChanged", () => emit("selectedKeysChanged", gridState));
+    gridState.on("selectedKeysChanged", onSelectedKeysChanged);
 
     onUnmounted(() => {
+        gridState.off("selectedKeysChanged", onSelectedKeysChanged);
         gridState.off("sortedRowsChanged", onSortedRowsChanged);
         gridState.dispose();
     });

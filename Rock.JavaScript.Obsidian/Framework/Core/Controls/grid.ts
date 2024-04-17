@@ -723,7 +723,7 @@ export async function getEntitySetBag(grid: IGridState, keyFields: string[], opt
 
     // Because we might be dealing with large data sets and might be pulling
     // formatted data from components, use a worker so the UI doesn't freeze.
-    const worker = new BackgroundItemsFunctionWorker(grid.getSortedRows(), processRow);
+    const worker = new BackgroundItemsFunctionWorker(grid.sortedRows, processRow);
 
     await worker.run();
 
@@ -1544,7 +1544,7 @@ class BackgroundItemsFunctionWorker<T> extends BackgroundWorker {
     private workerFunction: (item: T) => void;
 
     /** The array of items to be processed. */
-    private items: T[];
+    private items: readonly T[];
 
     /** The index of the next item to be processed. */
     private itemIndex: number = 0;
@@ -1556,7 +1556,7 @@ class BackgroundItemsFunctionWorker<T> extends BackgroundWorker {
      * @param items The array of items to be processed.
      * @param workerFunction The function to be called for each item in the array.
      */
-    constructor(items: T[], workerFunction: ((item: T) => void)) {
+    constructor(items: readonly T[], workerFunction: ((item: T) => void)) {
         super();
 
         this.workerFunction = workerFunction;
@@ -1744,7 +1744,7 @@ export class GridState implements IGridState {
         return this.internalSelectedKeys;
     }
 
-    private set selectedKeys(value: string[]) {
+    public set selectedKeys(value: string[]) {
         this.internalSelectedKeys = value;
         this.emitter.emit("selectedKeysChanged", this);
     }
@@ -1870,6 +1870,7 @@ export class GridState implements IGridState {
     private updateFilteredRows(): void {
         if (this.visibleColumns.length === 0) {
             this.filteredRows = [];
+            this.selectedKeys = [];
             this.updateSortedRows();
 
             return;
@@ -1877,6 +1878,7 @@ export class GridState implements IGridState {
 
         const columns = this.visibleColumns;
         const quickFilterRawValue = this.quickFilter.toLowerCase();
+        const oldFilteredKeys = this.filteredRows.map(r => this.getRowKey(r));
 
         const result = toRaw(this.rows).filter(row => {
             // Check if the row matches the quick filter.
@@ -1914,6 +1916,12 @@ export class GridState implements IGridState {
         });
 
         this.filteredRows = result;
+
+        // If anything actually changed, clear the selection.
+        const newFilteredKeys = this.filteredRows.map(r => this.getRowKey(r));
+        if (!deepEqual(oldFilteredKeys, newFilteredKeys, true)) {
+            this.selectedKeys = [];
+        }
 
         this.updateSortedRows();
     }
