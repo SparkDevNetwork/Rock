@@ -79,7 +79,7 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// <summary>
         /// Gets or sets the person's last attendance date.
         /// </summary>
-        public string LastAttendanceDate { get; set; }
+        public DateTime? LastAttendanceDate { get; set; }
         /// <summary>
         /// Gets or sets the Group ID.
         /// </summary>
