@@ -87,7 +87,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import EditPanel from "./LearningProgramDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningProgramDetail/viewPanel.partial.obs";
-    import AdditionalDetailsModal from "./LearningProgramDetail/advancedDetailModal.obs";
+    import AdditionalDetailsModal from "./LearningProgramDetail/additionalDetailsModal.obs";
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
@@ -276,7 +276,7 @@
                 title: "Advanced Details",
                 type: "default",
                 handler: async () => {
-                    if (await onViewAdvancedDetailModal()) {
+                    if (await onViewAditionalDetailsModal()) {
                         showDetailsModal.value = true;
                     }
                 }
@@ -426,12 +426,12 @@
     }
 
     /**
-     * Event handler for the Advanced Modal button being clicked.
+     * Event handler for the Additional Details Modal button being clicked.
      * Request all attribute details from the server and then show the modal.
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-    async function onViewAdvancedDetailModal(): Promise<boolean> {
+    async function onViewAditionalDetailsModal(): Promise<boolean> {
         errorMessage.value = "";
 
         const result = await invokeBlockAction<LearningProgramBag | string>("GetEntityBagWithAllAttributes");

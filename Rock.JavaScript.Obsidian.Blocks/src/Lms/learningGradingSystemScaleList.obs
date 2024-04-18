@@ -3,19 +3,21 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Grading System"
-          :entityTypeGuid="EntityType.LearningGradingSystem"
+          itemTerm="Grading Scale"
+          :entityTypeGuid="EntityType.LearningGradingSystemScale"
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <Column name="system"
-                title="System"
-                width="70%"
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <Column name="scale"
+                title="Scale"
+                width="40%"
                 :filter="textValueFilter"
-                :filterValue="getRowSystemFilterValue"
-                :quickFilterValue="getRowSystemFilterValue"
+                :filterValue="getRowScaleFilterValue"
+                :quickFilterValue="getRowScaleFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div class="d-flex flex-column text-muted">
@@ -26,19 +28,23 @@
             </template>
         </Column>
 
-        <NumberColumn name="scalesCount"
-                       title="Scales"
-                       field="scalesCount"
+        <NumberColumn name="threshold"
+                       title="Threshold %"
+                       field="threshold"
                        :filter="numberValueFilter"
-                       quickFilterValue="scalesCount"
+                       quickFilterValue="threshold"
+                       width="15%"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="isPassing"
+                       title="Passing"
+                       field="isPassing"
                        width="5%"
                        visiblePriority="xs" />
 
-        <BooleanColumn name="isActive"
-                       title="Active"
-                       field="isActive"
-                       width="5%"
-                       visiblePriority="xs" />
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <SecurityColumn />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -47,15 +53,15 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, numberValueFilter, DeleteColumn, BooleanColumn, NumberColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, textValueFilter, AttributeColumns, BooleanColumn, NumberColumn, Column, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { LearningGradingSystemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemList/learningGradingSystemListOptionsBag";
+    import { LearningGradingSystemScaleListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleList/learningGradingSystemScaleListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./LearningGradingSystemList/types.partial";
+    import { NavigationUrlKey } from "./LearningGradingSystemScaleList/types.partial";
     import { reactive, ref } from "vue";
 
-    const config = useConfigurationValues<ListBlockBox<LearningGradingSystemListOptionsBag>>();
+    const config = useConfigurationValues<ListBlockBox<LearningGradingSystemScaleListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
@@ -68,11 +74,11 @@
     // #region Functions
 
     /**
-     * Gets the filter value text to use for the system column.
+     * Gets the filter value text to use for the scale column.
      *
      * @param row The row to be filtered.
      */
-     function getRowSystemFilterValue(row: Record<string, unknown>): string {
+     function getRowScaleFilterValue(row: Record<string, unknown>): string {
         return row.name + " " + row.description;
     }
 
@@ -125,7 +131,7 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete learning grading system.");
+            await alert(result.errorMessage ?? "Unknown error while trying to delete learning grading system scale.");
         }
     }
 
@@ -136,6 +142,23 @@
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
     }
 
     // #endregion
