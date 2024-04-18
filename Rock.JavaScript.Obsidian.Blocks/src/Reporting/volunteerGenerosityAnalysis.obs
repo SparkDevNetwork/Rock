@@ -124,11 +124,10 @@
                 </template>
             </TextColumn>
 
-
-            <TextColumn name="lastAttendance"
+            <DateColumn name="lastAttendance"
                         title="Last Attendance"
                         field="lastAttendanceDate"
-                        :filter="pickExistingValueFilter"
+                        :filter="dateValueFilter"
                         visiblePriority="xs"
                         width="10%" />
 
@@ -407,7 +406,7 @@
     import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
     import { VolunteerGenerositySetupBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerositySetupBag";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import Grid, { TextColumn, textValueFilter, Column, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, Column, PersonColumn, pickExistingValueFilter, dateValueFilter, DateColumn } from "@Obsidian/Controls/grid";
     import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -631,6 +630,7 @@
             estimatedRefreshTime.value = (result.data as { estimatedRefreshTime: number }).estimatedRefreshTime;
         }
 
+        location.reload();
         isRefreshing.value = false;
         gridDataSource.value = loadGridData() as Promise<GridDataBag>;
     };

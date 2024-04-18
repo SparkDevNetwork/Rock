@@ -604,7 +604,7 @@ namespace Rock.Client.SystemGuid
         public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
         public const string TEMPLATE_BLOCK = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183";
         public const string TEXT_TO_WORKFLOW = "2CACB86F-D811-4483-98E1-272F1FF8FF5D";
-        public const string THEME_PURPOSE = "05189496-F60C-4563-8F10-42CEBB470C59";
+        public const string THEME_PURPOSE = "99FF0317-9B21-4E56-9F83-EA89A3C8C789";
         public const string TOPIC_TYPE = "41141100-8fc6-44bb-aa36-9778eeda7f62";
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
