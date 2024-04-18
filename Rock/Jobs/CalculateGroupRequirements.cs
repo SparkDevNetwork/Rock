@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -34,9 +35,24 @@ namespace Rock.Jobs
     [DisplayName( "Calculate Group Requirements" )]
     [Description( "Calculate Group Requirements for group members that are in groups that have group requirements." )]
 
+    [BooleanField( "Bypass Data View Cache",
+        Key = AttributeKey.BypassDataViewCache,
+        Description = "This is an experimental setting that will be removed in a future version of Rock. Whether to bypass the Data View cache when calculating group requirements.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 0 )]
+
     public class CalculateGroupRequirements : RockJob
     {
-        /// <summary> 
+        /// <summary>
+        /// Attribute Keys for the <see cref="CalculateGroupRequirements"/> job.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string BypassDataViewCache = "BypassDataViewCache";
+        }
+
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -50,6 +66,8 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
+            var bypassDataViewCache = GetAttributeValue( AttributeKey.BypassDataViewCache ).AsBoolean();
+
             // Lists for warnings of skipped groups, workflows, or people from the job.
             List<string> skippedGroupNames = new List<string>();
             List<string> skippedWorkflowNames = new List<string>();
@@ -134,7 +152,28 @@ namespace Rock.Jobs
 
                         var groupMembersThatDoNotMeetRequirementsPersonQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
 
-                        var personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, groupMembersThatDoNotMeetRequirementsPersonQry, groupIdName.Id, groupRequirement.GroupRoleId ).ToList();
+                        /*
+                            4/17/2024 - JPH
+
+                            The "Bypass Data View Cache" attribute is a temporary setting being introduced to properly test
+                            a new approach of calculating group requirements in bulk, using the newly-introduced data view cache.
+                            Using this new cache will be the default behavior of the job, whereas this setting will allow a given
+                            partner to easily fall back to the old behavior if the cached approach proves to be problematic in any way.
+
+                            This attribute will be removed in a future version of Rock (and the following if/else block will go away)
+                            once we're sure of which path to take in the long run.
+
+                            Reason: Option to fall back to old behavior
+                         */
+                        List<PersonGroupRequirementStatus> personGroupRequirementStatuses;
+                        if ( bypassDataViewCache )
+                        {
+                            personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, groupMembersThatDoNotMeetRequirementsPersonQry, groupIdName.Id, groupRequirement.GroupRoleId ).ToList();
+                        }
+                        else
+                        {
+                            personGroupRequirementStatuses = groupRequirement.PersonQueryableMeetsGroupRequirementUsingDataViewCache( rockContext, groupMembersThatDoNotMeetRequirementsPersonQry, groupIdName.Id, groupRequirement.GroupRoleId ).ToList();
+                        }
 
                         foreach ( var personGroupRequirementStatus in personGroupRequirementStatuses )
                         {
