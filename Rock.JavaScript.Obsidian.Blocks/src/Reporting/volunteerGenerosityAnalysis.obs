@@ -124,8 +124,7 @@
                 </template>
             </TextColumn>
 
-
-            <TextColumn name="lastAttendance"
+            <DateColumn name="lastAttendance"
                         title="Last Attendance"
                         field="lastAttendanceDate"
                         :filter="dateValueFilter"
@@ -407,7 +406,7 @@
     import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
     import { VolunteerGenerositySetupBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerositySetupBag";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import Grid, { TextColumn, textValueFilter, Column, PersonColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, Column, PersonColumn, pickExistingValueFilter, dateValueFilter, DateColumn } from "@Obsidian/Controls/grid";
     import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

@@ -139,8 +139,8 @@ namespace Rock.Blocks.Reporting
             {
                 var cutoffDate = DateTime.Today.AddDays( -FilterDateRange.Value );
                 filteredPeople = filteredPeople.Where( person =>
-                    DateTime.TryParse( person.PersonDetails.LastAttendanceDate, out DateTime lastAttendanceDate ) &&
-                    lastAttendanceDate >= cutoffDate
+                    person.PersonDetails.LastAttendanceDate.HasValue &&
+                    person.PersonDetails.LastAttendanceDate.Value >= cutoffDate
                 );
             }
 
@@ -152,16 +152,7 @@ namespace Rock.Blocks.Reporting
             return new GridBuilder<VolunteerGenerosityPersonDataBag>()
                 .AddField( "id", d => d.PersonDetails.PersonId )
                 .AddTextField( "campus", d => d.PersonDetails.CampusShortCode )
-                .AddTextField( "lastAttendanceDate", d =>
-                {
-                    DateTime lastAttendanceDate;
-                    if ( DateTime.TryParse( d.PersonDetails.LastAttendanceDate, out lastAttendanceDate ) )
-                    {
-                        return lastAttendanceDate.ToString( "M/d/yyyy" );
-                    }
-
-                    return "N/A";
-                } )
+                .AddDateTimeField( "lastAttendanceDate", d => d.PersonDetails.LastAttendanceDate )
                 .AddTextField( "team", d => d.PersonDetails.GroupName )
                 .AddTextField( "givingMonths", d =>
                 {
