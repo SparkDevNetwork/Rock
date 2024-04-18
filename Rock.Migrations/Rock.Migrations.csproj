@@ -2044,9 +2044,6 @@
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403151756104_Rollup_20240315.resx">
       <DependentUpon>202403151756104_Rollup_20240315.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202403132231213_LearningManagementSystemModels.resx">
-      <DependentUpon>202403132231213_LearningManagementSystemModels.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.3\202402131830310_LimitSizeOfIconCssClassToHundredBytes.resx">
       <DependentUpon>202402131830310_LimitSizeOfIconCssClassToHundredBytes.cs</DependentUpon>
     </EmbeddedResource>
