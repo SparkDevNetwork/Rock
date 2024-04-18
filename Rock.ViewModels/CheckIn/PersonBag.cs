@@ -120,6 +120,12 @@ namespace Rock.ViewModels.CheckIn
         public string GradeFormatted { get; set; }
 
         /// <summary>
+        /// Gets or sets the current ability level of the person.
+        /// </summary>
+        /// <value>The ability level of the person.</value>
+        public CheckInItemBag AbilityLevel { get; set; }
+
+        /// <summary>
         /// Gets or sets the photo URL.
         /// </summary>
         /// <value>The photo URL.</value>

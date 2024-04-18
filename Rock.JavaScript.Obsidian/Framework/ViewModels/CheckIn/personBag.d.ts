@@ -23,9 +23,13 @@
 
 import { Gender } from "@Obsidian/Enums/Crm/gender";
 import { Guid } from "@Obsidian/Types";
+import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 
 /** A family member that identifies a single individual for check-in. */
 export type PersonBag = {
+    /** Gets or sets the current ability level of the person. */
+    abilityLevel?: CheckInItemBag | null;
+
     /** Gets or sets the age. */
     age?: number | null;
 

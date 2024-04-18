@@ -240,6 +240,8 @@ namespace Rock.CheckIn.v2
 
             var people = preparedRequests.Select( a => a.Person ).ToList();
 
+            people.LoadAttributes( Session.RockContext );
+
             return SaveAttendanceRecords( sessionRequest.IsPending, newOrUpdatedAttendances, people, attributeEntitiesToSave );
         }
 
@@ -311,6 +313,8 @@ namespace Rock.CheckIn.v2
             }
 
             var people = attendanceItems.Select( a => a.Person ).ToList();
+
+            people.LoadAttributes( Session.RockContext );
 
             return SaveAttendanceRecords( false, updatedAttendances, people, null );
         }

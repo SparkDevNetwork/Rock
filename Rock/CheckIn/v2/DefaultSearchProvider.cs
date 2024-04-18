@@ -198,6 +198,8 @@ namespace Rock.CheckIn.v2
                 } )
                 .ToList();
 
+            familyMembers.Select( fm => fm.Person ).LoadAttributes( Session.RockContext );
+
             // Convert the raw database data into the bags that are understood
             // by different elements of the check-in system.
             var families = familyMembers

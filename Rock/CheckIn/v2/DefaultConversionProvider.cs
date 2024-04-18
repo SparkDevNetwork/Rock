@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Model;
 using Rock.ViewModels.CheckIn;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2
@@ -104,6 +105,8 @@ namespace Rock.CheckIn.v2
                     .OrderByDescending( gm => gm.GroupGuid == familyGuid )
                     .ThenBy( gm => gm.RoleOrder );
 
+            members.Select( fm => fm.Person ).LoadAttributes( Session.RockContext );
+
             foreach ( var member in members )
             {
                 // Skip any duplicates.
@@ -130,6 +133,23 @@ namespace Rock.CheckIn.v2
         /// <returns>A new instance of <see cref="PersonBag"/> that represents the person.</returns>
         public virtual PersonBag GetPersonBag( Person person )
         {
+            var abilityLevelGuid = person.GetAttributeValue( "AbilityLevel" ).AsGuidOrNull();
+            CheckInItemBag abilityLevel = null;
+
+            if ( abilityLevelGuid.HasValue )
+            {
+                var definedValue = DefinedValueCache.Get( abilityLevelGuid.Value, Session.RockContext );
+
+                if ( definedValue != null )
+                {
+                    abilityLevel = new CheckInItemBag
+                    {
+                        Guid = definedValue.Guid,
+                        Name = definedValue.Value
+                    };
+                }
+            }
+
             return new PersonBag
             {
                 Guid = person.Guid,
@@ -147,6 +167,7 @@ namespace Rock.CheckIn.v2
                 AgePrecise = person.AgePrecise,
                 GradeOffset = person.GradeOffset,
                 GradeFormatted = person.GradeFormatted,
+                AbilityLevel = abilityLevel,
                 Gender = person.Gender
             };
         }

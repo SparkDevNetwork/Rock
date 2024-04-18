@@ -103,6 +103,7 @@ namespace Rock.CheckIn.v2
             // Get all areas that don't have exclusions for today.
             var activeAreas = possibleAreas
                 .Where( a => !a.GroupScheduleExclusions.Any( e => today >= e.Start && today <= e.End ) )
+                .OrderBy( a => a.Order )
                 .ToList();
 
             // Get all area identifiers as a HashSet for faster lookups.
@@ -127,6 +128,7 @@ namespace Rock.CheckIn.v2
                 .SelectMany( l => GroupLocationCache.AllForLocationId( l.Id ) )
                 .DistinctBy( glc => glc.Id )
                 .Where( glc => activeAreaIds.Contains( GroupCache.Get( glc.GroupId, rockContext )?.GroupTypeId ?? 0 ) )
+                .OrderBy( glc => glc.Order )
                 .ToList();
 
             // Get all the schedules that are active.
@@ -137,6 +139,7 @@ namespace Rock.CheckIn.v2
                 .Where( s => s != null
                     && s.IsActive
                     && s.WasCheckInActive( now ) )
+                .OrderBy( s => s.StartTimeOfDay )
                 .ToList();
 
             // Get just the schedule identifiers in a hash set for faster lookups.
@@ -160,6 +163,7 @@ namespace Rock.CheckIn.v2
             {
                 AbilityLevels = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid(), rockContext )
                     ?.DefinedValues
+                    .OrderBy( dv => dv.Order )
                     .Select( dv => new AbilityLevelOpportunity
                     {
                         Guid = dv.Guid,
@@ -219,27 +223,29 @@ namespace Rock.CheckIn.v2
 
             // Add in all the Groups to the opportunities.
             var activeGroupLocationsUnderCapacity = activeGroupLocations
-                .Where( gl => !locationIdsOverCapacity.Contains( gl.LocationId ) );
-
-            foreach ( var grp in activeGroupLocationsUnderCapacity.GroupBy( gl => gl.GroupId ) )
-            {
-                var group = GroupCache.Get( grp.Key, rockContext );
-                var groupType = group?.GroupType;
-
-                if ( groupType == null )
+                .Where( gl => !locationIdsOverCapacity.Contains( gl.LocationId ) )
+                .GroupBy( gl => gl.GroupId )
+                .Select( grp => new
                 {
-                    continue;
-                }
+                    Group = GroupCache.Get( grp.Key, rockContext ),
+                    Locations = grp
+                } )
+                .Where( g => g.Group?.GroupType != null )
+                .OrderBy( g => g.Group.Order );
+
+            foreach ( var grp in activeGroupLocationsUnderCapacity )
+            {
+                var groupType = grp.Group.GroupType;
 
                 opportunities.Groups.Add( new GroupOpportunity
                 {
-                    Guid = group.Guid,
-                    Name = group.Name,
-                    AbilityLevelGuid = null,
+                    Guid = grp.Group.Guid,
+                    Name = grp.Group.Name,
+                    AbilityLevelGuid = grp.Group.GetAttributeValue( "AbilityLevel" ).AsGuidOrNull(),
                     AreaGuid = groupType.Guid,
-                    CheckInData = group.GetCheckInData( rockContext ),
+                    CheckInData = grp.Group.GetCheckInData( rockContext ),
                     CheckInAreaData = groupType.GetCheckInAreaData( rockContext ),
-                    LocationGuids = grp.OrderBy( gl => gl.Order )
+                    LocationGuids = grp.Locations.OrderBy( gl => gl.Order )
                         .Select( gl => NamedLocationCache.Get( gl.LocationId ) )
                         .Where( l => l != null )
                         .Select( l => l.Guid )
