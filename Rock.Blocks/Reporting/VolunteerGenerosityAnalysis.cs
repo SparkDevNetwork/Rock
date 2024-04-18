@@ -77,13 +77,15 @@ namespace Rock.Blocks.Reporting
 
                             var uniqueGroups = dataBag.PeopleData.Select( p => p.PersonDetails.GroupName ).Distinct().ToList();
 
+                            var hasMultipleCampuses = CampusCache.All().Count( c => ( bool ) c.IsActive ) > 1;
+
                             var bag = new VolunteerGenerositySetupBag
                             {
                                 UniqueCampuses = uniqueCampuses,
                                 UniqueGroups = uniqueGroups,
                                 LastUpdated = lastUpdated,
                                 EstimatedRefreshTime = estimatedRefreshTime,
-                                ShowCampusFilter = uniqueCampuses.Count > 1
+                                ShowCampusFilter = hasMultipleCampuses
                             };
 
                             return bag;
@@ -157,6 +159,7 @@ namespace Rock.Blocks.Reporting
                     {
                         return lastAttendanceDate.ToString( "M/d/yyyy" );
                     }
+
                     return "N/A";
                 } )
                 .AddTextField( "team", d => d.PersonDetails.GroupName )
