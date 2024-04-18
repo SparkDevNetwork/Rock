@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class LearningManagementSystemModels : IMigrationMetadata
+    public sealed partial class CodeGenerated_20240411 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(LearningManagementSystemModels));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Rollup_20240411));
         
         string IMigrationMetadata.Id
         {
-            get { return "202404102128185_LearningManagementSystemModels"; }
+            get { return "202404112355222_CodeGenerated_20240411"; }
         }
         
         string IMigrationMetadata.Source

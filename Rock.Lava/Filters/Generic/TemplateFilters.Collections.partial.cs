@@ -426,7 +426,7 @@ namespace Rock.Lava.Filters
             IEnumerable<object> e = input is IEnumerable<object> ? input as IEnumerable<object> : new List<object>( new[] { input } );
             var array = e.ToList();
 
-            if ( !e.Any() )
+            if ( input == null || !e.Any() )
             {
                 return 0;
             }

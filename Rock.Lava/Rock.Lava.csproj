@@ -169,6 +169,7 @@
     <Compile Include="Engine\LavaParseException.cs" />
     <Compile Include="Engine\LavaToLiquidTemplateConverter.cs" />
     <Compile Include="Engine\LavaUtilityHelper.cs" />
+    <Compile Include="Filters\Generic\TemplateFilters.Conversion.partial.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Utility.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Dictionaries.cs" />
     <Compile Include="Utilities\LavaDataObjectHelper.cs" />

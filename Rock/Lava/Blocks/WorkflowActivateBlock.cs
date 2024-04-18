@@ -221,7 +221,7 @@ namespace Rock.Lava.Blocks
                                     {
                                         activity = WorkflowActivity.Activate( activityType, workflow );
 
-                                        SetWorkflowAttributeValues( workflow, entityAttributes );
+                                        SetActivityAttributeValues( activity, entityAttributes );
                                     }
                                     else
                                     {
@@ -279,14 +279,12 @@ namespace Rock.Lava.Blocks
 
         private void SetWorkflowAttributeValues( Rock.Model.Workflow workflow, LavaElementAttributes lavaAttributes )
         {
-            // Entity Attribute keys are case-sensitive, whereas Lava parameters are not.
-            // Create a map of case-insensitive keys to the correct Entity Attribute casing.
-            var attributeNameToKeyMap = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
-            foreach ( var attributeKey in workflow.Attributes.Keys )
+            if ( workflow == null || lavaAttributes == null )
             {
-                attributeNameToKeyMap[attributeKey] = attributeKey;
+                return;
             }
 
+            var attributeNameToKeyMap = GetLavaParameterNameToAttributeKeyMap( workflow.Attributes?.Keys );
             // Set any workflow attributes that were specified.
             foreach ( var attr in lavaAttributes.Attributes )
             {
@@ -296,6 +294,45 @@ namespace Rock.Lava.Blocks
                     workflow.SetAttributeValue( entityKey, attr.Value.ToString() );
                 }
             }
+        }
+
+        private void SetActivityAttributeValues( Rock.Model.WorkflowActivity activity, LavaElementAttributes lavaAttributes )
+        {
+            if ( activity == null || lavaAttributes == null )
+            {
+                return;
+            }
+
+            var attributeNameToKeyMap = GetLavaParameterNameToAttributeKeyMap( activity.Attributes?.Keys );
+            // Set any activity attributes that were specified.
+            foreach ( var attr in lavaAttributes.Attributes )
+            {
+                var exists = attributeNameToKeyMap.TryGetValue( attr.Key, out string entityKey );
+                if ( exists )
+                {
+                    activity.SetAttributeValue( entityKey, attr.Value.ToString() );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates a map of case-insensitive keys to the correct Entity Attribute casing.
+        /// Entity Attribute keys are case-sensitive, whereas Lava parameters are not.
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        private Dictionary<string, string> GetLavaParameterNameToAttributeKeyMap( IEnumerable<string> keys )
+        {
+            var attributeNameToKeyMap = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+            if ( keys != null )
+            {
+                foreach ( var attributeKey in keys )
+                {
+                    attributeNameToKeyMap[attributeKey] = attributeKey;
+                }
+            }
+            return attributeNameToKeyMap;
         }
 
         #region ILavaSecured

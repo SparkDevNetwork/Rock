@@ -21,20 +21,19 @@
 // </copyright>
 //
 
-using Rock.Model;
-using Rock.SystemGuid;
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-namespace Rock.Rest.Controllers
-{
-    /// <summary>
-    /// LearningCourses REST API
-    /// </summary>
-    [RestControllerGuid( "1375ED75-E143-4938-9E30-647A1F4EBC70" )]
-    public partial class LearningCoursesController : Rock.Rest.ApiController<Rock.Model.LearningCourse>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LearningCoursesController"/> class.
-        /// </summary>
-        public LearningCoursesController() : base( new Rock.Model.LearningCourseService( new Rock.Data.RockContext() ) ) { } 
-    }
-}
+/** The additional configuration options for the Registration Instance Fee List block. */
+export type RegistrationInstanceFeeListOptionsBag = {
+    /** Gets or sets the file name of the export file. */
+    exportFileName?: string | null;
+
+    /** Gets or sets the title of the export file. */
+    exportTitleName?: string | null;
+
+    /** Gets or sets the fee name items for the fee name filter dropdown. */
+    feeNameItems?: ListItemBag[] | null;
+
+    /** Gets or sets the fee options items for the fee options filter dropdown. */
+    feeOptionsItems?: ListItemBag[] | null;
+};

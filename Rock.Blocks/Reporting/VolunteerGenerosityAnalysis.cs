@@ -77,12 +77,15 @@ namespace Rock.Blocks.Reporting
 
                             var uniqueGroups = dataBag.PeopleData.Select( p => p.PersonDetails.GroupName ).Distinct().ToList();
 
+                            var hasMultipleCampuses = CampusCache.All().Count( c => ( bool ) c.IsActive ) > 1;
+
                             var bag = new VolunteerGenerositySetupBag
                             {
                                 UniqueCampuses = uniqueCampuses,
                                 UniqueGroups = uniqueGroups,
                                 LastUpdated = lastUpdated,
-                                EstimatedRefreshTime = estimatedRefreshTime
+                                EstimatedRefreshTime = estimatedRefreshTime,
+                                ShowCampusFilter = hasMultipleCampuses
                             };
 
                             return bag;
@@ -116,6 +119,9 @@ namespace Rock.Blocks.Reporting
 
             IEnumerable<VolunteerGenerosityPersonDataBag> filteredPeople = dataBag.PeopleData;
 
+            // Filter out all of the inactive or archived people
+            filteredPeople = filteredPeople.Where( p => p.PersonDetails.IsActive );
+
             // Filter by Campus
             if ( !string.IsNullOrWhiteSpace( FilterCampus ) && FilterCampus != "All" )
             {
@@ -133,13 +139,8 @@ namespace Rock.Blocks.Reporting
             {
                 var cutoffDate = DateTime.Today.AddDays( -FilterDateRange.Value );
                 filteredPeople = filteredPeople.Where( person =>
-                    person.Donations.Any( d =>
-                        int.TryParse( d.Year, out int year ) &&
-                        int.TryParse( d.Month, out int month ) &&
-                        year != 0 &&
-                        month != 0 &&
-                        new DateTime( year, month, 1 ) >= cutoffDate
-                    )
+                    person.PersonDetails.LastAttendanceDate.HasValue &&
+                    person.PersonDetails.LastAttendanceDate.Value >= cutoffDate
                 );
             }
 
@@ -151,15 +152,7 @@ namespace Rock.Blocks.Reporting
             return new GridBuilder<VolunteerGenerosityPersonDataBag>()
                 .AddField( "id", d => d.PersonDetails.PersonId )
                 .AddTextField( "campus", d => d.PersonDetails.CampusShortCode )
-                .AddTextField( "lastAttendanceDate", d =>
-                {
-                    DateTime lastAttendanceDate;
-                    if ( DateTime.TryParse( d.PersonDetails.LastAttendanceDate, out lastAttendanceDate ) )
-                    {
-                        return lastAttendanceDate.ToString( "M/d/yyyy" );
-                    }
-                    return "N/A";
-                } )
+                .AddDateTimeField( "lastAttendanceDate", d => d.PersonDetails.LastAttendanceDate )
                 .AddTextField( "team", d => d.PersonDetails.GroupName )
                 .AddTextField( "givingMonths", d =>
                 {

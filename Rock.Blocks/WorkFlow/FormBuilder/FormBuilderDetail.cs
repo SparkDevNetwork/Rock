@@ -794,6 +794,33 @@ namespace Rock.Blocks.Workflow.FormBuilder
             return ActionOk( fieldFilterSources );
         }
 
+        /// <summary>
+        /// Gets the edit configuration values for the public admin configuration
+        /// values. This allows the UI to refresh the preview fields as the user
+        /// is making changes to the configuration values.
+        /// </summary>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="configurationValues">The admin configuration values.</param>
+        /// <returns>The edit configuration values.</returns>
+        [BlockAction]
+        public BlockActionResult GetEditConfigurationValues( Guid fieldTypeGuid, Dictionary<string, string> configurationValues )
+        {
+            var fieldType = FieldTypeCache.Get( fieldTypeGuid );
+
+            // If the field type or its C# component could not be found then
+            // we abort with a hard error. We need it to convert data.
+            if ( fieldType == null || fieldType.Field == null )
+            {
+                return ActionBadRequest( $"Field type '{fieldTypeGuid}' not found." );
+            }
+
+            var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( configurationValues );
+
+            var publicEditConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, ConfigurationValueUsage.Edit, null );
+
+            return ActionOk( publicEditConfigurationValues );
+        }
+
         #endregion
     }
 }

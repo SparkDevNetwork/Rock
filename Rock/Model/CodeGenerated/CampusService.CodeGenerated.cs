@@ -118,12 +118,6 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<LearningProgramCompletion>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, LearningProgramCompletion.FriendlyTypeName );
-                return false;
-            }
-
             if ( new Service<Person>( Context ).Queryable().Any( a => a.PrimaryCampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Person.FriendlyTypeName );
@@ -209,6 +203,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CampusStatusValueId = source.CampusStatusValueId;
             target.CampusTypeValueId = source.CampusTypeValueId;
+            target.ClosedDate = source.ClosedDate;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -217,12 +212,14 @@ namespace Rock.Model
             target.LeaderPersonAliasId = source.LeaderPersonAliasId;
             target.LocationId = source.LocationId;
             target.Name = source.Name;
+            target.OpenedDate = source.OpenedDate;
             target.Order = source.Order;
             target.PhoneNumber = source.PhoneNumber;
             target.ServiceTimes = source.ServiceTimes;
             target.ShortCode = source.ShortCode;
             target.TeamGroupId = source.TeamGroupId;
             target.TimeZoneId = source.TimeZoneId;
+            target.TitheMetric = source.TitheMetric;
             target.Url = source.Url;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

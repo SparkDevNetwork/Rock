@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,22 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
-{
-    /// <summary>
-    /// Determines the configuration mode of a LearningProgram.
-    /// </summary>
-    [Enums.EnumDomain( "Lms" )]
-    public enum ConfigurationMode
-    {
-        /// <summary>
-        /// Academic calendar mode.
-        /// </summary>
-        AcademicCalendar = 1,
 
-        /// <summary>
-        /// On-demand learning mode.
-        /// </summary>
-        OnDemandLearning = 2
-    }
+export const enum NavigationUrlKey {
+    DetailPage = "DetailPage"
 }
+
+export const enum PreferenceKey {
+    FilterDateRange = "filter-date-range",
+
+    FilterFeeName = "filter-fee-name",
+
+    FilterFeeOptions = "filter-fee-options"
+}
+
+export type GridSettingsOptions = {
+    dateRange?: string | null;
+
+    feeName?: string | null;
+
+    feeOptions: string[];
+};

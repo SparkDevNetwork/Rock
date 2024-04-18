@@ -47,6 +47,6 @@ namespace Rock.ViewModels.Blocks.Internal
         /// viewed or edited.
         /// </summary>
         /// <value>The entity type unique identifier.</value>
-        Guid EntityTypeGuid { get; set; }
+        Guid? EntityTypeGuid { get; set; }
     }
 }

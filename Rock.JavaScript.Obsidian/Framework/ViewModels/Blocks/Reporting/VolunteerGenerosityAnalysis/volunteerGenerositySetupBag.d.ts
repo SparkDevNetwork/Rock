@@ -29,6 +29,9 @@ export type VolunteerGenerositySetupBag = {
     /** Gets or sets the last updated date time.  */
     lastUpdated?: string | null;
 
+    /** Gets or sets the bool that shows/hides the campus filter. */
+    showCampusFilter: boolean;
+
     /** Gets or sets the list of unique campuses. */
     uniqueCampuses?: string[] | null;
 

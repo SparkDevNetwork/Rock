@@ -27,12 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for LearningGradingSystemScale that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for Theme that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class LearningGradingSystemScaleEntity
+    public partial class ThemeEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public string AdditionalSettingsJson { get; set; }
 
         /// <summary />
         public string Description { get; set; }
@@ -44,10 +47,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsPassing { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public int LearningGradingSystemId { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -58,10 +61,10 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public int? PurposeValueId { get; set; }
 
         /// <summary />
-        public decimal? ThresholdPercentage { get; set; }
+        public string RootPath { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -90,21 +93,22 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source LearningGradingSystemScale object
+        /// Copies the base properties from a source Theme object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( LearningGradingSystemScale source )
+        public void CopyPropertiesFrom( Theme source )
         {
             this.Id = source.Id;
+            this.AdditionalSettingsJson = source.AdditionalSettingsJson;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsPassing = source.IsPassing;
-            this.LearningGradingSystemId = source.LearningGradingSystemId;
+            this.IsActive = source.IsActive;
+            this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.Order = source.Order;
-            this.ThresholdPercentage = source.ThresholdPercentage;
+            this.PurposeValueId = source.PurposeValueId;
+            this.RootPath = source.RootPath;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -116,12 +120,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for LearningGradingSystemScale that includes all the fields that are available for GETs. Use this for GETs (use LearningGradingSystemScaleEntity for POST/PUTs)
+    /// Client model for Theme that includes all the fields that are available for GETs. Use this for GETs (use ThemeEntity for POST/PUTs)
     /// </summary>
-    public partial class LearningGradingSystemScale : LearningGradingSystemScaleEntity
+    public partial class Theme : ThemeEntity
     {
         /// <summary />
-        public LearningGradingSystem LearningGradingSystem { get; set; }
+        public DefinedValue PurposeValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

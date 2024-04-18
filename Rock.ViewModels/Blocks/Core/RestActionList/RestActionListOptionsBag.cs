@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Core.RestActionList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class RestActionListOptionsBag
     {
     }

@@ -21,20 +21,5 @@
 // </copyright>
 //
 
-using Rock.Model;
-using Rock.SystemGuid;
-
-namespace Rock.Rest.Controllers
-{
-    /// <summary>
-    /// LearningActivities REST API
-    /// </summary>
-    [RestControllerGuid( "3E78E139-D5FA-4BFA-B1C3-0FA53A51D559" )]
-    public partial class LearningActivitiesController : Rock.Rest.ApiController<Rock.Model.LearningActivity>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LearningActivitiesController"/> class.
-        /// </summary>
-        public LearningActivitiesController() : base( new Rock.Model.LearningActivityService( new Rock.Data.RockContext() ) ) { } 
-    }
-}
+export type RestActionListOptionsBag = {
+};

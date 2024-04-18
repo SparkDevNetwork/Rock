@@ -23,9 +23,12 @@
 
 /** Bag for donation data within the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityDonationBag = {
+    /** Gets or sets the month. */
     month?: string | null;
 
+    /** Gets or sets the month name. */
     monthNameAbbreviated?: string | null;
 
+    /** Gets or sets the year. */
     year?: string | null;
 };

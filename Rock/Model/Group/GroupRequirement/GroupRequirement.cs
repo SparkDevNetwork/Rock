@@ -101,8 +101,6 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the "Applies To" <see cref="Rock.Model.DataView"/> identifier.
-        /// If this property is set, the requirement is only applied to those people who are included in the specified Data View.
-        /// Group members that do not exist in this Data View will be assigned a status of "Not Applicable" for this requirement.
         /// </summary>
         /// <value>
         /// The data view identifier.

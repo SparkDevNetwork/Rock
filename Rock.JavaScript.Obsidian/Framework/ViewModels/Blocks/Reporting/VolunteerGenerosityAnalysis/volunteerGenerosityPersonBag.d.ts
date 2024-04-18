@@ -21,12 +21,17 @@
 // </copyright>
 //
 
+/** Bag for person-related data in the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityPersonBag = {
+    /** Gets or sets the person's last name. */
     lastName?: string | null;
 
+    /** Gets or sets the person's nickname. */
     nickName?: string | null;
 
+    /** Gets or sets the person ID. */
     personId?: string | null;
 
+    /** Gets or sets the person's photo URL. */
     photoUrl?: string | null;
 };

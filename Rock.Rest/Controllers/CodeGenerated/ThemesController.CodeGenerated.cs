@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Themes REST API
     /// </summary>
-    [RestControllerGuid( "7A17B9E8-4EC7-44A0-9047-F8A1CA4741F7" )]
+    [RestControllerGuid( "C63281B8-A415-4820-AD6F-092E04FEDDAC" )]
     public partial class ThemesController : Rock.Rest.ApiController<Rock.Model.Theme>
     {
         /// <summary>
