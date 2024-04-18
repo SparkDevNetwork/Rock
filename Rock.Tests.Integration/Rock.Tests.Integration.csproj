@@ -228,6 +228,7 @@
     <Compile Include="Issues\Issues_v15.cs" />
     <Compile Include="Modules\Core\Field.Types\PhoneNumberFieldTypeTests.cs" />
     <Compile Include="Modules\Core\AttributeMatrixTests.cs" />
+    <Compile Include="Modules\Core\Lava\Commands\WorkflowActivateTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />
     <Compile Include="Modules\Core\Lava\Filters\PersonalizationFilterTests.cs" />
     <Compile Include="Modules\Core\MergeTemplateTests.cs" />
