@@ -123,6 +123,9 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .ToDictionary( p => p.Guid, p => p );
 
+            // Load all the attributes in one go.
+            personLookup.Values.LoadAttributes( Session.RockContext );
+
             // Get the person performing the check-in if we can.
             var checkedInByPersonAliasId = GetCheckedInByPersonAliasId( sessionRequest );
 
@@ -196,11 +199,6 @@ namespace Rock.CheckIn.v2
                 // If they specified an ability level, update the person record.
                 if ( request.AbilityLevel != null )
                 {
-                    if ( request.Person.AttributeValues == null )
-                    {
-                        request.Person.LoadAttributes( Session.RockContext );
-                    }
-
                     var existingAttributeLevelGuid = request.Person.GetAttributeValue( "AbilityLevel" ).AsGuidOrNull();
 
                     if ( existingAttributeLevelGuid != request.AbilityLevel.Guid )
@@ -239,8 +237,6 @@ namespace Rock.CheckIn.v2
             }
 
             var people = preparedRequests.Select( a => a.Person ).ToList();
-
-            people.LoadAttributes( Session.RockContext );
 
             return SaveAttendanceRecords( sessionRequest.IsPending, newOrUpdatedAttendances, people, attributeEntitiesToSave );
         }
@@ -312,7 +308,9 @@ namespace Rock.CheckIn.v2
                 updatedAttendances.Add( attendance );
             }
 
-            var people = attendanceItems.Select( a => a.Person ).ToList();
+            var people = attendanceItems.Select( a => a.Person )
+                .DistinctBy( p => p.Id )
+                .ToList();
 
             people.LoadAttributes( Session.RockContext );
 
