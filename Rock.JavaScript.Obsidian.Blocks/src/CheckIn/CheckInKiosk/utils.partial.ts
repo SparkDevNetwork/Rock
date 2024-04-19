@@ -36,6 +36,12 @@ const kioskStateKey = Symbol("KioskState");
 export const UnexpectedErrorMessage = "Unexpected error encountered, please try again or ask for assistance.";
 
 /**
+ * The error message to throw if the check-in state is not valid for the
+ * requested action. This is displayed in the UI.
+ */
+export const invalidCheckInStateMessage = "Invalid check-in state.";
+
+/**
  * Makes a state object available to child components. This is essentially an
  * in-memory cache so they can quickly restore their state. It will be lost
  * if the page is reloaded.
@@ -242,4 +248,26 @@ export function isGuidInList(needle: Guid | Guid[] | null | undefined, haystack:
     }
 
     return haystack.some(h => areEqual(h, needle));
+}
+
+/**
+ * A custom error that indicates something is wrong with the check-in state.
+ * A standard error message will be used to show the user but the provided
+ * message will be logged to the console for debugging.
+ */
+export class InvalidCheckInStateError extends Error {
+    public readonly stateMessage: string;
+
+    /**
+     * Creates a new instance of InvalidCheckInStateError.
+     *
+     * @param stateMessage The message describing how the state is invalid.
+     */
+    constructor(stateMessage: string) {
+        super(invalidCheckInStateMessage);
+        this.name = "InvalidCheckInStateError";
+        this.stateMessage = stateMessage;
+
+        console.error(stateMessage);
+    }
 }

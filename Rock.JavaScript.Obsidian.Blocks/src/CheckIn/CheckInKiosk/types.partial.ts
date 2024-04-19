@@ -95,6 +95,13 @@ export enum Screen {
     PersonSelect,
 
     /**
+     * Displays all the option combinations that are valid for the selected
+     * attendee in a single list. This will then update all opportunity
+     * selections at the same time.
+     */
+    AutoModeOpportunitySelect,
+
+    /**
      * Displays the available ability levels for an attendee and requires that
      * one be selected.
      */

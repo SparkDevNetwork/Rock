@@ -40,15 +40,10 @@ import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/s
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
 import { DeepReadonly } from "vue";
 import { Screen, SessionOpportunitySelectionBag } from "./types.partial";
-import { UnexpectedErrorMessage, clone, isGuidInList } from "./utils.partial";
+import { InvalidCheckInStateError, UnexpectedErrorMessage, clone, invalidCheckInStateMessage, isGuidInList } from "./utils.partial";
 import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceRequestBag";
 import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
-
-/**
- * The error message to throw if the check-in state is not valid for the
- * requested action. This is displayed in the UI.
- */
-const invalidCheckInStateMessage = "Invalid check-in state.";
+import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 
 /**
  * Handles the heavy logic for a single check-in session. A session begins when
@@ -95,6 +90,12 @@ export class CheckInSession {
 
     /** The currently selected opportunities for the current attendee. */
     private _currentOpportunitySelection?: SessionOpportunitySelectionBag;
+
+    /**
+     * All selections made for attendees. This is the set of selections that
+     * will be converted to attendance records during save.
+     */
+    private _allAttendeeSelections: { attendeeGuid: Guid, selections: DeepReadonly<OpportunitySelectionBag[]> }[] = [];
 
     /** The attendance records that have been sent to the server and saved. */
     private _attendances: RecordedAttendanceBag[] = [];
@@ -236,6 +237,7 @@ export class CheckInSession {
         copy._currentAttendeeGuid = this._currentAttendeeGuid;
         copy._attendeeOpportunities = clone(this._attendeeOpportunities);
         copy._currentOpportunitySelection = clone(this._currentOpportunitySelection);
+        copy._allAttendeeSelections = clone(this._allAttendeeSelections);
         copy._attendances = clone(this._attendances);
 
         return copy;
@@ -263,46 +265,49 @@ export class CheckInSession {
      * @returns A new CheckInSession object.
      */
     private async withSaveAttendance(isPending: boolean): Promise<CheckInSession> {
-        const selections = this._currentOpportunitySelection;
-
         // Verify we have a valid configuration template.
-        if (!this.configuration.template || !selections) {
-            throw new Error(invalidCheckInStateMessage);
+        if (!this.configuration.template) {
+            throw new InvalidCheckInStateError("Template has not been configured.");
         }
 
-        // We need a valid search type and attendee.
-        if (this.searchType === undefined || !this.currentAttendeeGuid) {
-            throw new Error(invalidCheckInStateMessage);
+        // We need a valid search type.
+        if (this.searchType === undefined) {
+            throw new InvalidCheckInStateError("Search type was not defined.");
         }
 
-        // Verify that we have everything selected.
-        if (!selections || !selections.area || !selections.group || !selections.location || !selections.schedules) {
-            throw new Error(invalidCheckInStateMessage);
-        }
-
-        // Also make sure we have at least one schedule selected.
-        if (selections.schedules.length === 0) {
-            throw new Error(invalidCheckInStateMessage);
+        // Make sure we have selected attendees.
+        if (!this.selectedAttendeeGuids) {
+            throw new InvalidCheckInStateError("No individuals were selected.");
         }
 
         const attendanceRequests: AttendanceRequestBag[] = [];
 
-        // Build the attendance requests to cover all selections for this
-        // attendee. Because multiple services can be selected we might have
-        // multiple attendance records for a single attendee.
-        for (const schedule of selections.schedules) {
-            const attendance: AttendanceRequestBag = {
-                personGuid: this.currentAttendeeGuid,
-                selection: {
-                    abilityLevel: selections.abilityLevel,
-                    area: selections.area,
-                    group: selections.group,
-                    location: selections.location,
-                    schedule: schedule
-                }
-            };
+        for (const attendeeSelections of this._allAttendeeSelections) {
+            // Skip this attendee's selections if they aren't selected for
+            // check-in.
+            if (!this.selectedAttendeeGuids.some(a => areEqual(a, attendeeSelections.attendeeGuid))) {
+                continue;
+            }
 
-            attendanceRequests.push(attendance);
+            for (const selection of attendeeSelections.selections) {
+                const attendance: AttendanceRequestBag = {
+                    personGuid: attendeeSelections.attendeeGuid,
+                    selection: {
+                        abilityLevel: selection.abilityLevel,
+                        area: selection.area,
+                        group: selection.group,
+                        location: selection.location,
+                        schedule: selection.schedule
+                    }
+                };
+
+                attendanceRequests.push(attendance);
+            }
+        }
+
+        // Make sure we have at least one thing to save.
+        if (attendanceRequests.length === 0) {
+            throw new InvalidCheckInStateError("No attendance records to create.");
         }
 
         // Build the API request options.
@@ -444,9 +449,18 @@ export class CheckInSession {
      *
      * @returns A new CheckInSession object.
      */
-    public async withAttendee(attendeeGuid: Guid): Promise<CheckInSession> {
+    public async withAttendee(attendeeGuid: Guid | null): Promise<CheckInSession> {
         if (!this.configuration.template || !this.configuration.kiosk) {
             throw new Error(invalidCheckInStateMessage);
+        }
+
+        if (attendeeGuid === null) {
+            const emptyAttendeeSession = this.clone();
+
+            emptyAttendeeSession._currentAttendeeGuid = undefined;
+            emptyAttendeeSession._attendeeOpportunities = undefined;
+
+            return emptyAttendeeSession;
         }
 
         const request: AttendeeOpportunitiesOptionsBag = {
@@ -673,6 +687,32 @@ export class CheckInSession {
         return copy;
     }
 
+    /**
+     * Creates a new session by selecting the opporunities for the currently
+     * selected attendee.
+     *
+     * @param selections The selections for the current attendee.
+     *
+     * @returns A new CheckInSession object.
+     */
+    public withSelections(selections: OpportunitySelectionBag[]): CheckInSession {
+        const copy = this.clone();
+
+        if (!copy.currentAttendeeGuid) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        const otherAttendeeSelections = copy._allAttendeeSelections
+            .filter(s => !areEqual(s.attendeeGuid, copy.currentAttendeeGuid));
+
+        copy._allAttendeeSelections = [...otherAttendeeSelections, {
+            attendeeGuid: copy.currentAttendeeGuid,
+            selections: selections
+        }];
+
+        return copy;
+    }
+
     // #endregion
 
     // #region Public Functions
@@ -838,6 +878,25 @@ export class CheckInSession {
         return this._attendeeOpportunities.schedules;
     }
 
+    /**
+     * Gets the selections that have previously been made for the specified
+     * attendee.
+     *
+     * @param attendeeGuid The attendee unique identifier.
+     *
+     * @returns The collection of selections made for this attendee.
+     */
+    public getAttendeeSelections(attendeeGuid: Guid): OpportunitySelectionBag[] {
+        const selections = this._allAttendeeSelections
+            .find(s => areEqual(s.attendeeGuid, attendeeGuid));
+
+        if (!selections) {
+            return [];
+        }
+
+        return clone(selections.selections) as OpportunitySelectionBag[];
+    }
+
     // #endregion
 
     // #region Screen Switch Functions
@@ -860,6 +919,9 @@ export class CheckInSession {
         }
         else if (this.currentScreen === Screen.PersonSelect) {
             return this.withNextScreenFromPersonSelect();
+        }
+        else if (this.currentScreen === Screen.AutoModeOpportunitySelect) {
+            return this.withNextScreenFromAutoModeOpportunitySelect();
         }
         else if (this.currentScreen === Screen.AbilityLevelSelect) {
             return this.withNextScreenFromAbilityLevelSelect();
@@ -931,6 +993,26 @@ export class CheckInSession {
             return Promise.resolve(this.withScreen(Screen.ActionSelect));
         }
 
+        const isFamilyAutoMode = this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family
+            && this.configuration.template?.isAutoSelect;
+
+        if (isFamilyAutoMode && this.attendees) {
+            const copy = this.clone();
+
+            for (const attendee of this.attendees) {
+                if (!attendee.selectedOpportunities || !attendee.person) {
+                    continue;
+                }
+
+                copy._allAttendeeSelections.push({
+                    attendeeGuid: attendee.person.guid,
+                    selections: attendee.selectedOpportunities
+                });
+            }
+
+            return Promise.resolve(copy.withScreen(Screen.PersonSelect));
+        }
+
         return Promise.resolve(this.withScreen(Screen.PersonSelect));
     }
 
@@ -940,12 +1022,22 @@ export class CheckInSession {
      *
      * @returns A new CheckInSession object.
      */
-    private withNextScreenFromPersonSelect(): Promise<CheckInSession> {
+    private async withNextScreenFromPersonSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType == KioskCheckInMode.Family) {
-            // If we don't have an attendee then we are done.
-            if (!this.currentAttendeeGuid) {
-                return Promise.resolve(this.withScreen(Screen.Success));
+            if (this.configuration.template?.isAutoSelect) {
+                if (this.currentAttendeeGuid) {
+                    return Promise.resolve(this.withScreen(Screen.AutoModeOpportunitySelect));
+                }
+                else {
+                    // Family check-in in auto-select mode saves everybody at
+                    // once. Perform a full save of the attendance.
+                    const newSessionFamily = await this.withSaveAttendance(false);
+
+                    return newSessionFamily.withScreen(Screen.Success);
+                }
             }
+
+            throw new Error("Non-auto mode family check-in is not implemented yet.");
         }
 
         const newSession = this.clone();
@@ -972,10 +1064,20 @@ export class CheckInSession {
         // If we have more than 1 ability level to pick from then show the
         // ability level screen.
         if (abilityLevels.length > 1) {
-            return Promise.resolve(newSession.withScreen(Screen.AbilityLevelSelect));
+            return newSession.withScreen(Screen.AbilityLevelSelect);
         }
 
-        return newSession.withNextScreenFromAbilityLevelSelect();
+        return await newSession.withNextScreenFromAbilityLevelSelect();
+    }
+
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the auto mode opportunity select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
+    private withNextScreenFromAutoModeOpportunitySelect(): Promise<CheckInSession> {
+        return Promise.resolve(this.withScreen(Screen.PersonSelect));
     }
 
     /**
@@ -1115,14 +1217,53 @@ export class CheckInSession {
     private async withNextScreenFromScheduleSelect(): Promise<CheckInSession> {
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
             if ((this._attendeeOpportunities?.abilityLevels?.length ?? 0) > 1) {
-                return await this.withScreen(Screen.ScheduleSelect);
+                return this.withScreen(Screen.AbilityLevelSelect);
             }
 
             return await this.withNextScreenFromAbilityLevelSelect();
         }
 
+        const currentSelection = this.currentOpportunitySelection;
+        const selections: OpportunitySelectionBag[] = [];
+
+        if (!currentSelection) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        if (!currentSelection.area) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        if (!currentSelection.group) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        if (!currentSelection.location) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        if (!currentSelection.schedules) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        for (const schedule of currentSelection.schedules) {
+            selections.push({
+                abilityLevel: currentSelection.abilityLevel,
+                area: currentSelection.area,
+                group: currentSelection.group,
+                location: currentSelection.location,
+                schedule: schedule
+            });
+        }
+
+        if (selections.length === 0) {
+            throw new Error(invalidCheckInStateMessage);
+        }
+
+        let clone = this.withSelections(selections);
+
         // Individual check-in. Perform a full save of the attendance.
-        const clone = await this.withSaveAttendance(false);
+        clone = await clone.withSaveAttendance(false);
 
         return clone.withScreen(Screen.Success);
     }

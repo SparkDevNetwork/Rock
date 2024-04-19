@@ -39,6 +39,12 @@
                                     @next="onNextScreen"
                                     @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
 
+                <AutoModeOpportunitySelectScreen v-if="currentScreen === Screen.AutoModeOpportunitySelect"
+                                                 :configuration="configuration"
+                                                 :session="currentSession"
+                                                 @next="onNextScreen"
+                                                 @updateActions="onUpdateActions($event, Screen.AutoModeOpportunitySelect)" />
+
                 <AbilityLevelSelectScreen v-if="currentScreen === Screen.AbilityLevelSelect"
                                           :configuration="configuration"
                                           :session="currentSession"
@@ -493,6 +499,10 @@
     font-size: var(--font-size-btn-secondary);
 }
 
+.check-in-page .person-select-screen .attendee-button .opportunity + .opportunity {
+    margin-top: calc(var(--item-spacing) * 0.25);
+}
+
 .check-in-page .person-select-screen .attendee-button .message {
     font-size: var(--font-size-btn-secondary);
 }
@@ -513,6 +523,7 @@
     import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import GroupSelectScreen from "./CheckInKiosk/groupSelectScreen.partial.obs";
     import LocationSelectScreen from "./CheckInKiosk/locationSelectScreen.partial.obs";
+    import AutoModeOpportunitySelectScreen from "./CheckInKiosk/autoModeOpportunitySelectScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import PersonSelectScreen from "./CheckInKiosk/personSelectScreen.partial.obs";

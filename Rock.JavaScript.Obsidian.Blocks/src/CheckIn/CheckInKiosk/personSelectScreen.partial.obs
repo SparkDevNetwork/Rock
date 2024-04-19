@@ -19,10 +19,12 @@
                     <span class="title">
                         <span class="name">{{ attendee.person?.fullName }}</span>
 
-                        <span v-if="isFamilyMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0" class="opportunity">
-                            <span class="group label label-info">{{ attendee.selectedOpportunities[0].group?.name }}</span>
-                            <span class="location label label-info">{{ attendee.selectedOpportunities[0].location?.name }}</span>
-                            <span class="schedule label label-info">{{ attendee.selectedOpportunities[0].schedule?.name }}</span>
+                        <span v-if="isFamilyMode"
+                              v-for="opportunity in getAttendeeSelections(attendee)"
+                              class="opportunity">
+                            <span class="group label label-info">{{ opportunity.group?.name }}</span>
+                            <span class="location label label-info">{{ opportunity.location?.name }}</span>
+                            <span class="schedule label label-info">{{ opportunity.schedule?.name }}</span>
                         </span>
                     </span>
 
@@ -54,6 +56,7 @@
     import { areEqual } from "@Obsidian/Utility/guid";
     import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
     import { KioskButton } from "./types.partial";
+    import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 
     // This screen supports 3 distinct modes of operation depending on various
     // settings:
@@ -99,7 +102,7 @@
 
     // #region Values
 
-    const selections = ref<Guid[]>(getDefaultSelections());
+    const selections = ref<Guid[]>(getInitialSelections());
 
     // #endregion
 
@@ -143,7 +146,17 @@
 
     // #region Functions
 
-    function getDefaultSelections(): Guid[] {
+    /**
+     * Gets the initially selected attendees when the screen loads.
+     */
+    function getInitialSelections(): Guid[] {
+        // If we have previously selected attendees then use those again.
+        if (props.session.selectedAttendeeGuids) {
+            return props.session.selectedAttendeeGuids;
+        }
+
+        // Otherwise we need to check what the default selections from the
+        // server should be.
         if (!props.session.attendees) {
             return [];
         }
@@ -151,6 +164,23 @@
         return props.session.attendees
             .filter(a => a.isPreSelected && !!a.person?.guid)
             .map(a => a.person?.guid as Guid);
+    }
+
+    /**
+     * Gets the selections for the specified attendee.
+     *
+     * @param attendee The attendee whose selections we want.
+     *
+     * @returns A colleciton of opportunity selections.
+     */
+    function getAttendeeSelections(attendee: DeepReadonly<AttendeeBag>): OpportunitySelectionBag[] {
+        if (!attendee.person) {
+            return [];
+        }
+
+        const selections = props.session.getAttendeeSelections(attendee.person.guid);
+
+        return selections;
     }
 
     /**
@@ -175,7 +205,7 @@
                 title: "Next",
                 key: "next",
                 class: "next-button",
-                disabled: selections.value.length > 0,
+                disabled: selections.value.length === 0,
                 handler: onNextClick
             });
         }
@@ -183,10 +213,25 @@
         emit("updateActions", actions);
     }
 
+    /**
+     * Determines if the attendee is currently selected.
+     *
+     * @param attendee The attendee.
+     *
+     * @returns true if the attendee is currently selected.
+     */
     function isAttendeeSelected(attendee: DeepReadonly<AttendeeBag>): boolean {
         return selections.value.some(s => areEqual(s, attendee.person?.guid));
     }
 
+    /**
+     * Gets the custom style information for the attendee that should be
+     * applied to the button.
+     *
+     * @param attendee The attendee.
+     *
+     * @returns A collection of CSS property values.
+     */
     function getStyleForAttendee(attendee: DeepReadonly<AttendeeBag>): CSSProperties {
         const properties: CSSProperties = {
             backgroundImage: `url("${attendee.person?.photoUrl}")`
@@ -212,7 +257,9 @@
         else {
             if (attendee.person?.guid) {
                 try {
-                    const newSession = await props.session.withAttendee(attendee.person?.guid);
+                    let newSession = props.session.withSelectedAttendees([attendee.person.guid]);
+
+                    newSession = await newSession.withAttendee(attendee.person.guid);
 
                     emit("next", await newSession.withNextScreen());
                 }
@@ -241,7 +288,14 @@
     }
 
     async function onNextClick(): Promise<void> {
-        // TODO: Perform attendance save.
+        try {
+            let newSession = props.session.withSelectedAttendees(selections.value);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
     }
 
     // #endregion
