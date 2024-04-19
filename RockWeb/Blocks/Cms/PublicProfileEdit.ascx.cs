@@ -1507,7 +1507,7 @@ namespace RockWeb.Blocks.Cms
                 tbEmail.Required = false;
 
                 // don't display campus selector to children. Rated PG.
-                cpCampus.Visible = false;
+                fiFamilyInfo.Visible = false;
 
                 if ( person.GraduationYear.HasValue )
                 {
@@ -1546,7 +1546,7 @@ namespace RockWeb.Blocks.Cms
 
                 // show/hide campus selector
                 bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
-                cpCampus.Visible = showCampus;
+                fiFamilyInfo.Visible = showCampus;
                 if ( showCampus )
                 {
                     cpCampus.Campuses = CampusCache.All( false );
@@ -1669,6 +1669,12 @@ namespace RockWeb.Blocks.Cms
 
             pnlView.Visible = false;
             pnlEdit.Visible = true;
+
+            // Checks for the case where there is only one active campus and the Campus Picker automatically sets its visibility to false.
+            if ( cpCampus.Visible == false )
+            {
+                fiFamilyInfo.Visible = false;
+            }
         }
 
         /// <summary>
