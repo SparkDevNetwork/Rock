@@ -103,8 +103,9 @@
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
     <Compile Include="Lms\LearningGradingSystemDetail.cs" />
     <Compile Include="Lms\LearningGradingSystemList.cs" />
+    <Compile Include="Lms\LearningGradingSystemScaleDetail.cs" />
     <Compile Include="Lms\LearningGradingSystemScaleList.cs" />
-<Compile Include="Finance\FinancialPersonBankAccountList.cs" />
+    <Compile Include="Finance\FinancialPersonBankAccountList.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
@@ -117,7 +118,7 @@
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
-	<Compile Include="Event\RegistrationInstanceFeeList.cs" />
+    <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Communication\CommunicationList.cs" />
     <Compile Include="Communication\SmsPipelineList.cs" />

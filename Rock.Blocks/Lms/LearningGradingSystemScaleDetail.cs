@@ -26,18 +26,19 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Lms.LearningGradingSystemDetail;
+using Rock.ViewModels.Blocks.Lms.LearningGradingSystemScaleDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
 {
     /// <summary>
-    /// Displays the details of a particular learning grading system.
+    /// Displays the details of a particular learning grading system scale.
     /// </summary>
-    [DisplayName( "Learning Grading System Detail" )]
+
+    [DisplayName( "Learning Grading System Scale Detail" )]
     [Category( "LMS" )]
-    [Description( "Displays the details of a particular learning grading system." )]
+    [Description( "Displays the details of a particular learning grading system scale." )]
     [IconCssClass( "fa fa-question" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
@@ -45,14 +46,15 @@ namespace Rock.Blocks.Lms
 
     #endregion
 
-    [Rock.SystemGuid.EntityTypeGuid( "c174c0ef-9085-4ed6-b21d-019e2ac04b12" )]
-    [Rock.SystemGuid.BlockTypeGuid( "bd92b4d8-5777-422d-b210-a6b95ac137ad" )]
-    public class LearningGradingSystemDetail : RockEntityDetailBlockType<LearningGradingSystem, LearningGradingSystemBag>
+    [Rock.SystemGuid.EntityTypeGuid( "b14cb1a6-b60b-45b0-8f7d-457a869a25f2" )]
+    [Rock.SystemGuid.BlockTypeGuid( "332ab5bc-7e34-4710-a5dd-c50749ff11b5" )]
+    public class LearningGradingSystemScaleDetail : RockEntityDetailBlockType<LearningGradingSystemScale, LearningGradingSystemScaleBag>
     {
         #region Keys
 
         private static class PageParameterKey
         {
+            public const string LearningGradingSystemScaleId = "LearningGradingSystemScaleId";
             public const string LearningGradingSystemId = "LearningGradingSystemId";
         }
 
@@ -68,7 +70,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new DetailBlockBox<LearningGradingSystemBag, LearningGradingSystemDetailOptionsBag>();
+            var box = new DetailBlockBox<LearningGradingSystemScaleBag, LearningGradingSystemScaleDetailOptionsBag>();
 
             SetBoxInitialEntityState( box );
 
@@ -84,21 +86,21 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private LearningGradingSystemDetailOptionsBag GetBoxOptions( bool isEditable )
+        private LearningGradingSystemScaleDetailOptionsBag GetBoxOptions( bool isEditable )
         {
-            var options = new LearningGradingSystemDetailOptionsBag();
+            var options = new LearningGradingSystemScaleDetailOptionsBag();
 
             return options;
         }
 
         /// <summary>
-        /// Validates the LearningGradingSystem for any final information that might not be
+        /// Validates the LearningGradingSystemScale for any final information that might not be
         /// valid after storing all the data from the client.
         /// </summary>
-        /// <param name="learningGradingSystem">The LearningGradingSystem to be validated.</param>
+        /// <param name="learningGradingSystemScale">The LearningGradingSystemScale to be validated.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
-        /// <returns><c>true</c> if the LearningGradingSystem is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateLearningGradingSystem( LearningGradingSystem learningGradingSystem, out string errorMessage )
+        /// <returns><c>true</c> if the LearningGradingSystemScale is valid, <c>false</c> otherwise.</returns>
+        private bool ValidateLearningGradingSystemScale( LearningGradingSystemScale learningGradingSystemScale, out string errorMessage )
         {
             errorMessage = null;
 
@@ -110,29 +112,45 @@ namespace Rock.Blocks.Lms
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<LearningGradingSystemBag, LearningGradingSystemDetailOptionsBag> box )
+        private void SetBoxInitialEntityState( DetailBlockBox<LearningGradingSystemScaleBag, LearningGradingSystemScaleDetailOptionsBag> box )
         {
             var entity = GetInitialEntity();
 
             if ( entity == null )
             {
-                box.ErrorMessage = $"The {LearningGradingSystem.FriendlyTypeName} was not found.";
+                box.ErrorMessage = $"The {LearningGradingSystemScale.FriendlyTypeName} was not found.";
                 return;
             }
 
+            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            // New entity is being created, prepare for edit mode by default.
-            if ( box.IsEditable )
+            entity.LoadAttributes( RockContext );
+
+            if ( entity.Id != 0 )
             {
-                box.Entity = GetEntityBagForEdit( entity );
+                // Existing entity was found, prepare for view mode by default.
+                if ( isViewable )
+                {
+                    box.Entity = GetEntityBagForView( entity );
+                }
+                else
+                {
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( LearningGradingSystemScale.FriendlyTypeName );
+                }
             }
             else
             {
-                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( LearningGradingSystem.FriendlyTypeName );
+                // New entity is being created, prepare for edit mode by default.
+                if ( box.IsEditable )
+                {
+                    box.Entity = GetEntityBagForEdit( entity );
+                }
+                else
+                {
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( LearningGradingSystemScale.FriendlyTypeName );
+                }
             }
-
-            entity.LoadAttributes( RockContext );
 
             PrepareDetailBox( box, entity );
         }
@@ -141,25 +159,26 @@ namespace Rock.Blocks.Lms
         /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
-        /// <returns>A <see cref="LearningGradingSystemBag"/> that represents the entity.</returns>
-        private LearningGradingSystemBag GetCommonEntityBag( LearningGradingSystem entity )
+        /// <returns>A <see cref="LearningGradingSystemScaleBag"/> that represents the entity.</returns>
+        private LearningGradingSystemScaleBag GetCommonEntityBag( LearningGradingSystemScale entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            return new LearningGradingSystemBag
+            return new LearningGradingSystemScaleBag
             {
                 IdKey = entity.IdKey,
                 Description = entity.Description,
-                IsActive = entity.IsActive,
+                IsPassing = entity.IsPassing,
+                ThresholdPercentage = entity.ThresholdPercentage ?? 0,
                 Name = entity.Name
             };
         }
 
         /// <inheritdoc/>
-        protected override LearningGradingSystemBag GetEntityBagForView( LearningGradingSystem entity )
+        protected override LearningGradingSystemScaleBag GetEntityBagForView( LearningGradingSystemScale entity )
         {
             if ( entity == null )
             {
@@ -174,7 +193,7 @@ namespace Rock.Blocks.Lms
         }
 
         //// <inheritdoc/>
-        protected override LearningGradingSystemBag GetEntityBagForEdit( LearningGradingSystem entity )
+        protected override LearningGradingSystemScaleBag GetEntityBagForEdit( LearningGradingSystemScale entity )
         {
             if ( entity == null )
             {
@@ -189,7 +208,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <inheritdoc/>
-        protected override bool UpdateEntityFromBox( LearningGradingSystem entity, ValidPropertiesBox<LearningGradingSystemBag> box )
+        protected override bool UpdateEntityFromBox( LearningGradingSystemScale entity, ValidPropertiesBox<LearningGradingSystemScaleBag> box )
         {
             if ( box.ValidProperties == null )
             {
@@ -199,11 +218,14 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Bag.IsActive ),
-                () => entity.IsActive = box.Bag.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsPassing ),
+                () => entity.IsPassing = box.Bag.IsPassing );
 
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
+
+            box.IfValidProperty( nameof( box.Bag.ThresholdPercentage ),
+                () => entity.ThresholdPercentage = box.Bag.ThresholdPercentage );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
@@ -217,9 +239,9 @@ namespace Rock.Blocks.Lms
         }
 
         /// <inheritdoc/>
-        protected override LearningGradingSystem GetInitialEntity()
+        protected override LearningGradingSystemScale GetInitialEntity()
         {
-            return GetInitialEntity<LearningGradingSystem, LearningGradingSystemService>( RockContext, PageParameterKey.LearningGradingSystemId );
+            return GetInitialEntity<LearningGradingSystemScale, LearningGradingSystemScaleService>( RockContext, PageParameterKey.LearningGradingSystemScaleId );
         }
 
         /// <summary>
@@ -228,16 +250,21 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var pageParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningGradingSystemId] = PageParameter( PageParameterKey.LearningGradingSystemId ).ToStringSafe(),
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( pageParams )
             };
         }
 
         /// <inheritdoc/>
-        protected override bool TryGetEntityForEditAction( string idKey, out LearningGradingSystem entity, out BlockActionResult error )
+        protected override bool TryGetEntityForEditAction( string idKey, out LearningGradingSystemScale entity, out BlockActionResult error )
         {
-            var entityService = new LearningGradingSystemService( RockContext );
+            var entityService = new LearningGradingSystemScaleService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -250,19 +277,19 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningGradingSystem();
+                entity = new LearningGradingSystemScale();
                 entityService.Add( entity );
             }
 
             if ( entity == null )
             {
-                error = ActionBadRequest( $"{LearningGradingSystem.FriendlyTypeName} not found." );
+                error = ActionBadRequest( $"{LearningGradingSystemScale.FriendlyTypeName} not found." );
                 return false;
             }
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningGradingSystem.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit ${LearningGradingSystemScale.FriendlyTypeName}." );
                 return false;
             }
 
@@ -291,7 +318,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetEntityBagForEdit( entity );
 
-            return ActionOk( new ValidPropertiesBox<LearningGradingSystemBag>
+            return ActionOk( new ValidPropertiesBox<LearningGradingSystemScaleBag>
             {
                 Bag = bag,
                 ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
@@ -304,9 +331,9 @@ namespace Rock.Blocks.Lms
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( ValidPropertiesBox<LearningGradingSystemBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<LearningGradingSystemScaleBag> box )
         {
-            var entityService = new LearningGradingSystemService( RockContext );
+            var entityService = new LearningGradingSystemScaleService( RockContext );
 
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
@@ -320,7 +347,7 @@ namespace Rock.Blocks.Lms
             }
 
             // Ensure everything is valid before saving.
-            if ( !ValidateLearningGradingSystem( entity, out var validationMessage ) )
+            if ( !ValidateLearningGradingSystemScale( entity, out var validationMessage ) )
             {
                 return ActionBadRequest( validationMessage );
             }
@@ -337,7 +364,7 @@ namespace Rock.Blocks.Lms
             {
                 return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                 {
-                    [PageParameterKey.LearningGradingSystemId] = entity.IdKey
+                    [PageParameterKey.LearningGradingSystemScaleId] = entity.IdKey
                 } ) );
             }
 
@@ -347,11 +374,11 @@ namespace Rock.Blocks.Lms
 
             var bag = GetEntityBagForEdit( entity );
 
-            return ActionOk( new ValidPropertiesBox<LearningGradingSystemBag>
+            // This block doesn't contain a view mode so return to the parent page instead.
+            return ActionOk( this.GetCurrentPageUrl( new Dictionary<string, string>
             {
-                Bag = bag,
-                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-            } );
+                [PageParameterKey.LearningGradingSystemScaleId] = entity.IdKey
+            } ) );
         }
 
         /// <summary>
@@ -362,7 +389,7 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            var entityService = new LearningGradingSystemService( RockContext );
+            var entityService = new LearningGradingSystemScaleService( RockContext );
 
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {

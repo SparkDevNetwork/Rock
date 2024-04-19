@@ -81,6 +81,8 @@
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemList\LearningGradingSystemListOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningGradingSystemScaleDetail\LearningGradingSystemScaleBag.cs" />
+    <Compile Include="Blocks\Lms\LearningGradingSystemScaleDetail\LearningGradingSystemScaleDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemScaleList\LearningGradingSystemScaleListOptionsBag.cs" />
 <Compile Include="Blocks\Finance\FinancialPersonBankAccountList\FinancialPersonBankAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageList\AppleTvPageListOptionsBag.cs" />

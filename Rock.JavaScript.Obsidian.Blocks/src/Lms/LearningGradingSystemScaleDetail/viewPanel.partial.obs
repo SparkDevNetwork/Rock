@@ -25,17 +25,17 @@
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-    import { LearningGradingSystemBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemDetail/learningGradingSystemBag";
-    import { LearningGradingSystemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemDetail/learningGradingSystemDetailOptionsBag";
+    import { LearningGradingSystemScaleBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleDetail/learningGradingSystemScaleBag";
+    import { LearningGradingSystemScaleDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleDetail/learningGradingSystemScaleDetailOptionsBag";
 
     const props = defineProps({
     modelValue: {
-    type: Object as PropType<LearningGradingSystemBag | null>,
+    type: Object as PropType<LearningGradingSystemScaleBag | null>,
             required: false
         },
 
         options: {
-            type: Object as PropType<LearningGradingSystemDetailOptionsBag>,
+            type: Object as PropType<LearningGradingSystemScaleDetailOptionsBag>,
             required: true
         }
     });

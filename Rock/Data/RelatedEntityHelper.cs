@@ -28,7 +28,7 @@ namespace Rock.Data
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public sealed class RelatedEntityHelper<T> where T : Rock.Data.Entity<T>, new()
+    public sealed class RelatedEntityHelper<T> where T : class, Rock.Data.IEntity, new()
     {
         private Service<T> Service { get; set; }
 
