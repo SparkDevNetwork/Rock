@@ -1214,8 +1214,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
 	                    rockContext.SaveChanges();
 
-	                    // SAVE GROUP MEMBERS
-	                    var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                        // SAVE GROUP MEMBERS
+                        var recordStatusActiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ) ).Id;
+                        var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 	                    var reasonStatusReasonDeceasedId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
 	                    int? recordStatusValueID = dvpRecordStatus.SelectedValueAsInt();
 	                    int? reasonValueId = dvpReason.SelectedValueAsInt();
@@ -1370,6 +1371,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                                 if ( recordStatusValueID.HasValue && recordStatusValueID.Value != 0 )
                                                 {
                                                     groupMember.Person.RecordStatusValueId = recordStatusValueID.Value;
+
+                                                    // If they are active, clear their RecordStatus Reason
+                                                    if ( recordStatusValueID.Value == recordStatusActiveId )
+                                                    {
+                                                        groupMember.Person.RecordStatusReasonValueId = null;
+                                                    }
                                                 }
 
                                                 if ( reasonValueId.HasValue && reasonValueId.Value != 0 )
