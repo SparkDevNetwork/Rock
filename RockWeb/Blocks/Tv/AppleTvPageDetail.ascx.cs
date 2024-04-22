@@ -232,10 +232,10 @@ namespace RockWeb.Blocks.Tv
 
             page.Description = ceTvml.Text;
 
-            var pageResponse = page.AdditionalSettings.IsNotNullOrWhiteSpace() ? JsonConvert.DeserializeObject<ApplePageResponse>( page.AdditionalSettings ) : new ApplePageResponse();
+            var pageResponse = page.GetAdditionalSettings<ApplePageResponse>();
             pageResponse.Content = ceTvml.Text;
 
-            page.AdditionalSettings = pageResponse.ToJson();
+            page.SetAdditionalSettings( pageResponse );
 
             page.Description = tbDescription.Text;
 
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Tv
                 {
                     tbDescription.Text = page.Description;
 
-                    var pageResponse = page.AdditionalSettings.IsNotNullOrWhiteSpace() ? JsonConvert.DeserializeObject<ApplePageResponse>( page.AdditionalSettings ) : new ApplePageResponse();
+                    var pageResponse = page.GetAdditionalSettings<ApplePageResponse>();
 
                     ceTvml.Text = pageResponse.Content;
                     tbPageName.Text = page.InternalName;
