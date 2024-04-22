@@ -747,6 +747,7 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\BlockActionGridResponse.cs" />
+    <Compile Include="Blocks\ConfigurationChangedReloadAttribute.cs" />
     <Compile Include="Blocks\CustomizedGridAttribute.cs" />
     <Compile Include="Blocks\IHasCustomActions.cs" />
     <Compile Include="Blocks\InitialBlockHeightAttribute.cs" />

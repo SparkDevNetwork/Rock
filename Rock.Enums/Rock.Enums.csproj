@@ -62,6 +62,7 @@
     <Compile Include="Blocks\Security\AccountEntry\AccountEntryStep.cs" />
     <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
+    <Compile Include="Cms\BlockReloadMode.cs" />
     <Compile Include="Cms\BlockLocation.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
     <Compile Include="Cms\BotGuardianLevel.cs" />

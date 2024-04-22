@@ -30,7 +30,7 @@ import { debounce } from "./util";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
-const staticContentSymbol = Symbol();
+const staticContentSymbol = Symbol("static-content");
 
 // TODO: Change these to use symbols
 
@@ -160,7 +160,7 @@ export function onConfigurationValuesChanged(callback: () => void): void {
  *
  * @param content The static content from the server.
  */
-export function provideStaticContent(content: string | undefined): void {
+export function provideStaticContent(content: Ref<Node[]>): void {
     provide(staticContentSymbol, content);
 }
 
@@ -169,8 +169,14 @@ export function provideStaticContent(content: string | undefined): void {
  *
  * @returns A string of HTML content or undefined.
  */
-export function useStaticContent(): string | undefined {
-    return inject<string>(staticContentSymbol);
+export function useStaticContent(): Node[] {
+    const content = inject<Ref<Node[]>>(staticContentSymbol);
+
+    if (!content) {
+        return [];
+    }
+
+    return content.value;
 }
 
 
