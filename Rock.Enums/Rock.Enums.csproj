@@ -72,6 +72,7 @@
     <Compile Include="Cms\ContentControlType.cs" />
     <Compile Include="Cms\ContentLibraryItemExperienceLevel.cs" />
     <Compile Include="Cms\DisplayInNavWhen.cs" />
+    <Compile Include="Cms\MobilePageType.cs" />
     <Compile Include="Cms\PersistedDatasetDataFormat.cs" />
     <Compile Include="Cms\PersistedDatasetScriptType.cs" />
     <Compile Include="Cms\SiteType.cs" />
