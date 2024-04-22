@@ -80,6 +80,7 @@ namespace Rock.Blocks.Lms
         {
             public const string LearningCourseId = "LearningCourseId";
             public const string LearningClassId = "LearningClassId";
+            public const string LearningProgramId = "LearningProgramId";
         }
 
         private static class NavigationUrlKey
@@ -371,14 +372,25 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls( LearningCourseBag entity)
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                { PageParameterKey.LearningProgramId, PageParameter( PageParameterKey.LearningProgramId ) },
+                { PageParameterKey.LearningCourseId, PageParameter( PageParameterKey.LearningCourseId ) },
+                { PageParameterKey.LearningClassId, entity.DefaultLearningClassIdKey }
+            };
+
             var activityParams = new Dictionary<string, string>
             {
+                { PageParameterKey.LearningProgramId, PageParameter( PageParameterKey.LearningProgramId ) },
+                { PageParameterKey.LearningCourseId, PageParameter( PageParameterKey.LearningCourseId ) },
                 { PageParameterKey.LearningClassId, entity.DefaultLearningClassIdKey },
                 { "LearningActivityId", "((Key))" }
             };
 
             var participantParams = new Dictionary<string, string>
             {
+                { PageParameterKey.LearningProgramId, PageParameter( PageParameterKey.LearningProgramId ) },
+                { PageParameterKey.LearningCourseId, PageParameter( PageParameterKey.LearningCourseId ) },
                 { PageParameterKey.LearningClassId, entity.DefaultLearningClassIdKey },
                 { "LearningParticipantId", "((Key))" }
             };
@@ -387,7 +399,7 @@ namespace Rock.Blocks.Lms
             {
                 [NavigationUrlKey.ActivityDetailPage] = this.GetLinkedPageUrl( AttributeKey.ActivityDetailPage, activityParams ),
                 [NavigationUrlKey.FacilitatorDetailPage] = this.GetLinkedPageUrl( AttributeKey.FacilitatorDetailPage, participantParams ),
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams ),
                 [NavigationUrlKey.StudentDetailPage] = this.GetLinkedPageUrl( AttributeKey.StudentDetailPage, participantParams )
             };
         }
@@ -892,9 +904,9 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Gets a list of activities for the current course.
+        /// Gets a list of students for the current class (default of the course).
         /// </summary>
-        /// <returns>A list of Courses</returns>
+        /// <returns>A list of students</returns>
         [BlockAction]
         public BlockActionResult GetStudents(bool includeAbsences = false)
         {
@@ -954,7 +966,7 @@ namespace Rock.Blocks.Lms
                                 entity.LearningProgram ) );
                 }
 
-                var students = new LearningParticipantService( new RockContext() )
+                var students = new LearningParticipantService( rockContext )
                     .GetStudents( defaultClass.Id )
                     .AsNoTracking()
                     .ToList();
@@ -986,7 +998,7 @@ namespace Rock.Blocks.Lms
                     return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} has no classes." );
                 }
 
-                var facilitators = new LearningParticipantService( new RockContext() )
+                var facilitators = new LearningParticipantService( rockContext )
                     .GetFacilitators( defaultClass.Id )
                     .AsNoTracking()
                     .ToList();

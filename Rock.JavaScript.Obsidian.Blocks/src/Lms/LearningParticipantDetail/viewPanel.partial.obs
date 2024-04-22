@@ -17,7 +17,7 @@
             <Grid light
                   keyField="idKey"
                   itemTerm="Activity"
-                  :showfullScreen="false"
+                  :showFullScreen="false"
                   :data="gridDataSource">
 
                 <TextColumn name="name"

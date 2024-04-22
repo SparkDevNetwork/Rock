@@ -43,6 +43,6 @@ export type LearningGradingSystemScaleBag = {
     /** Gets or sets the name of the grading system scale. */
     name?: string | null;
 
-    /** Gets or sets the mimimum threshold percentage for the grading system scale. */
-    thresholdPercentage?: number;
+    /** Gets or sets the minimum threshold percentage of the grading system scale. */
+    thresholdPercentage: number;
 };

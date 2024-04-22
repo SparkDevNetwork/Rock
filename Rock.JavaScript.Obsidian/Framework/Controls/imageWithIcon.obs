@@ -2,7 +2,7 @@
 <template>
     <div ref="container" class="image-with-icon-container">
         <img :src="imgSrc" />
-        <span :class="stackClass" style="position: relative; bottom: 1.33em; left: .5em; text-align: center;">
+        <span class="icon-stack-container" :class="stackClass">
             <i class="fa fa-circle fa-stack-2x" :style="lightenedStyle"></i>
             <i :style="'color: ' + highlightColor" :class="iconCssClass + ' fa-stack-1x'"></i>
         </span>
@@ -11,6 +11,7 @@
 
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
+    import { isValidGuid } from "@Obsidian/Utility/guid";
     import { PropType, computed, ref } from "vue";
 
     const props = defineProps({
@@ -47,7 +48,6 @@
 
     // #region Values
 
-    const validGuidLength = 36;
     const imageFileGuid = ref<string>(props?.imageFileGuid?.toString() ?? "");
     const iconCssClass = ref<string>(props?.iconCssClass ?? "");
     const highlightColor = ref<string>(props?.highlightColor ?? "");
@@ -62,7 +62,7 @@
 
     // #region Computed Values
 
-    const guidIsValid = computed(() => props.imageFileGuid?.length === validGuidLength);
+    const guidIsValid = computed(() => isValidGuid(props.imageFileGuid));
 
     const imgSrc = computed(() =>
         guidIsValid.value ?

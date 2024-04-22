@@ -21,10 +21,31 @@
 // </copyright>
 //
 
-export type LearningCourseDetailOptionsBag = {
-    /** Gets or sets the configuration mode of the course's learning program. */
-    configurationMode: number;
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-    /** Gets or sets the whether the Class/GroupType takes attendance. */
-    takesAttendance: boolean;
+/** The item details for the Learning Semester Detail block. */
+export type LearningSemesterBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the date the semester ends. */
+    endDate?: string | null;
+
+    /** Gets or sets the date that students must enroll by. */
+    enrollmentCloseDate?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the program for the semester. */
+    learningProgramId: number;
+
+    /** Gets or sets the name of the LearningSemester. */
+    name?: string | null;
+
+    /** Gets or sets the date the semester starts */
+    startDate?: string | null;
 };

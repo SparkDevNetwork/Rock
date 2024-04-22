@@ -21,10 +21,6 @@
 // </copyright>
 //
 
-export type LearningCourseDetailOptionsBag = {
-    /** Gets or sets the configuration mode of the course's learning program. */
-    configurationMode: number;
-
-    /** Gets or sets the whether the Class/GroupType takes attendance. */
-    takesAttendance: boolean;
+/** The additional configuration options for the Learning Activity Completion List block. */
+export type LearningActivityCompletionListOptionsBag = {
 };

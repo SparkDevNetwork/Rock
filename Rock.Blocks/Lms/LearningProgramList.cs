@@ -119,8 +119,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningProgram> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext )
-                .Include( a => a.Category );
+            return base.GetListQueryable( rockContext );
         }
 
         /// <inheritdoc/>
@@ -134,8 +133,8 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "summary", a => a.Summary )
                 .AddTextField( "iconCssClass", a => a.IconCssClass ?? string.Empty )
                 .AddTextField( "highlightColor", a => a.HighlightColor ?? string.Empty )
-                .AddTextField( "category", a => a.Category?.Name )
-                .AddTextField( "categoryColor", a => a.Category?.HighlightColor ?? "#50a6e3" )
+                .AddTextField( "category", a => a.CategoryId.HasValue ? CategoryCache.Get( a.CategoryId.Value )?.Name : null )
+                .AddTextField( "categoryColor", a => a.CategoryId.HasValue ? CategoryCache.Get( a.CategoryId.Value )?.HighlightColor : null )
                 .AddField( "isPublic", a => a.IsPublic )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );

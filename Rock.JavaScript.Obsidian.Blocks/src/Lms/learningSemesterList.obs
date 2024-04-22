@@ -3,13 +3,16 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Learning Semester"
+          itemTerm="Semester"
           :entityTypeGuid="EntityType.LearningSemester"
           :expectedRowCount="config.expectedRowCount ?? undefined"
           tooltipField="name"
           stickyHeader
           liveUpdates
-          :onSelect="config.isAddEnabled ? onSelectItem : undefined"
+          :hasFullscreen="false"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined">
 
         <TextColumn name="name"
@@ -102,7 +105,7 @@
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", config.options?.learningProgramIdKey ?? "");
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
 

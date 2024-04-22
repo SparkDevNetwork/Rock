@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningCourseList;
 using Rock.Web.Cache;
@@ -60,6 +61,11 @@ namespace Rock.Blocks.Lms
         private static class NavigationUrlKey
         {
             public const string DetailPage = "DetailPage";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string LearningProgramId = "LearningProgramId";
         }
 
         #endregion Keys
@@ -111,26 +117,36 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                { PageParameterKey.LearningProgramId, PageParameter( PageParameterKey.LearningProgramId ) },
+                { "LearningCourseId", "((Key))" }
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningCourseId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<LearningCourse> GetListQueryable( RockContext rockContext )
         {
-            var programId = PageParameter( "LearningProgramId" ).ToIntSafe();
+            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
 
-            var coursesQuery = base.GetListQueryable( rockContext )
-                .Include( a => a.LearningProgram );
+            // Get the page parameter value (either IdKey or Id).
+            var entityParameterValue = PageParameter( PageParameterKey.LearningProgramId );
 
-            if ( programId > 0 )
-            {
-                coursesQuery = coursesQuery.Where( c => c.LearningProgramId == programId );
-            }
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            var programId =
+                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
+                entityParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
 
-            return coursesQuery;
+            return programId > 0 ?
+                base.GetListQueryable( rockContext ).Where( c => c.LearningProgramId == programId ) :
+                base.GetListQueryable( rockContext );
         }
 
         /// <inheritdoc/>

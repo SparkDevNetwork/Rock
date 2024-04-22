@@ -21,11 +21,5 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
 export type LearningProgramDetailOptionsBag = {
-
-    /** Gets or sets the communication templates. */
-    communicationTemplates?: ListItemBag[] | null;
-
 };

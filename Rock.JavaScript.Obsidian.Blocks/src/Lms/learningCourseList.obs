@@ -3,7 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Learning Course"
+          itemTerm="Course"
           :entityTypeGuid="EntityType.LearningCourse"
           :expectedRowCount="config.expectedRowCount ?? undefined"
           tooltipField="publicName"

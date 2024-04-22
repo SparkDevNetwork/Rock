@@ -59,8 +59,7 @@
                  @cancelEdit="onCancelEdit"
                  @save="onSave">
         <template #sidebar v-if="panelMode === DetailPanelMode.View">
-            <ImageWithIcon class="ml-3"
-                           :imageFileGuid="imageGuid"
+            <ImageWithIcon :imageFileGuid="imageGuid"
                            :highlightColor="highlightColor"
                            :iconCssClass="iconCssClass" />
         </template>

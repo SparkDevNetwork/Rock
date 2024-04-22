@@ -1196,6 +1196,7 @@
     <Compile Include="Model\LMS\LearningGradingSystem\LearningGradingSystem.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.cs" />
     <Compile Include="Model\LMS\LearningProgramCompletion\LearningProgramCompletion.cs" />
+    <Compile Include="Model\LMS\LearningProgram\LearningProgramService.cs" />
     <Compile Include="Model\LMS\LearningProgram\LearningProgram.cs" />
     <Compile Include="Model\LMS\LearningClass\LearningClass.cs" />
     <Compile Include="Model\LMS\LearningSemester\LearningSemester.cs" />

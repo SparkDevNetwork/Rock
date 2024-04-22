@@ -401,7 +401,7 @@ namespace Rock.Blocks.Lms
         {
             var queryParams = new Dictionary<string, string>
             {
-                [PageParameterKey.LearningProgramId] = IdHasher.Instance.GetId( idKey ).ToStringSafe()
+                [PageParameterKey.LearningProgramId] = idKey
             };
 
             return new Dictionary<string, string>

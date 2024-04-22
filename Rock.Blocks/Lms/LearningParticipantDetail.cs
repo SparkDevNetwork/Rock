@@ -56,6 +56,8 @@ namespace Rock.Blocks.Lms
 
         private static class PageParameterKey
         {
+            public const string LearningProgramId = "LearningProgramId";
+            public const string LearningCourseId = "LearningCourseId";
             public const string LearningParticipantId = "LearningParticipantId";
             public const string LearningClassId = "LearningClassId";
         }
@@ -185,7 +187,7 @@ namespace Rock.Blocks.Lms
             {
                 IdKey = entity.IdKey,
                 Absences = absences,
-                AbsencesLabelStyle = entity.LearningClass.AbsencesLabelStyle( absences ?? 0 ),
+                AbsencesLabelStyle = entity.LearningClass?.AbsencesLabelStyle( absences ?? 0 ),
                 CurrentGradePercent = entity.LearningGradePercent,
                 CurrentGradeText = entity.LearningGradingSystemScale?.Name,
                 ParticipantRole = entity.GroupRole?.ToListItemBag(),
@@ -268,9 +270,19 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningParticipant"/> to be viewed or edited on the page.</returns>
         private LearningParticipant GetInitialEntity( RockContext rockContext )
         {
-            var participantIdKey = PageParameter( PageParameterKey.LearningParticipantId );
-            var partipicantId = IdHasher.Instance.GetId( participantIdKey ) ?? participantIdKey.ToIntSafe();
-            if ( participantIdKey.IsNullOrWhiteSpace() || partipicantId == 0 )
+            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
+
+            // Get the page parameter value (either IdKey or Id).
+            var participantParameterValue = PageParameter( PageParameterKey.LearningParticipantId );
+
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            var partipicantId =
+                participantParameterValue.IsDigitsOnly() && allowIdParameters ?
+                participantParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( participantParameterValue ).ToIntSafe();
+
+            if ( partipicantId == 0 )
             {
                 return new LearningParticipant();
             }
@@ -282,6 +294,7 @@ namespace Rock.Blocks.Lms
                 .Include( p => p.Group.GroupType )
                 .Include( p => p.GroupRole )
                 .Include( p => p.LearningGradingSystemScale )
+                .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningSemester )
                 .FirstOrDefault( p => p.Id == partipicantId );
         }
@@ -314,9 +327,15 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId )
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams )
             };
         }
 
