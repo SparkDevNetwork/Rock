@@ -608,12 +608,14 @@ namespace RockWeb.Blocks.Crm
         {
             if ( _documentType == null )
             {
-                var documentTypeId = PageParameter( PageParameterKey.DocumentTypeId ).AsIntegerOrNull();
-
-                if ( documentTypeId.HasValue && documentTypeId.Value > 0 )
+                var documentTypeKey = PageParameter( PageParameterKey.DocumentTypeId );
+                if ( documentTypeKey.IsNotNullOrWhiteSpace() )
                 {
                     var documentTypeService = GetDocumentTypeService();
-                    _documentType = documentTypeService.Queryable( "EntityType,BinaryFileType" ).FirstOrDefault( dt => dt.Id == documentTypeId.Value );
+                    _documentType = documentTypeService.GetQueryableByKey( documentTypeKey, !PageCache.Layout.Site.DisablePredictableIds )
+                        .Include( dt => dt.EntityType )
+                        .Include( dt => dt.BinaryFileType )
+                        .FirstOrDefault();
                 }
             }
 
