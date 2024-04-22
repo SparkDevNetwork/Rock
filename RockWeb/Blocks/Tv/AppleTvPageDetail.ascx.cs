@@ -28,7 +28,6 @@ using Rock.Web;
 using Newtonsoft.Json;
 using Rock.Utility;
 using Rock.Common.Tv;
-using Rock.Tv;
 
 namespace RockWeb.Blocks.Tv
 {
@@ -233,10 +232,10 @@ namespace RockWeb.Blocks.Tv
 
             page.Description = ceTvml.Text;
 
-            var pageResponse = page.GetAdditionalSettings<AppleTvPageSettings>();
+            var pageResponse = page.AdditionalSettings.IsNotNullOrWhiteSpace() ? JsonConvert.DeserializeObject<ApplePageResponse>( page.AdditionalSettings ) : new ApplePageResponse();
             pageResponse.Content = ceTvml.Text;
 
-            page.SetAdditionalSettings( pageResponse );
+            page.AdditionalSettings = pageResponse.ToJson();
 
             page.Description = tbDescription.Text;
 
@@ -265,7 +264,7 @@ namespace RockWeb.Blocks.Tv
                 {
                     tbDescription.Text = page.Description;
 
-                    var pageResponse = page.GetAdditionalSettings<AppleTvPageSettings>();
+                    var pageResponse = page.AdditionalSettings.IsNotNullOrWhiteSpace() ? JsonConvert.DeserializeObject<ApplePageResponse>( page.AdditionalSettings ) : new ApplePageResponse();
 
                     ceTvml.Text = pageResponse.Content;
                     tbPageName.Text = page.InternalName;

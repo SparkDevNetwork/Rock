@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-using Rock.Enums.Cms;
+using Rock.Common.Mobile.Enums;
 
 namespace Rock.Mobile
 {
@@ -77,7 +77,7 @@ namespace Rock.Mobile
 
         /// <summary>
         /// Gets or sets the web page URL, this value is used if the <see cref="PageType"/>
-        /// is set to <see cref="Rock.Enums.Cms.MobilePageType.InternalWebPage"/> or <see cref="Rock.Enums.Cms.MobilePageType.ExternalWebPage"/>.
+        /// is set to <see cref="MobilePageType.InternalWebPage"/> or <see cref="MobilePageType.ExternalWebPage"/>.
         /// </summary>
         /// <value>The web page URL.</value>
         public string WebPageUrl { get; set; }

@@ -174,30 +174,6 @@ namespace Rock.Mobile
         }
 
         #endregion
-
-        #region Mobile Page Type
-
-        ///<summary>
-        /// Converts the specified Rock.Enums.Cms.MobilePageType to Rock.Common.Mobile.Enums.MobilePageType.
-        ///</summary>
-        ///<param name="mobilePageType">The Rock.Enums.Cms.MobilePageType value to convert.</param>
-        ///<returns>The equivalent Rock.Common.Mobile.Enums.MobilePageType value.</returns>
-        public static Rock.Common.Mobile.Enums.MobilePageType ToMobile( this Rock.Enums.Cms.MobilePageType mobilePageType )
-        {
-            switch ( mobilePageType )
-            {
-                case Rock.Enums.Cms.MobilePageType.NativePage:
-                    return Rock.Common.Mobile.Enums.MobilePageType.NativePage;
-                case Rock.Enums.Cms.MobilePageType.InternalWebPage:
-                    return Rock.Common.Mobile.Enums.MobilePageType.InternalWebPage;
-                case Rock.Enums.Cms.MobilePageType.ExternalWebPage:
-                    return Rock.Common.Mobile.Enums.MobilePageType.ExternalWebPage;
-                default:
-                    return Rock.Common.Mobile.Enums.MobilePageType.NativePage;
-            }
-        }
-
-        #endregion
     }
 
     /// <summary>

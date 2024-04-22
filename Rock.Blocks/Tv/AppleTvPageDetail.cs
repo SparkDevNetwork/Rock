@@ -24,7 +24,6 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tv;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Tv.AppleTvAppDetail;
@@ -160,7 +159,7 @@ namespace Rock.Blocks.Tv
                 return null;
             }
 
-            var response = entity.GetAdditionalSettings<AppleTvPageSettings>();
+            var response = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
             var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>();
 
             var bag = new AppleTvPageBag
@@ -243,9 +242,9 @@ namespace Rock.Blocks.Tv
         /// <param name="entity">The entity.</param>
         private static void UpdatePageResponseContent( AppleTvPageBag bag, Page entity )
         {
-            var pageResponse = entity.GetAdditionalSettings<AppleTvPageSettings>();
+            var pageResponse = entity.AdditionalSettings.FromJsonOrNull<ApplePageResponse>() ?? new ApplePageResponse();
             pageResponse.Content = bag.PageTVML;
-            entity.SetAdditionalSettings( pageResponse );
+            entity.AdditionalSettings = pageResponse.ToJson();
         }
 
         /// <summary>
@@ -472,6 +471,17 @@ namespace Rock.Blocks.Tv
 
                 return ActionOk( refreshedBox );
             }
+        }
+
+        /// <summary>
+        /// Helper class for Apple Page Additional Settings Configuration
+        /// </summary>
+        private sealed class ApplePageResponse
+        {
+            /// <summary>
+            /// Gets or sets the content.
+            /// </summary>
+            public string Content { get; set; }
         }
 
         #endregion

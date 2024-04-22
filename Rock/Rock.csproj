@@ -1330,7 +1330,6 @@
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
-    <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
     <Compile Include="Utility\CaptchaApi\CloudflareApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\CachedContentLibraryApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApi.cs" />

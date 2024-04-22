@@ -64,10 +64,6 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202404221542135_Mobile_AdditionalSettingsJson.cs" />
-    <Compile Include="Migrations\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
-      <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2026,9 +2022,6 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202404221542135_Mobile_AdditionalSettingsJson.resx">
-      <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
     </EmbeddedResource>
