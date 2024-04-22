@@ -52,7 +52,7 @@ WHERE p.[AdditionalSettings] IS NOT NULL AND (s.[SiteType] = 1 OR s.[SiteType] =
                 {
                     additionalSettingsJson = ConvertPageSettingsToJson<Mobile.AdditionalPageSettings>( additionalSettings );
                 }
-                else if( siteType == Rock.Model.SiteType.Tv )
+                else if ( siteType == Rock.Model.SiteType.Tv )
                 {
                     additionalSettingsJson = ConvertPageSettingsToJson<Tv.ApplePageResponse>( additionalSettings );
                 }
@@ -92,9 +92,9 @@ WHERE p.[AdditionalSettings] IS NOT NULL AND (s.[SiteType] = 1 OR s.[SiteType] =
             var settingsObject = settings.FromJsonOrNull<T>();
             if ( settingsObject != null )
             {
-                return new Dictionary<string, string>
+                return new Dictionary<string, object>
                 {
-                    [typeof( T ).Name] = settings
+                    [typeof( T ).Name] = settingsObject
                 }.ToJson();
             }
 
