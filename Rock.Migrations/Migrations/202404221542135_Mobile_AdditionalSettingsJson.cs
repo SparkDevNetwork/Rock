@@ -50,11 +50,11 @@ WHERE p.[AdditionalSettings] IS NOT NULL AND (s.[SiteType] = 1 OR s.[SiteType] =
                 // settings to the new JSON format.
                 if ( siteType == Rock.Model.SiteType.Mobile )
                 {
-                    additionalSettingsJson = ConvertSettingsToJson<Mobile.AdditionalPageSettings>( additionalSettings );
+                    additionalSettingsJson = ConvertPageSettingsToJson<Mobile.AdditionalPageSettings>( additionalSettings );
                 }
                 else if( siteType == Rock.Model.SiteType.Tv )
                 {
-                    additionalSettingsJson = ConvertSettingsToJson<Tv.ApplePageResponse>( additionalSettings );
+                    additionalSettingsJson = ConvertPageSettingsToJson<Tv.ApplePageResponse>( additionalSettings );
                 }
 
                 if ( additionalSettingsJson.IsNullOrWhiteSpace() )
@@ -87,7 +87,7 @@ WHERE p.[AdditionalSettings] IS NOT NULL AND (s.[SiteType] = 1 OR s.[SiteType] =
         /// <summary>
         /// Converts old settings to JSON format based on site type using a generic type parameter.
         /// </summary>
-        private string ConvertSettingsToJson<T>( string settings ) where T : class
+        private string ConvertPageSettingsToJson<T>( string settings ) where T : class
         {
             var settingsObject = settings.FromJsonOrNull<T>();
             if ( settingsObject != null )
