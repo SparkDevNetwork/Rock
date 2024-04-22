@@ -218,7 +218,7 @@ namespace Rock.Blocks.Lms
             return new LearningCourseBag
             {
                 IdKey = entity.IdKey,
-                DefaultLearningClassIdKey = entity.LearningClasses?.OrderBy( c => c.Order ).FirstOrDefault( c => c.IsActive ).IdKey,
+                DefaultLearningClassIdKey = entity.LearningClasses?.OrderBy( c => c.Order ).FirstOrDefault( c => c.IsActive )?.IdKey,
                 AllowHistoricalAccess = entity.AllowHistoricalAccess,
                 Category = entity.Category?.ToListItemBag(),
                 CategoryColor = entity.Category?.HighlightColor,
@@ -954,11 +954,8 @@ namespace Rock.Blocks.Lms
                                 entity.LearningProgram ) );
                 }
 
-                var students = new LearningParticipantService( new RockContext() ).Queryable()
-                    .Include( a => a.LearningGradingSystemScale )
-                    .Include( a => a.Person )
-                    .Where( a => a.LearningClassId == defaultClass.Id )
-                    .Where( a => !a.GroupRole.IsLeader )
+                var students = new LearningParticipantService( new RockContext() )
+                    .GetStudents( defaultClass.Id )
                     .AsNoTracking()
                     .ToList();
 
@@ -989,10 +986,8 @@ namespace Rock.Blocks.Lms
                     return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} has no classes." );
                 }
 
-                var facilitators = new LearningParticipantService( new RockContext() ).Queryable()
-                    .Include( a => a.Person )
-                    .Where( a => a.LearningClassId == defaultClass.Id )
-                    .Where( a => a.GroupRole.IsLeader )
+                var facilitators = new LearningParticipantService( new RockContext() )
+                    .GetFacilitators( defaultClass.Id )
                     .AsNoTracking()
                     .ToList();
 
@@ -1046,26 +1041,49 @@ namespace Rock.Blocks.Lms
 
         private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext )
         {
-            var contextCourse = RequestContext?.GetContextEntity<LearningCourse>();
+            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
+
+            // Get the page parameter value (either IdKey or Id).
+            var classParameterValue = PageParameter( PageParameterKey.LearningClassId );
+
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            var classId =
+                classParameterValue.IsDigitsOnly() && allowIdParameters ?
+                classParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( classParameterValue ).ToIntSafe();
+
             var contextClass = RequestContext?.GetContextEntity<LearningClass>();
+            var filteredClassId = classId > 0 ? classId : contextClass?.Id ?? 0;
 
-            var baseQuery = new LearningActivityService( rockContext )
-                    .Queryable()
-                    .Include( a => a.LearningActivityCompletions )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Id );
-
-            if (
-                contextCourse != null &&
-                contextCourse.LearningProgram?.ConfigurationMode == ConfigurationMode.OnDemandLearning &&
-                contextCourse.LearningClasses.FirstOrDefault() != null )
+            if ( filteredClassId > 0 )
             {
-                var classId = contextCourse.LearningClasses.FirstOrDefault().Id;
-                return baseQuery.Where( a => a.LearningClassId == classId );
+                return new LearningActivityService( rockContext )
+                    .GetClassLearningPlan( a => a.LearningClassId == filteredClassId )
+                    .AsNoTracking();
             }
-            else if ( contextClass?.Id > 0 )
+
+            // Get the page parameter value (either IdKey or Id).
+            var courseParameterValue = PageParameter( PageParameterKey.LearningCourseId );
+
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            var courseId =
+                courseParameterValue.IsDigitsOnly() && allowIdParameters ?
+                courseParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( courseParameterValue ).ToIntSafe();
+
+            var contextCourse= RequestContext?.GetContextEntity<LearningCourse>();
+            int filteredCourseId = courseId > 0 ? courseId : contextCourse?.Id ?? 0;
+
+            if ( filteredCourseId > 0 )
             {
-                return baseQuery.Where( a => a.LearningClassId == contextClass.Id );
+                // Get the default class (prevents duplicates from showing in the activity list).
+                var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( filteredCourseId, c => c.Id );
+
+                return new LearningActivityService( rockContext )
+                    .GetClassLearningPlan( a => a.LearningClassId == defaultClassId )
+                    .AsNoTracking();
             }
 
             return new List<LearningActivity>().AsQueryable();

@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningSemesterList;
 using Rock.Web.Cache;
@@ -62,6 +63,11 @@ namespace Rock.Blocks.Lms
         private static class NavigationUrlKey
         {
             public const string DetailPage = "DetailPage";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string LearningProgramId = "LearningProgramId";
         }
 
         #endregion Keys
@@ -127,16 +133,36 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningSemester> GetListQueryable( RockContext rockContext )
         {
-            var query = base.GetListQueryable( rockContext )
-                .Include( a => a.LearningClasses );
+            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
 
-            var contextEntity = RequestContext.GetContextEntity<LearningProgram>();
-            if ( contextEntity != null )
+            // Get the page parameter value (either IdKey or Id).
+            var entityParameterValue = PageParameter( PageParameterKey.LearningProgramId );
+
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            var entityId =
+                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
+                entityParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
+
+            // If the PageParameter has a value then use that
+            // otherwise try to get the Id for filtering from the ContextEntity.
+            if ( entityId > 0 )
             {
-                query = query.Where( a => a.LearningProgramId == contextEntity.Id );
+                return base.GetListQueryable( rockContext )
+                .Include( a => a.LearningClasses )
+                .Where( a => a.LearningProgramId == entityId );
             }
 
-            return query;
+            var contextEntity = RequestContext.GetContextEntity<LearningProgram>();
+            if ( contextEntity != null && contextEntity.Id > 0 )
+            {
+                return base.GetListQueryable( rockContext )
+                .Include( a => a.LearningClasses )
+                .Where( a => a.LearningProgramId == contextEntity.Id );
+            }
+
+            return new List<LearningSemester>().AsQueryable();
         }
 
         /// <inheritdoc/>

@@ -7,6 +7,7 @@
                                   :isDeleteEnabled="config.isEditable"
                                   getDataActionName="GetLearningPlan"
                                   @addClick="onAddActivityClick"
+                                  @rowClick="onActivityRowClick"
                                   @deleteClick="onDeleteActivityClick"
                                   @reorderClick="onReorderActivity" />
             </div>
@@ -62,10 +63,18 @@
     /**
      * Called when the Add activity button has been clicked by the individual.
      */
-    function onAddActivityClick(): void {
+     function onActivityRowClick(key: string | null): void {
         if (config.navigationUrls?.[NavigationUrlKey.ActivityDetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.ActivityDetailPage].replace("((Key))", "0");
+            const idKey = !key ? "0" : key;
+            window.location.href = config.navigationUrls[NavigationUrlKey.ActivityDetailPage].replace("((Key))", idKey);
         }
+    }
+
+    /**
+     * Called when the Add activity button has been clicked by the individual.
+     */
+    function onAddActivityClick(): void {
+        onActivityRowClick("0");
     }
 
     /**

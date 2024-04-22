@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,21 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Rock.Model
+namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionList
 {
-    public partial class LearningCourse
+    /// <summary>
+    /// The additional configuration options for the Learning Activity Completion List block.
+    /// </summary>
+    public class LearningActivityCompletionListOptionsBag
     {
-        //LearningClass DefaultClass
-        //{
-        //    get
-        //    {
-        //        return LearningClasses?.AsQueryable()?.OrderBy( c => c.Order ).FirstOrDefault( c => c.IsActive );
-        //    }
-        //}
-
     }
 }

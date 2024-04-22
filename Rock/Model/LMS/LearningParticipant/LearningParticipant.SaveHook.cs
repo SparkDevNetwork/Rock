@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System.Data.Entity;
-using System.Linq;
 using Rock.Data;
 
 namespace Rock.Model
@@ -27,18 +25,16 @@ namespace Rock.Model
         /// Save hook implementation for <see cref="LearningParticipant"/>.
         /// </summary>
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
-        internal class SaveHook : EntitySaveHook<LearningParticipant>
+        new internal class SaveHook : EntitySaveHook<LearningParticipant>
         {
+
             /// <summary>
-            /// Called after the save operation has been executed
+            /// Ensures the Particpiant has the necessary <see cref="LearningActivityCompletion"/> records
+            /// for the <see cref="LearningClass"/>.
             /// </summary>
-            /// <remarks>
-            /// This method is only called if <see cref="M:Rock.Data.EntitySaveHook`1.PreSave" /> returns
-            /// without error.
-            /// </remarks>
-            protected override void PostSave()
+            protected override void PreSave()
             {
-                if ( this.PreSaveState == EntityContextState.Added )
+                if ( PreSaveState == EntityContextState.Added )
                 {
                     // Add the Activity Completion records for the participant (student or facilitator).
                     new LearningParticipantService( RockContext ).AddActivityCompletions(Entity.Id);
@@ -46,7 +42,7 @@ namespace Rock.Model
                     RockContext.SaveChanges();
                 }
 
-                base.PostSave();
+                base.PreSave();
             }
         }
     }

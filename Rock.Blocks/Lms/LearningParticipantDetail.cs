@@ -283,8 +283,6 @@ namespace Rock.Blocks.Lms
                 .Include( p => p.GroupRole )
                 .Include( p => p.LearningGradingSystemScale )
                 .Include( p => p.LearningClass.LearningSemester )
-                .Include( p => p.LearningClass.LearningCourse )
-                .Include( p => p.LearningClass.LearningCourse.LearningProgram )
                 .FirstOrDefault( p => p.Id == partipicantId );
         }
 
@@ -679,25 +677,24 @@ namespace Rock.Blocks.Lms
                 }
 
                 var now = DateTime.Now;
-
+                rockContext.SqlLogging( true );
                 // Get the grade scales first since we'll need them for the grade caluculations.
-                var gradeScales = new LearningParticipantService( new RockContext() ).Queryable()
+                var gradeScales = new LearningParticipantService( rockContext ).Queryable()
                     .Where( p => p.Id == entity.Id )
                     .Include( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
                     .SelectMany( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
                     .ToList()
                     .OrderByDescending( g => g.ThresholdPercentage );
 
-                var learningPlan = new LearningActivityCompletionService( new RockContext() ).Queryable()
+                var learningPlan = new LearningActivityCompletionService( rockContext ).Queryable()
                     .Include( a => a.LearningActivity )
-                    .Include( a => a.LearningActivity.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
-                    .Where( a => a.Id == entity.Id )
-                    .Where( a => a.CompletedDate == null )
+                    .Where( a => a.StudentId == entity.Id )
                     .AsNoTracking()
                     .ToList()
                     .OrderBy( a => a.LearningActivity.Order );
 
                 // Return all activities for the course.
+                // TODO: Update Component selections once those classes are defined.
                 var gridBuilder = new GridBuilder<LearningActivityCompletion>()
                     .AddTextField( "idKey", a => a.IdKey )
                     .AddTextField( "name", a => a.LearningActivity.Name )
@@ -708,9 +705,9 @@ namespace Rock.Blocks.Lms
                     .AddField( "dateCompleted", a => a.CompletedDate )
                     .AddField( "dateAvailable", a => a.AvailableDate )
                     .AddField( "dueDate", a => a.DueDate )
-                    .AddField( "isPastDue", a => a.DueDate == null ? false : a.DueDate >= now )
-                    .AddField( "isAvailableNow", a => a.AvailableDate == null ? false : now >= a.AvailableDate )
-                    .AddTextField( "grade", a => a.Grade( gradeScales ) );
+                    .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDate.HasValue )
+                    .AddField( "isAvailableNow", a => a.AvailableDate != null && now >= a.AvailableDate )
+                    .AddTextField( "grade", a => a.GradeText( gradeScales) );
 
                 return ActionOk( gridBuilder.Build( learningPlan ) );
             }

@@ -24,19 +24,44 @@ namespace Rock.Model
     public partial class LearningActivityCompletion
     {
         /// <summary>
-        /// Gets the grade for the activity.
+        /// Gets the grade as a percentage for the student <see cref="LearningActivityCompletion">Activity</see>.
+        /// </summary>
+        public decimal GradePercent => LearningActivity?.Points > 0 ? ((decimal)PointsEarned / (decimal)LearningActivity.Points * 100) : 0;
+
+        /// <summary>
+        /// Gets the grade text for the activity.
         /// </summary>
         /// <param name="scales">
         ///     The list of <see cref="LearningGradingSystemScale">Scales</see> for the Activity.
         ///     Assumes the scales are ordered by ThresholdPercentage descending so the first match can be taken.
         /// </param>
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
-        public string Grade(IEnumerable<LearningGradingSystemScale> scales)
+        public string GradeText(IEnumerable<LearningGradingSystemScale> scales = null )
         {
-            var percent = PointsEarned / LearningActivity.Points;
-            var grade = scales.FirstOrDefault( s => s.ThresholdPercentage >= percent );
+            var percent = GradePercent;
+            var grade = Grade(scales);
 
             return grade?.Name.Length > 0 ? $"{grade?.Name} ({percent}%)" : $"{percent}%";
+        }
+
+        /// <summary>
+        /// Gets the <see cref="LearningGradingSystemScale"/> for the student <see cref="LearningActivityCompletion">Activity</see>.
+        /// </summary>
+        /// <param name="scales">
+        ///     The list of <see cref="LearningGradingSystemScale">Scales</see> for the Activity.
+        ///     Assumes the scales are ordered by ThresholdPercentage descending so the first match can be taken.
+        ///     If none are provided the navigation property is used to get them.
+        /// </param>
+        /// <returns>A string representing the text for the percentage and earned grade.</returns>
+        public LearningGradingSystemScale Grade( IEnumerable<LearningGradingSystemScale> scales = null )
+        {
+            if (scales == null)
+            {
+                scales = Student?.LearningClass?.LearningGradingSystem?.LearningGradingSystemScales.OrderByDescending( s => s.ThresholdPercentage );
+            }
+
+            var gradePercent = GradePercent;
+            return scales.FirstOrDefault( s => gradePercent >= s.ThresholdPercentage );
         }
     }
 }

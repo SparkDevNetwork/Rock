@@ -14,17 +14,36 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Data.Entity;
 using System.Linq;
 
 namespace Rock.Model
 {
     public partial class LearningActivityService
     {
-        public IQueryable<LearningActivity> GetClassLearningPlan( int classId )
+        /// <summary>
+        /// Gets a list of <see cref="LearningActivity"/>s for matching a specified <paramref name="activityFilterPredicate" />.
+        /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> for each activity by default.
+        /// </summary>
+        /// <param name="activityFilterPredicate">The predicate for filtering the activities.</param>
+        /// <param name="includeCompletions">Whether the LearningActivityCompletions for each LearningActivity should be included.</param>
+        /// <returns>A <c>Queryable</c> of LearningActivity matched by the predicate.</returns>
+        public IQueryable<LearningActivity> GetClassLearningPlan( Func<LearningActivity, bool> activityFilterPredicate, bool includeCompletions = true )
         {
-            return Queryable()
-                .Where( a => a.LearningClassId == classId )
-                .OrderBy( a => a.Order );
+            return
+                includeCompletions ?
+                Queryable()
+                    .Include( a => a.LearningActivityCompletions )
+                    .Where( activityFilterPredicate )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Id )
+                    .AsQueryable() :
+                Queryable()
+                    .Where( activityFilterPredicate )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Id )
+                    .AsQueryable();
         }
     }
 }

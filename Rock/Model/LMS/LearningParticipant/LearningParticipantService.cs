@@ -47,6 +47,46 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a list of <see cref="LearningParticipant">Students</see> for a specified <see cref="LearningClass"/>
+        /// </summary>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> to return students for.</param>
+        /// <returns>Queryable of LearningParticipants that have a Group role of not IsLeader.</returns>
+        public IQueryable<LearningParticipant> GetStudents( int classId )
+        {
+            return GetParticipants( a => !a.GroupRole.IsLeader && a.LearningClassId == classId, true );
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningParticipant">Facilitators</see> for a specified <see cref="LearningClass"/>
+        /// </summary>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> to return facilitators for.</param>
+        /// <returns>Queryable of LearningParticipants that have a Group role of IsLeader.</returns>
+        public IQueryable<LearningParticipant> GetFacilitators(int classId)
+        {
+            return GetParticipants( a => a.GroupRole.IsLeader && a.LearningClassId == classId );
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningParticipant">Participants</see> for a specified <see cref="LearningClass"/>
+        /// </summary>
+        /// <param name="filterPredicate">The predicate by which to filter the <see cref="LearningParticipant"/>.</param>
+        /// <param name="includeGradingScales">Whether to include the list of <see cref="LearningGradingSystemScale"/> for the course.</param>
+        /// <returns>Queryable of LearningParticipants.</returns>
+        public IQueryable<LearningParticipant> GetParticipants(Func<LearningParticipant, bool> filterPredicate, bool includeGradingScales = false )
+        {
+            return includeGradingScales ?
+                 Queryable()
+                    .Include( a => a.LearningGradingSystemScale )
+                    .Include( a => a.Person )
+                    .Where( filterPredicate )
+                    .AsQueryable() :
+                 Queryable()
+                    .Include( a => a.Person )
+                    .Where( filterPredicate )
+                    .AsQueryable();
+        }
+
+        /// <summary>
         /// <para>Gets a list of <see cref="LearningActivity">Activities</see> for the course that the <see cref="LearningParticipant"/>
         /// is enrolled in.</para>
         /// These are the activity templates. For instance data use <seealso cref="GetActivityCompletions"/>.
@@ -82,25 +122,10 @@ namespace Rock.Model
                 .SelectMany( p => p.LearningActivities );
         }
 
-        //public LearningClass GetDefaultClass( int courseId, bool includeGroupType = false )
-        //{
-        //    var baseQuery = new LearningClassService( ( RockContext ) Context ).Queryable();
-
-        //    if ( includeGroupType )
-        //    {
-        //        baseQuery = baseQuery.Include( c => c.GroupType );
-        //    }
-
-        //    return baseQuery
-        //        .OrderBy( c => c.Order )
-        //        .FirstOrDefault( c => c.IsActive && c.LearningCourseId == courseId );
-        //}
-
         /// <summary>
         /// Adds <see cref="LearningActivityCompletion">activity completions</see> for the <see cref="LearningParticipant">participant</see> .
         /// If any activity completion already exists it will be not be recreated.
         /// </summary>
-        /// <param name="rockContext">The RockContext to use for the action.</param>
         /// <param name="learningParticipantId">The identifier of the <see cref="LearningParticipant"/> for which to add the completion records.</param>
         /// <returns>The list of <see cref="LearningActivityCompletion"/> records to be saved when the Context is saved.</returns>
         public List<LearningActivityCompletion> AddActivityCompletions( int learningParticipantId )

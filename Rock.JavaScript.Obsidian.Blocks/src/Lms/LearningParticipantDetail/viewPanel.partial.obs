@@ -18,7 +18,7 @@
                   keyField="idKey"
                   itemTerm="Activity"
                   :showfullScreen="false"
-                  :data="gridData">
+                  :data="gridDataSource">
 
                 <TextColumn name="name"
                             title="Name"
