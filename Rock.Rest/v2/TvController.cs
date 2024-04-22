@@ -38,6 +38,7 @@ using Rock.Tv.Classes;
 using Rock.Logging;
 using Rock.Workflow.Action;
 using Rock.Utility;
+using ApplePageResponse = Rock.Tv.ApplePageResponse;
 
 namespace Rock.Rest.v2.Controllers
 {
@@ -336,7 +337,7 @@ namespace Rock.Rest.v2.Controllers
                 }
 
                 // Get the page response content from the AdditionalSettings property
-                var pageResponse = JsonConvert.DeserializeObject<ApplePageResponse>( page.AdditionalSettings );
+                var pageResponse = page.GetAdditionalSettings<ApplePageResponse>();
 
                 // Run Lava across the content
                 pageResponse.Content = pageResponse.Content.ResolveMergeFields( mergeFields, currentPerson, "All" );
