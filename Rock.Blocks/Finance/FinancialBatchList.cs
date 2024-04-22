@@ -442,7 +442,7 @@ namespace Rock.Blocks.Finance
 
                 if ( !entity.IsAuthorized( Authorization.DELETE, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${FinancialBatch.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {FinancialBatch.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
