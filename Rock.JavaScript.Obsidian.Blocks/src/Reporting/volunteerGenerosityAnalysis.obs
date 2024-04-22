@@ -28,31 +28,34 @@
                         </span>
                     </div>
 
-                    <div class="filter-row">
-                        <StandardFilterDaysBack :style="'width: 26vw'"
-                                                :onUpdate:modelValue="onDateRangeSelected"
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <StandardFilterDaysBack :onUpdate:modelValue="onDateRangeSelected"
                                                 v-model="selectedDateRange"
                                                 label="Attendance Date Range" />
+                        </div>
 
-                        <DropDownList v-if="bag.showCampusFilter" :style="'width: 26vw'"
-                                      v-model="campusValue"
+                        <div class="col-sm-4" v-if="bag.showCampusFilter">
+                            <DropDownList v-model="campusValue"
                                       :items="uniqueCampuses"
                                       :onUpdate:modelValue="onCampusSelected"
                                       label="Campus" />
+                        </div>
 
-                        <DropDownList :style="'width: 26vw'"
-                                      v-model="teamValue"
+                        <div class="col-sm-4">
+                            <DropDownList  v-model="teamValue"
                                       :items="uniqueGroups"
                                       :onUpdate:modelValue="onTeamSelected"
                                       label="Team" />
+                        </div>
                     </div>
 
                     <!-- Chart Section -->
-                    <div class="volunteer-monthly-giving-chart-container">
-                        <h3 class="w-100 flex">Volunteer Monthly Giving Rate</h3>
-                        <div class="volunteer-monthly-giving-chart">
-                            <div v-for="stat in teamDonationStats" :key="stat.month" class="volunteer-monthly-giving-bar-container">
-                                <div class="volunteer-monthly-giving-bar">
+                    <div class="styled-scroll">
+                        <h3 class="mb-0">Volunteer Monthly Giving Rate</h3>
+                        <div class="monthlysummarychart">
+                            <div v-for="stat in teamDonationStats" :key="stat.month" >
+                                <div class="monthlysummarychart-bar">
                                     <div v-if="stat.donatedPercentage > 0" class="donated percent" :style="{ height: `${stat.donatedPercentage}%` }">
                                         <span v-if="stat.donatedPercentage >= 20">
                                             {{ stat.donatedPercentage.toFixed(1) }}%
@@ -134,10 +137,11 @@
             <Column name="givingMonths"
                     title="Giving Months"
                     field="givingMonths"
+                    itemClass="giving-trends"
                     :sortField="'false'"
                     width="30%">
                 <template #format="{ row }">
-                    <div class="bar-chart">
+                    <div class="trend-chart">
                         <div v-for="(bar, index) in getBarChart(row.givingMonths)" :key="index" class="bar" :class="bar.class">
                             <div class="tooltip">{{ bar.month }}</div>
                         </div>
@@ -149,59 +153,106 @@
 </template>
 
 <style scoped>
-.volunteer-generosity-analysis .top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
 
-.volunteer-generosity-analysis .filter-row {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.volunteer-generosity-analysis .chart-row,
-.grid-row {
-    margin-bottom: 20px;
-}
-
-.bar-chart {
-    display: flex;
-    align-items: end;
+/* Months Giving Chart */
+.volunteer-generosity-analysis :deep( .grid-cell.giving-trends ) {
     position: relative;
-    top: 14px;
+    overflow: visible;
 }
 
+.trend-chart {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    right: var(--table-cell-padding-x);
+    left: var(--table-cell-padding-x);
+    height: initial;
+}
 
 .bar {
-    width: 20px;
+    width: 4%;
     margin: 0 2px;
     position: relative;
-}
-
-.full,
-.empty,
-.fullEmpty {
     height: 30px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
     transition: height 0.3s ease-out;
-}
-
-.empty,
-.fullEmpty {
-    background-color: transparent;
-    border-bottom: 3px solid var(--color-info);
-}
-
-.full {
     background-color: var(--color-info);
 }
 
+.empty {
+    height: 3px;
+}
+
+
+.monthlysummarychart {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    width: 100%;
+    overflow: auto;
+}
+
+
+.monthlysummarychart-bar {
+    width: 52px;
+    display: flex;
+    flex-direction: column-reverse;
+    height: 110px;
+    margin: 0 4px;
+}
+
+.not-donated,
+.donated {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    color: white;
+    transition: height 0.3s ease-out;
+    font-size: 14px;
+}
+
+.not-donated {
+    background-color: #E8E8E8;
+    color: black;
+}
+
+.donated {
+    background-color: var(--color-success);
+    border-top: 1px solid #00000035;
+}
+
+.month-label {
+    display: block;
+    text-align: center;
+    font-size: 0.7em;
+    align-items: baseline;
+    margin-top: 5px;
+    font-weight: 600;
+}
+
+.volunteer-monthly-giving-bar,
+.not-donated,
+.donated {
+    height: 108px;
+}
+
+.percent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.no-data-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    text-align: center;
+}
+
+
+/* tooltip styles */
 .tooltip {
     visibility: hidden;
     width: 70px;
@@ -225,94 +276,6 @@
     opacity: 0.8;
 }
 
-
-.volunteer-monthly-giving-chart-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.volunteer-monthly-giving-chart {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
-    width: 100%;
-}
-
-.volunteer-monthly-giving-bar-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 52px;
-}
-
-.volunteer-monthly-giving-bar {
-    width: 52px;
-    margin: 0 4px;
-    position: relative;
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    height: 108px;
-}
-
-.not-donated,
-.donated {
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    color: white;
-    transition: height 0.3s ease-out;
-}
-
-.not-donated {
-    background-color: #E8E8E8;
-    color: black;
-}
-
-.donated {
-    background-color: var(--color-success);
-    border-top: 1px solid #098F62;
-}
-
-.month-label {
-    display: flex;
-    text-align: center;
-    font-size: 0.7em;
-    align-items: baseline;
-    margin-top: 5px;
-}
-
-.volunteer-monthly-giving-month-labels {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.volunteer-monthly-giving-bar,
-.not-donated,
-.donated {
-    height: 108px;
-}
-
-.filter-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.filter-row.no-campus {
-    grid-template-columns: 1fr 2fr;
-}
-
-.filter-row > * {
-    flex: 1;
-    padding: 10px;
-}
-
 .tooltip::after {
     content: '';
     position: absolute;
@@ -329,6 +292,7 @@
     display: flex;
     justify-content: end;
 }
+
 
 .refresh-tooltip .tooltip-text {
     background-color: #000;
@@ -373,31 +337,7 @@
     border-top-color: black;
 }
 
-.grid-row,
-.volunteer-monthly-giving-chart-container {
-    width: 100%;
-}
 
-.volunteer-monthly-giving-month-labels {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 10px;
-}
-
-.percent {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.no-data-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 200px;
-    text-align: center;
-}
 </style>
 
 <script setup lang="ts">
