@@ -99,7 +99,7 @@
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
-    <Compile Include="Core\DocumentTypeList.cs" />
+    <Compile Include="Crm\DocumentTypeList.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
     <Compile Include="Finance\FinancialPersonBankAccountList.cs" />
