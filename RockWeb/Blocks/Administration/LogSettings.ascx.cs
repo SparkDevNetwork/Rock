@@ -150,13 +150,12 @@ namespace RockWeb.Blocks.Administration
 
             var rockConfig = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
 
-            var allCategories = rockConfig?.StandardCategories ?? new List<string>();
-            var standardCategories = RockLogger.GetStandardCategories();
-            var categories = allCategories.Where( c => standardCategories.Contains( c ) ).ToList();
-            var customCategories = allCategories.Where( c => !standardCategories.Contains( c ) ).ToList();
             var selectedCategories = rockConfig?.StandardCategories ?? new List<string>();
+            var standardCategories = RockLogger.GetStandardCategories();
+            var categories = selectedCategories.Where( c => standardCategories.Contains( c ) ).ToList();
+            var customCategories = selectedCategories.Where( c => !standardCategories.Contains( c ) ).ToList();
 
-            rlbCategoriesToLog.DataSource = categories;
+            rlbCategoriesToLog.DataSource = standardCategories;
             rlbCategoriesToLog.DataBind();
 
             if ( rockConfig == null )
@@ -170,7 +169,7 @@ namespace RockWeb.Blocks.Administration
             nbFilesToRetain.Text = rockConfig.NumberOfLogFiles.ToString();
             nbMaxFileSize.Text = rockConfig.MaxFileSize.ToString();
 
-            rlbCategoriesToLog.SetValues( selectedCategories );
+            rlbCategoriesToLog.SetValues( categories );
 
             wpLocalSettings.Visible = cbLogToLocal.Checked;
 
