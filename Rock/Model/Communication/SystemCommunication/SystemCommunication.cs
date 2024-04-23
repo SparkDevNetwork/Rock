@@ -135,7 +135,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the subject of an email that uses this template.
         /// </value>
-        [Required]
+        [Required(AllowEmptyStrings = true)]
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
         public string Subject { get; set; }
@@ -146,7 +146,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the body template for emails that use this template.
         /// </value>
-        [Required]
+        [Required(AllowEmptyStrings = true)]
         [DataMember( IsRequired = true )]
         public string Body { get; set; }
 
