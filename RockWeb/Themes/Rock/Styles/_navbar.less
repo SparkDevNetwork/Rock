@@ -241,19 +241,9 @@ body.navbar-side-open {
 
     .nav-item {
       .nav-link {
-        padding: 0;
-        line-height: 2.5;
         color: @navbarside-color;
-
-        &::before {
-          display: inline-block;
-          width: 0;
-          height: 8px;
-          margin-right: 14px;
-          margin-bottom: 1px;
-          content: " ";
-          background: @brand-primary;
-        }
+        padding-left: 14px;
+        padding-right: 0;
 
         &:focus {
           color: @nav-sub-text-rollover-color;
@@ -265,9 +255,14 @@ body.navbar-side-open {
           background-color: var(--nav-childpages-bg);
 
           &::before {
+            content: " ";
+            background: @brand-primary;
+            height: 8px;
             width: 8px;
-            padding-left: 8px;
-            margin-right: 6px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
           }
         }
       }
