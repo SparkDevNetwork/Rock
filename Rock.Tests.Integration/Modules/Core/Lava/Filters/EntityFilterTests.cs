@@ -191,7 +191,10 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
 
             var exception = Assert.ThrowsException<LavaException>( () =>
             {
-                TestHelper.GetTemplateOutput( typeof( FluidEngine ), template );
+                var renderOptions = LavaTestRenderOptions.DefaultEngine
+                    .WithExceptionHandling( ExceptionHandlingStrategySpecifier.Throw );
+
+                TestHelper.GetTemplateOutput( template, renderOptions );
             } );
 
             Assert.AreEqual( expectedMessage, exception.Message );
@@ -261,7 +264,10 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
 
             var exception = Assert.ThrowsException<LavaException>( () =>
             {
-                TestHelper.GetTemplateOutput( typeof( FluidEngine ), template );
+                var renderOptions = LavaTestRenderOptions.DefaultEngine
+                    .WithExceptionHandling( ExceptionHandlingStrategySpecifier.Throw );
+
+                TestHelper.GetTemplateOutput( template, renderOptions );
             } );
 
             Assert.AreEqual( expectedMessage, exception.Message );

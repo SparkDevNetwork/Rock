@@ -236,6 +236,17 @@ namespace Rock.Tests.Shared.Lava
         }
 
         /// <summary>
+        /// Get an instance of the default Lava engine.
+        /// For Rock v17 and above, the default engine is Fluid.
+        /// </summary>
+        /// <returns></returns>
+        public static ILavaEngine GetDefaultEngineInstance()
+        {
+            // The Fluid engine is the default Lava engine for Rock v17.
+            return _fluidEngine;
+        }
+
+        /// <summary>
         /// Set a Lava Engine instance to be used for subsequent tests.
         /// Only one engine of each type can be active at any time.
         /// </summary>
@@ -513,6 +524,26 @@ namespace Rock.Tests.Shared.Lava
             {
                 engine.RegisterShortcode( shortcode.TagName, shortCodeFactory );
             }
+        }
+
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public string GetTemplateOutput( string inputTemplate, LavaTestRenderOptions options )
+        {
+            ILavaEngine engine;
+            if ( options.LavaEngineTypes != null )
+            {
+                engine = GetEngineInstance( options.LavaEngineTypes.FirstOrDefault() );
+            }
+            else
+            {
+                 engine = GetDefaultEngineInstance();
+            }
+
+            return GetTemplateOutput( engine, inputTemplate, options );
         }
 
         /// <summary>
