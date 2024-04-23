@@ -92,7 +92,10 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
         /// <returns>A string that represents the icon class.</returns>
-        protected abstract string GetItemIconCssClass( Dictionary<string, string> privateConfigurationValues );
+        protected virtual string GetItemIconCssClass( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "fa fa-folder-open";
+        }
 
         /// <summary>
         /// Specifies the tree item types that are selectable. If <c>null</c>

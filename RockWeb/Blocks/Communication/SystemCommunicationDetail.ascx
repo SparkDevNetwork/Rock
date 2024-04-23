@@ -79,7 +79,7 @@
                                         <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>
                                         <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>
                                     </div>
-                                    <Rock:CodeEditor ID="ceEmailTemplate" EditorHeight="500" Label="Message Body" EditorMode="Html" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Body" Required="true" />
+                                    <Rock:CodeEditor ID="ceEmailTemplate" EditorHeight="500" Label="Message Body" EditorMode="Html" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Body" />
                                 </div>
                                 <div class="col-md-4">
                                     <Rock:RockCheckBox ID="cbCssInliningEnabled" runat="server" Text="CSS Inlining Enabled" Help="Enable CSS Inlining to move styles to inline attributes. This can help maximize compatibility with email clients. This requires support for inlining by the configured email transport." />

@@ -26,19 +26,23 @@ using System.ServiceModel.Channels;
 using System.Text;
 using System.Web;
 using System.Web.Http;
+
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Common.Tv;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Tv;
-using Rock.Web.Cache;
 using Rock.Tv.Classes;
-using Rock.Logging;
-using Rock.Workflow.Action;
 using Rock.Utility;
-using Microsoft.Extensions.Logging;
+using Rock.Web.Cache;
+
+using AppleTvPageSettings = Rock.Tv.AppleTvPageSettings;
 
 namespace Rock.Rest.v2.Controllers
 {
@@ -339,7 +343,7 @@ namespace Rock.Rest.v2.Controllers
                 }
 
                 // Get the page response content from the AdditionalSettings property
-                var pageResponse = JsonConvert.DeserializeObject<ApplePageResponse>( page.AdditionalSettings );
+                var pageResponse = page.GetAdditionalSettings<AppleTvPageSettings>();
 
                 // Run Lava across the content
                 pageResponse.Content = pageResponse.Content.ResolveMergeFields( mergeFields, currentPerson, "All" );

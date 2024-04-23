@@ -514,6 +514,7 @@ Obsidian.onReady(() => {{
         private async Task<ObsidianBlockConfigBag> GetConfigBagAsync( string rootElementId )
         {
             List<BlockCustomActionBag> configActions = null;
+            var reloadModeAttribute = GetType().GetCustomAttribute<ConfigurationChangedReloadAttribute>();
 
             if ( this is IHasCustomActions customActionsBlock )
             {
@@ -538,9 +539,9 @@ Obsidian.onReady(() => {{
                 BlockGuid = BlockCache.Guid,
                 ConfigurationValues = await GetBlockInitializationAsync( RockClientType.Web ),
                 CustomConfigurationActions = configActions,
-                Preferences = blockPreferences
+                Preferences = blockPreferences,
+                ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None
             };
-
         }
 
         /// <summary>
@@ -852,7 +853,11 @@ Obsidian.onReady(() => {{
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
 
-            return ActionOk( await GetConfigBagAsync( rootElementId ) );
+            var config = await GetConfigBagAsync( rootElementId );
+
+            config.InitialContent = GetInitialHtmlContent();
+
+            return ActionOk( config );
         }
 
         #endregion

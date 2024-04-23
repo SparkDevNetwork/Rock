@@ -178,7 +178,7 @@ namespace Rock.Blocks.Finance
         {
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${GroupMember.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {GroupMember.FriendlyTypeName}." );
             }
 
             var businessId = GetBusinessId();

@@ -753,6 +753,7 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\BlockActionGridResponse.cs" />
+    <Compile Include="Blocks\ConfigurationChangedReloadAttribute.cs" />
     <Compile Include="Blocks\CustomizedGridAttribute.cs" />
     <Compile Include="Blocks\IHasCustomActions.cs" />
     <Compile Include="Blocks\InitialBlockHeightAttribute.cs" />
@@ -1355,6 +1356,7 @@
     <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
+    <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
     <Compile Include="Utility\CaptchaApi\CloudflareApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\CachedContentLibraryApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApi.cs" />
