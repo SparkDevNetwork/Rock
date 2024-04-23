@@ -1031,6 +1031,7 @@
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostUpdateJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV161RemoveObsidianGroupScheduleToolboxBackButtons.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV166UpdateAchievementTypeTargetCount.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV151DataMigrationsDuplicateMobileInteractionsCleanup.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
@@ -1158,6 +1159,7 @@
     <Compile Include="Model\Core\PersonPreference\PersonPreference.cs" />
     <Compile Include="Model\Core\PersonPreference\PersonPreference.SaveHook.cs" />
     <Compile Include="Model\Core\PersonPreference\PersonPreferenceService.cs" />
+    <Compile Include="Model\Engagement\AchievementType\AchievementType.SaveHook.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.SaveHook.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceActionService.cs" />

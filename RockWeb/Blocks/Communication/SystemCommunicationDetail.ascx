@@ -36,7 +36,7 @@
                 <Rock:PanelWidget ID="pnlEmailTemplate" Title="Email" TitleIconCssClass="fa fa-envelope" CssClass="js-email-template" runat="server" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="FromName" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
+                            <Rock:RockTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="FromName" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
                             <Rock:EmailBox ID="tbTo" runat="server" Label="To" AllowMultiple="true" Help="<small><span class='tip tip-lava'></span></small>" AllowLava="true" />
                         </div>
                         <div class="col-md-6">
@@ -61,7 +61,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbSubject" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Subject" Help="<small><span class='tip tip-lava'></span></small>" />
+                            <Rock:RockTextBox ID="tbSubject" runat="server" Label="Subject" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Subject" Help="<small><span class='tip tip-lava'></span></small>" />
                         </div>
                         <div class="col-md-6">
                         </div>

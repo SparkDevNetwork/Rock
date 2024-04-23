@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -351,6 +351,12 @@ namespace Rock.Achievement.Component
             }
 
             return attempts;
+        }
+
+        /// <inheritdoc/>
+        protected internal override int? GetTargetCount( AchievementType achievementType )
+        {
+            return achievementType.GetAttributeValue( AttributeKey.NumberToAccumulate ).AsIntegerOrNull();
         }
 
         #endregion Abstract Method Overrides
