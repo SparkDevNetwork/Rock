@@ -80,12 +80,6 @@ namespace Rock.Tests.Integration.TestFramework
             RockApplicationStartupHelper.ConfigureEntitySaveHooks();
             LogHelper.Log( "Initializing Save Hooks: completed." );
 
-            LogHelper.Log( $"Initializing Rock..." );
-
-            // This will migrate the database so it needs to run after we initialize
-            // the database in our own way.
-            Rock.AssemblyInitializer.Initialize();
-
             LogHelper.Log( $"Initialize Test Environment: completed." );
         }
 
