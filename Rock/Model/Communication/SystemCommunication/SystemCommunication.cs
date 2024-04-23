@@ -146,7 +146,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the body template for emails that use this template.
         /// </value>
-        [DataMember]
+        [Required]
+        [DataMember( IsRequired = true )]
         public string Body { get; set; }
 
         /// <summary>
