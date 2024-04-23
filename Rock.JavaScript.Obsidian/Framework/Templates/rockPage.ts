@@ -125,8 +125,8 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
     const name = `Root${config.blockFileUrl.replace(/\//g, ".")}`;
     const staticContent = ref<Node[]>([]);
 
-    while (rootElement.firstChild !== null) {
-        const node = rootElement.firstChild;
+    while (wrapperElement.firstChild !== null) {
+        const node = wrapperElement.firstChild;
         node.remove();
         staticContent.value.push(node);
     }
