@@ -17,36 +17,34 @@
             <!-- Top Panel Section -->
             <template #gridHeaderPrepend>
                 <Panel :hasTitle="false">
-                    <div class="refresh-tooltip">
-                        <button class="btn btn-xs btn-default" @click.prevent="refreshData">
+                    <div class="d-flex justify-content-end">
+                        <button ref="refreshTooltip" class="btn btn-xs btn-default" @click.prevent="refreshData" :title="formatLastUpdated(lastUpdated) + ' - Estimated Refresh Time: ' + estimatedRefreshTime + ' seconds'">
                             {{ calculateTimeDifference(lastUpdated) }}
                             <i class="fas fa-sync-alt"></i>
                         </button>
-                        <span class="tooltip-text">
-                            {{ formatLastUpdated(lastUpdated) }} <br />
-                            Estimated Refresh Time: {{ estimatedRefreshTime }} seconds
-                        </span>
                     </div>
+
+
 
                     <div class="row">
                         <div class="col-sm-4">
                             <StandardFilterDaysBack :onUpdate:modelValue="onDateRangeSelected"
-                                                v-model="selectedDateRange"
-                                                label="Attendance Date Range" />
+                                                    v-model="selectedDateRange"
+                                                    label="Attendance Date Range" />
                         </div>
 
                         <div class="col-sm-4" v-if="bag.showCampusFilter">
                             <DropDownList v-model="campusValue"
-                                      :items="uniqueCampuses"
-                                      :onUpdate:modelValue="onCampusSelected"
-                                      label="Campus" />
+                                          :items="uniqueCampuses"
+                                          :onUpdate:modelValue="onCampusSelected"
+                                          label="Campus" />
                         </div>
 
                         <div class="col-sm-4">
-                            <DropDownList  v-model="teamValue"
-                                      :items="uniqueGroups"
-                                      :onUpdate:modelValue="onTeamSelected"
-                                      label="Team" />
+                            <DropDownList v-model="teamValue"
+                                          :items="uniqueGroups"
+                                          :onUpdate:modelValue="onTeamSelected"
+                                          label="Team" />
                         </div>
                     </div>
 
@@ -54,7 +52,7 @@
                     <div class="styled-scroll">
                         <h3 class="mb-0">Volunteer Monthly Giving Rate</h3>
                         <div class="monthlysummarychart">
-                            <div v-for="stat in teamDonationStats" :key="stat.month" >
+                            <div v-for="stat in teamDonationStats" :key="stat.month">
                                 <div class="monthlysummarychart-bar">
                                     <div v-if="stat.donatedPercentage > 0" class="donated percent" :style="{ height: `${stat.donatedPercentage}%` }">
                                         <span v-if="stat.donatedPercentage >= 20">
@@ -110,7 +108,7 @@
                         name="campus"
                         title="Campus"
                         field="campus"
-                        visiblePriority="xs"
+                        visiblePriority="sm"
                         width="10%">
                 <template #format="{ row }">
                     {{ decodeHtml(row.campus) }}
@@ -142,8 +140,7 @@
                     width="30%">
                 <template #format="{ row }">
                     <div class="trend-chart">
-                        <div v-for="(bar, index) in getBarChart(row.givingMonths)" :key="index" class="bar" :class="bar.class">
-                            <div class="tooltip">{{ bar.month }}</div>
+                        <div v-for="(bar, index) in getBarChart(row.givingMonths)" :key="index" class="bar" :class="bar.class" :title="getTooltipContent(bar.month)" ref="setBarRef">
                         </div>
                     </div>
                 </template>
@@ -180,6 +177,7 @@
 
 .empty {
     height: 3px;
+    align-self: flex-end;
 }
 
 
@@ -250,108 +248,21 @@
     height: 200px;
     text-align: center;
 }
-
-
-/* tooltip styles */
-.tooltip {
-    visibility: hidden;
-    width: 70px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    font-size: smaller;
-    border-radius: 6px;
-    padding: 5px 0;
-    position: absolute;
-    z-index: 1;
-    bottom: 35px;
-    left: 50%;
-    margin-left: -35px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.bar:hover .tooltip {
-    visibility: visible;
-    opacity: 0.8;
-}
-
-.tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: black transparent transparent transparent;
-}
-
-.refresh-tooltip {
-    position: relative;
-    display: flex;
-    justify-content: end;
-}
-
-
-.refresh-tooltip .tooltip-text {
-    background-color: #000;
-    border-radius: 6px;
-    bottom: 125%;
-    color: #fff;
-    font-size: small;
-    margin-left: -110px;
-    opacity: 0.7;
-    padding: 10px;
-    position: absolute;
-    text-align: center;
-    transition: opacity .3s;
-    visibility: hidden;
-    width: 270px;
-    z-index: 1;
-}
-
-.refresh-tooltip .tooltip-text::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 69%;
-    transform: translateX(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: black transparent transparent transparent;
-}
-
-.refresh-tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: o.7;
-}
-
-.tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: black;
-}
-
-
 </style>
 
 <script setup lang="ts">
-    import { ref, reactive, watch } from "vue";
+    import { ref, reactive, watch, nextTick } from "vue";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
     import { VolunteerGenerositySetupBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerositySetupBag";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import Grid, { TextColumn, textValueFilter, Column, PersonColumn, pickExistingValueFilter, dateValueFilter, DateColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, Column, dateValueFilter, DateColumn } from "@Obsidian/Controls/grid";
     import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PreferenceKey } from "./VolunteerGenerosityAnalyisis/types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const config = useConfigurationValues<ListBlockBox<VolunteerGenerosityDataBag>>();
     const bag = useConfigurationValues<VolunteerGenerositySetupBag>();
@@ -371,11 +282,16 @@
     const isRefreshing = ref(false);
     const uniqueGroups = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
     const uniqueCampuses = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
+    const refreshTooltip = ref<HTMLElement | null>(null);
 
     // #endregion
 
     // #region Functions
 
+    /**
+     * Fetches the block preferences for the campus and team dropdowns
+     * @returns void
+     */
     const fetchBlockPreferences = async (): Promise<void> => {
         const defaultCampus = blockPreferences.getValue(PreferenceKey.Campus) || "";
         const defaultTeam = blockPreferences.getValue(PreferenceKey.Team) || "";
@@ -487,7 +403,6 @@
         return `Data last updated ${datePart} at ${timePart}`;
     };
 
-
     /**
      * @param value The selected date range value
      * Sets the selected date range value
@@ -557,6 +472,37 @@
     };
 
     /**
+     * Sets the tooltip for the trend chart bars
+     * @param el The refresh button element
+     * @returns void
+     */
+    const setBarRef = (el: HTMLElement): void => {
+        if (el) {
+            tooltip(el, { html: true, sanitize: false });
+        }
+    };
+
+    /**
+     * Initializes the tooltip for the refresh button
+     * @returns void
+     */
+    const initializeTooltip = (): void => {
+        nextTick(() => {
+            if (refreshTooltip.value) {
+                tooltip(refreshTooltip.value);
+            }
+        });
+    };
+
+    /**
+     * @param month The month to display in the tooltip
+     * @returns A string representing the tooltip content
+     */
+    const getTooltipContent = (month: string): string => {
+        return `${month}`;
+    };
+
+    /**
      * Calls the RefreshData Block Action to refresh the data and reload the grid
      * @returns void
      */
@@ -608,6 +554,7 @@
 
                 await fetchBlockPreferences();
                 calculateDonationPercentages();
+                initializeTooltip();
 
                 return gridData;
             }
