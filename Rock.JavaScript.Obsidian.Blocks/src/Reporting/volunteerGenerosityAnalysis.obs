@@ -79,14 +79,20 @@
                     sortValue="{{ row.person.lastName }} {{ row.person.nickName }}"
                     :filter="textValueFilter"
                     filterValue="{{ row.person.nickName }} {{ row.person.lastName }}"
-                    quickFilterValue="{{ row.person.nickName }} {{ row.person.lastName }}">
+                    quickFilterValue="{{ row.person.nickName }} {{ row.person.lastName }}"
+                    width="15%">
                 <template #format="{ row }">
                     <div class="d-flex flex-fill align-items-center">
                         <div class="mr-2 flex-shrink-0"
-                             :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${row.person.photoUrl}')`, 'background-size': 'cover' }">
+                             :style="{ 'width': '40px', 'height': '40px', 'border-radius': '30px', 'background-image': `url('${row.person.photoUrl}')`, 'background-size': 'cover' }">
                         </div>
                         <div class="flex-grow-1">
-                            {{ row.person.nickName }} {{ row.person.lastName }}
+                            <strong>
+                                {{ row.person.nickName }} {{ row.person.lastName }}
+                            </strong>
+                            <div>
+                                {{ row.person.connectionStatus }}
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -145,6 +151,11 @@
                     </div>
                 </template>
             </Column>
+            <template #gridFooterPrepend>
+                <div v-if="gridData && gridData.rows && gridData.rows.length === 0" class="no-data-message">
+                    Your filters have yielded no results. Please try another combination of filters.
+                </div>
+            </template>
         </Grid>
     </div>
 </template>
@@ -245,8 +256,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 200px;
+    height: 100px;
     text-align: center;
+    font-size: larger;
+    color: var(--color-muted);
 }
 </style>
 
@@ -283,6 +296,7 @@
     const uniqueGroups = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
     const uniqueCampuses = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
     const refreshTooltip = ref<HTMLElement | null>(null);
+    const gridDataRef = ref<GridDataBag | undefined>(undefined);
 
     // #endregion
 
@@ -419,7 +433,6 @@
      */
     const onCampusSelected = (value: string | string[]): void => {
         if (!value || Array.isArray(value)) {
-            console.error("Unexpected value received for campus selection");
             return;
         }
 
@@ -433,7 +446,6 @@
      */
     const onTeamSelected = (value: string | string[]): void => {
         if (!value || Array.isArray(value)) {
-            console.error("Unexpected value received for team selection");
             return;
         }
 

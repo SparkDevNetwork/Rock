@@ -29,6 +29,9 @@ export type VolunteerGenerosityPersonDetailsBag = {
     /** Gets or sets the Campus Short Code */
     campusShortCode?: string | null;
 
+    /** Gets or sets the person's connection status */
+    connectionStatus?: string | null;
+
     /** Gets or sets the person's giving identifier. */
     givingId?: string | null;
 

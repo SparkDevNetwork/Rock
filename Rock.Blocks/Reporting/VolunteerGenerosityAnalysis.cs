@@ -167,7 +167,8 @@ namespace Rock.Blocks.Reporting
                     PersonId = d.PersonDetails.PersonId,
                     LastName = d.PersonDetails.LastName,
                     NickName = d.PersonDetails.NickName,
-                    PhotoUrl = d.PersonDetails.PhotoUrl
+                    PhotoUrl = d.PersonDetails.PhotoUrl,
+                    ConnectionStatus = d.PersonDetails.ConnectionStatus
                 } )
                 .AddField( "givingId", d => d.PersonDetails.GivingId )
                 .AddField( "groupName", d => d.PersonDetails.GroupName );
