@@ -32,7 +32,7 @@
                         </div>
 
                         <div class="col-md-9">
-                            <div id="fiFamilyInfo" runat="server">
+                            <div id="divFamilyInfo" runat="server">
                                 <h3>Family Information</h3>
                                 <hr class="mt-0" />
                                 <div class="row">
