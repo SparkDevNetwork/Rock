@@ -1241,9 +1241,23 @@ namespace Rock.Blocks.Types.Mobile.Security
         {
             int mobileNumberValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
+            string providedName = null;
+
+            if( person != null )
+            {
+                if( person.NickName.IsNotNullOrWhiteSpace() )
+                {
+                    providedName = person.NickName;
+                }
+                else if( person.FirstName.IsNotNullOrWhiteSpace() )
+                {
+                    providedName = person.FirstName;
+                }
+            }
+
             return new OnboardDetails
             {
-                FirstName = person?.NickName ?? person?.FirstName,
+                FirstName = providedName,
                 LastName = person?.LastName,
                 BirthDate = person?.BirthDate,
                 CampusGuid = person?.GetCampus()?.Guid,
