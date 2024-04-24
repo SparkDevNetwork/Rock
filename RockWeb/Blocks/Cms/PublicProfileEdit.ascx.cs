@@ -1669,6 +1669,9 @@ namespace RockWeb.Blocks.Cms
 
             pnlView.Visible = false;
             pnlEdit.Visible = true;
+
+            // Show the family information section only when the campus picker is visible.
+            divFamilyInfo.Visible = cpCampus.Visible;
         }
 
         /// <summary>
