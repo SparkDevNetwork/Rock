@@ -380,7 +380,8 @@
                         <asp:Panel ID="pnlAdultChildren" runat="server" Enabled="false" CssClass="data-integrity-options">
                             <Rock:RockCheckBox ID="cbisMoveGraduated" runat="server" Label="Should children only be moved if they have graduated?" Text="Yes" />
                             <Rock:NumberBox ID="nbAdultAge" runat="server" Label="The age a child should be considered an adult" AppendText="years" CssClass="input-width-md" />
-                            <Rock:GroupRolePicker ID="rpParentRelationship" runat="server" Label="An optional known relationship that should be added between the new adult and their parent(s)" />
+                            <Rock:GroupRolePicker ID="rpParentRelationship" runat="server" Label="An optional known relationship that should be added between the parent(s) and the new adult"
+                                Help="Usually this would be set to 'Parent', but if you have a different known relationship you want to use, you can set it here" />
                             <Rock:GroupRolePicker ID="rpSiblingRelationship" runat="server" Label="An optional known relationship that should be added between the new adult and their sibling(s)" />
                             <Rock:RockCheckBox ID="cbSameAddress" runat="server" Label="Should the new adult's home address be the same as their current family?" Text="Yes" />
                             <Rock:RockCheckBox ID="cbSamePhone" runat="server" Label="If the new adult does not have a home phone, should they use same number as their parent?" Text="Yes" />
