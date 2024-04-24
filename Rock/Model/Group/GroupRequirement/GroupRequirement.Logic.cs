@@ -926,7 +926,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates the group member requirement result.
+        /// Updates the group member requirement result (does not save the context).
+        /// <para>
+        /// If the group member requirement in question does not already exist in the database, a new instance
+        /// will be created as a proxy and added to the rock context, so navigation properties (lazy loading)
+        /// will work for any code that subsequently loads this same entity instance when using the same rock
+        /// context. It's up to the caller of this method to save changes.
+        /// </para>
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personId">The person identifier.</param>
@@ -974,7 +980,9 @@ namespace Rock.Model
                 var groupMemberRequirement = groupMemberRequirementService.Queryable().Where( a => a.GroupMemberId == groupMemberId && a.GroupRequirementId == groupRequirement.Id ).FirstOrDefault();
                 if ( groupMemberRequirement == null )
                 {
-                    groupMemberRequirement = new GroupMemberRequirement();
+                    // Create the group member requirement as a proxy so navigation properties
+                    // work for subsequent retrieval of this instance using the same rock context.
+                    groupMemberRequirement = rockContext.Set<GroupMemberRequirement>().Create();
                     groupMemberRequirement.GroupMemberId = groupMemberId;
                     groupMemberRequirement.GroupRequirementId = groupRequirement.Id;
                     groupMemberRequirementService.Add( groupMemberRequirement );
