@@ -151,6 +151,7 @@
     <Compile Include="Core\SignatureDocumentTemplateList.cs" />
     <Compile Include="Core\TagList.cs" />
     <Compile Include="Crm\AssessmentTypeList.cs" />
+    <Compile Include="Crm\BadgeList.cs" />
     <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />
     <Compile Include="Core\ScheduledJobList.cs" />
