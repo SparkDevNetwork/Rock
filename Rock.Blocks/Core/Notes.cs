@@ -549,7 +549,8 @@ namespace Rock.Blocks.Core
                         return ActionBadRequest( "Note type is invalid." );
                     }
 
-                    note.NoteTypeId = noteType.Id;
+                    // If the note has child notes, ensure that they have the same note type as the parent.
+                    SetParentNoteType( note, noteType.Id );
                 }
 
                 request.IfValidProperty( nameof( request.Bag.Text ), () =>
@@ -635,6 +636,29 @@ namespace Rock.Blocks.Core
                     savedNote.LoadAttributes( rockContext2 );
 
                     return ActionOk( GetNoteBag( savedNote, watchedNoteIds, RequestContext.CurrentPerson ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the note type for a parent note and all child notes.
+        /// </summary>
+        /// <param name="parentNote">The parent note object.</param>
+        /// <param name="noteTypeId">The identifier of the new Note Type.</param>
+        private void SetParentNoteType( Note parentNote, int noteTypeId )
+        {
+            if ( parentNote == null )
+            {
+                return;
+            }
+
+            parentNote.NoteTypeId = noteTypeId;
+
+            if ( parentNote.ChildNotes != null )
+            {
+                foreach ( var childNote in parentNote.ChildNotes )
+                {
+                    SetParentNoteType( childNote, noteTypeId );
                 }
             }
         }

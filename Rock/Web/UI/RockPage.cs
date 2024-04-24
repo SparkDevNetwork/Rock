@@ -3130,6 +3130,11 @@ Sys.Application.add_load(function () {
         /// <returns>An object that implements the <see cref="Rock.Data.IEntity"/> interface referencing the context object. </returns>
         internal Rock.Data.IEntity GetCurrentContext( EntityTypeCache entity, Dictionary<string, KeyEntity> keyEntityDictionary )
         {
+            if ( entity == null || keyEntityDictionary == null )
+            {
+                return null;
+            }
+
             if ( keyEntityDictionary.ContainsKey( entity.Name ) )
             {
                 var keyModel = keyEntityDictionary[entity.Name];

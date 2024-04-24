@@ -26,17 +26,21 @@
                 <asp:Panel ID="pnlEdit" runat="server">
                     <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <div class="row">
-                        <div class="col-md-4 pull-right">
-                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
-                        </div>
-                    </div>
-                    <div class="row">
 
                         <div class="col-md-3">
                             <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" ButtonText="<i class='fa fa-camera'></i>" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                         </div>
 
                         <div class="col-md-9">
+                            <div id="divFamilyInfo" runat="server">
+                                <h3>Family Information</h3>
+                                <hr class="mt-0" />
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+                                    </div>
+                                </div>
+                            </div>
                             <h3>Personal Information</h3>
                             <hr class="mt-0" />
                             <asp:Panel ID="pnlPersonalTitle" runat="server" CssClass="row">

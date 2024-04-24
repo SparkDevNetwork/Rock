@@ -153,6 +153,9 @@ namespace Rock.Web.Cache
         [DataMember]
         public string CustomSummaryLavaTemplate { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.AchievementType.TargetCount"/>
+        public int? TargetCount { get; private set; }
+
         /// <summary>
         /// The default SummaryLavaTemplate if <see cref="Rock.Model.AchievementType.CustomSummaryLavaTemplate" /> is not set.
         /// </summary>
@@ -311,6 +314,7 @@ namespace Rock.Web.Cache
             ImageBinaryFileId = achievementType.ImageBinaryFileId;
             AlternateImageBinaryFileId = achievementType.AlternateImageBinaryFileId;
             CustomSummaryLavaTemplate = achievementType.CustomSummaryLavaTemplate;
+            TargetCount = achievementType.TargetCount;
         }
 
         /// <summary>

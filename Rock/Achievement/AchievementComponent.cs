@@ -240,6 +240,26 @@ $@"<div style=""color: #16c98d"">
             return dictionary;
         }
 
+        /// <summary>
+        /// <para>
+        /// Gets the target count of things that must be done for this achievement
+        /// to be considered accomplished. For example, an achievement of
+        /// "attend 10 weeks in a row" should return 10.
+        /// </para>
+        /// <para>
+        /// This method is called as part of the pre-save process for achievement
+        /// types. Therefore only the data in the <paramref name="achievementType"/>
+        /// should be used to calculate this value. That is why we do not pass
+        /// a cache object.
+        /// </para>
+        /// </summary>
+        /// <param name="achievementType">The achievement type that contains the configuration.</param>
+        /// <returns>An integer that indicates the target count or <c>null</c> if not supported by this component.</returns>
+        internal protected virtual int? GetTargetCount( AchievementType achievementType )
+        {
+            return null;
+        }
+
         #region Attempt Calculation Helpers
 
         /// <summary>

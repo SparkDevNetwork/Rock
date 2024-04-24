@@ -363,7 +363,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Theme Purpose
         /// </summary>
-        public const string THEME_PURPOSE = "05189496-F60C-4563-8F10-42CEBB470C59";
+        public const string THEME_PURPOSE = "99FF0317-9B21-4E56-9F83-EA89A3C8C789";
 
         /// <summary>
         /// Campus Topic Type

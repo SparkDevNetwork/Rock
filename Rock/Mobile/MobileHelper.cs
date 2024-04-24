@@ -581,7 +581,7 @@ namespace Rock.Mobile
         {
             foreach ( var page in pages )
             {
-                var additionalPageSettings = page.AdditionalSettings.FromJsonOrNull<AdditionalPageSettings>() ?? new AdditionalPageSettings();
+                var additionalPageSettings = page.GetAdditionalSettings<AdditionalPageSettings>();
 
 
                 var mobilePage = new MobilePage
@@ -608,7 +608,7 @@ namespace Rock.Mobile
                     HideNavigationBar = additionalPageSettings.HideNavigationBar,
                     ShowFullScreen = additionalPageSettings.ShowFullScreen,
                     AutoRefresh = additionalPageSettings.AutoRefresh,
-                    PageType = additionalPageSettings.PageType,
+                    PageType = additionalPageSettings.PageType.ToMobile(),
                     WebPageUrl = additionalPageSettings.WebPageUrl
                 };
 

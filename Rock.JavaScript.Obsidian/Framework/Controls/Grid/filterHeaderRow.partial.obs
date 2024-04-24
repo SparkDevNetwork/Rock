@@ -6,7 +6,10 @@
         </div>
 
         <div class="grid-badges mr-3">
-            <span v-if="countMessage && isCountMessageVisible" class="label label-default">{{ countMessage }}</span>
+            <span v-if="countMessage && isCountMessageVisible" class="label label-default">
+                <span class="label-value">{{ countMessage }}</span>
+                <span v-if="selectedRowCount && selectedRowCount > 0" class="badge badge-info">{{ selectedRowCount }}</span>
+            </span>
         </div>
 
         <!-- This causes a break on extra small and small devices. -->
@@ -78,6 +81,12 @@
         isCountMessageVisible: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+
+        /** The number of rows currently selected in the grid. */
+        selectedRowCount: {
+            type: Number as PropType<number>,
+            required: false
         },
 
         /** Determines if the search box is visible. */

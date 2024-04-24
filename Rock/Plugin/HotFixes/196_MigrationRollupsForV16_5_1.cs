@@ -37,7 +37,8 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             ConsolidateGenderSettingsOnPublicProfileEditBlockUp();
-            AddVolunteerGenerosityAnalysisFeature();
+            // Commented thie method out to run in a later EF migration - AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.cs
+            // AddVolunteerGenerosityAnalysisFeature();
             DropHistoryGuidIndexUp();
         }
 
@@ -289,7 +290,7 @@ FROM
             string datasetGuid = "10539E72-B5D3-48E2-B9C6-DB43AFDAD55F";
 
             // Create the schedule and persisted dataset
-            RockMigrationHelper.AddPersistedDatasetWithSchedule(
+            RockMigrationHelper.AddOrUpdatePersistedDatasetWithSchedule(
                 scheduleGuid,
                 scheduleName,
                 scheduleDescription,

@@ -4203,19 +4203,31 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Determines whether [contains] [the specified input].
+        /// Determines whether the input collection contains the specified value.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="containValue">The contain value.</param>
+        /// <param name="input">The input collection.</param>
+        /// <param name="containValue">The search value.</param>
         /// <returns>
-        ///   <c>true</c> if [contains] [the specified input]; otherwise, <c>false</c>.
+        ///   <c>true</c> if the input collection contains the specified value; otherwise, <c>false</c>.
         /// </returns>
         public static bool Contains( object input, object containValue )
         {
-            var inputList = ( input as IList );
-            if ( inputList != null )
+            if ( input == null || containValue == null )
             {
+                return false;
+            }
+
+            if ( input is IList inputList )
+            { 
                 return inputList.Contains( containValue );
+            }
+            else if ( input is IEnumerable<object> inputGenericEnumerable )
+            {
+                return inputGenericEnumerable.ToList().Contains( containValue );
+            }
+            else if ( input is IEnumerable inputEnumerable )
+            {
+                return inputEnumerable.Cast<object>().ToList().Contains( containValue );
             }
 
             return false;

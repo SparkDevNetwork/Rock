@@ -518,7 +518,7 @@ create table #codeTable (
 	-- mobile block types
 	INSERT INTO #codeTable
 	SELECT 
-        @crlf + '            // Add/Update Obsidian Block Entity Type' +
+        @crlf + '            // Add/Update Mobile Block Entity Type' +
         @crlf + '            //   EntityType:' + isnull(et.[Name], '') + 
         @crlf +'            RockMigrationHelper.UpdateEntityType('
 		+ '"' + et.[Name] + '", '
@@ -744,7 +744,7 @@ create table #codeTable (
 
     INSERT INTO #codeTable
     SELECT 
-        @crlf + '            // Attribute for BlockType' + 
+        @crlf + '            // Attribute for ' + CASE WHEN bt.[Category] LIKE 'Mobile%' THEN 'Mobile' WHEN bt.Path IS NULL THEN 'Obsidian' ELSE '' END + ' BlockType' + 
         @crlf + '            //   BlockType: ' + bt.Name + 
         @crlf + '            //   Category: ' + isnull(bt.Category, '-') + 
         @crlf + '            //   Attribute: ' + a.Name +

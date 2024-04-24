@@ -218,7 +218,7 @@ export const DefinedType = {
     /** Used to manage the workflows that can be launched via a text message. */
     TextToWorkflow: "2CACB86F-D811-4483-98E1-272F1FF8FF5D",
     /** Theme Purpose */
-    ThemePurpose: "05189496-F60C-4563-8F10-42CEBB470C59",
+    ThemePurpose: "99FF0317-9B21-4E56-9F83-EA89A3C8C789",
     /** Campus Topic Type */
     TopicType: "41141100-8fc6-44bb-aa36-9778eeda7f62",
     /** Used to manage the lava code that can be launched via webhook. */

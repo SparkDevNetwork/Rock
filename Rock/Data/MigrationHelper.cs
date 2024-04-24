@@ -8664,7 +8664,7 @@ END
         /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
         /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
         /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
-        public void AddPersistedDatasetWithSchedule(
+        public void AddOrUpdatePersistedDatasetWithSchedule(
             string scheduleGuid,
             string scheduleName,
             string scheduleDescription,
@@ -8683,9 +8683,11 @@ END
             bool isDatasetActive,
             string enabledLavaCommands )
         {
-            Migration.Sql( string.Format( @"
-        DECLARE @ScheduleId INT;
+            Migration.Sql( $@"
+    DECLARE @ScheduleId INT;
 
+    IF NOT EXISTS(SELECT 1 FROM [Schedule] WHERE [Guid] = '{scheduleGuid}')
+    BEGIN
         INSERT INTO [Schedule] (
             [Name],
             [Description],
@@ -8695,16 +8697,23 @@ END
             [Guid]
         )
         VALUES (
-            '{0}',
-            '{1}',
-            '{2}',
-            '{3}',
-            {4},
-            '{5}'
+            '{scheduleName}',
+            '{scheduleDescription}',
+            '{iCalendarContent}',
+            '{effectiveStartDate}',
+            {( isScheduleActive ? 1 : 0 )},
+            '{scheduleGuid}'
         );
 
         SET @ScheduleId = SCOPE_IDENTITY();
+    END
+    ELSE
+    BEGIN
+        SET @ScheduleId = (SELECT [Id] FROM [Schedule] WHERE [Guid] = '{scheduleGuid}');
+    END
 
+    IF NOT EXISTS(SELECT 1 FROM [PersistedDataset] WHERE [Guid] = '{datasetGuid}')
+    BEGIN
         INSERT INTO [PersistedDataset] (
             [AccessKey],
             [Name],
@@ -8720,36 +8729,36 @@ END
             [Guid]
         )
         VALUES (
-            '{6}',
-            '{7}',
-            '{8}',
-            {9},
-            {10},
-            '{11}',
-            {12},
-            {13},
-            {14},
-            '{15}',
+            '{datasetAccessKey}',
+            '{datasetName.Replace( "'", "''" )}',
+            '{datasetDescription.Replace( "'", "''" )}',
+            {( allowManualRefresh ? 1 : 0 )},
+            {resultFormat},
+            '{buildScript.Replace( "'", "''" )}',
+            {buildScriptType},
+            {( isDatasetSystem ? 1 : 0 )},
+            {( isDatasetActive ? 1 : 0 )},
+            '{enabledLavaCommands}',
             @ScheduleId,
-            '{16}'
-        );",
-                scheduleName,
-                scheduleDescription,
-                iCalendarContent,
-                effectiveStartDate,
-                isScheduleActive ? 1 : 0,
-                scheduleGuid,
-                datasetAccessKey,
-                datasetName.Replace( "'", "''" ),
-                datasetDescription.Replace( "'", "''" ),
-                allowManualRefresh ? 1 : 0,
-                resultFormat,
-                buildScript.Replace( "'", "''" ),
-                buildScriptType,
-                isDatasetSystem ? 1 : 0,
-                isDatasetActive ? 1 : 0,
-                enabledLavaCommands,
-                datasetGuid ) );
+            '{datasetGuid}'
+        );
+    END
+    ELSE
+    BEGIN
+        UPDATE [PersistedDataset] SET
+            [AccessKey] = '{datasetAccessKey}',
+            [Name] = '{datasetName.Replace( "'", "''" )}',
+            [Description] = '{datasetDescription.Replace( "'", "''" )}',
+            [AllowManualRefresh] = {( allowManualRefresh ? 1 : 0 )},
+            [ResultFormat] = {resultFormat},
+            [BuildScript] = '{buildScript.Replace( "'", "''" )}',
+            [BuildScriptType] = {buildScriptType},
+            [IsSystem] = {( isDatasetSystem ? 1 : 0 )},
+            [IsActive] = {( isDatasetActive ? 1 : 0 )},
+            [EnabledLavaCommands] = '{enabledLavaCommands}',
+            [PersistedScheduleId] = @ScheduleId
+        WHERE [Guid] = '{datasetGuid}';
+    END" );
         }
 
         /// <summary>
@@ -8767,7 +8776,7 @@ END
         /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
         /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
         /// <param name="refreshIntervalMinutes">The refresh interval in minutes for the persisted dataset.</param>
-        public void AddPersistedDatasetWithRefreshInterval(
+        public void AddOrUpdatePersistedDatasetWithRefreshInterval(
             string datasetGuid,
             string datasetAccessKey,
             string datasetName,
@@ -8781,7 +8790,9 @@ END
             string enabledLavaCommands,
             int refreshIntervalMinutes )
         {
-            Migration.Sql( string.Format( @"
+            Migration.Sql( $@"
+    IF NOT EXISTS(SELECT 1 FROM [PersistedDataset] WHERE [Guid] = '{datasetGuid}')
+    BEGIN
         INSERT INTO [PersistedDataset] (
             [AccessKey],
             [Name],
@@ -8793,35 +8804,40 @@ END
             [IsSystem],
             [IsActive],
             [EnabledLavaCommands],
-            [PersistedScheduleId],
+            [RefreshIntervalMinutes],
             [Guid]
         )
         VALUES (
-            '{0}',
-            '{1}',
-            '{2}',
-            {3},
-            {4},
-            '{5}',
-            {6},
-            {7},
-            {8},
-            '{9}',
-            {10},
-            '{11}'
-        );",
-                datasetAccessKey,
-                datasetName.Replace( "'", "''" ),
-                datasetDescription.Replace( "'", "''" ),
-                allowManualRefresh ? 1 : 0,
-                resultFormat,
-                buildScript.Replace( "'", "''" ),
-                buildScriptType,
-                isDatasetSystem ? 1 : 0,
-                isDatasetActive ? 1 : 0,
-                enabledLavaCommands,
-                refreshIntervalMinutes,
-                datasetGuid ) );
+            '{datasetAccessKey}',
+            '{datasetName.Replace( "'", "''" )}',
+            '{datasetDescription.Replace( "'", "''" )}',
+            {(allowManualRefresh ? 1 : 0)},
+            {resultFormat},
+            '{buildScript.Replace( "'", "''" )}',
+            {buildScriptType},
+            {(isDatasetSystem ? 1 : 0)},
+            {(isDatasetActive ? 1 : 0)},
+            '{enabledLavaCommands}',
+            {refreshIntervalMinutes},
+            '{datasetGuid}'
+        );
+    END
+    ELSE
+    BEGIN
+        UPDATE [PersistedDataset] SET
+            [AccessKey] = '{datasetAccessKey}',
+            [Name] = '{datasetName.Replace( "'", "''" )}',
+            [Description] = '{datasetDescription.Replace( "'", "''" )}',
+            [AllowManualRefresh] = {(allowManualRefresh ? 1 : 0)},
+            [ResultFormat] = {resultFormat},
+            [BuildScript] = '{buildScript.Replace( "'", "''" )}',
+            [BuildScriptType] = {buildScriptType},
+            [IsSystem] = {(isDatasetSystem ? 1 : 0)},
+            [IsActive] = {(isDatasetActive ? 1 : 0)},
+            [EnabledLavaCommands] = '{enabledLavaCommands}',
+            [RefreshIntervalMinutes] = {refreshIntervalMinutes}
+        WHERE [Guid] = '{datasetGuid}';
+    END" );
         }
 
         /// <summary>

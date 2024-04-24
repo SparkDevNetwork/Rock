@@ -601,7 +601,7 @@ namespace RockWeb.Blocks.Mobile
                 return;
             }
 
-            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<AdditionalPageSettings>() ?? new AdditionalPageSettings();
+            var additionalSettings = page.GetAdditionalSettings<AdditionalPageSettings>();
 
             //
             // Setup the Details panel information.
@@ -613,7 +613,7 @@ namespace RockWeb.Blocks.Mobile
 
             var fields = new List<KeyValuePair<string, string>>();
 
-            if ( additionalSettings.PageType == MobilePageType.NativePage )
+            if ( additionalSettings.PageType == Rock.Enums.Cms.MobilePageType.NativePage )
             {
                 fields.Add( new KeyValuePair<string, string>( "Layout", page.Layout.Name ) );
             }
@@ -706,11 +706,11 @@ namespace RockWeb.Blocks.Mobile
             hlExternalWebPage.ToolTip = string.Format( "This page will open {0} in an external browser application.", additionalSettings.WebPageUrl );
 
             // Update the visibility of all controls to match our current state.
-            hlInternalWebPage.Visible = additionalSettings.PageType == MobilePageType.InternalWebPage;
-            hlExternalWebPage.Visible = additionalSettings.PageType == MobilePageType.ExternalWebPage;
+            hlInternalWebPage.Visible = additionalSettings.PageType == Rock.Enums.Cms.MobilePageType.InternalWebPage;
+            hlExternalWebPage.Visible = additionalSettings.PageType == Rock.Enums.Cms.MobilePageType.ExternalWebPage;
             pnlDetails.Visible = true;
             pnlEditPage.Visible = false;
-            pnlBlocks.Visible = additionalSettings.PageType == MobilePageType.NativePage;
+            pnlBlocks.Visible = additionalSettings.PageType == Rock.Enums.Cms.MobilePageType.NativePage;
         }
 
         /// <summary>
@@ -764,7 +764,7 @@ namespace RockWeb.Blocks.Mobile
                 }
             }
 
-            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            var additionalSettings = page.GetAdditionalSettings<AdditionalPageSettings>();
 
             // Set the basic fields of the page.
             tbName.Text = page.PageTitle;
@@ -785,7 +785,7 @@ namespace RockWeb.Blocks.Mobile
             ddlMenuDisplayWhen.BindToEnum<Rock.Model.DisplayInNavWhen>();
             ddlMenuDisplayWhen.SetValue( page.DisplayInNavWhen.ToStringSafe().AsIntegerOrNull() ?? page.DisplayInNavWhen.ConvertToInt() );
 
-            ddlPageType.BindToEnum<MobilePageType>();
+            ddlPageType.BindToEnum<Rock.Enums.Cms.MobilePageType>();
             ddlPageType.SetValue( additionalSettings.PageType.ConvertToInt() );
             tbWebPageUrl.Text = additionalSettings.WebPageUrl;
 
@@ -1092,9 +1092,9 @@ namespace RockWeb.Blocks.Mobile
         /// </summary>
         private void UpdateAdvancedSettingsVisibility()
         {
-            var pageType = ddlPageType.SelectedValueAsEnum<MobilePageType>( MobilePageType.NativePage );
+            var pageType = ddlPageType.SelectedValueAsEnum<Rock.Enums.Cms.MobilePageType>( Rock.Enums.Cms.MobilePageType.NativePage );
 
-            if ( pageType == MobilePageType.NativePage )
+            if ( pageType == Rock.Enums.Cms.MobilePageType.NativePage )
             {
                 tbWebPageUrl.Visible = false;
                 pnlNativePageAdvancedSettings.Visible = true;
@@ -1169,13 +1169,13 @@ namespace RockWeb.Blocks.Mobile
                 page.ParentPageId = parentPageId;
             }
 
-            var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
+            var additionalSettings = page.GetAdditionalSettings<AdditionalPageSettings>();
             additionalSettings.LavaEventHandler = ceEventHandler.Text;
             additionalSettings.CssStyles = ceCssStyles.Text;
             additionalSettings.HideNavigationBar = cbHideNavigationBar.Checked;
             additionalSettings.ShowFullScreen = cbShowFullScreen.Checked;
             additionalSettings.AutoRefresh = cbAutoRefresh.Checked;
-            additionalSettings.PageType = ddlPageType.SelectedValueAsEnum<MobilePageType>( MobilePageType.NativePage );
+            additionalSettings.PageType = ddlPageType.SelectedValueAsEnum<Rock.Enums.Cms.MobilePageType>( Rock.Enums.Cms.MobilePageType.NativePage );
             additionalSettings.WebPageUrl = tbWebPageUrl.Text;
 
             page.InternalName = tbInternalName.Text;
@@ -1185,7 +1185,7 @@ namespace RockWeb.Blocks.Mobile
             page.BodyCssClass = tbCssClass.Text;
             page.LayoutId = ddlLayout.SelectedValueAsId().Value;
             page.DisplayInNavWhen = ddlMenuDisplayWhen.SelectedValue.ConvertToEnumOrNull<Rock.Model.DisplayInNavWhen>() ?? DisplayInNavWhen.Never;
-            page.AdditionalSettings = additionalSettings.ToJson();
+            page.SetAdditionalSettings<AdditionalPageSettings>( additionalSettings );
             int? oldIconId = null;
             if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId )
             {

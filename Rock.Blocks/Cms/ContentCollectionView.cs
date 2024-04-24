@@ -303,19 +303,47 @@ namespace Rock.Blocks.Cms
         /// <summary>
         /// The default template for a mobile group header.
         /// </summary>
-        private const string DefaultMobileGroupHeaderTemplate = @"<Grid StyleClass=""px-8, mt-8""
-      MarginBottom=""-8""
-      HorizontalOptions=""Center""
-      ColumnDefinitions=""Auto, *"">
-    
-    <Rock:Icon IconClass=""{{ SourceEntity.IconCssClass }}""
-               StyleClass=""mr-8, title2, text-primary-strong""
-               Grid.Column=""0""
-               VerticalOptions=""Center"" />
-
-    <Label Text=""{{ SourceName | Escape }}""
-           StyleClass=""title2, text-interface-stronger, bold""
-           Grid.Column=""1"" />
+        private const string DefaultMobileGroupHeaderTemplate = @"<Grid x:Name=""sourcesLayout"" 
+      RowDefinitions=""*"">
+       <FlexLayout BindableLayout.ItemsSource=""{Binding Sources}""
+                   Wrap=""Wrap""
+                   JustifyContent=""Start""
+                   AlignItems=""Start"">
+              <BindableLayout.ItemTemplate>
+                     <DataTemplate>
+                            <Border HeightRequest=""36""
+                                    StrokeShape=""RoundRectangle 22""
+                                    StyleClass=""px-16, py-4""
+                                    MarginRight=""4""
+                                    MarginBottom=""4"">
+                                
+                                <!-- The Content Collection Source Name -->
+                                <Label Text=""{Binding Name}""
+                                       StyleClass=""body""
+                                       VerticalOptions=""Center"">
+                                    <Label.Behaviors>
+                                        <!-- Ensure that text-interface-softest applies to the selected tag. -->
+                                        <Rock:AddCssClassWhenTrueBehavior ClassName=""text-interface-softest""
+                                                                      FalseClassName=""text-interface-strong""
+                                                                      Value=""{Binding IsSelected}"" />
+                                    </Label.Behaviors>
+                                </Label>
+                                
+                                <Border.Behaviors>
+                                   <!-- Ensure that bg-primary-strong applies to the selected tag. -->
+                                    <Rock:AddCssClassWhenTrueBehavior ClassName=""bg-primary-strong""
+                                                                      FalseClassName=""bg-interface-soft""
+                                                                      Value=""{Binding IsSelected}"" />
+                                </Border.Behaviors>
+                                        
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command=""{Binding BindingContext.UpdateSelectedSource, Source={x:Reference Name=sourcesLayout}}""
+                                                          CommandParameter=""{Binding Guid}"" />
+                                </Border.GestureRecognizers>
+                            </Border>
+                     </DataTemplate>
+              </BindableLayout.ItemTemplate>
+       </FlexLayout>
 </Grid>";
 
         #endregion
@@ -1272,6 +1300,33 @@ namespace Rock.Blocks.Cms
                 return null;
             }
 
+            var groupResultsBySource = GetAttributeValue( AttributeKey.GroupResultsBySource ).AsBoolean();
+            var mobileSources = new List<MobileContentSource>();
+
+            if ( groupResultsBySource )
+            {
+                var sources = ContentCollectionSourceCache.All()
+                    .Where( s => s.ContentCollectionId == contentCollection.Id )
+                    .ToList();
+
+                foreach( var source in sources )
+                {
+                    var sourceEntityType = source.EntityType.GetEntityType();
+                    var sourceEntity = Reflection.GetIEntityForEntityType( sourceEntityType, source.EntityId );
+
+                    if ( sourceEntity == null )
+                    {
+                        continue;
+                    }
+
+                    mobileSources.Add( new MobileContentSource
+                    {
+                        Name = sourceEntity.ToString(),
+                        Guid = source.Guid
+                    } );
+                }
+            }
+
             return new
             {
                 ContentCollection = contentCollectionGuid,
@@ -1283,7 +1338,7 @@ namespace Rock.Blocks.Cms
                 GroupResultsBySource = GetAttributeValue( AttributeKey.GroupResultsBySource ).AsBoolean(),
                 EnabledSortOrders = GetAttributeValue( AttributeKey.EnabledSortOrders ).SplitDelimitedValues().ToList(),
                 TrendingTerm = GetAttributeValue( AttributeKey.TrendingTerm ),
-                ResultsTemplate = GetAttributeValue( AttributeKey.ResultsTemplate ),
+                GroupHeaderTemplate = GetAttributeValue( AttributeKey.GroupHeaderTemplate ),
                 ItemTemplate = GetItemTemplate(),
                 PreSearchTemplate = GetPreSearchTemplate(),
                 Filters = GetSearchFilters( contentCollection ),
@@ -1291,7 +1346,25 @@ namespace Rock.Blocks.Cms
                 BoostMatchingRequestFilters = GetAttributeValue( AttributeKey.BoostMatchingRequestFilters ).AsBoolean(),
                 SegmentBoostAmount = GetAttributeValue( AttributeKey.SegmentBoostAmount ).AsDecimalOrNull(),
                 RequestFilterBoostAmount = GetAttributeValue( AttributeKey.RequestFilterBoostAmount ).AsDecimalOrNull(),
+                CollectionSources = mobileSources
             };
+        }
+
+        /// <summary>
+        /// A class that represents a content source to be bundled
+        /// into the mobile configuration.
+        /// </summary>
+        private class MobileContentSource
+        {
+            /// <summary>
+            /// Gets or sets the name of the source.
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the GUID of the source.
+            /// </summary>
+            public Guid Guid { get; set; }
         }
 
         #endregion

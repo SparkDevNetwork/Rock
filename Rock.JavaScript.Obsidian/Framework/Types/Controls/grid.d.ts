@@ -374,6 +374,15 @@ type StandardColumnProps = {
     },
 
     /**
+     * The type of the column which will be used to apply specific CSS classes
+     * dynamically and help in identifying the column type throughout the system.
+     */
+    columnType: {
+        type: PropType<string>,
+        required: false
+    },
+
+    /**
      * Additional CSS class to apply to the header cell.
      */
     headerClass: {
@@ -727,6 +736,12 @@ export type ColumnDefinition = {
 
     /** The additional CSS class to apply to the data item cell. */
     itemClass?: string;
+
+    /**
+     * The type of the column which will be used to apply specific CSS classes
+     * dynamically and help in identifying the column type throughout the system.
+     */
+    columnType?: string;
 
     /**
      * If `true` then the column will not ever be rendered on screen. It may

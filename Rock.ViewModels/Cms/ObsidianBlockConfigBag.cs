@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Enums.Cms;
+
 namespace Rock.ViewModels.Cms
 {
     /// <summary>
@@ -62,6 +64,14 @@ namespace Rock.ViewModels.Cms
         public object ConfigurationValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the initial content to be rendered for the block
+        /// until the component loads. This is only valid when refreshing
+        /// the block initialization for a block reload operation.
+        /// </summary>
+        /// <value>The initial content.</value>
+        public string InitialContent { get; set; }
+
+        /// <summary>
         /// Gets or sets the custom configuration actions that should be added
         /// to the block's configuration bar.
         /// </summary>
@@ -75,5 +85,11 @@ namespace Rock.ViewModels.Cms
         /// </summary>
         /// <value>The person preferences associated with this block.</value>
         public ObsidianBlockPreferencesBag Preferences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reload mode when the block configuration changes.
+        /// </summary>
+        /// <value>The reload mode.</value>
+        public BlockReloadMode ReloadMode { get; set; }
     }
 }

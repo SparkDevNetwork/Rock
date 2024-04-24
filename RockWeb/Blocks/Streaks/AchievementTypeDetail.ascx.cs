@@ -686,6 +686,12 @@ namespace RockWeb.Blocks.Streaks
             var component = updatedCacheItem.AchievementComponent;
             var configDictionary = component.GenerateConfigFromAttributeValues( updatedCacheItem );
             achievementType.ComponentConfigJson = configDictionary.ToJson();
+
+            // Force the achievement type to be in a modified state so that
+            // pre/post logic triggers in case the ComponentConfigJson hasn't
+            // actually changed. This whole save pattern should be re-worked
+            // to not need this secondary save.
+            achievementType.ModifiedDateTime = RockDateTime.Now;
             rockContext.SaveChanges();
 
             // If the save was successful, reload the page using the new record Id.

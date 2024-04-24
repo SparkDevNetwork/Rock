@@ -242,8 +242,15 @@ body.navbar-side-open {
     .nav-item {
       .nav-link {
         padding: 0;
-        line-height: 2.5;
+        line-height: 1.4;
+        display: flex;
+        align-items: center;
+        margin: 18px 0;
         color: @navbarside-color;
+
+        &:last-child{
+            margin-bottom: 0;
+        }
 
         &::before {
           display: inline-block;
