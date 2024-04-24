@@ -48,6 +48,11 @@ export default defineComponent({
             default: "52px"
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "reorder"
+        },
+
         /**
          * Called when the order of an item has changed. The first parameter
          * is the row item that was moved. The second parameter is the row item
