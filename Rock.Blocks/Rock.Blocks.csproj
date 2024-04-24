@@ -64,6 +64,7 @@
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
