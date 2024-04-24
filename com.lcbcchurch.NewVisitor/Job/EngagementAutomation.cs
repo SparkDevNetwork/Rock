@@ -12,6 +12,7 @@ using Quartz;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -41,7 +42,7 @@ namespace com.lcbcchurch.NewVisitor.Job
     [DisallowConcurrentExecution]
 
     #endregion Attributes
-    public class EngagementAutomation : IJob
+    public class EngagementAutomation : RockJob
     {
         private const string USER_PREFERENCE_KEY_ENGAGEMENT_SCORE = "lcbc_EngagementScoreResults";
         private const string SOURCE_OF_CHANGE = "Engagement Automation";
@@ -75,24 +76,20 @@ namespace com.lcbcchurch.NewVisitor.Job
         /// <summary>
         /// Executes the specified context.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute()
         {
-            _httpContext = HttpContext.Current;
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-
-            string engagementScoringResult = CalculateEngagementScore( context );
+            string engagementScoringResult = CalculateEngagementScore();
             var message = new StringBuilder();
             message.AppendLine( $@"Engagement Scoring: {engagementScoringResult}" );
 
-            if ( dataMap.GetString( AttributeKey.EnableUpdatingFamilyCampus ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.EnableUpdatingFamilyCampus ).AsBoolean() )
             {
-                string updateFamilyResult = UpdateFamilyCampus( context );
+                string updateFamilyResult = UpdateFamilyCampus();
                 message.AppendLine( $@"Update Family Campus: {updateFamilyResult}" );
             }
 
-            context.UpdateLastStatusMessage( message.ToString() );
+            UpdateLastStatusMessage( message.ToString() );
         }
 
         #region Helper Methods
@@ -100,14 +97,13 @@ namespace com.lcbcchurch.NewVisitor.Job
         /// <summary>
         /// Updates the family campus.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="Exception">Could not determine the 'Family' group type.</exception>
-        private string UpdateFamilyCampus( IJobExecutionContext context )
+        private string UpdateFamilyCampus()
         {
             try
             {
-                context.UpdateLastStatusMessage( $"Processing campus updates." );
+                UpdateLastStatusMessage( $"Processing campus updates." );
 
                 var setting = Rock.Web.SystemSettings.GetValue( SystemSetting.LCBC_ENGAGEMENTSCORING_CONFIGURATION ).FromJsonOrNull<EngagementAutomationSetting>();
 
@@ -171,7 +167,7 @@ namespace com.lcbcchurch.NewVisitor.Job
                         // Update the status on every 100th record
                         if ( recordsProcessed % 100 == 0 )
                         {
-                            context.UpdateLastStatusMessage( $"Processing campus updates: {recordsProcessed:N0} of {totalRecords:N0} families processed; campus has been updated for {recordsUpdated:N0} of them." );
+                            UpdateLastStatusMessage( $"Processing campus updates: {recordsProcessed:N0} of {totalRecords:N0} families processed; campus has been updated for {recordsUpdated:N0} of them." );
                         }
 
                         recordsProcessed++;
@@ -211,13 +207,12 @@ namespace com.lcbcchurch.NewVisitor.Job
         /// <summary>
         /// calculate the engagement score.
         /// </summary>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string CalculateEngagementScore( IJobExecutionContext context )
+        private string CalculateEngagementScore()
         {
             try
             {
-                context.UpdateLastStatusMessage( $"Processing engagement scoring." );
+                UpdateLastStatusMessage( $"Processing engagement scoring." );
 
                 var setting = Rock.Web.SystemSettings.GetValue( SystemSetting.LCBC_ENGAGEMENTSCORING_CONFIGURATION ).FromJsonOrNull<EngagementAutomationSetting>();
 
@@ -237,9 +232,7 @@ namespace com.lcbcchurch.NewVisitor.Job
                     return $"No person found eligible for engagement scoring;";
                 }
 
-                // Loop through each person
-                JobDataMap dataMap = context.JobDetail.JobDataMap;
-                Guid interactionChannelGuid = dataMap.GetString( "InteractionChannel" ).AsGuid();
+                Guid interactionChannelGuid = GetAttributeValue( "InteractionChannel" ).AsGuid();
                 var interactionChannel = InteractionChannelCache.Get( interactionChannelGuid );
                 var scoringItemDetails = new List<ScoringItemDetail>();
                 foreach ( var item in setting.ScoringItems )
@@ -302,7 +295,8 @@ namespace com.lcbcchurch.NewVisitor.Job
                     {
                         PersonId = person.Id
                     };
-                    var userPreference = PersonService.GetUserPreference( person, USER_PREFERENCE_KEY_ENGAGEMENT_SCORE );
+                    var personPreferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+                    var userPreference = personPreferences.GetValue( USER_PREFERENCE_KEY_ENGAGEMENT_SCORE );
                     if ( string.IsNullOrWhiteSpace( userPreference ) )
                     {
                         engagementScoreResult.ItemScores = new List<ItemScore>();
@@ -331,11 +325,18 @@ namespace com.lcbcchurch.NewVisitor.Job
                         var updateRockContext = new RockContext();
                         var interactionService = new InteractionService( updateRockContext );
                         updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                        var engagementScoreResult = engagementScoreResults.Single( a => a.PersonId == person.Id );
+                        var engagementScoreResult = engagementScoreResults.LastOrDefault( a => a.PersonId == person.Id );
+                        if ( engagementScoreResult == null )
+                        {
+                            continue;
+                        }
+
                         var totalScore = engagementScoreResult.ItemScores.Select( a => a.Score ).DefaultIfEmpty( 0 ).Sum();
                         person.SetAttributeValue( attributeCache.Key, totalScore );
                         person.SaveAttributeValues( updateRockContext );
-                        PersonService.SaveUserPreference( person, USER_PREFERENCE_KEY_ENGAGEMENT_SCORE, engagementScoreResult.ItemScores.ToJson() );
+                        var personPreferences = PersonPreferenceCache.GetPersonPreferenceCollection( person );
+                        personPreferences.SetValue( USER_PREFERENCE_KEY_ENGAGEMENT_SCORE, engagementScoreResult.ItemScores.ToJson() );
+                        personPreferences.Save();
                         foreach ( var item in engagementScoreResult.ItemScores.Where( a => a.Score > 0 && a.IsChanged ) )
                         {
                             var scoringItemDetail = scoringItemDetails.First( a => a.Guid == item.ScoringItemId );
@@ -345,8 +346,10 @@ namespace com.lcbcchurch.NewVisitor.Job
                             interaction.RelatedEntityId = scoringItemDetail.EntityIds.FirstOrDefault();
                             interaction.RelatedEntityTypeId = scoringItemDetail.EntityTypeId;
                         }
+
                         updateRockContext.SaveChanges();
                         recordsUpdated++;
+                        
                     }
                     catch ( Exception ex )
                     {
@@ -400,7 +403,12 @@ namespace com.lcbcchurch.NewVisitor.Job
                             var personIdsWithAttendance = GetPeopleTotalAttendanceForGroupType( groupType.Id, periodInDays, targetPersonIds, rockContext );
                             foreach ( var personId in targetPersonIds )
                             {
-                                var engagementScoreResult = engagementScoreResults.Single( a => a.PersonId == personId );
+                                var engagementScoreResult = engagementScoreResults.LastOrDefault( a => a.PersonId == personId );
+                                if ( engagementScoreResult == null )
+                                {
+                                    continue;
+                                }
+
                                 var itemScore = engagementScoreResult.ItemScores.FirstOrDefault( a => a.ScoringItemId == scoringItem.Guid );
                                 if ( itemScore == null )
                                 {
@@ -476,7 +484,7 @@ namespace com.lcbcchurch.NewVisitor.Job
         {
             foreach ( var personId in targetPersonIds )
             {
-                var engagementScoreResult = engagementScoreResults.Single( a => a.PersonId == personId );
+                var engagementScoreResult = engagementScoreResults.LastOrDefault( a => a.PersonId == personId );
                 var itemScore = engagementScoreResult.ItemScores.FirstOrDefault( a => a.ScoringItemId == scoringItem.Guid );
                 if ( itemScore == null )
                 {
@@ -720,7 +728,12 @@ namespace com.lcbcchurch.NewVisitor.Job
             if ( dataView != null )
             {
                 var errors = new List<string>();
-                return dataView.GetQuery( null, 30, out errors )
+                var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                {
+                    DatabaseTimeoutSeconds = 30
+                };
+
+                return dataView.GetQuery( dataViewGetQueryArgs )
                     .Where( a => personIds.Contains( a.Id ) )
                     .Select( a => a.Id )
                     .ToList();
