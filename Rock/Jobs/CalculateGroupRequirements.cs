@@ -14,13 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Microsoft.Extensions.Logging;
-
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Logging;
-using Rock.Model;
-using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,6 +21,14 @@ using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Text;
+
+using Microsoft.Extensions.Logging;
+
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Logging;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -44,6 +45,7 @@ namespace Rock.Jobs
         DefaultBooleanValue = false,
         Order = 0 )]
 
+    [RockLoggingCategory]
     public class CalculateGroupRequirements : RockJob
     {
         /// <summary>
@@ -327,7 +329,7 @@ namespace Rock.Jobs
                     .GetByPersonIdRequirementIdGroupIdGroupRoleId( status.PersonId, status.GroupRequirement.Id, groupId, status.GroupRequirement.GroupRoleId );
                 if ( groupMemberRequirement == null )
                 {
-                   Logger.LogWarning( $"Could not find group member requirement for group requirement: '{status.GroupRequirement}' for Person.Id: {status.PersonId} in Group.Id: {groupId} when attempting to launch workflow type: '{workflowTypeCache.Name}' so the workflow was not launched." );
+                    Logger.LogWarning( $"Could not find group member requirement for group requirement: '{status.GroupRequirement}' for Person.Id: {status.PersonId} in Group.Id: {groupId} when attempting to launch workflow type: '{workflowTypeCache.Name}' so the workflow was not launched." );
 
                     wasWorkflowSuccessful = false;
                     return;
