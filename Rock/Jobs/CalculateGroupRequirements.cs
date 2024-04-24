@@ -327,7 +327,7 @@ namespace Rock.Jobs
                     .GetByPersonIdRequirementIdGroupIdGroupRoleId( status.PersonId, status.GroupRequirement.Id, groupId, status.GroupRequirement.GroupRoleId );
                 if ( groupMemberRequirement == null )
                 {
-                    Log( RockLogLevel.Warning, $"Could not find group member requirement for group requirement: '{status.GroupRequirement}' for Person.Id: {status.PersonId} in Group.Id: {groupId} when attempting to launch workflow type: '{workflowTypeCache.Name}' so the workflow was not launched." );
+                   Logger.LogWarning( $"Could not find group member requirement for group requirement: '{status.GroupRequirement}' for Person.Id: {status.PersonId} in Group.Id: {groupId} when attempting to launch workflow type: '{workflowTypeCache.Name}' so the workflow was not launched." );
 
                     wasWorkflowSuccessful = false;
                     return;
@@ -345,7 +345,7 @@ namespace Rock.Jobs
 
                     if ( workflowErrors?.Any() == true )
                     {
-                        Log( RockLogLevel.Warning, $"Encountered workflow errors when calculating group requirement: '{status.GroupRequirement}' for workflow type: '{workflowTypeCache.Name}' for Person.Id: {status.PersonId} in Group.Id: {groupId}: {string.Join( "; ", workflowErrors )}" );
+                        Logger.LogWarning( $"Encountered workflow errors when calculating group requirement: '{status.GroupRequirement}' for workflow type: '{workflowTypeCache.Name}' for Person.Id: {status.PersonId} in Group.Id: {groupId}: {string.Join( "; ", workflowErrors )}" );
 
                         wasWorkflowSuccessful = false;
                     }
