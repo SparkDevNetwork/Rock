@@ -144,6 +144,11 @@ export const standardColumnProps: StandardColumnProps = {
         required: false
     },
 
+    columnType: {
+        type: String as PropType<string>,
+        required: false
+    },
+
     headerClass: {
         type: String as PropType<string>,
         required: false
@@ -902,6 +907,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
             exportValue: (r, c) => c.field ? String(r[c.field]) : undefined,
             formatComponent: htmlCell,
             condensedComponent: htmlCell,
+            columnType: "",
             headerClass: customColumn.headerClass ?? undefined,
             itemClass: customColumn.itemClass ?? undefined,
             hideOnScreen: false,
@@ -951,6 +957,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
     const headerClass = getVNodeProp<string>(node, "headerClass");
     const itemClass = getVNodeProp<string>(node, "itemClass");
+    const columnType = getVNodeProp<string>(node, "columnType");
     const hideOnScreen = getVNodeProp<boolean>(node, "hideOnScreen") === true || getVNodeProp<string>(node, "hideOnScreen") === "";
     const excludeFromExport = getVNodeProp<boolean>(node, "excludeFromExport") === true || getVNodeProp<string>(node, "excludeFromExport") === "";
     const visiblePriority = getVNodeProp<"xs" | "sm" | "md" | "lg" | "xl">(node, "visiblePriority") || "xs";
@@ -1101,6 +1108,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         excludeFromExport,
         visiblePriority,
         width: parseGridLength(width),
+        columnType,
         headerClass,
         itemClass,
         props: getVNodeProps(node),
