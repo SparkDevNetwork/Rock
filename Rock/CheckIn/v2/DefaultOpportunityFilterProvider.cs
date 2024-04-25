@@ -100,14 +100,12 @@ namespace Rock.CheckIn.v2
         /// <param name="person">The person to use when filtering opportunities.</param>
         public virtual void FilterPersonOpportunities( Attendee person )
         {
-            // Run standard group filters.
             var groupFilters = GetGroupFilters( person );
+            var locationFilters = GetLocationFilters( person );
+            var scheduleFilters = GetScheduleFilters( person );
 
-            if ( groupFilters.Count > 0 )
-            {
-                person.Opportunities.Groups
-                    .RemoveAll( g => groupFilters.Any( f => !f.IsGroupValid( g ) ) );
-            }
+            // Run group filters.
+            groupFilters.ForEach( f => f.FilterGroups( person.Opportunities ) );
 
             // If this person is not already disabled and there are no groups
             // then disable the person with appropriate reason.
@@ -121,14 +119,8 @@ namespace Rock.CheckIn.v2
             var allReferencedLocationGuids = new HashSet<Guid>( person.Opportunities.Groups.SelectMany( g => g.LocationGuids ) );
             person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationGuids.Contains( l.Guid ) );
 
-            // Run standard location filters.
-            var locationFilters = GetLocationFilters(  person );
-
-            if ( locationFilters.Count > 0 )
-            {
-                person.Opportunities.Locations
-                    .RemoveAll( l => locationFilters.Any( f => !f.IsLocationValid( l ) ) );
-            }
+            // Run location filters.
+            locationFilters.ForEach( f => f.FilterLocations( person.Opportunities ) );
 
             // If this person is not already disabled and there are no locations
             // then disable the person with appropriate reason.
@@ -142,14 +134,8 @@ namespace Rock.CheckIn.v2
             var allReferencedScheduleGuids = new HashSet<Guid>( person.Opportunities.Locations.SelectMany( l => l.ScheduleGuids ) );
             person.Opportunities.Schedules.RemoveAll( s => !allReferencedScheduleGuids.Contains( s.Guid ) );
 
-            // Run standard schedule filters.
-            var scheduleFilters = GetScheduleFilters(  person );
-
-            if ( scheduleFilters.Count > 0 )
-            {
-                person.Opportunities.Schedules
-                    .RemoveAll( l => scheduleFilters.Any( f => !f.IsScheduleValid( l ) ) );
-            }
+            // Run schedule filters.
+            scheduleFilters.ForEach( f => f.FilterSchedules( person.Opportunities ) );
         }
 
         /// <summary>

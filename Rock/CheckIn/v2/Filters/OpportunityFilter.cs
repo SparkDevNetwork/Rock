@@ -77,6 +77,16 @@ namespace Rock.CheckIn.v2.Filters
         #region Methods
 
         /// <summary>
+        /// Filters the <see cref="OpportunityCollection.Groups"/> by removing
+        /// any groups that should not be available for check-in.
+        /// </summary>
+        /// <param name="opportunities">The opportunities to be filtered.</param>
+        public virtual void FilterGroups( OpportunityCollection opportunities )
+        {
+            opportunities.Groups.RemoveAll( g => !IsGroupValid( g ) );
+        }
+
+        /// <summary>
         /// Determines whether the specified group is valid for check-in.
         /// </summary>
         /// <param name="group">The group.</param>
@@ -87,6 +97,16 @@ namespace Rock.CheckIn.v2.Filters
         }
 
         /// <summary>
+        /// Filters the <see cref="OpportunityCollection.Locations"/> by removing
+        /// any locations that should not be available for check-in.
+        /// </summary>
+        /// <param name="opportunities">The opportunities to be filtered.</param>
+        public virtual void FilterLocations( OpportunityCollection opportunities )
+        {
+            opportunities.Locations.RemoveAll( l => !IsLocationValid( l ) );
+        }
+
+        /// <summary>
         /// Determines whether the specified location is valid for check-in.
         /// </summary>
         /// <param name="location">The location.</param>
@@ -94,6 +114,16 @@ namespace Rock.CheckIn.v2.Filters
         public virtual bool IsLocationValid( LocationOpportunity location )
         {
             return true;
+        }
+
+        /// <summary>
+        /// Filters the <see cref="OpportunityCollection.Schedules"/> by removing
+        /// any schedules that should not be available for check-in.
+        /// </summary>
+        /// <param name="opportunities">The opportunities to be filtered.</param>
+        public virtual void FilterSchedules( OpportunityCollection opportunities )
+        {
+            opportunities.Schedules.RemoveAll( s => !IsScheduleValid( s ) );
         }
 
         /// <summary>
