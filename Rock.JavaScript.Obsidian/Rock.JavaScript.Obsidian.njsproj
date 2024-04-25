@@ -400,6 +400,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduleToolbox\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\" />
+    <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerCommentList\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupRegistration\" />

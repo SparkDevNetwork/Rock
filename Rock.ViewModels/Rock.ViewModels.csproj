@@ -144,6 +144,7 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpsBag.cs" />
     <Compile Include="Blocks\Internal\IBlockBox.cs" />
     <Compile Include="Blocks\Internal\IDetailBlockBox.cs" />
+    <Compile Include="Blocks\Prayer\PrayerCommentList\PrayerCommentListOptionsBag.cs" />
     <Compile Include="Blocks\Prayer\PrayerRequestList\PrayerRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
