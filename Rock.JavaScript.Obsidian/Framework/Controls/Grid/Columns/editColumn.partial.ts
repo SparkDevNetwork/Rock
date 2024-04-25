@@ -52,6 +52,11 @@ export default defineComponent({
             default: "52px"
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "edit"
+        },
+
         /**
         * An optional callback that will be used to determine if the delete
         * button is disabled for the specified row.

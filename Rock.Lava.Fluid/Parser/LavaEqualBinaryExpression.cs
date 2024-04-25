@@ -26,6 +26,7 @@ namespace Rock.Lava.Fluid
     /// <summary>
     /// A derivation of the Fluid EqualBinaryExpression that implements the comparison operators "==" and "!=".
     /// This implementation modifies the default Fluid behavior as follows:
+    /// * Modifies boolean comparisons to align with previous Lava implementations.
     /// * Adds implicit conversion of non-numeric operands where the other operand is a number.
     /// * Adds date comparisons.
     /// * Adds the default comparison for Types that implement IComparable.
@@ -94,12 +95,79 @@ namespace Rock.Lava.Fluid
                 }
             }
 
-            // If the left value is boolean and the right value is not, the equality comparison should be false.
-            // This fixes an issue in Fluid v2.3.1 so that it aligns with the Shopify Liquid standard.
-            // For more information, see https://github.com/sebastienros/fluid/issues/566.
-            if ( leftValue is BooleanValue && !( rightValue is BooleanValue ) )
+            /* 
+               2024-04-19 - DJL
+
+               # Lava (v1.17) and Shopify Liquid Differences.
+               The comparison of equality for boolean values in Lava differs from the Shopify Liquid standard.
+               Lava is more lenient when interpreting operands as either true or false, in an effort to better capture
+               the intention of the code and preserve backward compatibility with previous Lava engine implementations.
+
+               The Shopify standard implementation always returns false for comparisons between operands of different types.
+               By contrast, Lava uses a "duck-typing" approach; if either operand is a boolean, an attempt is made to convert
+               the other operand to a "true/false" value before any comparison is made. This leads to the differences
+               summarized in the following table.
+
+               +----------------+----------------+-------------+-------------------------------------------+
+               | EXPRESSION     | SHOPIFY OUTPUT | LAVA OUTPUT | NOTES                                     |
+               +----------------+----------------+-------------+-------------------------------------------+
+               | true == 'true' | false          | true        | boolean and string type comparison fails. |
+               | 'true' == true | false          | true        |                                           |
+               | True == true   | false          | true        | Sentence case 'True' is undefined.        |
+               +----------------+----------------+-------------+-------------------------------------------+
+
+               # Lava (v1.17) and DotLiquid Differences.
+               Lava supports the same boolean equality comparisons as the DotLiquid framework (v1.8), with some minor
+               corrections for an inconsistency shown in the table below.
+
+               +----------------+------------------+-------------+ -------------------------------------------------------+
+               | EXPRESSION     | DOTLIQUID OUTPUT | LAVA OUTPUT | NOTES                                                  |
+               +----------------+------------------+-------------+--------------------------------------------------------+
+               | true == 'true' | true             | true        | RHS is converted to boolean and comparison succeeds.   |
+               | 'true' == true | false            | true        | RHS is converted to 'True', and case comparison fails. |
+               | 'true' == True | false            | true        |                                                        |
+               +----------------+------------------+-------------+--------------------------------------------------------+
+            */
+
+            // If either value is a boolean and both values can be converted to a boolean, perform a boolean comparison.
+            if ( leftValue is BooleanValue )
             {
-                return FailIfEqual ? BooleanValue.True : BooleanValue.False;
+                var rightBoolean = ConvertToBooleanValueOrNull( rightValue );
+                if ( rightBoolean != null )
+                {
+                    if ( FailIfEqual )
+                    {
+                        return leftValue == rightBoolean ? BooleanValue.False : BooleanValue.True;
+                    }
+                    else
+                    {
+                        return leftValue == rightBoolean ? BooleanValue.True : BooleanValue.False;
+                    }
+                }
+                else
+                {
+                    if ( rightValue.Type == FluidValues.String )
+                    {
+                        // When comparing a boolean to a non-truthy string, the result should be false.
+                        // Fluid incorrectly converts any non-empty string to BooleanValue.True.
+                        return FailIfEqual ? BooleanValue.True : BooleanValue.False;
+                    }
+                }
+            }
+            if ( rightValue is BooleanValue )
+            {
+                var leftBoolean = ConvertToBooleanValueOrNull( leftValue );
+                if ( leftBoolean != null )
+                {
+                    if ( FailIfEqual )
+                    {
+                        return leftBoolean == rightValue ? BooleanValue.False : BooleanValue.True;
+                    }
+                    else
+                    {
+                        return leftBoolean == rightValue ? BooleanValue.True : BooleanValue.False;
+                    }
+                }
             }
 
             // If either value is an Enum, perform an Enum comparison.
@@ -112,7 +180,7 @@ namespace Rock.Lava.Fluid
                 return EnumValueIsEqualToOtherTypeValue( rv, leftValue );
             }
 
-            // If either value is numeric, and both values can be converted to a number, perform a numeric comparison.
+            // If both values can be converted to a number, perform a numeric comparison.
             if ( leftValue is NumberValue || rightValue is NumberValue )
             {
                 decimal leftDecimal;
@@ -157,6 +225,36 @@ namespace Rock.Lava.Fluid
             {
                 return leftValue.Equals( rightValue ) ? BooleanValue.True : BooleanValue.False;
             }
+        }
+
+        /// <summary>
+        /// Converts a FluidValue object to a BooleanValue by applying Rock parsing rules for boolean values.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private BooleanValue ConvertToBooleanValueOrNull( FluidValue value )
+        {
+            if ( value.Type == FluidValues.Boolean )
+            {
+                return ( BooleanValue ) value;
+            }
+
+            // The Fluid ToBooleanValue() interprets any non-empty string as a true value.
+            // However, we only want to interpret specific values as true.
+            if ( value.Type == FluidValues.String )
+            {
+                var stringValue = value.ToStringValue()?.ToLower();
+                if ( stringValue == "true" )
+                {
+                    return BooleanValue.True;
+                }
+                if ( stringValue == "false" )
+                {
+                    return BooleanValue.False;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

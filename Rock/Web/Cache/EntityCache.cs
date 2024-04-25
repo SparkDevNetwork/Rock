@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -252,8 +251,12 @@ namespace Rock.Web.Cache
             var value = new T();
             value.SetFromEntity( entity );
 
-            IdFromGuidCache.UpdateCacheId<T>( entity.Guid, entity.Id );
-            UpdateCacheItem( entity.Id.ToString(), value );
+            // The entity Id is 0 if the entity is yet to be saved to the database. We want to avoid adding such entities to the cache.
+            if ( entity.Id > 0 )
+            {
+                IdFromGuidCache.UpdateCacheId<T>( entity.Guid, entity.Id );
+                UpdateCacheItem( entity.Id.ToString(), value );
+            }
 
             return value;
         }
@@ -419,12 +422,12 @@ namespace Rock.Web.Cache
             return new Service<TT>( rockContext ).Queryable();
         }
 
-    /// <summary>
-    /// Removes or invalidates the CachedItem based on EntityState
-    /// </summary>
-    /// <param name="entityId">The entity identifier.</param>
-    /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
-    public static void UpdateCachedEntity( int entityId, EntityState entityState )
+        /// <summary>
+        /// Removes or invalidates the CachedItem based on EntityState
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
+        public static void UpdateCachedEntity( int entityId, EntityState entityState )
         {
             // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.
             // Reading it from the database here could also cause a deadlock depending on the database isolation level.

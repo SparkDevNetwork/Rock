@@ -608,17 +608,21 @@ namespace Rock.Reporting.Dashboard
                     var result = new MetricPartitionEntityId();
 
                     result.MetricPartition = mp;
+
+                    // Get the Entity Type for this Partition if it has been assigned.
                     var entityTypeCache = EntityTypeCache.Get( result.MetricPartition.EntityTypeId ?? 0 );
 
+                    // Try to get an Entity of the same type from the current context.
                     if ( entityTypeCache != null && this.ContextEntity( entityTypeCache.Name ) != null )
                     {
                         result.EntityId = this.ContextEntity( entityTypeCache.Name ).Id;
                     }
 
-                    // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
+                    // If there is no matching Entity in the current context, check the page parameters based on the Entity Type name.
                     if ( !result.EntityId.HasValue )
                     {
                         // Figure out what the parameter name should be ("CampusId, GroupId, etc") depending on the Metric's Entity Type.
+                        // If this partition does not have a specified Entity Type, look for a generic "EntityId" parameter.
                         var entityParamName = "EntityId";
                         if ( entityTypeCache != null )
                         {
@@ -628,7 +632,7 @@ namespace Rock.Reporting.Dashboard
                         result.EntityId = this.PageParameter( entityParamName ).AsIntegerOrNull();
                     }
 
-                    // ... if we still don't have a context entity, check the Page context.
+                    // If we still don't have a context entity, check the Page context.
                     if ( !result.EntityId.HasValue )
                     {
                         var contextEntity = this.RockPage.GetCurrentContext( entityTypeCache );

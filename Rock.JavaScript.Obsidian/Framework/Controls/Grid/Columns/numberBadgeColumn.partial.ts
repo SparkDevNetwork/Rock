@@ -66,6 +66,11 @@ export default defineComponent({
             default: getExportValue
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "numberBadge"
+        },
+
         /**
          * A value greater than or equal to `hideMinimum` and less than or
          * equal to `hideMaximum` will be hidden.

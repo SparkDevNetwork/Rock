@@ -63,6 +63,11 @@ export default defineComponent({
         exportValue: {
             type: Function as PropType<ExportValueFunction>,
             default: getExportValue
-        }
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "text"
+        },
     }
 });

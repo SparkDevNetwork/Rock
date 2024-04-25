@@ -47,7 +47,8 @@
                 return true;
             }
 
-            const found = disallowedStrings.value.filter(dont => value.includes(dont));
+            const compareValue = value.toLocaleUpperCase();
+            const found = disallowedStrings.value.filter(dont => compareValue.includes(dont.toLocaleUpperCase()));
             let foundSentenceList = "";
 
             if (found.length == 1) {

@@ -64,25 +64,49 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202404071458052_AddTheme.cs" />
-    <Compile Include="Migrations\202404071458052_AddTheme.designer.cs">
+    <Compile Include="Migrations\202404221542135_Mobile_AdditionalSettingsJson.cs" />
+    <Compile Include="Migrations\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
+      <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202404231632538_AddTargetCountColumnToAchievementType.cs" />
+    <Compile Include="Migrations\202404231632538_AddTargetCountColumnToAchievementType.Designer.cs">
+      <DependentUpon>202404231632538_AddTargetCountColumnToAchievementType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202404242201295_AddIsOverflowLocationToGroupLocation.cs" />
+    <Compile Include="Migrations\202404242201295_AddIsOverflowLocationToGroupLocation.Designer.cs">
+      <DependentUpon>202404242201295_AddIsOverflowLocationToGroupLocation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202404251740406_Rollup_20240425.cs" />
+    <Compile Include="Migrations\202404251740406_Rollup_20240425.Designer.cs">
+      <DependentUpon>202404251740406_Rollup_20240425.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202404251817274_CodeGenerated_20240425.cs" />
+    <Compile Include="Migrations\202404251817274_CodeGenerated_20240425.Designer.cs">
+      <DependentUpon>202404251817274_CodeGenerated_20240425.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs" />
-    <Compile Include="Migrations\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.Designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.Designer.cs">
       <DependentUpon>202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs" />
-    <Compile Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.designer.cs">
       <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202404112335123_Rollup_20240411.cs" />
-    <Compile Include="Migrations\202404112335123_Rollup_20240411.Designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404112335123_Rollup_20240411.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404112335123_Rollup_20240411.Designer.cs">
       <DependentUpon>202404112335123_Rollup_20240411.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202404112355222_CodeGenerated_20240411.cs" />
-    <Compile Include="Migrations\202404112355222_CodeGenerated_20240411.Designer.cs">
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404112355222_CodeGenerated_20240411.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404112355222_CodeGenerated_20240411.Designer.cs">
       <DependentUpon>202404112355222_CodeGenerated_20240411.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.designer.cs">
+      <DependentUpon>202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.Designer.cs">
@@ -2018,20 +2042,38 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202404071458052_AddTheme.resx">
+    <EmbeddedResource Include="Migrations\202404221542135_Mobile_AdditionalSettingsJson.resx">
+      <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202404231632538_AddTargetCountColumnToAchievementType.resx">
+      <DependentUpon>202404231632538_AddTargetCountColumnToAchievementType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202404242201295_AddIsOverflowLocationToGroupLocation.resx">
+      <DependentUpon>202404242201295_AddIsOverflowLocationToGroupLocation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202404251740406_Rollup_20240425.resx">
+      <DependentUpon>202404251740406_Rollup_20240425.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202404251817274_CodeGenerated_20240425.resx">
+      <DependentUpon>202404251817274_CodeGenerated_20240425.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.resx">
       <DependentUpon>202404080840179_UpdateAnalyticsSourceZipCodeAndCampusSchema.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.resx">
       <DependentUpon>202404101451405_UpdateVolunteerGenerosityAnalysisPersistedDataset.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202404112335123_Rollup_20240411.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404112335123_Rollup_20240411.resx">
       <DependentUpon>202404112335123_Rollup_20240411.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202404112355222_CodeGenerated_20240411.resx">
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404112355222_CodeGenerated_20240411.resx">
       <DependentUpon>202404112355222_CodeGenerated_20240411.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.resx">
+      <DependentUpon>202404171636153_AddOrUpdateResultPageLocationAndAddOrUpdateVolGenPersistedDataset.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.4\202403222154517_Rollup_20240322.resx">
       <DependentUpon>202403222154517_Rollup_20240322.cs</DependentUpon>

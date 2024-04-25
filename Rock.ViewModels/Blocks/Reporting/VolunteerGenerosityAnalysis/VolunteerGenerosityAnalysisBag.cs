@@ -79,7 +79,7 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// <summary>
         /// Gets or sets the person's last attendance date.
         /// </summary>
-        public string LastAttendanceDate { get; set; }
+        public DateTime? LastAttendanceDate { get; set; }
         /// <summary>
         /// Gets or sets the Group ID.
         /// </summary>
@@ -96,6 +96,14 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// Gets or sets the Campus Short Code
         /// </summary>
         public string CampusShortCode { get; set; }
+        /// <summary>
+        /// Gets or sets the IsActive flag.
+        /// </summary>
+        public bool IsActive { get; set; }
+        /// <summary>
+        /// Gets or sets the person's connection status
+        /// </summary>
+        public string ConnectionStatus { get; set; }
     }
 
     /// <summary>
@@ -138,6 +146,10 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// Gets or sets the person's photo URL.
         /// </summary>
         public string PhotoUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the person's connection status
+        /// </summary>
+        public string ConnectionStatus { get; set; }
     }
 
     /// <summary>

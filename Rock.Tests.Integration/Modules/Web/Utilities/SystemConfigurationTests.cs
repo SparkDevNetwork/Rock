@@ -20,12 +20,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Modules.Web.Utilities
 {
     [TestClass]
     [TestCategory( "Rock.Web.SystemConfiguration" )]
-    public class SystemConfigurationTests
+    public class SystemConfigurationTests : DatabaseTestsBase
     {
         private const string RockGetDateFunctionName = "ROCKGETDATE";
 
@@ -48,8 +49,10 @@ namespace Rock.Tests.Integration.Modules.Web.Utilities
         [TestMethod]
         public void OrgTimeZone_ChangeConfigurationForExistingFunction_ReconfiguresUserFunction()
         {
-            // Get the current timezone setting.
-            var tz0 = TimeZoneInfo.FindSystemTimeZoneById( RockDateTimeHelper.GetOrgTimeZoneForCurrentDatabase() );
+            // Set initial time zone for testing.
+            var tz0 = TimeZoneInfo.FindSystemTimeZoneById( "Eastern Standard Time" );
+
+            RockDateTimeHelper.SynchronizeTimeZoneConfiguration( tz0.Id );
 
             // Configure the user function for an alternate timezone and confirm that it produces a datetime
             // with an offset for that timezone.

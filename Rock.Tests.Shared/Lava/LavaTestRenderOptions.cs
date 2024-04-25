@@ -40,7 +40,8 @@ namespace Rock.Tests.Shared.Lava
             get
             {
                 var options = New
-                    .WithFluidEngine();
+                    .WithFluidEngine()
+                    .WithRockLiquidEngine();
                 return options;
             }
         }
@@ -221,6 +222,17 @@ namespace Rock.Tests.Shared.Lava
         public static LavaTestRenderOptions WithRockLiquidEngine( this LavaTestRenderOptions options )
         {
             return options.WithEngines( new Type[] { typeof( RockLiquidEngine ) } );
+        }
+
+        /// <summary>
+        /// Set the WhiteSpace ignore option.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static LavaTestRenderOptions WithIgnoreWhiteSpace( this LavaTestRenderOptions options, bool ignoreWhiteSpace = true )
+        {
+            options.IgnoreWhiteSpace = ignoreWhiteSpace;
+            return options;
         }
     }
 

@@ -229,6 +229,12 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_161_CHOP_ACCOUNTENTRY_AND_LOGIN = "A65D26C1-229E-4198-B388-E269C3534BC0";
 
         /// <summary>
+        /// The Job to run Post v16.6 Data Migrations to update the newly
+        /// created TargetCount column on AchievementType.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_UPDATE_ACHIEVEMENTTYPE_TARGETCOUNT_COLUMN = "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";

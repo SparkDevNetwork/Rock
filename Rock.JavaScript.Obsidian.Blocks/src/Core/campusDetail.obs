@@ -176,14 +176,14 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<CampusBag, CampusDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<CampusBag>>("Edit", {
             key: campusViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
+        if (result.isSuccess && result.data && result.data.bag) {
             campusEditBag.value = {
-                bag: result.data.entity,
-                validProperties: Object.keys(result.data.entity)
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
 
             return true;
@@ -202,19 +202,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<CampusBag, CampusDetailOptionsBag> = {
-            entity: campusEditBag.value.bag,
-            isEditable: true,
-            validProperties: campusEditBag.value.validProperties
-        };
-
-        const result = await invokeBlockAction<CampusBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<CampusBag> | string>("Save", {
+            box: campusEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                campusViewBag.value = result.data;
+                campusViewBag.value = result.data.bag;
 
                 return true;
             }

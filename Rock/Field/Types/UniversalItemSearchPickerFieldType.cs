@@ -57,6 +57,7 @@ namespace Rock.Field.Types
                 return new Dictionary<string, string>
                 {
                     ["areDetailsAlwaysVisible"] = AreDetailsAlwaysVisible( privateConfigurationValues ) ? "true" : "false",
+                    ["iconCssClass"] = GetItemIconCssClass( privateConfigurationValues ),
                     ["isIncludeInactiveVisible"] = IsIncludeInactiveVisible( privateConfigurationValues ) ? "true" : "false",
                     ["searchUrl"] = GetSearchUrl( privateConfigurationValues )
                 };
@@ -87,6 +88,16 @@ namespace Rock.Field.Types
         protected virtual bool IsIncludeInactiveVisible( Dictionary<string, string> privateConfigurationValues )
         {
             return false;
+        }
+
+        /// <summary>
+        /// Gets the CSS icon class to use on the picker when it is clsoed.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>A string that represents the icon class.</returns>
+        protected virtual string GetItemIconCssClass( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "fa fa-folder-open";
         }
 
         /// <summary>
@@ -148,6 +159,7 @@ namespace Rock.Field.Types
             {
                 ID = id,
                 AreDetailsAlwaysVisible = AreDetailsAlwaysVisible( privateConfigurationValues ),
+                IconCssClass = GetItemIconCssClass( privateConfigurationValues ),
                 IsIncludeInactiveVisible = IsIncludeInactiveVisible( privateConfigurationValues ),
                 SearchUrl = GetSearchUrl( privateConfigurationValues )
             };

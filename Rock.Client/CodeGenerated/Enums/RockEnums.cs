@@ -1369,6 +1369,55 @@ namespace Rock.Client.Enums.Core
 
 }
 
+namespace Rock.Client.Enums.Cms
+{
+    /// <summary>
+    /// </summary>
+    public enum BlockReloadMode
+    {
+        None = 0x0,
+        Block = 0x1,
+        Page = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum BotGuardianLevel
+    {
+        Disable = 0x0,
+        Enable = 0x1,
+        Inherit = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ContentCollectionFilterControl
+    {
+        Pills = 0x0,
+        Dropdown = 0x1,
+        Boolean = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ContentLibraryItemExperienceLevel
+    {
+        Foundational = 0x1,
+        Intermediate = 0x2,
+        Advanced = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MobilePageType
+    {
+        NativePage = 0x0,
+        InternalWebPage = 0x1,
+        ExternalWebPage = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Core.Grid
 {
     /// <summary>
@@ -1443,37 +1492,6 @@ namespace Rock.Client.Enums.Core.Grid
         EndsWith = 0x3,
         Equals = 0x4,
         DoesNotEqual = 0x5,
-    }
-
-}
-
-namespace Rock.Client.Enums.Cms
-{
-    /// <summary>
-    /// </summary>
-    public enum BotGuardianLevel
-    {
-        Disable = 0x0,
-        Enable = 0x1,
-        Inherit = -1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum ContentCollectionFilterControl
-    {
-        Pills = 0x0,
-        Dropdown = 0x1,
-        Boolean = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum ContentLibraryItemExperienceLevel
-    {
-        Foundational = 0x1,
-        Intermediate = 0x2,
-        Advanced = 0x3,
     }
 
 }

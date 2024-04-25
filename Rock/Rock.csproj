@@ -753,6 +753,7 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\BlockActionGridResponse.cs" />
+    <Compile Include="Blocks\ConfigurationChangedReloadAttribute.cs" />
     <Compile Include="Blocks\CustomizedGridAttribute.cs" />
     <Compile Include="Blocks\IHasCustomActions.cs" />
     <Compile Include="Blocks\InitialBlockHeightAttribute.cs" />
@@ -1030,6 +1031,7 @@
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostUpdateJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV161RemoveObsidianGroupScheduleToolboxBackButtons.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV166UpdateAchievementTypeTargetCount.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV151DataMigrationsDuplicateMobileInteractionsCleanup.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsMobileRestUserGroup.cs" />
@@ -1157,6 +1159,7 @@
     <Compile Include="Model\Core\PersonPreference\PersonPreference.cs" />
     <Compile Include="Model\Core\PersonPreference\PersonPreference.SaveHook.cs" />
     <Compile Include="Model\Core\PersonPreference\PersonPreferenceService.cs" />
+    <Compile Include="Model\Engagement\AchievementType\AchievementType.SaveHook.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.SaveHook.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceActionService.cs" />
@@ -1355,6 +1358,7 @@
     <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
     <Compile Include="UniversalSearch\IndexHelper.cs" />
+    <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
     <Compile Include="Utility\CaptchaApi\CloudflareApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\CachedContentLibraryApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApi.cs" />

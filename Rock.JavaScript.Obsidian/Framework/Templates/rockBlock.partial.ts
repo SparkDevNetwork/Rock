@@ -28,6 +28,7 @@ import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
 import { IBlockPersonPreferencesProvider, IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
 import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
+import { BlockReloadMode } from "@Obsidian/Enums/Cms/blockReloadMode";
 
 const store = useStore();
 
@@ -116,6 +117,31 @@ function updateConfigurationBarActions(blockContainerElement: HTMLElement, actio
     });
 }
 
+/**
+ * Converts a HTML string to a collection of Node objects.
+ *
+ * @param content The HTML content to be converted.
+ *
+ * @returns A collection of Node objects that represent the HTML.
+ */
+function convertHtmlToNodes(content: string | undefined | null): Node[] {
+    if (typeof content !== "string") {
+        return [];
+    }
+
+    const nodes: Node[] = [];
+    const root = document.createElement("div");
+    root.innerHTML = content;
+
+    while (root.firstChild !== null) {
+        const node = root.firstChild;
+        node.remove();
+        nodes.push(node);
+    }
+
+    return nodes;
+}
+
 export default defineComponent({
     name: "RockBlock",
 
@@ -133,7 +159,7 @@ export default defineComponent({
             required: true
         },
         staticContent: {
-            type: String as PropType<string>,
+            type: Array as PropType<Node[]>,
             required: false
         }
     },
@@ -144,6 +170,7 @@ export default defineComponent({
         const blockContainerElement = ref<HTMLElement | null>(null);
         const configurationValues = ref(props.config.configurationValues);
         const configCustomActions = ref(props.config.customConfigurationActions);
+        const staticContent = ref(props.staticContent ?? []);
         const customActionComponent = ref<Component | null>(null);
         const currentBlockComponent = ref<Component | null>(props.blockComponent);
 
@@ -213,6 +240,7 @@ export default defineComponent({
                     configurationValuesChanged.reset();
                     configurationValues.value = result.data?.configurationValues;
                     configCustomActions.value = result.data?.customConfigurationActions;
+                    staticContent.value = convertHtmlToNodes(result.data?.initialContent);
                     currentBlockComponent.value = props.blockComponent;
                 });
             }
@@ -242,7 +270,7 @@ export default defineComponent({
 
             // Compare the preference in the props with the one in the Session Storage and choose the later of the two.
             // This was done to avoid displaying outdated preference when the individual navigates to the webpage using a back button for instance.
-            if(props.config?.preferences?.timeStamp && timeStampFromSessionData <= props.config.preferences.timeStamp) {
+            if (props.config?.preferences?.timeStamp && timeStampFromSessionData <= props.config.preferences.timeStamp) {
                 const preferenceDataToBeStored = {
                     timeStamp: props.config.preferences?.timeStamp,
                     values: props.config.preferences?.values ?? []
@@ -386,7 +414,7 @@ export default defineComponent({
         provideReloadBlock(reloadBlock);
         providePersonPreferences(getPreferenceProvider());
         const configurationValuesChanged = provideConfigurationValuesChanged();
-        provideStaticContent(props.staticContent);
+        provideStaticContent(staticContent);
 
         if (props.config.blockGuid) {
             provideBlockGuid(props.config.blockGuid);
@@ -396,6 +424,13 @@ export default defineComponent({
         // changes to the block.
         if (props.config.blockGuid) {
             addBlockChangedEventListener(props.config.blockGuid, () => {
+                if (props.config.reloadMode === BlockReloadMode.Page) {
+                    window.location.href = window.location.href.toString();
+                }
+                else if (props.config.reloadMode === BlockReloadMode.Block) {
+                    reloadBlock();
+                }
+
                 configurationValuesChanged.invoke();
             });
         }

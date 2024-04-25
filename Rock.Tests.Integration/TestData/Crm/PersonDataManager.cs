@@ -258,6 +258,61 @@ namespace Rock.Tests.Integration.TestData.Crm
             } );
         }
 
+        public class UpdateEntityAttributeValueActionArgs : UpdateEntityActionArgsBase<EntityAttributeValueInfo>
+        {
+            public string Key { get; set; }
+
+            public string Value { get; set; }
+        }
+        public class EntityAttributeValueInfo
+        {
+            public string AttributeKey { get; set; }
+
+            public string AttributeValue { get; set; }
+        }
+
+        public void SetPersonAttribute( UpdateEntityAttributeValueActionArgs args )
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            var person = personService.GetByIdentifierOrThrow( args.UpdateTargetIdentifier );
+
+            person.LoadAttributes();
+            person.SetAttributeValue( args.Key, args.Value );
+
+            person.SaveAttributeValues( rockContext );
+        }
+
+        public class AddPersonAttributeActionArgs
+        {
+            public Guid? Guid { get; set; }
+            public string EntityTypeIdentifier { get; set; }
+            public string Key { get; set; }
+            public string Name { get; set; }
+            public string UpdateTargetIdentifier { get; set; }
+            public string FieldTypeIdentifier { get; set; }
+        }
+
+        public void AddPersonAttribute( AddPersonAttributeActionArgs args )
+        {
+            var rockContext = new RockContext();
+
+            var argsAdd = new TestDataHelper.Core.AddEntityAttributeArgs
+            {
+                Key = args.Key,
+                EntityTypeIdentifier = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ).ToString(),
+                FieldTypeIdentifier = args.FieldTypeIdentifier,
+                Guid = args.Guid,
+                Name = args.Name
+            };
+
+            TestDataHelper.Core.AddEntityAttribute( argsAdd, rockContext );
+
+            rockContext.SaveChanges();
+        }
+
+        
         public class PersonPreviousNameInfo
         {
             public string PreviousLastName { get; set; }

@@ -99,8 +99,10 @@
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
+    <Compile Include="Crm\DocumentTypeList.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
+    <Compile Include="Finance\FinancialPersonBankAccountList.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
@@ -109,10 +111,12 @@
     <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
-	<Compile Include="Cms\PageRouteList.cs" />
-	<Compile Include="Crm\PersonMergeRequestList.cs" />
+    <Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
+	<Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Communication\CommunicationList.cs" />
     <Compile Include="Communication\SmsPipelineList.cs" />
@@ -147,9 +151,10 @@
     <Compile Include="Core\SignatureDocumentTemplateList.cs" />
     <Compile Include="Core\TagList.cs" />
     <Compile Include="Crm\AssessmentTypeList.cs" />
+    <Compile Include="Crm\BadgeList.cs" />
     <Compile Include="Crm\NamelessPersonList.cs" />
     <Compile Include="Crm\SignalTypeDetail.cs" />
-	<Compile Include="Core\ScheduledJobList.cs" />
+    <Compile Include="Core\ScheduledJobList.cs" />
     <Compile Include="Core\SuggestionDetail.cs" />
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
@@ -192,6 +197,8 @@
     <Compile Include="Reporting\InteractionDetail.cs" />
     <Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
+    <Compile Include="Prayer\PrayerCommentList.cs" />
+    <Compile Include="Prayer\PrayerRequestList.cs" />
     <Compile Include="Reporting\MetricValueDetail.cs" />
     <Compile Include="Reporting\InteractionComponentDetail.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />

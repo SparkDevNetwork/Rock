@@ -17,7 +17,7 @@ using Rock.Model;
 using Rock.Tests.Shared;
 using Http.TestLibrary;
 
-namespace Rock.Tests.Rock.Lava
+namespace Rock.Tests.UnitTests.Lava
 {
     [TestClass]
     [TestCategory( TestFeatures.Lava )]
@@ -991,73 +991,6 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
-        #region Tags (if/else)
-
-        /// <summary>
-        /// Tests the Liquid standard if / else
-        /// </summary>
-        [TestMethod]
-        public void Liquid_IfElse_ShouldIf()
-        {
-            AssertTemplateResult( " CORRECT ", "{% if true %} CORRECT {% else %} NO {% endif %}" );
-        }
-
-        /// <summary>
-        /// Tests the Liquid standard if / else
-        /// </summary>
-        [TestMethod]
-        public void Liquid_IfElse_ShouldElse()
-        {
-            AssertTemplateResult( " CORRECT ", "{% if false %} NO {% else %} CORRECT {% endif %}" );
-        }
-
-        /// <summary>
-        /// Tests the Liquid standard if / elsif / else
-        /// </summary>
-        [TestMethod]
-        public void Liquid_IfElsIf_ShouldIf()
-        {
-            AssertTemplateResult( "CORRECT", "{% if 1 == 1 %}CORRECT{% elsif 1 == 1%}1{% else %}2{% endif %}" );
-        }
-
-        /// <summary>
-        /// Tests the Liquid standard if / elsif / else
-        /// </summary>
-        [TestMethod]
-        public void Liquid_IfElsIf_ShouldElsIf()
-        {
-            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elsif 1 == 1%}CORRECT{% else %}2{% endif %}" );
-        }
-
-        /// <summary>
-        /// Tests the Liquid standard if / elsif / else
-        /// </summary>
-        [TestMethod]
-        public void Liquid_IfElsIf_ShouldElse()
-        {
-            AssertTemplateResult( "CORRECT", "{% if 2 == 0 %}0{% elsif 2 == 1%}1{% else %}CORRECT{% endif %}" );
-        }
-
-        /// <summary>
-        /// Tests the Liquid standard if / else
-        /// </summary>
-        [TestMethod]
-        public void LiquidCustom_IfElseIf_ShouldElseIf()
-        {
-            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 1%}CORRECT{% else %}2{% endif %}" );
-        }
-
-        /// <summary>
-        /// Tests the Liquid standard if / else
-        /// </summary>
-        [TestMethod]
-        public void LiquidCustom_IfElseIf_ShouldElse()
-        {
-            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 2%}1{% else %}CORRECT{% endif %}" );
-        }
-
-        #endregion
-
         #region Date Filters
 
         /// <summary>
@@ -1348,55 +1281,4 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
     }
-    #region Helper class to deal with comparing inexact dates (that are otherwise equal).
-
-    public static class DateTimeAssert
-    {
-        /// <summary>
-        /// Asserts that the two dates are equal within a timespan of 500 milliseconds.
-        /// </summary>
-        /// <param name="expectedDate">The expected date.</param>
-        /// <param name="actualDate">The actual date.</param>
-        /// <exception cref="Xunit.Sdk.EqualException">Thrown if the two dates are not equal enough.</exception>
-        public static void AreEqual( DateTime? expectedDate, DateTime? actualDate )
-        {
-            AreEqual( expectedDate, actualDate, TimeSpan.FromMilliseconds( 500 ) );
-        }
-
-        /// <summary>
-        /// Asserts that the two dates are equal within what ever timespan you deem is sufficient.
-        /// </summary>
-        /// <param name="expectedDate">The expected date.</param>
-        /// <param name="actualDate">The actual date.</param>
-        /// <param name="maximumDelta">The maximum delta.</param>
-        /// <exception cref="Xunit.Sdk.EqualException">Thrown if the two dates are not equal enough.</exception>
-        public static void AreEqual( DateTime? expectedDate, DateTime? actualDate, TimeSpan maximumDelta )
-        {
-            if ( expectedDate == null && actualDate == null )
-            {
-                return;
-            }
-            else if ( expectedDate == null )
-            {
-                throw new NullReferenceException( "The expected date was null" );
-            }
-            else if ( actualDate == null )
-            {
-                throw new NullReferenceException( "The actual date was null" );
-            }
-
-            double totalSecondsDifference = Math.Abs( ( ( DateTime ) actualDate - ( DateTime ) expectedDate ).TotalSeconds );
-
-            if ( totalSecondsDifference > maximumDelta.TotalSeconds )
-            {
-                //throw new Xunit.Sdk.EqualException( string.Format( "{0}", expectedDate ), string.Format( "{0}", actualDate ) );
-                throw new Exception( string.Format( "\nExpected Date: {0}\nActual Date: {1}\nExpected Delta: {2}\nActual Delta in seconds: {3}",
-                                                expectedDate,
-                                                actualDate,
-                                                maximumDelta,
-                                                totalSecondsDifference ) );
-            }
-        }
-    }
-    #endregion
 }

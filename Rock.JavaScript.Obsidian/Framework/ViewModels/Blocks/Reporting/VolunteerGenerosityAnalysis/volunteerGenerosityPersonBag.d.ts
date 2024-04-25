@@ -23,6 +23,9 @@
 
 /** Bag for person-related data in the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityPersonBag = {
+    /** Gets or sets the person's connection status */
+    connectionStatus?: string | null;
+
     /** Gets or sets the person's last name. */
     lastName?: string | null;
 

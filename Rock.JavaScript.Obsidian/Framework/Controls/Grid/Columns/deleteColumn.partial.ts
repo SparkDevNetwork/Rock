@@ -53,6 +53,11 @@ export default defineComponent({
             default: "52px"
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "delete"
+        },
+
         /**
          * Disables the normal confirmation message displayed before calling
          * the click handler.

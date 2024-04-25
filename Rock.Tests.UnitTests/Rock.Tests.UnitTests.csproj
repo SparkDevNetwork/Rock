@@ -166,6 +166,7 @@
     <Compile Include="Rock\Blocks\Mobile\Cms\DailyChallengeEntryTests.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />
+    <Compile Include="Rock\Lava\Filters\ConversionFilterTests.cs" />
     <Compile Include="Rock\Lava\Filters\StructuredContentFilterTests.cs" />
     <Compile Include="Rock\Lava\LavaTestHelper.cs" />
     <Compile Include="Rock\Lava\LiquidFilterTests.cs" />
@@ -187,6 +188,7 @@
     <Compile Include="Rock\Lava\LavaUnitTestHelper.cs" />
     <Compile Include="Rock\Lava\LavaTypeAttributesTests.cs" />
     <Compile Include="Rock\Lava\RenderTests.cs" />
+    <Compile Include="Rock\Lava\Tags\IfTagTests.cs" />
     <Compile Include="Rock\Model\ConnectionRequestTest.cs" />
     <Compile Include="Rock\Model\EntityExtensionMethodTests.cs" />
     <Compile Include="Rock\Model\PersonTest.cs" />
@@ -285,6 +287,10 @@
     <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj">
       <Project>{d8de32c9-25da-4897-a750-7dd8755b3d45}</Project>
       <Name>Rock.Tests.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
+      <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
+      <Name>Rock.Version</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
       <Project>{05BAAF85-9C53-4CCD-A535-036427B0DF72}</Project>

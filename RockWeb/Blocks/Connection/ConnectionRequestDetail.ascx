@@ -211,7 +211,7 @@
                                 <Rock:RockDropDownList ID="ddlPlacementGroupStatus" runat="server" Label="Group Member Status" Visible="false" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
+                                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" IncludeInactive="false" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
                             </div>
                         </div>
 

@@ -1258,7 +1258,7 @@ namespace RockWeb.Blocks.Crm
                     Control control = attributeCache.AddControl( phAttributes.Controls, attributeCache.DefaultValue, string.Empty, setValues, true, attributeCache.IsRequired, labelText );
 
                     // Q: Why don't we enable if the control is a RockCheckBox?
-                    if ( action == "Update" && !( control is RockCheckBox ) )
+                    if ( action == "Update" && !( control is RockCheckBox ) && !( control is PersonPicker ) && !( control is ItemPicker ) )
                     {
                         var webControl = control as WebControl;
                         if ( webControl != null )
