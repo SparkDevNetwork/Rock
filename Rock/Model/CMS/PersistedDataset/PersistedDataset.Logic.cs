@@ -60,6 +60,8 @@ namespace Rock.Model
         {
             using ( var activity = ObservabilityHelper.StartActivity( $"PERSISTED DATASET: Update Result Data (Id: {Id})" ) )
             {
+                ObservabilityHelper.EnableDbQueryCountTracking( activity );
+
                 activity?.AddTag( "rock.persisted_dataset.id", Id );
                 activity?.AddTag( "rock.persisted_dataset.name", Name );
                 activity?.AddTag( "rock.persisted_dataset.type", BuildScriptType.ToString() );
