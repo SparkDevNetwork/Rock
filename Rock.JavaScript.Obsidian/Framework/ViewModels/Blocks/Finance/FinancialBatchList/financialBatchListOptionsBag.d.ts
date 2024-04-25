@@ -40,7 +40,7 @@ export type FinancialBatchListOptionsBag = {
     /** Determines if the accounts column should be displayed. */
     showAccountsColumn: boolean;
 
-    /** Determines if the transaction count column should be displayed */
+    /** Determines if the transaction count column should be displayed. */
     showTransactionCountColumn: boolean;
 
     /** The sources that can be used to filter the results. */
@@ -48,5 +48,4 @@ export type FinancialBatchListOptionsBag = {
 
     /** The transaction types that can be used to filter the results. */
     transactionTypes?: ListItemBag[] | null;
-
 };

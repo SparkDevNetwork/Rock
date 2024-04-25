@@ -501,6 +501,7 @@
     <TypeScriptCompile Include="Framework\Enums\Cms\contentCollectionFilterControl.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\contentControlType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\displayInNavWhen.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Cms\mobilePageType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\persistedDatasetDataFormat.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\persistedDatasetScriptType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\siteType.ts" />
