@@ -367,20 +367,20 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Week, nbWeek.Text );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Engagement_Score, nbEngagementScore.Text );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.First_Steps_Class, cblFirstSteps.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Welcome_Email, cblWelcomeEmail.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Welcome_Letter, cblWelcomeLetter.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Cookie_Drop, cblCokieDrop.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.No_Return_Card, cblNoReturnCard.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Serving_Card, cblServingCard.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.SMS_Personal_Connection, cblSMSPersonal.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Email_Personal_Connection, cblEmailPersonal.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.FaceToFace_Personal_Connection, cblFaceToFace.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Phone_Call_Personal_Connection, cblPhoneCall.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Mailed_Personal_Note_Personal_Connection, cblMailedPersonalNote.SelectedValues.AsDelimited( ";" ) );
-            gfFilter.SaveUserPreference( FilterAttributeKeys.Touchpoint_Conversation_Personal_Connection, cblTouchpointConversation.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Week, nbWeek.Text );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Engagement_Score, nbEngagementScore.Text );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.First_Steps_Class, cblFirstSteps.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Welcome_Email, cblWelcomeEmail.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Welcome_Letter, cblWelcomeLetter.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Cookie_Drop, cblCokieDrop.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.No_Return_Card, cblNoReturnCard.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Serving_Card, cblServingCard.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.SMS_Personal_Connection, cblSMSPersonal.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Email_Personal_Connection, cblEmailPersonal.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.FaceToFace_Personal_Connection, cblFaceToFace.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Phone_Call_Personal_Connection, cblPhoneCall.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Mailed_Personal_Note_Personal_Connection, cblMailedPersonalNote.SelectedValues.AsDelimited( ";" ) );
+            gfFilter.SetFilterPreference( FilterAttributeKeys.Touchpoint_Conversation_Personal_Connection, cblTouchpointConversation.SelectedValues.AsDelimited( ";" ) );
             BindGrid();
         }
 
@@ -392,7 +392,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gfFilter_ClearFilterClick( object sender, EventArgs e )
         {
-            gfFilter.DeleteUserPreferences();
+            gfFilter.DeleteFilterPreferences();
             BindFilter();
         }
 
@@ -630,7 +630,8 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
                 var persons = new PersonService( rockContext ).GetByIds( selectedPersonIds ).ToList();
                 var workflowDetails = persons.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                 var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( workflowTypeId, workflowDetails );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+
+                launchWorkflowsTxn.Enqueue();
             }
 
             BindGrid();
@@ -815,8 +816,8 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
         /// </summary>
         private void BindFilter()
         {
-            nbWeek.Text = gfFilter.GetUserPreference( FilterAttributeKeys.Week );
-            nbEngagementScore.Text = gfFilter.GetUserPreference( FilterAttributeKeys.Engagement_Score );
+            nbWeek.Text = gfFilter.GetFilterPreference( FilterAttributeKeys.Week );
+            nbEngagementScore.Text = gfFilter.GetFilterPreference( FilterAttributeKeys.Engagement_Score );
 
             BindsCheckboxList( FilterAttributeKeys.First_Steps_Class, cblFirstSteps );
             BindsCheckboxList( FilterAttributeKeys.Welcome_Email, cblWelcomeEmail );
@@ -837,7 +838,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
         /// </summary>
         private void BindsCheckboxList( string attributeKey, RockCheckBoxList control )
         {
-            string controlValue = gfFilter.GetUserPreference( attributeKey );
+            string controlValue = gfFilter.GetFilterPreference( attributeKey );
             if ( !string.IsNullOrWhiteSpace( controlValue ) )
             {
                 control.SetValues( controlValue.Split( ';' ).ToList() );
@@ -930,7 +931,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
                     IsExporting = isExporting
                 };
 
-                string week = gfFilter.GetUserPreference( FilterAttributeKeys.Week );
+                string week = gfFilter.GetFilterPreference( FilterAttributeKeys.Week );
                 if ( !string.IsNullOrWhiteSpace( week ) )
                 {
                     if ( personDataRow.Week != week.AsInteger() )
@@ -939,7 +940,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
                     }
                 }
 
-                string engagementScore = gfFilter.GetUserPreference( FilterAttributeKeys.Engagement_Score );
+                string engagementScore = gfFilter.GetFilterPreference( FilterAttributeKeys.Engagement_Score );
                 if ( !string.IsNullOrWhiteSpace( engagementScore ) )
                 {
                     if ( personDataRow.EngagementScore != engagementScore.AsInteger() )
@@ -1138,7 +1139,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
         private bool? GetFilterValueAsBoolean( string attributeKey )
         {
             bool? value = null;
-            string valueString = gfFilter.GetUserPreference( attributeKey );
+            string valueString = gfFilter.GetFilterPreference( attributeKey );
             if ( !string.IsNullOrWhiteSpace( valueString ) )
             {
                 var values = valueString.Split( ';' ).ToList();
