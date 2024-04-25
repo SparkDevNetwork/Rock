@@ -79,6 +79,8 @@
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
     <Compile Include="Blocks\Lms\LearningActivityCompletionList\LearningActivityCompletionListOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningActivityDetail\LearningActivityBag.cs" />
+    <Compile Include="Blocks\Lms\LearningActivityDetail\LearningActivityDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemList\LearningGradingSystemListOptionsBag.cs" />

@@ -1,0 +1,118 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="panelTitle" :hasFullscreen="true">
+        <div class="learning-activity-video-file-configuration-container" v-if="screenToShow === ComponentScreen.Configuration">
+            <div class="header-content-section" >
+                <RockLabel>Header Content</RockLabel>
+                <StructuredContentEditor
+                                        v-model="headerContent" />
+            </div>
+            <div class="video-file-media-section">
+                <div class="media-account-field">
+                    <RockLabel>Video File</RockLabel>
+                    <MediaElementPicker v-model="video" media-element-label="Video" />
+                </div>
+                <div class="completion-threshold-field">
+                    <NumberBox v-model="completionThreshold"
+                            :decimalCount="0"
+                            :minimumValue="0"
+                            :maximumValue="100"
+                            label="Completion Threshold"
+                            help="Set the minimum percentage of the video that must be watched to count as viewed."
+                            inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">%</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+
+            <div class="footer-content-section">
+                <RockLabel>Footer Content</RockLabel>
+                <StructuredContentEditor
+                                        v-model="footerContent" />
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <RockButton btnType="primary" @click="$emit('saveConfiguration', {})">
+                Save Summary
+            </RockButton>
+        </div>
+    </Panel>
+
+</template>
+
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { getLearningActivityEmits, getLearningActivityProps, ComponentScreen, ConfigurationValues } from "./learningActivity";
+    // import { VideoWatchLearningActivityValue } from "./LearningActivity/learningActivityBase.partial";
+    //import { useHttp } from "@Obsidian/Utility/http";
+    import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    // const http = useHttp();
+    // const internalValue = ref({} as VideoWatchLearningActivityValue);
+    const video = ref({} as ListItemBag);
+    const headerContent = ref("");
+    const footerContent = ref("");
+    const completionThreshold = ref(0);
+
+    const props = defineProps({ ...getLearningActivityProps() });
+
+    const _emits = defineEmits({ ...getLearningActivityEmits() });
+
+    const screenToShow = ref(props.screenToShow);
+
+    const panelTitle = computed((): string => {
+        switch (screenToShow.value) {
+            case ComponentScreen.Completion:
+                return "Activity";
+            case ComponentScreen.Configuration:
+                return "Configure Activity";
+            case ComponentScreen.Scoring:
+                return "Score Activity";
+            case ComponentScreen.Summary:
+                return "Summary";
+        }
+        return "";
+    });
+
+    watch(() => props.screenToShow, () => {
+        updateRefValue(screenToShow, props.screenToShow ?? ComponentScreen.Summary);
+    });
+    // watch(() => props.modelValue, () => {
+    //     if (props.modelValue) {
+    //         try {
+    //             internalValue.value = JSON.parse(props.modelValue || "{}");
+    //         }
+    //         catch (error) {
+    //             internalValue.value = {} as VideoWatchLearningActivityValue;
+    //         }
+
+    //         video.value = internalValue.value.video;
+    //         headerContent.value = internalValue.value.headerContent ?? "";
+    //         footerContent.value = internalValue.value.footerContent ?? "";
+    //         completionThreshold.value = internalValue.value.completionThreshold ?? 0;
+    //     }
+    // }, { immediate: true });
+
+    // watch(() => [video.value, headerContent, footerContent, completionThreshold], () => {
+
+    //     const newValue = {
+    //         headerContent: headerContent.value,
+    //         video: video.value,
+    //         footerContent: footerContent.value,
+    //         completionThreshold: completionThreshold.value,
+    //     };
+    //     emit("update:modelValue", JSON.stringify(newValue));
+    // }, { deep: true });
+
+</script>
