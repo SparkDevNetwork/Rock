@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Quartz;
 
 using Rock.Attribute;
 using Rock.Jobs;
 
-namespace Rock.Tests.Integration.Core.Jobs
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     public enum TestResultType
     {

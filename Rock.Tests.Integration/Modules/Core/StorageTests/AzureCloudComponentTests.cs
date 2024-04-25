@@ -15,6 +15,7 @@
 // </copyright>
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -22,7 +23,7 @@ using Rock.Security;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Storage
+namespace Rock.Tests.Integration.Modules.Core.StorageTests
 {
     [Ignore( "These tests require Azure Cloud configuration." )]
     [TestClass]

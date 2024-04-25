@@ -55,6 +55,22 @@ namespace Rock.Blocks
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// The serializer settings to use when encoding block configurationd ata.
+        /// </summary>
+        private static readonly Lazy<Newtonsoft.Json.JsonSerializerSettings> _serializerSettings = new Lazy<Newtonsoft.Json.JsonSerializerSettings>( () =>
+        {
+            var settings = Rock.JsonExtensions.CreateSerializerSettings( false, true, true );
+
+            settings.StringEscapeHandling = Newtonsoft.Json.StringEscapeHandling.EscapeHtml;
+
+            return settings;
+        } );
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -312,10 +328,13 @@ namespace Rock.Blocks
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the HTML markup needed to fully initialize this block. This
+        /// method can be overridden to provide content for a fully static
+        /// block. Fully static blocks do not reload automatically when the
+        /// block settings have been modified.
         /// </summary>
-        /// <returns></returns>
-        public string GetControlMarkup()
+        /// <returns>An HTML string.</returns>
+        public virtual string GetControlMarkup()
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
             var rootElementStyle = "";
@@ -339,16 +358,36 @@ namespace Rock.Blocks
             }
 
             var config = GetConfigBag( rootElementId );
+            var initialContent = GetInitialHtmlContent() ?? string.Empty;
+
+            // If any text value contains "</script>" then it will be interpreted
+            // by the browser as the end of the main script tag, even if it is
+            // inside a JavaScript string. Use custom JSON serializer settings
+            // that have an option enabled to escape HTML characters in strings.
+            var configJson = Newtonsoft.Json.JsonConvert.SerializeObject( config, _serializerSettings.Value );
 
             return
-$@"<div id=""{rootElementId}"" class=""obsidian-block-loading"" style=""{rootElementStyle.Trim()}""></div>
+$@"<div id=""{rootElementId}"" class=""obsidian-block-loading"" style=""{rootElementStyle.Trim()}"">{initialContent}</div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
-        module.initializeBlock({config.ToCamelCaseJson( false, true )});
+        module.initializeBlock({configJson});
     }});
 }});
 </script>";
+        }
+
+        /// <summary>
+        /// Gets the initial HTML content to use when rendering an Obsidian
+        /// block. This can be overridden to create a psuedo-static block. This
+        /// content will be included in the HTML page for SEO indexing as well
+        /// as initial page rendering. The Obsidian code can then choose to
+        /// continue using this content or replace it once it loads.
+        /// </summary>
+        /// <returns>A string of HTML content.</returns>
+        protected virtual string GetInitialHtmlContent()
+        {
+            return string.Empty;
         }
 
         /// <summary>

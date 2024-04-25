@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Modal v-model="isVisible"
-           modalWrapperClasses="new-group-scheduler provide-location-modal"
+           modalWrapperClasses="group-scheduler-v2 provide-location-modal"
            saveText="Save"
            :title="title"
            :isSaveButtonDisabled="isSaveButtonDisabled"
@@ -36,7 +36,7 @@
 
 <!-- These styles cannot be scoped since some of them are being used in a modal. -->
 <style>
-.new-group-scheduler {
+.group-scheduler-v2 {
     @media (min-width: 576px) {
         &.provide-location-modal {
             .modal-scrollable {

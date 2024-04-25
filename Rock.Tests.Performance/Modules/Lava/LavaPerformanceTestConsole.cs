@@ -19,18 +19,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
 using DotLiquid;
+
 using Rock;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
-using Rock.Tests.Integration.Core.Lava;
+using Rock.Tests.Shared.Lava;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Performance
+namespace Rock.Tests.Performance.Modules.Lava
 {
     /// <summary>
     /// Run a series of tests to benchmark the performance of selected Lava engine implementations.

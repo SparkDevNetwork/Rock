@@ -15,9 +15,11 @@
 // </copyright>
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+using Rock.Lava;
+using Rock.Tests.Shared.Lava;
+
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// Test the scoping of variables in a Lava context using various container configurations

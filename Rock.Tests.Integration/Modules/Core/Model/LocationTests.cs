@@ -17,20 +17,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     /// <summary>
     /// Tests to verify operations related to Locations.
     /// </summary>
     [TestClass]
-    public class LocationTests
+    public class LocationTests : DatabaseTestsBase
     {
         #region Setup/Cleanup
 
@@ -41,25 +44,6 @@ namespace Rock.Tests.Integration.Core
         public static void ClassInitialize( TestContext testContext )
         {
             CreateTestData();
-        }
-
-        /// <summary>
-        /// Runs after all tests in this class is executed.
-        /// </summary>
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            //RemoveTestData();
-        }
-
-        /// <summary>
-        /// Runs after each test in this class is executed.
-        /// Deletes the test data added to the database for each tests.
-        /// </summary>
-        [TestCleanup]
-        public void Cleanup()
-        {
-            //
         }
 
         #endregion

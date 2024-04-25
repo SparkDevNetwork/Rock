@@ -155,7 +155,7 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onSave(): Promise<boolean | string> {
+    async function onSave(): Promise<void> {
         errorMessage.value = "";
 
         const data: DetailBlockBox<WebFarmNodeBag, WebFarmNodeDetailOptionsBag> = {
@@ -169,19 +169,13 @@
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "object") {
+            if (typeof result.data === "object") {
                 webFarmNodeViewBag.value = result.data;
-
-                return true;
             }
-            else if (result.statusCode === 201 && typeof result.data === "string") {
-                return result.data;
-            }
+        }else{
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save web farm node.";
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save web farm node.";
-
-        return false;
     }
 
     const onStartSubmitForm = (): void => {

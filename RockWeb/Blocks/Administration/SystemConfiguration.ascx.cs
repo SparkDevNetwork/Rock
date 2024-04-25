@@ -285,6 +285,8 @@ namespace RockWeb.Blocks.Administration
 
             nbObservabilityMaxAttributeLength.IntegerValue = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH ).AsIntegerOrNull();
 
+            cbObservabilityIncludeQueryStatements.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS ).AsBoolean();
+
             vlTargetedQueries.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES );
         }
 
@@ -567,6 +569,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT, urlObservabilityEndpoint.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT, nbObservabilitySpanCountLimit.Text );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH, nbObservabilityMaxAttributeLength.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS, cbObservabilityIncludeQueryStatements.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES, vlTargetedQueries.Value );
 
             nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Success;

@@ -133,7 +133,17 @@ namespace Rock
         /// <returns></returns>
         public static List<int> AsIntegerList( this IEnumerable<string> items )
         {
-            return items.Select( a => a.AsIntegerOrNull() ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+            return items.Select( a => a.AsIntegerOrNull() ).AsIntegerList();
+        }
+
+        /// <summary>
+        /// Converts a List&lt;int?&gt; to List&lt;int&gt; only returning items that have a value.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static List<int> AsIntegerList( this IEnumerable<int?> items )
+        {
+            return items.Where( a => a.HasValue ).Select( a => a.Value ).ToList();
         }
 
         /// <summary>

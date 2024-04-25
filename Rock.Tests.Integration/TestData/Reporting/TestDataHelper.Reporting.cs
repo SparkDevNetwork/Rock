@@ -18,7 +18,7 @@ using System;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.Reporting.DataFilter;
+using Rock.Tests.Integration.Modules.Reporting.DataFilter;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;

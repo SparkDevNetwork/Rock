@@ -182,9 +182,9 @@ namespace Rock.Web.Cache
                 IconSvg = fieldTypeImplementationType.GetCustomAttribute<IconSvgAttribute>( false )?.IconSvg ?? _defaultFieldTypeSvg;
 
                 // Default to Advanced if the field type does not specify its usage.
-                Usage = fieldTypeImplementationType.GetCustomAttribute<FieldTypeUsageAttribute>( false )?.Usage ?? Rock.Field.FieldTypeUsage.Advanced;
+                Usage = fieldTypeImplementationType.GetCustomAttribute<FieldTypeUsageAttribute>( true )?.Usage ?? Rock.Field.FieldTypeUsage.Advanced;
 
-                Platform = fieldTypeImplementationType.GetCustomAttribute<RockPlatformSupportAttribute>( false )?.Platform ?? 0;
+                Platform = fieldTypeImplementationType.GetCustomAttribute<RockPlatformSupportAttribute>( true )?.Platform ?? 0;
             }
         }
 

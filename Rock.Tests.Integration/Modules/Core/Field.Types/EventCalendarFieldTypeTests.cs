@@ -15,18 +15,19 @@
 // </copyright>
 
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Field;
-using Rock.Field.Types;
-using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Core.Field.Types
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Field.Types;
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.Tests.Integration.Modules.Core.Field.Types
 {
     /// <summary>
     /// Unit tests for the <see cref="EventCalendarFieldType"/> field type
     /// </summary>
     [TestClass]
-    public class EventCalendarFieldTypeTests
+    public class EventCalendarFieldTypeTests : DatabaseTestsBase
     {
         /// <summary>
         /// Given an empty string the text value should be an empty string.

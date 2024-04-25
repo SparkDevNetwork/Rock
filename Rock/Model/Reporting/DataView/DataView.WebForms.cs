@@ -120,7 +120,7 @@ namespace Rock.Model
             if ( serviceInstance == null )
             {
                 var entityTypeCache = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine ServiceInstance from DataView EntityType {entityTypeCache} for {this}" );
+                throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this.DataViewFilter, $"Unable to determine ServiceInstance from DataView EntityType {entityTypeCache} for {this}" );
             }
 
             var databaseTimeoutSeconds = dataViewGetQueryArgs.DatabaseTimeoutSeconds;
@@ -161,7 +161,7 @@ namespace Rock.Model
                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
                 if ( getMethod == null )
                 {
-                    throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine IService.Get for Report: {this}" );
+                    throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this.DataViewFilter, $"Unable to determine IService.Get for Report: {this}" );
                 }
 
                 // Get the specific, underlying IEntity type implementation (i.e. Group).

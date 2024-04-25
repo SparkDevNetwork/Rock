@@ -291,11 +291,15 @@ namespace Rock.SystemKey
         /// <summary>
         /// The name of the standard Rock Context.
         /// </summary>
+        [Obsolete( "Use RockInstanceConfig to get connection strings." )]
+        [RockObsolete( "1.16.3" )]
         public const string ROCK_CONTEXT = "RockContext";
 
         /// <summary>
         /// The name of the standard Rock Context for Read Only queries.
         /// </summary>
+        [Obsolete( "Use RockInstanceConfig to get connection strings." )]
+        [RockObsolete( "1.16.3" )]
         public const string ROCK_CONTEXT_READ_ONLY = "RockContextReadOnly";
 
         /// <summary>
@@ -332,6 +336,13 @@ namespace Rock.SystemKey
         /// The protocol to use for sending telemetry for observability.
         /// </summary>
         public const string OBSERVABILITY_TARGETED_QUERIES = "core_ObservabilityTargetedQueries";
+
+        /// <summary>
+        /// Determines if all SQL query statements are included in database
+        /// activities. Query statements will always be included in targeted
+        /// queries.
+        /// </summary>
+        public const string OBSERVABILITY_INCLUDE_QUERY_STATEMENTS = "core_ObservabilityIncludeQueryStatements";
 
         /// <summary>
         /// The maximum number of spans that can be created for a single trace

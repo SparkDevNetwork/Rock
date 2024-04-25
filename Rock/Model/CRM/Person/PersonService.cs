@@ -1697,7 +1697,7 @@ namespace Rock.Model
 
             if ( !string.IsNullOrWhiteSpace( firstName ) && !string.IsNullOrWhiteSpace( lastName ) )
             {
-                var metaphones = ( ( RockContext ) this.Context ).Metaphones;
+                var metaphones = this.Context.Set<Metaphone>();
 
                 string ln1 = string.Empty;
                 string ln2 = string.Empty;
@@ -4424,7 +4424,7 @@ FROM (
                 if ( recordsChanged > 0 )
                 {
                     // Since PrimaryFamily is populated in straight SQL, we'll need to tell EF what the Person's new PrimaryFamilyId is
-                    var affectedPerson = rockContext.People.FirstOrDefault( a => a.Id == personId );
+                    var affectedPerson = rockContext.Set<Person>().FirstOrDefault( a => a.Id == personId );
                     if ( affectedPerson != null )
                     {
                         var primaryFamilyId = rockContext.Database.SqlQuery<int?>( $"SELECT TOP 1 [PrimaryFamilyId] FROM [Person] WHERE [Id] = @personId", new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) ).FirstOrDefault();

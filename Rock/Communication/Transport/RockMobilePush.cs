@@ -343,7 +343,7 @@ namespace Rock.Communication.Transport
                                         {
                                             notification.Android = new AndroidConfig
                                             {
-                                                Notification =
+                                                Notification = new AndroidNotification
                                                 {
                                                     Sound = sound
                                                 }
@@ -351,7 +351,7 @@ namespace Rock.Communication.Transport
 
                                             notification.Apns = new ApnsConfig
                                             {
-                                                Aps =
+                                                Aps = new Aps
                                                 {
                                                     Sound = sound
                                                 }
@@ -464,7 +464,7 @@ namespace Rock.Communication.Transport
                 Notification = new AndroidNotification
                 {
                     ClickAction = "Rock.Mobile.Main",
-                    Sound = sound,
+                    Sound = sound ?? string.Empty,
                 }
             };
 

@@ -495,7 +495,6 @@ namespace Rock.CodeGeneration.Pages
         public bool ReportRockCodeWarnings()
         {
             bool hasWarnings = false;
-            StringBuilder missingDbSetWarnings = new StringBuilder();
             StringBuilder rockObsoleteWarnings = new StringBuilder();
             StringBuilder rockGuidWarnings = new StringBuilder();
             Dictionary<string, string> rockGuids = new Dictionary<string, string>(); // GUID, Class/Method
@@ -504,15 +503,6 @@ namespace Rock.CodeGeneration.Pages
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
             rockAssemblyList.Add( typeof( Rock.Rest.ApiControllerBase ).Assembly );
-
-            /* List any EntityTypes that don't have an associated DbSet<T> in RockContext */
-            var dbSetEntityType = typeof( Rock.Data.RockContext ).GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.Name == "DbSet`1" ).Select( a => a.PropertyType.GenericTypeArguments[0] ).ToList();
-            var entityTypes = _modelItems.Select( i => i.Item ).ToList();
-            var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
-            if ( missingDbSets.Any() )
-            {
-                missingDbSetWarnings.AppendLine( missingDbSets.Select( a => $" - {a.Name}" ).ToList().AsDelimited( "\r\n" ) );
-            }
 
             foreach ( var rockAssembly in rockAssemblyList )
             {
@@ -721,14 +711,6 @@ namespace Rock.CodeGeneration.Pages
                 warnings.AppendLine();
                 warnings.AppendLine( "[Obsolete] that doesn't have [RockObsolete]" );
                 warnings.Append( rockObsoleteWarnings );
-            }
-
-            if ( missingDbSetWarnings.Length > 0 )
-            {
-                hasWarnings = true;
-                warnings.AppendLine();
-                warnings.AppendLine( "RockContext missing DbSet<T>s" );
-                warnings.Append( missingDbSetWarnings );
             }
 
             if ( singletonClassVariablesWarnings.Count > 0 )
@@ -961,7 +943,7 @@ GO
         /// <param name="type"></param>
         private void WriteServiceFile( string rootFolder, Type type )
         {
-            string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
+            string dbContextFullName = Rock.Reflection.GetDbContextTypeForEntityType( type ).FullName;
             if ( dbContextFullName.StartsWith( "Rock.Data." ) )
             {
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
@@ -1445,7 +1427,7 @@ GO
 
             string pluralizedName = PluralizeTypeName( type );
             string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
-            string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
+            string dbContextFullName = Rock.Reflection.GetDbContextTypeForEntityType( type ).FullName;
 
             var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
             var rockObsolete = type.GetCustomAttribute<RockObsolete>();

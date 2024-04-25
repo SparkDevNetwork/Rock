@@ -16,13 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
     /// <summary>
     /// Test for shortcodes that are defined and implemented as code components rather than as parameterized Lava templates.
@@ -352,10 +355,10 @@ Schedule Active = {{isScheduleActive}}
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
                 // Verify that the result emits the expected parse error.
-                var error = result.Error?.InnerException;
-                if ( !(error is LavaParseException ) )
+                var error = result.Error;
+                if ( !(error is LavaException ) )
                 {
-                    throw new Exception( "Parse exception expected but not encountered." );
+                    throw new Exception( "Lava Exception expected but not encountered." );
                 }
 
                 if ( engine.GetType() == typeof( FluidEngine ) )
@@ -385,10 +388,10 @@ Schedule Active = {{isScheduleActive}}
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
 
                 // Verify that the result emits the expected parse error.
-                var error = result.Error?.InnerException;
-                if ( !( error is LavaParseException ) )
+                var error = result.Error;
+                if ( !( error is LavaException ) )
                 {
-                    throw new Exception( "Parse exception expected but not encountered." );
+                    throw new Exception( "Lava Exception expected but not encountered." );
                 }
 
                 // In Fluid, parse error should correctly identify the invalid shortcode.

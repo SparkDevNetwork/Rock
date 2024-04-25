@@ -1,0 +1,88 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextBox v-model="nameFilter"
+             placeholder="Search"
+             size="small"
+             :disabled="disabled">
+        <template #inputGroupPrepend>
+            <div class="input-group-addon">
+                <i class="fa fa-search"></i>
+            </div>
+        </template>
+        <template #inputGroupAppend>
+            <div :class="clearButtonCssClass" @click="onClearClick">
+                <i :class="clearIconCssClass"></i>
+            </div>
+        </template>
+    </TextBox>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue"): void
+    }>();
+
+    // #region Values
+
+    const nameFilter = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isDisabled = computed((): boolean => {
+        return props.disabled;
+    });
+
+    const hasFilter = computed((): boolean => {
+        return !!nameFilter.value;
+    });
+
+    const clearButtonCssClass = computed((): Record<string, boolean> => {
+        return {
+            "input-group-addon": true,
+            "clickable": !isDisabled.value && hasFilter.value
+        };
+    });
+
+    const clearIconCssClass = computed((): Record<string, boolean> => {
+        return {
+            "fa fa-times": true,
+            "text-muted": isDisabled.value || !hasFilter.value
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the individual clicks the clear button in
+     * the name filter text box.
+     */
+    function onClearClick(): void {
+        if (isDisabled.value) {
+            return;
+        }
+
+        nameFilter.value = "";
+    }
+
+    // #endregion Event Handlers
+</script>

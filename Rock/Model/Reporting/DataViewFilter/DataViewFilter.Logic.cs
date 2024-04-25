@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -32,7 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a filter on a <see cref="Rock.Model.DataView"/> in Rock.
     /// </summary>
-    public partial class DataViewFilter
+    public partial class DataViewFilter : ICacheable
     {
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="DataViewFilter" /> 
@@ -202,21 +203,21 @@ namespace Rock.Model
                     if ( !this.EntityTypeId.HasValue )
                     {
                         // if this happens, we want to throw an exception to prevent incorrect results
-                        throw new RockDataViewFilterExpressionException( this, $"EntityTypeId not defined for {this}" );
+                        throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this, $"EntityTypeId not defined for {this}" );
                     }
 
                     var entityType = EntityTypeCache.Get( this.EntityTypeId.Value );
                     if ( entityType == null )
                     {
                         // if this happens, we want to throw an exception to prevent incorrect results
-                        throw new RockDataViewFilterExpressionException( this, $"Unable to determine EntityType not defined for EntityTypeId {EntityTypeId}" );
+                        throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this, $"Unable to determine EntityType not defined for EntityTypeId {EntityTypeId}" );
                     }
 
                     var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
                     if ( component == null )
                     {
                         // if this happens, we want to throw an exception to prevent incorrect results
-                        throw new RockDataViewFilterExpressionException( this, $"Unable to determine Component for EntityType {entityType.Name}" );
+                        throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this, $"Unable to determine Component for EntityType {entityType.Name}" );
                     }
 
                     string selection; // A formatted string representing the filter settings: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)
@@ -261,7 +262,7 @@ namespace Rock.Model
                     catch ( RockDataViewFilterExpressionException dex )
                     {
                         // components don't know which DataView/DataFilter they are working with, so if there was a RockDataViewFilterExpressionException, let's tell it what DataViewFilter/DataView it was using
-                        dex.SetDataFilterIfNotSet( this );
+                        dex.SetDataFilterIfNotSet( ( IDataViewFilterDefinition ) this );
                         throw;
                     }
 
@@ -360,7 +361,7 @@ namespace Rock.Model
 
                     return orExp;
                 default:
-                    throw new RockDataViewFilterExpressionException( this, $"Unexpected FilterExpressionType {ExpressionType} " );
+                    throw new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) this, $"Unexpected FilterExpressionType {ExpressionType} " );
             }
         }
 
@@ -445,6 +446,22 @@ namespace Rock.Model
             {
                 return this.ExpressionType.ConvertToString();
             }
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <inheritdoc />
+        public IEntityCache GetCacheObject()
+        {
+            return DataViewFilterCache.Get( this.Id );
+        }
+
+        /// <inheritdoc />
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            DataViewFilterCache.UpdateCachedEntity( this, entityState );
         }
 
         #endregion

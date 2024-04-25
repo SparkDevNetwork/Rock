@@ -25,6 +25,7 @@ using Rock.Cms.ContentCollection;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility.Settings;
 
 namespace Rock.Web.Cache
 {
@@ -38,7 +39,14 @@ namespace Rock.Web.Cache
     {
         #region Static Fields
 
-        private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>( StringComparer.OrdinalIgnoreCase );
+        private static ConcurrentDictionary<string, int> EntityTypes
+        {
+            get
+            {
+                return ( ConcurrentDictionary<string, int> ) RockCache.GetOrAddExisting( "EntityTypeCache_LookupByName", () =>
+                    new ConcurrentDictionary<string, int>( StringComparer.OrdinalIgnoreCase ) );
+            }
+        }
 
         #endregion
 

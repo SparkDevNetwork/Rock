@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Web;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Performance.Interactions
+namespace Rock.Tests.Performance.Modules.Crm.Interactions
 {
     [TestClass]
     [Ignore("Performance tests. These tests do not contain any Asserts.")]
-    public class PageViewTests
+    public class PageViewTests : DatabaseTestsBase
     {
-        public TestContext TestContext { get; set; }
-
         public static List<PageCache> _allPages;
 
         [TestMethod]

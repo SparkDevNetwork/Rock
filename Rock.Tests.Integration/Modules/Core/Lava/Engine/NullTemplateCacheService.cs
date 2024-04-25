@@ -15,9 +15,10 @@
 // </copyright>
 //
 using System;
+
 using Rock.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// An implementation of a provider for Lava Template objects that does not perform any caching.

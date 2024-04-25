@@ -64,7 +64,7 @@ namespace Rock.Model
         /// </summary>
         public IQueryable<Rock.Model.PersonAliasPersonalization> GetPersonAliasPersonalizationSegmentQuery()
         {
-            return ( this.Context as RockContext ).PersonAliasPersonalizations.Where( a => a.PersonalizationType == PersonalizationType.Segment );
+            return ( this.Context as RockContext ).Set<PersonAliasPersonalization>().Where( a => a.PersonalizationType == PersonalizationType.Segment );
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<PersonalizedEntity> GetPersonalizedEntitySegmentQuery( int entityTypeId, int entityId )
         {
-            return ( this.Context as RockContext ).PersonalizedEntities
+            return ( this.Context as RockContext ).Set<PersonalizedEntity>()
                 .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.EntityTypeId == entityTypeId && a.EntityId == entityId );
         }
 
@@ -138,7 +138,7 @@ namespace Rock.Model
              SK - 07-27-2022
              AddRange is used intentionally below instead of BulkInsert as it throws error Unexpected existing transaction.
             */
-            rockContext.PersonalizedEntities.AddRange( personalizedEntitiesToInsert );
+            rockContext.Set<PersonalizedEntity>().AddRange( personalizedEntitiesToInsert );
             rockContext.SaveChanges();
         }
 
@@ -232,11 +232,11 @@ namespace Rock.Model
             var rockContext = ( RockContext ) this.Context;
 
             // Get the list of Personalization Entity Ids associated with the specified person alias.
-            var qryEntityId = rockContext.PersonAliasPersonalizations
+            var qryEntityId = rockContext.Set<PersonAliasPersonalization>()
                 .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.PersonAliasId == personAliasId )
                 .Select( a => a.PersonalizationEntityId );
             // Get the active Personalization Segments associated with the Entity Ids.
-            var qrySegmentId = rockContext.Segments
+            var qrySegmentId = new PersonalizationSegmentService( rockContext ).Queryable()
                 .Where( s => s.IsActive && qryEntityId.Contains( s.Id ) )
                 .Select(s => s.Id);
             // Return a set of hashed Ids identifying the Personalization Segments.
@@ -263,7 +263,7 @@ namespace Rock.Model
             }
 
             var rockContext = (RockContext)this.Context;
-            var existingSegmentIdList = rockContext.PersonAliasPersonalizations
+            var existingSegmentIdList = rockContext.Set<PersonAliasPersonalization>()
                 .Where( x => x.PersonAlias.PersonId == personId
                              && x.PersonalizationType == PersonalizationType.Segment )
                 .Select( x => x.PersonalizationEntityId )
@@ -284,7 +284,7 @@ namespace Rock.Model
                         pap.PersonAliasId = personAliasId;
                         pap.PersonalizationEntityId = segmentId;
 
-                        rockContext.PersonAliasPersonalizations.Add( pap );
+                        rockContext.Set<PersonAliasPersonalization>().Add( pap );
                     }
                 }
             }
@@ -306,13 +306,13 @@ namespace Rock.Model
             }
 
             var rockContext = ( RockContext ) this.Context;
-            var removeSegments = rockContext.PersonAliasPersonalizations
+            var removeSegments = rockContext.Set<PersonAliasPersonalization>()
                 .Where( pap => pap.PersonAlias.PersonId == personId
                              && pap.PersonalizationType == PersonalizationType.Segment
                              && segmentIdList.Contains( pap.PersonalizationEntityId ) )
                 .ToList();
 
-            rockContext.PersonAliasPersonalizations.RemoveRange( removeSegments );
+            rockContext.Set<PersonAliasPersonalization>().RemoveRange( removeSegments );
 
             return removeSegments.Count;
         }

@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.CheckIn;
 using Rock.Model;
 
 namespace Rock
@@ -64,6 +66,27 @@ namespace Rock
                 .ToList();
 
             return sortedScheduleList;
+        }
+
+        /// <summary>
+        /// Orders the check-in schedules by <see cref="Schedule.Order"/>, then next start date time, then name, then ID.
+        /// </summary>
+        /// <param name="checkInSchedules">The check-in schedules to order.</param>
+        /// <param name="beginDateTime">The optional begin date time to use when checking for the next start date time.
+        /// If no value is provided, <see cref="RockDateTime.Now"/> will be used.</param>
+        /// <returns>The check-in schedules, ordered by <see cref="Schedule.Order"/>, then next start date time, then name, then ID.</returns>
+        public static IEnumerable<CheckInSchedule> OrderByOrderAndNextScheduledDateTime( this IEnumerable<CheckInSchedule> checkInSchedules, DateTime? beginDateTime = null )
+        {
+            if ( !beginDateTime.HasValue )
+            {
+                beginDateTime = RockDateTime.Now;
+            }
+
+            return checkInSchedules?
+                .OrderBy( a => a.Schedule?.Order )
+                .ThenBy( a => a.Schedule?.GetNextStartDateTime( beginDateTime.Value ) )
+                .ThenBy( a => a.Schedule?.Name )
+                .ThenBy( a => a.Schedule?.Id );
         }
     }
 }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,9 +36,9 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity in Other Workflow" )]
 
-    [WorkflowAttribute("Activity", "The activity that should be activated", true, fieldTypeClassNames: new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
-    [WorkflowTextOrAttribute("Workflow", "Workflow Attribute", "The ID or Guid of the workflow that should be activated", true, key:"WorkflowReference" )]
-    [Rock.SystemGuid.EntityTypeGuid( "DD266CDB-7D60-4312-B727-C2AA95C21128")]
+    [WorkflowAttribute( "Activity", "The activity that should be activated", true, fieldTypeClassNames: new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
+    [WorkflowTextOrAttribute( "Workflow", "Workflow Attribute", "The ID or Guid of the workflow that should be activated", true, key: "WorkflowReference" )]
+    [Rock.SystemGuid.EntityTypeGuid( "DD266CDB-7D60-4312-B727-C2AA95C21128" )]
     public class ActivateOtherActivity : ActionComponent
     {
         /// <summary>
@@ -62,38 +62,41 @@ namespace Rock.Workflow.Action
 
             var reference = GetAttributeValue( action, "WorkflowReference", true );
             Rock.Model.Workflow workflow = null;
-            if (reference.AsGuidOrNull() != null )
-            {
-                var referenceGuid = reference.AsGuid();
-                workflow = new WorkflowService( rockContext ).Queryable()
-                    .Where( w => w.Guid == referenceGuid )
-                    .FirstOrDefault();
-            }
-            else if (reference.AsIntegerOrNull() != null )
-            {
-                var referenceInt = reference.AsInteger();
-                workflow = new WorkflowService( rockContext ).Queryable()
-                   .Where( w => w.Id == referenceInt )
-                   .FirstOrDefault();
-            }
-            else
-            {
-                action.AddLogEntry( "Invalid Workflow Property", true );
-                return false;
-            }            
-            
-            var activityType = WorkflowActivityTypeCache.Get( workflowActivityGuid );
-            if ( activityType == null )
-            {
-                action.AddLogEntry( "Invalid Activity Property", true );
-                return false;
-            }
 
-            WorkflowActivity.Activate( activityType, workflow );
-            action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
+            // Use new context so only changes made to the activity by this action are persisted
+            using ( var newRockContext = new RockContext() )
+            {
+                if ( reference.AsGuidOrNull() != null )
+                {
+                    var referenceGuid = reference.AsGuid();
+                    workflow = new WorkflowService( newRockContext ).Queryable()
+                        .FirstOrDefault( w => w.Guid == referenceGuid );
+                }
+                else if ( reference.AsIntegerOrNull() != null )
+                {
+                    var referenceInt = reference.AsInteger();
+                    workflow = new WorkflowService( newRockContext ).Queryable()
+                       .FirstOrDefault( w => w.Id == referenceInt );
+                }
+                else
+                {
+                    action.AddLogEntry( "Invalid Workflow Property", true );
+                    return false;
+                }
+
+                var activityType = WorkflowActivityTypeCache.Get( workflowActivityGuid );
+                if ( activityType == null )
+                {
+                    action.AddLogEntry( "Invalid Activity Property", true );
+                    return false;
+                }
+
+                WorkflowActivity.Activate( activityType, workflow, newRockContext );
+                action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
+                newRockContext.SaveChanges();
+            }
 
             return true;
         }
-
     }
 }

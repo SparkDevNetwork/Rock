@@ -267,35 +267,37 @@ namespace Rock.Workflow.Action
                     }
 
                     // Render the PDF from the HTML result.
-                    var pdfGenerator = new Pdf.PdfGenerator();
-                    if ( result.FooterHtmlFragment.IsNotNullOrWhiteSpace() )
+                    using ( var pdfGenerator = new Pdf.PdfGenerator() )
                     {
-                        pdfGenerator.FooterHtml = result.FooterHtmlFragment;
+                        if ( result.FooterHtmlFragment.IsNotNullOrWhiteSpace() )
+                        {
+                            pdfGenerator.FooterHtml = result.FooterHtmlFragment;
+                        }
+
+                        pdfStream = pdfGenerator.GetPDFDocumentFromHtml( result.Html );
+
+                        // Upload the PDF.
+                        FinancialStatementGeneratorUploadGivingStatementData uploadGivingStatementData = new FinancialStatementGeneratorUploadGivingStatementData
+                        {
+                            FinancialStatementGeneratorRecipient = recipient,
+                            FinancialStatementIndividualSaveOptions = individualSaveOptions,
+                            PDFData = pdfStream.ReadBytesToEnd()
+                        };
+
+                        // This will add the document to all of the individuals that should get it based on the settings.
+                        var uploadDocumentResponse = FinancialStatementGeneratorHelper.UploadGivingStatementDocument( uploadGivingStatementData, out int? binaryFileId );
+
+                        action.AddLogEntry( $"Uploaded contribution statements for {uploadDocumentResponse.NumberOfIndividuals} individual(s)." );
+
+                        // Update the binary file that is set on the workflow.
+                        var binaryFileGuid = new BinaryFileService( rockContext ).GetSelect( binaryFileId.Value, a => a.Guid );
+
+                        if ( binaryFileId.HasValue && binaryFileGuid != null )
+                        {
+                            this.SetWorkflowAttributeValue( action, AttributeKey.DocumentAttribute, binaryFileGuid );
+                        }
+                        rockContext.SaveChanges();
                     }
-
-                    pdfStream = pdfGenerator.GetPDFDocumentFromHtml( result.Html );
-
-                    // Upload the PDF.
-                    FinancialStatementGeneratorUploadGivingStatementData uploadGivingStatementData = new FinancialStatementGeneratorUploadGivingStatementData
-                    {
-                        FinancialStatementGeneratorRecipient = recipient,
-                        FinancialStatementIndividualSaveOptions = individualSaveOptions,
-                        PDFData = pdfStream.ReadBytesToEnd()
-                    };
-
-                    // This will add the document to all of the individuals that should get it based on the settings.
-                    var uploadDocumentResponse = FinancialStatementGeneratorHelper.UploadGivingStatementDocument( uploadGivingStatementData, out int? binaryFileId );
-
-                    action.AddLogEntry( $"Uploaded contribution statements for {uploadDocumentResponse.NumberOfIndividuals} individual(s)." );
-
-                    // Update the binary file that is set on the workflow.
-                    var binaryFileGuid = new BinaryFileService( rockContext ).GetSelect( binaryFileId.Value, a => a.Guid );
-
-                    if ( binaryFileId.HasValue && binaryFileGuid != null )
-                    {
-                        this.SetWorkflowAttributeValue( action, AttributeKey.DocumentAttribute, binaryFileGuid );
-                    }
-                    rockContext.SaveChanges();
                 }
                 catch ( Exception ex )
                 {

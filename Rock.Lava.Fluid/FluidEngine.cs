@@ -723,9 +723,21 @@ namespace Rock.Lava.Fluid
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>
+        [Obsolete( "Use ParseTemplateToTokens instead.")]
+        [RockObsolete("v17")] 
         public List<string> TokenizeTemplate( string lavaTemplate )
         {
             return LavaFluidParser.ParseToTokens( lavaTemplate );
+        }
+
+        /// <summary>
+        /// Process a template and return the list of valid tokens identified by the parser.
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public List<string> ParseTemplateToTokens( string lavaTemplate, bool includeComments = false )
+        {
+            return LavaFluidParser.ParseToTokens( lavaTemplate, includeComments );
         }
 
         /// <summary>

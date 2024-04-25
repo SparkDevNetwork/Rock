@@ -26,6 +26,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The settings that will be edited in the custom settings panel for the Sign-Up Finder block. */
 export type SignUpFinderCustomSettingsBag = {
+    /** Gets or sets the campuses to include in the campus list. */
+    campuses?: string[] | null;
+
     /** Gets or sets the statuses of the campuses to include in the campus list. */
     campusStatuses?: ListItemBag[] | null;
 
@@ -64,6 +67,9 @@ export type SignUpFinderCustomSettingsBag = {
 
     /** Gets or sets the number of columns the filters should be displayed as. */
     filterColumns: number;
+
+    /** Gets or sets whether to hide campuses with no opportunities. */
+    hideCampusesWithNoOpportunities: boolean;
 
     /** Gets or sets whether projects that are full should be shown. */
     hideOvercapacityProjects: boolean;

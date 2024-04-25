@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Crm.Attendance
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class AttendanceOccurrenceTests
+    public class AttendanceOccurrenceTests : DatabaseTestsBase
     {
         private string attendanceOccurrenceForeignKey;
 

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+import { CurrencyInfoBag } from "../ViewModels/Rest/Utilities/currencyInfoBag";
+
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
 // Number.toLocaleString takes the same options as Intl.NumberFormat
 // Most of the options probably won't get used, so just add the ones you need to use to this when needed
@@ -75,7 +77,7 @@ export function toNumberOrNull(str?: string | number | null): number | null {
  * Ex: 1000.20 => $1,000.20
  * @param value The value to be converted to a currency.
  */
-export function toCurrencyOrNull(value?: string | number | null): string | null {
+export function toCurrencyOrNull(value?: string | number | null, currencyInfo: CurrencyInfoBag | null = null): string | null {
     if (typeof value === "string") {
         value = toNumberOrNull(value);
     }
@@ -83,8 +85,9 @@ export function toCurrencyOrNull(value?: string | number | null): string | null 
     if (value === null || value === undefined) {
         return null;
     }
-
-    return "$" + asFormattedString(value, 2);
+    const currencySymbol = currencyInfo?.symbol ?? "$";
+    const currencyDecimalPlaces = currencyInfo?.decimalPlaces ?? 2;
+    return `${currencySymbol}${asFormattedString(value, currencyDecimalPlaces)}`;
 }
 
 /**

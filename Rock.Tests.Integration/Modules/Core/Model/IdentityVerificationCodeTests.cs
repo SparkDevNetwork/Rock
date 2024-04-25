@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Data;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Core.Security
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
     [Ignore( "These tests require additional data. Rows are expected in the IdentityVerificationCode table." )]
-    public class IdentityVerificationCodeTests
+    public class IdentityVerificationCodeTests : DatabaseTestsBase
     {
         [TestMethod]
         public void GetRandomPhoneVerificationCodeReturnsValue()

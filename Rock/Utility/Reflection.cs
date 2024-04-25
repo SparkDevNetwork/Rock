@@ -189,11 +189,11 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the appropriate DbContext based on the entity type
+        /// Gets the appropriate DbContext Type based on the entity type
         /// </summary>
         /// <param name="entityType">Type of the Entity.</param>
-        /// <returns></returns>
-        public static System.Data.Entity.DbContext GetDbContextForEntityType( Type entityType )
+        /// <returns>A <see cref="Type"/> object.</returns>
+        public static Type GetDbContextTypeForEntityType( Type entityType )
         {
             Type contextType = typeof( Rock.Data.RockContext );
             if ( entityType.Assembly != contextType.Assembly )
@@ -205,6 +205,19 @@ namespace Rock
                     contextType = contextTypeLookup.First().Value;
                 }
             }
+
+            return contextType;
+        }
+
+        /// <summary>
+        /// Gets the appropriate DbContext based on the entity type
+        /// </summary>
+        /// <param name="entityType">Type of the Entity.</param>
+        /// <returns></returns>
+        public static System.Data.Entity.DbContext GetDbContextForEntityType( Type entityType )
+        {
+            Type contextType = GetDbContextTypeForEntityType( entityType );
+
             if ( contextType == typeof( Rock.Data.RockContext ) )
             {
                 return new Rock.Data.RockContext();

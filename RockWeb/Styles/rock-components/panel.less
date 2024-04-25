@@ -19,3 +19,37 @@
     }
   }
 }
+
+// Panels with sidebar content.
+.panel-with-sidebar {
+  display: flex;
+  background: @panel-bg;
+  box-shadow: 0 0 1px 0 rgba(0,0,0,0.03), 0 1px 3px 0 rgba(0,0,0,0.08);
+  border: 1px solid @panel-default-border;
+  border-radius: @panel-border-radius;
+
+  > .panel {
+    border: 0;
+    box-shadow: none;
+
+    > .panel-heading {
+      background-color: initial;
+      border: 0;
+    }
+
+    > .panel-sub-header {
+      border: 0;
+    }
+
+    > .panel-body {
+      .actions:last-of-type {
+        border: 0;
+      }
+    }
+  }
+
+  > .panel-sidebar-content {
+    margin-top: 12px;
+    width: 320px;
+  }
+}

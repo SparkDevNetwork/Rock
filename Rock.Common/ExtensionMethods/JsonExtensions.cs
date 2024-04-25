@@ -270,7 +270,7 @@ namespace Rock
         /// <param name="ignoreErrors"><c>true</c> if errors should be silently ignored.</param>
         /// <param name="camelCase"><c>true</c> if key names should be in camel case.</param>
         /// <returns>An instance of <see cref="JsonSerializerSettings"/> to be used.</returns>
-        private static JsonSerializerSettings CreateSerializerSettings( bool indentOutput, bool ignoreErrors, bool camelCase )
+        internal static JsonSerializerSettings CreateSerializerSettings( bool indentOutput, bool ignoreErrors, bool camelCase )
         {
             var settings = new JsonSerializerSettings
             {

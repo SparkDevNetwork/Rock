@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import RockForm from "./rockForm.obs";
     import RockButton from "./rockButton.obs";
     import RockValidation from "./rockValidation.obs";
@@ -235,6 +235,8 @@
                 }
             });
         }
+
+        nextTick(adjustOverflowPadding);
     }
 
     /**

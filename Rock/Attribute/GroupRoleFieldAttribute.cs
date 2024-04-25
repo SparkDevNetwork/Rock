@@ -16,6 +16,7 @@
 //
 using System;
 
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -44,7 +45,7 @@ namespace Rock.Attribute
             if ( !string.IsNullOrWhiteSpace( groupTypeGuid ) )
             {
                 Guid guid = Guid.Empty;
-                if ( Guid.TryParse( groupTypeGuid, out guid ) )
+                if ( Guid.TryParse( groupTypeGuid, out guid ) && RockInstanceConfig.DatabaseIsAvailable )
                 {
                     var groupType = GroupTypeCache.Get( guid );
                     if ( groupType != null )

@@ -109,7 +109,7 @@
     });
 
     const anyLocations = computed((): boolean => {
-        return !!Object.keys(props.occurrences?.length);
+        return !!props.occurrences?.length;
     });
 
     const unassignedResourceCount = computed((): GroupSchedulerUnassignedResourceCountBag | null | undefined => {

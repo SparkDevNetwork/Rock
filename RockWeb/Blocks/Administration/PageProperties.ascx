@@ -104,6 +104,7 @@
                                             <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" Help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
                                             <asp:CustomValidator ID="cvPageRoute" runat="server" ControlToValidate="tbPageRoute" OnServerValidate="cvPageRoute_ServerValidate" Display="None" ErrorMessage="Invalid Route(s)" />
                                         </fieldset>
+                                        <Rock:DefinedValuesPickerEnhanced ID="dvpPageIntents" runat="server" Label="Page Intent" Help="Helps classify the purpose of the page. This is written to interactions as individuals view the page. You can provide options here by editing the Interaction Intent Defined Type." />
                                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                                             <fieldset>
                                                 <h4>Context Parameters</h4>

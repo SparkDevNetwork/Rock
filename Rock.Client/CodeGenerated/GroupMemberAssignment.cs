@@ -44,6 +44,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int GroupId { get; set; }
+
+        /// <summary />
         public int GroupMemberId { get; set; }
 
         /// <summary />
@@ -96,6 +99,7 @@ namespace Rock.Client
             this.ConfirmationSentDateTime = source.ConfirmationSentDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GroupId = source.GroupId;
             this.GroupMemberId = source.GroupMemberId;
             this.LastReminderSentDateTime = source.LastReminderSentDateTime;
             this.LocationId = source.LocationId;

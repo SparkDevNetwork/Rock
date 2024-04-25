@@ -14,17 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Rock.Model;
-using Rock.Data;
 using System.Linq;
-using Rock.Tests.Shared;
-using Rock.Lava.Fluid;
 
-namespace Rock.Tests.Integration.Core.Lava
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Data;
+using Rock.Lava;
+using Rock.Lava.Fluid;
+using Rock.Model;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
+
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// Tests to provide performance metrics for critical components of the Lava engine implementation.

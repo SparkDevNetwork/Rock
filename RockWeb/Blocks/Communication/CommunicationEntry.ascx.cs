@@ -667,7 +667,7 @@ namespace RockWeb.Blocks.Communication
                                         if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
                                         {
                                             textClass = "js-no-bulk-email";
-                                            if ( cbBulk.Checked )
+                                            if ( cbBulk.Checked || _isBulkCommunicationForced )
                                             {
                                                 // This is a bulk email and user does not want bulk emails
                                                 textClass += " text-danger";
@@ -1119,7 +1119,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( !_fullMode )
             {
-                cbBulk.Checked = GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean();
+                cbBulk.Checked = _isBulkCommunicationForced || GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean();
             }
 
             MediumControl control = LoadMediumControl( true );
@@ -1412,7 +1412,6 @@ namespace RockWeb.Blocks.Communication
                  && emailMediumComponent.IsBulkEmailThresholdExceeded( Recipients?.Count ?? 0 ) )
             {
                 // Override to unchecked when bulk communication is prevented.
-                cbBulk.Checked = false;
                 cbBulk.Visible = false;
 
                 // Force bulk communication since the recipient count has exceeded the threshold.

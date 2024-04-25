@@ -23,7 +23,7 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
     /// <summary>
     /// Information about a sign-up registrant.
     /// </summary>
-    [DebuggerDisplay("{FullName}, Will Attend: {WillAttend}")]
+    [DebuggerDisplay( "{FullName}, Will Attend: {WillAttend}" )]
     public class SignUpRegistrantBag
     {
         /// <summary>
@@ -137,5 +137,21 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
         /// The registrant's unmet group requirements, if any.
         /// </value>
         public List<string> UnmetGroupRequirements { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Gets or sets the registrant's member attribute values.
+        /// </summary>
+        /// <value>
+        /// The registrant's member attribute values.
+        /// </value>
+        public Dictionary<string, string> MemberAttributeValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrant's member opportunity attribute values.
+        /// </summary>
+        /// <value>
+        /// The registrant's member opportunity attribute values.
+        /// </value>
+        public Dictionary<string, string> MemberOpportunityAttributeValues { get; set; }
     }
 }

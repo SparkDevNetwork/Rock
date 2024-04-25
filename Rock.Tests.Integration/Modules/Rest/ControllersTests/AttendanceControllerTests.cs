@@ -1,22 +1,16 @@
 ﻿using System;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Rest.Controllers;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Crm.Attendance
+namespace Rock.Tests.Integration.Modules.Rest.ControllersTests
 {
     [TestClass]
-    [Ignore()]
-    public class AttendanceControllerTests
+    public class AttendanceControllerTests : DatabaseTestsBase
     {
-        /// <summary>
-        /// Runs before any tests in this class are executed.
-        /// </summary>
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext testContext )
-        {
-        }
-
         [TestMethod]
         public void AddAttendance()
         {
@@ -60,6 +54,5 @@ namespace Rock.Tests.Integration.Crm.Attendance
                 Assert.That.IsTrue( exception.Response.StatusCode == System.Net.HttpStatusCode.BadRequest );
             }
         }
-
     }
 }

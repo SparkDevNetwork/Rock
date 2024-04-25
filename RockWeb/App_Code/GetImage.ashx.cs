@@ -499,6 +499,12 @@ namespace RockWeb
         /// <returns></returns>
         private Stream GetResized( NameValueCollection queryString, Stream fileContent )
         {
+            // Check if the request has disabled optimizations. If so return.
+            if ( queryString["disableoptimizations"] != null )
+            {
+                return fileContent;
+            }
+
             try
             {
                 ResizeSettings settings = new ResizeSettings( queryString );

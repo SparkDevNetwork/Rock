@@ -127,6 +127,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string PersonActionIdentifier = "rckid";
             public const string PledgeId = "PledgeId";
             public const string StatementYear = "StatementYear";
+            public const string AutoEdit = "autoEdit";
+            public const string ReturnUrl = "returnUrl";
         }
 
         #endregion Attribute Keys
@@ -208,7 +210,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate == DateTime.MaxValue.Date )
             {
-                lPledgeDate.Text = string.Format( "{0} On-Ward", financialPledge.StartDate.ToShortDateString() );
+                lPledgeDate.Text = string.Format( "{0} Onward", financialPledge.StartDate.ToShortDateString() );
             }
             else
             {
@@ -546,6 +548,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var queryParams = new Dictionary<string, string>();
             queryParams.AddOrReplace( PageParameterKey.PledgeId, "0" );
             queryParams.AddOrReplace( PageParameterKey.PersonActionIdentifier, Person.GetPersonActionIdentifier( "pledge" ) );
+            queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+            queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
             NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
         }
 
@@ -655,6 +659,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var queryParams = new Dictionary<string, string>();
                 queryParams.AddOrReplace( PageParameterKey.PledgeId, pledge.Id.ToString() );
                 queryParams.AddOrReplace( PageParameterKey.PersonActionIdentifier, Person.GetPersonActionIdentifier( "pledge" ) );
+                queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+                queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
                 NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
             }
         }

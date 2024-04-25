@@ -26,26 +26,26 @@
 
 <!-- These styles cannot be scoped since they're being used in a tooltip. -->
 <style>
-.new-group-scheduler .progress-bar-tooltip {
+.group-scheduler-v2 .progress-bar-tooltip {
     min-width: 130px;
 }
 
-.new-group-scheduler .progress-bar-tooltip-label {
+.group-scheduler-v2 .progress-bar-tooltip-label {
     font-weight: bold;
 }
 
-.new-group-scheduler .progress-bar-tooltip-responses {
+.group-scheduler-v2 .progress-bar-tooltip-responses {
     margin-top: 12px;
 }
 
-.new-group-scheduler .progress-bar-tooltip-counts {
+.group-scheduler-v2 .progress-bar-tooltip-counts {
     margin-top: 4px;
     display: flex;
     justify-content: space-around;
     align-items: center;
 }
 
-.new-group-scheduler .progress-bar-tooltip-counts > span {
+.group-scheduler-v2 .progress-bar-tooltip-counts > span {
     display: flex;
     align-items: center;
     gap: 6px;

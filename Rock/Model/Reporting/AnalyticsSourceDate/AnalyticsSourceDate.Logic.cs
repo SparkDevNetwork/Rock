@@ -339,7 +339,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
             using ( var rockContext = new RockContext() )
             {
                 // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
-                EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
+                EFBatchOperation.For( rockContext, rockContext.Set<AnalyticsSourceDate>() ).InsertAll( generatedDates );
 
                 // Update the Sunday of the Year data
                 rockContext.Database.ExecuteSqlCommand( SundayOfTheYearSql );

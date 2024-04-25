@@ -15,18 +15,21 @@
 // </copyright>
 //
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core
+namespace Rock.Tests.Integration.Modules.Core
 {
     /// <summary>
     /// Tests for Entity Attributes.
     /// </summary>
     [TestClass]
-    public class AttributeTests
+    public class AttributeTests : DatabaseTestsBase
     {
         [ClassInitialize]
         public static void Initialize( TestContext context )

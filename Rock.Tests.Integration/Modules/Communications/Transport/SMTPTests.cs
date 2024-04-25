@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Communications.Transport
+namespace Rock.Tests.Integration.Modules.Communications.Transport
 {
     [TestClass]
-    public class SMTPTests
+    public class SMTPTests : DatabaseTestsBase
     {
         private static Guid ServerAttributeGuid = SystemGuid.Attribute.COMMUNICATION_TRANSPORT_SMTP_SERVER.AsGuid();
         private static string _serverAttributeValueValue;

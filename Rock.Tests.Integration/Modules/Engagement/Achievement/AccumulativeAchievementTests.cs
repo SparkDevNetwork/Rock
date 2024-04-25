@@ -17,20 +17,23 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Achievement;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Engagement.Achievements
+namespace Rock.Tests.Integration.Modules.Engagement.Achievements
 {
     /// <summary>
     /// Tests for Accumulative Achievements that use the database
     /// </summary>
     [TestClass]
-    public class AccumulativeAchievementTests
+    public class AccumulativeAchievementTests : DatabaseTestsBase
     {
         private const string ComponentEntityTypeName = "Rock.Achievement.Component.AccumulativeAchievement";
         private const string StreakTypeGuidString = "93050DB0-82FC-4EBE-9AB8-8BB8BADFB2F0";
@@ -150,6 +153,10 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         /// </summary>
         private static void CreateAchievementTypeData()
         {
+            // Create the component so it sets up the attributes.
+            AchievementContainer.Instance.Refresh();
+            _ = AchievementContainer.GetComponent( ComponentEntityTypeName );
+
             var achievementType = new AchievementType
             {
                 Name = "Test Achievement",
@@ -187,17 +194,6 @@ namespace Rock.Tests.Integration.Engagement.Achievements
             CreatePersonAliasData();
             CreateStreakTypeData();
             CreateAchievementTypeData();
-        }
-
-        /// <summary>
-        /// Runs after all tests in this class is executed.
-        /// </summary>
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            DeleteTestData();
-            _rockContext = null;
-            _streakTypeService = null;
         }
 
         [TestCleanup]

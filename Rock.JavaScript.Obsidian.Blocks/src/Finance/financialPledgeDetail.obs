@@ -12,12 +12,13 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="FinancialPledge"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -41,7 +42,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./FinancialPledgeDetail/editPanel.partial.obs";
     import ViewPanel from "./FinancialPledgeDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./FinancialPledgeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -58,7 +59,7 @@
     const errorMessage = ref("");
 
     const financialPledgeViewBag = ref(config.entity);
-    const financialPledgeEditBag = ref<FinancialPledgeBag>({} as FinancialPledgeBag);
+    const financialPledgeEditBag = ref<FinancialPledgeBag>(config.entity ?? {});
 
     const entityTypeGuid = EntityType.FinancialPledge;
 
@@ -118,9 +119,9 @@
         return config.options ?? {};
     });
 
-    // #endregion
-
-    // #region Functions
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value === DetailPanelMode.Add;
+    });
 
     // #endregion
 
@@ -255,4 +256,6 @@
         financialPledgeEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
 </script>

@@ -15,12 +15,15 @@
 // </copyright>
 
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Integration.Web.Controls
+using Rock.Tests.Shared.TestFramework;
+
+namespace Rock.Tests.Integration.Modules.Web.Controls
 {
     [TestClass]
-    public class AddressControlTests
+    public class AddressControlTests : DatabaseTestsBase
     {
         [TestMethod]
         public void AddressControl_SetsDefaultValuesforCountryAndState()

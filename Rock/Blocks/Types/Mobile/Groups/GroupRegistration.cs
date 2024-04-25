@@ -597,7 +597,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             if ( member == null )
             {
                 member = new GroupMember { Id = 0 };
-                rockContext.GroupMembers.Add( member );
+                new GroupMemberService( rockContext ).Add( member );
 
                 member.GroupId = group.Id;
                 // This is needed to trigger workflows later.
