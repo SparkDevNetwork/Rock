@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Runtime.Serialization;
 
 using Rock.Lava;
+using Rock.Observability;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -57,43 +58,52 @@ namespace Rock.Model
         /// <exception cref="Rock.Model.PersistedDataset.UnsupportedBuildScriptTypeException">Is thrown if the BuildScriptType is not known/supported.</exception>
         public void UpdateResultData()
         {
-            var timeToBuildStopwatch = System.Diagnostics.Stopwatch.StartNew();
-            switch ( this.BuildScriptType )
+            using ( var activity = ObservabilityHelper.StartActivity( $"PERSISTED DATASET: Update Result Data (Id: {Id})" ) )
             {
-                case PersistedDatasetScriptType.Lava:
-                    {
-                        var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
-                        var output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
+                activity?.AddTag( "rock.persisted_dataset.id", Id );
+                activity?.AddTag( "rock.persisted_dataset.name", Name );
+                activity?.AddTag( "rock.persisted_dataset.type", BuildScriptType.ToString() );
 
-                        // Ensure resulting output is valid for its defined format,
-                        // otherwise log the problem and throw an exception.
-                        if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
+                var timeToBuildStopwatch = System.Diagnostics.Stopwatch.StartNew();
+                switch ( this.BuildScriptType )
+                {
+                    case PersistedDatasetScriptType.Lava:
                         {
-                            var outputAsDynamic = output.FromJsonDynamicOrNull();
+                            var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
+                            var output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
 
-                            // If the 
-                            if ( outputAsDynamic == null )
+                            // Ensure resulting output is valid for its defined format,
+                            // otherwise log the problem and throw an exception.
+                            if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
                             {
-                                throw new InvalidDataContractException( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
+                                var outputAsDynamic = output.FromJsonDynamicOrNull();
+
+                                // If the 
+                                if ( outputAsDynamic == null )
+                                {
+                                    throw new InvalidDataContractException( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
+                                }
+
+                                // Save a nicely formatted version of the result
+                                this.ResultData = outputAsDynamic.ToJson( true );
                             }
-
-                            // Save a nicely formatted version of the result
-                            this.ResultData = outputAsDynamic.ToJson( true );
+                            break;
                         }
-                        break;
-                    }
 
-                default:
-                    {
-                        throw new UnsupportedBuildScriptTypeException( this.BuildScriptType );
-                    }
+                    default:
+                        {
+                            throw new UnsupportedBuildScriptTypeException( this.BuildScriptType );
+                        }
+                }
+
+                timeToBuildStopwatch.Stop();
+                this.TimeToBuildMS = timeToBuildStopwatch.Elapsed.TotalMilliseconds;
+
+                this.LastRefreshDateTime = RockDateTime.Now;
+
+                activity?.AddTag( "rock.persisted_dataset.build_duration", ( int ) Math.Floor( timeToBuildStopwatch.Elapsed.TotalMilliseconds ) );
+                activity?.AddTag( "rock.persisted_dataset.result_size", ResultData.Length );
             }
-
-            timeToBuildStopwatch.Stop();
-            this.TimeToBuildMS = timeToBuildStopwatch.Elapsed.TotalMilliseconds;
-
-            this.LastRefreshDateTime = RockDateTime.Now;
-
         }
 
         /// <summary>
