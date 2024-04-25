@@ -197,6 +197,8 @@
     <Compile Include="Reporting\InteractionDetail.cs" />
     <Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
+    <Compile Include="Prayer\PrayerCommentList.cs" />
+    <Compile Include="Prayer\PrayerRequestList.cs" />
     <Compile Include="Reporting\MetricValueDetail.cs" />
     <Compile Include="Reporting\InteractionComponentDetail.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
