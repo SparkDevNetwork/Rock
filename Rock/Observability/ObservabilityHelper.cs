@@ -366,6 +366,43 @@ namespace Rock.Observability
         }
 
         /// <summary>
+        /// Increments the database query count tag on the root activity and any
+        /// intermediate activities with an existing "rock.db.query_count" tag.
+        /// </summary>
+        /// <param name="activity">The activity to start with when walking up the ancestor tree.</param>
+        internal static void IncrementDbQueryCount( Activity activity )
+        {
+            while ( activity != null )
+            {
+                var queryCount = activity.GetTagItem( "rock.db.query_count" ) as int?;
+
+                // If the activity already has a query count or its the root
+                // activity then increment the value. This allows activities
+                // to request that they also get the query count recorded
+                // on them by setting the initial value to zero.
+                if ( queryCount.HasValue || activity.Parent == null )
+                {
+                    activity.SetTag( "rock.db.query_count", ( queryCount ?? 0 ) + 1 );
+                }
+
+                activity = activity.Parent;
+            }
+        }
+
+        /// <summary>
+        /// Enables tracking of database query counts for the specified activity.
+        /// The root activity will always track query counts.
+        /// </summary>
+        /// <param name="activity">The activity for which to enable database query count tracking.</param>
+        internal static void EnableDbQueryCountTracking( Activity activity )
+        {
+            if ( activity != null && activity.GetTagItem( "rock.db.query_count" ) == null )
+            {
+                activity.SetTag( "rock.db.query_count", 0 );
+            }
+        }
+
+        /// <summary>
         /// Appends the path to the URI if it doesn't already end with the path.
         /// </summary>
         /// <param name="uri">The URI to be modified.</param>
