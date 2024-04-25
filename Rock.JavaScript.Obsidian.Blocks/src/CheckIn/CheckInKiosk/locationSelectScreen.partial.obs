@@ -3,7 +3,7 @@
     <div class="location-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.currentAttendee?.person">
+                   :person="session.getCurrentAttendee()?.person">
             <div class="button-list">
                 <RockButton v-for="location in locations"
                             btnType="primary"
@@ -53,11 +53,11 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        return props.session.currentOpportunitySelection?.group?.name ?? "Location";
+        return props.session.selectedGroup?.name ?? "Location";
     });
 
     const subtitle = computed((): string => {
-        return `Select the location you would like to check ${props.session.currentAttendee?.person?.nickName} into`;
+        return `Select the location you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
     });
 
     const locations = computed((): LocationOpportunityBag[] => {

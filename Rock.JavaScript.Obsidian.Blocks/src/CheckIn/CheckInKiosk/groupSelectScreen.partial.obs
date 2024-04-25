@@ -3,7 +3,7 @@
     <div class="group-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.currentAttendee?.person">
+                   :person="session.getCurrentAttendee()?.person">
             <div class="button-list">
                 <RockButton v-for="group in groups"
                             btnType="primary"
@@ -53,11 +53,11 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        return props.session.currentOpportunitySelection?.area?.name ?? "Group";
+        return props.session.selectedArea?.name ?? "Group";
     });
 
     const subtitle = computed((): string => {
-        return `Select the group you would like to check ${props.session.currentAttendee?.person?.nickName} into`;
+        return `Select the group you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
     });
 
     const groups = computed((): GroupOpportunityBag[] => {

@@ -20,7 +20,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configurationTemplateBag";
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
-import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationBag";
 
 // #region Temporary Types
@@ -138,16 +137,6 @@ export enum Screen {
      */
     Success,
 }
-
-/**
- * Special variation of the standard selection bag that omits the single
- * schedule property in favor of a schedules property that contains an array
- * of schedules.
- */
-export type SessionOpportunitySelectionBag = Omit<OpportunitySelectionBag, "schedule"> & {
-    /** The schedules that have been selected for these options. */
-    schedules?: CheckInItemBag[] | null;
-};
 
 /**
  * Defines a button that will be displayed by the main kiosk page at the

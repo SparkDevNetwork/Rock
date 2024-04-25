@@ -46,7 +46,7 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, CSSProperties, DeepReadonly, PropType, ref, watch } from "vue";
+    import { computed, CSSProperties, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
@@ -109,7 +109,7 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        return props.session.currentFamily?.name ?? "";
+        return props.session.getCurrentFamily()?.name ?? "";
     });
 
     const subtitle = computed((): string => {
@@ -129,7 +129,7 @@
         return props.configuration.template?.isAutoSelect === true;
     });
 
-    const attendees = computed((): DeepReadonly<AttendeeBag[]> => {
+    const attendees = computed((): AttendeeBag[] => {
         if (!props.session.attendees) {
             return [];
         }
@@ -173,7 +173,7 @@
      *
      * @returns A colleciton of opportunity selections.
      */
-    function getAttendeeSelections(attendee: DeepReadonly<AttendeeBag>): OpportunitySelectionBag[] {
+    function getAttendeeSelections(attendee: AttendeeBag): OpportunitySelectionBag[] {
         if (!attendee.person) {
             return [];
         }
@@ -220,7 +220,7 @@
      *
      * @returns true if the attendee is currently selected.
      */
-    function isAttendeeSelected(attendee: DeepReadonly<AttendeeBag>): boolean {
+    function isAttendeeSelected(attendee: AttendeeBag): boolean {
         return selections.value.some(s => areEqual(s, attendee.person?.guid));
     }
 
@@ -232,7 +232,7 @@
      *
      * @returns A collection of CSS property values.
      */
-    function getStyleForAttendee(attendee: DeepReadonly<AttendeeBag>): CSSProperties {
+    function getStyleForAttendee(attendee: AttendeeBag): CSSProperties {
         const properties: CSSProperties = {
             backgroundImage: `url("${attendee.person?.photoUrl}")`
         };
@@ -245,7 +245,7 @@
      *
      * @param family The family that was selected.
      */
-    async function onAttendeeClick(attendee: DeepReadonly<AttendeeBag>): Promise<void> {
+    async function onAttendeeClick(attendee: AttendeeBag): Promise<void> {
         if (isFamilyMode.value) {
             if (isAttendeeSelected(attendee)) {
                 selections.value = selections.value.filter(s => !areEqual(s, attendee.person?.guid));
@@ -270,7 +270,7 @@
         }
     }
 
-    async function onChangeSelection(attendee: DeepReadonly<AttendeeBag>): Promise<void> {
+    async function onChangeSelection(attendee: AttendeeBag): Promise<void> {
         if (!attendee.person?.guid) {
             return;
         }
@@ -289,9 +289,16 @@
 
     async function onNextClick(): Promise<void> {
         try {
-            let newSession = props.session.withSelectedAttendees(selections.value);
+            if (props.session.configuration.template?.isAutoSelect) {
+                emit("next", await props.session.withNextScreen());
+            }
+            else {
+                let newSession = props.session.withSelectedAttendees(selections.value);
 
-            emit("next", await newSession.withNextScreen());
+                newSession = await newSession.withAttendee(selections.value[0]);
+
+                emit("next", await newSession.withNextScreen());
+            }
         }
         catch (error) {
             await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);

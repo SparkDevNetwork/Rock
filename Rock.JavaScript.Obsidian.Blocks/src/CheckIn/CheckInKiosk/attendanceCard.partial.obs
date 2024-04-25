@@ -33,11 +33,11 @@
 <script setup lang="ts">
     import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
     import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
-    import { computed, CSSProperties, DeepReadonly, PropType } from "vue";
+    import { computed, CSSProperties, PropType } from "vue";
 
     const props = defineProps({
         attendance: {
-            type: Object as PropType<DeepReadonly<RecordedAttendanceBag>>,
+            type: Object as PropType<RecordedAttendanceBag>,
             required: true
         }
     });

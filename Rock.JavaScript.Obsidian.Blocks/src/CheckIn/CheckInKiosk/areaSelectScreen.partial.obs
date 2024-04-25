@@ -3,7 +3,7 @@
     <div class="area-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.currentAttendee?.person">
+                   :person="session.getCurrentAttendee()?.person">
             <div class="button-list">
                 <RockButton v-for="area in areas"
                             btnType="primary"
@@ -54,7 +54,7 @@
     // #region Computed Values
 
     const subtitle = computed((): string => {
-        return `Select the area you would like to check ${props.session.currentAttendee?.person?.nickName} into`;
+        return `Select the area you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
     });
 
     const areas = computed((): AreaOpportunityBag[] => {

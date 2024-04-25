@@ -572,13 +572,7 @@
             currentSession.value = new CheckInSession(configuration.value, http);
         }
         else if (screen === Screen.Success) {
-            const selections = currentSession.value.currentOpportunitySelection;
-
-            if (selections && selections.schedules) {
-                for (const sched of selections.schedules) {
-                    console.log(`${sched.name} : ${selections.abilityLevel?.name} : ${selections.area?.name} : ${selections.group?.name} : ${selections.location?.name}`);
-                }
-            }
+            // TODO: Do stuff here?
         }
     }
 

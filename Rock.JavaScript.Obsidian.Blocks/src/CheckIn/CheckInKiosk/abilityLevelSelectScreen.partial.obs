@@ -3,7 +3,7 @@
     <div class="ability-level-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.currentAttendee?.person">
+                   :person="session.getCurrentAttendee()?.person">
             <div class="button-list">
                 <RockButton v-for="abilityLevel in abilityLevels"
                             btnType="primary"
@@ -54,7 +54,7 @@
     // #region Computed Values
 
     const subtitle = computed((): string => {
-        return `Select the ability level for ${props.session.currentAttendee?.person?.nickName} from the list below`;
+        return `Select the ability level for ${props.session.getCurrentAttendee()?.person?.nickName} from the list below`;
     });
 
     const abilityLevels = computed((): AbilityLevelOpportunityBag[] => {

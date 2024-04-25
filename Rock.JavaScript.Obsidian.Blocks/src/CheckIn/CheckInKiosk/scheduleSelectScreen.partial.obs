@@ -3,7 +3,7 @@
     <div class="schedule-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.currentAttendee?.person">
+                   :person="session.getCurrentAttendee()?.person">
             <div class="button-list">
                 <RockButton v-for="schedule in schedules"
                             btnType="primary"
@@ -24,7 +24,7 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, DeepReadonly, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
@@ -55,7 +55,7 @@
 
     // #region Values
 
-    const selections = ref<Guid[]>(getDefaultSelections(props.session.currentOpportunitySelection?.schedules));
+    const selections = ref<Guid[]>(getDefaultSelections(props.session.selectedSchedules));
 
     // #endregion
 
@@ -66,7 +66,7 @@
             return "Select Times";
         }
         else {
-            return props.session.currentOpportunitySelection?.location?.name ?? "Schedule";
+            return props.session.selectedLocation?.name ?? "Schedule";
         }
     });
 
@@ -75,7 +75,7 @@
             return `Select your preferred check-in times`;
         }
         else {
-            return `Select the times you would like to check ${props.session.currentAttendee?.person?.nickName} into`;
+            return `Select the times you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
         }
     });
 
@@ -87,23 +87,19 @@
 
     // #region Functions
 
-    function getDefaultSelections(schedule: DeepReadonly<CheckInItemBag> | DeepReadonly<CheckInItemBag[]> | undefined | null): Guid[] {
-        // DeepReadonly and Array.isArray() don't play well together. So force
-        // a cast back to the native object.
-        const item = schedule as CheckInItemBag | CheckInItemBag[] | undefined | null;
-
-        if (!item) {
+    function getDefaultSelections(schedule: CheckInItemBag | CheckInItemBag[] | undefined | null): Guid[] {
+        if (!schedule) {
             return [];
         }
-        else if (Array.isArray(item)) {
-            return item.map(s => s.guid);
+        else if (Array.isArray(schedule)) {
+            return schedule.map(s => s.guid);
         }
         else {
-            return [item.guid];
+            return [schedule.guid];
         }
     }
 
-    function isSelected(schedule: DeepReadonly<CheckInItemBag>): boolean {
+    function isSelected(schedule: CheckInItemBag): boolean {
         return selections.value.some(s => areEqual(s, schedule.guid));
     }
 
@@ -124,7 +120,7 @@
         emit("updateActions", actions);
     }
 
-    function onScheduleClick(schedule: DeepReadonly<CheckInItemBag>): void {
+    function onScheduleClick(schedule: CheckInItemBag): void {
         if (isGuidInList(schedule.guid, selections.value)) {
             selections.value = selections.value.filter(s => !areEqual(s, schedule.guid));
         }
