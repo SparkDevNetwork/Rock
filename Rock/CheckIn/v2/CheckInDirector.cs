@@ -323,7 +323,8 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the recent attendance for a set of people.
+        /// Gets the recent attendance for a set of people. This does not
+        /// include pending attendance records.
         /// </summary>
         /// <param name="cutoffDateTime">Attendance records must start on or after this date and time.</param>
         /// <param name="personGuids">The person unique identifiers to query the database for.</param>
@@ -340,7 +341,8 @@ namespace Rock.CheckIn.v2
                     && a.Occurrence.Schedule != null
                     && a.StartDateTime >= cutoffDateTime
                     && a.DidAttend.HasValue
-                    && a.DidAttend.Value == true );
+                    && a.DidAttend.Value == true
+                    && a.CheckInStatus != Enums.Event.CheckInStatus.Pending );
 
             // TODO: This should probably be changed to a raw SQL query for performance.
             // Because the list of personGuids will be changing constantly it
@@ -366,7 +368,8 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the current attendance for a set of locations.
+        /// Gets the current attendance for a set of locations. This includes
+        /// pending attendance records.
         /// </summary>
         /// <param name="startDateTime">Attendance records must start on this date.</param>
         /// <param name="locationIds">The location identifiers to load attendance data for.</param>
