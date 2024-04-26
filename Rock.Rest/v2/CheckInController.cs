@@ -228,6 +228,7 @@ namespace Rock.Rest.v2.Controllers
                 return Ok( new FamilyMembersResponseBag
                 {
                     FamilyGuid = options.FamilyGuid,
+                    PossibleSchedules = session.GetAllPossibleScheduleBags(),
                     People = session.GetAttendeeBags(),
                     CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags()
                 } );
