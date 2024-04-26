@@ -17,13 +17,18 @@
         <div v-if="attendance.inProgressAchievements" class="achievements" style="margin-top: var(--item-spacing);">
             <label>Current Achievement Status</label>
 
-            <div v-for="achievement in attendance.inProgressAchievements">
+            <div v-for="achievement in attendance.inProgressAchievements"
+                 class="achievement">
                 <div class="title" style="display: flex;">
                     <div style="font-weight: bold;">{{ achievement.name }}</div>
-                    <div style="margin-left: auto;">{{ getPercentComplete(achievement) }}</div>
+                    <div style="margin-left: auto;">{{ getProgressText(achievement) }}</div>
                 </div>
-                <div class="progress">
-                    <div class="progress-bar" role="progressbar" :style="{ width: getPercentComplete(achievement) }"></div>
+                <div v-if="achievement.targetCount"
+                     class="completion-progress"
+                     style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <i v-for="item in getAchievementItems(achievement)"
+                       :class="item"
+                       style="color: #fd9215;"></i>
                 </div>
             </div>
         </div>
@@ -50,7 +55,50 @@
         return properties;
     });
 
-    function getPercentComplete(achievement: AchievementBag): string {
+    function isProgressOkay(actualProgress: number, expectedProgress: number): boolean {
+        // Add a tiny bit to account for rounding errors since we are dealing
+        // with floating point accuracy.
+        if ((actualProgress + 0.001) >= expectedProgress) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function getAchievementItems(achievement: AchievementBag): string[] {
+        if (!achievement.targetCount) {
+            return [];
+        }
+
+        const items: string[] = [];
+        const halfItemProgress = 1 / achievement.targetCount / 2;
+
+        for (let i = 0; i < achievement.targetCount; i++) {
+            const expectedItemProgress = (i + 1) / achievement.targetCount;
+            const expectedHalfItemProgress = (i / achievement.targetCount) + halfItemProgress;
+
+            if (isProgressOkay(achievement.progress, expectedItemProgress)) {
+                items.push("fa fa-star completion-item-full");
+            }
+            else if (isProgressOkay(achievement.progress, expectedHalfItemProgress)) {
+                items.push("fa fa-star-half-alt completion-item-half");
+            }
+            else {
+                items.push("fa fa-star-o completion-item-empty");
+            }
+        }
+
+        return items;
+    }
+
+    function getProgressText(achievement: AchievementBag): string {
+        if (achievement.targetCount) {
+            const completedCount = Math.floor(achievement.targetCount * achievement.progress);
+
+            return `${completedCount} of ${achievement.targetCount}`;
+        }
+
         return `${Math.floor(achievement.progress * 100)}%`;
     }
 </script>
