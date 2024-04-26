@@ -796,25 +796,25 @@ export class CheckInSession {
      * @returns A new CheckInSession object.
      */
     public withNextFamilySchedule(): CheckInSession {
-        if (!this.possibleSchedules) {
-            throw new InvalidCheckInStateError("No possible family schedules.");
+        if (!this.selectedSchedules) {
+            throw new InvalidCheckInStateError("No selected schedules.");
         }
 
         let nextScheduleGuid: Guid | undefined;
 
         if (!this.currentFamilyScheduleGuid) {
-            nextScheduleGuid = this.possibleSchedules[0].guid;
+            nextScheduleGuid = this.selectedSchedules[0].guid;
         }
         else {
-            const currentScheduleIndex = this.possibleSchedules
+            const currentScheduleIndex = this.selectedSchedules
                 .findIndex(s => areEqual(s.guid, this.currentFamilyScheduleGuid));
 
             if (currentScheduleIndex === -1) {
                 throw new InvalidCheckInStateError("Current schedule was not found.");
             }
 
-            if (currentScheduleIndex + 1 < this.possibleSchedules.length) {
-                nextScheduleGuid = this.possibleSchedules[currentScheduleIndex + 1].guid;
+            if (currentScheduleIndex + 1 < this.selectedSchedules.length) {
+                nextScheduleGuid = this.selectedSchedules[currentScheduleIndex + 1].guid;
             }
             else {
                 nextScheduleGuid = undefined;
