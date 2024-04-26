@@ -306,7 +306,7 @@ function defineFileConfig(input, output, options) {
                 return false;
             }
 
-            // Always keep the CSS style inejector internal.
+            // Always keep the CSS style injector internal.
             if (target.includes("style-inject.es.js")) {
                 return false;
             }

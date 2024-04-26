@@ -415,7 +415,7 @@ export function propertyRef<T>(value: T, propertyName: string): ExtendedRef<T> {
 // #region VNode Helpers
 
 /**
- * Retrieves a single prop value from a VNode object. If the prop is explicitely
+ * Retrieves a single prop value from a VNode object. If the prop is explicitly
  * specified in the DOM then it will be returned. Otherwise the component's
  * prop default values are checked. If there is a default value it will be
  * returned.

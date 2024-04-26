@@ -63,9 +63,6 @@
         }
     }
 
-    async function onSaveConfig(configurationValues: ConfigurationValues): Promise<void> {
-    }
-
     /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.

@@ -2,10 +2,7 @@
 <template>
     <fieldset>
         <!-- Pass the configuration and completion json values to the component. -->
-        <activityTypeComponent
-                   modelValue=""
-                   :configurationValues="{}"
-                   :activityComponentId="LearningActivityTypeGuids.VideoWatch" />
+
         <ValueDetailList :modelValue="topValues" />
 
         <div class="row">
@@ -27,16 +24,11 @@
     import { defineAsyncComponent, computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
-    //import LearningActivityComponent from "@Obsidian/Controls/learningActivityComponent.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
     import LearningActivityBase from "@Obsidian/Controls/LearningActivity/LearningActivityBase.partial";
-    import { LearningActivityType as LearningActivityTypeGuids } from "@Obsidian/SystemGuids/learningActivityType";
-    //import { getLearningActivityType, provideLearningActivityTypeGuid } from "@Obsidian/Controls/LearningActivityComponent/learningActivityComponent.obs";
-    //import { ComponentScreen } from "@Obsidian/Controls/LearningActivityComponent/learningActivityComponent.obs";
-    //import { VideoWatchLearningActivity } from "@Obsidian/Controls/learningActivityComponent.obs";
 
     const props = defineProps({
         modelValue: {
