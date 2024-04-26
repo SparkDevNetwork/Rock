@@ -438,7 +438,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 StatusName = request.ConnectionStatus.Name,
                 WorkflowTypes = connectionWorkflows,
                 Activities = activitiesViewModel,
-                ConnectionRequestGuid = request.Guid
+                ConnectionRequestGuid = request.Guid,
+                ShowConnectButton = request.ConnectionOpportunity.ShowConnectButton
             };
 
             if ( isEditable )
@@ -2409,6 +2410,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// Gets or sets the connection request guid.
             /// </summary>
             public Guid ConnectionRequestGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether or not to show the connect button.
+            /// </summary>
+            public bool ShowConnectButton { get; set; }
         }
 
         /// <summary>
