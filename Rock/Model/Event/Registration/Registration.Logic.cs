@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
@@ -30,6 +31,33 @@ namespace Rock.Model
 {
     public partial class Registration
     {
+        #region Properties
+        
+        /// <summary>
+        /// Gets a boolean value indicating whether this registration has an active payment plan.
+        /// </summary>
+        /// <remarks>
+        /// <strong>This is an internal API</strong> that supports the Rock
+        /// infrastructure and not subject to the same compatibility standards
+        /// as public APIs. It may be changed or removed without notice in any
+        /// release and should therefore not be directly used in any plug-ins.
+        /// </remarks>
+        /// <value>
+        /// A boolean value indicating whether a payment plan is configured.
+        /// </value>
+        [NotMapped]
+        [LavaVisible]
+        [RockInternal( "1.16.6" )]
+        public virtual bool IsPaymentPlanActive
+        {
+            get
+            {
+                return this.PaymentPlanFinancialScheduledTransaction?.IsActive == true;
+            }
+        }
+
+        #endregion
+
         #region Navigation Properties
 
         /// <summary>

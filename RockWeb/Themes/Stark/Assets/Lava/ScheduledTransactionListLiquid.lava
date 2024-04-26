@@ -1,5 +1,5 @@
 <div class="scheduledtransaction-summary">
-  <strong>{{ ScheduledTransaction.PersonName }}</strong><br/>
+    <strong>{{ ScheduledTransaction.PersonName }}{% if ScheduledTransaction.TransactionType %} ({{ ScheduledTransaction.TransactionType }}){% endif %}</strong><br/>
     {{ ScheduledTransaction.ScheduledAmount | FormatAsCurrency }} on
     {% if ScheduledTransaction.CurrencyType != "Credit Card" %}
     {{ ScheduledTransaction.CurrencyType }}

@@ -17,6 +17,13 @@
                     </div>
                 </ItemTemplate>
             </asp:Repeater>
+            
+            <Rock:ModalDialog ID="mdDeleteTransaction" runat="server" Title="Are you sure?" OnSaveClick="mdDeleteTransaction_SaveClick" SaveButtonText="Delete" Visible="false">
+                <Content>
+                    <asp:HiddenField ID="hfBbtnDeleteId" runat="server"></asp:HiddenField>
+                    <p>Are you sure you want to delete this transaction?</p>
+                </Content>
+            </Rock:ModalDialog>
         </div>
 
         <asp:Panel ID="pnlNoScheduledTransactions" runat="server" CssClass="alert alert-info" Visible="false">

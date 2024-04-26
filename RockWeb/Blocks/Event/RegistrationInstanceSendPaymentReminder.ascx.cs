@@ -325,12 +325,28 @@ namespace RockWeb.Blocks.Event
                 {
                     int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
 
-                    RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
-                    _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
-                                                .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
+                    _registrationInstance = new RegistrationInstanceService( rockContext )
+                        .Queryable()
+                        .Include( r => r.RegistrationTemplate )
+                        .AsNoTracking()
+                        .FirstOrDefault( r => r.Id == registrationInstanceId );
                 }
 
-                var outstandingBalances = _registrationInstance.Registrations.Where( r => r.BalanceDue > 0 );
+                var registrationService = new RegistrationInstanceService( rockContext );
+
+                var registrationsAndPaymentPlans = registrationService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( r => r.Id == _registrationInstance.Id )
+                    .SelectMany( r => r.Registrations )
+                    .GetPaymentPlans()
+                    .ToList();
+
+                var outstandingBalances = registrationsAndPaymentPlans
+                    .Where( r => r.Registration.BalanceDue > 0 )
+                    // Ignore registrations with an active payment plan scheduled transaction.
+                    .Where( r => r.PaymentPlan == null || r.Registration.BalanceDue > r.PaymentPlan.PlannedAmountRemaining )
+                    .Select( r => r.Registration );
 
                 var sortProperty = gRegistrations.SortProperty;
 
