@@ -51,4 +51,10 @@ export type AchievementBag = {
 
     /** Gets or sets the start date time. */
     startDateTime?: string | null;
+
+    /**
+     * Gets or sets the target count of things that must be done for this
+     * achievement to be considered accomplished.
+     */
+    targetCount?: number | null;
 };

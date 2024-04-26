@@ -410,13 +410,16 @@ namespace Rock.CheckIn.v2
         /// <returns>A new instance of <see cref="AchievementBag"/>.</returns>
         public virtual AchievementBag GetAchievementBag( AchievementAttempt achievementAttempt )
         {
+            var achievementType = AchievementTypeCache.Get( achievementAttempt.AchievementTypeId );
+
             return new AchievementBag
             {
                 Guid = achievementAttempt.Guid,
-                Name = AchievementTypeCache.Get( achievementAttempt.AchievementTypeId )?.Name ?? "Unknown Achievement",
+                Name = achievementType?.Name ?? "Unknown Achievement",
                 IsSuccess = achievementAttempt.IsSuccessful,
                 IsClosed = achievementAttempt.IsClosed,
                 Progress = achievementAttempt.Progress,
+                TargetCount = achievementType?.TargetCount,
                 StartDateTime = achievementAttempt.AchievementAttemptStartDateTime.ToRockDateTimeOffset(),
                 EndDateTime = achievementAttempt.AchievementAttemptEndDateTime?.ToRockDateTimeOffset()
             };

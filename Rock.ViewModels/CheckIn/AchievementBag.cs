@@ -43,6 +43,15 @@ namespace Rock.ViewModels.CheckIn
         public decimal Progress { get; set; }
 
         /// <summary>
+        /// Gets or sets the target count of things that must be done for this
+        /// achievement to be considered accomplished.
+        /// </summary>
+        /// <value>
+        /// The number of things that must be accomplished to complete this achievement or <c>null</c> if not known.
+        /// </value>
+        public int? TargetCount { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this achievement was successful.
         /// </summary>
         /// <value><c>true</c> if this achievement was successful; otherwise, <c>false</c>.</value>
