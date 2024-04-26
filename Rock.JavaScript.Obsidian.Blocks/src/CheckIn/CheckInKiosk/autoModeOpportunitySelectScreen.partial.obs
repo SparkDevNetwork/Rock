@@ -211,7 +211,7 @@
      */
     async function onNextClick(): Promise<void> {
         try {
-            let newSession = props.session.withSelections(selectedOpportunities.value);
+            let newSession = props.session.withStashedCurrentAttendeeSelections(selectedOpportunities.value);
 
             newSession = await newSession.withAttendee(null);
 

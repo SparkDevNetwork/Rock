@@ -295,8 +295,6 @@
             else {
                 let newSession = props.session.withSelectedAttendees(selections.value);
 
-                newSession = await newSession.withAttendee(selections.value[0]);
-
                 emit("next", await newSession.withNextScreen());
             }
         }

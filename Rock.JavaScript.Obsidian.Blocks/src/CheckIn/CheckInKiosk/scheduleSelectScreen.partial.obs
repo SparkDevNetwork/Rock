@@ -3,7 +3,7 @@
     <div class="schedule-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.getCurrentAttendee()?.person">
+                   :person="currentPerson">
             <div class="button-list">
                 <RockButton v-for="schedule in schedules"
                             btnType="primary"
@@ -35,6 +35,7 @@
     import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { KioskButton } from "./types.partial";
+    import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
     const props = defineProps({
         configuration: {
@@ -77,6 +78,14 @@
         else {
             return `Select the times you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
         }
+    });
+
+    const currentPerson = computed((): PersonBag | undefined | null => {
+        if (props.session.configuration.template?.kioskCheckInType === KioskCheckInMode.Family) {
+            return null;
+        }
+
+        return props.session.getCurrentAttendee()?.person;
     });
 
     const schedules = computed((): ScheduleOpportunityBag[] => {
@@ -134,11 +143,7 @@
      */
     async function onNextClick(): Promise<void> {
         try {
-            const scheduleGuids = schedules.value
-                .filter(s => isGuidInList(s.guid, selections.value))
-                .map(s => s.guid);
-
-            const newSession = props.session.withSelectedSchedules(scheduleGuids);
+            const newSession = props.session.withSelectedSchedules(selections.value);
 
             emit("next", await newSession.withNextScreen());
         }
