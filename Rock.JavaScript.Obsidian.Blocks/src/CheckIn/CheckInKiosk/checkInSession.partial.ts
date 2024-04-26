@@ -32,6 +32,8 @@ import { OpportunityCollectionBag } from "@Obsidian/ViewModels/CheckIn/opportuni
 import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
 import { AttendeeOpportunitiesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesOptionsBag";
 import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
+import { ConfirmAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceOptionsBag";
+import { ConfirmAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceResponseBag";
 import { FamilyMembersOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersOptionsBag";
 import { FamilyMembersResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersResponseBag";
 import { SaveAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceOptionsBag";
@@ -306,32 +308,51 @@ export class CheckInSession {
         });
     }
 
-    // private async withConfirmAttendance(): Promise<CheckInSession> {
-    //     // Build the API request options.
-    //     const request: SaveAttendanceOptionsBag = {
-    //         kioskGuid: this.configuration.kiosk?.guid,
-    //         templateGuid: this.configuration.template.guid,
-    //         session: {
-    //             guid: this.sessionGuid,
-    //             isPending: isPending,
-    //             searchMode: this.searchType,
-    //             searchTerm: this.searchTerm,
-    //             familyGuid: this.currentFamilyGuid
-    //         },
-    //         requests: attendanceRequests
-    //     };
+    /**
+     * Creates a new session object by confirming the pending attendance data
+     * and then storing the final attendance data in the new session.
+     *
+     * @returns A new CheckInSession object.
+     */
+    private async withConfirmAttendance(): Promise<CheckInSession> {
+        if (!this.configuration.template) {
+            throw new InvalidCheckInStateError("Template configuration is missing.");
+        }
 
-    //     const response = await this.http.post<SaveAttendanceResponseBag>("/api/v2/checkin/SaveAttendance", undefined, request);
+        // Build the API request options.
+        const request: ConfirmAttendanceOptionsBag = {
+            templateGuid: this.configuration.template.guid,
+            sessionGuid: this.sessionGuid
+        };
 
-    //     if (!response.isSuccess || !response.data?.attendances) {
-    //         throw new Error(response.errorMessage || UnexpectedErrorMessage);
-    //     }
+        const response = await this.http.post<ConfirmAttendanceResponseBag>("/api/v2/checkin/ConfirmAttendance", undefined, request);
 
-    //     return new CheckInSession(this, {
-    //         attendances: [...this.attendances, ...response.data.attendances],
-    //         allAttendeeSelections: []
-    //     });
-    // }
+        if (!response.isSuccess || !response.data?.attendances) {
+            throw new Error(response.errorMessage || UnexpectedErrorMessage);
+        }
+
+        // Take our existing attendance records and replace any that match
+        // the records we just got. Add any new records that didn't previously
+        // exist in the data.
+        const attendances = [...this.attendances];
+        for (let i = 0; i < response.data.attendances.length; i++) {
+            const attendanceItem = response.data.attendances[i];
+            const existingIndex = attendances
+                .findIndex(a => areEqual(a.attendance?.guid, attendanceItem.attendance?.guid));
+
+            if (existingIndex !== -1) {
+                attendances.splice(existingIndex, 1, attendanceItem);
+            }
+            else {
+                attendances.push(attendanceItem);
+            }
+        }
+
+        return new CheckInSession(this, {
+            attendances,
+            allAttendeeSelections: []
+        });
+    }
 
     // #endregion
 
@@ -1401,9 +1422,9 @@ export class CheckInSession {
 
             // Was this the last attendee?
             if (!familySession.currentAttendeeGuid) {
-                throw new Error("Confirming attendance is not yet supported.");
-                // TODO: Confirm attendance.
-                // TODO: Move to success screen.
+                familySession = await familySession.withConfirmAttendance();
+
+                return familySession.withScreen(Screen.Success);
             }
 
             // If this is not the first family schedule then skip the ability
