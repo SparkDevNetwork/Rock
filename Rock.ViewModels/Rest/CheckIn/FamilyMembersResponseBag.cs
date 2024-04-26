@@ -34,6 +34,15 @@ namespace Rock.ViewModels.Rest.CheckIn
         public Guid FamilyGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets all possible schedules that are available across all
+        /// of the people in this family. If schedule A is available for the
+        /// first person and schedule B is available for the second person then
+        /// both schedule A and B will be included.
+        /// </summary>
+        /// <value>The collection of possible schedules.</value>
+        public List<ScheduleOpportunityBag> PossibleSchedules { get; set; }
+
+        /// <summary>
         /// Gets or sets the people that can be potentially checked in for
         /// the family.
         /// </summary>

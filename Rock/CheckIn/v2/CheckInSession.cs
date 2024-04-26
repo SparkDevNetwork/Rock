@@ -439,6 +439,26 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
+        /// Gets the set of all possible schedules for all attendees that have
+        /// been loaded. If the first attendee has schedules A and B and the
+        /// second attendee has schedules B and C, then the set of [A, B, C]
+        /// will be returned.
+        /// </summary>
+        /// <returns>A list of bags representing all possible schedules.</returns>
+        public List<ScheduleOpportunityBag> GetAllPossibleScheduleBags()
+        {
+            return Attendees
+                .SelectMany( a => a.Opportunities.Schedules )
+                .DistinctBy( s => s.Guid )
+                .Select( s => new ScheduleOpportunityBag
+                {
+                    Guid = s.Guid,
+                    Name = s.Name
+                } )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the potential attendee bags from the set of attendee items.
         /// </summary>
         /// <param name="opportunityCollection">The opportunity collection to be converted to a bag.</param>

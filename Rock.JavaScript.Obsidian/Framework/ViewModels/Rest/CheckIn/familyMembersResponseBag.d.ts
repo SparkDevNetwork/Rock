@@ -24,6 +24,7 @@
 import { Guid } from "@Obsidian/Types";
 import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
+import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
 
 /**
  * The response that will be returned by the list family members check-in
@@ -41,4 +42,12 @@ export type FamilyMembersResponseBag = {
      * the family.
      */
     people?: AttendeeBag[] | null;
+
+    /**
+     * Gets or sets all possible schedules that are available across all
+     * of the people in this family. If schedule A is available for the
+     * first person and schedule B is available for the second person then
+     * both schedule A and B will be included.
+     */
+    possibleSchedules?: ScheduleOpportunityBag[] | null;
 };
