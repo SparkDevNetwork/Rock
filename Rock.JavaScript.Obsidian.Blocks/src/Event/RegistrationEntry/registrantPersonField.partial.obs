@@ -4,7 +4,7 @@
     <NotificationBox v-else alertType="danger">Could not load the control for person field {{ fieldType }}.</NotificationBox>
 </template>
 <script setup lang="ts">
-    import { computed, PropType, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -35,6 +35,12 @@
     });
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
+
+    // #region Values
+
+    const isFieldLocked = computed<boolean>(() => props.field.isLockedIfValuesExist && !!props.fieldValues[props.field.guid] && props.isKnownFamilyMember);
+
+    // #endregion
 
     // #region Computed Values
 
@@ -99,7 +105,8 @@
 
     const fieldControlComponentProps = computed(() => {
         const componentProps: Record<string, unknown> = {
-            rules: props.field.isRequired ? "required" : ""
+            rules: props.field.isRequired ? "required" : "",
+            disabled: isFieldLocked.value
         };
 
         switch (props.field.personFieldType) {

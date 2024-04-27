@@ -360,6 +360,8 @@
     align-items: flex-start;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
     overflow-x: hidden;
+    align-self: center;
+    line-height: 1.4;
 }
 
 .grid-select-field:first-child {

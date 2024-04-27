@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
@@ -466,6 +467,7 @@ namespace Rock.Model
             AllowExternalRegistrationUpdates = template.AllowExternalRegistrationUpdates;
             ShowSmsOptIn = template.ShowSmsOptIn;
             SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+            ConnectionStatusValueId = template.ConnectionStatusValueId;
 
             // Workflow type ids
             WorkflowTypeIds = new List<int>();
@@ -497,6 +499,24 @@ namespace Rock.Model
             ExternalGatewayMerchantId = instance.ExternalGatewayMerchantId;
             FinancialAccountId = instance.AccountId;
             BatchNamePrefix = template.BatchNamePrefix;
+
+            // Payment plan
+            IsPaymentPlanAllowed = template.IsPaymentPlanAllowed;
+            PaymentDeadlineDate = instance.PaymentDeadlineDate;
+            PaymentPlanFrequencyValueIds = template.PaymentPlanFrequencyValueIdsCollection.ToList();
+            if ( PaymentPlanFrequencyValueIds?.Any() != true )
+            {
+                // If no payment plan frequencies were selected in the template,
+                // then allow any frequency defined in the gateway.
+                PaymentPlanFrequencyValueIds = template
+                    .FinancialGateway
+                    ?.GetGatewayComponent()
+                    ?.SupportedPaymentSchedules
+                    // Ignore "One-Time" option.
+                    ?.Where( f => f.Guid != SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
+                    .Select( f => f.Id )
+                    .ToList() ?? new List<int>();
+            }
 
             // Group placement
             GroupTypeId = template.GroupTypeId;
@@ -772,6 +792,38 @@ namespace Rock.Model
         public string BatchNamePrefix { get; private set; }
 
         /// <summary>
+        /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPaymentPlanAllowed { get; private set; }
+        
+        /// <summary>
+        /// Gets the payment deadline date.
+        /// </summary>
+        /// <value>
+        /// The payment deadline date.
+        /// </value>
+        public DateTime? PaymentDeadlineDate { get; private set; }
+
+        /// <summary>
+        /// Gets the collection of payment plan frequency value IDs from which a registrant can select.
+        /// </summary>
+        /// <value>
+        /// The collection of payment plan frequency value IDs from which a registrant can select.
+        /// </value>
+        public List<int> PaymentPlanFrequencyValueIds { get; private set; }
+
+        /// <summary>
+        /// Gets the connection status value identifier.
+        /// </summary>
+        /// <value>
+        /// The connection status value identifier.
+        /// </value>
+        public int? ConnectionStatusValueId { get; private set; }
+
+        /// <summary>
         /// Gets the group type identifier.
         /// </summary>
         /// <value>
@@ -860,5 +912,126 @@ namespace Rock.Model
         /// The name of the signature document template.
         /// </value>
         public string SignatureDocumentTemplateName { get; private set; }
+    }
+
+    /// <summary>
+    /// A payment plan.
+    /// </summary>
+    /// <remarks>
+    /// This only contains data for this payment plan configuration; data from previous configurations (number of payments, amount per payment, etc) are excluded.
+    /// <para>
+    /// <strong>This is an internal API</strong> that supports the Rock
+    /// infrastructure and not subject to the same compatibility standards
+    /// as public APIs. It may be changed or removed without notice in any
+    /// release and should therefore not be directly used in any plug-ins.
+    /// </para>
+    /// </remarks>
+    [RockInternal( "1.16.6" )]
+    public sealed class PaymentPlan
+    {
+        /// <summary>
+        /// Gets or sets the amount per payment.
+        /// </summary>
+        public decimal AmountPerPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if this payment plan is active.
+        /// </summary>
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of payments (paid and unpaid).
+        /// </summary>
+        public int NumberOfPayments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of payments that have already been processed by the payment gateway.
+        /// </summary>
+        /// <remarks>
+        /// This value may be inaccurate if payments haven't been synced from the payment gateway to Rock.
+        /// <para>
+        /// This only contains data for this payment plan configuration; data from previous configurations (number of payments, amount per payment, etc) are excluded.
+        /// </para>
+        /// </remarks>
+        public int NumberOfPaymentsProcessed { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of payments that still need to be processed by the payment gateway.
+        /// </summary>
+        /// <remarks>
+        ///     This value may be inaccurate if payments haven't been synced from the payment gateway to Rock.
+        ///     <para>
+        ///         This only contains data for this payment plan configuration; data from previous configurations (number of payments, amount per payment, etc) are excluded.
+        ///     </para>
+        /// </remarks>
+        public int NumberOfPaymentsRemaining { get; set; }
+
+        /// <summary>
+        /// The total amount covered by this payment plan.
+        /// </summary>
+        /// <remarks>
+        /// This value may be inaccurate if payments haven't been synced from the payment gateway to Rock.
+        /// </remarks>
+        public decimal PlannedAmount { get; set; }
+
+        /// <summary>
+        /// The amount that has already been processed by the payment gateway.
+        /// </summary>
+        /// <remarks>
+        ///     This value may be inaccurate if payments haven't been synced from the payment gateway to Rock.
+        ///     <para>
+        ///         This only contains data for this payment plan configuration; data from previous configurations (number of payments, amount per payment, etc) are excluded.
+        ///     </para>
+        /// </remarks>
+        public decimal PlannedAmountProcessed { get; set; }
+
+        /// <summary>
+        /// The amount that has yet to be processed by the payment gateway.
+        /// </summary>
+        /// <remarks>
+        ///     This value may be inaccurate if payments haven't been synced from the payment gateway to Rock.
+        ///     <para>
+        ///         This only contains data for this payment plan configuration; data from previous configurations (number of payments, amount per payment, etc) are excluded.
+        ///     </para>
+        /// </remarks>
+        public decimal PlannedAmountRemaining { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start date for the payment plan.
+        /// </summary>
+        public DateTime StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment frequency unique identifier.
+        /// </summary>
+        public Guid TransactionFrequencyValueGuid { get; set; }
+    }
+
+    /// <summary>
+    /// A registration payment plan. 
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
+    [RockInternal( "1.16.6" )]
+    public class RegistrationPaymentPlan
+    {
+        /// <summary>
+        /// Gets or sets the registration.
+        /// </summary>
+        public Registration Registration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment plan associated with the registration.
+        /// </summary>
+        /// <value>
+        /// Can be <see langword="null"/> if the registration does not have an active payment plan.
+        /// </value>
+        public PaymentPlan PaymentPlan { get; set; }
     }
 }

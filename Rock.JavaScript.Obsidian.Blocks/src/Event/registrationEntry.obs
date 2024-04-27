@@ -80,6 +80,8 @@
     import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
+    import { RegistrationEntryPaymentPlanBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryPaymentPlanBag";
+    import { RegistrationEntryCreatePaymentPlanRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCreatePaymentPlanRequestBag";
 
     const store = useStore();
     const steps: Record<Step, Step> = {
@@ -150,6 +152,7 @@
         sessionExpirationDateMs: null,
         registrationSessionGuid: config.session?.registrationSessionGuid || newGuid(),
         ownFamilyGuid: config.currentPersonFamilyGuid || newGuid(),
+        paymentPlan: null,
     });
     const registrationCostSummary = ref<RegistrationCostSummaryInfo>({
         paidAmount: 0,
@@ -380,6 +383,18 @@
 
     /** Gets the args needed for persisting the session. */
     function getRegistrationEntryBlockArgs(): RegistrationEntryArgsBag {
+        let {
+            paymentPlan
+        } = registrationEntryState.value;
+
+        if (!paymentPlan?.amountPerPayment
+            || !paymentPlan?.transactionFrequencyGuid
+            || !paymentPlan?.numberOfPayments
+            || !paymentPlan?.startDate) {
+            // One of the required payment plan fields is missing, so clear the payment plan.
+            paymentPlan = null;
+        }
+
         return {
             registrationSessionGuid: registrationEntryState.value.registrationSessionGuid,
             gatewayToken: registrationEntryState.value.gatewayToken,
@@ -390,6 +405,7 @@
             registrants: registrationEntryState.value.registrants,
             amountToPayNow: registrationEntryState.value.amountToPayToday,
             registrationGuid: config.session?.registrationGuid || null,
+            paymentPlan,
         };
     }
 
@@ -483,7 +499,11 @@
     }
 
     function onSummaryNext(): void {
-        if (registrationEntryState.value.amountToPayToday) {
+        if (registrationEntryState.value.amountToPayToday
+            || (
+                registrationEntryState.value.paymentPlan?.amountPerPayment
+                && registrationEntryState.value.paymentPlan?.numberOfPayments)
+            ) {
             registrationEntryState.value.currentStep = Step.Payment;
         }
         else {

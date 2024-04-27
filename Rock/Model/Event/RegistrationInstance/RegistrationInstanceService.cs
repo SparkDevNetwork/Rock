@@ -266,7 +266,7 @@ namespace Rock.Model
                     var templateFeeItem = templateFeeItems.First( f => f.Guid == feeItemGuid );
                     var templateFee = templateFeeItem.RegistrationTemplateFee;
 
-                    decimal cost = templateFeeItem.Cost;
+                    var cost = templateFeeItem.Cost;
                     var desc = GetFeeLineItemDescription( templateFee, templateFeeItem, quantity );
 
                     var feeCostSummary = new RegistrationCostSummaryInfo
@@ -291,7 +291,7 @@ namespace Rock.Model
                             // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
                             if ( discountAmountRemaining > feeCostSummary.Cost )
                             {
-                                discountAmountRemaining -= feeCostSummary.DiscountedCost;
+                                discountAmountRemaining -= feeCostSummary.Cost;
                                 feeCostSummary.DiscountedCost = 0.0m;
                             }
                             else
