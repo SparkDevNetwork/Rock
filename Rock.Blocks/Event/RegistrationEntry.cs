@@ -475,6 +475,15 @@ namespace Rock.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
+                // A browser may send approximated values; e.g., 0.020000000000000004 (instead of 0.02) or 0.0699999999999932 (instead of 0.07).
+                // Round currency amounts using the organization's currency settings before processing payments.
+                var currencyInfo = new RockCurrencyCodeInfo();
+                args.AmountToPayNow = decimal.Round( args.AmountToPayNow, currencyInfo.DecimalPlaces );
+                if ( args.PaymentPlan != null )
+                {
+                    args.PaymentPlan.AmountPerPayment = decimal.Round( args.PaymentPlan.AmountPerPayment, currencyInfo.DecimalPlaces );
+                }
+
                 var context = GetContext( rockContext, args, out var errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
