@@ -151,6 +151,7 @@
                     </div>
                 </template>
             </Column>
+
             <template #gridFooterPrepend>
                 <div v-if="gridData && gridData.rows && gridData.rows.length === 0" class="no-data-message">
                     Your filters have yielded no results. Please try another combination of filters.
@@ -267,7 +268,7 @@
     import { ref, reactive, watch, nextTick } from "vue";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
-    import { VolunteerGenerositySetupBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerositySetupBag";
+    import { VolunteerGenerosityInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityInitializationBox";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import Grid, { TextColumn, textValueFilter, Column, dateValueFilter, DateColumn } from "@Obsidian/Controls/grid";
     import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
@@ -278,7 +279,7 @@
     import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const config = useConfigurationValues<ListBlockBox<VolunteerGenerosityDataBag>>();
-    const bag = useConfigurationValues<VolunteerGenerositySetupBag>();
+    const bag = useConfigurationValues<VolunteerGenerosityInitializationBox>();
     const gridDataSource = ref<Promise<GridDataBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     let gridData: GridDataBag | undefined;
@@ -296,7 +297,6 @@
     const uniqueGroups = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
     const uniqueCampuses = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
     const refreshTooltip = ref<HTMLElement | null>(null);
-    const gridDataRef = ref<GridDataBag | undefined>(undefined);
 
     // #endregion
 
@@ -470,7 +470,7 @@
      * @param givenMonthsStr A comma separated string of months and years
      * @returns An array of objects representing the bar chart
      */
-    const getBarChart = (givenMonthsStr): { month: string; full: string; class: string; }[] => {
+    const getBarChart = (givenMonthsStr: string): { month: string; full: string; class: string; }[] => {
         const givenMonths = givenMonthsStr ? givenMonthsStr.split(",").map(monthYear => monthYear.trim()) : [];
         const allEmpty = givenMonths.length === 0; // Check if all months are empty
 
@@ -479,7 +479,8 @@
             let barClass = isFull ? "full" : "empty";
             if (allEmpty) barClass = "fullEmpty"; // Apply fullEmpty class if all months are empty
 
-            return { month: displayedMonth, full: isFull, class: barClass };
+            return { month: displayedMonth, full: isFull.toString(), class: barClass };
+
         });
     };
 
