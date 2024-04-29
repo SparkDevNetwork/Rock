@@ -9,9 +9,9 @@
 
         <section class="page-body">
             <ContentTransition>
-                <ConfigurationScreen v-if="currentScreen === Screen.Configuration"
+                <ConfigurationScreen v-if="currentScreen === AdminScreen.Configuration"
                                      :blockConfiguration="blockConfiguration"
-                                     @updateActions="onUpdateActions($event, Screen.Configuration)"
+                                     @updateActions="onUpdateActions($event, AdminScreen.Configuration)"
                                      @configured="onConfigured" />
 
                 <WelcomeScreen v-if="currentScreen === Screen.Welcome"
@@ -690,7 +690,7 @@
     import { computed, ref, shallowRef } from "vue";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
-    import { CheckInKioskOptionsBag, KioskButton, Screen } from "./CheckInKiosk/types.partial";
+    import { AdminScreen, CheckInKioskOptionsBag, KioskButton, Screen } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
     import { useHttp } from "@Obsidian/Utility/http";
@@ -703,16 +703,16 @@
     provideKioskState(kioskState);
 
     const configuration = ref<KioskConfigurationBag>({});
-    const currentScreen = ref(Screen.Configuration);
+    const currentScreen = ref<Screen | AdminScreen>(AdminScreen.Configuration);
     const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
 
     const hasNavigation = computed((): boolean => {
-        return currentScreen.value !== Screen.Configuration
+        return currentScreen.value !== AdminScreen.Configuration
             && currentScreen.value !== Screen.Welcome;
     });
 
     const hasBackButton = computed((): boolean => {
-        return currentScreen.value !== Screen.Configuration
+        return currentScreen.value !== AdminScreen.Configuration
             && currentScreen.value !== Screen.Welcome;
     });
 
@@ -736,7 +736,7 @@
         navigateToScreen(Screen.Welcome);
     }
 
-    function onUpdateActions(actions: KioskButton[], source: Screen): void {
+    function onUpdateActions(actions: KioskButton[], source: Screen | AdminScreen): void {
         if (currentScreen.value === source) {
             currentScreenActions.value = actions;
         }
