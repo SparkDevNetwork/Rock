@@ -37,6 +37,31 @@
             </template>
         </DateColumn>
 
+        <!-- Name column that will always show in the CSV/Excel Export -->
+        <Column name="name"
+                title="Name"
+                :class="'name'"
+                :filter="textValueFilter"
+                :filterValue="getRowNameFilterValue"
+                :quickFilterValue="getRowNameFilterValue"
+                visiblePriority="xs"
+                :hideOnScreen="true"
+                >
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span class="text-semibold">{{ row.name }} </span>
+                    </div>
+                    <div class="text-xs">
+                        <span>{{ row.batchId }}</span>
+                    </div>
+                    <div v-if="row.note">
+                        {{ row.note }}
+                    </div>
+                </div>
+            </template>
+        </Column>
+
         <!-- Name column that will always show in the Grid -->
         <Column name="name"
                 title="Name"
