@@ -607,6 +607,7 @@ namespace Rock.Blocks.Engagement
             {
                 // Create a new entity.
                 entity = new StepType();
+                entity.StepProgramId = GetStepProgramId();
                 entityService.Add( entity );
             }
 
