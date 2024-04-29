@@ -35,6 +35,14 @@ export type CurrencyParts = {
 export const CurrencyFormatString = {
     default: "-!#,###.%",
     defaultCodeSuffix: "-!#,###.% @",
+    /**
+     * Formats the currency as a decimal number without currency symbols.
+     * 
+     * @example
+     * createCurrency(-1.6789, defaultCurrencyOptions).format(CurrencyFormatString.decimal); // "-1.68"
+     * createCurrency(1.6789, defaultCurrencyOptions).format(CurrencyFormatString.decimal); // "1.68"
+     */
+    decimal: "-#.%",
     indic: "-!#,##,###.%",
     indicCodeSuffix: "-!#,##,###.% @",
 } as const;
@@ -760,7 +768,7 @@ function getCurrencyParts(currency: number | CurrencyParts, targetPrecision: num
 
     const isNegative: boolean = parts[0]?.startsWith("-") ?? false;
     let majorUnits: string = parts[0]?.substring(isNegative ? 1 : 0) ?? "";
-    let minorUnits: string = parts[1]?.substring(0, targetPrecision + 1) ?? "";
+    let minorUnits: string = parts[1]?.substring(0, targetPrecision + 1) ?? ""; // Temporarily increase the precision by 1 to handle rounding.
 
     if (minorUnits.length === targetPrecision + 1) {
         if (minorUnits[targetPrecision] >= "5") {
@@ -771,6 +779,8 @@ function getCurrencyParts(currency: number | CurrencyParts, targetPrecision: num
             }
             else {
                 // Round the minor units up.
+                // "069" => (Number("06") + 1).toString() => "7"; target precision is 2, so the number needs to be zero-padded in front => "07" (done below).
+                // "999" => (Number("99") + 1).toString() => "100"; result is larger than target precision 2, so major units need to be incremented, and the tens and ones digits become the minor units => "00" (done below).
                 minorUnits = (+minorUnits.slice(0, targetPrecision) + 1).toString();
             }
         }
@@ -781,7 +791,14 @@ function getCurrencyParts(currency: number | CurrencyParts, targetPrecision: num
     }
 
     if (minorUnits.length < targetPrecision) {
-        minorUnits = minorUnits + "0".repeat(targetPrecision - minorUnits.length);
+        minorUnits = "0".repeat(targetPrecision - minorUnits.length) + minorUnits;
+    }
+    else if (minorUnits.length === targetPrecision + 1) {
+        // Rounding the minor units resulted in an additional major unit
+        // (e.g., "1.995" rounds up to "2.00") so increment the major unit,
+        // and truncate the leading minor unit number.
+        majorUnits = (+majorUnits + 1).toString();
+        minorUnits = minorUnits.substring(1);
     }
 
     const units: number = +(`${isNegative ? "-" : ""}${majorUnits}${minorUnits}`);

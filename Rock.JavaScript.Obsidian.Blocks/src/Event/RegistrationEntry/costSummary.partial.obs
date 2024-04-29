@@ -133,6 +133,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, ref, watch } from "vue";
+    import { CurrencyFormatString, CurrencyOptions, createCurrency, createReadonlyCurrencyOptions } from "./currency.partial";
     import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary, formatCurrency, PaymentPlanFrequency, getPaymentPlanFrequency } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
@@ -359,25 +360,30 @@
         return formatCurrency(amountRemaining.value, registrationEntryState.viewModel.currencyInfo);
     });
 
-    /** The vee-validate rules for the amount to pay today */
+    /** The validation rules for the amount to pay today */
     const amountToPayTodayRules = computed<ValidationRule[]>(() => {
+        const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
+            precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
+            symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
+        });
         const rules: ValidationRule[] = [];
-        let min = amountDueToday.value;
-        const max = maxAmountCanBePaid.value;
 
-        if (min > max) {
+        let min = createCurrency(amountDueToday.value, currencyOptions);
+        const max = createCurrency(maxAmountCanBePaid.value, currencyOptions);
+
+        if (min.isGreaterThan(max)) {
             min = max;
         }
 
-        if (min > 0) {
+        if (min.isGreaterThan(0)) {
             rules.push("required");
         }
         else {
             rules.push("notblank");
         }
 
-        rules.push(`gte:${min}`);
-        rules.push(`lte:${max}`);
+        rules.push(`gte:${min.format(CurrencyFormatString.decimal)}`);
+        rules.push(`lte:${max.format(CurrencyFormatString.decimal)}`);
 
         return rules;
     });
