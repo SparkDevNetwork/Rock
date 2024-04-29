@@ -17,7 +17,7 @@
           @selectedKeysChanged="onSelectedKeysChanged">
         <SelectColumn />
 
-        <!-- The following column should be for the ID but should only show up in the export -->
+        <!-- The following column is for the ID, but will only show up in the export -->
         <Column name="id"
                 title="ID"
                 field="id"
@@ -37,13 +37,41 @@
             </template>
         </DateColumn>
 
+        <!-- Name column that will always show in the CSV/Excel Export -->
         <Column name="name"
                 title="Name"
                 :class="'name'"
                 :filter="textValueFilter"
                 :filterValue="getRowNameFilterValue"
                 :quickFilterValue="getRowNameFilterValue"
-                visiblePriority="xs">
+                visiblePriority="xs"
+                :hideOnScreen="true"
+                >
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span class="text-semibold">{{ row.name }} </span>
+                    </div>
+                    <div class="text-xs">
+                        <span>{{ row.batchId }}</span>
+                    </div>
+                    <div v-if="row.note">
+                        {{ row.note }}
+                    </div>
+                </div>
+            </template>
+        </Column>
+
+        <!-- Name column that will always show in the Grid -->
+        <Column name="name"
+                title="Name"
+                :class="'name'"
+                :filter="textValueFilter"
+                :filterValue="getRowNameFilterValue"
+                :quickFilterValue="getRowNameFilterValue"
+                visiblePriority="xs"
+                :hideOnScreen="false"
+                >
             <template #format="{ row }">
                 <div>
                     <div>
@@ -52,6 +80,31 @@
                     <div class="text-xs">
                         <span>{{ row.batchId }}</span>
                         <span v-if="!config.options?.showTransactionCountColumn"> | Transaction Count: {{ row.transactionCount }}</span>
+                    </div>
+                    <div v-if="row.note">
+                        {{ row.note }}
+                    </div>
+                </div>
+            </template>
+        </Column>
+
+        <!-- Name column that will always show in the CSV/Excel Export -->
+        <Column name="name"
+                title="Name"
+                :class="'name'"
+                :filter="textValueFilter"
+                :filterValue="getRowNameFilterValue"
+                :quickFilterValue="getRowNameFilterValue"
+                visiblePriority="xs"
+                :hideOnScreen="true"
+                >
+            <template #format="{ row }">
+                <div>
+                    <div>
+                        <span class="text-semibold">{{ row.name }} </span>
+                    </div>
+                    <div class="text-xs">
+                        <span>{{ row.batchId }}</span>
                     </div>
                     <div v-if="row.note">
                         {{ row.note }}
