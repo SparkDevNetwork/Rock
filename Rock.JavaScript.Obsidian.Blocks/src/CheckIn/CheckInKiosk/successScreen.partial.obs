@@ -1,23 +1,33 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="location-select-screen">
+        <div class="completed-achievements">
+            <AchievementCard v-for="item in completedAchievements"
+                             :achievement="item.achievement"
+                             :person="item.person" />
+        </div>
+
         <MainPanel :title="title"
                    :subtitle="subtitle">
-            <div class="attendance-cards" style="display: flex; gap: var(--item-spacing); justify-content: center; flex-wrap: wrap;">
-                <AttendanceCard v-for="attendance in props.session.attendances"
-                    :attendance="attendance" />
+            <div class="attendance-cards">
+                <AttendanceCard v-for="attendance in aggregateAttendance"
+                                :attendance="attendance" />
             </div>
         </MainPanel>
     </div>
 </template>
 
 <script setup lang="ts">
+    import AchievementCard from "./achievementCard.partial.obs";
     import AttendanceCard from "./attendanceCard.partial.obs";
     import MainPanel from "./mainPanel.partial.obs";
     import { computed, PropType, ref } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./checkInSession.partial";
-    import { KioskButton } from "./types.partial";
+    import { AggregateAttendance, KioskButton } from "./types.partial";
+    import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
+    import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         configuration: {
@@ -43,6 +53,70 @@
     // #endregion
 
     // #region Computed Values
+
+    const completedAchievements = computed((): { achievement: AchievementBag, person: PersonBag }[] => {
+        const items: { achievement: AchievementBag, person: PersonBag }[] = [];
+
+        for (const attendance of props.session.attendances) {
+            if (!attendance.justCompletedAchievements || !attendance.attendance?.person) {
+                continue;
+            }
+
+            for (const achievement of attendance.justCompletedAchievements) {
+                const existingItem = items
+                    .find(item => areEqual(item.achievement.guid, achievement.guid)
+                        && areEqual(item.person.guid, attendance.attendance?.person?.guid));
+
+                if (!existingItem) {
+                    items.push({
+                        person: attendance.attendance.person,
+                        achievement
+                    });
+                }
+            }
+        }
+
+        return items;
+    });
+
+    const aggregateAttendance = computed((): AggregateAttendance[] => {
+        const items: AggregateAttendance[] = [];
+
+        for (const attendance of props.session.attendances) {
+            if (!attendance.attendance?.person) {
+                continue;
+            }
+
+            let item = items.find(i => areEqual(i.person.guid, attendance.attendance?.person?.guid));
+
+            if (!item) {
+                item = {
+                    person: attendance.attendance.person,
+                    attendances: [],
+                    inProgressAchievements: [],
+                    justCompletedAchievements: []
+                };
+
+                items.push(item);
+            }
+
+            item.attendances.push(attendance.attendance);
+
+            for (const achievement of attendance.inProgressAchievements ?? []) {
+                if (!item.inProgressAchievements.find(i => areEqual(i.guid, achievement.guid))) {
+                    item.inProgressAchievements.push(achievement);
+                }
+            }
+
+            for (const achievement of attendance.justCompletedAchievements ?? []) {
+                if (!item.justCompletedAchievements.find(i => areEqual(i.guid, achievement.guid))) {
+                    item.justCompletedAchievements.push(achievement);
+                }
+            }
+        }
+
+        return items;
+    });
 
     // #endregion
 

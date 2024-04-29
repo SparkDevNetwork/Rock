@@ -1,34 +1,36 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="attendance-card well" style="width: calc(33.33% - calc(var(--item-spacing) * 2 / 3))">
-        <div class="title" style="display: flex; gap: var(--item-spacing); justify-content: center; align-items: center;">
+    <div class="attendance-card">
+        <div class="header">
             <div class="avatar" :style="avatarStyle"></div>
 
-            <div class="name">{{ attendance.attendance?.person?.fullName }}</div>
+            <div class="title">{{ attendance.person.fullName }}</div>
         </div>
 
-        <label>Checked Into</label>
+        <div class="attendance-list">
+            <label>Checked Into</label>
 
-        <div class="label label-info" style="display: flex;">
-            <div>{{ attendance.attendance?.location?.name }}</div>
-            <div style="margin-left: auto;">{{ attendance.attendance?.schedule?.name }}</div>
+            <div v-for="item in attendance.attendances"
+                 class="attendance-detail">
+                <div class="title">{{ item.location?.name }}</div>
+                <div class="subtitle">{{ item.schedule?.name }}</div>
+            </div>
         </div>
 
-        <div v-if="attendance.inProgressAchievements" class="achievements" style="margin-top: var(--item-spacing);">
+        <div v-if="attendance.inProgressAchievements"
+             class="achievement-list">
             <label>Current Achievement Status</label>
 
             <div v-for="achievement in attendance.inProgressAchievements"
                  class="achievement">
-                <div class="title" style="display: flex;">
-                    <div style="font-weight: bold;">{{ achievement.name }}</div>
-                    <div style="margin-left: auto;">{{ getProgressText(achievement) }}</div>
+                <div class="header">
+                    <div class="title">{{ achievement.name }}</div>
+                    <div class="subtitle">{{ getProgressText(achievement) }}</div>
                 </div>
                 <div v-if="achievement.targetCount"
-                     class="completion-progress"
-                     style="display: flex; gap: 4px; flex-wrap: wrap;">
+                     class="completion-progress">
                     <i v-for="item in getAchievementItems(achievement)"
-                       :class="item"
-                       style="color: #fd9215;"></i>
+                       :class="item"></i>
                 </div>
             </div>
         </div>
@@ -37,19 +39,19 @@
 
 <script setup lang="ts">
     import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
-    import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
     import { computed, CSSProperties, PropType } from "vue";
+    import { AggregateAttendance } from "./types.partial";
 
     const props = defineProps({
         attendance: {
-            type: Object as PropType<RecordedAttendanceBag>,
+            type: Object as PropType<AggregateAttendance>,
             required: true
         }
     });
 
     const avatarStyle = computed((): CSSProperties => {
         const properties: CSSProperties = {
-            backgroundImage: `url("${props.attendance.attendance?.person?.photoUrl}")`
+            backgroundImage: `url("${props.attendance.person.photoUrl}")`
         };
 
         return properties;

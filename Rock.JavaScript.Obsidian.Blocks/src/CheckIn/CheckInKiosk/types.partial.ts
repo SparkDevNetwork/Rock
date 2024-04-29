@@ -21,6 +21,9 @@ import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configura
 import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 import { WebKioskBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/webKioskBag";
 import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationBag";
+import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
+import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
+import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
 // #region Temporary Types
 
@@ -164,6 +167,18 @@ export type KioskButton = {
 
     /** The function to call when the button is clicked. */
     handler?: () => void | Promise<void>;
+};
+
+/**
+ * Defines the structure of aggregate attendance data used on the success
+ * screen. The server returns multiple recorded attendance records for a single
+ * individual, but we need those aggregated by person.
+ */
+export type AggregateAttendance = {
+    person: PersonBag;
+    attendances: AttendanceBag[],
+    justCompletedAchievements: AchievementBag[],
+    inProgressAchievements: AchievementBag[]
 };
 
 /* eslint-disable @typescript-eslint/naming-convention */

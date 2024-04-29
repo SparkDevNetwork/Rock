@@ -110,11 +110,17 @@
     --button-vertical-padding: 16px;
     --button-horizontal-padding: 24px;
     --item-spacing: 16px;
+
     --tones-darkest: #425466;
     --tones-dark: #77889a;
     --tones-medium: #d8ddec;
     --tones-light: #edf0f6;
     --tones-lightest: #f5f7fc;
+
+    --unit-sm: 4px;
+    --unit-md: 8px;
+    --unit-lg: 16px;
+    --unit-xl: 24px;
 
     --font-size-h1: 24px;
     --font-size-h2: 18px;
@@ -513,6 +519,140 @@
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     padding: 0 24px;
+}
+
+
+/**
+ * Success Screen
+ */
+.check-in-page .completed-achievements {
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    padding-bottom: var(--vertical-padding);
+}
+
+.check-in-page .achievement-card {
+    border-radius: var(--button-border-radius);
+    background-color: white;
+    border: 1px solid var(--tones-light);
+    padding: var(--vertical-padding) var(--horizontal-padding);
+    display: grid;
+    line-height: 1.3em;
+}
+
+.check-in-page .achievement-card svg {
+    grid-row: 1 / span 2;
+    margin-right: var(--horizontal-padding);
+}
+
+.check-in-page .achievement-card .title {
+    grid-column: 2;
+    align-content: end;
+    font-weight: 600;
+}
+
+.check-in-page .achievement-card .subtitle {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: start;
+}
+
+.check-in-page .attendance-cards {
+    display: flex;
+    gap: var(--item-spacing);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.check-in-page .attendance-card {
+    width: calc(33.33% - calc(var(--item-spacing) * 2 / 3));
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit-md);
+    border-radius: var(--button-border-radius);
+    background-color: var(--tones-light);
+    border: var(--tones-medium);
+    padding: var(--unit-lg) var(--unit-lg);
+}
+
+.check-in-page .attendance-card .header {
+    display: flex;
+    gap: var(--item-spacing);
+    justify-content: center;
+    align-items: center;
+}
+
+.check-in-page .attendance-card .attendance-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit-sm);
+}
+
+.check-in-page .attendance-card label {
+    margin-bottom: 0;
+}
+
+.check-in-page .attendance-card .attendance-detail {
+    border-radius: var(--unit-md);
+    background-color: var(--color-primary);
+    color: var(--theme-white);
+    padding: var(--unit-sm) var(--unit-md);
+    display: flex;
+    justify-content: space-between;
+}
+
+.check-in-page .attendance-card .attendance-detail .title {
+    font-weight: 600;
+}
+
+.check-in-page .attendance-card .achievement-list {
+    flex-grow: 1;
+    align-content: end;
+    padding-top: var(--unit-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit-lg);
+    justify-content: end;
+}
+
+.check-in-page .attendance-card .achievement {
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit-sm);
+}
+
+.check-in-page .attendance-card .achievement .header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.check-in-page .attendance-card .achievement .title {
+    font-weight: 600;
+}
+
+.check-in-page .attendance-card .achievement .completion-progress {
+    display: flex;
+    gap: var(--unit-sm);
+    flex-wrap: wrap;
+}
+
+.check-in-page .attendance-card .achievement .completion-item-full,
+.check-in-page .attendance-card .achievement .completion-item-half {
+    color: #fd9215;
+}
+
+.check-in-page .attendance-card .achievement .completion-item-empty {
+    color: var(--tones-dark);
+}
+
+.check-in-page .attendance-card .achievement:first-of-type {
+    margin-top: calc(var(--unit-md) * -1);
+}
+
+.check-in-page .attendance-card .achievement + .achievement {
+    padding-top: var(--unit-md);
+    border-top: 1px solid var(--tones-medium);
 }
 </style>
 
