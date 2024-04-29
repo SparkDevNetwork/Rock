@@ -21,17 +21,25 @@
 // </copyright>
 //
 
-import { VolunteerGenerosityDonationBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDonationBag";
-import { VolunteerGenerosityPersonDetailsBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityPersonDetailsBag";
+import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
 
-/** Bag for person-related data in the Volunteer Generosity Analysis block. */
-export type VolunteerGenerosityPersonDataBag = {
-    /** Gets or sets the list of donations. */
-    donations?: VolunteerGenerosityDonationBag[] | null;
+/** A bag that contains all data for the Volunteer Generosity Analysis block. */
+export type VolunteerGenerosityInitializationBox = {
+    /** Gets or sets the estimated refresh time of the persisted dataset.  */
+    estimatedRefreshTime: number;
 
-    /** Gets or sets the person details. */
-    personDetails?: VolunteerGenerosityPersonDetailsBag | null;
+    /** Gets or sets the last updated date time.  */
+    lastUpdated?: string | null;
 
-    /** Gets or sets the person group key. */
-    personGroupKey?: string | null;
+    /** Gets or sets the list of people data. */
+    peopleData?: VolunteerGenerosityDataBag[] | null;
+
+    /** Gets or sets the bool that shows/hides the campus filter. */
+    showCampusFilter: boolean;
+
+    /** Gets or sets the list of unique campuses. */
+    uniqueCampuses?: string[] | null;
+
+    /** Gets or sets the list of unique groups  */
+    uniqueGroups?: string[] | null;
 };

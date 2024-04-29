@@ -22,44 +22,18 @@ using System.Globalization;
 namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
 {
     /// <summary>
-    /// A bag that contains all data for the Volunteer Generosity Analysis block.
-    /// </summary>
-    public class VolunteerGenerosityDataBag
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<VolunteerGenerosityPersonDataBag> PeopleData { get; set; } = new List<VolunteerGenerosityPersonDataBag>();
-    }
-
-    /// <summary>
     /// Bag for person-related data in the Volunteer Generosity Analysis block.
     /// </summary>
-    public class VolunteerGenerosityPersonDataBag
+    public class VolunteerGenerosityDataBag
     {
         /// <summary>
         /// Gets or sets the person group key.
         /// </summary>
         public string PersonGroupKey { get; set; }
         /// <summary>
-        /// Gets or sets the person details.
-        /// </summary>
-        public VolunteerGenerosityPersonDetailsBag PersonDetails { get; set; }
-        /// <summary>
-        /// Gets or sets the list of donations.
-        /// </summary>
-        public List<VolunteerGenerosityDonationBag> Donations { get; set; } = new List<VolunteerGenerosityDonationBag>();
-    }
-
-    /// <summary>
-    /// Bag for detailed information about a person in the Volunteer Generosity Analysis block.
-    /// </summary>
-    public class VolunteerGenerosityPersonDetailsBag
-    {
-        /// <summary>
         /// Gets or sets the person identifier.
         /// </summary>
-        public string PersonId { get; set; }
+        public int PersonId { get; set; }
         /// <summary>
         /// Gets or sets the person's last name.
         /// </summary>
@@ -104,25 +78,10 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// Gets or sets the person's connection status
         /// </summary>
         public string ConnectionStatus { get; set; }
-    }
-
-    /// <summary>
-    /// Bag for donation data within the Volunteer Generosity Analysis block.
-    /// </summary>
-    public class VolunteerGenerosityDonationBag
-    {
         /// <summary>
-        /// Gets or sets the month name.
+        /// Gets or sets the person's donation months
         /// </summary>
-        public string MonthNameAbbreviated { get; set; }
-        /// <summary>
-        /// Gets or sets the year.
-        /// </summary>
-        public string Year { get; set; }
-        /// <summary>
-        /// Gets or sets the month.
-        /// </summary>
-        public string Month { get; set; }
+        public string DonationMonths { get; set; }
     }
 
     /// <summary>
@@ -133,7 +92,7 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// <summary>
         /// Gets or sets the person ID.
         /// </summary>
-        public string PersonId { get; set; }
+        public int PersonId { get; set; }
         /// <summary>
         /// Gets or sets the person's last name.
         /// </summary>
@@ -155,7 +114,7 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
     /// <summary>
     /// A bag that contains all data for the Volunteer Generosity Analysis block.
     /// </summary>
-    public class VolunteerGenerositySetupBag
+    public class VolunteerGenerosityInitializationBox
     {
         /// <summary>
         /// Gets or sets the list of unique campuses.
@@ -177,6 +136,10 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// Gets or sets the bool that shows/hides the campus filter.
         /// </summary>
         public bool ShowCampusFilter { get; set; }
+        /// <summary>
+        /// Gets or sets the list of people data.
+        /// </summary>
+        public List<VolunteerGenerosityDataBag> PeopleData { get; set; }
     }
 }
 

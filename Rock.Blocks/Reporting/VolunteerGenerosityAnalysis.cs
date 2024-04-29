@@ -17,7 +17,7 @@ namespace Rock.Blocks.Reporting
     [Rock.SystemGuid.BlockTypeGuid( "586A26F1-8A9C-4AB4-B788-9B44895B9D40" )]
     [Rock.SystemGuid.EntityTypeGuid( "4C55BFE1-7E97-4CFB-BCB7-2015AA25D9B9" )]
 
-    public class VolunteerGenerosityAnalysis : RockListBlockType<VolunteerGenerosityPersonDataBag>
+    public class VolunteerGenerosityAnalysis : RockListBlockType<VolunteerGenerosityDataBag>
     {
         #region Keys
 
@@ -63,33 +63,28 @@ namespace Rock.Blocks.Reporting
                 {
                     try
                     {
-                        var lastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToString( "yyyy-MM-dd HH:mm:ss" ) : "N/A";
-                        var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0;
-                        var dataBag = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityDataBag>();
+                        var box = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityInitializationBox>();
 
-                        if ( dataBag != null )
+                        if ( box != null && ( box.UniqueCampuses == null || box.UniqueGroups == null ) )
                         {
-                            var uniqueCampuses = dataBag.PeopleData
-                                .Where( p => !string.IsNullOrEmpty( p.PersonDetails.CampusShortCode ) )
-                                .Select( p => p.PersonDetails.CampusShortCode )
+                            var peopleData = box.PeopleData;
+                            var uniqueCampuses = peopleData
+                                .Where( p => !string.IsNullOrEmpty( p.CampusShortCode ) )
+                                .Select( p => p.CampusShortCode )
                                 .Distinct()
                                 .ToList();
 
-                            var uniqueGroups = dataBag.PeopleData.Select( p => p.PersonDetails.GroupName ).Distinct().ToList();
-
+                            var uniqueGroups = peopleData.Select( p => p.GroupName ).Distinct().ToList();
                             var hasMultipleCampuses = CampusCache.All().Count( c => ( bool ) c.IsActive ) > 1;
 
-                            var bag = new VolunteerGenerositySetupBag
-                            {
-                                UniqueCampuses = uniqueCampuses,
-                                UniqueGroups = uniqueGroups,
-                                LastUpdated = lastUpdated,
-                                EstimatedRefreshTime = estimatedRefreshTime,
-                                ShowCampusFilter = hasMultipleCampuses
-                            };
-
-                            return bag;
+                            box.UniqueCampuses = uniqueCampuses;
+                            box.UniqueGroups = uniqueGroups;
+                            box.LastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToString( "yyyy-MM-dd HH:mm:ss" ) : "N/A";
+                            box.EstimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0;
+                            box.ShowCampusFilter = hasMultipleCampuses;
                         }
+
+                        return box;
                     }
                     catch ( Exception ex )
                     {
@@ -101,37 +96,37 @@ namespace Rock.Blocks.Reporting
             }
         }
 
-        protected override IQueryable<VolunteerGenerosityPersonDataBag> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<VolunteerGenerosityDataBag> GetListQueryable( RockContext rockContext )
         {
             var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
             var dataset = PersistedDatasetCache.Get( datasetGuid );
 
             if ( dataset == null || string.IsNullOrWhiteSpace( dataset.ResultData ) )
             {
-                return Enumerable.Empty<VolunteerGenerosityPersonDataBag>().AsQueryable();
+                return Enumerable.Empty<VolunteerGenerosityDataBag>().AsQueryable();
             }
 
-            var dataBag = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityDataBag>();
-            if ( dataBag == null )
+            var dataRoot = dataset.ResultData.FromJsonOrNull<VolunteerGenerosityInitializationBox>();
+            if ( dataRoot == null || dataRoot.PeopleData == null )
             {
-                return Enumerable.Empty<VolunteerGenerosityPersonDataBag>().AsQueryable();
+                return Enumerable.Empty<VolunteerGenerosityDataBag>().AsQueryable();
             }
 
-            IEnumerable<VolunteerGenerosityPersonDataBag> filteredPeople = dataBag.PeopleData;
+            IEnumerable<VolunteerGenerosityDataBag> filteredPeople = dataRoot.PeopleData.AsEnumerable();
 
             // Filter out all of the inactive or archived people
-            filteredPeople = filteredPeople.Where( p => p.PersonDetails.IsActive );
+            filteredPeople = filteredPeople.Where( p => p.IsActive );
 
             // Filter by Campus
             if ( !string.IsNullOrWhiteSpace( FilterCampus ) && FilterCampus != "All" )
             {
-                filteredPeople = filteredPeople.Where( person => person.PersonDetails.CampusShortCode == FilterCampus );
+                filteredPeople = filteredPeople.Where( person => person.CampusShortCode == FilterCampus );
             }
 
             // Filter by Team
             if ( !string.IsNullOrWhiteSpace( FilterTeam ) && FilterTeam != "All" )
             {
-                filteredPeople = filteredPeople.Where( person => person.PersonDetails.GroupName == FilterTeam );
+                filteredPeople = filteredPeople.Where( person => person.GroupName == FilterTeam );
             }
 
             // Filter by Date Range
@@ -139,39 +134,32 @@ namespace Rock.Blocks.Reporting
             {
                 var cutoffDate = DateTime.Today.AddDays( -FilterDateRange.Value );
                 filteredPeople = filteredPeople.Where( person =>
-                    person.PersonDetails.LastAttendanceDate.HasValue &&
-                    person.PersonDetails.LastAttendanceDate.Value >= cutoffDate
+                    person.LastAttendanceDate.HasValue &&
+                    person.LastAttendanceDate.Value >= cutoffDate
                 );
             }
 
             return filteredPeople.AsQueryable();
         }
 
-        protected override GridBuilder<VolunteerGenerosityPersonDataBag> GetGridBuilder()
+        protected override GridBuilder<VolunteerGenerosityDataBag> GetGridBuilder()
         {
-            return new GridBuilder<VolunteerGenerosityPersonDataBag>()
-                .AddField( "id", d => d.PersonDetails.PersonId )
-                .AddTextField( "campus", d => d.PersonDetails.CampusShortCode )
-                .AddDateTimeField( "lastAttendanceDate", d => d.PersonDetails.LastAttendanceDate )
-                .AddTextField( "team", d => d.PersonDetails.GroupName )
-                .AddTextField( "givingMonths", d =>
-                {
-                    return string.Join( ", ", d.Donations.Select( donation =>
-                    {
-                        int.TryParse( donation.Year, out int year );
-                        return $"{donation.MonthNameAbbreviated} {year}";
-                    } ) );
-                } )
+            return new GridBuilder<VolunteerGenerosityDataBag>()
+                .AddField( "id", d => d.PersonId )
+                .AddTextField( "campus", d => d.CampusShortCode )
+                .AddDateTimeField( "lastAttendanceDate", d => d.LastAttendanceDate )
+                .AddTextField( "team", d => d.GroupName )
+                .AddTextField( "givingMonths", d => d.DonationMonths )
                 .AddField( "person", d => new VolunteerGenerosityPersonBag
                 {
-                    PersonId = d.PersonDetails.PersonId,
-                    LastName = d.PersonDetails.LastName,
-                    NickName = d.PersonDetails.NickName,
-                    PhotoUrl = d.PersonDetails.PhotoUrl,
-                    ConnectionStatus = d.PersonDetails.ConnectionStatus
+                    PersonId = d.PersonId,
+                    LastName = d.LastName,
+                    NickName = d.NickName,
+                    PhotoUrl = d.PhotoUrl,
+                    ConnectionStatus = d.ConnectionStatus
                 } )
-                .AddField( "givingId", d => d.PersonDetails.GivingId )
-                .AddField( "groupName", d => d.PersonDetails.GroupName );
+                .AddField( "givingId", d => d.GivingId )
+                .AddField( "groupName", d => d.GroupName );
         }
 
         [BlockAction]

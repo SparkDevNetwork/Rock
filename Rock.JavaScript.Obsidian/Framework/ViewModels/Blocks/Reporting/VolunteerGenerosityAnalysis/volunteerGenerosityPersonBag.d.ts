@@ -33,7 +33,7 @@ export type VolunteerGenerosityPersonBag = {
     nickName?: string | null;
 
     /** Gets or sets the person ID. */
-    personId?: string | null;
+    personId: number;
 
     /** Gets or sets the person's photo URL. */
     photoUrl?: string | null;

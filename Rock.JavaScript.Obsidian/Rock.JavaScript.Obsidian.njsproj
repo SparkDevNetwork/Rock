@@ -1066,6 +1066,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityDonationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityGivingDataItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityGroupDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityMonthlyGivingDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityPersonBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerosityPersonDataBag.d.ts" />
