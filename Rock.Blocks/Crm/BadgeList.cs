@@ -127,7 +127,7 @@ namespace Rock.Blocks.Crm
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "badgeName", a => a.Name )
-                .AddTextField( "badgeType", a => a.EntityType.FriendlyName )
+                .AddTextField( "badgeType", a => a.EntityType?.FriendlyName )
                 .AddTextField( "badgeComponent", a => a.BadgeComponentEntityType.FriendlyName )
                 .AddTextField( "badgeDescription", a => a.Description )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )

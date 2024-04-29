@@ -8,18 +8,19 @@
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="false"
           @selectItem="onSelectItem"
           class="mb-4">
 
         <ReorderColumn @orderChanged="onOrderChanged" />
 
-        <TextColumn name="badgeName" title="Name" field="badgeName" :filter="textValueFilter" width="15%" />
+        <TextColumn name="badgeName" title="Name" field="badgeName" :filter="textValueFilter" width="15%" visiblePriority="xs" /> />
 
-        <TextColumn name="badgeType" title="Type" field="badgeType" :filter="pickExistingValueFilter" width="5%" />
+        <TextColumn name="badgeType" title="Type" field="badgeType" :filter="pickExistingValueFilter" width="5%" visiblePriority="sm" /> />
 
-        <TextColumn name="badgeComponent" title="Component" field="badgeComponent" :filter="pickExistingValueFilter" width="15%" />
+        <TextColumn name="badgeComponent" title="Component" field="badgeComponent" :filter="pickExistingValueFilter" width="15%" visiblePriority="md" /> />
 
-        <TextColumn name="badgeDescription" title="Description" field="badgeDescription" :filter="textValueFilter" width="35%" />
+        <TextColumn name="badgeDescription" title="Description" field="badgeDescription" :filter="textValueFilter" width="35%" visiblePriority="lg" /> />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
