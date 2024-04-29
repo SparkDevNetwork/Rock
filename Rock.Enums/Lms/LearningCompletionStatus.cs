@@ -14,27 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
+namespace Rock.Enums.Lms
 {
     /// <summary>
     /// Determines the learning completion status for a ( learning ) class.
     /// </summary>
-    [Enums.EnumDomain( "Lms" )]
     public enum LearningCompletionStatus
     {
         /// <summary>
         /// The class is not yet complete.
         /// </summary>
-        Incomplete = 1,
+        Incomplete = 0,
 
         /// <summary>
         /// The class has been compelted with a failing grade.
         /// </summary>
-        Fail = 2,
+        Fail = 1,
 
         /// <summary>
         /// The class has been completed with a passing grade.
         /// </summary>
-        Pass = 3
+        Pass = 2
     }
 }

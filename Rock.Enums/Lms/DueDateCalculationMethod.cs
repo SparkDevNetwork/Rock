@@ -14,32 +14,31 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
+namespace Rock.Enums.Lms
 {
     /// <summary>
-    /// Determines the completion status of a LearningProgramCompletion.
+    /// Determines the method for calculating the due date.
     /// </summary>
-    [Enums.EnumDomain( "Lms" )]
     public enum DueDateCalculationMethod
     {
         /// <summary>
         /// A specific date.
         /// </summary>
-        Specific = 1,
+        Specific = 0,
 
         /// <summary>
         /// An offset of the class start date.
         /// </summary>
-        ClassStartOffset = 2,
+        ClassStartOffset = 1,
 
         /// <summary>
         /// An offset of the class enrollment date.
         /// </summary>
-        EnrollmentOffset = 3,
+        EnrollmentOffset = 2,
 
         /// <summary>
         /// No calculation.
         /// </summary>
-        NoDate = 4
+        NoDate = 3
     }
 }

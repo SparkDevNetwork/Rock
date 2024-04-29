@@ -14,22 +14,21 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
+namespace Rock.Enums.Lms
 {
     /// <summary>
     /// Determines the party responsible for completing an activity.
     /// </summary>
-    [Enums.EnumDomain( "Lms" )]
     public enum AssignTo
     {
         /// <summary>
-        /// The responsible party is the facilitator.
-        /// </summary>
-        Facilitator = 1,
-
-        /// <summary>
         /// The responsible party is the student.
         /// </summary>
-        Student = 2
+        Student = 0,
+
+        /// <summary>
+        /// The responsible party is the facilitator.
+        /// </summary>
+        Facilitator = 1
     }
 }

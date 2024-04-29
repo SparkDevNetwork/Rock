@@ -19,6 +19,7 @@ using System;
 
 using Rock.ViewModels.Utility;
 using Rock.Model;
+using Rock.Enums.Lms;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
 {

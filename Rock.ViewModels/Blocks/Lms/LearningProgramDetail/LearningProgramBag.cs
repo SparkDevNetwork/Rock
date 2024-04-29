@@ -15,8 +15,8 @@
 // </copyright>
 //
 
+using Rock.Enums.Lms;
 using Rock.ViewModels.Utility;
-using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
 {

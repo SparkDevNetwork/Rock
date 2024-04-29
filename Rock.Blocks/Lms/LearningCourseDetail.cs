@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;

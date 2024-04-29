@@ -14,27 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
+namespace Rock.Enums.Lms
 {
     /// <summary>
     /// The type of course requirement.
     /// </summary>
-    [Enums.EnumDomain( "Lms" )]
     public enum RequirementType
     {
         /// <summary>
         /// Prior completion of the LearningCourse.
         /// </summary>
-        Prerequisite = 1,
+        Prerequisite = 0,
 
         /// <summary>
         /// Simultaneous enrollment of the LearningCourse.
         /// </summary>
-        Corequisite = 2,
+        Corequisite = 1,
 
         /// <summary>
         /// Completion of an equivalent LearningCourse.
         /// </summary>
-        Equivalent = 3
+        Equivalent = 2
     }
 }

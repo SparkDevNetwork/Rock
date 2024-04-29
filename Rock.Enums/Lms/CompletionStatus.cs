@@ -14,27 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
+namespace Rock.Enums.Lms
 {
     /// <summary>
     /// Determines the completion status of a LearningProgramCompletion.
     /// </summary>
-    [Enums.EnumDomain( "Lms" )]
     public enum CompletionStatus
     {
         /// <summary>
         /// The program is pending completion.
         /// </summary>
-        Pending = 1,
+        Pending = 0,
 
         /// <summary>
         /// The program was completed.
         /// </summary>
-        Completed = 2,
+        Completed = 1,
 
         /// <summary>
         /// The program not completed before expiring.
         /// </summary>
-        Expired = 3
+        Expired = 2
     }
 }

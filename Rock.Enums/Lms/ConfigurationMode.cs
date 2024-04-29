@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Model
+namespace Rock.Enums.Lms
 {
     /// <summary>
     /// Determines the configuration mode of a LearningProgram.
@@ -24,11 +24,11 @@ namespace Rock.Model
         /// <summary>
         /// Academic calendar mode.
         /// </summary>
-        AcademicCalendar = 1,
+        AcademicCalendar = 0,
 
         /// <summary>
         /// On-demand learning mode.
         /// </summary>
-        OnDemandLearning = 2
+        OnDemandLearning = 1
     }
 }

@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;

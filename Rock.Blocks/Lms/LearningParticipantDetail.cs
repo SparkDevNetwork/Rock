@@ -732,46 +732,6 @@ namespace Rock.Blocks.Lms
             }
         }
 
-        /// <summary>
-        /// Adds the person as a participant to the specified <see cref="LearningClass"/> and with the specified role.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <param name="participantType">The role of the participant.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult AddParticipant( string guidString, AssignTo participantType )
-        {
-            if ( !Guid.TryParse( guidString, out var personGuid ) )
-            {
-                return ActionBadRequest( $"${Person.FriendlyTypeName} not valid." );
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var person = new PersonService( rockContext ).Get( personGuid );
-
-                if ( person == null )
-                {
-                    return ActionBadRequest( $"{Person.FriendlyTypeName} not found." );
-                }
-
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningActivity.FriendlyTypeName}." );
-                }
-
-                //if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                //{
-                //    return ActionBadRequest( errorMessage );
-                //}
-
-                //entityService.Delete( entity );
-                //rockContext.SaveChanges();
-
-                return ActionOk();
-            }
-        }
-
         #endregion
     }
 }

@@ -21,10 +21,10 @@ DECLARE
 DECLARE
     @programsCreated INT = 0,
     @activeGroupMemberStatus INT = 1,
-    @pendingProgramCompletion INT = 1,
-    @classCompletionIncomplete INT = 1,
-    @classCompletionFail INT = 2,
-    @classCompletionPass INT = 3,
+    @pendingProgramCompletion INT = 0,
+    @classCompletionIncomplete INT = 0,
+    @classCompletionFail INT = 1,
+    @classCompletionPass INT = 2,
     @now DATETIMEOFFSET = SYSDATETIMEOFFSET(),
     @facilitatorRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '80F802CE-2F59-4AB1-ABD8-CFD7A009A00A'),
     @studentRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = 'FA3ACAC2-0377-484C-B888-974CA3BF2FF2'),
@@ -126,7 +126,7 @@ BEGIN
                         FROM string_split((SELECT [Name] FROM LearningProgram WHERE Id = @programId), ' ')
                     ) a
                 ),
-                @courseNumber, '0', @courseNumber
+                '-', @courseNumber, '0', @courseNumber
             ),
             @credits INT = FLOOR(RAND(CHECKSUM(NEWID())) * 4) + 1;
             
@@ -179,12 +179,12 @@ BEGIN
             )
 
             DECLARE 
-                @specificDate INT = 1,
-                @classStartOffset INT = 2,
-                @enrollmentOffset INT = 3,
-                @neverDue INT = 4,
+                @specificDate INT = 0,
+                @classStartOffset INT = 1,
+                @enrollmentOffset INT = 2,
+                @neverDue INT = 3,
+                @alwaysAvailable INT = 3,
                 @availableAfterPreviousComplete INT = 4,
-                @alwaysAvailable INT = 5,
                 @videoActivityGuid UNIQUEIDENTIFIER = NEWID(),
                 @video2ActivityGuid UNIQUEIDENTIFIER = NEWID(),
                 @checkoffActivityGuid UNIQUEIDENTIFIER = NEWID(),
@@ -201,6 +201,8 @@ BEGIN
                     DAY, 
                     RAND(CHECKSUM(NEWID())) * (1+DATEDIFF(DAY, @now, DATEADD(MONTH, 1, @now))),
                     @now);
+
+                    
 
             /* Create the Activities for the Class */
             INSERT [LearningActivity] ( [LearningClassId], [Name], [Order], [ActivityComponentId], [AssignTo], [DueDateCalculationMethod], [DueDateDefault], [DueDateOffset], [AvailableDateCalculationMethod], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], [Guid], [Description] )

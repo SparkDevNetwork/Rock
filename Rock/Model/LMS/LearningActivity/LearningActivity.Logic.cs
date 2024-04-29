@@ -17,6 +17,8 @@
 
 using System;
 
+using Rock.Enums.Lms;
+
 namespace Rock.Model
 {
     public partial class LearningActivity

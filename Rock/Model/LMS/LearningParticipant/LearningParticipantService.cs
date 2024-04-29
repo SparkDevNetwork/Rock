@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Utility;
 
 namespace Rock.Model
