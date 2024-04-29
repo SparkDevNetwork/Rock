@@ -8,6 +8,7 @@
                 <RockButton v-for="schedule in schedules"
                             btnType="primary"
                             class="schedule-button"
+                            :class="{ checked: isSelected(schedule) }"
                             @click="onScheduleClick(schedule)">
                     <span class="selection">
                         <i v-if="isSelected(schedule)" class="fa fa-check-square"></i>

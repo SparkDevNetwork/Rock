@@ -99,17 +99,11 @@
     display: flex;
     flex-direction: column;
     gap: var(--item-spacing);
-    padding: 8px 16px;
+    padding: var(--unit-md) var(--unit-lg);
     font-size: var(--font-size-body);
     font-weight: 400;
 
-    --panel-border-radius: 16px;
-    --button-border-radius: 4px;
-    --vertical-padding: 8px;
-    --horizontal-padding: 16px;
-    --button-vertical-padding: 16px;
-    --button-horizontal-padding: 24px;
-    --item-spacing: 16px;
+    --item-spacing: var(--unit-lg);
 
     --tones-darkest: #425466;
     --tones-dark: #77889a;
@@ -117,24 +111,25 @@
     --tones-light: #edf0f6;
     --tones-lightest: #f5f7fc;
 
-    --unit-sm: 4px;
+    --unit-xs: calc(var(--unit-md) * 0.25);
+    --unit-sm: calc(var(--unit-md) * 0.5);
     --unit-md: 8px;
-    --unit-lg: 16px;
-    --unit-xl: 24px;
+    --unit-lg: calc(var(--unit-md) * 2);
+    --unit-xl: calc(var(--unit-md) * 3);
 
-    --font-size-h1: 24px;
-    --font-size-h2: 18px;
+    --font-size-h1: calc(var(--font-size-body) * 1.75);
+    --font-size-h2: calc(var(--font-size-body) * 1.25);
     --font-size-body: 14px;
-    --font-size-small: 12px;
-    --font-size-btn-primary: 22px;
-    --font-size-btn-secondary: 14px;
-    --font-size-btn-small: 14px;
+    --font-size-small: calc(var(--font-size-body) * 0.85);
+    --font-size-btn-primary: calc(var(--font-size-body) * 1.6);
+    --font-size-btn-secondary: var(--font-size-body);
+    --font-size-btn-small: var(--font-size-body);
 }
 
 .check-in-page .check-in-panel {
     background-color: #fff;
-    border-radius: var(--panel-border-radius) var(--panel-border-radius) var(--panel-border-radius) var(--panel-border-radius);
-    padding: var(--vertical-padding) var(--horizontal-padding);
+    border-radius: var(--unit-lg) var(--unit-lg) var(--unit-lg) var(--unit-lg);
+    padding: var(--unit-md) var(--unit-lg);
     display: flex;
     flex-direction: column;
 }
@@ -153,7 +148,7 @@
 
 .check-in-page .button-list .btn {
     display: flex;
-    padding: var(--button-horizontal-padding);
+    padding: var(--unit-xl);
     gap: var(--item-spacing);
     align-items: center;
 }
@@ -180,11 +175,11 @@
 
 .check-in-page .attendee-banner {
     background-color: var(--tones-light);
-    border-radius: var(--button-border-radius);
+    border-radius: var(--unit-sm);
     display: flex;
     flex-direction: column;
     gap: calc(var(--item-spacing) * 0.5);
-    padding: 8px;
+    padding: var(--unit-md);
     align-items: center;
 }
 
@@ -192,7 +187,7 @@
  * Styles for the page header.
  */
 .check-in-page .page-header {
-    border-radius: var(--panel-border-radius) var(--panel-border-radius) 0 0;
+    border-radius: var(--unit-lg) var(--unit-lg) 0 0;
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
@@ -222,22 +217,22 @@
 }
 
 .check-in-page .page-body .check-in-panel {
-    padding: 24px 24px;
-    gap: 16px;
+    padding: var(--unit-xl);
+    gap: var(--unit-lg);
 }
 
 .check-in-page h1 {
     color: var(--tones-darkest);
     font-size: var(--font-size-h1);
     font-weight: 600;
-    margin: 0 0 4px 0;
+    margin: 0 0 var(--unit-sm) 0;
 }
 
 .check-in-page h2 {
     color: var(--tones-dark);
     font-size: var(--font-size-h2);
     font-weight: 600;
-    margin: 0 0 4px 0;
+    margin: 0 0 var(--unit-sm) 0;
 }
 
 .check-in-page .panel-header .title {
@@ -267,7 +262,7 @@
  * Styles for the pager footer.
  */
 .check-in-page .page-footer {
-    border-radius: 0 0 var(--panel-border-radius) var(--panel-border-radius);
+    border-radius: 0 0 var(--unit-lg) var(--unit-lg);
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
@@ -284,7 +279,7 @@
 }
 
 .check-in-page .page-footer .configure-button {
-    padding: 2px 8px;
+    padding: var(--unit-xs) var(--unit-md);
     font-size: 28px;
     color: var(--tones-medium);
 }
@@ -338,7 +333,7 @@
     background: #e5dcd1;
     grid-row: 1/3;
     grid-column: 1/2;
-    border-radius: var(--panel-border-radius);
+    border-radius: var(--unit-lg);
     position: relative;
 }
 
@@ -469,27 +464,19 @@
 .check-in-page .person-select-screen .attendee-button .selection {
     font-size: 50px;
     line-height: 1;
-    margin: var(--button-vertical-padding) 0 var(--button-horizontal-padding) var(--button-vertical-padding);
+    margin: var(--unit-lg) 0 var(--unit-xl) var(--unit-lg);
 }
 
 .check-in-page .person-select-screen .attendee-button > * {
-    margin: var(--button-vertical-padding) 0;
+    margin: var(--unit-lg) 0;
 }
 
 .check-in-page .person-select-screen .attendee-button > *:first-child {
-    margin-left: var(--button-horizontal-padding);
+    margin-left: var(--unit-xl);
 }
 
 .check-in-page .person-select-screen .attendee-button > *:last-child {
-    margin-right: var(--button-horizontal-padding);
-}
-
-.check-in-page .person-select-screen .attendee-button .photo {
-    width: 50px;
-    height: 50px;
-    border: 3px solid #fff;
-    border-radius: 25px;
-    background-size: cover;
+    margin-right: var(--unit-xl);
 }
 
 .check-in-page .person-select-screen .attendee-button .title {
@@ -518,7 +505,35 @@
     align-self: stretch;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    padding: 0 24px;
+    padding: 0 var(--unit-xl);
+}
+
+
+/**
+ * Schedule Select Screen
+ */
+.check-in-page .schedule-select-screen .button-list {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.check-in-page .schedule-select-screen .schedule-button {
+    background-color: var(--tones-lightest);
+    border-color: var(--tones-medium);
+    color: var(--tones-dark);
+}
+
+.check-in-page .schedule-select-screen .schedule-button.checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--theme-white);
+}
+
+.check-in-page .schedule-select-screen .schedule-button .selection {
+    font-size: 50px;
+    line-height: 1;
+    margin-top: calc(var(--unit-md) * -1);
+    margin-bottom: calc(var(--unit-md) * -1);
 }
 
 
@@ -529,21 +544,21 @@
     justify-content: center;
     display: flex;
     flex-wrap: wrap;
-    padding-bottom: var(--vertical-padding);
+    padding-bottom: var(--unit-md);
 }
 
 .check-in-page .achievement-card {
-    border-radius: var(--button-border-radius);
+    border-radius: var(--unit-sm);
     background-color: white;
     border: 1px solid var(--tones-light);
-    padding: var(--vertical-padding) var(--horizontal-padding);
+    padding: var(--unit-md) var(--unit-lg);
     display: grid;
     line-height: 1.3em;
 }
 
 .check-in-page .achievement-card svg {
     grid-row: 1 / span 2;
-    margin-right: var(--horizontal-padding);
+    margin-right: var(--unit-lg);
 }
 
 .check-in-page .achievement-card .title {
@@ -570,7 +585,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--unit-md);
-    border-radius: var(--button-border-radius);
+    border-radius: var(--unit-sm);
     background-color: var(--tones-light);
     border: var(--tones-medium);
     padding: var(--unit-lg) var(--unit-lg);

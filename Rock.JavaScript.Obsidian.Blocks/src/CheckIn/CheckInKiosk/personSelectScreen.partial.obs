@@ -14,7 +14,7 @@
                         <i v-else class="fa fa-square-o"></i>
                     </span>
 
-                    <span class="photo" :style="getStyleForAttendee(attendee)"></span>
+                    <span class="avatar" :style="getStyleForAttendee(attendee)"></span>
 
                     <span class="title">
                         <span class="name">{{ attendee.person?.fullName }}</span>
