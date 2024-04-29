@@ -65,7 +65,7 @@ type LearningActivityComponentBaseProps = {
         default: ComponentScreen.Summary
     };
 
-    studentId: {
+    participantId: {
         type: PropType<number>;
         required: false;
     };

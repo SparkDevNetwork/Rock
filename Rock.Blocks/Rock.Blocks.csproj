@@ -103,6 +103,7 @@
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
     <Compile Include="Lms\LearningActivityCompletionList.cs" />
     <Compile Include="Lms\LearningActivityDetail.cs" />
+    <Compile Include="Lms\LearningClassDetail.cs" />
     <Compile Include="Lms\LearningGradingSystemDetail.cs" />
     <Compile Include="Lms\LearningGradingSystemList.cs" />
     <Compile Include="Lms\LearningGradingSystemScaleDetail.cs" />

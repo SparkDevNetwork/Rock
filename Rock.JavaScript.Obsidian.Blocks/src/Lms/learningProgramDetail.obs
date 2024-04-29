@@ -7,41 +7,6 @@
         <Kpi :value="24" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
         <Kpi :value="365" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
         <Kpi :value="1145" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
-        <!-- Placeholder for UX team to replace with Active Classes KPI component. -->
-        <!-- <div class="col-xs-12 col-md-6 col-lg-4 mb-3 mb-md-0">
-            <div class="panel h-100 mb-sm-0">
-                <div class="panel-heading">
-                    <div class="text semi-bold">
-                        Active Classes<br />
-                        <strong>24</strong>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
-        <!-- Placeholder for UX team to replace with Active Students KPI component. -->
-        <!-- <div class="col-xs-12 col-md-6 col-lg-4 mb-3 mb-md-0">
-            <div class="panel h-100 mb-sm-0">
-                <div class="panel-heading">
-                    <div class="text semi-bold">
-                        Active Students<br />
-                        <strong>365</strong>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
-        <!-- Placeholder for UX team to replace with Completions KPI component. -->
-        <!-- <div class="col-xs-12 col-md-6 col-lg-4 mb-3 mb-md-0">
-            <div class="panel h-100 mb-sm-0">
-                <div class="panel-heading">
-                    <div class="text semi-bold">
-                        Completions<br />
-                        <strong>1,145</strong>
-                    </div>
-                </div>
-            </div>
-        </div> -->
     </div>
 
     <DetailBlock

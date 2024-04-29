@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,20 +15,12 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
+namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
 {
     /// <summary>
-    /// The additional configuration options for the Learning Activity Detail block.
+    /// The additional configuration options for the Learning Class Detail block.
     /// </summary>
-    public class LearningActivityDetailOptionsBag
+    public class LearningClassDetailOptionsBag
     {
-        /// <summary>
-        /// Gets or sets the list of available activity types.
-        /// </summary>
-        public List<ListItemBag> ActivityTypes { get; set; }
     }
 }

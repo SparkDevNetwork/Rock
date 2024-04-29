@@ -1,0 +1,93 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
+    import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningClassBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningClassDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningClassBag>): void
+    }>();
+
+    // #region Values
+
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningClassBag> = {
+            bag: { ...props.modelValue.bag } as LearningClassBag
+        };
+        
+            setPropertiesBoxValue(newValue, "description", description.value);
+            setPropertiesBoxValue(newValue, "isActive", isActive.value);
+            setPropertiesBoxValue(newValue, "name", name.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

@@ -1,9 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <!-- Pass the configuration and completion json values to the component. -->
-
-        <ValueDetailList :modelValue="topValues" />
+        <StructuredContentEditor v-model="description" :disabled="true" />
 
         <div class="row">
             <div class="col-md-6">
@@ -21,14 +19,14 @@
 </template>
 
 <script setup lang="ts">
-    import { defineAsyncComponent, computed, PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
-    import LearningActivityBase from "@Obsidian/Controls/LearningActivity/LearningActivityBase.partial";
 
     const props = defineProps({
         modelValue: {
@@ -47,53 +45,10 @@
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
 
+    const description = ref(props.modelValue?.description ?? "");
     // #endregion
 
     // #region Computed Values
-
-    //const activityTypeGuid = ref(toGuidOrNull(LearningActivityTypeGuids.VideoWatch) ?? emptyGuid);
-
-    // const activityComponent = computed((): LearningActivityBase => {
-    //     //https://vuejs.org/guide/components/async.html
-    //     console.warn("defineAsyncComponent", {value: props.modelValue});
-    //     return defineAsyncComponent(() =>
-    //         import(props.modelValue)
-    //     );
-    // });
-
-    // const configurationComponent = computed((): Component => {
-    //     console.warn({activityComponent});
-    //     return (activityComponent.value as ILearningActivityType).getConfigurationComponent();
-    // });
-    // const activityType = computed(() => {
-    //     const learningActivityType = getLearningActivityType(activityTypeGuid.value);
-
-    //     console.warn("viewPanel.computed.activityType", {learningActivityType, activityTypeGuid});
-    //     // Default to the simple video watch trype if unable to resolve.
-    //     return learningActivityType ?? new VideoWatchLearningActivity();
-    // });
-
-    // const screenToShow = computed(() => {
-    //     return ComponentScreen.Configuration;
-    // });
-
-    /** The configuration component to use to display the value. */
-    //const configurationComponent = computed(() => activityType.value?.getConfigurationComponent());
-
-    /** The values to display full-width at the top of the block. */
-    const topValues = computed((): ValueDetailListItem[] => {
-        const valueBuilder = new ValueDetailListItemBuilder();
-
-        if (!props.modelValue) {
-            return valueBuilder.build();
-        }
-
-        if (props.modelValue.description) {
-            valueBuilder.addTextValue("Description", props.modelValue.description);
-        }
-
-        return valueBuilder.build();
-    });
 
     /** The values to display at half-width on the left side of the block. */
     const leftSideValues = computed((): ValueDetailListItem[] => {
@@ -102,6 +57,14 @@
         if (!props.modelValue) {
             return valueBuilder.build();
         }
+
+        const averageGradePercentText = props.modelValue?.averageGradePercent?.toFixed(1).toString() ?? "0";
+        const averageScoreText = `${props.modelValue.averageGrade ?? ""} (${averageGradePercentText}%)`;
+        valueBuilder.addTextValue("Average Score", averageScoreText);
+        valueBuilder.addTextValue("Available", props.modelValue?.availableDateDescription ?? "");
+
+        const checkmarkIconOrEmpty = props.modelValue.isStudentCommentingEnabled ? "<i class='fa fa-check'></i>" : "";
+        valueBuilder.addHtmlValue("Student Commenting Enabled", checkmarkIconOrEmpty);
 
         return valueBuilder.build();
     });
@@ -114,6 +77,9 @@
             return valueBuilder.build();
         }
 
+        valueBuilder.addTextValue("Points", props.modelValue?.points.toString() ?? "");
+        valueBuilder.addTextValue("Due Date", props.modelValue?.dueDateDescription ?? "");
+
         return valueBuilder.build();
     });
 
@@ -121,13 +87,9 @@
 
     // #region Functions
 
-    const activityTypeComponent: LearningActivityBase = defineAsyncComponent(() => import(props.modelValue));
-
-    console.warn("activityType", {activityTypeComponent: activityTypeComponent.getConfigurationComponent() });
     // #endregion
 
     // #region Event Handlers
 
     // #endregion
-    //provideLearningActivityTypeGuid(activityTypeGuid);
 </script>

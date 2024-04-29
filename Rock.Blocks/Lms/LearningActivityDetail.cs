@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -25,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
@@ -88,6 +90,14 @@ namespace Rock.Blocks.Lms
         private LearningActivityDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new LearningActivityDetailOptionsBag();
+
+            options.ActivityTypes = new List<ListItemBag> {
+                new ListItemBag { Text = "Assessment", Value = "9f7aee5e-eb09-4d23-bf84-9556453592a9" },
+                new ListItemBag { Text = "Check-Off", Value = "572da887-834e-4700-a2e2-28c6a7f4d8ae" },
+                new ListItemBag { Text = "Point Assessment", Value = "bea388a3-6223-45d3-a917-5424568cfa28" },
+                new ListItemBag { Text = "Upload File", Value = "4665c42b-6bb2-4491-88ab-a2d972744c70" },
+                new ListItemBag { Text = "Video Watch", Value = "f50d7c37-c9a9-4d5f-9724-3d433f1cd740" },
+            };
 
             return options;
         }
@@ -166,22 +176,36 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
+            var completionStatistics = new LearningActivityService( RockContext ).GetCompletionStatistics( entity );
+
             return new LearningActivityBag
             {
                 IdKey = entity.IdKey,
                 ActivityComponentId = entity.ActivityComponentId,
                 ActivityComponentSettingsJson = entity.ActivityComponentSettingsJson,
+                ActivityComponentPath = "../../Controls/videoWatchLearningActivity.obs.js",
                 AssignTo = entity.AssignTo,
                 AvailableDateCalculationMethod = entity.AvailableDateCalculationMethod,
+                AvailableDateCalculated = entity.AvailableDateCalculated,
                 AvailableDateDefault = entity.AvailableDateDefault,
+                AvailableDateDescription = entity.AvailableDateDescription,
                 AvailableDateOffset = entity.AvailableDateOffset,
+                AverageGrade = completionStatistics.AverageGrade?.Name,
+                AverageGradePercent = completionStatistics.AverageGradePercent,
+                CompleteCount = completionStatistics.Complete,
+                CompletionWorkflowType = entity.CompletionWorkflowType.ToListItemBag(),
                 Description = entity.Description,
                 DueDateCalculationMethod = entity.DueDateCalculationMethod,
+                DueDateCalculated = entity.DueDateCalculated,
                 DueDateDefault = entity.DueDateDefault,
+                DueDateDescription = entity.DueDateDescription,
                 DueDateOffset = entity.DueDateOffset,
+                IncompleteCount = completionStatistics.Incomplete,
+                IsPastDue = entity.IsPastDue,
                 IsStudentCommentingEnabled = entity.IsStudentCommentingEnabled,
                 Name = entity.Name,
                 Order = entity.Order,
+                PercentComplete = completionStatistics.PercentComplete,
                 Points = entity.Points,
                 SendNotificationCommunication = entity.SendNotificationCommunication
             };
@@ -270,6 +294,12 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.SendNotificationCommunication ),
                 () => entity.SendNotificationCommunication = box.Bag.SendNotificationCommunication );
 
+            box.IfValidProperty( nameof( box.Bag.CompletionWorkflowType ),
+                () => entity.CompletionWorkflowTypeId = box.Bag.CompletionWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
+
+            box.IfValidProperty( nameof( box.Bag.TaskBinaryFile ),
+                () => entity.TaskBinaryFileId = box.Bag.TaskBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
+
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
@@ -284,7 +314,32 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningActivity GetInitialEntity()
         {
-            return GetInitialEntity<LearningActivity, LearningActivityService>( RockContext, PageParameterKey.LearningActivityId );
+            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
+
+            // Get the page parameter value (either IdKey or Id).
+            var entityParameterValue = PageParameter( PageParameterKey.LearningActivityId );
+
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            var entityId =
+                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
+                entityParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
+
+
+            // If a zero identifier is specified then create a new entity.
+            if ( entityId == 0 )
+            {
+                return new LearningActivity
+                {
+                    Id = 0,
+                    Guid = Guid.Empty
+                };
+            }
+
+            var entityService = new LearningActivityService( RockContext );
+
+            return entityService.Queryable().AsNoTracking().Include( a => a.CompletionWorkflowType ).FirstOrDefault( a => a.Id == entityId );
         }
 
         /// <summary>

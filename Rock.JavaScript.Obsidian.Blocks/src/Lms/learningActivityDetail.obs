@@ -3,19 +3,56 @@
     <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock
+                 v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :isFullScreenVisible="false"
+                 :isAuditHidden="false"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="Activity"
+                 :isBadgesVisible="true"
+                 :isSecurityHidden="false"
+                 :footerSecondaryActions="footerSecondaryActions"
+                 :isEditVisible="isEditable"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="learningActivityViewBag" :options="options" :hasFullScreen="false" />
+        </template>
+        <template #edit>
+            <EditPanel v-model="learningActivityEditBag" :options="options" @propertyChanged="onPropertyChanged" :hasFullScreen="false" />
+        </template>
+    </DetailBlock>
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, refreshDetailAttributes } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import EditPanel from "./LearningActivityDetail/editPanel.partial.obs";
+    import ViewPanel from "./LearningActivityDetail/viewPanel.partial.obs";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { NavigationUrlKey } from "./LearningActivityDetail/types.partial";
 
     const config = useConfigurationValues<DetailBlockBox<LearningActivityBag, LearningActivityDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+
+    const entityTypeGuid = EntityType.LearningProgram;
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     // #region Values
 
@@ -27,9 +64,117 @@
         bag: {} as LearningActivityBag
     });
 
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [
+    ];
+
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(learningActivityEditBag, validProperties, invokeBlockAction), undefined, true);
+
     // #endregion
 
     // #region Computed Values
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+     const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        labels.push({
+            title: `Completions: ${learningActivityViewBag.value.completeCount} (${parseInt(learningActivityViewBag.value.percentComplete)}%)`,
+            type: "info",
+            iconCssClass: "fa fa-group"
+        });
+
+        if (learningActivityViewBag.isPastDue) {
+            labels.push({
+                title: "Past Due",
+                type: "warning"
+            });
+        }
+
+        // TODO: Confirm if we want this - it's not in the mockup.
+        if (learningActivityViewBag.value?.isPublic === true) {
+            labels.push({
+                title: "Public",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                title: "Private",
+                type: "warning"
+            });
+        }
+
+        if (learningActivityViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): LearningActivityDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    /**
+     * The entity name to display in the block panel.
+     */
+     const panelName = computed((): string => {
+        return learningActivityViewBag.value?.name ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return learningActivityViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * The footer secondary actions for the block panel.
+     */
+     const footerSecondaryActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+
+        const secondaryActions: PanelAction[] = [];
+
+        if (isEditable) {
+            secondaryActions.push({
+                iconCssClass: "fa fa-copy",
+                title: "Copy Activity",
+                type: "default",
+                handler: async () => {
+                    //TODO: Handle clone.
+                }
+            });
+        }
+
+        return secondaryActions;
+    });
 
     // #endregion
 
@@ -38,6 +183,24 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+     async function onCancelEdit(): Promise<boolean | string> {
+        if (!learningActivityEditBag.value?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * Event handler for the Edit button being clicked. Request the edit
@@ -90,6 +253,23 @@
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning activity.";
 
         return false;
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+     function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
     }
 
     // #endregion

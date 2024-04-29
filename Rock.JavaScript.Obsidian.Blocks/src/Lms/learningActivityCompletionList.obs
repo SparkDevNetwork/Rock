@@ -33,7 +33,9 @@
                     :filter="dateValueFilter"
                     visiblePriority="xs">
             <template #format="{ row }">
-                <span :class="{'text-warning': row.hadExtension}">{{ RockDateTime.parseISO(row.dueDate as string)?.toLocaleString() }}</span>
+                <span :class="{'text-warning': row.hadExtension}">
+                {{ RockDateTime.parseISO(row.dueDate as string)?.toLocaleString({
+                    dateStyle: "short"}) }}</span>
             </template>
         </DateColumn>
 
@@ -43,7 +45,6 @@
                 width="10%"
                 :filter="numberValueFilter"
                 :filterValue="getGradePercentFilterValue"
-                :quickFilterValue="getGradePercentFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <span v-if="!row.isCompleted"></span>
@@ -112,7 +113,7 @@
      * @param row The row to be filtered.
      */
      function getGradePercentFilterValue(row: Record<string, unknown>): number {
-        return row.isCompleted ? row.gradePercent as number : -1;
+        return row.isCompleted ? (row.gradePercent as number) : -1;
     }
 
     /**
