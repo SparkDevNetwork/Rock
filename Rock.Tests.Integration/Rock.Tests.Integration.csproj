@@ -221,6 +221,7 @@
     <Compile Include="Modules\Core\MergeTemplateTests.cs" />
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
+    <Compile Include="Modules\Core\Workflow\BackgroundCheckRequestTests.cs" />
     <Compile Include="Modules\Security\RockSigningCredentialsTests.cs" />
     <Compile Include="Modules\Crm\Following\FollowingTests.cs" />
     <Compile Include="Modules\Crm\Groups\GroupRequirementsTests.cs" />
@@ -247,6 +248,7 @@
     <Compile Include="Modules\Reporting\DataFilter\NumericDataFilterFactoryBase.cs" />
     <Compile Include="Modules\Web\Controls\AddressControlTests.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
+    <Compile Include="TestData\Core\EntityAttributeDataManager.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Organization.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Core.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
@@ -373,7 +375,7 @@
     <Compile Include="TestFramework\PersonLookup.cs" />
     <Compile Include="Modules\Web\Cache\RateLimiterCacheTests.cs" />
     <Compile Include="Modules\Web\Utilities\RockUpdateHelperTests.cs" />
-    <Compile Include="Modules\Core\Workflow\Action\BackgroundCheckRequestTests.cs" />
+    <Compile Include="Modules\Core\Workflow\Action\WorkflowActionReminderAddTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

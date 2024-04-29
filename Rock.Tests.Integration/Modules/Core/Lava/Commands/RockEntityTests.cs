@@ -25,6 +25,7 @@ using Rock.Lava;
 using Rock.Lava.Blocks;
 using Rock.Model;
 using Rock.Tests.Integration.Events;
+using Rock.Tests.Integration.TestData.Core;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 using Rock.Web.Cache;
@@ -212,7 +213,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             var definedTypeTitle = DefinedTypeCache.All().FirstOrDefault( c => c.Name == "Title" );
             var definedTypeSuffix = DefinedTypeCache.All().FirstOrDefault( c => c.Name == "Suffix" );
 
-            var args = new TestDataHelper.Core.AddEntityAttributeArgs
+            var args = new AddEntityAttributeArgs
             {
                 ForeignKey = "IntegrationTest",
 
@@ -225,12 +226,12 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             args.Guid = _Count1AttributeGuid.AsGuid();
             args.EntityTypeQualifierValue = definedTypeTitle.Id.ToString();
 
-            var attribute1 = TestDataHelper.Core.AddEntityAttribute( args, rockContext );
+            var attribute1 = EntityAttributeDataManager.Instance.AddEntityAttribute( args, rockContext );
 
             args.Guid = _Count2AttributeGuid.AsGuid();
             args.EntityTypeQualifierValue = definedTypeSuffix.Id.ToString();
 
-            var attribute2 = TestDataHelper.Core.AddEntityAttribute( args, rockContext );
+            var attribute2 = EntityAttributeDataManager.Instance.AddEntityAttribute( args, rockContext );
 
             rockContext.SaveChanges();
 
