@@ -23,7 +23,7 @@ using Rock.Lava;
 using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
+namespace Rock.Tests.Integration.Modules.Core.Lava.Shortcodes
 {
     /// <summary>
     /// Test for shortcodes that are defined and implemented as parameterized Lava templates rather than code components.
