@@ -21,8 +21,36 @@
         <Column name="id"
                 title="ID"
                 field="id"
-                :hideOnScreen="true"
-                visiblePriority="xl" />
+                :hideOnScreen="true" />
+
+        <!-- Name column that will always show in the CSV/Excel Export -->
+        <Column name="exportName"
+                title="Name"
+                field="name"
+                :hideOnScreen="true" />
+
+        <!-- Name column that will always show in the Grid -->
+        <Column name="name"
+                title="Name"
+                :class="'name'"
+                :filter="textValueFilter"
+                :filterValue="getRowNameFilterValue"
+                :quickFilterValue="getRowNameFilterValue"
+                visiblePriority="xs"
+                :hideOnScreen="false"
+                :excludeFromExport="true"
+                >
+            <template #format="{ row }">
+                <div>
+                    <div class="highlight-title">{{ row.name }}</div>
+                    <div class="highlight-detail">
+                        {{ row.batchId }}
+                        <template v-if="!config.options?.showTransactionCountColumn"> Transaction Count: {{ row.transactionCount }}</template>
+                        <template v-if="row.note"><br>{{ row.note }}</template>
+                    </div>
+                </div>
+            </template>
+        </Column>
 
         <DateColumn name="date"
                     title="Date"
@@ -36,82 +64,6 @@
                 </div>
             </template>
         </DateColumn>
-
-        <!-- Name column that will always show in the CSV/Excel Export -->
-        <Column name="name"
-                title="Name"
-                :class="'name'"
-                :filter="textValueFilter"
-                :filterValue="getRowNameFilterValue"
-                :quickFilterValue="getRowNameFilterValue"
-                visiblePriority="xs"
-                :hideOnScreen="true"
-                >
-            <template #format="{ row }">
-                <div>
-                    <div>
-                        <span class="text-semibold">{{ row.name }} </span>
-                    </div>
-                    <div class="text-xs">
-                        <span>{{ row.batchId }}</span>
-                    </div>
-                    <div v-if="row.note">
-                        {{ row.note }}
-                    </div>
-                </div>
-            </template>
-        </Column>
-
-        <!-- Name column that will always show in the Grid -->
-        <Column name="name"
-                title="Name"
-                :class="'name'"
-                :filter="textValueFilter"
-                :filterValue="getRowNameFilterValue"
-                :quickFilterValue="getRowNameFilterValue"
-                visiblePriority="xs"
-                :hideOnScreen="false"
-                >
-            <template #format="{ row }">
-                <div>
-                    <div>
-                        <span class="text-semibold">{{ row.name }} </span>
-                    </div>
-                    <div class="text-xs">
-                        <span>{{ row.batchId }}</span>
-                        <span v-if="!config.options?.showTransactionCountColumn"> | Transaction Count: {{ row.transactionCount }}</span>
-                    </div>
-                    <div v-if="row.note">
-                        {{ row.note }}
-                    </div>
-                </div>
-            </template>
-        </Column>
-
-        <!-- Name column that will always show in the CSV/Excel Export -->
-        <Column name="name"
-                title="Name"
-                :class="'name'"
-                :filter="textValueFilter"
-                :filterValue="getRowNameFilterValue"
-                :quickFilterValue="getRowNameFilterValue"
-                visiblePriority="xs"
-                :hideOnScreen="true"
-                >
-            <template #format="{ row }">
-                <div>
-                    <div>
-                        <span class="text-semibold">{{ row.name }} </span>
-                    </div>
-                    <div class="text-xs">
-                        <span>{{ row.batchId }}</span>
-                    </div>
-                    <div v-if="row.note">
-                        {{ row.note }}
-                    </div>
-                </div>
-            </template>
-        </Column>
 
         <NumberColumn name="transactionCount"
                 title="Transaction Count"
@@ -223,6 +175,11 @@
         </CurrencyColumn>
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <Column name="exportNote"
+                title="Note"
+                field="note"
+                :hideOnScreen="true" />
 
         <DeleteColumn v-if="config.isDeleteEnabled"
                       :rowDisabled="onDeleteRowDisabled"
