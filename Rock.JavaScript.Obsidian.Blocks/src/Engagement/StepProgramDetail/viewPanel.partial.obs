@@ -12,7 +12,7 @@
                 <div class="col-xs-12 col-sm-6 col-md-6 d-flex align-items-start justify-content-end">
                     <SlidingDateRangePicker v-model="filterDate"
                                             :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
-                                            :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                            :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year, TimeUnit.Day, TimeUnit.Hour]"
                                             class="pull-right"
                                             previewLocation="None" />
                     <RockButton :btnSize="BtnSize.Default"
