@@ -23,6 +23,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { LearningClassFacilitatorBag } from "./learningClassFacilitatorBag";
 
 /** The item details for the Learning Class Detail block. */
 export type LearningClassBag = {
@@ -35,14 +36,20 @@ export type LearningClassBag = {
     /** Gets or sets the Rock.Model.Campus that this Group is associated with. */
     campus?: ListItemBag | null;
 
+    /** Gets or sets the related LearningCourse code. */
+    courseCode?: string | null;
+
+    /** Gets or sets the related LearningCourse name. */
+    courseName?: string | null;
+
     /** Gets or sets the optional description of the group. */
     description?: string | null;
 
-    /** Gets or Sets the GroupLocations that are associated with the Group. */
-    groupLocations?: ListItemBag[] | null;
+    /** Gets or sets the list of facilitators for this learning class. */
+    facilitators: LearningClassFacilitatorBag[] | null;
 
-    /** Gets or sets the Rock.Model.GroupType that this Group is a member of. */
-    groupType?: ListItemBag | null;
+    /** Gets or sets the related Rock.Model.LearningGradingSystem. */
+    gradingSystem?: ListItemBag | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
@@ -53,18 +60,21 @@ export type LearningClassBag = {
     /** Gets or sets a value indicating whether the group should be shown in group finders */
     isPublic: boolean;
 
-    /** Gets or sets the related Rock.Model.LearningCourse. */
-    learningCourse?: ListItemBag | null;
-
-    /** Gets or sets the related Rock.Model.LearningGradingSystem. */
-    learningGradingSystem?: ListItemBag | null;
-
-    /** Gets or sets the related Rock.Model.LearningSemester. */
-    learningSemester?: ListItemBag | null;
+    /** Gets or Sets the location that is associated with the class. */
+    location?: ListItemBag | null;
 
     /** Gets or sets the Name of the Group. This property is required. */
     name?: string | null;
 
     /** Gets or sets the Rock.Model.Schedule. */
     schedule?: ListItemBag | null;
+
+    /** Gets or sets the related Rock.Model.LearningSemester. */
+    semester?: ListItemBag | null;
+
+    /** Gets or sets the number of students in the class. */
+    studentCount: number;
+
+    /** Gets or sets whether this class takes attendance. */
+    takesAttendance: boolean;
 };

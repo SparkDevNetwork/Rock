@@ -21,10 +21,17 @@
 // </copyright>
 //
 
-export type LearningCourseDetailOptionsBag = {
-    /** Gets or sets the configuration mode of the course's learning program. */
-    configurationMode?: number | null;
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    /** Gets or sets the whether the Class/GroupType takes attendance. */
-    takesAttendance: boolean;
+/** The facilitator details for the Learning Class Detail block. */
+export type LearningClassFacilitatorBag = {
+
+    /** Gets or sets the facilitator name. */
+    facilitatorName?: string | null;
+
+    /** Gets or sets the facilitator role. */
+    facilitatorRole?: string | null;
+
+    /** Gets or sets the facilitator list item. */
+    facilitator?: ListItemBag | null;
 };

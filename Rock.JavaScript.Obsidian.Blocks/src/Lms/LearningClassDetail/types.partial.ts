@@ -16,5 +16,6 @@
 //
 
 export const enum NavigationUrlKey {
+    AttendancePage = "AttendancePage",
     ParentPage = "ParentPage"
 }

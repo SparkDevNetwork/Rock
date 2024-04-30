@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -44,6 +45,9 @@ namespace Rock.Blocks.Lms
 
     #region Block Attributes
 
+    [LinkedPage( "Attendance Page",
+        Description = "The page that to be used for taking attendance for the class.",
+        Key = AttributeKey.AttendancePage, IsRequired = false, Order = 1 )]
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "08b8da88-be2e-4237-883d-b9a2db5f6260" )]
@@ -52,14 +56,22 @@ namespace Rock.Blocks.Lms
     {
         #region Keys
 
+        private static class AttributeKey
+        {
+            public const string AttendancePage = "AttendancePage";
+        }
+
         private static class PageParameterKey
         {
             public const string LearningClassId = "LearningClassId";
+            public const string LearningCourseId = "LearningCourseId";
+            public const string LearningProgramId = "LearningProgramId";
         }
 
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
+            public const string AttendancePage = "AttendancePage";
         }
 
         #endregion Keys
@@ -87,7 +99,17 @@ namespace Rock.Blocks.Lms
         /// <returns>The options that provide additional details to the block.</returns>
         private LearningClassDetailOptionsBag GetBoxOptions( bool isEditable )
         {
+            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
             var options = new LearningClassDetailOptionsBag();
+
+            if ( programId > 0 )
+            {
+                var programService = new LearningProgramService( RockContext );
+                options.ProgramConfigurationMode = programService.GetConfigurationMode( programId );
+                options.Semesters = programService.Semesters( programId ).ToListItemBagList();
+            }
+
+            options.GradingSystems = new LearningGradingSystemService( RockContext ).Queryable().Where( g => g.IsActive ).ToListItemBagList();
 
             return options;
         }
@@ -164,20 +186,31 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
+            var locationItem = entity.GroupLocations?.FirstOrDefault()?.ToListItemBag() ?? new ListItemBag();
+            var textToRemove = entity.Name + " at ";
+
+            // The GroupLocation.ToString method includes the group name so we want to replace that before 
+            if ( locationItem.Text.IsNotNullOrWhiteSpace() && locationItem.Text.StartsWith( textToRemove ) )
+            {
+                locationItem.Text = locationItem.Text.Remove( 0, textToRemove.Length );
+            }
+
             return new LearningClassBag
             {
                 IdKey = entity.IdKey,
-                Campus = entity.Campus.ToListItemBag(),
+                Campus = entity.Campus?.ToListItemBag() ?? new ListItemBag(),
+                TakesAttendance = entity.GroupType?.TakesAttendance ?? false,
                 Description = entity.Description,
-                GroupLocations = entity.GroupLocations.ToListItemBagList(),
-                GroupType = entity.GroupType.ToListItemBag(),
+                Location = locationItem,
                 IsActive = entity.IsActive,
                 IsPublic = entity.IsPublic,
-                LearningCourse = entity.LearningCourse.ToListItemBag(),
-                LearningGradingSystem = entity.LearningGradingSystem.ToListItemBag(),
-                LearningSemester = entity.LearningSemester.ToListItemBag(),
+                CourseCode = entity.LearningCourse?.CourseCode,
+                CourseName = entity.LearningCourse?.Name,
+                GradingSystem = entity.LearningGradingSystem?.ToListItemBag() ?? new ListItemBag(),
+                Semester = entity.LearningSemester?.ToListItemBag() ?? new ListItemBag(),
+                StudentCount = new LearningParticipantService( RockContext ).GetStudents( entity.Id ).Count(),
                 Name = entity.Name,
-                Schedule = entity.Schedule.ToListItemBag()
+                Schedule = entity.Schedule?.ToListItemBag() ?? new ListItemBag()
             };
         }
 
@@ -190,6 +223,28 @@ namespace Rock.Blocks.Lms
             }
 
             var bag = GetCommonEntityBag( entity );
+
+            // Get just what we need for the facilitators info.
+            bag.Facilitators = new LearningParticipantService( RockContext )
+                .GetFacilitators( entity.Id )
+                .Select( f => new
+                {
+                    f.Person.FullName,
+                    f.Guid,
+                    RoleName = f.GroupRole.Name,
+                } )
+                .ToList()
+                .Select( f => new LearningClassFacilitatorBag
+                {
+                    FacilitatorName = f.FullName,
+                    FacilitatorRole = f.RoleName,
+                    Facilitator = new ListItemBag
+                    {
+                        Value = f.Guid.ToString(),
+                        Text = f.FullName
+                    }
+                } )
+                .ToList();
 
             return bag;
         }
@@ -215,17 +270,53 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
+            if ( entity.GroupTypeId == 0)
+            {
+                if (Guid.TryParse( SystemGuid.GroupType.GROUPTYPE_LMS_CLASS, out var groupTypeGuid ) )
+                {
+                    entity.GroupTypeId = new GroupTypeService( RockContext ).GetId( groupTypeGuid ).Value;
+                }
+            }
+
             box.IfValidProperty( nameof( box.Bag.Campus ),
                 () => entity.CampusId = box.Bag.Campus.GetEntityId<Campus>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
 
-            //box.IfValidProperty( nameof( box.Bag.GroupLocations ),
-            //    () => entity.GroupLocations = box.Bag.GroupLocations.ToListI;
+            var deleteLocatonError = string.Empty;
 
-            box.IfValidProperty( nameof( box.Bag.GroupType ),
-                () => entity.GroupTypeId = box.Bag.GroupType.GetEntityId<GroupType>( RockContext ).Value );
+            box.IfValidProperty( nameof( box.Bag.Location ),
+                () =>
+                {
+                    var locationId = box.Bag.Location.GetEntityId<Location>( RockContext );
+                    var currentLocation = entity.GroupLocations.FirstOrDefault();
+                    if ( currentLocation?.LocationId != locationId )
+                    {
+                        var groupLocationService = new GroupLocationService( RockContext );
+
+                        // Remove the current location if it doesn't match.
+                        if ( currentLocation != null )
+                        {
+                            groupLocationService.CanDelete( currentLocation, out deleteLocatonError );
+
+                            groupLocationService.Delete( currentLocation );
+                        }
+
+                        // If there's a new location add it.
+                        if ( locationId > 0 )
+                        {
+                            entity.GroupLocations.Add( groupLocationService.GetByLocation( locationId.Value ).FirstOrDefault() );
+                        }
+                    }
+
+                } );
+
+            // If there was an error deleting the location then return false to notify the caller of the error.
+            if ( deleteLocatonError.Length > 0 )
+            {
+                return false;
+            }
 
             box.IfValidProperty( nameof( box.Bag.IsActive ),
                 () => entity.IsActive = box.Bag.IsActive );
@@ -233,14 +324,16 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.IsPublic ),
                 () => entity.IsPublic = box.Bag.IsPublic );
 
-            box.IfValidProperty( nameof( box.Bag.LearningCourse ),
-                () => entity.LearningCourseId = box.Bag.LearningCourse.GetEntityId<LearningCourse>( RockContext ).Value );
+            // Only allow the UI to set the grading system if it's not yet set.
+            // Because existing ActivityCompletions may be set using it.
+            if ( entity.LearningGradingSystemId == 0 )
+            {
+                box.IfValidProperty( nameof( box.Bag.GradingSystem ),
+                () => entity.LearningGradingSystemId = box.Bag.GradingSystem.GetEntityId<LearningGradingSystem>( RockContext ).Value );
+            }
 
-            box.IfValidProperty( nameof( box.Bag.LearningGradingSystem ),
-                () => entity.LearningGradingSystemId = box.Bag.LearningGradingSystem.GetEntityId<LearningGradingSystem>( RockContext ).Value );
-
-            box.IfValidProperty( nameof( box.Bag.LearningSemester ),
-                () => entity.LearningSemesterId = box.Bag.LearningSemester.GetEntityId<LearningSemester>( RockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Semester ),
+                () => entity.LearningSemesterId = box.Bag.Semester.GetEntityId<LearningSemester>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
@@ -254,7 +347,30 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningClass GetInitialEntity()
         {
-            return GetInitialEntity<LearningClass, LearningClassService>( RockContext, PageParameterKey.LearningClassId );
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            var entityId = PageParameterAsId( PageParameterKey.LearningClassId );
+
+            // If a zero identifier is specified then create a new entity.
+            if ( entityId == 0 )
+            {
+                return new LearningClass
+                {
+                    Id = 0,
+                    Guid = Guid.Empty
+                };
+            }
+
+            var entityService = new LearningClassService( RockContext );
+
+            return entityService
+                .Queryable()
+                .Include( c => c.GroupType )
+                .Include( c => c.Campus )
+                .Include( c => c.LearningCourse )
+                .Include( c => c.LearningCourse.LearningProgram )
+                .Include( c => c.LearningGradingSystem )
+                .FirstOrDefault( a => a.Id == entityId );
         }
 
         /// <summary>
@@ -263,9 +379,17 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId )
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams ),
+                [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, queryParams )
             };
         }
 
@@ -286,6 +410,9 @@ namespace Rock.Blocks.Lms
             {
                 // Create a new entity.
                 entity = new LearningClass();
+
+                entity.LearningCourseId = PageParameterAsId( PageParameterKey.LearningCourseId );
+
                 entityService.Add( entity );
             }
 
@@ -307,6 +434,32 @@ namespace Rock.Blocks.Lms
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Gets the box that will contain all the information needed to begin
+        /// the clone operation.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be cloned.</param>
+        /// <returns>A box that contains the entity and any other information required.</returns>
+        [BlockAction]
+        public BlockActionResult Clone( string key )
+        {
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            var bag = GetEntityBagForEdit( entity );
+            // Remove the id and update the name.
+            bag.IdKey = string.Empty;
+            bag.Name += " - Copy";
+
+            return ActionOk( new ValidPropertiesBox<LearningClassBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
+        }
 
         /// <summary>
         /// Gets the box that will contain all the information needed to begin

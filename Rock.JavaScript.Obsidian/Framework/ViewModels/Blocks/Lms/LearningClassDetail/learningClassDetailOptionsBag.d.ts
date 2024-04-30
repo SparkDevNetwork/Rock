@@ -21,6 +21,17 @@
 // </copyright>
 //
 
+import { ListItemBag } from "../../../../ViewModels/Utility/listItemBag";
+import { ConfigurationMode } from "../../../../Enums/Lms/configurationMode";
+
 /** The additional configuration options for the Learning Class Detail block. */
 export type LearningClassDetailOptionsBag = {
+    /** Gets or sets the available grading systems. */
+    gradingSystems?: ListItemBag[] | null;
+
+    /** Gets or sets the related Rock.Model.LearningProgram's configuration mode. */
+    programConfigurationMode?: ConfigurationMode | null;
+
+    /** Gets or sets the available semesters for this course. */
+    semesters?: ListItemBag[] | null;
 };

@@ -97,7 +97,7 @@ namespace Rock.Blocks.Lms
         #region Keys
 
         private const string ShowHideListSource = "Yes^Show,No^Hide";
-        private const string DisplayModeListSource = "AcademicCalendarOnly^Show only Acadmemic Calendar Mode,Always^Always show the block";
+        private const string DisplayModeListSource = "AcademicCalendarOnly^Show only Acadmemic Calendar Mode,Always^Always show";
 
         private static class DisplayMode
         {
@@ -164,13 +164,29 @@ namespace Rock.Blocks.Lms
             // Show the block if the block setting for ShowOnlyInAcademicCalendarMode is false
             // or the program context entity is academic calendar mode.
             var showOnlyForAcademicCalendarMode = GetAttributeValue( AttributeKey.DisplayMode ).ToStringSafe() == DisplayMode.AcademicCalendarOnly;
-            options.ShowBlock = !showOnlyForAcademicCalendarMode || ContextEntityIsAcademicCalendarMode();
+            options.ShowBlock = !showOnlyForAcademicCalendarMode || ProgramIsAcademicConfigurationMode();
 
             return options;
         }
 
-        private bool ContextEntityIsAcademicCalendarMode()
+        /// <summary>
+        /// Determines if the current learning program is in academic configuration mode.
+        /// </summary>
+        /// <returns><c>true</c> if the current program is in academic configuration mode; otherwise <c>false</c>.</returns>
+        private bool ProgramIsAcademicConfigurationMode()
         {
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
+
+            if ( programId > 0 )
+            {
+                return new LearningProgramService( RockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Any( p => p.Id == programId && p.ConfigurationMode == ConfigurationMode.AcademicCalendar );
+            }
+
             var programContextEntity = RequestContext.GetContextEntity<LearningProgram>();
             if ( programContextEntity?.ConfigurationMode == ConfigurationMode.AcademicCalendar )
             {

@@ -14,32 +14,41 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
+using Rock.Data;
 using Rock.Enums.Lms;
-using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
+namespace Rock.Model
 {
+    public partial class LearningProgram
+    {
+      
+    }
+
     /// <summary>
-    /// The additional configuration options for the Learning Class Detail block.
+    /// POCO for encapsulating KPIs for a given <see cref="LearningProgram"/> .
     /// </summary>
-    public class LearningClassDetailOptionsBag
+    public class LearningProgramKpis
     {
         /// <summary>
-        /// Gets or sets the available grading systems.
+        /// Gets or sets the number of active classes in the Program.
         /// </summary>
-        public List<ListItemBag> GradingSystems { get; set; }
+        public int ActiveClasses { get; set; }
 
         /// <summary>
-        /// Gets or sets the related Rock.Model.LearningProgram's configuration mode.
+        /// Gets or sets the number of active students in the Program.
         /// </summary>
-        public ConfigurationMode? ProgramConfigurationMode { get; set; }
+        public int ActiveStudents{ get; set; }
 
         /// <summary>
-        /// Gets or sets the available semesters for this course.
+        /// Gets or sets the number of students who have completed this Program.
         /// </summary>
-        public List<ListItemBag> Semesters { get; set; }
+        public int Completions { get; set; }
     }
 }

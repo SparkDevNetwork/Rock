@@ -31,6 +31,12 @@ export type LearningProgramBag = {
     /** Gets or sets the number of absences at which a warning should be triggered. */
     absencesWarningCount?: number | null;
 
+    /** Gets or sets the number of active classes in the Program. */
+    activeClasses: number;
+
+    /** Gets or sets the number of active students in the Program. */
+    activeStudents: number;
+
     /** Gets or sets the additional settings json. */
     additionalSettingsJson?: string | null;
 
@@ -54,6 +60,9 @@ export type LearningProgramBag = {
 
     /** Gets or sets the Id of the Rock.Model.WorkflowType that is triggered when the program is completed by a student. */
     completionWorkflowTypeId?: number | null;
+
+    /** Gets or sets the number of students who have completed this Program. */
+    completions: number;
 
     /** Gets or sets the configuration mode of the LearningProgram. */
     configurationMode: number;

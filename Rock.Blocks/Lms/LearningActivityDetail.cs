@@ -22,11 +22,11 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
@@ -57,6 +57,9 @@ namespace Rock.Blocks.Lms
         private static class PageParameterKey
         {
             public const string LearningActivityId = "LearningActivityId";
+            public const string LearningProgramId = "LearningProgramId";
+            public const string LearningCourseId = "LearningCourseId";
+            public const string LearningClassId = "LearningClassId";
         }
 
         private static class NavigationUrlKey
@@ -195,6 +198,7 @@ namespace Rock.Blocks.Lms
                 CompleteCount = completionStatistics.Complete,
                 CompletionWorkflowType = entity.CompletionWorkflowType.ToListItemBag(),
                 Description = entity.Description,
+                DescriptionAsHtml = entity.Description.IsNotNullOrWhiteSpace() ? new StructuredContentHelper( entity.Description ).Render() : string.Empty,
                 DueDateCalculationMethod = entity.DueDateCalculationMethod,
                 DueDateCalculated = entity.DueDateCalculated,
                 DueDateDefault = entity.DueDateDefault,
@@ -314,18 +318,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningActivity GetInitialEntity()
         {
-            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
-
-            // Get the page parameter value (either IdKey or Id).
-            var entityParameterValue = PageParameter( PageParameterKey.LearningActivityId );
-
-            // Parse out the Id if the parameter is an IdKey or take the Id
-            // If the site allows predictable Ids in parameters.
-            var entityId =
-                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
-                entityParameterValue.ToIntSafe() :
-                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
-
+            var entityId = PageParameterAsId( PageParameterKey.LearningActivityId );
 
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
@@ -348,9 +341,16 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId )
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams )
             };
         }
 

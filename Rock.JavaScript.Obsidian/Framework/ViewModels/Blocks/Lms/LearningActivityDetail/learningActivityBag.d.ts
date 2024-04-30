@@ -80,6 +80,9 @@ export type LearningActivityBag = {
     /** Gets or sets the description of the activity. */
     description?: string | null;
 
+    /** Gets or sets the description of the activity as html. */
+    descriptionAsHtml?: string | null
+
     /** Gets or sets the calculated due date for the activity. */
     dueDateCalculated?: string | null;
 

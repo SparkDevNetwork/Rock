@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningCourseDetail
@@ -71,6 +72,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningCourseDetail
         /// Gets or sets the description of the course.
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description of the course as HTML.
+        /// </summary>
+        public string DescriptionAsHtml { get; set; }
 
         /// <summary>
         /// Indicates whether or not this course allows announcements.

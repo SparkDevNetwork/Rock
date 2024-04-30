@@ -59,6 +59,9 @@ export type LearningCourseBag = {
     /** Gets or sets the description of the course. */
     description?: string | null;
 
+    /** Gets or sets the description of the course as html. */
+    descriptionAsHtml?: string | null
+
     /** Indicates whether or not this course allows announcements. */
     enableAnnouncements: boolean;
 
@@ -72,7 +75,7 @@ export type LearningCourseBag = {
     isActive: boolean;
 
     /**
-     * Indicates whether or not this course should 
+     * Indicates whether or not this course should
      * be displayed in public contexts (e.g. on a public site).
      */
     isPublic: boolean;

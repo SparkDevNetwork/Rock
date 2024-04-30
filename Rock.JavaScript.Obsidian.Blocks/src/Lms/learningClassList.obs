@@ -9,7 +9,9 @@
           stickyHeader
           :expectedRowCount="config.expectedRowCount ?? undefined"
           liveUpdates
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined">
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :onSelectItem="onRowClick"
+          @deleteClick="onDeleteClick">
 
         <TextColumn
                     v-if="config.options?.showCourseColumn"
@@ -164,8 +166,15 @@
      * Called when the Add button has been clicked by the indivual.
      */
     function onAddItem(): void {
+        onRowClick("0");
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+     function onRowClick(idKey: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", idKey);
         }
     }
 

@@ -19,8 +19,7 @@
                 </fieldset>
             </div>
             <div v-else-if="item === 'Description'">
-                <StructuredContentEditor
-                                         v-model="description" disabled />
+                <span v-html="descriptionAsHtml"></span>
             </div>
         </template>
     </TabbedContent>
@@ -36,7 +35,6 @@
     import { LearningCourseRequirementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseRequirement/learningCourseRequirementBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
-    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
 
     const props = defineProps({
         modelValue: {
@@ -55,7 +53,7 @@
     const courseDetailTabs: Array<string> = ["Overview", "Description"];
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
-    const description = ref(props.modelValue?.description ?? "");
+    const descriptionAsHtml = ref(props.modelValue?.descriptionAsHtml ?? "");
 
     // #endregion
 

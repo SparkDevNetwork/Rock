@@ -223,16 +223,21 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
+            var kpis = new LearningProgramService( RockContext ).GetProgramKpis( entity.Id );
+
             return new LearningProgramBag
             {
                 IdKey = entity.IdKey,
                 AbsencesCriticalCount = entity.AbsencesCriticalCount,
                 AbsencesWarningCount = entity.AbsencesWarningCount,
+                ActiveClasses = kpis.ActiveClasses,
+                ActiveStudents = kpis.ActiveStudents,
                 AdditionalSettingsJson = entity.AdditionalSettingsJson,
                 Category = entity.Category.ToListItemBag(),
                 CategoryId = entity.CategoryId,
                 CompletionWorkflowType = entity.CompletionWorkflowType.ToListItemBag(),
                 CompletionWorkflowTypeId = entity.CompletionWorkflowTypeId,
+                Completions = kpis.Completions,
                 ConfigurationMode = entity.ConfigurationMode,
                 Description = entity.Description,
                 HighlightColor = entity.HighlightColor,

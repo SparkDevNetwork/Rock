@@ -171,10 +171,10 @@ span.past-due-dates {
     function getCompletionsHtml(row: Record<string, unknown>): string {
         const completedCount = row?.completedCount as number;
         const count = row?.count as number;
-        const defaultLabel = "<span class=\"label label-default\">0%</span>";
 
+        // If there are no completions don't show a label.
         if (!count || !completedCount) {
-            return defaultLabel;
+            return "";
         }
 
         const percentComplete = Math.round(completedCount / count * 100);
@@ -187,7 +187,7 @@ span.past-due-dates {
             case percentComplete <= 80:
                 return `<span class="label label-danger">${percentComplete}%</span>`;
             default:
-                return defaultLabel;
+                return "<span class=\"label label-default\">0%</span>";
         }
     }
 

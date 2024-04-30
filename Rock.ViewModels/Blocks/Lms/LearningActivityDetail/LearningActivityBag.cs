@@ -100,6 +100,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the description of the activity as html.
+        /// </summary>
+        public string DescriptionAsHtml {  get; set; }
+
+        /// <summary>
         /// The calculation method used for determing the DueDate of the activity.
         /// </summary>
         public DueDateCalculationMethod DueDateCalculationMethod { get; set; }

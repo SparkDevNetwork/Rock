@@ -33,6 +33,16 @@ namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
         public int? AbsencesWarningCount { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of active classes in the Program.
+        /// </summary>
+        public int ActiveClasses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of active students in the Program.
+        /// </summary>
+        public int ActiveStudents { get; set; }
+
+        /// <summary>
         /// Gets or sets the additional settings json.
         /// </summary>
         public string AdditionalSettingsJson { get; set; }
@@ -61,6 +71,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
         /// Gets or sets the Id of the Rock.Model.WorkflowType that is triggered when the program is completed by a student.
         /// </summary>
         public int? CompletionWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of students who have completed this Program.
+        /// </summary>
+        public int Completions { get; set; }
 
         /// <summary>
         /// Gets or sets the configuration mode of the LearningProgram.

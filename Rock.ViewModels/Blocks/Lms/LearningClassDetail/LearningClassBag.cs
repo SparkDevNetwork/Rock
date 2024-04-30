@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,19 +32,29 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         public ListItemBag Campus { get; set; }
 
         /// <summary>
+        /// Gets or sets the related LearningCourse code.
+        /// </summary>
+        public string CourseCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related LearningCourse name.
+        /// </summary>
+        public string CourseName { get; set; }
+
+        /// <summary>
         /// Gets or sets the optional description of the group.
         /// </summary>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or Sets the GroupLocations that are associated with the Group.
+        /// Gets or sets the list of facilitators for this learning class.
         /// </summary>
-        public List<ListItemBag> GroupLocations { get; set; }
+        public List<LearningClassFacilitatorBag> Facilitators { get; set; }
 
         /// <summary>
-        /// Gets or sets the Rock.Model.GroupType that this Group is a member of.
+        /// Gets or sets the related Rock.Model.LearningGradingSystem.
         /// </summary>
-        public ListItemBag GroupType { get; set; }
+        public ListItemBag GradingSystem { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this is an active group. This value is required.
@@ -57,19 +67,9 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         public bool IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the related Rock.Model.LearningCourse.
+        /// Gets or Sets the Location that is associated with the Class.
         /// </summary>
-        public ListItemBag LearningCourse { get; set; }
-
-        /// <summary>
-        /// Gets or sets the related Rock.Model.LearningGradingSystem.
-        /// </summary>
-        public ListItemBag LearningGradingSystem { get; set; }
-
-        /// <summary>
-        /// Gets or sets the related Rock.Model.LearningSemester.
-        /// </summary>
-        public ListItemBag LearningSemester { get; set; }
+        public ListItemBag Location { get; set; }
 
         /// <summary>
         /// Gets or sets the Name of the Group. This property is required.
@@ -80,5 +80,42 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         /// Gets or sets the Rock.Model.Schedule.
         /// </summary>
         public ListItemBag Schedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related Rock.Model.LearningSemester.
+        /// </summary>
+        public ListItemBag Semester { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of students in the class.
+        /// </summary>
+        public int StudentCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this class takes attendance.
+        /// </summary>
+        public bool TakesAttendance { get; set; }
+    }
+
+    /// <summary>
+    /// The facilitator details for the Learning Class Detail block.
+    /// </summary>
+    public class LearningClassFacilitatorBag
+    {
+        /// <summary>
+        /// Gets or sets the facilitator name.
+        /// </summary>
+        public string FacilitatorName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the facilitator role.
+        /// </summary>
+        public string FacilitatorRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the facilitator list item.
+        /// </summary>
+        public ListItemBag Facilitator { get; set; }
+
     }
 }

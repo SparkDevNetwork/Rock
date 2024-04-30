@@ -270,17 +270,7 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningParticipant"/> to be viewed or edited on the page.</returns>
         private LearningParticipant GetInitialEntity( RockContext rockContext )
         {
-            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
-
-            // Get the page parameter value (either IdKey or Id).
-            var participantParameterValue = PageParameter( PageParameterKey.LearningParticipantId );
-
-            // Parse out the Id if the parameter is an IdKey or take the Id
-            // If the site allows predictable Ids in parameters.
-            var partipicantId =
-                participantParameterValue.IsDigitsOnly() && allowIdParameters ?
-                participantParameterValue.ToIntSafe() :
-                IdHasher.Instance.GetId( participantParameterValue ).ToIntSafe();
+            var partipicantId = PageParameterAsId( PageParameterKey.LearningParticipantId );
 
             if ( partipicantId == 0 )
             {
@@ -330,7 +320,8 @@ namespace Rock.Blocks.Lms
             var queryParams = new Dictionary<string, string>
             {
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
-                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId )
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId )
             };
 
             return new Dictionary<string, string>

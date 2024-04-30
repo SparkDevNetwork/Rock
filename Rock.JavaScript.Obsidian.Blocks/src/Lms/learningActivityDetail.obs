@@ -86,44 +86,15 @@
         }
 
         labels.push({
-            title: `Completions: ${learningActivityViewBag.value.completeCount} (${parseInt(learningActivityViewBag.value.percentComplete)}%)`,
+            title: `Completions: ${learningActivityViewBag.value?.completeCount ?? "0"} (${learningActivityViewBag.value?.percentComplete?.toFixed(0) ?? 0}%)`,
             type: "info",
             iconCssClass: "fa fa-group"
         });
 
-        if (learningActivityViewBag.isPastDue) {
+        if (learningActivityViewBag.value?.isPastDue) {
             labels.push({
                 title: "Past Due",
                 type: "warning"
-            });
-        }
-
-        // TODO: Confirm if we want this - it's not in the mockup.
-        if (learningActivityViewBag.value?.isPublic === true) {
-            labels.push({
-                title: "Public",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                title: "Private",
-                type: "warning"
-            });
-        }
-
-        if (learningActivityViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
-                title: "Inactive",
-                type: "danger"
             });
         }
 
@@ -191,7 +162,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
      async function onCancelEdit(): Promise<boolean | string> {
-        if (!learningActivityEditBag.value?.idKey) {
+        if (!learningActivityEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }

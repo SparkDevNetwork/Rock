@@ -10,7 +10,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="LearningCourse"
+                 entityTypeName="Course"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -36,7 +36,7 @@
         </template>
     </DetailBlock>
 
-    <OnDemandSubPanel v-if="!isAcademicMode && panelMode == DetailPanelMode.View" v-model="learningCourseViewBag" />
+    <OnDemandSubPanel v-if="!isAcademicMode && panelMode === DetailPanelMode.View" v-model="learningCourseViewBag" />
 </template>
 
 <script setup lang="ts">
@@ -49,6 +49,7 @@
     import EditPanel from "./LearningCourseDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningCourseDetail/viewPanel.partial.obs";
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
+    import OnDemandSubPanel from "../Lms/LearningCourseDetail/OnDemandSubPanel/onDemandSubPanel.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./LearningCourseDetail/types.partial";
@@ -56,7 +57,7 @@
     import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
-    import OnDemandSubPanel from "../Lms/LearningCourseDetail/OnDemandSubPanel/onDemandSubPanel.partial.obs";
+
 
     const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();

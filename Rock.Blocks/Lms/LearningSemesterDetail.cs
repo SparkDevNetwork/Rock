@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -25,7 +24,6 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningSemesterDetail;
 using Rock.ViewModels.Utility;
@@ -326,15 +324,7 @@ namespace Rock.Blocks.Lms
             // Set the LearningProgramId from the page parameter if the entity doesn't yet have one.
             if (entity.LearningProgramId == 0)
             {
-                var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;// Get the page parameter value (either IdKey or Id).
-                var programParameterValue = PageParameter( PageParameterKey.LearningProgramId );
-
-                // Parse out the Id if the parameter is an IdKey or take the Id
-                // If the site allows predictable Ids in parameters.
-                entity.LearningProgramId =
-                    programParameterValue.IsDigitsOnly() && allowIdParameters ?
-                    programParameterValue.ToIntSafe() :
-                    IdHasher.Instance.GetId( programParameterValue ).ToIntSafe();
+                entity.LearningProgramId = PageParameterAsId( PageParameterKey.LearningProgramId );
             }
 
             // Update the entity instance from the information in the bag.

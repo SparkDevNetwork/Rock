@@ -4,9 +4,9 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
     <div class="row d-flex mb-3">
-        <Kpi :value="24" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
-        <Kpi :value="365" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
-        <Kpi :value="1145" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
+        <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
+        <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
+        <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
     </div>
 
     <DetailBlock
@@ -64,7 +64,7 @@
     import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
     import { LearningProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
-    import { ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ConfigurationMode, ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
 
     const config = useConfigurationValues<DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -87,6 +87,9 @@
     const imageGuid = ref<string>(learningProgramViewBag.value?.imageBinaryFile?.value ?? "");
     const iconCssClass = ref<string>(learningProgramViewBag.value?.iconCssClass ?? "");
     const highlightColor = ref<string>(learningProgramViewBag.value?.highlightColor ?? "");
+    const activeClasses = ref(learningProgramViewBag.value?.activeClasses);
+    const activeStudents = ref(learningProgramViewBag.value?.activeStudents);
+    const completions = ref(learningProgramViewBag.value?.completions);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -215,7 +218,7 @@
             });
         }
 
-        if (learningProgramViewBag.value?.configurationMode === 1 && config.navigationUrls?.[NavigationUrlKey.SemestersPage]) {
+        if (learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar && config.navigationUrls?.[NavigationUrlKey.SemestersPage]) {
             footerActionsPanelActions.push({
                 title: "Semesters",
                 type: "default",
@@ -241,10 +244,10 @@
         if (isEditable) {
             secondaryActions.push({
                 iconCssClass: "fa fa-ellipsis-h",
-                title: "Advanced Details",
+                title: "Additional Details",
                 type: "default",
                 handler: async () => {
-                    if (await onViewAditionalDetailsModal()) {
+                    if (await onViewAdditionalDetailsModal()) {
                         showDetailsModal.value = true;
                     }
                 }
@@ -399,7 +402,7 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-    async function onViewAditionalDetailsModal(): Promise<boolean> {
+    async function onViewAdditionalDetailsModal(): Promise<boolean> {
         errorMessage.value = "";
 
         const result = await invokeBlockAction<LearningProgramBag | string>("GetEntityBagWithAllAttributes");

@@ -79,10 +79,12 @@ namespace Rock.Model
                  Queryable()
                     .Include( a => a.LearningGradingSystemScale )
                     .Include( a => a.Person )
+                    .Include( a => a.GroupRole )
                     .Where( filterPredicate )
                     .AsQueryable() :
                  Queryable()
                     .Include( a => a.Person )
+                    .Include( a => a.GroupRole )
                     .Where( filterPredicate )
                     .AsQueryable();
         }

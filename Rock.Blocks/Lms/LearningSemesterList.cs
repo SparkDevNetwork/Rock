@@ -25,7 +25,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningSemesterList;
 using Rock.Web.Cache;
@@ -138,18 +137,8 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningSemester> GetListQueryable( RockContext rockContext )
         {
-            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
-
-            // Get the page parameter value (either IdKey or Id).
-            var entityParameterValue = PageParameter( PageParameterKey.LearningProgramId );
-
-            // Parse out the Id if the parameter is an IdKey or take the Id
-            // If the site allows predictable Ids in parameters.
-            var entityId =
-                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
-                entityParameterValue.ToIntSafe() :
-                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
-
+            var entityId = PageParameterAsId( PageParameterKey.LearningProgramId );
+                
             // If the PageParameter has a value then use that
             // otherwise try to get the Id for filtering from the ContextEntity.
             if ( entityId > 0 )

@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -130,7 +131,7 @@ namespace Rock.Blocks.Lms
                 .Queryable()
                 .Include( c => c.LearningCourse )
                 .Include( c => c.GroupType )
-                .Where( c => c.Id == courseId )
+                .Where( c => c.LearningCourseId == courseId )
                 .OrderBy( c => c.Order )
                 .Select( c => new LearningCourseDetailOptionsBag
                 {
@@ -228,6 +229,7 @@ namespace Rock.Blocks.Lms
                 CourseCode = entity.CourseCode,
                 Credits = entity.Credits,
                 Description = entity.Description,
+                DescriptionAsHtml = entity.Description.IsNotNullOrWhiteSpace() ? new StructuredContentHelper( entity.Description ).Render() : string.Empty,
                 EnableAnnouncements = entity.EnableAnnouncements,
                 ImageBinaryFile = entity.ImageBinaryFile?.ToListItemBag(),
                 IsActive = entity.IsActive,
@@ -364,7 +366,25 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningCourse"/> to be viewed or edited on the page.</returns>
         private LearningCourse GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<LearningCourse, LearningCourseService>( rockContext, PageParameterKey.LearningCourseId );
+            var entityId = PageParameterAsId( PageParameterKey.LearningCourseId );
+
+            // If a zero identifier is specified then create a new entity.
+            if ( entityId == 0 )
+            {
+                return new LearningCourse
+                {
+                    Id = 0,
+                    Guid = Guid.Empty
+                };
+            }
+
+            var entityService = new LearningCourseService( rockContext );
+
+            return entityService.Queryable()
+                .AsNoTracking()
+                .Include( a => a.LearningProgram )
+                .Include( a => a.LearningClasses )
+                .FirstOrDefault( a => a.Id == entityId );
         }
 
         /// <summary>
@@ -1054,18 +1074,8 @@ namespace Rock.Blocks.Lms
 
         private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext )
         {
-            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
-
-            // Get the page parameter value (either IdKey or Id).
-            var classParameterValue = PageParameter( PageParameterKey.LearningClassId );
-
-            // Parse out the Id if the parameter is an IdKey or take the Id
-            // If the site allows predictable Ids in parameters.
-            var classId =
-                classParameterValue.IsDigitsOnly() && allowIdParameters ?
-                classParameterValue.ToIntSafe() :
-                IdHasher.Instance.GetId( classParameterValue ).ToIntSafe();
-
+            var classId = PageParameterAsId( PageParameterKey.LearningClassId );
+            
             var contextClass = RequestContext?.GetContextEntity<LearningClass>();
             var filteredClassId = classId > 0 ? classId : contextClass?.Id ?? 0;
 
@@ -1077,14 +1087,7 @@ namespace Rock.Blocks.Lms
             }
 
             // Get the page parameter value (either IdKey or Id).
-            var courseParameterValue = PageParameter( PageParameterKey.LearningCourseId );
-
-            // Parse out the Id if the parameter is an IdKey or take the Id
-            // If the site allows predictable Ids in parameters.
-            var courseId =
-                courseParameterValue.IsDigitsOnly() && allowIdParameters ?
-                courseParameterValue.ToIntSafe() :
-                IdHasher.Instance.GetId( courseParameterValue ).ToIntSafe();
+            var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
 
             var contextCourse= RequestContext?.GetContextEntity<LearningCourse>();
             int filteredCourseId = courseId > 0 ? courseId : contextCourse?.Id ?? 0;

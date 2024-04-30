@@ -10,13 +10,14 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :isAuditHidden="false"
-                 :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="false"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
+                 :isFollowVisible="false"
+                 :isFullScreenVisible="false"
                  :isSecurityHidden="false"
+                 :footerSecondaryActions="footerSecondaryActions"
                  @cancelEdit="onCancelEdit"
-                 @delete="onDelete"
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
@@ -72,7 +73,11 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return learningClassViewBag.value?.name ?? "";
+        return [
+            learningClassViewBag.value?.courseCode ?? "",
+            learningClassViewBag.value?.semester?.text ?? "",
+            learningClassViewBag.value?.schedule?.text ?? ""
+        ].filter(s => s.length > 0).join(" | ");
     });
 
     /**
@@ -92,22 +97,73 @@
             return undefined;
         }
 
+        labels.push({
+            iconCssClass: "fa fa-users",
+            title: `Students: ${learningClassViewBag.value?.studentCount ?? 0}`,
+            type: "info"
+        });
+
+        const campusName = learningClassViewBag.value?.campus?.text ?? "";
+        if (campusName.length > 0) {
+            labels.push({
+                title: campusName,
+                type: "link"
+            });
+        }
+
         if (learningClassViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
                 title: "Active",
                 type: "success"
             });
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
                 title: "Inactive",
                 type: "danger"
             });
         }
 
         return labels;
+    });
+
+    /**
+     * The footer secondary actions for the block panel.
+     */
+     const footerSecondaryActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+
+        const secondaryActions: PanelAction[] = [];
+
+        if (isEditable) {
+            secondaryActions.push({
+                iconCssClass: "fa fa-clone",
+                title: "Copy",
+                type: "default",
+                handler: async () => {
+                    onClone();
+                }
+            });
+        }
+
+        if (learningClassViewBag.value?.takesAttendance === true) {
+            secondaryActions.push({
+                iconCssClass: "fa fa-check-square",
+                title: "Take Attendance",
+                type: "default",
+                handler: async () => {
+                    if (!learningClassEditBag.value.bag?.idKey) {
+                        if (config.navigationUrls?.[NavigationUrlKey.AttendancePage]) {
+                            location.href = config.navigationUrls[NavigationUrlKey.AttendancePage];
+                        }
+                    }
+                }
+            });
+        }
+
+        return secondaryActions;
     });
 
     const isEditable = computed((): boolean => {
@@ -125,6 +181,37 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Handles the click event of the "Clone" button.
+     */
+     async function onClone(): Promise<boolean> {
+        const key = learningClassViewBag.value?.idKey ?? "";
+        if (key.length === 0) {
+            errorMessage.value = "Invalid Id detected while trying to clone learning class.";
+            return false;
+        }
+
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningClassBag>>("Clone", { key });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to clone learning class.";
+            return false;
+        }
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            learningClassEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            panelMode.value = DetailPanelMode.Add;
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
     /**
      * Event handler for the Cancel button being clicked while in Edit mode.

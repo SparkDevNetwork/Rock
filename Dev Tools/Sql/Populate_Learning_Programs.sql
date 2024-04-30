@@ -347,14 +347,19 @@ BEGIN
     SET @programsCreated = @programsCreated + 1;
 END
 
+
+/* Redeclare the variables here in case we want to run the query without the inserts above. */
+DECLARE
+    @queryFacilitatorRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '80F802CE-2F59-4AB1-ABD8-CFD7A009A00A'),
+    @queryStudentRoleId INT = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = 'FA3ACAC2-0377-484C-B888-974CA3BF2FF2');
 SELECT 
     p.[Name] [Program], 
     s.Name [Semester], 
     c.Name [Course], 
     COUNT(DISTINCT cl.Id) Classes, 
     COUNT(DISTINCT a.Id) Activities, 
-    SUM(IIF(gm.GroupRoleId = @studentRoleId, 1, 0)) Students,
-    SUM(IIF(gm.GroupRoleId = @facilitatorRoleId, 1, 0)) Facilitators
+    SUM(IIF(gm.GroupRoleId = @queryStudentRoleId, 1, 0)) Students,
+    SUM(IIF(gm.GroupRoleId = @queryFacilitatorRoleId, 1, 0)) Facilitators
 FROM LearningProgram p
 JOIN LearningCourse c ON p.Id = c.LearningProgramId
 LEFT JOIN LearningSemester s on s.LearningProgramId = p.Id
