@@ -27,8 +27,8 @@ import { Guid } from "@Obsidian/Types";
 import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** Bag containing the communication information for the Communication Entry block. */
-export type CommunicationEntryCommunicationBag = {
+/** Bag containing the information for the Communication Entry block to save a communication. */
+export type CommunicationEntrySaveRequestBag = {
     /** Gets or sets the BCC email addresses. */
     bccAddresses?: string | null;
 

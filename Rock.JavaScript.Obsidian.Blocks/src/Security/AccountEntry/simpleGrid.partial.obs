@@ -2,11 +2,11 @@
 <template>
     <div class="table-responsive">
         <table :class="[
-                'grid-table table',
-                hasAlternatingColors ? 'table-striped' : '',
-                hasBorder ? 'table-bordered' : '',
-                hasHoverEffect ? 'table-hover' : ''
-            ]">
+            'grid-table table',
+            hasAlternatingColors ? 'table-striped' : '',
+            hasBorder ? 'table-bordered' : '',
+            hasHoverEffect ? 'table-hover' : ''
+        ]">
             <thead>
                 <Comment>
                     <!--
@@ -42,7 +42,7 @@
                     <tr>
                         <template v-for="propertyName in propertyNames" :key="propertyName">
                             <slot :name="getHeaderSlotName(propertyName)" :propertyName="propertyName">
-                                <th>{{ toTitleCase(splitCamelCase(propertyName)) }}</th>
+                                <th>{{ toTitleCase(splitCase(propertyName)) }}</th>
                             </slot>
                         </template>
                     </tr>
@@ -120,18 +120,18 @@
     </div>
 </template>
 <!-- TODO JMH Remove generic stuff. -->
-<!-- <script setup lang="ts" generic="T"> -->
-<script setup lang="ts">
-    import { splitCamelCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
+<script setup lang="ts" generic="T">
+    // <script setup lang="ts">
+    import { splitCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { computed, PropType } from "vue";
-    import Comment from "./comment.partial.obs";
+    import Comment from "@Obsidian/Controls/comment.obs";
 
     const props = defineProps({
         items: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            type: Array as PropType<any[]>,
+            // type: Array as PropType<any[]>,
             // TODO JMH Remove generic stuff.
-            // type: Array as PropType<T[]>,
+            type: Array as PropType<T[]>,
             required: true
         },
 
@@ -156,7 +156,9 @@
         },
 
         getItemKey: {
-            type: Function as PropType<((item: unknown) => unknown)>,
+            // TODO JMH Remove generic stuff.
+            type: Function as PropType<((item: T) => unknown)>,
+            // type: Function as PropType<((item: unknown) => unknown)>,
             required: true
         }
     });

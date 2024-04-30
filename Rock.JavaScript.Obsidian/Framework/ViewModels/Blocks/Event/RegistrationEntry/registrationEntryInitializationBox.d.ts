@@ -109,7 +109,6 @@ export type RegistrationEntryInitializationBox = {
      */
     isInlineSignatureRequired: boolean;
 
-    /** Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments. */
     isPaymentPlanAllowed: boolean;
 
     /** Gets a value indicating whether the payment plan has been configured. */

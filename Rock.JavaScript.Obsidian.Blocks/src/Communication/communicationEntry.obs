@@ -9,7 +9,7 @@
 
         <template #default>
             <div ref="panelDiv" v-if="!areResultsShown">
-                <PanelNavigationBar v-model="selectedMediumEntityTypeGuid"
+                <PanelNavigationBar v-model="selectedMediumEntityTypeGuidOrEmptyString"
                                     :isFirstSelectedByDefault="true"
                                     :items="mediums" />
 
@@ -27,9 +27,10 @@
                                  :dismissible="true"
                                  heading="Warning" />
 
-                <CommunicationMedium :communication="config.communication"
+                <CommunicationMedium v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions"
+                                     :communication="config.communication"
                                      :isFullMode="isFullMode"
-                                     :mediumEntityTypeGuid="selectedMediumEntityTypeGuid"
+                                     :mediumEntityTypeGuid="selectedMediumEntityTypeGuidOrEmptyString"
                                      :mediumOptions="config.mediumOptions"
                                      ref="communicationMedium"
                                      @error="onError"
@@ -108,7 +109,7 @@
     const sentResultsDiv = ref<HTMLElement | undefined>();
     const communicationMedium = ref<InstanceType<typeof CommunicationMedium>>();
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
-    const selectedMediumEntityTypeGuid = ref<Nullable<string>>("");
+    const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
     const resultMessage = ref<Nullable<string>>("");
     const viewCommunicationUrl = ref<string>(window.location.href);
     const validationSummaryMessage = ref<Nullable<string>>();
@@ -136,7 +137,8 @@
     const footerActions = computed<FooterActions>(() => {
         const something = !!config.authorization?.isApproveActionAuthorized
             || !!config.authorization?.isEditActionAuthorized
-            || !!config.authorization?.isCurrentPersonSender;
+            //|| !!config.authorization?.isCurrentPersonSender
+            ;
 
         const somethingElse = !!config.authorization?.canApproveCommunication
             && config.communication?.status === CommunicationStatus.PendingApproval;

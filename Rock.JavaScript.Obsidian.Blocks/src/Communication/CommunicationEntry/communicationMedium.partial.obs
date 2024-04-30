@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <KeepAlive>
-        <Email v-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumEmail)"
+        <Email v-if="areEqual(mediumEntityTypeGuid, EntityType.CommunicationMediumEmail)"
                :communication="communication"
                :isFullMode="isFullMode"
                :key="EntityType.CommunicationMediumEmail"
@@ -12,11 +12,11 @@
                @saved="emit('saved', $event)"
                @sent="emit('sent', $event)"
                @tested="emit('tested', $event)" />
-        <Sms v-else-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumSms)"
+        <Sms v-else-if="areEqual(mediumEntityTypeGuid, EntityType.CommunicationMediumSms)"
              :isFullMode="isFullMode"
              :mediumEntityTypeGuid="mediumEntityTypeGuid"
              ref="mediumComponent" />
-        <PushNotification v-else-if="isGuid(mediumEntityTypeGuid, EntityType.CommunicationMediumPushNotification)"
+        <PushNotification v-else-if="areEqual(mediumEntityTypeGuid, EntityType.CommunicationMediumPushNotification)"
                           :isFullMode="isFullMode"
                           :mediumEntityTypeGuid="mediumEntityTypeGuid"
                           ref="mediumComponent" />
@@ -37,13 +37,14 @@
     import Email from "./communicationMediumEmail.partial.obs";
     import Sms from "./communicationMediumSms.partial.obs";
     import PushNotification from "./communicationMediumPushNotification.partial.obs";
-    import { Nullable } from "./types.partial";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
     import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
+    import { Guid } from "@Obsidian/Types";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         isFullMode: {
@@ -51,20 +52,16 @@
             default: false
         },
         mediumEntityTypeGuid: {
-            type: String as PropType<Nullable<string>>,
-            required: false
-        },
-        initialOptions: {
-            type: Object as PropType<Nullable<CommunicationEntryMediumOptionsBaseBag>>,
-            required: false
+            type: String as PropType<Guid>,
+            required: true
         },
         communication: {
-            type: Object as PropType<Nullable<CommunicationEntryCommunicationBag>>,
-            required: false
+            type: Object as PropType<CommunicationEntryCommunicationBag>,
+            required: true
         },
         mediumOptions: {
-            type: Object as PropType<Nullable<CommunicationEntryMediumOptionsBaseBag>>,
-            required: false
+            type: Object as PropType<CommunicationEntryMediumOptionsBaseBag>,
+            required: true
         },
     });
     defineExpose({
@@ -98,10 +95,6 @@
     //#endregion
 
     //#region Functions
-
-    function isGuid(sourceGuid: Nullable<string>, targetGuid: Nullable<string>): boolean {
-        return !!sourceGuid && !!targetGuid && sourceGuid.toLocaleLowerCase().localeCompare(targetGuid.toLocaleLowerCase(), undefined, { sensitivity: "base" }) === 0;
-    }
 
     /**
      * Cancels the communication entry.

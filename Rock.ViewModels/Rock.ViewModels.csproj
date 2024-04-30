@@ -78,6 +78,9 @@
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryTestRequestBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveRequestBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySendRequestBag.cs" />
     <Compile Include="Blocks\Core\DocumentTypeList\DocumentTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PersonPhotoBag.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PhotoUploadInitializationBox.cs" />

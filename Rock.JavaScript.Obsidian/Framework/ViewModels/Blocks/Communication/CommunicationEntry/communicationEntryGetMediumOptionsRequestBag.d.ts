@@ -26,5 +26,5 @@ import { Guid } from "@Obsidian/Types";
 /** Bag containing the information required to get medium options for the Communication Entry block. */
 export type CommunicationEntryGetMediumOptionsRequestBag = {
     /** Gets or sets the medium entity type unique identifier. */
-    mediumEntityTypeGuid?: Guid | null;
+    mediumEntityTypeGuid: Guid;
 };

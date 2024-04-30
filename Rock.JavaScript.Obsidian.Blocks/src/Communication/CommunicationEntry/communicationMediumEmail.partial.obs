@@ -28,7 +28,7 @@
             <div class="col-sm-6">
                 <DropDownList v-model="templateGuid"
                               :disabled="internalDisabled"
-                              :items="mediumOptions?.templates ?? undefined"
+                              :items="mediumOptions.templates ?? undefined"
                               label="Template" />
             </div>
             <div v-if="!isBulkEmailThresholdExceeded" class="col-sm-6 align-self-center">
@@ -160,7 +160,6 @@
     import { PropType, Ref, computed, nextTick, onMounted, ref, watch, watchEffect } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
-    import { Nullable } from "./types.partial";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
@@ -177,16 +176,20 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { splitCamelCase } from "@Obsidian/Utility/stringUtils";
+    import { splitCase } from "@Obsidian/Utility/stringUtils";
     import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { CommunicationEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveRequestBag";
     import { CommunicationEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveResponseBag";
+    import { CommunicationEntrySendRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendRequestBag";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
+    import { CommunicationEntryTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestRequestBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
+    import { Guid } from "@Obsidian/Types";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -199,18 +202,19 @@
             default: false
         },
         mediumEntityTypeGuid: {
-            type: String as PropType<Nullable<string>>,
-            required: false
+            type: String as PropType<Guid>,
+            required: true
         },
 
         /** The communication info from which to load the initial control data. */
         communication: {
-            type: Object as PropType<Nullable<CommunicationEntryCommunicationBag>>,
-            required: false
+            type: Object as PropType<CommunicationEntryCommunicationBag>,
+            required: true
         },
+
         mediumOptions: {
-            type: Object as PropType<Nullable<CommunicationEntryEmailMediumOptionsBag>>,
-            required: false
+            type: Object as PropType<CommunicationEntryEmailMediumOptionsBag>,
+            required: true
         },
     });
 
@@ -260,8 +264,8 @@
     const isScheduleSendModalOpen = ref<boolean>(false);
     const fileInputWrapper = ref<HTMLInputElement | undefined>();
     const message = ref<string>(props.communication?.message ?? "");
-    const communicationGuid = ref<Nullable<string>>(props.communication?.communicationGuid);
-    const options = ref<Nullable<CommunicationEntryEmailMediumOptionsBag>>(props.mediumOptions);
+    const communicationGuid = ref<Guid>(props.communication.communicationGuid);
+    const options = ref<CommunicationEntryEmailMediumOptionsBag>(props.mediumOptions);
     const isFormSubmitted = ref<boolean>(false);
     const pendingAction = ref<() => PromiseLike<void>>();
     const isRecipientRequired = ref<boolean>(false);
@@ -280,7 +284,7 @@
     });
 
     const isBulkEmailThresholdExceeded = computed<boolean>(() => {
-        const threshold = props.mediumOptions?.bulkEmailThreshold;
+        const threshold = props.mediumOptions.bulkEmailThreshold;
         return !!(threshold ?? "undefined" !== "undefined")
             && recipients.value.length > threshold!;
     });
@@ -408,7 +412,7 @@
                 return `${recipient.name ?? "This recipient"} has an inactive email.`;
             }
             else {
-                return `${recipient.name ?? "This recipient"} has email preference set to "${splitCamelCase(recipient.emailPreference ?? "")}".`;
+                return `${recipient.name ?? "This recipient"} has email preference set to "${splitCase(recipient.emailPreference ?? "")}".`;
             }
         });
     }
@@ -564,7 +568,7 @@
     async function doSave(): Promise<void> {
         try {
             internalDisabled.value = true;
-            const bag: CommunicationEntryCommunicationBag = {
+            const bag: CommunicationEntrySaveRequestBag = {
                 isBulkCommunication: isBulkCommunication.value,
                 bccAddresses: bccAddresses.value,
                 ccAddresses: ccAddresses.value,
@@ -602,7 +606,7 @@
         try {
             internalDisabled.value = true;
 
-            const bag: CommunicationEntryCommunicationBag = {
+            const bag: CommunicationEntrySendRequestBag = {
                 isBulkCommunication: isBulkCommunication.value,
                 bccAddresses: bccAddresses.value,
                 ccAddresses: ccAddresses.value,
@@ -640,7 +644,7 @@
         try {
             internalDisabled.value = true;
 
-            const bag: CommunicationEntryCommunicationBag = {
+            const bag: CommunicationEntryTestRequestBag = {
                 isBulkCommunication: isBulkCommunication.value,
                 bccAddresses: bccAddresses.value,
                 ccAddresses: ccAddresses.value,

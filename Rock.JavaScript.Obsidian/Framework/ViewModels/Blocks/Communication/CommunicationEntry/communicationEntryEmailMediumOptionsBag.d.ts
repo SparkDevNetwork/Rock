@@ -28,7 +28,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /** Bag containing the Email Medium options for the Communication Entry block. */
 export type CommunicationEntryEmailMediumOptionsBag = {
     /** Gets or sets the binary file type unique identifier. */
-    binaryFileTypeGuid?: Guid | null;
+    binaryFileTypeGuid: Guid;
 
     /** Gets or sets the recipient threshold that, once exceeded, will automatically mark the communication as a bulk email. */
     bulkEmailThreshold?: number | null;

@@ -2,6 +2,7 @@
 <template>
     <Modal v-model="internalIsOpen"
            cancelText="Cancel"
+           :clickBackdropToClose="false"
            saveText="Save"
            title="Recipient Manager"
            @save="onSaveClicked">
@@ -11,64 +12,102 @@
         </div>
         <hr>
         <TextBox v-model="recipientTextFilter" label="Filter" placeholder="Filter by name, email or phone number" />
-        <SimpleGrid style="max-height: 450px; overflow-y: auto"
-                    :items="filteredRecipients"
-                    :hasAlternatingColors="false"
-                    :hasBorder="false"
-                    :hasHoverEffect="false"
-                    :getItemKey="(i) => isRecipient(i) ? i.personAliasGuid : null">
-            <template #header>
-                <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">SMS</th>
-                    <th align="center" class="text-center" scope="col">Push</th>
-                    <th align="center" class="text-center" scope="col"><!-- Empty header for delete column. --></th>
-                </tr>
-            </template>
-            <template #row="{ item }">
-                <tr>
-                    <th scope="row" :class="['align-middle', item.isDeceased ? 'text-muted' : '']">
-                        <template v-if="!item.isDeceased">
-                            {{ item.name }}
-                        </template>
-                        <template v-else>
-                            <div>
-                                <div>{{ item.name }}</div>
-                                <small class="font-weight-light">Deceased Won't Send</small>
-                            </div>
-                        </template>
-                    </th>
-                    <td :class="['align-middle', item.isDeceased ? 'text-muted' : '']">
-                        <span><i :class="['fa fa-circle', item.isDeceased ? 'text-muted' : (isBulk ? item.isBulkEmailAllowed : item.isEmailAllowed) ? 'text-success' : 'text-danger']" data-container="body" :data-original-title="getEmailTooltipRef(item).value" :ref="setItemRef"></i>&nbsp;{{ item.email }}</span>
-                    </td>
-                    <td :class="['align-middle', item.isDeceased ? 'text-muted' : '']">
-                        <span><i :class="['fa fa-circle', item.isDeceased ? 'text-muted' : item.isSmsAllowed ? 'text-success' : 'text-danger']"></i>&nbsp;{{ item.smsNumber }}</span>
-                    </td>
-                    <td align="center" :class="['align-middle text-center', item.isDeceased ? 'text-muted' : '']">
-                        <span><i :class="['fa fa-circle', item.isDeceased ? 'text-muted' : item.isPushAllowed ? 'text-success' : 'text-danger']"></i></span>
-                    </td>
-                    <td align="center" :class="['align-middle text-center', item.isDeceased ? 'text-muted' : '']">
-                        <RockButton @click="onDeselectItemClicked(item.personAliasGuid)" btnType="link" btnSize="xs"><i class="fa fa-times"></i></RockButton>
-                    </td>
-                </tr>
-            </template>
-        </SimpleGrid>
+        <Grid :definition="recipientsGridDefinition"
+              :data="recipientsGridData"
+              itemTerm="Recipient"
+              :keyField="getStringKey<CommunicationEntryRecipientBag>('personAliasGuid')"
+              :light="true">
+
+            <Column :name="getRecipientKey('name')"
+                    :field="getRecipientKey('name')"
+                    title="Name"
+                    :filter="textValueFilter">
+                <template #format="{ row }">
+                    <div v-if="!(row as CommunicationEntryRecipientBag).isDeceased">
+                        {{ (row as CommunicationEntryRecipientBag).name }}
+                    </div>
+                    <div v-else class="text-muted">
+                        <div>{{ (row as CommunicationEntryRecipientBag).name }}</div>
+                        <small class="font-weight-light">Deceased Won't Send</small>
+                    </div>
+                </template>
+            </Column>
+
+            <Column :name="getRecipientKey('isEmailAllowed')"
+                    :field="getRecipientKey('isEmailAllowed')"
+                    title="Email">
+                <template #format="{ row }">
+                    <span>
+                        <i :class="[
+                            'fa fa-circle',
+                            (row as CommunicationEntryRecipientBag).isDeceased
+                                ? 'text-muted'
+                                : (isBulk
+                                    ? (row as CommunicationEntryRecipientBag).isBulkEmailAllowed
+                                    : (row as CommunicationEntryRecipientBag).isEmailAllowed)
+                                    ? 'text-success'
+                                    : 'text-danger']"
+                           data-container="body"
+                           :data-original-title="getEmailTooltipRef((row as CommunicationEntryRecipientBag)).value"
+                           :ref="setItemRef"></i>&nbsp;{{ (row as CommunicationEntryRecipientBag).email }}</span>
+                </template>
+            </Column>
+
+            <Column :name="getRecipientKey('isSmsAllowed')"
+                    :field="getRecipientKey('isSmsAllowed')"
+                    title="SMS">
+                <template #format="{ row }">
+                    <span>
+                        <i :class="[
+                            'fa fa-circle',
+                            (row as CommunicationEntryRecipientBag).isDeceased
+                                ? 'text-muted'
+                                : (row as CommunicationEntryRecipientBag).isSmsAllowed
+                                    ? 'text-success'
+                                    : 'text-danger']"></i>&nbsp;{{ (row as CommunicationEntryRecipientBag).smsNumber }}
+                    </span>
+                </template>
+            </Column>
+
+            <Column :name="getRecipientKey('isPushAllowed')"
+                    :field="getRecipientKey('isPushAllowed')"
+                    title="Push">
+                <template #format="{ row }">
+                    <span>
+                        <i :class="[
+                            'fa fa-circle',
+                            (row as CommunicationEntryRecipientBag).isDeceased
+                                ? 'text-muted'
+                                : (row as CommunicationEntryRecipientBag).isPushAllowed
+                                    ? 'text-success'
+                                    : 'text-danger']"></i>
+                    </span>
+                </template>
+            </Column>
+
+            <ButtonColumn name="deselectItem"
+                          iconClass="fa fa-times"
+                          @click="onDeselectItemClicked" />
+        </Grid>
     </Modal>
 </template>
 
 <script setup lang="ts">
     import { PropType, computed, ref, Ref, watch } from "vue";
-    import SimpleGrid from "../../Security/AccountEntry/simpleGrid.partial.obs";
+    // import SimpleGrid from "../../Security/AccountEntry/simpleGrid.partial.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import Grid, { Column, ButtonColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/fieldDefinitionBag";
+import { Guid } from "@Obsidian/Types";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -103,6 +142,35 @@
 
     const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
     const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
+
+    function getStringKey<T>(key: Extract<keyof T, string>): string {
+        return key;
+    }
+
+    function getRecipientKey(key: Extract<keyof CommunicationEntryRecipientBag, string>): string {
+        return getStringKey<CommunicationEntryRecipientBag>(key);
+    }
+
+    function createFieldDefinition(name: string): FieldDefinitionBag {
+        return {
+            name
+        };
+    }
+
+    const recipientsGridDefinition: GridDefinitionBag = {
+        enableLaunchWorkflow: false,
+        enableStickyHeader: false,
+        fields: [
+            createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("name")),
+            createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("isEmailAllowed")),
+            createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("isSmsAllowed")),
+            createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("isPushAllowed")),
+        ],
+    };
+
+    const recipientsGridData = computed<GridDataBag>(() => ({
+        rows: filteredRecipients.value,
+    }));
 
     //#region Values
 
@@ -162,15 +230,11 @@
         }
     }
 
-    function isRecipient(item: unknown): item is CommunicationEntryRecipientBag {
-        return ((item as CommunicationEntryRecipientBag)?.personAliasGuid ?? null) !== null;
-    }
-
     //#endregion
 
     //#region Event Handlers
 
-    function onDeselectItemClicked(personAliasGuid: string | null | undefined): void {
+    function onDeselectItemClicked(personAliasGuid: Guid): void {
         if (!personAliasGuid) {
             return;
         }

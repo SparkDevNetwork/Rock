@@ -27,7 +27,7 @@ import { Guid } from "@Obsidian/Types";
 /** Bag containing the response information after saving a communication via the Communication Entry block. */
 export type CommunicationEntrySaveResponseBag = {
     /** Gets the communication unique identifier. */
-    communicationGuid?: Guid | null;
+    communicationGuid: Guid;
 
     /** Gets the communication identifier. */
     communicationId: number;

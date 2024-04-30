@@ -33,10 +33,7 @@ using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
 using Rock.Net;
-using System.Linq.Expressions;
 using System.ComponentModel.DataAnnotations;
-using System.Collections;
-using Rock.ViewModels.Blocks.Cms.LibraryViewer;
 
 namespace Rock.Blocks.Communication
 {
@@ -766,97 +763,114 @@ namespace Rock.Blocks.Communication
         //{
         //    args.IsValid = Recipients.Any();
         //}
-
-        private bool IsValueNotNull( object value, string valueFriendlyName, out ValidationResult validationResult )
+        
+        private static class Validate
         {
-            if ( value != null )
+            public static bool IsNotNull( object value, string valueFriendlyName, out ValidationResult validationResult )
             {
-                validationResult = ValidationResult.Success;
-                return true;
+                if ( value != null )
+                {
+                    validationResult = ValidationResult.Success;
+                    return true;
+                }
+                else
+                {
+                    validationResult = new ValidationResult( $"{valueFriendlyName} is required." );
+                    return false;
+                }
             }
-            else
+
+            public static bool IsNotNullOrWhiteSpace( string value, string valueFriendlyName, out ValidationResult validationResult )
             {
-                validationResult = new ValidationResult( $"{valueFriendlyName} is required." );
-                return false;
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    validationResult = ValidationResult.Success;
+                    return true;
+                }
+                else
+                {
+                    validationResult = new ValidationResult( $"{valueFriendlyName} is required." );
+                    return false;
+                }
+            }
+
+            public static bool IsNowOrFutureDateTime( DateTimeOffset value, string valueFriendlyName, out ValidationResult validationResult )
+            {
+                if ( value.CompareTo( RockDateTime.Now ) >= 0 )
+                {
+                    validationResult = ValidationResult.Success;
+                    return true;
+                }
+                else
+                { 
+                    validationResult = new ValidationResult( $"{valueFriendlyName} must be a future date/time." );
+                    return false;
+                }
+            }
+
+            public static bool IsNotEmpty<T>( IEnumerable<T> value, string valueFriendlyName, out ValidationResult validationResult )
+            {
+                if ( value != null && value.Any() )
+                {
+                    validationResult = ValidationResult.Success;
+                    return true;
+                }
+                else
+                {
+                    validationResult = new ValidationResult( $"At least one {valueFriendlyName.Singularize()} is required." );
+                    return false;
+                }
+            }
+
+            public static bool IsNotEmpty( Guid value, string valueFriendlyName, out ValidationResult validationResult )
+            {
+                if ( !value.IsEmpty() )
+                {
+                    validationResult = ValidationResult.Success;
+                    return true;
+                }
+                else
+                {
+                    validationResult = new ValidationResult( $"{valueFriendlyName} is required." );
+                    return false;
+                }
             }
         }
 
-        private bool IsValueNotNotOrWhiteSpace( string value, string valueFriendlyName, out ValidationResult validationResult )
+        private static bool IsTestRequestValid( CommunicationEntryTestRequestBag bag, out ValidationResult validationResult )
         {
-            if ( value.IsNotNullOrWhiteSpace() )
-            {
-                validationResult = ValidationResult.Success;
-                return true;
-            }
-            else
-            {
-                validationResult = new ValidationResult( $"{valueFriendlyName} is required." );
-                return false;
-            }
+            return Validate.IsNotNull( bag, "Communication Information", out validationResult )
+                && Validate.IsNotNullOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
+                && Validate.IsNotNullOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
+                && Validate.IsNotEmpty( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
+                && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
+                && Validate.IsNotEmpty( bag.Recipients, nameof( bag.Recipients ), out validationResult );
         }
 
-        private bool IsValueNowOrFutureDateTime( DateTimeOffset value, string valueFriendlyName, out ValidationResult validationResult )
+        private static bool IsSendRequestValid( CommunicationEntrySendRequestBag bag, out ValidationResult validationResult )
         {
-            if ( value.CompareTo( RockDateTime.Now ) >= 0 )
-            {
-                validationResult = ValidationResult.Success;
-                return true;
-            }
-            else
-            { 
-                validationResult = new ValidationResult( $"{valueFriendlyName} must be a future date/time." );
-                return false;
-            }
+            return Validate.IsNotNull( bag, "Communication Information", out validationResult )
+                && Validate.IsNotNullOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
+                && Validate.IsNotNullOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
+                && Validate.IsNotEmpty( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
+                && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
+                && Validate.IsNotEmpty( bag.Recipients, nameof( bag.Recipients ), out validationResult );
         }
 
-        private bool IsValueNotEmpty<T>( IEnumerable<T> value, string valueFriendlyName, out ValidationResult validationResult )
+        private static bool IsSaveRequestValid( CommunicationEntrySaveRequestBag bag, out ValidationResult validationResult )
         {
-            if ( value != null && value.Any() )
-            {
-                validationResult = ValidationResult.Success;
-                return true;
-            }
-            else
-            {
-                validationResult = new ValidationResult( $"At least one {valueFriendlyName.Singularize()} is required." );
-                return false;
-            }
-        }
-
-        private bool IsTestRequestValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
-        {
-            return IsValueNotNull( bag, "Communication Information", out validationResult )
-                 && IsValueNotNotOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
-                 && IsValueNotNotOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
-                 && IsValueNotNull( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
-                 && ( !bag.FutureSendDateTime.HasValue || IsValueNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
-                 && IsValueNotEmpty( bag.Recipients, nameof( bag.Recipients ), out validationResult );
-        }
-
-        private bool IsSendRequestValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
-        {
-            return IsValueNotNull( bag, "Communication Information", out validationResult )
-                 && IsValueNotNotOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
-                 && IsValueNotNotOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
-                 && IsValueNotNull( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
-                 && ( !bag.FutureSendDateTime.HasValue || IsValueNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
-                 && IsValueNotEmpty( bag.Recipients, nameof( bag.Recipients ), out validationResult );
-        }
-
-        private bool IsSaveRequestValid( CommunicationEntryCommunicationBag bag, out ValidationResult validationResult )
-        {
-            return IsValueNotNull( bag, "Communication Information", out validationResult )
-                 && IsValueNotNotOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
-                 && IsValueNotNotOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
-                 && IsValueNotNull( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
-                 && ( !bag.FutureSendDateTime.HasValue || IsValueNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) );
+            return Validate.IsNotNull( bag, "Communication Information", out validationResult )
+                && Validate.IsNotNullOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
+                && Validate.IsNotNullOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
+                && Validate.IsNotEmpty( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
+                && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) );
         }
 
         /// <summary>
         /// Tests the communication by sending it to the current person.
         /// </summary>
         [BlockAction( "Test" )]
-        public BlockActionResult Test( CommunicationEntryCommunicationBag bag )
+        public BlockActionResult Test( CommunicationEntryTestRequestBag bag )
         {
             if ( !IsTestRequestValid( bag, out var validationResult ) )
             {
@@ -984,7 +998,7 @@ namespace Rock.Blocks.Communication
         /// Sends the communication.
         /// </summary>
         [BlockAction( "Send" )]
-        public BlockActionResult Send( CommunicationEntryCommunicationBag bag )
+        public BlockActionResult Send( CommunicationEntrySendRequestBag bag )
         {
             if ( !IsSendRequestValid( bag, out var validationResult ) )
             {
@@ -1112,7 +1126,10 @@ namespace Rock.Blocks.Communication
             }
         }
 
-        public class NullMediumDataService : IMediumDataService
+        /// <summary>
+        /// A no-op medium data service that does not do anything.
+        /// </summary>
+        public class NoOpMediumDataService : IMediumDataService
         {
             public void OnCommunicationSave( RockContext rockContext, CommunicationEntryCommunicationBag communication )
             {
@@ -1126,7 +1143,7 @@ namespace Rock.Blocks.Communication
 
             if ( medium == null )
             {
-                return new NullMediumDataService();
+                return new NoOpMediumDataService();
             }
 
             if ( medium is Rock.Communication.Medium.Email )
@@ -1134,15 +1151,15 @@ namespace Rock.Blocks.Communication
                 return new EmailMediumDataService();
             }
 
-            // Return null behavior by default.
-            return new NullMediumDataService();
+            // Return no-op behavior by default.
+            return new NoOpMediumDataService();
         }
 
         /// <summary>
         /// Saves the communication.
         /// </summary>
         [BlockAction( "Save" )]
-        public BlockActionResult Save( CommunicationEntryCommunicationBag bag )
+        public BlockActionResult Save( CommunicationEntrySaveRequestBag bag )
         {
             if ( !IsSaveRequestValid( bag, out var validationResult ) )
             {
@@ -1160,10 +1177,10 @@ namespace Rock.Blocks.Communication
                 }
                 else
                 {
-                    var mediumControl = GetMediumDataService( bag.MediumEntityTypeGuid );
-                    if ( mediumControl != null )
+                    var mediumDataService = GetMediumDataService( bag.MediumEntityTypeGuid );
+                    if ( mediumDataService != null )
                     {
-                        mediumControl.OnCommunicationSave( rockContext, bag );
+                        mediumDataService.OnCommunicationSave( rockContext, bag );
                     }
 
                     communication.Status = CommunicationStatus.Draft;

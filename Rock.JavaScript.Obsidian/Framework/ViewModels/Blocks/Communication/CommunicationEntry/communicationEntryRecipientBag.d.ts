@@ -53,7 +53,7 @@ export type CommunicationEntryRecipientBag = {
     name?: string | null;
 
     /** Gets or sets the unique identifier of the person associated with this recipient. */
-    personAliasGuid?: Guid | null;
+    personAliasGuid: Guid;
 
     /** Gets or sets the photo URL of the recipient. */
     photoUrl?: string | null;
