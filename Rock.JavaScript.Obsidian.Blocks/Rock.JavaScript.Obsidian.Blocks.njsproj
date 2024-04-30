@@ -132,6 +132,7 @@
     <Content Include="src\Event\RegistrationEntry\sessionRenewal.partial.obs" />
     <Content Include="src\Event\RegistrationEntry\success.partial.obs" />
     <Content Include="src\Event\RegistrationEntry\summary.partial.obs" />
+    <Content Include="src\Finance\benevolenceRequestList.obs" />
     <Content Include="src\Finance\businessDetail.obs" />
     <Content Include="src\Finance\BusinessDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\BusinessDetail\viewPanel.partial.obs" />
@@ -350,6 +351,7 @@
     <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventItemDetail\" />
     <Folder Include="src\Event\RegistrationInstanceFeeList\" />
+    <Folder Include="src\Finance\BenevolenceRequestList\" />
     <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
@@ -519,6 +521,7 @@
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationInstanceFeeList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\BenevolenceRequestList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />

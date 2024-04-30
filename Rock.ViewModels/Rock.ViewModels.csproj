@@ -94,6 +94,8 @@
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryPaymentPlanBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceRequestList\BenevolenceRequestListOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceRequestList\ResultTypeBag.cs" />
     <Compile Include="Blocks\Finance\BusinessContactList\BusinessContactBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrantBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrarBag.cs" />
