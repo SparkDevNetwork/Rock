@@ -14,13 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Configuration;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Bus;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Settings;
 using Rock.WebStartup;
@@ -33,6 +36,8 @@ namespace Rock.Tests.Integration.TestFramework
     public sealed class IntegrationTestInitializer
     {
         public static bool IsContainersEnabled { get; private set; }
+
+        public static string DatabaseHostSettingKey = "DatabaseHost";
 
         [TestMethod]
         public void ForceDeployment()
@@ -62,14 +67,69 @@ namespace Rock.Tests.Integration.TestFramework
         /// <returns>A task that indicates when the operation has completed.</returns>
         public static async Task InitializeTestEnvironment( TestContext context )
         {
-            if ( ConfigurationManager.ConnectionStrings["RockContext"] != null )
+            AddTestContextSettingsFromConfigurationFile( context );
+
+            var databaseHost = ConfigurationManager.AppSettings[DatabaseHostSettingKey]?.ToStringSafe().Trim().ToLower();
+
+            var useLocalDb = ( databaseHost == "localdb" );
+            var useRemote = !useLocalDb && ConfigurationManager.ConnectionStrings["RockContext"] != null;
+
+            // Initialize a database container for the test environment.
+            ITestDatabaseContainer container;
+            if ( useLocalDb )
             {
-                DatabaseTestsBase.IsContainersEnabled = false;
+                // Initialize the LocalDb container.
+                var manager = new LocalDatabaseManager();
+
+                var connectionString = ConfigurationManager.ConnectionStrings["RockContext"]?.ConnectionString;
+                if ( connectionString.IsNullOrWhiteSpace() )
+                {
+                    throw new Exception( @"Database Connection string not found. The LocalDb database container requires a configured ConnectionString for ""RockContext""." );
+                }
+
+                manager.ConnectionString = connectionString;
+                manager.DatabaseCreatorKey = context.Properties["DatabaseCreatorKey"].ToStringSafe();
+                manager.DatabaseRefreshStrategy = context.Properties["DatabaseRefreshStrategy"].ToStringSafe().ConvertToEnum<DatabaseRefreshStrategySpecifier>( DatabaseRefreshStrategySpecifier.Never );
+
+                // Create a database initializer instance to prepare the test data.
+                var initializerTypeName = context.Properties["DatabaseInitializer"].ToStringSafe();
+                if ( string.IsNullOrWhiteSpace( initializerTypeName ) )
+                {
+                    initializerTypeName = nameof( Rock.Tests.Shared.TestFramework.Database.Initializer.SampleDataset );
+                }
+
+                var initializerTypesMap = Reflection.FindTypes( typeof( ITestDatabaseInitializer ) );
+                var initializerType = initializerTypesMap.Where( kv => kv.Key == initializerTypeName || kv.Key.EndsWith( "." + initializerTypeName ) )
+                    .Select( kv => kv.Value )
+                    .FirstOrDefault();
+
+                if ( initializerType == null )
+                {
+                    throw new Exception( $@"Database Initializer not found. The configuration setting ""DatabaseInitializer"" must specify a known System.Type that implements the {nameof(ITestDatabaseInitializer)} interface." );
+                }
+
+                var initializerInstance = Activator.CreateInstance( initializerType ) as ITestDatabaseInitializer;
+
+                manager.DatabaseInitializer = initializerInstance;
+
+                container = new LocalDatabaseContainer( manager );
+            }
+            else if ( useRemote )
+            {
+                // Initialize the remote database connection.
+                // For consistency, this should be implemented as a singleton instance of a container implementing ITestDatabaseContainer in the future.
+                container = null;
+
                 RockInstanceConfig.Database.SetConnectionString( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
                 RockInstanceConfig.SetDatabaseIsAvailable( true );
             }
+            else
+            {
+                // Initialize the Docker Sql Server container.
+                container = new TestDatabaseContainer();
+            }
 
-            AddTestContextSettingsFromConfigurationFile( context );
+            DatabaseTestsBase.InitializeContainer( container );
 
             LogHelper.SetTestContext( context );
             LogHelper.Log( $"Initialize Test Environment: started..." );
