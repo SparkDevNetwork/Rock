@@ -477,7 +477,7 @@
         return last13Months.map(displayedMonth => {
             const isFull = givenMonths.includes(displayedMonth);
             let barClass = isFull ? "full" : "empty";
-            if (allEmpty) barClass = "fullEmpty"; // Apply fullEmpty class if all months are empty
+            if (allEmpty) barClass = "empty";
 
             return { month: displayedMonth, full: isFull.toString(), class: barClass };
 
