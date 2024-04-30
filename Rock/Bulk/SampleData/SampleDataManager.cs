@@ -18,6 +18,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -56,6 +57,18 @@ namespace Rock.Utility
         public SampleDataManager( IRockLogger logDevice )
         {
             _taskLog = logDevice ?? new RockLoggerMemoryBuffer( new RockLogConfiguration() );
+
+            _lavaEngine = LavaService.GetCurrentEngine();
+        }
+
+        /// <summary>
+        /// Create a new instance.
+        /// </summary>
+        public SampleDataManager( ILavaEngine lavaEngine, IRockLogger logDevice = null )
+        {
+            _taskLog = logDevice ?? new RockLoggerMemoryBuffer( new RockLogConfiguration() );
+
+            _lavaEngine = lavaEngine;
         }
 
         #endregion
@@ -64,6 +77,7 @@ namespace Rock.Utility
 
         private SampleDataImportActionArgs _args = new SampleDataImportActionArgs();
         private readonly IRockLogger _taskLog;
+        private readonly ILavaEngine _lavaEngine;
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -286,6 +300,14 @@ namespace Rock.Utility
             this.ProcessXmlDocument( xdoc, args );
         }
 
+        private void VerifyEnvironment()
+        {
+            if ( LavaService.GetCurrentEngine() == null )
+            {
+                throw new Exception( "SampleDataManager processing failed. The LavaService must be initialized to process sample data correctly." );
+            }
+        }
+
         /// <summary>
         /// Process all the data in the XML file; deleting stuff and then adding stuff.
         /// as per https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification#wiki-xml-data
@@ -294,6 +316,9 @@ namespace Rock.Utility
         /// <param name="args"></param>
         internal void ProcessXmlDocument( XDocument xdoc, SampleDataImportActionArgs args )
         {
+            // Prior to processing, verify the environment.
+            VerifyEnvironment();
+
             _args = args ?? new SampleDataImportActionArgs();
 
             // Re-seed the randomizer with the given seed if it's non-0.
@@ -942,7 +967,7 @@ namespace Rock.Utility
 
                 // Merge lava fields
                 // LAVA additionalReminderDetails
-                Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+                var mergeObjects = new LavaDataDictionary();
                 DateTime? registrationStartsDate = null;
                 DateTime? registrationEndsDate = null;
                 DateTime? sendReminderDate = null;
@@ -951,30 +976,32 @@ namespace Rock.Utility
 
                 if ( element.Attribute( "registrationStarts" ) != null )
                 {
-                    var y = element.Attribute( "registrationStarts" ).Value.ResolveMergeFields( mergeObjects );
-                    registrationStartsDate = DateTime.Parse( y );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "registrationStarts" ).Value, mergeObjects );
+                    registrationStartsDate = DateTime.Parse( renderResult.Text );
                 }
 
                 if ( element.Attribute( "registrationEnds" ) != null )
                 {
-                    registrationEndsDate = DateTime.Parse( element.Attribute( "registrationEnds" ).Value.ResolveMergeFields( mergeObjects ) );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "registrationEnds" ).Value, mergeObjects );
+                    registrationEndsDate = DateTime.Parse( renderResult.Text );
                 }
 
                 if ( element.Attribute( "sendReminderDate" ) != null )
                 {
-                    sendReminderDate = DateTime.Parse( element.Attribute( "sendReminderDate" ).Value.ResolveMergeFields( mergeObjects ) );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "sendReminderDate" ).Value, mergeObjects );
+                    sendReminderDate = DateTime.Parse( renderResult.Text );
                 }
 
                 if ( element.Attribute( "additionalReminderDetails" ) != null )
                 {
-                    additionalReminderDetails = element.Attribute( "additionalReminderDetails" ).Value;
-                    additionalReminderDetails = additionalReminderDetails.ResolveMergeFields( mergeObjects );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "additionalReminderDetails" ).Value, mergeObjects );
+                    additionalReminderDetails = renderResult.Text;
                 }
 
                 if ( element.Attribute( "additionalConfirmationDetails" ) != null )
                 {
-                    additionalConfirmationDetails = element.Attribute( "additionalConfirmationDetails" ).Value;
-                    additionalConfirmationDetails = additionalConfirmationDetails.ResolveMergeFields( mergeObjects );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "additionalConfirmationDetails" ).Value, mergeObjects );
+                    additionalConfirmationDetails = renderResult.Text;
                 }
 
                 // Get the contact info
