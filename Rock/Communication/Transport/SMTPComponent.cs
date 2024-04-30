@@ -186,7 +186,10 @@ namespace Rock.Communication.Transport
             {
                 if ( rockEmailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
                 {
-                    mailMessage.ReplyToList.Add( new MailAddress( rockEmailMessage.ReplyToEmail ) );
+                    foreach ( var replyToEmail in rockEmailMessage.ReplyToEmail.Split( ',' ).Where( e => e.IsNotNullOrWhiteSpace() ) )
+                    {
+                        mailMessage.ReplyToList.Add( new MailAddress( replyToEmail ) );
+                    }
                 }
             }
             catch
