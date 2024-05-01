@@ -71,6 +71,7 @@ namespace Rock.Model
                 return new LearningActivityCompletionStatistics();
             }
 
+            // Get all of the completions records for the activity.
             var activityCompletions = new LearningActivityCompletionService( ( RockContext ) Context )
                 .Queryable()
                 .Include( a => a.LearningActivity )
@@ -85,6 +86,7 @@ namespace Rock.Model
                 } )
                 .ToList();
 
+            // If there weren't any completions there are no statistics to calculate.
             if ( !activityCompletions.Any() )
             {
                 return new LearningActivityCompletionStatistics();
@@ -97,6 +99,18 @@ namespace Rock.Model
 
             // For all point averages only consider activities that have been completed.
             var completedActivities = activityCompletions.Where( a => a.IsStudentCompleted ).ToList();
+
+            // If there aren't any completed activities there's no need for additional calculations
+            // return the data we've collected so far.
+            if ( !completedActivities.Any() )
+            {
+                return new LearningActivityCompletionStatistics
+                {
+                    Complete = complete.ToIntSafe(),
+                    Incomplete = incomplete.ToIntSafe(),
+                    PercentComplete = percentComplete
+                };
+            }
 
             var averagePoints = completedActivities.Average( a => a.PointsEarned );
             var averagePercent = points > 0 ? averagePoints / points * 100 : 0;
