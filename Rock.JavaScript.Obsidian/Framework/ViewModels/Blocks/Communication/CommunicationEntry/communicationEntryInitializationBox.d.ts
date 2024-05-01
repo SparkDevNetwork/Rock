@@ -83,6 +83,9 @@ export type CommunicationEntryInitializationBox = {
     /** Gets or sets whether the "schedule unavailability" feature is enabled. */
     isScheduleUnavailabilityEnabled: boolean;
 
+    /** Gets or sets the maximum number of recipients allowed before communication will need to be approved. */
+    maximumRecipientsBeforeApprovalRequired: number;
+
     /** Gets or sets the options for the selected communication medium. */
     mediumOptions?: CommunicationEntryMediumOptionsBaseBag | null;
 

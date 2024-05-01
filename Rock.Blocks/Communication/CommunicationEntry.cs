@@ -215,6 +215,11 @@ namespace Rock.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Gets the maximum number of recipients allowed before communication will need to be approved.
+        /// </summary>
+        private int MaximumRecipients => GetAttributeValue( AttributeKey.MaximumRecipients ).AsInteger();
+
         //protected int? CommunicationId
         //{
         //    get { return ViewState["CommunicationId"] as int?; }
@@ -305,7 +310,8 @@ namespace Rock.Blocks.Communication
             var currentPerson = GetCurrentPerson();
             var box = new CommunicationEntryInitializationBox
             {
-                IsFullMode = IsFullMode,
+                IsFullMode = this.IsFullMode,
+                MaximumRecipientsBeforeApprovalRequired = this.MaximumRecipients,
             };
 
             // "Simple" mode will prevent users from searching/adding new people to communication.

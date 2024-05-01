@@ -107,7 +107,7 @@
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/fieldDefinitionBag";
-import { Guid } from "@Obsidian/Types";
+    import { Guid } from "@Obsidian/Types";
 
     const invokeBlockAction = useInvokeBlockAction();
 

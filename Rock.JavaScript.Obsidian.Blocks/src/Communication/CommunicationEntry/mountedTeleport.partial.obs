@@ -1,0 +1,163 @@
+<template>
+    <div ref="harness" style="display: none;">
+        <slot></slot>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        /** Selector of target element where slotted content should be teleported. */
+        to: {
+            type: String as PropType<string>,
+            required: true,
+        },
+
+        /** The max number of attempts to teleport slotted content to the target element. */
+        maxTeleportAttempts: {
+            type: Number as PropType<number>,
+            default: 1000,
+        },
+
+        onPortalOpenedCallback: {
+            type: Function as PropType<((target: Element) => void) | undefined>,
+        },
+
+        onPortalClosedCallback: {
+            type: Function as PropType<((target: Element) => void) | undefined>,
+        },
+    });
+
+    const harness = ref<HTMLElement | undefined>();
+    const target = ref<Element | undefined>();
+    const movedChildNodes = ref<ChildNode[]>([]);
+    const teleportAttempts = ref<number>(0);
+
+    //#region  Functions
+
+    /** Repeatedly tries to set the target node and stops when the node is set or when the max attempt count is reached. */
+    function trySettingTarget(): void {
+        teleportAttempts.value++;
+
+        // Keep setting the target until it is found.
+        target.value = document.querySelector(props.to) ?? undefined;
+
+        if (!target.value) {
+            if (teleportAttempts.value > props.maxTeleportAttempts) {
+                // Stop.
+                console.warn(`Unable to teleport slotted content to target. Couldn't find target with selector '${props.to}'.`);
+                teleportAttempts.value = 0;
+                return;
+            }
+            else {
+                // Try again on the next tick.
+                nextTick(trySettingTarget);
+            }
+        }
+    }
+
+    /** Moves all child nodes from source node to target node. */
+    function moveAllChildNodes(source: Node, target: Node): void {
+        if (source && target) {
+            const moved: ChildNode[] = [];
+
+            // Move the harness child elements (slotted content) to the target.
+            while (source.childNodes.length > 0) {
+                target.appendChild(source.childNodes[0]);
+                moved.push(source.childNodes[0]);
+            }
+
+            movedChildNodes.value = moved;
+        }
+    }
+
+    /** Moves specific child nodes from source node to target node. */
+    function moveSpecificChildNodes(source: Node, target: Node, nodes: ChildNode[]): void {
+        if (source && target) {
+            const moved: ChildNode[] = [];
+            const sourceNodes: ChildNode[] = [...source.childNodes];
+
+            // Move specific child elements (slotted content) to the target.
+            for (const node of nodes) {
+                if (sourceNodes.includes(node)) {
+                    target.appendChild(node);
+                }
+            }
+
+            movedChildNodes.value = moved;
+        }
+    }
+
+    //#endregion
+
+    /** Moves child nodes (slotted content) whenever the target node changes. */
+    watch(target, (newTarget, oldTarget) => {
+        if (!oldTarget && newTarget) {
+            if (!harness.value) {
+                // This should not happen.
+                throw "Unable to teleport slotted content to target. The harness is not set.";
+            }
+
+            // Move the harness child elements (slotted content) to the target.
+            moveAllChildNodes(harness.value, newTarget);
+
+            if (props.onPortalOpenedCallback) {
+                props.onPortalOpenedCallback(newTarget);
+            }
+        }
+        else if (oldTarget && newTarget) {
+            // Only move the child nodes that have already been moved.
+            moveSpecificChildNodes(oldTarget, newTarget, movedChildNodes.value);
+
+            if (props.onPortalOpenedCallback) {
+                props.onPortalOpenedCallback(newTarget);
+            }
+        }
+        else if (oldTarget && !newTarget) {
+            if (!harness.value) {
+                // This should not happen.
+                throw "Unable to teleport slotted content to target. The harness is not set.";
+            }
+
+            // The new target element is not set so move the child nodes back to
+            // the original harness element.
+            moveSpecificChildNodes(oldTarget, harness.value, movedChildNodes.value);
+        }
+    });
+
+    /** Updates the target node whenever the `to` selector changes. */
+    watch(() => props.to, () => {
+        trySettingTarget();
+    });
+
+    //#region Hooks
+
+    /** Performs initial checks, hides the inner harness div where content is slotted, and attempts to set the target node. */
+    onMounted(() => {
+        if (!harness.value) {
+            // This should not happen.
+            throw "Unable to teleport slotted content to target. The initial div was not mounted.";
+        }
+
+        // Remove the harness from the DOM.
+        harness.value.remove();
+
+        trySettingTarget();
+    });
+
+    /** Removes slotted nodes from the DOM when this component is unmounted. */
+    onUnmounted(() => {
+        for (const childNode of movedChildNodes.value) {
+            if (childNode?.parentNode) {
+                childNode.remove();
+            }
+        }
+
+        if (props.onPortalClosedCallback && target.value) {
+            props.onPortalClosedCallback(target.value);
+        }
+    });
+
+    //#endregion
+</script>

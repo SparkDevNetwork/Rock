@@ -29,6 +29,7 @@
 
                 <CommunicationMedium v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions"
                                      :communication="config.communication"
+                                     :footerActionsSelector="`#${footerActionsId}`"
                                      :isFullMode="isFullMode"
                                      :mediumEntityTypeGuid="selectedMediumEntityTypeGuidOrEmptyString"
                                      :mediumOptions="config.mediumOptions"
@@ -53,28 +54,8 @@
             </NotificationBox>
         </template>
 
-        <template #footerActions v-if="communicationMedium">
-            <RockButton id="btnSubmit"
-                        class="btn btn-primary"
-                        type="button"
-                        @click="onSend">{{ sendButtonText }}</RockButton>
-
-            <RockButton v-if="isFullMode"
-                        id="btnTest"
-                        class="btn btn-link"
-                        type="button"
-                        @click="onSendTest">Send Test</RockButton>
-
-            <RockButton v-if="footerActions"
-                        id="btnSave"
-                        class="btn btn-link"
-                        type="button"
-                        @click="onSave">Save as Draft</RockButton>
-
-            <RockButton id="btnCancel"
-                        class="btn btn-link"
-                        type="button"
-                        @click="communicationMedium.cancel()">Cancel</RockButton>
+        <template #footerActions>
+            <div :id="footerActionsId"></div>
         </template>
     </Panel>
 </template>
@@ -87,7 +68,6 @@
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
@@ -95,9 +75,24 @@
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    type FooterActionProperties = {
+        isButtonEnabled: boolean;
+        isButtonVisible: boolean;
+        buttonText: string;
+    };
+
+    type FooterActions = {
+        cancel: FooterActionProperties;
+        save: FooterActionProperties;
+        send: FooterActionProperties;
+        test: FooterActionProperties;
+    };
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
+    const footerActionsId = ref<string>(`communication-entry-footer-actions-${newGuid()}`);
 
     defineProps();
 
@@ -120,19 +115,6 @@
     //#endregion
 
     //#region Computed Values
-
-    type FooterActionProperties = {
-        isButtonEnabled: boolean;
-        isButtonVisible: boolean;
-        buttonText: string;
-    };
-
-    type FooterActions = {
-        cancel: FooterActionProperties;
-        save: FooterActionProperties;
-        send: FooterActionProperties;
-        test: FooterActionProperties;
-    };
 
     const footerActions = computed<FooterActions>(() => {
         const something = !!config.authorization?.isApproveActionAuthorized
@@ -166,13 +148,14 @@
             },
         };
     });
-
+    
     const isCancelButtonVisible = computed<boolean>(() => {
         return !!config.authorization?.canApproveCommunication && config.communication?.status === CommunicationStatus.PendingApproval;
     });
 
     const sendButtonText = computed<string>(() => {
-        if (!!config.authorization?.canApproveCommunication && config.communication?.status === CommunicationStatus.PendingApproval) {
+        if (!!config.authorization?.canApproveCommunication
+            && config.communication?.status === CommunicationStatus.PendingApproval) {
             return "Send";
         }
         else {
@@ -289,6 +272,10 @@
     //#endregion
 
     //#region Watchers
+
+    //#endregion
+
+    //#region Hooks
 
     //#endregion
 

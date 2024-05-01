@@ -93,5 +93,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// The options for the selected communication medium.
         /// </value>
         public CommunicationEntryMediumOptionsBaseBag MediumOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum number of recipients allowed before communication will need to be approved.
+        /// </summary>
+        public int MaximumRecipientsBeforeApprovalRequired { get; set; }
     }
 }

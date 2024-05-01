@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockForm :submit="isFormSubmitted"
+              id="hello"
               @submit="onFormSubmitted">
         <div class="row">
             <div class="col-sm-12">
@@ -147,6 +148,34 @@
                     :editorHeight="600"
                     label="Message"
                     :mergeFields="['GlobalAttribute', 'Rock.Model.Person', 'Communication.Subject|Subject', 'Communication.FromName|From Name', 'Communication.FromEmail|From Address', 'Communication.ReplyToEmail|Reply To', 'UnsubscribeOption']" />
+
+        <MountedTeleport :to="footerActionsSelector"
+                         :onPortalOpenedCallback="onFooterActionsPortalOpened"
+                         :onPortalClosedCallback="onFooterActionsPortalClosed">
+
+            <RockButton id="btnSubmit"
+                        class="btn btn-primary"
+                        type="button"
+                        @click="send">Send</RockButton>
+
+            <RockButton v-if="isFullMode"
+                        id="btnTest"
+                        class="btn btn-link"
+                        type="button"
+                        @click="test">Send Test</RockButton>
+
+            <RockButton id="btnSave"
+                        class="btn btn-link"
+                        type="button"
+                        @click="save">Save as Draft</RockButton>
+
+            <NotificationBox v-if="testResult?.messageHtml"
+                    :alertType="getAlertType(testResult.messageType)"
+                    class="margin-t-md"
+                    id="nbTestResult">
+                <span ref="testResultsSpan" v-html="testResult.messageHtml"></span>
+            </NotificationBox>
+        </MountedTeleport>
     </RockForm>
 </template>
 
@@ -190,12 +219,19 @@
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
     import { Guid } from "@Obsidian/Types";
+    import MountedTeleport from "./mountedTeleport.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        footerActionsSelector: {
+            type: String as PropType<string>,
+            required: true
         },
         isFullMode: {
             type: Boolean as PropType<boolean>,
@@ -241,6 +277,7 @@
 
     //#region Values
 
+    const isMounted = ref<boolean>(false);
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
     const recipients = ref<CommunicationEntryRecipientBag[]>(props.communication?.recipients ?? []);
     const attachments = ref<ListItemBag[]>(props.communication?.emailAttachmentBinaryFiles ?? []);
@@ -269,6 +306,7 @@
     const isFormSubmitted = ref<boolean>(false);
     const pendingAction = ref<() => PromiseLike<void>>();
     const isRecipientRequired = ref<boolean>(false);
+    const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
 
     //#endregion
 
@@ -368,6 +406,11 @@
 
     //#region Functions
 
+    /** Converts a string to an alert type. */
+    function getAlertType(type: string | null | undefined): AlertType {
+        return type as AlertType ?? AlertType.Default;
+    }
+
     /** Converts recipients to list item bags. */
     function convertRecipientsToListItems(recipients: CommunicationEntryRecipientBag[]): ListItemBag[] {
         return recipients.map(item => ({
@@ -425,6 +468,14 @@
     //#endregion
 
     //#region Event Handlers
+
+    function onFooterActionsPortalOpened(portal: Element): void {
+        portal.classList.remove("d-none");
+    }
+
+    function onFooterActionsPortalClosed(portal: Element): void {
+        portal.classList.add("d-none");
+    }
 
     function onScheduleSendModalSave(): void {
         const dateTime = RockDateTime.parseISO(tempScheduleSendDateTime.value);
@@ -643,6 +694,7 @@
     async function doSendTest(): Promise<void> {
         try {
             internalDisabled.value = true;
+            testResult.value = undefined;
 
             const bag: CommunicationEntryTestRequestBag = {
                 isBulkCommunication: isBulkCommunication.value,
@@ -669,6 +721,7 @@
             }
             else {
                 emit("tested", result.data);
+                testResult.value = result.data;
             }
         }
         finally {
@@ -756,5 +809,7 @@
         if (!fromName.value) {
             fromName.value = options.value.fromName ?? "";
         }
+
+        isMounted.value = true;
     });
 </script>

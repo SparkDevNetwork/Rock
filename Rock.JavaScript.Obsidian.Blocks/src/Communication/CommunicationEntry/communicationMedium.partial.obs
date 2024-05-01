@@ -3,6 +3,7 @@
     <KeepAlive>
         <Email v-if="areEqual(mediumEntityTypeGuid, EntityType.CommunicationMediumEmail)"
                :communication="communication"
+               :footerActionsSelector="footerActionsSelector"
                :isFullMode="isFullMode"
                :key="EntityType.CommunicationMediumEmail"
                :mediumEntityTypeGuid="mediumEntityTypeGuid"
@@ -13,10 +14,12 @@
                @sent="emit('sent', $event)"
                @tested="emit('tested', $event)" />
         <Sms v-else-if="areEqual(mediumEntityTypeGuid, EntityType.CommunicationMediumSms)"
+             :footerActionsSelector="footerActionsSelector"
              :isFullMode="isFullMode"
              :mediumEntityTypeGuid="mediumEntityTypeGuid"
              ref="mediumComponent" />
         <PushNotification v-else-if="areEqual(mediumEntityTypeGuid, EntityType.CommunicationMediumPushNotification)"
+                          :footerActionsSelector="footerActionsSelector"
                           :isFullMode="isFullMode"
                           :mediumEntityTypeGuid="mediumEntityTypeGuid"
                           ref="mediumComponent" />
@@ -47,6 +50,10 @@
     import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
+        footerActionsSelector: {
+            type: String as PropType<string>,
+            required: true,
+        },
         isFullMode: {
             type: Boolean as PropType<boolean>,
             default: false

@@ -12,6 +12,10 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+        footerActionsSelector: {
+            type: String as PropType<string>,
+            required: true
+        },
         isFullMode: {
             type: Boolean as PropType<boolean>,
             default: false
