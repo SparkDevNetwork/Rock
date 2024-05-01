@@ -591,6 +591,8 @@ namespace RockWeb.Blocks.Connection
             {
                 AvailableAttributes = ( ViewState[ViewStateKey.AvailableAttributeIds] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
             }
+
+            AddDynamicControls();
         }
 
         /// <summary>
@@ -715,39 +717,19 @@ namespace RockWeb.Blocks.Connection
             else
             {
                 var causingControlClientId = Request["__EVENTTARGET"].ToStringSafe();
+                var causingControl = Page.FindControl( causingControlClientId );
+
                 if ( causingControlClientId == lbJavaScriptCommand.ClientID )
                 {
-                    // Handle card commands that are sent via JavaScript. These postbacks will only come
-                    // from interactions with connection request cards while operating in board view mode;
-                    // simply process the JavaScript command and exit this method.
+                    // Handle commands that are sent via JavaScript
                     ProcessJavaScriptCommand();
-                    return;
                 }
-
-                var causingControl = Page.FindControl( causingControlClientId );
-                var isCardViewMode = IsCardViewMode;
-
-                if ( causingControl != null )
+                else if ( causingControl != null &&
+                    ( causingControl == ppRequesterFilter || causingControl.Parent == ppRequesterFilter ) )
                 {
-                    if ( causingControl == ppRequesterFilter || causingControl.Parent == ppRequesterFilter )
-                    {
-                        // If the postback comes from the filter drawer, don't modify the filter drawer CSS,
-                        // which dictates if the drawer is open or closed.
-                        divFilterDrawer.Style.Clear();
-                    }
-                    else if ( causingControl == lbToggleViewMode )
-                    {
-                        // If the postback comes from the toggle view mode button, the view mode is in the
-                        // process of changing as a result of this request; only re-add dynamic controls
-                        // and rebind the grid if we're currently in or transitioning to grid view mode.
-                        isCardViewMode = !isCardViewMode;
-                    }
-                }
-
-                if ( !isCardViewMode )
-                {
-                    AddDynamicControls();
-                    BindRequestsGrid();
+                    // If the postback comes from the filter drawer, don't modify the filter drawer CSS,
+                    // which dictates if the drawer is open or closed
+                    divFilterDrawer.Style.Clear();
                 }
             }
         }
@@ -784,10 +766,10 @@ namespace RockWeb.Blocks.Connection
 
         #endregion Base Control Methods
 
-        #region Card Drag
+        #region JavaScript Postbacks
 
         /// <summary>
-        /// Processes the drag event.
+        /// Processes the JavaScript event.
         /// </summary>
         private void ProcessJavaScriptCommand()
         {
@@ -797,6 +779,26 @@ namespace RockWeb.Blocks.Connection
             int? newStatusId;
             int? requestId;
             int? newIndex;
+
+            /*
+                4/30/2024 - JPH
+
+                This is an unconventional way of handling a grid row's delete action, but this
+                block has a pretty complex combination of child controls (to make up its "board"
+                and "list" view modes), which leads to a complicated control lifecycle. This fix
+                will properly support deletes from list view mode until we rewrite the block
+                using the new, Obsidian framework.
+
+                Reason: [Sometimes] Can't delete requests in list view.
+                https://github.com/SparkDevNetwork/Rock/issues/5720
+             */
+            ParseDeleteEventArgument( argument, out requestId );
+            if ( requestId.HasValue )
+            {
+                DeleteGridRequest( requestId.Value );
+                return;
+            }
+
             ParseDragEventArgument( argument, out action, out newStatusId, out requestId, out newIndex );
 
             if ( action == "on-following-change" )
@@ -837,6 +839,22 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 return;
+            }
+        }
+
+        /// <summary>
+        /// Parses the delete event.
+        /// </summary>
+        /// <param name="argument">The argument.</param>
+        /// <param name="requestId">The request identifier.</param>
+        private void ParseDeleteEventArgument( string argument, out int? requestId )
+        {
+            requestId = null;
+
+            var segments = argument.SplitDelimitedValues();
+            if ( segments.Length == 2 && segments[0] == "on-request-delete" )
+            {
+                requestId = segments[1].AsIntegerOrNull();
             }
         }
 
@@ -939,7 +957,7 @@ namespace RockWeb.Blocks.Connection
             newIndex = segments.Length >= 4 ? segments[3].AsIntegerOrNull() : null;
         }
 
-        #endregion Card Drag
+        #endregion JavaScript Postbacks
 
         #region Helper Methods
 
@@ -2391,11 +2409,10 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Handles the Delete event of the gRequests control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gRequests_Delete( object sender, RowEventArgs e )
+        /// <param name="connectionRequestId">The connection request identifier.</param>
+        private void DeleteGridRequest( int connectionRequestId )
         {
-            ConnectionRequestId = e.RowKeyId;
+            ConnectionRequestId = connectionRequestId;
             ViewAllActivities = false;
             DeleteRequest();
             BindRequestsGrid();
@@ -6191,7 +6208,6 @@ namespace RockWeb.Blocks.Connection
 
             // Hold a reference to the delete column
             var deleteField = new DeleteField();
-            deleteField.Click += gRequests_Delete;
             gRequests.Columns.Add( deleteField );
         }
 
