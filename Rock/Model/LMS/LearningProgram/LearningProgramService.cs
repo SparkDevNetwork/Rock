@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
@@ -69,16 +68,23 @@ namespace Rock.Model
         public LearningProgramKpis GetProgramKpis ( int learningProgramId )
         {
             var context = ( RockContext ) Context;
+            var now = RockDateTime.Now;
 
+            // Get the class and student data in aggregate together.
             var classAndStudentData = new LearningClassService( context )
                 .Queryable()
                 .AsNoTracking()
                 .Where( c => c.IsActive )
                 .Where( c => c.LearningCourse.LearningProgramId == learningProgramId )
+                .Where( c => c.LearningSemester.EndDate >= now )
+                .Where( c => c.LearningSemester.StartDate <= now )
                 .Select( c => new
                 {
                     ClassId = c.Id,
-                    StudentCount = c.LearningParticipants.Where( p => !p.GroupRole.IsLeader ).Select( s => s.PersonId).Distinct().Count()
+                    PersonIds = c.LearningParticipants
+                        .Where( p => !p.GroupRole.IsLeader )
+                        .Where( p => p.LearningCompletionStatus == LearningCompletionStatus.Incomplete )
+                        .Select( s => s.PersonId )
                 } ).ToList();
 
             var completions = new LearningProgramCompletionService( context )
@@ -89,7 +95,7 @@ namespace Rock.Model
             return new LearningProgramKpis
             {
                 ActiveClasses = classAndStudentData.Select( c => c.ClassId ).Distinct().Count(),
-                ActiveStudents = classAndStudentData.Sum( c => c.StudentCount ),
+                ActiveStudents = classAndStudentData.SelectMany( c => c.PersonIds).Distinct().Count(),
                 Completions = completions
             };
         }
