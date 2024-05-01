@@ -78,7 +78,7 @@ namespace Rock.Model
                 .Select( c => new
                 {
                     ClassId = c.Id,
-                    StudentCount = c.LearningParticipants.Count( p => !p.GroupRole.IsLeader )
+                    StudentCount = c.LearningParticipants.Where( p => !p.GroupRole.IsLeader ).Select( s => s.PersonId).Distinct().Count()
                 } ).ToList();
 
             var completions = new LearningProgramCompletionService( context )

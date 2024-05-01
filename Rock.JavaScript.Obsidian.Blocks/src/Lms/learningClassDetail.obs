@@ -28,6 +28,8 @@
             <EditPanel v-model="learningClassEditBag" :options="options" />
         </template>
     </DetailBlock>
+
+    <LearningClassSecondaryLists v-if="panelMode === DetailPanelMode.View" v-model="learningClassViewBag" />
 </template>
 
 <script setup lang="ts">
@@ -38,6 +40,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./LearningClassDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningClassDetail/viewPanel.partial.obs";
+    import LearningClassSecondaryLists from "./LearningClassSecondaryLists/learningClassSecondaryLists.partial.obs";
     import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningClassDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -171,7 +174,7 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? { takesAttendance: false };
     });
 
     // #endregion

@@ -34,4 +34,7 @@ export type LearningClassDetailOptionsBag = {
 
     /** Gets or sets the available semesters for this course. */
     semesters?: ListItemBag[] | null;
+
+    /** Gets or sets whether this class takes attendance. */
+    takesAttendance: boolean;
 };

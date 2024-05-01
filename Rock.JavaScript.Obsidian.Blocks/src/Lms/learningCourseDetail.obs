@@ -36,7 +36,7 @@
         </template>
     </DetailBlock>
 
-    <OnDemandSubPanel v-if="!isAcademicMode && panelMode === DetailPanelMode.View" v-model="learningCourseViewBag" />
+    <LearningClassSecondaryLists v-if="!isAcademicMode && panelMode === DetailPanelMode.View" v-model="learningCourseViewBag" />
 </template>
 
 <script setup lang="ts">
@@ -49,7 +49,7 @@
     import EditPanel from "./LearningCourseDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningCourseDetail/viewPanel.partial.obs";
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
-    import OnDemandSubPanel from "../Lms/LearningCourseDetail/OnDemandSubPanel/onDemandSubPanel.partial.obs";
+    import LearningClassSecondaryLists from "../Lms/LearningClassSecondaryLists/LearningClassSecondaryLists.partial.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./LearningCourseDetail/types.partial";

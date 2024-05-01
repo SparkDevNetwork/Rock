@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="onDemandCourseListTabs">
+    <TabbedContent :tabs="tabs">
         <template #tabpane="{ item }">
             <div v-if="item === 'Learning Plan'">
                 <LearningPlanGrid :isAddEnabled="config.isEditable"
@@ -31,22 +31,24 @@
 
 <script setup lang="ts">
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
-    import LearningPlanGrid from "../../LearningPlanGrid/learningPlanGrid.partial.obs";
-    import StudentGrid from "../../StudentGrid/studentGrid.partial.obs";
-    import FacilitatorGrid from "../../FacilitatorGrid/facilitatorGrid.partial.obs";
+    import LearningPlanGrid from "./learningPlanGrid.partial.obs";
+    import StudentGrid from "./studentGrid.partial.obs";
+    import FacilitatorGrid from "./facilitatorGrid.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
+    import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
+    import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "../types.partial";
+    import { NavigationUrlKey } from "./types.partial";
 
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
-    const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
-    const onDemandCourseListTabs: Array<string> = ["Learning Plan", "Students", "Facilitators"];
+    const config = useConfigurationValues<DetailBlockBox<LearningCourseBag | LearningClassBag, LearningCourseDetailOptionsBag | LearningClassDetailOptionsBag>>();
+    const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators"];
 
     // #endregion
 

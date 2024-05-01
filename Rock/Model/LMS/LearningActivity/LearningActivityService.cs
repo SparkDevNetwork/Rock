@@ -71,7 +71,7 @@ namespace Rock.Model
                 return new LearningActivityCompletionStatistics();
             }
 
-            var activityCompletions = new LearningActivityCompletionService((RockContext)Context)
+            var activityCompletions = new LearningActivityCompletionService( ( RockContext ) Context )
                 .Queryable()
                 .Include( a => a.LearningActivity )
                 .Include( a => a.LearningActivity.LearningClass )
@@ -85,7 +85,7 @@ namespace Rock.Model
                 } )
                 .ToList();
 
-            if (!activityCompletions.Any() )
+            if ( !activityCompletions.Any() )
             {
                 return new LearningActivityCompletionStatistics();
             }
@@ -108,7 +108,7 @@ namespace Rock.Model
                 .OrderByDescending( a => a.ThresholdPercentage )
                 .ThenBy( a => a.Id )
                 .FirstOrDefault( a => a.ThresholdPercentage.HasValue && averagePercent >= ( double ) a.ThresholdPercentage.Value );
-            
+
             return new LearningActivityCompletionStatistics
             {
                 Complete = complete.ToIntSafe(),
