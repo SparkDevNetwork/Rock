@@ -81,10 +81,9 @@ namespace Rock.Blocks.Cms
         {
             var box = new ListBlockBox<PersistedDatasetListOptionsBag>();
             var builder = GetGridBuilder();
-            var isAddDeleteEnabled = GetIsAddEnabled();
 
-            box.IsAddEnabled = isAddDeleteEnabled;
-            box.IsDeleteEnabled = isAddDeleteEnabled;
+            box.IsAddEnabled = GetIsAddEnabled();
+            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -145,7 +144,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "name", a => a.Name )
                 .AddField( "lastRefreshDateTime", a => a.LastRefreshDateTime )
                 .AddTextField( "accessKey", a => a.AccessKey )
-                .AddField( "timeToBuildMS", a => Math.Round( ( double ) a.TimeToBuildMS ).ToString() )
+                .AddField( "timeToBuildMS", a => a.TimeToBuildMS.HasValue ? Math.Round( ( double ) a.TimeToBuildMS ).ToString() : "-" )
                 .AddTextField( "resultData", a => a.ResultData )
                 .AddField( "resultSize", a => a.ResultData != null ? a.ResultData.Length / 1024 : 0 )
                 .AddField( "isSystem", a => a.IsSystem );
@@ -238,9 +237,9 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( $"{PersistedDataset.FriendlyTypeName} not found." );
                 }
 
-                if ( GetIsAddEnabled() )
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${PersistedDataset.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {PersistedDataset.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

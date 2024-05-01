@@ -129,8 +129,7 @@ namespace Rock.Workflow.Action
             {
                 errorMessages.Add( "No person was provided for the reminder." );
             }
-
-            if ( !person.PrimaryAliasId.HasValue )
+            else if ( !person.PrimaryAliasId.HasValue )
             {
                 errorMessages.Add( $"{person.FullName} does not have a primary alias identifier." );
             }
@@ -174,6 +173,27 @@ namespace Rock.Workflow.Action
                 errorMessages.Add( string.Format( "Entity could not be found for selected value ('{0}')!", entityIdGuidString ) );
             }
 
+            // Get the Reminder Date.
+            DateTime? reminderDateTime;
+
+            var reminderDate = GetAttributeValueFromWorkflowTextOrAttribute( action, AttributeKey.ReminderDate )
+                .ResolveMergeFields( mergeFields );
+            if ( reminderDate.IsNullOrWhiteSpace() )
+            {
+                // If no reminder date is specified, activate it immediately.
+                reminderDateTime = RockDateTime.Now;
+            }
+            else
+            {
+                reminderDateTime = reminderDate.AsDateTime();
+
+                if ( reminderDateTime == null )
+                {
+                    errorMessages.Add( $"Reminder Date value is not a valid date ('{reminderDate}')" );
+                }
+            }
+
+            // If any parameters are invalid, log the error messages and fail the action.
             if ( errorMessages.Any() )
             {
                 errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
@@ -188,12 +208,10 @@ namespace Rock.Workflow.Action
                 PersonAliasId = person.PrimaryAliasId.Value
             };
 
-
             reminder.EntityId = entityObject.Id;
 
-            reminder.Note = GetAttributeValue( action, AttributeKey.Note ).ResolveMergeFields( mergeFields );
-            reminder.ReminderDate = GetAttributeValue( action, AttributeKey.ReminderDate ).ResolveMergeFields( mergeFields ).AsDateTime() ?? RockDateTime.Now;
-
+            reminder.Note = GetAttributeValueFromWorkflowTextOrAttribute( action, AttributeKey.Note ).ResolveMergeFields( mergeFields );
+            reminder.ReminderDate = reminderDateTime.Value;
             reminder.RenewPeriodDays = GetAttributeValue( action, AttributeKey.RepeatEvery ).AsIntegerOrNull();
             reminder.RenewMaxCount = GetAttributeValue( action, AttributeKey.NumberOfTimesToRepeat ).AsIntegerOrNull();
 

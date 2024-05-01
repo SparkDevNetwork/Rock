@@ -82,6 +82,11 @@ namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
         /// Gets or sets the person's donation months
         /// </summary>
         public string DonationMonths { get; set; }
+        /// <summary>
+        /// Gets or sets the person's bit mask
+        /// </summary>
+        public string DonationMonthYearBitmask { get; set; }
+
     }
 
     /// <summary>

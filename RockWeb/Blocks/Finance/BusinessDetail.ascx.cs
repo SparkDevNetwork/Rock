@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -391,33 +391,35 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     {
                         if ( cbSaveFormerAddressAsPreviousAddress.Checked )
                         {
-                            GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now );
+                            var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
+                            workLocation.GroupLocationTypeValueId = previousLocationTypeId;
                         }
-
-                        groupLocationService.Delete( workLocation );
                     }
                 }
                 else
                 {
+                    GroupLocation currentGroupLocation;
                     var newLocation = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
-                    if ( workLocation == null )
+                    if ( workLocation == null || ( cbSaveFormerAddressAsPreviousAddress.Checked && newLocation.Id != workLocation.Location.Id ) )
                     {
-                        workLocation = new GroupLocation();
-                        groupLocationService.Add( workLocation );
-                        workLocation.GroupId = adultFamilyMember.Group.Id;
-                        workLocation.GroupLocationTypeValueId = workLocationTypeId;
+                        if ( workLocation != null )
+                        {
+                            var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
+                            workLocation.GroupLocationTypeValueId = previousLocationTypeId;
+                        }
+
+                        currentGroupLocation = new GroupLocation();
+                        groupLocationService.Add( currentGroupLocation );
+                        currentGroupLocation.GroupId = adultFamilyMember.Group.Id;
+                        currentGroupLocation.GroupLocationTypeValueId = workLocationTypeId;
                     }
                     else
                     {
-                        // Save this to history if the box is checked and the new info is different than the current one.
-                        if ( cbSaveFormerAddressAsPreviousAddress.Checked && newLocation.Id != workLocation.Location.Id )
-                        {
-                            new GroupLocationHistoricalService( rockContext ).Add( GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now ) );
-                        }
+                        currentGroupLocation = workLocation;
                     }
 
-                    workLocation.Location = newLocation;
-                    workLocation.IsMailingLocation = true;
+                    currentGroupLocation.Location = newLocation;
+                    currentGroupLocation.IsMailingLocation = true;
                 }
 
                 rockContext.SaveChanges();
@@ -741,6 +743,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 // Get addresses
                 var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
+                var previousLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
                 if ( workLocationType != null )
                 {
                     if ( business.GivingGroup != null ) // Giving Group is a shortcut to Family Group for business
@@ -755,17 +758,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         }
 
                         // Get Previous Addresses
-                        var previousLocations = new GroupLocationHistoricalService( rockContext )
-                            .Queryable()
-                            .Where( h => h.GroupId == business.GivingGroup.Id && h.GroupLocationTypeValueId == workLocationType.Id )
-                            .OrderBy( h => h.EffectiveDateTime )
+                        var previousLocations = business.GivingGroup.GroupLocations
+                            .Where( gl => gl.GroupLocationTypeValueId == previousLocationType.Id )
+                            .OrderByDescending( h => h.CreatedDateTime )
                             .Select( h => h.Location )
                             .ToList();
 
-                        foreach ( var previouslocation in previousLocations )
-                        {
-                            detailsLeft.Add( "Previous Address", previouslocation.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
-                        }
+                        detailsLeft.Add( "Previous Address".PluralizeIf( previousLocations.Count > 1 ), previousLocations.Select( a => a.GetFullStreetAddress().ConvertCrLfToHtmlBr() ).JoinStrings( "<br><br>" ) );
                     }
                 }
 

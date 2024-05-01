@@ -336,6 +336,12 @@
     gap: 8px;
 }
 
+.grid-column-header > .grid-filter-popup  .alert {
+    border-top: 0;
+    box-shadow: none;
+    padding: 8px;
+}
+
 .grid-row {
     display: flex;
     background-color: #fff;
@@ -461,6 +467,15 @@
 
 .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.active {
     background-color: var(--theme-light);
+}
+
+.grid-obsidian .grid-cell .highlight-detail {
+    color: var(--theme-medium);
+    font-size: 14px;
+}
+
+.grid-obsidian .grid-cell .highlight-title {
+    font-weight: 600;
 }
 
 @media (max-width: 767px) {

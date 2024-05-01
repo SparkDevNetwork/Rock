@@ -48,7 +48,6 @@
                 name="participant"
                 title="Participant"
                 width="15%"
-                itemClass="fundraising-participant-cell"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="row.participant" />
@@ -69,13 +68,6 @@
                     visiblePriority="xs" />
     </Grid>
 </template>
-
-<style>
-.fundraising-participant-cell {
-    flex-direction: column;
-    align-items: stretch !important;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

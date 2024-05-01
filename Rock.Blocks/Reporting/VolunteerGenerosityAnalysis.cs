@@ -82,6 +82,11 @@ namespace Rock.Blocks.Reporting
                             box.LastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToString( "yyyy-MM-dd HH:mm:ss" ) : "N/A";
                             box.EstimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0;
                             box.ShowCampusFilter = hasMultipleCampuses;
+
+                            foreach ( var person in peopleData )
+                            {
+                                person.DonationMonths = DecodeDonationMonthBitmask( person.DonationMonthYearBitmask );
+                            }
                         }
 
                         return box;
@@ -149,7 +154,7 @@ namespace Rock.Blocks.Reporting
                 .AddTextField( "campus", d => d.CampusShortCode )
                 .AddDateTimeField( "lastAttendanceDate", d => d.LastAttendanceDate )
                 .AddTextField( "team", d => d.GroupName )
-                .AddTextField( "givingMonths", d => d.DonationMonths )
+                .AddTextField( "givingMonths", d => DecodeDonationMonthBitmask( d.DonationMonthYearBitmask ) )
                 .AddField( "person", d => new VolunteerGenerosityPersonBag
                 {
                     PersonId = d.PersonId,
@@ -188,6 +193,40 @@ namespace Rock.Blocks.Reporting
                 return ActionOk( new { LastUpdated = lastUpdated, EstimatedRefreshTime = estimatedRefreshTime } );
             }
         }
+
+        private string DecodeDonationMonthBitmask( string donationMonthYearBitmask )
+        {
+            if ( string.IsNullOrEmpty( donationMonthYearBitmask ) )
+            {
+                return null;
+            }
+
+            var donationMonths = new List<string>();
+            var monthAbbreviations = new string[] {
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            };
+
+            var yearBitmaskPairs = donationMonthYearBitmask.Split( '|' );
+            foreach ( var yearBitmaskPair in yearBitmaskPairs )
+            {
+                var parts = yearBitmaskPair.Split( '-' );
+                if ( parts.Length == 2 && int.TryParse( parts[0], out int year ) && int.TryParse( parts[1], out int bitmask ) )
+                {
+                    for ( int i = 0; i < 12; i++ )
+                    {
+                        if ( ( bitmask & ( int ) Math.Pow( 2, i ) ) != 0 )
+                        {
+                            donationMonths.Add( $"{monthAbbreviations[i]} {year}" );
+                        }
+                    }
+                }
+            }
+
+            return string.Join( ", ", donationMonths );
+        }
+
+
 
         #endregion
     }

@@ -63,5 +63,10 @@ export default defineComponent({
             type: Object as PropType<Component>,
             default: ButtonCell
         },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "button"
+        },
     },
 });

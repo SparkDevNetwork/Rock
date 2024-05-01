@@ -21,6 +21,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -77,17 +78,21 @@ namespace Rock.Jobs
             foreach ( var segment in segmentList.OrderBy( s => s.Name ) )
             {
                 this.UpdateLastStatusMessage( $"{segment.Name}: Updating..." );
-                using ( var rockContext = new RockContext() )
-                {
-                    rockContext.Database.CommandTimeout = commandTimeoutSeconds;
-                    var segmentUpdateResults = new PersonalizationSegmentService( rockContext ).UpdatePersonAliasPersonalizationDataForSegment( segment );
-                    if ( segmentUpdateResults.CountAddedSegment == 0 && segmentUpdateResults.CountRemovedFromSegment == 0 )
+
+                using ( var activity = ObservabilityHelper.StartActivity( $"Segment: {segment.Name}" ) )
+                { 
+                    using ( var rockContext = new RockContext() )
                     {
-                        resultsBuilder.AppendLine( $"{segment.Name} - No changes." );
-                    }
-                    else
-                    {
-                        resultsBuilder.AppendLine( $"{segment.Name} - {segmentUpdateResults.CountAddedSegment} added and {segmentUpdateResults.CountRemovedFromSegment} removed." );
+                        rockContext.Database.CommandTimeout = commandTimeoutSeconds;
+                        var segmentUpdateResults = new PersonalizationSegmentService( rockContext ).UpdatePersonAliasPersonalizationDataForSegment( segment );
+                        if ( segmentUpdateResults.CountAddedSegment == 0 && segmentUpdateResults.CountRemovedFromSegment == 0 )
+                        {
+                            resultsBuilder.AppendLine( $"{segment.Name} - No changes." );
+                        }
+                        else
+                        {
+                            resultsBuilder.AppendLine( $"{segment.Name} - {segmentUpdateResults.CountAddedSegment} added and {segmentUpdateResults.CountRemovedFromSegment} removed." );
+                        }
                     }
                 }
             }

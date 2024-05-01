@@ -128,6 +128,24 @@
 
         $('#<%= upnlRoot.ClientID %> .js-transfer-connector').on('click', syncTransferConnectorControls);
         $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle($('#<%=rbRequestModalViewModeTransferModeSelectConnector.ClientID%>').is(":checked"));
+
+        // request delete prompt
+        $('#<%= upnlRoot.ClientID %> .js-grid-requests a.grid-delete-button').on('click', function () {
+            var $btn = $(this);
+            var $row = $btn.closest('tr');
+            var dataKey = $row.attr('datakey');
+
+            if (!dataKey) {
+                return;
+            }
+
+            Rock.dialogs.confirm('Are you sure you want to delete this request?', function (result) {
+                if (result) {
+                    const postback = 'javascript:__doPostBack(' + JSON.stringify("<%= lbJavaScriptCommand.ClientID %>") + ', ' + JSON.stringify("on-request-delete|" + dataKey) + ')';
+                    window.location = postback;
+                }
+            });
+        });
     });
 
     const toggleFilterDrawer = function () {
@@ -337,7 +355,7 @@
             <asp:UpdatePanel ID="upnlGridView" runat="server" class="grid-view-container">
                 <ContentTemplate>
                     <div class="panel-body p-0">
-                        <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
+                        <Rock:Grid ID="gRequests" CssClass="border-top-0 js-grid-requests" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind" ShowConfirmDeleteDialog="false">
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
                                 <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />

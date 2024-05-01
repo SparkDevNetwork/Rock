@@ -21,6 +21,11 @@
 // </copyright>
 //
 
-/** Class PersistedDatasetDetailOptionsBag. */
-export type PersistedDatasetListOptionsBag = {
+/** Contains details on the Benevolence Request Result. */
+export type BenevolenceResultBag = {
+    /** Gets or sets the amount formatted as currency. */
+    amount?: number | null;
+
+    /** Gets or sets the result. */
+    result?: string | null;
 };
