@@ -383,7 +383,7 @@ const transactionFrequencyTwiceAMonth: TransactionFrequency = {
     },
 
     getNextTransactionDate(): RockDateTime {
-        // Always use tomorrow's date for recurring transactions.
+        // Get the first 1st or 15th after tomorrow.
         const tomorrow = RockDateTime.now().addDays(1).date;
         return getNextDay(tomorrow, ...[1, 15]) ?? tomorrow;
     },
