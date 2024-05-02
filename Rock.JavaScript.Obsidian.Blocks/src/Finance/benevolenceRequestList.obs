@@ -66,6 +66,7 @@
                       title="Assigned To"
                       field="caseWorker"
                       :hideAvatar="true"
+                      :showAsLink="true"
                       :filter="pickExistingValueFilter"
                       visiblePriority="md" />
 

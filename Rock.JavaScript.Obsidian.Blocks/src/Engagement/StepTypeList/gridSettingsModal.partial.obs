@@ -1,0 +1,115 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="name" label="Name" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="spansTime"
+                              label="Spans Time"
+                              :items="yesOrNoOptions"
+                              showBlankItem />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="allowsMultiple"
+                              label="Allow Multiple"
+                              :items="yesOrNoOptions"
+                              showBlankItem />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="activeStatus"
+                              label="Active Status"
+                              :items="activeStatusOptions"
+                              showBlankItem />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+    }>();
+
+    const name = ref(props.modelValue.name ?? "");
+    const spansTime = ref(props.modelValue.spansTime ?? "");
+    const allowsMultiple = ref(props.modelValue.allowsMultiple ?? "");
+    const activeStatus = ref(props.modelValue.activeStatus ?? "");
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const yesOrNoOptions = [
+        {
+            text: "Yes",
+            value: "Yes"
+        },
+        {
+            text: "No",
+            value: "No"
+        }
+    ] as ListItemBag[];
+
+    const activeStatusOptions = [
+        {
+            text: "Active",
+            value: "Active"
+        },
+        {
+            text: "Inactive",
+            value: "Inactive"
+        }
+    ] as ListItemBag[];
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            name: name.value,
+            spansTime: spansTime.value,
+            allowsMultiple: allowsMultiple.value,
+            activeStatus: activeStatus.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        name.value = props.modelValue.name ?? "";
+        spansTime.value = props.modelValue.spansTime ?? "";
+        allowsMultiple.value = props.modelValue.allowsMultiple ?? "";
+        activeStatus.value = props.modelValue.activeStatus ?? "";
+    });
+</script>
