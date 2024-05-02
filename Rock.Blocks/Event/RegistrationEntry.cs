@@ -2931,10 +2931,14 @@ namespace Rock.Blocks.Event
                         {
                             throw new Exception( errorMessage );
                         }
-
-                        if ( transaction == null )
+                        else if ( transaction == null )
                         {
                             throw new Exception( "There was a problem with the payment" );
+                        }
+                        else
+                        {
+                            // The payment was processed successfully, so save the transaction in Rock.
+                            SaveTransaction( gateway, context, transaction, paymentInfo, rockContext );
                         }
                     }
 
