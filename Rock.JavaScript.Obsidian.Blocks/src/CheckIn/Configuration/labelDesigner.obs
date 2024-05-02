@@ -55,11 +55,15 @@
             },
         });
 
-        layer.add(textblock,);
+        layer.add(textblock);
 
-        var tr = new Konva.Transformer();
+        var tr = new Konva.Transformer({
+            nodes: [textblock],
+            rotationSnaps: [0, 90, 180, 270],
+            rotationSnapTolerance: 45,
+            rotateAnchorOffset: 25
+        });
         layer.add(tr);
-        tr.nodes([textblock]);
 
         textblock.on("transform", function (ev) {
             textblock.setAttrs({
