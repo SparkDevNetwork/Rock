@@ -475,13 +475,11 @@ namespace Rock.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
-                // A browser may send approximated values; e.g., 0.020000000000000004 (instead of 0.02) or 0.0699999999999932 (instead of 0.07).
-                // Round currency amounts using the organization's currency settings before processing payments.
-                var currencyInfo = new RockCurrencyCodeInfo();
-                args.AmountToPayNow = decimal.Round( args.AmountToPayNow, currencyInfo.DecimalPlaces );
-                if ( args.PaymentPlan != null )
+                FixRegistrationArguments( args );
+
+                if ( args.PaymentPlan != null && !IsPaymentPlanValid( args.PaymentPlan, out var paymentPlanInvalidErrorMessage ) )
                 {
-                    args.PaymentPlan.AmountPerPayment = decimal.Round( args.PaymentPlan.AmountPerPayment, currencyInfo.DecimalPlaces );
+                    return ActionBadRequest( paymentPlanInvalidErrorMessage );
                 }
 
                 var context = GetContext( rockContext, args, out var errorMessage );
@@ -502,6 +500,67 @@ namespace Rock.Blocks.Event
 
                 return new BlockActionResult( System.Net.HttpStatusCode.Created, successViewModel );
             }
+        }
+
+        /// <summary>
+        /// Fixes registration arguments, such as, approximated decimal values sent by a browser.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void FixRegistrationArguments( RegistrationEntryArgsBag args )
+        {
+            // A browser may send approximated values;
+            // e.g., 0.020000000000000004 (instead of 0.02) or 0.0699999999999932 (instead of 0.07).
+            // Round currency amounts using the organization's currency settings.
+            var currencyInfo = new RockCurrencyCodeInfo();
+
+            args.AmountToPayNow = decimal.Round( args.AmountToPayNow, currencyInfo.DecimalPlaces );
+
+            if ( args.PaymentPlan != null )
+            {
+                args.PaymentPlan.AmountPerPayment = decimal.Round( args.PaymentPlan.AmountPerPayment, currencyInfo.DecimalPlaces );
+            }
+        }
+
+        /// <summary>
+        /// Determines if a payment plan is valid.
+        /// </summary>
+        /// <param name="paymentPlan">The payment plan to validate.</param>
+        /// <param name="errorMessage">The error message if validation fails.</param>
+        /// <returns><see langword="true"/> if the payment plan is valid; otherwise, <see langword="false"/> (<paramref name="errorMessage"/> will contain the validation error message).</returns>
+        private bool IsPaymentPlanValid( RegistrationEntryCreatePaymentPlanRequestBag paymentPlan, out string errorMessage )
+        {
+            if ( paymentPlan.TransactionFrequencyGuid == SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() )
+            {
+                DateTime GetAllowedStartDate()
+                {
+                    var tomorrow = RockDateTime.Today.AddDays( 1 );
+                    if ( tomorrow.Day == 1 || tomorrow.Day == 15 )
+                    {
+                        return tomorrow;
+                    }
+                    else if ( tomorrow.Day < 15 )
+                    {
+                        return tomorrow.AddDays( 15 - tomorrow.Day );
+                    }
+                    else
+                    {
+                        // Day > 15 so return the 1st of the next month.
+                        return tomorrow.AddDays( -( tomorrow.Day - 1 ) ).AddMonths( 1 );
+                    }
+                }
+
+                var allowedStartDate = GetAllowedStartDate();
+
+                if ( paymentPlan.StartDate != allowedStartDate )
+                {
+                    errorMessage = $"The payment plan start date {paymentPlan.StartDate:d} is invalid";
+                    return false;
+                }
+            }
+
+            errorMessage = null;
+            return true;
         }
 
         /// <summary>

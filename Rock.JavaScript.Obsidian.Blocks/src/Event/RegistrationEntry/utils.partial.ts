@@ -21,7 +21,8 @@ import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import {
     RegistrationEntryState,
     RegistrationCostSummaryInfo,
-    RegistrantBasicInfo } from "./types.partial";
+    RegistrantBasicInfo
+} from "./types.partial";
 import { InjectionKey, Ref, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
@@ -254,7 +255,7 @@ const transactionFrequencyBiWeekly: TransactionFrequency = {
 type GetNextDayOption = "end-of-month";
 
 /**
- * Starting from the current date, finds the next day in the month matching one the specified days.
+ * From the starting date, finds the next day matching one the specified days.
  * @param potentialDays Represents the days of the month; e.g., 1 is the 1st, 2 is the 2nd, etc.
  * @example
  * // Assume current date is 2-8-2024.
@@ -264,8 +265,8 @@ type GetNextDayOption = "end-of-month";
  * getNextDay(8); // 2-8-2024
  * getNextDay("end-of-month"); // 2-29-2024
  */
-function getNextDay(...potentialDays: (number | GetNextDayOption)[]): RockDateTime | null {
-    let date = RockDateTime.now().date;
+function getNextDay(startingDate: RockDateTime, ...potentialDays: (number | GetNextDayOption)[]): RockDateTime | null {
+    let date = startingDate;
 
     potentialDays = potentialDays
         // Remove invalid days.
@@ -383,7 +384,8 @@ const transactionFrequencyTwiceAMonth: TransactionFrequency = {
 
     getNextTransactionDate(): RockDateTime {
         // Always use tomorrow's date for recurring transactions.
-        return RockDateTime.now().addDays(1).date;
+        const tomorrow = RockDateTime.now().addDays(1).date;
+        return getNextDay(tomorrow, ...[1, 15]) ?? tomorrow;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
