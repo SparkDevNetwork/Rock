@@ -25,6 +25,7 @@ import DateColumn from "./Grid/Columns/dateColumn.partial";
 import DateTimeColumn from "./Grid/Columns/dateTimeColumn.partial";
 import DeleteColumn from "./Grid/Columns/deleteColumn.partial";
 import EditColumn from "./Grid/Columns/editColumn.partial";
+import HighlightDetailColumn from "./Grid/Columns/highlightDetailColumn.partial";
 import LabelColumn from "./Grid/Columns/labelColumn.partial";
 import NumberBadgeColumn from "./Grid/Columns/numberBadgeColumn.partial";
 import NumberColumn from "./Grid/Columns/numberColumn.partial";
@@ -41,6 +42,7 @@ import DateCell from "./Grid/Cells/dateCell.partial.obs";
 import DateTimeCell from "./Grid/Cells/dateTimeCell.partial.obs";
 import DeleteCell from "./Grid/Cells/deleteCell.partial.obs";
 import EditCell from "./Grid/Cells/editCell.partial.obs";
+import HighlightDetailCell from "./Grid/Cells/highlightDetailCell.partial.obs";
 import LabelCell from "./Grid/Cells/labelCell.partial.obs";
 import NumberBadgeCell from "./Grid/Cells/numberBadgeCell.partial.obs";
 import NumberCell from "./Grid/Cells/numberCell.partial.obs";
@@ -74,6 +76,7 @@ export {
     DateTimeColumn,
     DeleteColumn,
     EditColumn,
+    HighlightDetailColumn,
     LabelColumn,
     NumberBadgeColumn,
     NumberColumn,
@@ -93,6 +96,7 @@ export {
     DateTimeCell,
     DeleteCell,
     EditCell,
+    HighlightDetailCell,
     LabelCell,
     NumberBadgeCell,
     NumberCell,

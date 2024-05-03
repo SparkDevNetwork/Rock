@@ -1,0 +1,39 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <div class="highlight-title">{{ title }}</div>
+        <div class="highlight-detail">
+            <component v-if="props.column.slots.detailFormat"
+                       :is="props.column.slots.detailFormat"
+                       :row="props.row"
+                       :column="props.column"
+                       :grid="props.grid" />
+            <template v-else>{{ detail }}</template>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    const title = computed((): unknown => {
+        if (props.column.field) {
+            return props.row[props.column.field];
+        }
+        else {
+            return "";
+        }
+    });
+
+    const detail = computed((): unknown => {
+        if (typeof props.column.props.detailField === "string") {
+            return props.row[props.column.props.detailField];
+        }
+        else {
+            return "";
+        }
+    });
+</script>
