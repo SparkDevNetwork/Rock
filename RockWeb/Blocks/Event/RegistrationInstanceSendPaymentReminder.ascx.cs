@@ -271,14 +271,23 @@ namespace RockWeb.Blocks.Event
             {
                 using ( RockContext rockContext = new RockContext() )
                 {
-                    RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
+                    var registrationInstanceService = new RegistrationInstanceService( rockContext );
 
                     // NOTE: Do not use AsNoTracking because lava might need to lazy load some stuff
-                    _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" )
-                                                .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
+                    _registrationInstance = registrationInstanceService
+                        .Queryable()
+                        .Include( r => r.RegistrationTemplate )
+                        .Where( r => r.Id == registrationInstanceId )
+                        .FirstOrDefault();
 
-
-                    var registrationSample = _registrationInstance.Registrations.Where( r => r.BalanceDue > 0 ).FirstOrDefault();
+                    var registrationService = new RegistrationService( rockContext );
+                    var registrationSample = registrationService
+                        .Queryable()
+                        .Where( r => r.RegistrationInstanceId == registrationInstanceId )
+                        .IncludePaymentPlanDependencies()
+                        // Must call ToList() in order to use the Registration.BalanceDue property.
+                        .ToList()
+                        .FirstOrDefault( r => r.BalanceDue > 0 && ( r.PaymentPlanFinancialScheduledTransaction?.PaymentPlan == null || r.BalanceDue > r.PaymentPlanFinancialScheduledTransaction.PaymentPlan.PlannedAmountRemaining ) );
 
                     if ( registrationSample != null )
                     {
@@ -334,15 +343,16 @@ namespace RockWeb.Blocks.Event
 
                 var registrationService = new RegistrationInstanceService( rockContext );
 
-                var registrationsAndPaymentPlans = registrationService
+                var registrationPaymentPlanPairs = registrationService
                     .Queryable()
                     .AsNoTracking()
                     .Where( r => r.Id == _registrationInstance.Id )
                     .SelectMany( r => r.Registrations )
-                    .GetPaymentPlans()
+                    .GetPaymentPlanPairs()
+                    // Must call ToList here to use the Registration.BalanceDue property below.
                     .ToList();
 
-                var outstandingBalances = registrationsAndPaymentPlans
+                var outstandingBalances = registrationPaymentPlanPairs
                     .Where( r => r.Registration.BalanceDue > 0 )
                     // Ignore registrations with an active payment plan scheduled transaction.
                     .Where( r => r.PaymentPlan == null || r.Registration.BalanceDue > r.PaymentPlan.PlannedAmountRemaining )

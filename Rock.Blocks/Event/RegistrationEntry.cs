@@ -4322,7 +4322,7 @@ namespace Rock.Blocks.Event
                         ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
                     ) &&
                     r.RegistrationInstanceId == registrationContext.RegistrationSettings.RegistrationInstanceId )
-                .GetPaymentPlans()
+                .GetPaymentPlanPairs()
                 .FirstOrDefault();
 
             var registration = registrationPaymentPlanPair?.Registration;
