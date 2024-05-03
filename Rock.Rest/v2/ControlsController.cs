@@ -5751,7 +5751,7 @@ namespace Rock.Rest.v2
                 // workflow actions from showing up to the user. System user only.
                 if ( !categoryName.Equals( "HideFromUser", System.StringComparison.OrdinalIgnoreCase ) )
                 {
-                    categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
+                    categorizedActions.TryAdd( categoryName, new List<EntityTypeCache>() );
                     categorizedActions[categoryName].Add( action.EntityType );
                 }
             }
@@ -5984,7 +5984,7 @@ namespace Rock.Rest.v2
                             System.Reflection.PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                             if ( propertyInfo != null )
                             {
-                                propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( model, null ) );
+                                propertyValues.TryAdd( propertyName, propertyInfo.GetValue( model, null ) );
                             }
                         }
 

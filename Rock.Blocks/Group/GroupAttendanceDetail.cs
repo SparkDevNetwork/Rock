@@ -632,7 +632,7 @@ namespace Rock.Blocks.Group
                         .ToList();
                     foreach ( var person in personList )
                     {
-                        mergeObjects.AddOrIgnore( person.Id, person );
+                        mergeObjects.TryAdd( person.Id, person );
                     }
                 }
 
@@ -1317,7 +1317,7 @@ namespace Rock.Blocks.Group
                     var startTimes = schedule.GetScheduledStartTimes( date.Value.Date, date.Value.Date.AddDays( 1 ) );
                     if ( startTimes.Any() )
                     {
-                        schedules.AddOrIgnore( schedule.Guid, schedule.Name );
+                        schedules.TryAdd( schedule.Guid, schedule.Name );
                     }
                 }
             }
@@ -1333,7 +1333,7 @@ namespace Rock.Blocks.Group
 
                 foreach ( var groupLocationSchedule in groupLocationSchedules )
                 {
-                    schedules.AddOrIgnore( groupLocationSchedule.ScheduleGuid, groupLocationSchedule.ScheduleName );
+                    schedules.TryAdd( groupLocationSchedule.ScheduleGuid, groupLocationSchedule.ScheduleName );
                 }
             }
 

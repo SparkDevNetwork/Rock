@@ -59,7 +59,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void AddOrIgnore<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        [RockObsolete( "1.16.6" )]
+        [Obsolete( "Use TryAdd() instead." )]
+        public static void AddOrIgnore<TKey, TValue>( IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
             // Special logic when dealing with concurrent dictionaries to
             // solve issue https://github.com/SparkDevNetwork/Rock/issues/5852.

@@ -196,32 +196,32 @@ namespace Rock.Obsidian.UI
 
                 if ( communicationUrl.IsNotNullOrWhiteSpace() )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.Communicate, communicationUrl );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.Communicate, communicationUrl );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/PersonMerge/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.MergePerson, "/PersonMerge/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.MergePerson, "/PersonMerge/{EntitySetId}" );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/BusinessMerge/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.MergeBusiness, "/BusinessMerge/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.MergeBusiness, "/BusinessMerge/{EntitySetId}" );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/BulkUpdate/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.BulkUpdate, "/BulkUpdate/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.BulkUpdate, "/BulkUpdate/{EntitySetId}" );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/LaunchWorkflows/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.LaunchWorkflow, "/LaunchWorkflows/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.LaunchWorkflow, "/LaunchWorkflows/{EntitySetId}" );
                 }
 
                 if ( IsAuthorizedForRoute( block.RequestContext, "/MergeTemplate/{EntitySetId}" ) )
                 {
-                    definition.ActionUrls.AddOrIgnore( GridActionUrlKey.MergeTemplate, "/MergeTemplate/{EntitySetId}" );
+                    definition.ActionUrls.TryAdd( GridActionUrlKey.MergeTemplate, "/MergeTemplate/{EntitySetId}" );
                 }
             } );
         }

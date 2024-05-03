@@ -1356,7 +1356,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         {
                             groupTypeNames = new List<string>();
                             groupTypeNamesByAttributeGuid.Add( attribute.Guid, groupTypeNames );
-                            attributeCachesByAttributeGuid.AddOrIgnore( attribute.Guid, attribute );
+                            attributeCachesByAttributeGuid.TryAdd( attribute.Guid, attribute );
                         }
 
                         groupTypeNames.Add( groupTypeCache.Name );

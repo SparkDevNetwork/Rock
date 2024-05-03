@@ -124,7 +124,7 @@ namespace Rock
                     continue;
                 }
 
-                parameters.AddOrIgnore( qp.Key, qp.Value );
+                parameters.TryAdd( qp.Key, qp.Value );
             }
 
             var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );

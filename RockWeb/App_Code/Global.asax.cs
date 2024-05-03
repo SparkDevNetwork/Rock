@@ -658,7 +658,7 @@ namespace RockWeb
                 foreach ( var startupType in Rock.Reflection.FindTypes( typeof( IRockStartup ) ).Select( a => a.Value ).ToList() )
                 {
                     var startup = Activator.CreateInstance( startupType ) as IRockStartup;
-                    startups.AddOrIgnore( startup.StartupOrder, new List<IRockStartup>() );
+                    startups.TryAdd( startup.StartupOrder, new List<IRockStartup>() );
                     startups[startup.StartupOrder].Add( startup );
                 }
 

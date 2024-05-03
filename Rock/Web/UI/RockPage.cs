@@ -3989,7 +3989,7 @@ Sys.Application.add_load(function () {
                         and ignore the value stored in the QueryString list (the value is the same). In any case if there is contention between a
                         Route Key and QueryString Key the Route will take precedence.
                     */
-                    parameters.AddOrIgnore( param, Request.QueryString[param] );
+                    parameters.TryAdd( param, Request.QueryString[param] );
                 }
             }
 
@@ -4711,7 +4711,7 @@ Sys.Application.add_load(function () {
 
             foreach ( var key in preferences.GetKeys().Where( k => k.StartsWith( keyPrefix ) ) )
             {
-                selectedValues.AddOrIgnore( key, preferences.GetValue( key ) );
+                selectedValues.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return selectedValues;
@@ -4776,7 +4776,7 @@ Sys.Application.add_load(function () {
 
             foreach ( var key in preferences.GetKeys() )
             {
-                userPreferences.AddOrIgnore( key, preferences.GetValue( key ) );
+                userPreferences.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return userPreferences;

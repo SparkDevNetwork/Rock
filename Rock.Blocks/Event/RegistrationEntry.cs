@@ -825,12 +825,12 @@ namespace Rock.Blocks.Event
                         if ( fieldViewModel.FieldSource == RegistrationFieldSource.PersonAttribute )
                         {
                             var personAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, person, field );
-                            fieldValues.AddOrIgnore( fieldViewModel.Guid, personAttributeValue );
+                            fieldValues.TryAdd( fieldViewModel.Guid, personAttributeValue );
                         }
                         else if ( fieldViewModel.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                         {
                             var registrantAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
-                            fieldValues.AddOrIgnore( fieldViewModel.Guid, registrantAttributeValue );
+                            fieldValues.TryAdd( fieldViewModel.Guid, registrantAttributeValue );
                         }
                     }
                 }
@@ -1148,7 +1148,7 @@ namespace Rock.Blocks.Event
             campusId = campusId ?? registrarFamily.CampusId;
 
             // Set the family guid for any other registrants that were selected to be in the same family
-            multipleFamilyGroupIds.AddOrIgnore( registrarFamily.Guid, registrarFamily.Id );
+            multipleFamilyGroupIds.TryAdd( registrarFamily.Guid, registrarFamily.Id );
 
             if ( !singleFamilyId.HasValue )
             {
@@ -1886,7 +1886,7 @@ namespace Rock.Blocks.Event
                 if ( family != null )
                 {
                     familyId = family.Id;
-                    multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
+                    multipleFamilyGroupIds.TryAdd( familyGuid, family.Id );
                     if ( !singleFamilyId.HasValue )
                     {
                         singleFamilyId = family.Id;
@@ -1920,7 +1920,7 @@ namespace Rock.Blocks.Event
                         familyId = familyGroup.Id;
 
                         // Store the family id for next person
-                        multipleFamilyGroupIds.AddOrIgnore( familyGuid, familyGroup.Id );
+                        multipleFamilyGroupIds.TryAdd( familyGuid, familyGroup.Id );
                         if ( !singleFamilyId.HasValue )
                         {
                             singleFamilyId = familyGroup.Id;

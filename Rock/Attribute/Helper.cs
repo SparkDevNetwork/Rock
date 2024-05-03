@@ -549,7 +549,7 @@ This can be due to multiple threads updating the same attribute at the same time
                         PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                         if ( propertyInfo != null )
                         {
-                            propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( entity, null ) );
+                            propertyValues.TryAdd( propertyName, propertyInfo.GetValue( entity, null ) );
                         }
                     }
 
@@ -595,7 +595,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 foreach ( var attribute in allAttributes )
                 {
                     // Add a placeholder for this item's value for each attribute
-                    attributeValues.AddOrIgnore( attribute.Key, null );
+                    attributeValues.TryAdd( attribute.Key, null );
                 }
 
                 // If loading attributes for a saved item, read the item's value(s) for each attribute 
@@ -739,7 +739,7 @@ This can be due to multiple threads updating the same attribute at the same time
             }
 
             entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-            allAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
+            allAttributes.ForEach( a => entity.Attributes.TryAdd( a.Key, a ) );
 
             entity.AttributeValues = attributeValues;
         }
@@ -933,7 +933,7 @@ This can be due to multiple threads updating the same attribute at the same time
                         var propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                         if ( propertyInfo != null )
                         {
-                            propertyValues.AddOrIgnore( propertyName.ToLower(), propertyInfo.GetValue( entity, null ).ToStringSafe() );
+                            propertyValues.TryAdd( propertyName.ToLower(), propertyInfo.GetValue( entity, null ).ToStringSafe() );
                         }
                     }
 
@@ -1025,7 +1025,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 }
 
                 entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-                entityAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
+                entityAttributes.ForEach( a => entity.Attributes.TryAdd( a.Key, a ) );
 
                 entity.AttributeValues = attributeValues;
             }
@@ -3128,7 +3128,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                     Control control = parentControl?.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
                     if ( control != null )
                     {
-                        result.AddOrIgnore( attributeKeyValue.Value, control );
+                        result.TryAdd( attributeKeyValue.Value, control );
                     }
                 }
             }
