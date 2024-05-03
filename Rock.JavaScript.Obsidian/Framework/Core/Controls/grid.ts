@@ -877,6 +877,7 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
                 unitType: "%"
             },
             props: {},
+            slots: {},
             data: {}
         });
     }
@@ -918,6 +919,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
                 unitType: "%"
             },
             props: {},
+            slots: {},
             data: {}
         };
 
@@ -1112,6 +1114,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         headerClass,
         itemClass,
         props: getVNodeProps(node),
+        slots: node.children as Record<string, Component> ?? {},
         data: {}
     };
 

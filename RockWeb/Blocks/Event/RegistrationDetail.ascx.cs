@@ -2416,7 +2416,7 @@ namespace RockWeb.Blocks.Event
                 .Max( t => ( DateTime? ) t.TransactionDateTime.Value );
             
             // Use the financial gateway associated with the existing payment plan
-            // instead of what's configured on the template, as that gateway may
+            // instead of what's configured on the template, as the template's gateway may
             // have changed after the payment plan was created.
             var nextPaymentDate = registration.PaymentPlanFinancialScheduledTransaction.FinancialGateway?.GetGatewayComponent()?.GetNextPaymentDate( registration.PaymentPlanFinancialScheduledTransaction, lastTransactionDate );
                 
@@ -2428,6 +2428,7 @@ namespace RockWeb.Blocks.Event
 
                 // Disallow updates if the next payment date is today.
                 lbChangePaymentPlan.Enabled = nextPaymentDate.Value.Date != RockDateTime.Today;
+                spanChangeButtonWrapper.Attributes["title"] = ( lbChangePaymentPlan.Enabled ) ? "" : "The plan cannot be changed because the next payment is today (and may be in process).";
 
                 // Allow deletion if the recurring payment has more payments.
                 lbDeletePaymentPlan.Enabled = true;
@@ -3028,7 +3029,7 @@ namespace RockWeb.Blocks.Event
         private PaymentPlanConfiguration GetPaymentPlanConfigurationForRegistration()
         {
             // Use the financial gateway associated with the existing payment plan
-            // instead of what's configured on the template, as that gateway may
+            // instead of what's configured on the template, as the template's gateway may
             // have changed after the payment plan was created.
             var financialGatewayComponent = this.Registration
                 .PaymentPlanFinancialScheduledTransaction
@@ -3104,7 +3105,7 @@ namespace RockWeb.Blocks.Event
         private PaymentPlanConfiguration GetPaymentPlanConfigurationFromModal()
         {
             // Use the financial gateway associated with the existing payment plan
-            // instead of what's configured on the template, as that gateway may
+            // instead of what's configured on the template, as the template's gateway may
             // have changed after the payment plan was created.
             var financialGatewayComponent = this.Registration
                 .PaymentPlanFinancialScheduledTransaction
@@ -3241,7 +3242,7 @@ namespace RockWeb.Blocks.Event
                     .FirstOrDefault( f => f.Id == paymentPlanFinancialScheduledTransactionId.Value );
                 
                 // Use the financial gateway associated with the existing payment plan
-                // instead of what's configured on the template, as that gateway may
+                // instead of what's configured on the template, as the template's gateway may
                 // have changed after the payment plan was created.
                 var financialGatewayComponent = financialScheduledTransaction.FinancialGateway?.GetGatewayComponent();
 

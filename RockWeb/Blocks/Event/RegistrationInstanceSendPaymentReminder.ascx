@@ -28,7 +28,7 @@
                     <hr />
                     <h4>Outstanding Balances</h4>
                     <asp:Literal ID="lBalanceInstructions" runat="server" />
-                    <Rock:Grid ID="gRegistrations" runat="server" AllowPaging="false" AllowSorting="true" DataKeyNames="Id">
+                    <Rock:Grid ID="gRegistrations" runat="server" AllowPaging="false" RowItemText="Registration" AllowSorting="true" DataKeyNames="Id">
                         <Columns>
                             <Rock:SelectField />
                             <Rock:RockTemplateField HeaderText="Name" SortExpression="Name">

@@ -129,8 +129,8 @@
                                                     <Rock:RockLiteral ID="lFrequencyPaymentAmount" runat="server" />
                                                     <Rock:RockLiteral ID="lNextPaymentDate" runat="server" Label="Next Payment Date" />
 
-                                                    <asp:LinkButton ID="lbChangePaymentPlan" runat="server" CssClass="btn btn-default btn-xs margin-t-sm" Text="Change" OnClick="lbChangePaymentPlan_Click" CausesValidation="false" />
-                                                    <asp:LinkButton ID="lbDeletePaymentPlan" runat="server" CssClass="btn btn-link btn-xs margin-t-sm" Text="Delete" OnClick="lbDeletePaymentPlan_Click" CausesValidation="false" />
+                                                    <span id="spanChangeButtonWrapper" runat="server" data-toggle="tooltip" data-placement="top" data-original-title=""><asp:LinkButton ID="lbChangePaymentPlan" runat="server" CssClass="btn btn-default btn-xs margin-t-sm" Text="Change" OnClick="lbChangePaymentPlan_Click" CausesValidation="false" /></span>
+                                                    <asp:LinkButton ID="lbDeletePaymentPlan" runat="server" CssClass="btn btn-link btn-xs margin-t-sm text-primary" Text="Delete" OnClick="lbDeletePaymentPlan_Click" CausesValidation="false" />
 
                                                     <Rock:ModalDialog ID="mdUpdatePaymentPlan" runat="server" Title="Update Payment Plan" ValidationGroup="vgUpdatePaymentPlan" OnSaveClick="mdUpdatePaymentPlan_SaveClick" SaveButtonCausesValidation="true">
                                                         <Content>
