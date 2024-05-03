@@ -16,6 +16,7 @@
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -2885,7 +2886,7 @@ namespace Rock.Utility
                     if ( personElem.Attribute( "email" ) != null )
                     {
                         var emailAddress = personElem.Attribute( "email" ).Value.Trim();
-                        if ( emailAddress.IsValidEmail() )
+                        if ( EmailAddressFieldValidator.IsValid( emailAddress ) )
                         {
                             person.Email = emailAddress;
                             person.IsEmailActive = personElem.Attribute( "emailIsActive" ) != null && personElem.Attribute( "emailIsActive" ).Value.AsBoolean();
