@@ -2428,6 +2428,7 @@ namespace RockWeb.Blocks.Event
 
                 // Disallow updates if the next payment date is today.
                 lbChangePaymentPlan.Enabled = nextPaymentDate.Value.Date != RockDateTime.Today;
+                spanChangeButtonWrapper.Attributes["title"] = ( lbChangePaymentPlan.Enabled ) ? "" : "The plan cannot be changed because the next payment is today (and may be in process).";
 
                 // Allow deletion if the recurring payment has more payments.
                 lbDeletePaymentPlan.Enabled = true;
