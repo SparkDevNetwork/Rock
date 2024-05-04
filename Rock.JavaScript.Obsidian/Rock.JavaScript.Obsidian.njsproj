@@ -803,7 +803,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceIntializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessSavedSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetBag.d.ts" />

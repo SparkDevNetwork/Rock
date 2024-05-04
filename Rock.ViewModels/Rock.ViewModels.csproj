@@ -55,7 +55,8 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
-    <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
+    <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressItem.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />

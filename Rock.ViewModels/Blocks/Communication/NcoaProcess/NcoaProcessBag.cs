@@ -27,7 +27,7 @@ namespace Rock.ViewModels.Blocks.Communication.NcoaProcess
         public bool Mark48MonthAsPrevious { get; set; }
         public decimal MinMoveDistance { get; set; }
         public ListItemBag NcoaFileUploadReference { get; set; }
-
+        public Dictionary<int, NcoaProcessPersonAddressItem> Addresses { get; set; }
+        public string SuccessMessage { get; set; }
     }
 }
-//DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance, List<NcoaReturnRecord> ncoaReturnRecords

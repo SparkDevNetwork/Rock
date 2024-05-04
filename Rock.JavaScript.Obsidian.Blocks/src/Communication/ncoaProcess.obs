@@ -1,87 +1,104 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <NotificationBox v-if="successMessage"
+        alertType="success"
+        v-html="successMessage" />
+    <NotificationBox v-if="errorMessage"
+        v-text="errorMessage"
+        alertType="warning" />
     <Panel title="National Change of Address (NCOA) Processing">
         <p><strong>Enhance Your Data</strong></p>
         <p>TrueNCOA provides a service to non-profits to validate and update person address data leveraging the National Change of Address (NCOA)
             database maintained by the U.S. Postal Service. The output will include details such as the person’s current address, move date, and
             move type (temporary or permanent).
         </p>
-        <p>Be sure to <a href="https://app.truencoa.com/Users/Register">sign-up with TrueNCOA</a> before you get started. This block will export the needed input file for TrueNCOA and allow you to
+        <p class="mb-5">Be sure to <a href="https://app.truencoa.com/Users/Register">sign-up with TrueNCOA</a> before you get started. This block will export the needed input file for TrueNCOA and allow you to
             import their results back into Rock.
         </p>
 
         <div class="row">
-            <div class="col-md-1"></div>
-            <div class="well col-md-4">
-                <h2>Step 1: NCOA Export Tool</h2>
-                <div class="">
-                    <p>Select a data vew to filter your export.</p>
+            <div class="col-md-6">
+                <div class="well col-md-offset-1 col-md-11 col-lg-10 flex-between" style="height: 620px;">
                     <div>
-                        <DataViewPicker
-                            v-model="selectedPersonDataView"
-                            label="Person Data View"
-                            help="Person data view filter to apply."
-                            />
+                        <h3>Step 1: NCOA Export Tool</h3>
+                        <div class="ml-2">
+                            <p style="opacity: 0.6;">Select a data vew to filter your export.</p>
+                            <div class="input-width">
+                                <DataViewPicker
+                                    v-model="selectedPersonDataView"
+                                    label="Person Data View"
+                                    help="Person data view filter to apply."
+                                    />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ml-2">
+                        <RockButton
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            :disabled="isLoading"
+                            @click="exportFile"
+                            >
+                            Export File
+                        </RockButton>
                     </div>
                 </div>
-                <div class="">
-                    <RockButton
-                    :btnSize="BtnSize.Default"
-                    :btnType="BtnType.Primary"
-                    @click="exportFile"
-                    >
-                        Export File
-                    </RockButton>
-                </div>
             </div>
-            <div class="col-md-1"></div>
-            <div class="well col-md-4">
-                <h2>STEP 2: NCOA Results Uploader</h2>
-                <div>
-                    <p class="step-subheader">Upload and configure file processing settings.</p>
-                    <FileUploader
-                        v-model="importedFile"
-                        label="TrueNCOA Results"
-                        help=""
-                        :uploadAsTemporary="true"
-                        uploadButtonText="Upload"
-                        :showDeleteButton="true" />
-                    <NumberBox v-model="minMoveDistance" label="Minimum Move Distance to Inactivate"
-                        help="Minimum move distance that a person moved before marking the person's account to inactivate. Leaving the value blank disables this feature."
-                        rules="required"
+            <div class="col-md-6">
+                <div class="well col-md-11 col-lg-offset-1 col-lg-10 flex-between" style="height: 620px;">
+                    <div>
+                        <h3>STEP 2: NCOA Results Uploader</h3>
+                        <div class="ml-2">
+                            <p style="opacity: 0.6;">Upload and configure file processing settings.</p>
+                            <FileUploader
+                                v-model="importedFile"
+                                label="TrueNCOA Results"
+                                help=""
+                                :uploadAsTemporary="true"
+                                uploadButtonText="Upload"
+                                :showDeleteButton="true" />
+                            <div class="input-width">
+                                <NumberBox v-model="minMoveDistance" label="Minimum Move Distance to Inactivate"
+                                help="Minimum move distance that a person moved before marking the person's account to inactivate. Leaving the value blank disables this feature."
+                                    rules="required"
+                                    >
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">Miles</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                            <CheckBox v-model="isMark48Month"
+                                label="Mark 48 Month Move as Previous Address"
+                                help="Mark moves in the 19-48 month catagory as a previous address." />
+                            <CheckBox v-model="isMarkInvalidAddresses"
+                                label="Mark Invalid Addresses as Previous Address"
+                                help="Mark Invalid Addresses as Previous Addresses" />
+                                <div class="input-width">
+                                    <DefinedValuePicker
+                                        v-model="selectedInactiveReason"
+                                        label="Inactive Record Reason"
+                                        :definedTypeGuid="DefinedType.PersonRecordStatusReason"
+                                        help="The reason to use when inactivating people due to moving beyond the configured number of miles." />
+                                </div>
+                        </div>
+                    </div>
+                    <div class="ml-2">
+                        <RockButton
+                        :btnSize="BtnSize.Default"
+                        :btnType="BtnType.Primary"
+                        @click="processImportFile"
                         >
-                        <template #inputGroupAppend>
-                            <span class="input-group-addon">Miles</span>
-                        </template>
-                    </NumberBox>
-                    <CheckBox v-model="isMark48Month"
-                        label="Mark 48 Month Move as Previous Address"
-                        help="Mark moves in the 19-48 month catagory as a previous address." />
-                    <CheckBox v-model="isMarkInvalidAddresses"
-                        label="Mark Invalid Addresses as Previous Address"
-                        help="Mark Invalid Addresses as Previous Addresses" />
-                    <DefinedValuePicker
-                        v-model="selectedInactiveReason"
-                        label="Inactive Record Reason"
-                        :definedTypeGuid="DefinedType.PersonRecordStatusReason"
-                        help="The reason to use when inactivating people due to moving beyond the configured number of miles." />
-                </div>
-                <div>
-                    <RockButton
-                    :btnSize="BtnSize.Default"
-                    :btnType="BtnType.Primary"
-                    @click="processImportFile"
-                    >
-                        Import File
-                    </RockButton>
+                            Import File
+                        </RockButton>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-1"></div>
         </div>
     </Panel>
 </template>
 
 <script setup lang="ts">
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
@@ -94,37 +111,46 @@ import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ref } from "vue";
-import { NcoaProcessOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessOptionsBag";
+import { NcoaProcessSavedSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessSavedSettingsBag";
 import { NcoaProcessBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { Workbook } from "@Obsidian/Libs/exceljs";
 
-    const box = useConfigurationValues<NcoaProcessOptionsBag>();
+    const box = useConfigurationValues<NcoaProcessSavedSettingsBag>();
     const invokeBlockAction = useInvokeBlockAction();
 
-    const minMoveDistance = ref(250);
-    const isMark48Month = ref(true);
-    const isMarkInvalidAddresses = ref(true);
-    const selectedPersonDataView = ref({value: null});
+    const minMoveDistance = ref(box.minimumMoveDistance ?? 200);
+    const isMark48Month = ref(box.is48MonthMoveChecked ?? true);
+    const isMarkInvalidAddresses = ref(box.isInvalidAddressesChecked ?? true);
+    const selectedPersonDataView = ref(box.personDataView ?? {value: null});
 
-    const selectedInactiveReason = ref<ListItemBag | null>(null);
+    const selectedInactiveReason = ref<ListItemBag | null>(box.inactiveRecordReason ?? null);
 
-    const importedFile = ref(null);
+    const importedFile = ref(box.uploadFileReference ?? null);
+
+    const successMessage = ref("");
+    const errorMessage = ref("");
+    const isLoading = ref(false);
+
+    console.log("here is box: ", box);
 
     const exportFile = async () => {
-        const result = await invokeBlockAction("PrepareExportFile", { dataViewValue: selectedPersonDataView.value.value});
-
+        isLoading.value = true;
+        const result = await invokeBlockAction<NcoaProcessBag>("PrepareExportFile", { dataViewValue: selectedPersonDataView.value.value});
         // Generate Excel file and download
         if (result.isSuccess) {
-            const workbook = generateExcel(result.data);
-
-            await downloadWorkbook(workbook, "ExportedAddresses.xlsx", "xlsx");
+            const workbook = generateDataForFile(result.data?.addresses);
+            await downloadWorkbook(workbook, "ExportedAddresses", "csv").then(() => {
+                successMessage.value = result.data?.successMessage || "Success";
+            });
         }
+        else {
+            errorMessage.value = result.errorMessage || "Error";
+        }
+        isLoading.value = false;
     };
 
     const processImportFile = async () => {
-
-        //console.log("imported file: ", importedFile.value);
 
         const bag = <NcoaProcessBag> {
             inactiveReason: selectedInactiveReason.value,
@@ -133,14 +159,20 @@ import { Workbook } from "@Obsidian/Libs/exceljs";
             minMoveDistance: minMoveDistance.value,
             ncoaFileUploadReference: importedFile.value
         };
-        console.log("imported file: ", importedFile.value);
-        const result = await invokeBlockAction("ProcessNcoaImportFile", { bag });
+        const result = await invokeBlockAction<NcoaProcessBag>("ProcessNcoaImportFile", { bag });
+
+        if (result.isSuccess) {
+            successMessage.value = result.data?.successMessage || "Success";
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Error";
+        }
 
         // console.log(result);
     };
 
-    // Function to generate Excel file
-    function generateExcel(data) :Workbook {
+    // Function to generate data for the excel/csv file
+    function generateDataForFile(data) :Workbook {
         const workbook = new Workbook();
         const worksheet = workbook.addWorksheet();
 
@@ -204,42 +236,15 @@ import { Workbook } from "@Obsidian/Libs/exceljs";
 </script>
 
 <style scoped>
-/* .full-width {
-    width: 100%;
-}
-
-.steps-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10%;
-}
-
-.step-box {
-    min-width: 250px;
-    width: 40%;
-    background-color: #f7f7f7;
-    height: 650px;
-    border-radius: 12px;
-    padding: 20px
-}
-
-.step-flex {
+.flex-between {
     display: flex;
     flex-direction: column;
-    height: 90%;
     justify-content: space-between;
-    padding-left: 10px;
 }
 
-.step-header {
-    font-size: 18px;
-    font-weight: bold;
+.input-width {
+    width: 70%;
+    min-width: 280px;
 }
-
-.step-subheader {
-    color: #8C8D96;
-} */
 
 </style>

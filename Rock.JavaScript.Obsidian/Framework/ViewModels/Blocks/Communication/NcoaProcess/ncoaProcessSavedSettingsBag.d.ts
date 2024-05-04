@@ -23,18 +23,22 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type NcoaProcessBag = {
-    addresses?: Record<number, unknown> | null;
+export type NcoaProcessSavedSettingsBag = {
+    /** Gets or sets the Id of the Inactive Record Reason to use when inactivating people due to moving beyond the configured number of miles. */
+    inactiveRecordReason?: ListItemBag | null;
 
-    inactiveReason?: ListItemBag | null;
+    /** Gets or sets the boolean determining if a move in the 19-48 month catagory should be marked as a previous address. */
+    is48MonthMoveChecked?: boolean | null;
 
-    mark48MonthAsPrevious: boolean;
+    /** Gets or sets the boolean determining invalid addresses should be marked as previous addresses. */
+    isInvalidAddressesChecked?: boolean | null;
 
-    markInvalidAsPrevious: boolean;
+    /** Gets or sets the minimum move distance to use when determining inactivating people. */
+    minimumMoveDistance?: number | null;
 
-    minMoveDistance: number;
+    /** Gets or sets the person data view Guid. */
+    personDataView?: ListItemBag | null;
 
-    ncoaFileUploadReference?: ListItemBag | null;
-
-    successMessage?: string | null;
+    /** Gets or sets the reference to the uploaded file. */
+    uploadFileReference?: ListItemBag | null;
 };
