@@ -1,8 +1,36 @@
 <template>
-    <div ref="containerElement" class="container"></div>
+    <div class="label-designer">
+        <Panel title="Label Designer"
+               hasFullscreen>
+            <template #headerActions>
+                <LabelDimensionsButton v-model="labelSize" />
+            </template>
+
+            <div class="panel-body-fill" style="display: flex;">
+                <Menu />
+
+                <Editor />
+                <!-- <div style="display: flex; justify-content: center; align-items: center; flex-grow: 1; background-color: var(--theme-lightest);">
+                    <div ref="containerElement" class="container"></div>
+                </div> -->
+            </div>
+
+            <template #footerActions>
+                <RockButton btnType="primary">Save</RockButton>
+            </template>
+        </Panel>
+    </div>
 </template>
 
 <style scoped>
+.label-designer {
+    --menu-bar-height: 37px;
+}
+
+.panel-body-fill {
+    margin: calc(var(--panel-body-padding) * -1);
+}
+
 .container {
     max-width: 720px;
 }
@@ -14,10 +42,17 @@
 </style>
 
 <script setup lang="ts">
+    import Editor from "./LabelDesigner/editor.partial.obs";
     import Konva from "@Obsidian/Libs/konva";
+    import LabelDimensionsButton from "./LabelDesigner/labelDimensionsButton.partial.obs";
+    import Menu from "./LabelDesigner/menu.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { onMounted, ref } from "vue";
+    import { Size } from "./LabelDesigner/types.partial";
 
     const containerElement = ref<HTMLDivElement | undefined>();
+    const labelSize = ref<Size>({ width: 4, height: 2 });
 
     onMounted(() => {
         if (!containerElement.value) {

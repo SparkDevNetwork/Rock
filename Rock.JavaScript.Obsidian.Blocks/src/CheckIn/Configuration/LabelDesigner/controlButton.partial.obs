@@ -1,0 +1,47 @@
+<template>
+    <div class="icon-button">
+        <i class="icon" :class="props.icon"></i>
+        <span class="title text-sm">{{ props.title }}</span>
+    </div>
+</template>
+
+<style scoped>
+.icon-button {
+    width: 100px;
+    height: 100px;
+    border: 2px solid var(--theme-light);
+    color: var(--theme-dark);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    cursor: grab;
+}
+
+.icon-button .icon {
+    font-size: 28px;
+}
+
+.icon-button .title {
+    text-align: center;
+    line-height: 1.1;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        icon: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+</script>

@@ -1,0 +1,107 @@
+<template>
+    <div class="editor">
+        <div class="menu-bar">
+            <div class="left-actions">
+
+            </div>
+
+            <div class="center-actions">
+                <span class="action">
+                    <i class="fa fa-layer-group"></i>
+                    Position
+                </span>
+            </div>
+
+            <div class="right-actions">
+                <span class="action">
+                    <i class="fa fa-filter"></i>
+                </span>
+
+                <span class="action">
+                    <i class="fa fa-trash"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="editor-content">
+            <div>Editor Placeholder</div>
+
+            <div class="editor-features">
+                <Switch v-model="isGridVisible"
+                        text="Show Grid" />
+
+                <Switch v-model="isGridLocked"
+                        text="Snap To Grid" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.editor {
+    background-color: var(--theme-lightest);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-bar {
+    height: var(--menu-bar-height);
+    background-color: var(--theme-white);
+    color: var(--theme-darkest);
+    display: flex;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.left-actions,
+.center-actions,
+.right-actions {
+    flex-grow: 1;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.center-actions {
+    justify-content: center;
+}
+
+.right-actions {
+    justify-content: end;
+}
+
+.action {
+    padding-left: 5px;
+    padding-right: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.editor-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.editor-features {
+    display: flex;
+    min-width: 480px;
+}
+
+.editor-features > :deep(*) {
+    flex-grow: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import { ref } from "vue";
+
+    const isGridVisible = ref(false);
+    const isGridLocked = ref(false);
+
+    const props = defineProps();
+</script>

@@ -1,0 +1,120 @@
+<template>
+    <div class="menu">
+        <div class="menu-bar">
+            <div class="menu-item menu-controls clickable"
+                 :class="{ active: !isComponentSelected }"
+                 @click="onControlsClick">
+                <div>
+                    Controls
+                </div>
+            </div>
+
+            <div v-if="selectedComponent"
+                 class="menu-item menu-component clickable"
+                 :class="{ active: isComponentSelected }"
+                 @click="onComponentClick">
+                {{ selectedComponent }}
+            </div>
+
+            <div class="menu-fill"></div>
+        </div>
+
+        <div v-if="!isComponentSelected" class="control-list">
+            <ControlButton icon="fa fa-user" title="Attendee Info" />
+            <ControlButton icon="fa fa-calendar-check" title="Check-in Info" />
+            <ControlButton icon="fa fa-medal" title="Achievement Info" />
+            <ControlButton icon="fa fa-grip-lines" title="Line" />
+            <ControlButton icon="fa fa-font" title="Text" />
+            <ControlButton icon="fa fa-user" title="Rectangle" />
+            <ControlButton icon="fa fa-square" title="Ellipse" />
+            <ControlButton icon="fa fa-circle" title="Icon" />
+            <ControlButton icon="fa fa-image" title="Image" />
+            <ControlButton icon="fa fa-id-badge" title="Attendee Photo" />
+            <ControlButton icon="fa fa-qrcode" title="Barcode" />
+        </div>
+
+        <div v-else>
+
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.menu {
+    width: 360px;
+}
+
+.menu-bar {
+    height: var(--menu-bar-height);
+    display: flex;
+}
+
+.menu-item {
+    background-color: var(--theme-lightest);
+    color: var(--theme-dark);
+    font-weight: bold;
+    border-left: 1px solid var(--theme-light);
+    border-right: 1px solid var(--theme-light);
+    border-bottom: 1px solid var(--theme-light);
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.menu-item:first {
+    border-left: 0;
+}
+
+.menu-item.active {
+    background-color: var(--color-white);
+    color: var(--color-primary);
+    border: 0;
+}
+
+.menu-controls,
+.menu-component {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-fill {
+    flex-grow: 1;
+    height: 100%;
+    background-color: var(--theme-lightest);
+    border: 1px solid var(--theme-light);
+    border-top-width: 0;
+}
+
+.control-list {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 10px;
+}
+</style>
+
+<script setup lang="ts">
+    import ControlButton from "./controlButton.partial.obs";
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        selectedComponent: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const isComponentSelected = ref(!!props.selectedComponent);
+
+    function onControlsClick(): void {
+        isComponentSelected.value = false;
+    }
+
+    function onComponentClick(): void {
+        isComponentSelected.value = true;
+    }
+
+    watch(() => props.selectedComponent, () => {
+        isComponentSelected.value = !!props.selectedComponent;
+    });
+</script>
