@@ -1546,7 +1546,9 @@ namespace RockWeb.Blocks.Cms
 
                 // show/hide campus selector
                 bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
+                divFamilyInfo.Visible = showCampus;
                 cpCampus.Visible = showCampus;
+
                 if ( showCampus )
                 {
                     cpCampus.Campuses = CampusCache.All( false );
