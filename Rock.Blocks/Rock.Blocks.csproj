@@ -115,6 +115,8 @@
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\AuditList.cs" />
+    <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
+    <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
 	<Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Cms\SiteList.cs" />
