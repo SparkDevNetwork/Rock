@@ -348,7 +348,7 @@ namespace Rock.Blocks.Core
 
             foreach ( var item in items )
             {
-                values.AddOrIgnore( item.Name, item.Value );
+                values.TryAdd( item.Name, item.Value );
             }
 
             return values;

@@ -483,7 +483,7 @@ namespace RockWeb.Blocks.Groups
 
                 var schedules = new Dictionary<int, string> { { 0, string.Empty } };
                 grouplocations.SelectMany( l => l.Schedules ).OrderBy( s => s.Name ).ToList()
-                    .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
+                    .ForEach( s => schedules.TryAdd( s.Id, s.Name ) );
                 var locationField = gOccurrences.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Location" );
                 if ( schedules.Any() )
                 {
@@ -569,10 +569,10 @@ namespace RockWeb.Blocks.Groups
                     var locCampus = new Dictionary<int, int>();
                     foreach ( var campus in CampusCache.All().Where( c => c.LocationId.HasValue ) )
                     {
-                        locCampus.AddOrIgnore( campus.LocationId.Value, campus.Id );
+                        locCampus.TryAdd( campus.LocationId.Value, campus.Id );
                         foreach ( var locId in locationService.GetAllDescendentIds( campus.LocationId.Value ) )
                         {
-                            locCampus.AddOrIgnore( locId, campus.Id );
+                            locCampus.TryAdd( locId, campus.Id );
                         }
                     }
 

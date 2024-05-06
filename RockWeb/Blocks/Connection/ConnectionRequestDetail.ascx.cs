@@ -1761,13 +1761,13 @@ namespace RockWeb.Blocks.Connection
                         .AsNoTracking()
                         .ToList();
 
-                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.TryAdd( p.Id, p ) );
                 }
 
                 // Add the current person as possible connector
                 if ( CurrentPerson != null )
                 {
-                    connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                    connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
                 }
 
                 // Add connectors to dropdown list
@@ -2521,7 +2521,7 @@ namespace RockWeb.Blocks.Connection
                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.Person ).AsNoTracking()
                             .ToList()
-                            .ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                            .ForEach( p => connectors.TryAdd( p.Id, p ) );
                     }
 
                     if ( !currentConnectorId.HasValue && campusId.HasValue )
@@ -2534,7 +2534,7 @@ namespace RockWeb.Blocks.Connection
             // Add the current person as possible connector
             if ( CurrentPerson != null )
             {
-                connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
             }
 
             // Make sure the current value is an option
@@ -2543,7 +2543,7 @@ namespace RockWeb.Blocks.Connection
                 var person = new PersonService( rockContext ).Get( currentConnectorId.Value );
                 if ( person != null )
                 {
-                    connectors.AddOrIgnore( person.Id, person );
+                    connectors.TryAdd( person.Id, person );
                 }
             }
 
@@ -2591,7 +2591,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         if ( groupConfig.GroupMemberRole != null )
                         {
-                            roles.AddOrIgnore( groupConfig.GroupMemberRole.Id, groupConfig.GroupMemberRole.Name );
+                            roles.TryAdd( groupConfig.GroupMemberRole.Id, groupConfig.GroupMemberRole.Name );
                         }
                     }
                 }
@@ -2642,7 +2642,7 @@ namespace RockWeb.Blocks.Connection
                                 c.GroupTypeId == group.GroupTypeId &&
                                 c.GroupMemberRoleId == roleId.Value ) )
                         {
-                            statuses.AddOrIgnore( groupConfig.GroupMemberStatus.ConvertToInt(), groupConfig.GroupMemberStatus.ConvertToString() );
+                            statuses.TryAdd( groupConfig.GroupMemberStatus.ConvertToInt(), groupConfig.GroupMemberStatus.ConvertToString() );
                         }
                     }
                 }
@@ -3036,7 +3036,7 @@ namespace RockWeb.Blocks.Connection
                     activity = new ConnectionRequestActivityService( rockContext ).Get( activityGuid );
                     if ( activity != null && activity.ConnectorPersonAlias != null && activity.ConnectorPersonAlias.Person != null )
                     {
-                        connectors.AddOrIgnore( activity.ConnectorPersonAlias.Person.Id, activity.ConnectorPersonAlias.Person );
+                        connectors.TryAdd( activity.ConnectorPersonAlias.Person.Id, activity.ConnectorPersonAlias.Person );
                     }
                 }
 
@@ -3067,13 +3067,13 @@ namespace RockWeb.Blocks.Connection
                         .SelectMany( g => g.ConnectorGroup.Members )
                         .Select( m => m.Person )
                         .ToList()
-                        .ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                        .ForEach( p => connectors.TryAdd( p.Id, p ) );
                 }
             }
 
             if ( CurrentPerson != null )
             {
-                connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
             }
 
             ddlActivity.SetValue( activity != null ? activity.ConnectionActivityTypeId : 0 );

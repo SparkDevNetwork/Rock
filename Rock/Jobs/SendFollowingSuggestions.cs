@@ -113,7 +113,7 @@ namespace Rock.Jobs
                                 followerPersonIds.Contains( a.PersonId ) &&
                                 a.PersonId == a.AliasPersonId )
                             .ToList()
-                            .ForEach( a => primaryAliasIds.AddOrIgnore( a.PersonId, a.Id ) );
+                            .ForEach( a => primaryAliasIds.TryAdd( a.PersonId, a.Id ) );
 
                         // Get current date/time. 
                         var timestamp = RockDateTime.Now;
@@ -158,7 +158,7 @@ namespace Rock.Jobs
                                             suggestionTypeComponent.ExistingFollowings = new Dictionary<int, List<int>>();
                                             foreach ( var following in followingService.Queryable( "PersonAlias" ).AsNoTracking().Where( f => f.EntityTypeId == entityTypeId && string.IsNullOrEmpty( f.PurposeKey ) && followerPersonIds.Contains( f.PersonAlias.PersonId ) ) )
                                             {
-                                                suggestionTypeComponent.ExistingFollowings.AddOrIgnore( following.PersonAlias.PersonId, new List<int>() );
+                                                suggestionTypeComponent.ExistingFollowings.TryAdd( following.PersonAlias.PersonId, new List<int>() );
                                                 suggestionTypeComponent.ExistingFollowings[following.PersonAlias.PersonId].Add( following.EntityId );
                                             }
 

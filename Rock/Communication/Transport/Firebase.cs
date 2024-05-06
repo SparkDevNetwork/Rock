@@ -411,7 +411,7 @@ namespace Rock.Communication.Transport
                         {
                             foreach ( var mergeField in mergeFields )
                             {
-                                recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                                recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                             }
 
                             PushMessage( recipient.To.SplitDelimitedValues( "," ).ToList(), pushMessage, recipient.MergeFields );
@@ -527,7 +527,7 @@ namespace Rock.Communication.Transport
                         {
                             foreach ( var mergeField in mergeFields )
                             {
-                                recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                                recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                             }
 
                             PushMessageLegacy( sender, recipient.To.SplitDelimitedValues( "," ).ToList(), pushMessage, recipient.MergeFields );

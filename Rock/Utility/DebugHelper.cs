@@ -545,7 +545,7 @@ StackTrace:
                 TaskIdentifier = taskIdentifier,
                 StartDateTime = DateTime.Now
             };
-            _tasks.AddOrIgnore( taskIdentifier, newTask );
+            _tasks.TryAdd( taskIdentifier, newTask );
 
             var msg = $"<TASK-START> {taskIdentifier}";
             if ( !string.IsNullOrWhiteSpace( logMessage ) )

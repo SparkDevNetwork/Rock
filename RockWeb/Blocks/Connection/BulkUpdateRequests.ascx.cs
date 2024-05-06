@@ -680,12 +680,12 @@ namespace RockWeb.Blocks.Connection
                         .AsNoTracking()
                         .ToList();
 
-            connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+            connectionOpportunityConnectorPersonList.ForEach( p => connectors.TryAdd( p.Id, p ) );
 
             // Add the current person as possible connector
             if ( CurrentPerson != null )
             {
-                connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
             }
 
             return connectors;

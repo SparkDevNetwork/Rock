@@ -1961,7 +1961,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     var parts = mergeField.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                     if ( parts.Any() )
                     {
-                        communicationMergeFields.AddOrIgnore( parts.First().Replace( '.', '_' ), parts.Last().Replace( '.', '_' ) );
+                        communicationMergeFields.TryAdd( parts.First().Replace( '.', '_' ), parts.Last().Replace( '.', '_' ) );
                     }
                 }
 
@@ -3378,11 +3378,11 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                         var boundField = this.ColumnsOfType<RockBoundField>().Where( c => c.DataField == mergeField ).FirstOrDefault();
                                         if ( boundField != null )
                                         {
-                                            mergeValues.AddOrIgnore( mergeField, boundField.FormatDataValue( row[i] ) );
+                                            mergeValues.TryAdd( mergeField, boundField.FormatDataValue( row[i] ) );
                                         }
                                         else
                                         {
-                                            mergeValues.AddOrIgnore( mergeField, row[i] );
+                                            mergeValues.TryAdd( mergeField, row[i] );
                                         }
                                     }
                                 }
@@ -3545,11 +3545,11 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                                         var boundField = this.ColumnsOfType<RockBoundField>().Where( c => c.DataField == keyVal.Key ).FirstOrDefault();
                                                         if ( boundField != null )
                                                         {
-                                                            mergeValues.AddOrIgnore( keyVal.Value, boundField.FormatDataValue( obj ) );
+                                                            mergeValues.TryAdd( keyVal.Value, boundField.FormatDataValue( obj ) );
                                                         }
                                                         else
                                                         {
-                                                            mergeValues.AddOrIgnore( keyVal.Value, obj );
+                                                            mergeValues.TryAdd( keyVal.Value, obj );
                                                         }
                                                     }
                                                 }
@@ -4154,11 +4154,11 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
                         if ( mergeFieldKey != null )
                         {
-                            itemMergeFields.AddOrIgnore( mergeFieldKey, objValue );
+                            itemMergeFields.TryAdd( mergeFieldKey, objValue );
                         }
                     }
 
-                    itemMergeFieldsList.AddOrIgnore( idVal.Value, itemMergeFields );
+                    itemMergeFieldsList.TryAdd( idVal.Value, itemMergeFields );
                 }
             }
 

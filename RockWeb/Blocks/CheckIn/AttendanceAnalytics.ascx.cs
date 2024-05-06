@@ -1347,7 +1347,7 @@ var headerText = dp.label;
                     foreach ( DataRow row in dtAttendeeDates.Rows )
                     {
                         int personId = ( int ) row["PersonId"];
-                        allAttendeeVisits.AddOrIgnore( personId, new AttendeeVisits() );
+                        allAttendeeVisits.TryAdd( personId, new AttendeeVisits() );
                         var result = allAttendeeVisits[personId];
                         result.PersonId = personId;
 
@@ -1429,7 +1429,7 @@ var headerText = dp.label;
                         foreach ( DataRow row in dtAttendeeDatesMissed.Rows )
                         {
                             int personId = ( int ) row["PersonId"];
-                            missedResults.AddOrIgnore( personId, new AttendeeResult() );
+                            missedResults.TryAdd( personId, new AttendeeResult() );
                             var missedResult = missedResults[personId];
                             missedResult.PersonId = personId;
 
@@ -2028,7 +2028,7 @@ var headerText = dp.label;
                         } )
                         .Where( l => l.Location != null ) )
                     {
-                        _personLocations.AddOrIgnore( item.PersonId, item.Location );
+                        _personLocations.TryAdd( item.PersonId, item.Location );
                     }
                 }
             }

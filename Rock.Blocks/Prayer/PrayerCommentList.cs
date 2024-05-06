@@ -30,6 +30,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerCommentList;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using static Rock.Blocks.Finance.FinancialBatchList;
 
 namespace Rock.Blocks.Prayer
 {
@@ -55,7 +56,7 @@ namespace Rock.Blocks.Prayer
     [Rock.SystemGuid.EntityTypeGuid( "b2f1b644-836d-46a6-86c9-8fbb26d96ea7" )]
     [Rock.SystemGuid.BlockTypeGuid( "3f997da7-ac42-41c9-97f1-2069bb9d9e5c" )]
     [CustomizedGrid]
-    public class PrayerCommentList : RockEntityListBlockType<Note>
+    public class PrayerCommentList : RockListBlockType<PrayerCommentList.PrayerCommentData>
     {
         #region Keys
 
@@ -140,7 +141,26 @@ namespace Rock.Blocks.Prayer
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Note> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<PrayerCommentData> GetListQueryable( RockContext rockContext )
+        {
+            var prayerCommentQry = GetCommentDataQueryable( rockContext );
+            var prayerRequestIdsQry = prayerCommentQry.Select( a => a.EntityId );
+            var prayerRequests = new PrayerRequestService( rockContext ).Queryable().Where( a => prayerRequestIdsQry.Contains( a.Id ) ).ToList();
+            var prayerComments = prayerCommentQry.AsEnumerable()
+               .Select( b => new PrayerCommentData
+               {
+                   IdKey = b.IdKey,
+                   CreatedDateTime = b.CreatedDateTime,
+                   CreatedBy = b.CreatedByPersonAlias != null ? b.CreatedByPersonAlias.Person : null,
+                   IsSystem = b.IsSystem,
+                   Text = b.Text,
+                   PrayerRequestIdKey = prayerRequests.Where( a => a.Id == b.EntityId ).Select( a => a.IdKey ).FirstOrDefault()
+               } );
+
+            return prayerComments.AsQueryable();
+        }
+
+        private IQueryable<Note> GetCommentDataQueryable( RockContext rockContext )
         {
             // Filter by Category.  First see if there is a Block Setting, otherwise use the Grid Filter
             CategoryCache categoryFilter = null;
@@ -192,15 +212,17 @@ namespace Rock.Blocks.Prayer
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<Note> GetGridBuilder()
+        protected override GridBuilder<PrayerCommentData> GetGridBuilder()
         {
-            return new GridBuilder<Note>()
+            return new GridBuilder<PrayerCommentData>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddPersonField( "createdBy", a => a.CreatedByPersonAlias?.Person )
+                .AddPersonField( "createdBy", a => a.CreatedBy )
                 .AddTextField( "text", a => a.Text )
                 .AddDateTimeField( "time", a => a.CreatedDateTime )
-                .AddField( "isSystem", a => a.IsSystem );
+                .AddField( "isSystem", a => a.IsSystem )
+                .AddField( "prayerRequestIdKey", a => a.PrayerRequestIdKey );
+
         }
 
         #endregion
@@ -237,6 +259,65 @@ namespace Rock.Blocks.Prayer
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        #endregion
+
+        #region Support Classes
+
+        /// <summary>
+        /// The temporary data format to use when building the results for the
+        /// grid.
+        /// </summary>
+        public class PrayerCommentData
+        {
+            /// <summary>
+            /// Gets or sets the Id Key.
+            /// </summary>
+            /// <value>
+            /// The Id Key.
+            /// </value>
+            public string IdKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Prayer Request Id Key.
+            /// </summary>
+            /// <value>
+            /// The Prayer Request Id Key.
+            /// </value>
+            public string PrayerRequestIdKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Created By.
+            /// </summary>
+            /// <value>
+            /// The Created By.
+            /// </value>
+            public Person CreatedBy { get; set; }
+
+            /// <summary>
+            /// Gets or sets the text.
+            /// </summary>
+            /// <value>
+            /// The text.
+            /// </value>
+            public string Text { get; set; }
+
+            /// <summary>
+            /// Gets or sets the created date and time.
+            /// </summary>
+            /// <value>
+            /// The created date and time.
+            /// </value>
+            public DateTime? CreatedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets a flag indicating if this note is part of the Rock core system/framework.
+            /// </summary>
+            /// <value>
+            /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is part of the Rock core system/framework; otherwise <c>false</c>.
+            /// </value>
+            public bool IsSystem { get; set; }
         }
 
         #endregion

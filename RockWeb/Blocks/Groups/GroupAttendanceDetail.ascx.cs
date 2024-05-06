@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Groups
                 var personList = new PersonService( rockContext ).GetByIds( personIdList );
                 foreach ( var person in personList.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
                 {
-                    mergeObjectsDictionary.AddOrIgnore( person.Id, person );
+                    mergeObjectsDictionary.TryAdd( person.Id, person );
                 }
             }
 
@@ -809,7 +809,7 @@ namespace RockWeb.Blocks.Groups
                     .SelectMany( l => l.Schedules )
                     .OrderBy( s => s.Name )
                     .ToList()
-                    .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
+                    .ForEach( s => schedules.TryAdd( s.Id, s.Name ) );
             }
 
             if ( schedules.Any() )

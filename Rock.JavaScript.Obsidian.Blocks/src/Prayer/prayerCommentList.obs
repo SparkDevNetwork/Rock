@@ -11,7 +11,7 @@
           :showLaunchWorkflow="false"
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="isGridSettingsVisible = true"
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :onAddItem="undefined"
           @selectItem="onSelectItem">
 
         <DateTimeColumn name="time"
@@ -105,7 +105,13 @@
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            if (gridData && gridData.rows) {
+                let rowItem = gridData.rows?.find(x => x["idKey"] == key);
+
+                if (rowItem) {
+                    window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key)+ `&PrayerRequestId=${rowItem?.prayerRequestIdKey}`;
+                }
+            }
         }
     }
 
@@ -129,15 +135,6 @@
         }
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete note.");
-        }
-    }
-
-    /**
-     * Called when the Add button has been clicked by the indivual.
-     */
-    function onAddItem(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
 

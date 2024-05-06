@@ -1557,7 +1557,7 @@ namespace RockWeb.Blocks.Event
             {
                 foreach ( var discount in this.RegistrationTemplate.Discounts.OrderBy( d => d.Code ) )
                 {
-                    discountCodes.AddOrIgnore(
+                    discountCodes.TryAdd(
                         discount.Code,
                         discount.Code + ( string.IsNullOrWhiteSpace( discount.DiscountString ) ? string.Empty : string.Format( " ({0})", HttpUtility.HtmlDecode( discount.DiscountString ) ) ) );
                 }
@@ -1565,7 +1565,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !string.IsNullOrWhiteSpace( registration.DiscountCode ) )
             {
-                discountCodes.AddOrIgnore( registration.DiscountCode, registration.DiscountCode );
+                discountCodes.TryAdd( registration.DiscountCode, registration.DiscountCode );
             }
 
             ddlGroup.Items.Clear();

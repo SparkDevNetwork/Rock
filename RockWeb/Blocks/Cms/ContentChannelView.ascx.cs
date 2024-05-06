@@ -771,7 +771,7 @@ $(document).ready(function() {
                 mergeFields.Add( "ArchiveSummaryPageUrl", archivePageRef.BuildUrl() );
 
                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                mergeFields.TryAdd( "Person", CurrentPerson );
 
                 // set page title
                 if ( isSetPageTitleEnabled && contentItemList.Count > 0 )

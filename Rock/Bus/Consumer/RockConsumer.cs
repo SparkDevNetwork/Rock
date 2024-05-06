@@ -189,7 +189,7 @@ namespace Rock.Bus.Consumer
             {
                 if ( IsRockConsumer( type ) )
                 {
-                    consumerTypes.AddOrIgnore( type.FullName, type );
+                    consumerTypes.TryAdd( type.FullName, type );
                 }
             }
 
