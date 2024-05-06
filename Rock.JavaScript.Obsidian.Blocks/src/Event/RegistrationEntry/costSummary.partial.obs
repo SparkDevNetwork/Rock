@@ -95,7 +95,7 @@
                         </div>
                     </div>
 
-                    <div v-if="isPaymentPlanConfigurationSupported && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.paymentPlan" class="form-group">
+                    <div v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs) && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.paymentPlan" class="form-group">
                         <RockButton btnType="default" btnSize="xs" @click="onConfigurePaymentPlanClicked">Configure a Payment Plan</RockButton>
                     </div>
                 </template>
@@ -113,16 +113,17 @@
                     <RockLabel class="primary-label">Payment Plan</RockLabel>
                     <StaticFormControl label="Amount Due Today" :modelValue="formatCurrency(registrationEntryState.amountToPayToday, registrationEntryState.viewModel.currencyInfo)" />
                     <StaticFormControl :label="`${registrationEntryState.paymentPlan?.transactionFrequencyText} Payment Amount`" :modelValue="`${formatCurrency(registrationEntryState.paymentPlan?.amountPerPayment ?? 0, registrationEntryState.viewModel.currencyInfo)} x ${registrationEntryState.paymentPlan?.numberOfPayments ?? 0}`" />
-                    <RockButton v-if="isPaymentPlanConfigurationSupported" btnType="default" btnSize="xs" @click="onConfigurePaymentPlanClicked">Change</RockButton>
-                    <RockButton v-if="isPaymentPlanConfigurationSupported" btnType="link" btnSize="xs" @click="onUnconfigurePaymentPlanClicked">Cancel</RockButton>
+                    <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="default" btnSize="xs" @click="onConfigurePaymentPlanClicked">Change</RockButton>
+                    <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="link" btnSize="xs" @click="onUnconfigurePaymentPlanClicked">Cancel</RockButton>
                 </div>
             </div>
         </div>
     </Loading>
 
-    <ConfigurePaymentPlanModal v-if="isPaymentPlanConfigurationSupported"
+    <ConfigurePaymentPlanModal v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)"
                                v-model="isConfigurePaymentPlanModalShown"
-                               :paymentPlanFrequencies="paymentPlanFrequencies" />
+                               :paymentDeadlineDate="paymentPlanArgs.paymentPlanDeadlineDate"
+                               :paymentPlanFrequencies="paymentPlanArgs.paymentPlanFrequencies" />
 </template>
 
 <style scoped>
@@ -179,10 +180,43 @@
 
     // #region Computed Values
 
+    type PaymentPlanArgs = {
+        paymentPlanDeadlineDate: RockDateTime;
+        paymentPlanFrequencies: PaymentPlanFrequency[];
+    };
+
+    const paymentPlanArgs = computed<Partial<PaymentPlanArgs>>(() => ({
+        paymentPlanDeadlineDate: paymentPlanDeadlineDate.value ?? undefined,
+        paymentPlanFrequencies: paymentPlanFrequencies.value
+    }));
+
+    /** Gets whether or not the payment plan feature can be shown. */
+    function isPaymentPlanConfigurationSupported(args: Partial<PaymentPlanArgs>): args is PaymentPlanArgs {
+        if (!args.paymentPlanDeadlineDate) {
+            return false;
+        }
+
+        if (!paymentPlanFrequencies.value.length) {
+            return false;
+        }
+
+        return true;
+    }
+
+    const paymentPlanDeadlineDate = computed<RockDateTime | null>(() => {
+        if (!registrationEntryState.viewModel.paymentDeadlineDate) {
+            return null;
+        }
+        else {
+            return RockDateTime.parseISO(registrationEntryState.viewModel.paymentDeadlineDate);
+        }
+    });
+
     /** Gets the valid payment plan frequencies. */
     const paymentPlanFrequencies = computed<PaymentPlanFrequency[]>(() => {
-        const paymentPlanDeadlineDate: RockDateTime | null = RockDateTime.parseISO(registrationEntryState.viewModel.paymentDeadlineDate || "");
-        if (!paymentPlanDeadlineDate) {
+        const deadlineDate = paymentPlanDeadlineDate.value;
+
+        if (!deadlineDate) {
             // The payment plan deadline date is required to calculate
             // the max number of payments per payment plan frequency.
             // If there is no deadline date, then return an empty array.
@@ -190,7 +224,7 @@
         }
 
         const frequencies = (registrationEntryState.viewModel.paymentPlanFrequencies ?? [])
-            .map(listItemBag => getPaymentPlanFrequency(listItemBag, paymentPlanDeadlineDate))
+            .map(listItemBag => getPaymentPlanFrequency(listItemBag, deadlineDate))
             // Only return frequencies that can make at least
             // two payments for the given payment plan start date.
             .filter(frequency => frequency.maxNumberOfPayments >= 2);
@@ -218,9 +252,9 @@
     });
 
     /** Gets whether or not the payment plan feature can be shown. */
-    const isPaymentPlanConfigurationSupported = computed<boolean>(() => {
-        return paymentPlanFrequencies.value.length > 0;
-    });
+    // const isPaymentPlanConfigurationSupported = computed<boolean>(() => {
+    //     return !!paymentPlanDeadlineDate.value && paymentPlanFrequencies.value.length > 0;
+    // });
 
     const currencyInfo = computed<CurrencyInfoBag>(() => {
         return registrationEntryState.viewModel.currencyInfo ?? {
