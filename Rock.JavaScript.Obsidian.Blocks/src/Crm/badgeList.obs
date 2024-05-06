@@ -14,6 +14,8 @@
 
         <ReorderColumn @orderChanged="onOrderChanged" />
 
+        <TextColumn name="id" title="Id" field="id" :hideOnScreen="true" />
+
         <TextColumn name="badgeName" title="Name" field="badgeName" :filter="textValueFilter" width="15%" visiblePriority="xs" /> />
 
         <TextColumn name="badgeType" title="Type" field="badgeType" :filter="pickExistingValueFilter" width="5%" visiblePriority="sm" /> />
