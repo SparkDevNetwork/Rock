@@ -17,12 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rock.Data;
+
 using Rock.Extension;
-using Rock.Web.Cache;
 
 namespace Rock.Lms
 {
@@ -46,27 +42,6 @@ namespace Rock.Lms
         public static LearningActivityContainer Instance
         {
             get { return instance.Value; }
-        }
-
-        /// <summary>
-        /// Refreshes this instance.
-        /// </summary>
-        public override void Refresh()
-        {
-            base.Refresh();
-
-            // Check for other uses of this elsewhere...
-            // Create any attributes that need to be created
-            //int badgeEntityTypeId = EntityTypeCache.Get( typeof( Model.Badge ) ).Id;
-            //using ( var rockContext = new RockContext() )
-            //{
-            //    foreach ( var badge in this.Components )
-            //    {
-            //        Type badgeType = badge.Value.Value.GetType();
-            //        int badgeComponentEntityTypeId = EntityTypeCache.Get( badgeType ).Id;
-            //        Rock.Attribute.Helper.UpdateAttributes( badgeType, badgeEntityTypeId, "BadgeComponentEntityTypeId", badgeComponentEntityTypeId.ToString(), rockContext );
-            //    }
-            //}
         }
 
         /// <summary>

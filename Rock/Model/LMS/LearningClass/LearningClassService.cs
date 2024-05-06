@@ -40,7 +40,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the related <see cref="GroupType"/> for the <see cref="LearningClass"/> with the specified id.
         /// </summary>
-        /// <param name="idKey">The idKey of the <see cref="LearningClass"/> for which to retrieve roles.</param>
+        /// <param name="id">The idKey of the <see cref="LearningClass"/> for which to retrieve roles.</param>
         /// <returns>A list of GroupTypeRoles for the class.</returns>
         public IQueryable<GroupTypeRole> GetClassRoles( int id )
         {
@@ -50,6 +50,21 @@ namespace Rock.Model
                 groupTypeId > 0 ?
                 new GroupTypeRoleService( ( RockContext ) Context ).GetByGroupTypeId( groupTypeId ).OrderBy( t => t.Order ) :
                 Array.Empty<GroupTypeRole>().AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets the <see cref="LearningGradingSystemScale"/> list for the specified <see cref="LearningClass"/>.
+        /// </summary>
+        /// <param name="id">The identifier of the Learning Class to retrieve scales for.</param>
+        /// <returns>A Queryable of LearningGradingSystemScales for the specified class.</returns>
+        public IQueryable<LearningGradingSystemScale> GetClassScales( int id )
+        {
+            return Queryable()
+                .AsNoTracking()
+                .Include( a => a.LearningGradingSystem )
+                .Include( a => a.LearningGradingSystem.LearningGradingSystemScales )
+                .Where( a => a.Id == id )
+                .SelectMany( a => a.LearningGradingSystem.LearningGradingSystemScales );
         }
 
         /// <summary>

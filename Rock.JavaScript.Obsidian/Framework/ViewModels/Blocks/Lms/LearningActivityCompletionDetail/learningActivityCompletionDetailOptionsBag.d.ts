@@ -20,10 +20,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type LearningProgramDetailOptionsBag = {
-
-    /** Gets or sets the available system communications. */
-    systemCommunications?: ListItemBag[] | null;
+/** The additional configuration options for the Learning Activity Completion List block. */
+export type LearningActivityCompletionDetailOptionsBag = {
 };

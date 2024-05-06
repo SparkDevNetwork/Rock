@@ -20,10 +20,17 @@
 // limitations under the License.
 // </copyright>
 //
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type LearningProgramDetailOptionsBag = {
+/**
+ * The StructuredContent of the StructuredContentEditor control.
+ */
+export type StructuredContentBag = {
+    /** The individual blocks of markup */
+    blocks: never[];
 
-    /** Gets or sets the available system communications. */
-    systemCommunications?: ListItemBag[] | null;
+    /** The timestamp of the last change. */
+    time?: number | null;
+
+    /** The version of the editor control. */
+    version?: string | null;
 };

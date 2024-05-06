@@ -28,24 +28,26 @@ namespace Rock.Model
         /// Gets a list of <see cref="LearningActivity"/>s for matching a specified <paramref name="activityFilterPredicate" />.
         /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> for each activity by default.
         /// </summary>
-        /// <param name="activityFilterPredicate">The predicate for filtering the activities.</param>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retreive activities.</param>
         /// <param name="includeCompletions">Whether the LearningActivityCompletions for each LearningActivity should be included.</param>
         /// <returns>A <c>Queryable</c> of LearningActivity matched by the predicate.</returns>
-        public IQueryable<LearningActivity> GetClassLearningPlan( Func<LearningActivity, bool> activityFilterPredicate, bool includeCompletions = true )
+        public IQueryable<LearningActivity> GetClassLearningPlan( int classId, bool includeCompletions = true )
         {
             return
                 includeCompletions ?
                 Queryable()
+                    .AsNoTracking()
                     .Include( a => a.LearningActivityCompletions )
-                    .Where( activityFilterPredicate )
+                    .Include( a => a.LearningClass )
+                    .Where( a => a.LearningClassId == classId )
                     .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Id )
-                    .AsQueryable() :
+                    .ThenBy( a => a.Id ) :
                 Queryable()
-                    .Where( activityFilterPredicate )
+                    .AsNoTracking()
+                    .Include( a => a.LearningClass )
+                    .Where( a => a.LearningClassId == classId )
                     .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Id )
-                    .AsQueryable();
+                    .ThenBy( a => a.Id );
         }
 
         /// <summary>

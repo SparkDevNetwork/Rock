@@ -119,7 +119,8 @@ namespace Rock.Blocks.Lms
         protected override IQueryable<LearningActivity> GetListQueryable( RockContext rockContext )
         {
             var baseQuery = base.GetListQueryable( rockContext )
-                .Include( a => a.LearningActivityCompletions );
+                .Include( a => a.LearningActivityCompletions )
+                .Include( a => a.LearningClass );
 
             var contextCourse = RequestContext.GetContextEntity<LearningCourse>();
             var contextClass = RequestContext.GetContextEntity<LearningClass>();

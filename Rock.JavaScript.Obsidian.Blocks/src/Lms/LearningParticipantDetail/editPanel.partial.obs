@@ -37,7 +37,7 @@
         }
     });
 
-    const classRoles = ref(props.options?.classRoles);
+    const classRoles = ref(props.options?.classRoles ?? []);
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: LearningParticipantBag): void,

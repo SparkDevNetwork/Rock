@@ -15,10 +15,9 @@
 // </copyright>
 //
 
-//import { IActivityComponentField } from "./activityComponentField.partial";
-import { Component, PropType, computed, defineComponent } from "vue";
-// import { getLearningActivityProps } from "./utils.partial";
-import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+import { PropType } from "vue";
+import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
+import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Determines how the component should be rendered. */
@@ -29,51 +28,79 @@ export enum ComponentScreen {
     Summary = "summary"
 }
 
-export type ConfigurationValues = Record<string, string>;
-
-export const enum ConfigurationValueKey {
-    Options = "options"
-}
-
-export type VideoWatchLearningActivityValue = {
-    completionThreshold: number;
-    footerContent: string,
-    headerContent: string,
-    video: ListItemBag;
-};
-
 /**
  * The basic properties that all learning activity components must support.
  */
 type LearningActivityComponentBaseProps = {
-    modelValue: {
-        type: PropType<string>,
-        required: false
-    };
 
-    configurationValues: {
-        type: PropType<ConfigurationValues>;
-        default: () => ConfigurationValues;
-    };
-
-    completionJson: {
+    activityName: {
         type: PropType<string>;
+        default:() => "";
+    };
+
+    assignTo: {
+        type: PropType<AssignTo>;
+        default: () => 0;
+    };
+
+    binaryFile: {
+        type: PropType<ListItemBag>,
+        required: false
+    },
+
+    componentSettingsJson: {
+        type: PropType<string>;
+        default: () => "{}";
+    };
+
+    componentCompletionJson: {
+        type: PropType<string>;
+        default: () => "{}";
+    };
+
+    currentPerson: {
+        type: PropType<LearningActivityParticipantBag>;
+        required: false;
+    };
+
+    pointsEarned: {
+        type: PropType<number>;
         required: false
     };
+
+    pointsPossible: {
+        type: PropType<number>;
+        required: false
+    };
+
     screenToShow: {
         type: PropType<ComponentScreen>,
         default: ComponentScreen.Summary
     };
 
-    participantId: {
-        type: PropType<number>;
+    student: {
+        type: PropType<LearningActivityParticipantBag>;
         required: false;
     };
 };
 
+/**
+ * The emits that all Learning Activity Components are expected to emit.
+ * Failure to implement all emits could result in unexpected behavior.
+ */
 type LearningActivityComponentBaseEmits = {
-    saveConfiguration(configurationValues: ConfigurationValues): void;
-    saveCompletion(configurationValues: ConfigurationValues): void;
+    /** Emitted when there are changes to the configuration of a component. */
+    componentSettingsChanged(configurationValues: string): void;
+
+    /** Emitted when the completion of a component has been modified. */
+    componentCompletionChanged(_componentCompletionAsJson: string): void;
+
+    /** Emitted when the completion of a component has been finalized. */
+    componentCompleted(_componentCompletionAsJson: string): void;
+
+    /** Emitted when the completion of a component has been cancelled.
+      *  It's expected the parent of the component will discard any changes. */
+    componentCompletionCancelled(): void;
 };
 
 /**
@@ -81,8 +108,44 @@ type LearningActivityComponentBaseEmits = {
  */
 export function getLearningActivityProps(): LearningActivityComponentBaseProps {
     return {
-        modelValue: {
+
+        activityName: {
             type: String as PropType<string>,
+            default:() => ""
+        },
+
+        assignTo: {
+            type: Object as PropType<AssignTo>,
+            default: () => AssignTo.Student
+        },
+
+        binaryFile: {
+            type: Object as PropType<ListItemBag>,
+            required: false
+        },
+
+        componentCompletionJson: {
+            type: String as PropType<string>,
+            default: () => "{}"
+        },
+
+        componentSettingsJson: {
+            type: String as PropType<string>,
+            default: () => "{}"
+        },
+
+        currentPerson: {
+            type: Object as PropType<LearningActivityParticipantBag>,
+            required: false,
+        },
+
+        pointsEarned: {
+            type: Number as PropType<number>,
+            required: false
+        },
+
+        pointsPossible: {
+            type: Number as PropType<number>,
             required: false
         },
 
@@ -91,20 +154,10 @@ export function getLearningActivityProps(): LearningActivityComponentBaseProps {
             default: ComponentScreen.Summary
         },
 
-        completionJson: {
-            type: Object as PropType<string>,
-            required: false
-        },
-
-        configurationValues: {
-            type: Object as PropType<ConfigurationValues>,
-            default: () => ({})
-        },
-
-        studentId: {
-            type: Object as PropType<number>,
+        student: {
+            type: Object as PropType<LearningActivityParticipantBag>,
             required: false,
-        }
+        },
     };
 }
 
@@ -113,10 +166,16 @@ export function getLearningActivityProps(): LearningActivityComponentBaseProps {
  */
 export function getLearningActivityEmits(): LearningActivityComponentBaseEmits {
     return {
-        saveConfiguration(configurationValues: ConfigurationValues) {
+        componentSettingsChanged(_componentSettingsAsJson: string): void {
 
         },
-        saveCompletion(configurationValues: ConfigurationValues): void {
+        componentCompletionChanged(_componentCompletionAsJson: string): void {
+
+        },
+        componentCompleted(_componentCompletionAsJson: string): void {
+
+        },
+        componentCompletionCancelled(): void {
 
         }
     };
@@ -128,100 +187,100 @@ export function getLearningActivityEmits(): LearningActivityComponentBaseEmits {
  * Note to plugins: Do not implement this interface directly or your implementation
  * may break if we add new required methods.
  */
-export interface ILearningActivityType {
-    activityTypeName: string;
+// export interface ILearningActivityType {
+//     activityTypeName: string;
 
-    getConfigurationComponent(): Component;
+//     getConfigurationComponent(): Component;
 
-    getCompletionComponent(): Component;
+//     getCompletionComponent(): Component;
 
-    getSummaryComponent(): Component;
+//     getSummaryComponent(): Component;
 
-    getScoringComponent(): Component;
+//     getScoringComponent(): Component;
 
-    //saveConfiguration(): void;
+//     //saveConfiguration(): void;
 
-    // The parent component will handle this.
-    // saveProgress(completionJson: string, entityId: ): void;
-}
+//     // The parent component will handle this.
+//     // saveProgress(completionJson: string, entityId: ): void;
+// }
 
 /**
  * Basic learning activity type implementation that is suitable for implementations to
  * extend.
  */
-export abstract class LearningActivityBase implements ILearningActivityType {
+// export abstract class LearningActivityBase implements ILearningActivityType {
 
-    activityTypeName: string = "Learning Activity Base";
+//     activityTypeName: string = "Learning Activity Base";
 
-    public getTextValue(value: string, _configurationValues: Record<string, string>): string {
-        return value ?? "";
-    }
+//     public getTextValue(value: string, _configurationValues: Record<string, unknown>): string {
+//         return value ?? "";
+//     }
 
-    public getComponentHtmlContent(value: string, configurationValues: Record<string, string>, _isEscaped?: boolean): string {
-        return `${escapeHtml(this.getTextValue(value, configurationValues))}`;
-    }
+//     public getComponentHtmlContent(value: string, configurationValues: Record<string, unknown>, _isEscaped?: boolean): string {
+//         return `${escapeHtml(this.getTextValue(value, configurationValues))}`;
+//     }
 
-    public getConfigurationComponent(): Component {
-        return defineComponent({
-            name: "LearningActivity.Configuration",
-            props: { ...getLearningActivityProps(), isEscaped: Boolean },
-            setup: (props) => {
-                return {
-                    content: computed(() => {
-                        return this.getComponentHtmlContent(props.modelValue ?? "", props.configurationValues, props.isEscaped);
-                    })
-                };
-            },
+//     public getConfigurationComponent(): Component {
+//         return defineComponent({
+//             name: "LearningActivity.Configuration",
+//             props: { ...getLearningActivityProps(), isEscaped: Boolean },
+//             setup: (props) => {
+//                 return {
+//                     content: computed(() => {
+//                         return this.getComponentHtmlContent(props.modelValue ?? "", props.configurationValues, props.isEscaped);
+//                     })
+//                 };
+//             },
 
-            template: `<span v-html="content"></span>`
-        });
-    }
+//             template: `<span v-html="content"></span>`
+//         });
+//     }
 
-    public getCompletionComponent(): Component {
-        return defineComponent({
-            name: "LearningActivity.Completion",
-            props: { ...getLearningActivityProps(), isEscaped: Boolean },
-            setup: (props) => {
-                return {
-                    content: computed(() => {
-                        return this.getComponentHtmlContent(props.modelValue ?? "", props.configurationValues, props.isEscaped);
-                    })
-                };
-            },
+//     public getCompletionComponent(): Component {
+//         return defineComponent({
+//             name: "LearningActivity.Completion",
+//             props: { ...getLearningActivityProps(), isEscaped: Boolean },
+//             setup: (props) => {
+//                 return {
+//                     content: computed(() => {
+//                         return this.getComponentHtmlContent(props.modelValue ?? "", props.configurationValues, props.isEscaped);
+//                     })
+//                 };
+//             },
 
-            template: `<span v-html="content"></span>`
-        });
-    }
+//             template: `<span v-html="content"></span>`
+//         });
+//     }
 
-    getSummaryComponent(): Component {
-        return defineComponent({
-            name: "LearningActivity.Summary",
-            props: { ...getLearningActivityProps(), isEscaped: Boolean },
-            setup: (props) => {
-                return {
-                    content: computed(() => {
-                        return this.getComponentHtmlContent(props.modelValue ?? "", props.configurationValues, props.isEscaped);
-                    })
-                };
-            },
+//     getSummaryComponent(): Component {
+//         return defineComponent({
+//             name: "LearningActivity.Summary",
+//             props: { ...getLearningActivityProps(), isEscaped: Boolean },
+//             setup: (props) => {
+//                 return {
+//                     content: computed(() => {
+//                         return this.getComponentHtmlContent(props.modelValue ?? "", props.configurationValues, props.isEscaped);
+//                     })
+//                 };
+//             },
 
-            template: `<span v-html="content"></span>`
-        });
-    }
+//             template: `<span v-html="content"></span>`
+//         });
+//     }
 
-    getScoringComponent(): Component {
-        return defineComponent({
-            name: "LearningActivity.Scoring",
-            props: { ...getLearningActivityProps(), isEscaped: Boolean },
-            setup: (props) => {
-                return {
-                    content: computed(() => {
-                        return this.getComponentHtmlContent(props.modelValue ?? "", props.configurationValues, props.isEscaped);
-                    })
-                };
-            },
+//     getScoringComponent(): Component {
+//         return defineComponent({
+//             name: "LearningActivity.Scoring",
+//             props: { ...getLearningActivityProps(), isEscaped: Boolean },
+//             setup: (props) => {
+//                 return {
+//                     content: computed(() => {
+//                         return this.getComponentHtmlContent(props.modelValue ?? "", props.configurationValues, props.isEscaped);
+//                     })
+//                 };
+//             },
 
-            template: `<span v-html="content"></span>`
-        });
-    }
-}
+//             template: `<span v-html="content"></span>`
+//         });
+//     }
+// }

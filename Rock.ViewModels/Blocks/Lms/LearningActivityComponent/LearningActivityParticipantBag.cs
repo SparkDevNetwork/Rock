@@ -15,25 +15,35 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
+using System;
 
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
 {
     /// <summary>
-    /// The additional configuration options for the Learning Activity Detail block.
+    /// The item details for the Learning Activity Detail block.
     /// </summary>
-    public class LearningActivityDetailOptionsBag
+    public class LearningActivityParticipantBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the available activity types as list items.
+        /// Gets or sets the Guid of the related participant (GroupMember.Guid).
         /// </summary>
-        public List<ListItemBag> ActivityTypeListItems { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of available activity types.
+        /// Gets or sets the name of the related participant.
         /// </summary>
-        public List<LearningActivityComponentBag> ActivityTypes { get; set; }
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the participant is a facilitator of the activity.
+        /// </summary>
+        public bool IsFacilitator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the role this participant has in the class.
+        /// </summary>
+        public string RoleName { get; set; }
     }
 }

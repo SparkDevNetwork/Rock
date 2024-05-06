@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -25,9 +26,9 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningProgramDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -143,7 +144,32 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningProgramDetailOptionsBag();
 
+            options.SystemCommunications = GetCommunicationTemplates( rockContext );
+
             return options;
+        }
+
+        /// <summary>
+        /// Gets the communication templates.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<ListItemBag> GetCommunicationTemplates( RockContext rockContext )
+        {
+            var communicationTemplates = new List<ListItemBag>();
+            foreach ( var systemEmail in new SystemCommunicationService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( e => e.Title )
+                .Select( e => new
+                {
+                    e.Guid,
+                    e.Title
+                } ) )
+            {
+                communicationTemplates.Add( new ListItemBag() { Text = systemEmail.Title, Value = systemEmail.Guid.ToString() } );
+            }
+
+            return communicationTemplates;
         }
 
         /// <summary>

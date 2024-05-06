@@ -250,22 +250,16 @@ namespace Rock.Blocks.Lms
 
             // Get just what we need for the facilitators info.
             bag.Facilitators = new LearningParticipantService( RockContext )
-                .GetFacilitators( entity.Id )
-                .Select( f => new
-                {
-                    f.Person.FullName,
-                    f.Guid,
-                    RoleName = f.GroupRole.Name,
-                } )
+                .GetFacilitatorBags( entity.Id )
                 .ToList()
                 .Select( f => new LearningClassFacilitatorBag
                 {
-                    FacilitatorName = f.FullName,
+                    FacilitatorName = f.Name,
                     FacilitatorRole = f.RoleName,
                     Facilitator = new ListItemBag
                     {
                         Value = f.Guid.ToString(),
-                        Text = f.FullName
+                        Text = f.Name
                     }
                 } )
                 .ToList();
@@ -412,8 +406,11 @@ namespace Rock.Blocks.Lms
 
             return new Dictionary<string, string>
             {
+                [NavigationUrlKey.ActivityDetailPage] = this.GetLinkedPageUrl( AttributeKey.ActivityDetailPage, queryParams ),
+                [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, queryParams ),
+                [NavigationUrlKey.FacilitatorDetailPage] = this.GetLinkedPageUrl( AttributeKey.FacilitatorDetailPage, queryParams ),
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams ),
-                [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, queryParams )
+                [NavigationUrlKey.StudentDetailPage] = this.GetLinkedPageUrl( AttributeKey.StudentDetailPage, queryParams )
             };
         }
 
@@ -474,7 +471,9 @@ namespace Rock.Blocks.Lms
             }
 
             var bag = GetEntityBagForEdit( entity );
+
             // Remove the id and update the name.
+            // GetEntityBagForEdit expects to know the Entity.Id so we can't use CloneWithoutIdentity.
             bag.IdKey = string.Empty;
             bag.Name += " - Copy";
 
@@ -781,7 +780,6 @@ namespace Rock.Blocks.Lms
 
             var facilitators = new LearningParticipantService( RockContext )
                 .GetFacilitators( entity.Id )
-                .AsNoTracking()
                 .ToList();
 
             // Return all facilitators for the course's default class.
@@ -838,7 +836,7 @@ namespace Rock.Blocks.Lms
             if ( filteredClassId > 0 )
             {
                 return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( a => a.LearningClassId == filteredClassId )
+                    .GetClassLearningPlan( filteredClassId )
                     .AsNoTracking();
             }
 
@@ -854,7 +852,7 @@ namespace Rock.Blocks.Lms
                 var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( filteredCourseId, c => c.Id );
 
                 return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( a => a.LearningClassId == defaultClassId )
+                    .GetClassLearningPlan( defaultClassId )
                     .AsNoTracking();
             }
 

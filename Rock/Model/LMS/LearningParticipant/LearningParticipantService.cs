@@ -14,39 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Enums.Lms;
-using Rock.Utility;
+using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 
 namespace Rock.Model
 {
     public partial class LearningParticipantService
     {
-        /// <summary>
-        /// Gets the <see cref="Rock.Model.LearningParticipant">participants</see> for the class idKey specified.
-        /// </summary>
-        /// <param name="idKey">The idKey of the <see cref="LearningClass">class</see> for which to retrieve participants.</param>
-        /// <returns>A queryable of the class participants.</returns>
-        public IQueryable<LearningParticipant> GetClassParticipants( string idKey )
-        {
-            var id = IdHasher.Instance.GetId( idKey ).ToIntSafe();
-            return id > 0 ? Enumerable.Empty<LearningParticipant>().AsQueryable() : GetClassParticipants( id );
-        }
-
-        /// <summary>
-        /// Gets the <see cref="Rock.Model.LearningParticipant">participants</see> for the classId specified.
-        /// </summary>
-        /// <param name="classId">The id of the <see cref="LearningClass">class</see> for which to retrieve participants.</param>
-        /// <returns>Queryable of the class participants.</returns>
-        public IQueryable<LearningParticipant> GetClassParticipants( int classId )
-        {
-            return Queryable().Where( p => p.LearningClassId == classId );
-        }
-
         /// <summary>
         /// Gets a list of <see cref="LearningParticipant">Students</see> for a specified <see cref="LearningClass"/>
         /// </summary>
@@ -54,7 +33,7 @@ namespace Rock.Model
         /// <returns>Queryable of LearningParticipants that have a Group role of not IsLeader.</returns>
         public IQueryable<LearningParticipant> GetStudents( int classId )
         {
-            return GetParticipants( a => !a.GroupRole.IsLeader && a.LearningClassId == classId, true );
+            return GetParticipants( classId, true ).Where( a => !a.GroupRole.IsLeader );
         }
 
         /// <summary>
@@ -64,29 +43,29 @@ namespace Rock.Model
         /// <returns>Queryable of LearningParticipants that have a Group role of IsLeader.</returns>
         public IQueryable<LearningParticipant> GetFacilitators(int classId)
         {
-            return GetParticipants( a => a.GroupRole.IsLeader && a.LearningClassId == classId );
+            return GetParticipants( classId ).Where( a => a.GroupRole.IsLeader );
         }
 
         /// <summary>
         /// Gets a list of <see cref="LearningParticipant">Participants</see> for a specified <see cref="LearningClass"/>
         /// </summary>
-        /// <param name="filterPredicate">The predicate by which to filter the <see cref="LearningParticipant"/>.</param>
+        /// <param name="classId">The identifier of the class for which to retreive participants.</param>
         /// <param name="includeGradingScales">Whether to include the list of <see cref="LearningGradingSystemScale"/> for the course.</param>
         /// <returns>Queryable of LearningParticipants.</returns>
-        public IQueryable<LearningParticipant> GetParticipants(Func<LearningParticipant, bool> filterPredicate, bool includeGradingScales = false )
+        public IQueryable<LearningParticipant> GetParticipants(int classId, bool includeGradingScales = false )
         {
             return includeGradingScales ?
                  Queryable()
+                    .AsNoTracking()
                     .Include( a => a.LearningGradingSystemScale )
                     .Include( a => a.Person )
                     .Include( a => a.GroupRole )
-                    .Where( filterPredicate )
-                    .AsQueryable() :
+                    .Where( a => a.LearningClassId == classId ) :
                  Queryable()
+                    .AsNoTracking()
                     .Include( a => a.Person )
                     .Include( a => a.GroupRole )
-                    .Where( filterPredicate )
-                    .AsQueryable();
+                    .Where( a => a.LearningClassId == classId );
         }
 
         /// <summary>
@@ -152,6 +131,82 @@ namespace Rock.Model
             new LearningActivityCompletionService( rockContext ).AddRange( completionsToAdd );
 
             return completionsToAdd;
+        }
+
+        /// <summary>
+        /// Gets the participantId of the facilitator in the specified class matching the provided <see cref="Person"/>
+        /// identifier or <c>0</c> if not found.
+        /// </summary>
+        /// <param name="personId">The <see cref="Person"/> identifier of the participant to retrieve.</param>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
+        /// <returns></returns>
+        public int GetFacilitatorId( int personId, int classId )
+        {
+            return GetParticipant( personId, classId )
+                .Select( p => p.Id )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the participantId of the participant in the specified class matching the provided <see cref="Person"/>
+        /// identifier or <c>0</c> if not found.
+        /// </summary>
+        /// <param name="personId">The <see cref="Person"/> identifier of the participant to retrieve.</param>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
+        /// <returns></returns>
+        public IQueryable<LearningParticipant> GetParticipant( int personId, int classId )
+        {
+            return Queryable()
+                .Include( a => a.Person )
+                .Include( a => a.GroupRole )
+                .Where( p => p.LearningClassId == classId && p.PersonId == personId );
+        }
+
+        /// <summary>
+        /// Gets a list of facilitator <see cref="LearningActivityParticipantBag"/> for the specified
+        /// <see cref="LearningClass"/> and (optionally) for one or more <see cref="Person" /> identifiers.
+        /// </summary>
+        /// <param name="classId">The identifier of the class to search within.</param>
+        /// <param name="personIds">Optional list of Person identifiers to search for.</param>
+        /// <returns>A list of <see cref="LearningActivityParticipantBag"/> that is the result of the search.</returns>
+        public IEnumerable<LearningActivityParticipantBag> GetFacilitatorBags( int classId, params int[] personIds )
+        {
+            return GetParticipantBags( classId, true, personIds );
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningActivityParticipantBag"/> for the specified
+        /// <see cref="LearningClass"/> and (optionally) for one or more <see cref="Person" /> identifiers.
+        /// </summary>
+        /// <param name="classId">The identifier of the class to search within.</param>
+        /// <param name="facilitatorsOnly">When <c>true</c> only group members whose role is leader will be returned;
+        ///     otherwise all participants are returned.</param>
+        /// <param name="personIds">Optional list of Person identifiers to search for.</param>
+        /// <returns>A list of <see cref="LearningActivityParticipantBag"/> that is the result of the search.</returns>
+        public IEnumerable<LearningActivityParticipantBag> GetParticipantBags( int classId, bool facilitatorsOnly = false, params int[] personIds )
+        {
+            // Filter by PersonIds if any were provided. Otherwise return all participants.
+            var baseQuery = personIds?.Any() == true ?
+                GetParticipants( classId )
+                    .Where( p => personIds.Contains( p.PersonId ) ) :
+                GetParticipants(classId );
+
+            // Optionally filter by facilitators only.
+            if (facilitatorsOnly )
+            {
+                baseQuery = baseQuery.Where( p => p.GroupRole.IsLeader );
+            }
+
+            return baseQuery
+                .Select( p => new { p.Id, IsFacilitator = p.GroupRole.IsLeader, p.Person.NickName, p.Person.LastName, p.Person.SuffixValueId, RoleName = p.GroupRole.Name, p.Guid } )
+                .ToList().Select( p => new LearningActivityParticipantBag
+                {
+                    Guid = p.Guid,
+                    IdKey = Utility.IdHasher.Instance.GetHash( p.Id ),
+                    IsFacilitator = p.IsFacilitator,
+                    Name = Person.FormatFullName( p.NickName, p.LastName, p.SuffixValueId ),
+                    RoleName = p.RoleName
+                } );
         }
     }
 }

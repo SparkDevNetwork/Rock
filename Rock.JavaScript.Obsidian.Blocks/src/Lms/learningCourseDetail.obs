@@ -36,7 +36,11 @@
         </template>
     </DetailBlock>
 
-    <LearningClassSecondaryLists v-if="!isAcademicMode && panelMode === DetailPanelMode.View" v-model="learningCourseViewBag" />
+    <LearningClassSecondaryLists v-if="!isAcademicMode && panelMode === DetailPanelMode.View"
+                                 :isEditable="isEditable"
+                                 :navigationUrls="config.navigationUrls"
+                                 :takesAttendance="options.takesAttendance"
+                                 v-model="learningCourseViewBag" />
 </template>
 
 <script setup lang="ts">

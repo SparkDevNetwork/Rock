@@ -26,14 +26,12 @@ import { AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDat
 import { DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculationMethod";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { LearningActivityParticipantBag } from "../LearningActivityComponent/learningActivityParticipantBag";
 
 /** The item details for the Learning Activity Detail block. */
 export type LearningActivityBag = {
     /** The id of the related ActivityComponent for this LearningActivity. */
-    activityComponentId: number;
-
-    /** Gets or sets the path to the Activity Component .obs file (relative to the web root). */
-    activityComponentPath?: string | null;
+    activityComponentId?: number | null;
 
     /** Gets or sets the json config for the activity component before completion. */
     activityComponentSettingsJson?: string | null;
@@ -76,6 +74,9 @@ export type LearningActivityBag = {
 
     /** Gets or sets the workflow type that's triggered when the activity is completed. */
     completionWorkflowType?: ListItemBag | null;
+
+    /** Gets or sets the currently logged in person. */
+    currentPerson?: LearningActivityParticipantBag | null;
 
     /** Gets or sets the description of the activity. */
     description?: string | null;

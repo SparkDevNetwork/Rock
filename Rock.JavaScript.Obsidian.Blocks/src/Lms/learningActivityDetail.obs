@@ -14,7 +14,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Activity"
-                 :isBadgesVisible="true"
+                 :isBadgesVisible="false"
                  :isSecurityHidden="false"
                  :footerSecondaryActions="footerSecondaryActions"
                  :isEditVisible="isEditable"
@@ -52,9 +52,9 @@
 
     const entityTypeGuid = EntityType.LearningProgram;
 
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
-
     // #region Values
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     const blockError = ref("");
     const errorMessage = ref("");
@@ -66,12 +66,20 @@
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
-    const validProperties = [
-    ];
+    const validProperties = [];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(learningActivityEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
+
+    // Check to see if this is a request to clone an existing record.
+    const params = new URLSearchParams(window.location.search);
+    const cloneId = ref((params.get("clone")) ?? "");
+
+    if (cloneId.value.length > 0) {
+        // Call to clone must come after initializing view bags.
+        clone(cloneId.value);
+    }
 
     // #region Computed Values
 
@@ -106,7 +114,7 @@
     });
 
     const options = computed((): LearningActivityDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? { };
     });
 
     /**
@@ -139,7 +147,14 @@
                 title: "Copy Activity",
                 type: "default",
                 handler: async () => {
-                    //TODO: Handle clone.
+                    // Reload the current page replacing the current IdKey with 0 and a search param to clone the same id.
+                    const currentIdKey = learningActivityViewBag.value?.idKey ?? "";
+                    const currentSearch = location.search ?? "";
+                    location.href = [
+                        location.href.replace(currentIdKey, "0"),
+                        currentSearch.length === 0 ? "?" : "",
+                        `clone=${currentIdKey}`
+                    ].join("");
                 }
             });
         }
@@ -154,6 +169,36 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Handles the click event of the "Clone" button.
+     */
+     async function clone(key: string): Promise<boolean> {
+        if (key.length === 0 || key == "0") {
+            errorMessage.value = "Invalid Id detected while trying to clone learning activity.";
+            return false;
+        }
+
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningActivityBag>>("Clone", { key });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to clone learning activity.";
+            return false;
+        }
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            learningActivityEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            panelMode.value = DetailPanelMode.Add;
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
     /**
      * Event handler for the Cancel button being clicked while in Edit mode.

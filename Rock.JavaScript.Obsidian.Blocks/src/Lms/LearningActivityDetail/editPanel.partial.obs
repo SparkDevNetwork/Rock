@@ -42,6 +42,7 @@
             <div class="col-md-6">
                 <template v-if="availableDateCalculationMethod == AvailableDateCalculationMethod.Specific.toString()">
                     <DatePicker v-model="availableDateDefault"
+                                rules="required"
                                 label="Available Date" />
                 </template>
 
@@ -52,6 +53,7 @@
 
                     <NumberBox v-model="availableDateOffset"
                                label="Available Date Offset"
+                               rules="required"
                                help="The number of days from the calculation reference to add before the assignment is available."
                                inputGroupClasses="input-width-md">
                         <template #inputGroupAppend>
@@ -74,7 +76,7 @@
 
             <div class="col-md-6">
                 <template v-if="dueDateCalculationMethod == DueDateCalculationMethod.Specific.toString()">
-                    <DatePicker v-model="dueDateDefault"
+                    <DatePicker v-model="dueDateDefault" rules="required"
                                 label="Due Date" />
                 </template>
 
@@ -85,6 +87,7 @@
 
                     <NumberBox v-model="dueDateOffset"
                                label="Due Date Offset"
+                               rules="required"
                                help="The number of days from the calculation reference to add before the assignment is due."
                                inputGroupClasses="input-width-md">
                         <template #inputGroupAppend>
@@ -120,7 +123,7 @@
             <div class="col-md-6">
 
                 <DropDownList
-                              v-model="activityType"
+                              v-model="activityComponentValue"
                               :grouped="false"
                               :items="activityTypes"
                               rules="required"
@@ -130,16 +133,22 @@
             </div>
         </div>
 
-
         <!-- Pass the configuration and completion json values to the component. -->
-        <activityTypeComponent v-if="activityTypeComponent" modelValue="" :screenToShow="screenToShow" @saveConfiguration="onSaveConfig" />
+        <activityTypeComponent v-if="activityTypeComponent"
+                               :activityName="name"
+                               :currentPerson="currentPerson"
+                               :screenToShow="screenToShow"
+                               :componentSettingsJson="activityComponentSettingsJson"
+                               :pointsPossible="points"
+                               @componentSettingsChanged="onSettingsChanged"
+                               @componentCompleted="onComplete" />
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { PropType, defineAsyncComponent, ref, watch } from "vue";
+    import { PropType, computed, defineAsyncComponent, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -155,8 +164,8 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { LearningActivityBase, ComponentScreen, ConfigurationValues } from "@Obsidian/Controls/learningActivity";
-
+    import { ComponentScreen } from "@Obsidian/Controls/learningActivity";
+    import { LearningActivityComponentBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityComponentBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
@@ -164,9 +173,8 @@
     import { AvailableDateCalculationMethodDescription, AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
     import { DueDateCalculationMethodDescription, DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculationMethod";
 
-    const screenToShow = ref(ComponentScreen.Summary);
-
-    const lmsFileTypeGuid = BinaryFiletype.LearningManagementSystem;
+    const screenToShow = ref(ComponentScreen.Configuration);
+     const lmsFileTypeGuid = BinaryFiletype.LearningManagementSystem;
 
     const props = defineProps({
         modelValue: {
@@ -190,9 +198,10 @@
     const availableDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(AvailableDateCalculationMethodDescription ?? []));
     const dueDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(DueDateCalculationMethodDescription ?? []));
     const assignTos = ref<ListItemBag[]>(enumToListItemBag(AssignToDescription ?? []));
-    const activityTypes = ref<ListItemBag[]>(props.options?.activityTypes ?? []);
-    const activityComponentPath = ref(props.modelValue.bag?.activityComponentPath ?? "");
-    const taskBinaryFile = propertyRef(props.modelValue.bag?.taskBinaryFile ?? null, "TemplateBinaryFileId");
+    const activityTypes = ref<ListItemBag[]>(props.options?.activityTypeListItems ?? []);
+    const activityTypeComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
+    const currentPerson = ref(props.modelValue.bag?.currentPerson ?? {});
+    const taskBinaryFile = propertyRef(props.modelValue.bag?.taskBinaryFile ?? null, "TaskBinaryFile");
 
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
@@ -208,8 +217,16 @@
     const dueDateOffset = propertyRef(props.modelValue.bag?.dueDateOffset, "DueDateOffset");
     const sendNotificationCommunication = propertyRef(props.modelValue.bag?.sendNotificationCommunication ?? false, "SendNotificationCommunication");
     const completionWorkflowType = propertyRef(props.modelValue.bag?.completionWorkflowType ?? {}, "CompletionWorkflowType");
-    const activityType = propertyRef(props.modelValue.bag?.activityComponentId?.toString() ?? "", "ActivityType");
+    const activityComponentId = propertyRef(props.modelValue.bag?.activityComponentId, "ActivityComponentId");
+    const activityComponentSettingsJson = propertyRef(props.modelValue.bag?.activityComponentSettingsJson ?? "", "ActivityComponentSettingsJson");
+
     const points = propertyRef(props.modelValue.bag?.points ?? 0, "Points");
+
+    const activityComponentValue = ref(
+        activityTypes.value?.find(a => a.value ===
+            activityTypeComponents.value.find(c => c.activityComponentId === activityComponentId.value)?.guid
+        )?.value ?? ""
+    );
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -226,7 +243,8 @@
         , dueDateOffset
         , sendNotificationCommunication
         , completionWorkflowType
-        , activityType
+        , activityComponentId
+        , activityComponentSettingsJson
         , points
     ];
 
@@ -238,14 +256,31 @@
 
     // #region Event Handlers
 
-    async function onSaveConfig(configurationValues: ConfigurationValues): Promise<void> {
+    /**
+     * Event handler for the activity component settings value changed event.
+     */
+     async function onSettingsChanged(newComponentSettingsJson: string): Promise<void> {
+        activityComponentSettingsJson.value = newComponentSettingsJson;
     }
 
     // #endregion
-    let activityTypeComponent: LearningActivityBase;
 
-    watch(activityComponentPath, () => {
-        activityTypeComponent = defineAsyncComponent(() => import(activityComponentPath.value));
+    const activityTypeComponent = computed(() => {
+        const selectedActivityComponent = activityTypeComponents.value.find(a => a.guid === activityComponentValue.value);
+
+    if (!selectedActivityComponent) {
+        activityComponentId.value = null;
+        return null;
+    }
+
+    activityComponentId.value = selectedActivityComponent.activityComponentId;
+
+    // The import path is relative to the Rock web root, but we're in a block
+    // so we need to prepend a path up to the web root from our 'Obsidian/Blocks/Domain'.
+    const path = selectedActivityComponent.activityComponentPath ?? "";
+    if (path.length > 0) {
+        return defineAsyncComponent(() => import("../../../" + path));
+    }
     });
 
     // Watch for parental changes in our model value and update all our values.
@@ -265,6 +300,8 @@
         updateRefValue(dueDateOffset, props.modelValue.bag?.dueDateOffset);
         updateRefValue(sendNotificationCommunication, props.modelValue.bag?.sendNotificationCommunication ?? false);
         updateRefValue(completionWorkflowType, props.modelValue.bag?.completionWorkflowType ?? {});
+        updateRefValue(activityComponentId, props.modelValue.bag?.activityComponentId);
+        updateRefValue(activityComponentSettingsJson, props.modelValue.bag?.activityComponentSettingsJson ?? "{}");
         updateRefValue(points, props.modelValue.bag?.points ?? 0);
     });
 
@@ -288,10 +325,9 @@
         setPropertiesBoxValue(newValue, "dueDateOffset", dueDateOffset.value);
         setPropertiesBoxValue(newValue, "sendNotificationCommunication", sendNotificationCommunication.value);
         setPropertiesBoxValue(newValue, "completionWorkflowType", completionWorkflowType.value);
+        setPropertiesBoxValue(newValue, "activityComponentId", activityComponentId.value);
+        setPropertiesBoxValue(newValue, "activityComponentSettingsJson", activityComponentSettingsJson.value);
         setPropertiesBoxValue(newValue, "points", points.value);
-
-        // TODO: Determine which value to save for componentId.
-        //setPropertiesBoxValue(newValue, "activityComponentId", parseInt(activityType.value));
 
         emit("update:modelValue", newValue);
     });

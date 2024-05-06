@@ -17,9 +17,8 @@
 
 using System;
 
-using Rock.ViewModels.Utility;
-using Rock.Model;
 using Rock.Enums.Lms;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
 {
@@ -32,11 +31,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         /// The id of the related ActivityComponent for this LearningActivity.
         /// </summary>
         public int ActivityComponentId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path to the Activity Component .obs file (relative to the web root).
-        /// </summary>
-        public string ActivityComponentPath { get; set; }
 
         /// <summary>
         /// Gets or sets the json config for the activity component before completion.
@@ -93,6 +87,16 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         /// Gets or sets the workflow type that's triggered when the activity is completed.
         /// </summary>
         public ListItemBag CompletionWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currently logged in person.
+        /// </summary>
+        public LearningActivityParticipantBag CurrentPerson { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the current person is a facilitator of the activity.
+        /// </summary>
+        public bool CurrentPersonIsFacilitator { get; set; }
 
         /// <summary>
         /// Gets or sets the description of the activity.

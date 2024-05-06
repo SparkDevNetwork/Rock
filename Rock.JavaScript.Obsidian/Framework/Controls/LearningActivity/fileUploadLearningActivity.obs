@@ -1,0 +1,230 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <div class="instructions-section">
+                <StructuredContentEditor label="Instructions" v-model="configuration.instructions" />
+            </div>
+            <div class="rubric-section">
+                <StructuredContentEditor label="Grading Rubric" v-model="configuration.rubric" />
+            </div>
+            <div class="show-rubric-on-upload-section">
+                <CheckBox v-model="configuration.showRubricOnUpload" label="Show Rubric on Upload" />
+            </div>
+            <div class="show-rubric-on-scoring-section">
+                <CheckBox v-model="configuration.showRubricOnScoring" label="Show Rubric on Scoring" />
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <fieldset>
+                <div class="instructions-section">
+                    <StructuredContentEditor :disabled="true" label="Instructions" v-model="configuration.instructions" />
+                </div>
+                <div class="rubric-section" v-if="configuration.showRubricOnUpload">
+                    <StructuredContentEditor :disabled="true" label="Grading Rubric" v-model="configuration.rubric" />
+                </div>
+
+
+                <div class="file-upload-section">
+                    <FileUploader v-model="binaryFile"
+                              label="Upload File"
+                              rules="required"
+                              :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
+                              uploadButtonText="Upload"
+                              :showDeleteButton="true" />
+                </div>
+                <div class="footer-section">
+                    <RockButton :btnType="BtnType.Primary"
+                                @click="emits('componentCompleted', JSON.stringify(binaryFile))">
+                        Complete
+                    </RockButton>
+                </div>
+            </fieldset>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Scoring">
+            <fieldset>
+                <div class="instructions-section">
+                    <StructuredContentEditor :disabled="true" label="Instructions" v-model="configuration.instructions" />
+                </div>
+                <div class="rubric-section" v-if="configuration.showRubricOnScoring">
+                    <StructuredContentEditor :disabled="true" label="Grading Rubric" v-model="configuration.rubric" />
+                </div>
+
+
+                <div class="grading-section">
+                    <div class="file-section">
+                        <RockLabel>File</RockLabel>
+                        <a v-if="fileUrl" :href="fileUrl" target="_blank">{{binaryFile?.text}}</a>
+                    </div>
+
+                    <div class="score-section">
+                        <NumberBox v-model="pointsEarned"
+                            label="Score"
+                            rules="required"
+                            :min="0"
+                            :max="pointsPossible"
+                            inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                        </template>
+                    </NumberBox>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <RockButton :btnType="BtnType.Primary"
+                                @click="emits('componentCompletionChanged', JSON.stringify(binaryFile))">
+                        Complete
+                    </RockButton>
+                    <RockButton :btnType="BtnType.Link"
+                                @click="emits('componentCompletionCancelled')">
+                        Cancel
+                    </RockButton>
+                </div>
+            </fieldset>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <NotificationBox v-if="binaryFile" alertType="success">
+                {{ assignee?.name ?? defaultAssigneeDescription }} uploaded the following file:
+                <a v-if="fileUrl" :href="fileUrl" target="_blank">{{binaryFile.text}}</a>.
+            </NotificationBox>
+            <NotificationBox v-if="!binaryFile" alertType="warning">
+                {{ assignee?.name ?? defaultAssigneeDescription }} has not uploaded a file.
+            </NotificationBox>
+        </div>
+    </Panel>
+</template>
+<style scoped>
+    .grading-section {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: 50%;
+
+        .file-section {
+            grid-row: 1;
+            grid-column: 1;
+        }
+
+        .score-section {
+            grid-row: 1;
+            grid-column: 2;
+        }
+    }
+
+    .footer-section {
+        margin-right: 4px;
+    }
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch, } from "vue";
+    import { getLearningActivityEmits, getLearningActivityProps, ComponentScreen } from "./learningActivity";
+    import { FileUploadActivityCompletion, FileUploadActivityConfiguration } from "./fileUploadLearningActivity";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
+    import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+
+    // Get the required props and emits for learning activity components.
+    const props = defineProps({ ...getLearningActivityProps() });
+    const emits = defineEmits({ ...getLearningActivityEmits() });
+
+    const screenToShow = ref(props.screenToShow);
+    const assignTo = ref(props.assignTo ?? AssignTo.Student);
+    const defaultAssigneeDescription = `The ${AssignToDescription[assignTo.value]}`;
+    const currentPerson = ref(props.currentPerson ?? {} as LearningActivityParticipantBag);
+    const student = ref(props.student ?? {} as LearningActivityParticipantBag);
+
+    /** Parse the configuration/settings from the provided string. */
+    const componentSettingsJson = ref(props.componentSettingsJson ?? "{}");
+    const configuration = ref<FileUploadActivityConfiguration>({} as FileUploadActivityConfiguration);
+
+    try {
+        configuration.value = JSON.parse(componentSettingsJson.value) as FileUploadActivityConfiguration;
+    }
+    catch (error) {
+        configuration.value = { } as FileUploadActivityConfiguration;
+    }
+
+    /** Parse the completion from the provided string. */
+    const componentCompletionJson = ref(props.componentCompletionJson ?? "{}");
+    const completion = ref<FileUploadActivityCompletion>({} as FileUploadActivityCompletion);
+
+    try {
+        completion.value = JSON.parse(componentCompletionJson.value) as FileUploadActivityCompletion;
+    }
+    catch (error) {
+        completion.value = { } as FileUploadActivityCompletion;
+    }
+
+    const assignee = computed((): LearningActivityParticipantBag => {
+        if (assignTo.value === AssignTo.Facilitator && currentPerson.value.isFacilitator === true) {
+            return currentPerson.value;
+        }
+        else {
+            return student.value;
+        }
+    });
+
+    const binaryFile = ref(props.binaryFile ?? null);
+
+    const panelTitle = computed((): string => {
+        switch (screenToShow.value) {
+            case ComponentScreen.Completion:
+                return props.activityName;
+            case ComponentScreen.Configuration:
+                return `Configure ${props.activityName}`;
+            case ComponentScreen.Scoring:
+                return `Score ${props.activityName}`;
+            case ComponentScreen.Summary:
+                return `${props.activityName} - Summary`;
+            default:
+                return props.activityName ?? "";
+        }
+    });
+
+    const fileUrl = computed((): string => {
+        if (binaryFile.value?.value) {
+            return `/GetFile.ashx?guid=${binaryFile.value.value}`;
+        }
+
+        return "";
+    });
+
+    /** CSS classes for the panel. */
+    const containerClasses = computed(() => {
+        return [
+            `lms-${screenToShow.value}-container`,
+            `lms-file-upload-${screenToShow.value}-container`
+        ];
+    });
+
+    watch(() => props.screenToShow, () => {
+        updateRefValue(screenToShow, props.screenToShow ?? ComponentScreen.Summary);
+    });
+
+    /** Watch for modified settings. */
+    const debouncedEmits = debounce(() => emits("componentSettingsChanged", JSON.stringify(configuration.value)));
+    watch(() => configuration, () => {
+        debouncedEmits();
+    }, { deep: true });
+
+    /** Watch for modified completion. */
+    watch(() => binaryFile, () => {
+        emits("componentCompletionChanged", JSON.stringify(binaryFile));
+    }, { deep: true });
+
+</script>

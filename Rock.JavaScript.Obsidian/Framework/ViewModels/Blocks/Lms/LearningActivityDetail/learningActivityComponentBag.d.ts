@@ -20,10 +20,22 @@
 // limitations under the License.
 // </copyright>
 //
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type LearningProgramDetailOptionsBag = {
+/** The additional configuration options for the Learning Activity Detail block. */
+export type LearningActivityComponentBag = {
+    /** Gets or sets the id of the related LearningActivityComponent for this activity. */
+    activityComponentId: number;
 
-    /** Gets or sets the available system communications. */
-    systemCommunications?: ListItemBag[] | null;
+    /** Gets or sets the name of the activity component. */
+    activityComponentName?: string | null;
+
+    /** Gets or sets the path to the activity component .obs file (relative to the web root). */
+    activityComponentPath?: string | null;
+
+    highlightColor?: string | null;
+
+    /**  */
+    iconCssClass?: string | null;
+
+    guid?: string | null;
 };

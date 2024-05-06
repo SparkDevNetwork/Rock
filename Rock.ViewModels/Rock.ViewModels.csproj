@@ -78,7 +78,11 @@
     <Compile Include="Blocks\Event\RegistrationInstanceActiveList\RegistrationInstanceListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
+    <Compile Include="Blocks\Lms\LearningActivityCompletionDetail\LearningActivityCompletionBag.cs" />
+    <Compile Include="Blocks\Lms\LearningActivityCompletionDetail\LearningActivityCompletionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityCompletionList\LearningActivityCompletionListOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningActivityComponent\LearningActivityParticipantBag.cs" />
+    <Compile Include="Blocks\Lms\LearningActivityComponent\LearningActivityComponentBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityDetail\LearningActivityBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityDetail\LearningActivityDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassBag.cs" />

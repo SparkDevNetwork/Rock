@@ -38,7 +38,7 @@
                                           v-model="systemCommunicationValue"
                                           label="Default Communication Template"
                                           help="The template to use when sending emails for communications about this program and it's courses."
-                                          :items="communicationTemplates" />
+                                          :items="systemCommunications" />
 
                             <WorkflowTypePicker
                                                 v-model="completionWorkflowType"
@@ -110,7 +110,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
 
@@ -140,7 +140,7 @@
 
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const communicationTemplates = ref(props.options.communicationTemplates ?? []);
+    const systemCommunications = ref(props.options.systemCommunications ?? []);
 
     const systemCommunicationValue = propertyRef(props.modelValue.systemCommunication?.value ?? "", "SystemCommunication");
     const completionWorkflowType = propertyRef(props.modelValue.completionWorkflowType ?? {}, "CompletionWorkflowType");

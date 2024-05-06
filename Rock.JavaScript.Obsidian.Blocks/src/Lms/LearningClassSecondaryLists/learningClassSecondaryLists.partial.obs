@@ -3,8 +3,8 @@
     <TabbedContent :tabs="tabs">
         <template #tabpane="{ item }">
             <div v-if="item === 'Learning Plan'">
-                <LearningPlanGrid :isAddEnabled="config.isEditable"
-                                  :isDeleteEnabled="config.isEditable"
+                <LearningPlanGrid :isAddEnabled="isEditable"
+                                  :isDeleteEnabled="isEditable"
                                   getDataActionName="GetLearningPlan"
                                   @addClick="onAddActivityClick"
                                   @rowClick="onActivityRowClick"
@@ -12,16 +12,16 @@
                                   @reorderClick="onReorderActivity" />
             </div>
             <div v-else-if="item === 'Students'">
-                <StudentGrid :isAddEnabled="config.isEditable"
-                             :isDeleteEnabled="config.isEditable"
-                             :showAbsences="config.options?.takesAttendance"
+                <StudentGrid :isAddEnabled="isEditable"
+                             :isDeleteEnabled="isEditable"
+                             :showAbsences="showAbsences"
                              @addClick="onStudentClick('0')"
                              @rowClick="onStudentClick"
                              @deleteClick="onDeleteParticipantClick" />
             </div>
             <div v-else-if="item === 'Facilitators'">
-                <FacilitatorGrid :isAddEnabled="config.isEditable"
-                                 :isDeleteEnabled="config.isEditable"
+                <FacilitatorGrid :isAddEnabled="isEditable"
+                                 :isDeleteEnabled="isEditable"
                                  @addClick="onAddFacilitatorClick"
                                  @deleteClick="onDeleteParticipantClick" />
             </div>
@@ -34,20 +34,33 @@
     import LearningPlanGrid from "./learningPlanGrid.partial.obs";
     import StudentGrid from "./studentGrid.partial.obs";
     import FacilitatorGrid from "./facilitatorGrid.partial.obs";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
-    import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
-    import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
-    import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./types.partial";
+    import { PropType, ref } from "vue";
 
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
-    const config = useConfigurationValues<DetailBlockBox<LearningCourseBag | LearningClassBag, LearningCourseDetailOptionsBag | LearningClassDetailOptionsBag>>();
+    const props = defineProps({
+        navigationUrls: {
+                type: Object as PropType<Record<string, string> | null>,
+                required: false
+        },
+        isEditable: {
+            type: Boolean as PropType<boolean>,
+                default: () => false
+        },
+        showAbsences: {
+            type: Boolean as PropType<boolean>,
+                default: () => false
+        }
+    });
+
+    const isEditable = ref(props.isEditable ?? false);
+    const navigationUrls = ref(props.navigationUrls ?? {});
+
     const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators"];
 
     // #endregion
@@ -66,9 +79,9 @@
      * Called when the Add activity button has been clicked by the individual.
      */
      function onActivityRowClick(key: string | null): void {
-        if (config.navigationUrls?.[NavigationUrlKey.ActivityDetailPage]) {
+        if (navigationUrls.value[NavigationUrlKey.ActivityDetailPage]) {
             const idKey = !key ? "0" : key;
-            window.location.href = config.navigationUrls[NavigationUrlKey.ActivityDetailPage].replace("((Key))", idKey);
+            window.location.href = navigationUrls.value[NavigationUrlKey.ActivityDetailPage].replace("((Key))", idKey);
         }
     }
 
@@ -83,9 +96,9 @@
      * Called when a student row or the Add student button has been clicked by the individual.
      */
     function onStudentClick(key: string | null): void {
-        if (config.navigationUrls?.[NavigationUrlKey.StudentDetailPage]) {
+        if (navigationUrls.value[NavigationUrlKey.StudentDetailPage]) {
             const idKey = !key ? "0" : key;
-            window.location.href = config.navigationUrls[NavigationUrlKey.StudentDetailPage].replace("((Key))", idKey);
+            window.location.href = navigationUrls.value[NavigationUrlKey.StudentDetailPage].replace("((Key))", idKey);
         }
     }
 
@@ -93,8 +106,8 @@
      * Called when the Add facilitator button has been clicked by the individual.
      */
     function onAddFacilitatorClick(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.FacilitatorDetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.FacilitatorDetailPage].replace("((Key))", "0");
+        if (navigationUrls.value[NavigationUrlKey.FacilitatorDetailPage]) {
+            window.location.href = navigationUrls.value[NavigationUrlKey.FacilitatorDetailPage].replace("((Key))", "0");
         }
     }
 
@@ -117,7 +130,7 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
+            alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
         }
     }
 

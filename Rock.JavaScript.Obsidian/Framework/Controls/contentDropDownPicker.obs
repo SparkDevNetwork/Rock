@@ -428,6 +428,7 @@
      * disabled for primary button) as well as firing an event on the component.
      */
     function onAction(type: "primary" | "secondary" | "clear"): void {
+        console.warn("clear!", {type, disableAutoCloseOnPrimaryAction: props.disableAutoCloseOnPrimaryAction});
         if (type !== "primary" || !props.disableAutoCloseOnPrimaryAction) {
             // Primary button shouldn't auto-close if auto-close disabled
             internalShowPopup.value = false;

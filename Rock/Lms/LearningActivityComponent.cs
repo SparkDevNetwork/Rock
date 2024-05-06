@@ -14,40 +14,33 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rock.Achievement;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
+
+using Rock.Obsidian;
 
 namespace Rock.Lms
 {
     /// <summary>
     /// Base class for learning activity components
     /// </summary>
-    public abstract class LearningActivityComponent : Rock.Extension.Component
+    public abstract class LearningActivityComponent : ObsidianComponent
     {
         #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LearningActivityComponent"/> class.
         /// </summary>
-        /// <param name="attributeKeysStoredInConfig">The attribute keys stored in configuration.</param>
-        public LearningActivityComponent( HashSet<string> attributeKeysStoredInConfig )
+        /// <param name="componentFilePath">The path to the Obsidian component's .obs file.</param>
+        public LearningActivityComponent(string componentFilePath ): base (componentFilePath )
         {
-            AttributeKeysStoredInConfig = attributeKeysStoredInConfig;
+            
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LearningActivityComponent" /> class.
         /// </summary>
-        public LearningActivityComponent() : base( false )
+        public LearningActivityComponent() : base( )
         {
-            // Override default constructor of Component that loads attributes (needs to be done by each instance)
         }
 
         #endregion
@@ -55,16 +48,7 @@ namespace Rock.Lms
         /// <summary>
         /// Gets the supported configuration.
         /// </summary>
-        public readonly AchievementConfiguration ConfigurationScreen;
-
-        /// <summary>
-        /// Gets the attribute keys stored in component settings.
-        /// <see cref="LearningActivity.ActivityComponentSettingsJson"/>
-        /// </summary>
-        /// <value>
-        /// The attribute keys stored in configuration.
-        /// </value>
-        public readonly HashSet<string> AttributeKeysStoredInConfig;
+        public readonly string ConfigurationScreen;
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -97,38 +81,46 @@ namespace Rock.Lms
         /// </value>
         public virtual string HighlightColor { get; set; }
 
-        #region Abstract Methods
-
         /// <summary>
-        /// Gets the HTML for the configuration screen based on the <see cref="Rock.Model.LearningActivity"/>.
+        /// Gets or sets the name of this component.
         /// </summary>
-        /// <param name="learningActivity">The learning activity.</param>
-        /// <returns>HTML markup for configuring the <see cref="LearningActivity"/>.</returns>
-        public abstract string ConfigurationScreenHtml( LearningActivity learningActivity );
+        /// <value>
+        /// The <see cref="System.String"/> name of the component.
+        /// </value>
+        public virtual string Name { get; set; }
 
-        /// <summary>
-        /// Gets the HTML for the completion screen based on the <see cref="Rock.Model.LearningActivity"/>
-        /// and <see cref="Rock.Model.LearningParticipant"/> accessing the component.
-        /// </summary>
-        /// <param name="learningActivity">The learning activity.</param>
-        /// <param name="participant">The learning participant the HTML screen will be shown to.</param>
-        /// <returns>HTML markup for completing the <see cref="LearningActivity"/>.</returns>
-        public abstract string CompletionScreenHtml( LearningActivity learningActivity, LearningParticipant participant );
+        //#region Abstract Methods
 
-        /// <summary>
-        /// Gets the HTML for the scoring screen based on the <see cref="Rock.Model.LearningActivity"/>.
-        /// </summary>
-        /// <param name="learningActivity">The learning activity.</param>
-        /// <returns>HTML markup for the <see cref="Rock.Model.LearningParticipant">Facilitator</see> to score the <see cref="LearningActivity"/>.</returns>
-        public abstract string FacilitatorScoringScreenHtml( LearningActivity learningActivity );
+        ///// <summary>
+        ///// Gets the HTML for the configuration screen based on the <see cref="Rock.Model.LearningActivity"/>.
+        ///// </summary>
+        ///// <param name="learningActivity">The learning activity.</param>
+        ///// <returns>HTML markup for configuring the <see cref="LearningActivity"/>.</returns>
+        //public abstract string ConfigurationScreenHtml( LearningActivity learningActivity );
 
-        /// <summary>
-        /// Gets the HTML for the summary screen based on the <see cref="Rock.Model.LearningActivity"/>.
-        /// </summary>
-        /// <param name="learningActivity">The learning activity.</param>
-        /// <returns>HTML markup for configuring the <see cref="LearningActivity"/>.</returns>
-        public abstract string SummaryScreenHtml( LearningActivity learningActivity );
+        ///// <summary>
+        ///// Gets the HTML for the completion screen based on the <see cref="Rock.Model.LearningActivity"/>
+        ///// and <see cref="Rock.Model.LearningParticipant"/> accessing the component.
+        ///// </summary>
+        ///// <param name="learningActivity">The learning activity.</param>
+        ///// <param name="participant">The learning participant the HTML screen will be shown to.</param>
+        ///// <returns>HTML markup for completing the <see cref="LearningActivity"/>.</returns>
+        //public abstract string CompletionScreenHtml( LearningActivity learningActivity, LearningParticipant participant );
 
-        #endregion Abstract Methods
+        ///// <summary>
+        ///// Gets the HTML for the scoring screen based on the <see cref="Rock.Model.LearningActivity"/>.
+        ///// </summary>
+        ///// <param name="learningActivity">The learning activity.</param>
+        ///// <returns>HTML markup for the <see cref="Rock.Model.LearningParticipant">Facilitator</see> to score the <see cref="LearningActivity"/>.</returns>
+        //public abstract string FacilitatorScoringScreenHtml( LearningActivity learningActivity );
+
+        ///// <summary>
+        ///// Gets the HTML for the summary screen based on the <see cref="Rock.Model.LearningActivity"/>.
+        ///// </summary>
+        ///// <param name="learningActivity">The learning activity.</param>
+        ///// <returns>HTML markup for configuring the <see cref="LearningActivity"/>.</returns>
+        //public abstract string SummaryScreenHtml( LearningActivity learningActivity );
+
+        //#endregion Abstract Methods
     }
 }

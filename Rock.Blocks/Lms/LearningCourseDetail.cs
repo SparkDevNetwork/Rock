@@ -989,7 +989,6 @@ namespace Rock.Blocks.Lms
 
                 var students = new LearningParticipantService( rockContext )
                     .GetStudents( defaultClass.Id )
-                    .AsNoTracking()
                     .ToList();
 
                 return ActionOk( gridBuilder.Build( students ) );
@@ -1021,7 +1020,6 @@ namespace Rock.Blocks.Lms
 
                 var facilitators = new LearningParticipantService( rockContext )
                     .GetFacilitators( defaultClass.Id )
-                    .AsNoTracking()
                     .ToList();
 
                 // Return all facilitators for the course's default class.
@@ -1082,7 +1080,7 @@ namespace Rock.Blocks.Lms
             if ( filteredClassId > 0 )
             {
                 return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( a => a.LearningClassId == filteredClassId )
+                    .GetClassLearningPlan( filteredClassId )
                     .AsNoTracking();
             }
 
@@ -1098,7 +1096,7 @@ namespace Rock.Blocks.Lms
                 var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( filteredCourseId, c => c.Id );
 
                 return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( a => a.LearningClassId == defaultClassId )
+                    .GetClassLearningPlan( defaultClassId )
                     .AsNoTracking();
             }
 

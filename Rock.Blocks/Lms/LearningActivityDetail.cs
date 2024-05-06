@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Lms;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
@@ -60,6 +61,7 @@ namespace Rock.Blocks.Lms
             public const string LearningProgramId = "LearningProgramId";
             public const string LearningCourseId = "LearningCourseId";
             public const string LearningClassId = "LearningClassId";
+            public const string CloneId = "CloneId";
         }
 
         private static class NavigationUrlKey
@@ -94,13 +96,24 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningActivityDetailOptionsBag();
 
-            options.ActivityTypes = new List<ListItemBag> {
-                new ListItemBag { Text = "Assessment", Value = "9f7aee5e-eb09-4d23-bf84-9556453592a9" },
-                new ListItemBag { Text = "Check-Off", Value = "572da887-834e-4700-a2e2-28c6a7f4d8ae" },
-                new ListItemBag { Text = "Point Assessment", Value = "bea388a3-6223-45d3-a917-5424568cfa28" },
-                new ListItemBag { Text = "Upload File", Value = "4665c42b-6bb2-4491-88ab-a2d972744c70" },
-                new ListItemBag { Text = "Video Watch", Value = "f50d7c37-c9a9-4d5f-9724-3d433f1cd740" },
-            };
+            var components = LearningActivityContainer.Instance.Components;
+
+            // Get the list of Activity Components (for rendering the actual Obsidian component.
+            options.ActivityTypes = components.Select( component => new LearningActivityComponentBag {
+                ActivityComponentId = component.Value.Value.EntityType.Id,
+                ActivityComponentName = component.Value.Value.Name,
+                ActivityComponentPath = component.Value.Value.FilePath,
+                HighlightColor = component.Value.Value.HighlightColor,
+                IconCssClass = component.Value.Value.IconCssClass,
+                Guid = component.Value.Value.EntityType.Guid.ToString()
+            } ).ToList();
+
+            // Get a list of Activity Types for the user to select from.
+            options.ActivityTypeListItems = options.ActivityTypes.Select( a => new ListItemBag
+            {
+                Value = a.Guid,
+                Text = a.ActivityComponentName
+            } ).ToList();
 
             return options;
         }
@@ -172,21 +185,32 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
         /// <returns>A <see cref="LearningActivityBag"/> that represents the entity.</returns>
-        private LearningActivityBag GetCommonEntityBag( LearningActivity entity )
+        private LearningActivityBag GetCommonEntityBag( LearningActivity entity, bool includeStatistics = true )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var completionStatistics = new LearningActivityService( RockContext ).GetCompletionStatistics( entity );
+            var completionStatistics = includeStatistics ?
+                new LearningActivityService( RockContext ).GetCompletionStatistics( entity ) :
+                new LearningActivityCompletionStatistics();
+
+            // Get the current persons info.
+            var currentPerson = GetCurrentPerson();
+            var isClassFacilitator = new LearningParticipantService( RockContext ).GetFacilitatorId( currentPerson.Id, entity.LearningClassId ) > 0;
+            var currentPersonBag = new LearningActivityParticipantBag
+            {
+                Name = currentPerson.FullName,
+                IdKey = currentPerson.IdKey,
+                IsFacilitator = isClassFacilitator
+            };
 
             return new LearningActivityBag
             {
                 IdKey = entity.IdKey,
                 ActivityComponentId = entity.ActivityComponentId,
                 ActivityComponentSettingsJson = entity.ActivityComponentSettingsJson,
-                ActivityComponentPath = "../../Controls/videoWatchLearningActivity.obs.js",
                 AssignTo = entity.AssignTo,
                 AvailableDateCalculationMethod = entity.AvailableDateCalculationMethod,
                 AvailableDateCalculated = entity.AvailableDateCalculated,
@@ -197,6 +221,7 @@ namespace Rock.Blocks.Lms
                 AverageGradePercent = completionStatistics.AverageGradePercent,
                 CompleteCount = completionStatistics.Complete,
                 CompletionWorkflowType = entity.CompletionWorkflowType.ToListItemBag(),
+                CurrentPerson = currentPersonBag,
                 Description = entity.Description,
                 DescriptionAsHtml = entity.Description.IsNotNullOrWhiteSpace() ? new StructuredContentHelper( entity.Description ).Render() : string.Empty,
                 DueDateCalculationMethod = entity.DueDateCalculationMethod,
@@ -505,6 +530,38 @@ namespace Rock.Blocks.Lms
 
             return ActionOk( this.GetParentPageUrl() );
         }
+
+        /// <summary>
+        /// Gets the box that will contain all the information needed to begin
+        /// the clone operation.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be cloned.</param>
+        /// <returns>A box that contains the entity and any other information required.</returns>
+        [BlockAction]
+        public BlockActionResult Clone( string key )
+        {
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            // The GetEntityBagForEdit includes some statistics info that we won't need for a clone.
+            // Instead call the commonEntityBag which is called by GetEntityBagForEdit and ignore statistics.
+            var includeStatistics = false;
+            var bag = GetCommonEntityBag( entity, includeStatistics );
+
+            // Remove the id and update the name.
+            // GetEntityBagForEdit depends on properties which are removed by CloneWithoutIdentity.
+            bag.IdKey = string.Empty;
+            bag.Name += " - Copy";
+
+            return ActionOk( new ValidPropertiesBox<LearningActivityBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
+        }
+
 
         #endregion
     }

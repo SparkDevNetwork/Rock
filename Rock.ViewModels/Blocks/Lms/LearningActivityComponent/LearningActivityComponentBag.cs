@@ -15,25 +15,34 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
 {
     /// <summary>
-    /// The additional configuration options for the Learning Activity Detail block.
+    /// The item details for the Learning Activity Detail block.
     /// </summary>
-    public class LearningActivityDetailOptionsBag
+    public class LearningActivityComponentBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the available activity types as list items.
+        /// Gets or sets the id of the related LearningActivityComponent for this activity.
         /// </summary>
-        public List<ListItemBag> ActivityTypeListItems { get; set; }
+        public int ActivityComponentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of available activity types.
+        /// Gets or sets the name of the activity component.
         /// </summary>
-        public List<LearningActivityComponentBag> ActivityTypes { get; set; }
+        public string ActivityComponentName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path to the activity component .obs file (relative to the web root).
+        /// </summary>
+        public string ActivityComponentPath { get; set; }
+
+        public string HighlightColor { get; set; }
+
+        public string IconCssClass { get; set; }
+
+        public string Guid { get; set; }
     }
 }

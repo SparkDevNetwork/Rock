@@ -20,10 +20,22 @@
 // limitations under the License.
 // </copyright>
 //
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type LearningProgramDetailOptionsBag = {
+import { Guid } from "@Obsidian/Types";
 
-    /** Gets or sets the available system communications. */
-    systemCommunications?: ListItemBag[] | null;
+/** The additional configuration options for the Learning Activity Completion List block. */
+export type LearningActivityParticipantBag = {
+    guid?: Guid | null;
+
+    /** Gets or sets the id key of the related participant. */
+    idKey?: string | null;
+
+    /** Indicates whether or not the participant is a facilitator of the activity. */
+    isFacilitator: boolean;
+
+    /** Gets or sets the name of the related participant. */
+    name?: string | null;
+
+    /** Gets or sets the name of the role this participant has in the class. */
+    roleName?: string | null;
 };

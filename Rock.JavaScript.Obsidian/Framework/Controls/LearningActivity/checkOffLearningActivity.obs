@@ -1,0 +1,145 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="screenToShow !== ComponentScreen.Scoring" :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <div class="header-content-section">
+                <StructuredContentEditor label="Content" v-model="configuration.content" />
+            </div>
+            <div class="is-required-section">
+                <CheckBox v-model="configuration.isConfirmationRequired" label="Confirmation Required" />
+
+            </div>
+
+            <div class="footer-content-section">
+                <TextBox v-model="configuration.confirmationText"
+                         label="Confirmation Text"
+                         textMode="multiline"
+                         help="Enter a brief statement individuals will agree to by checking off." />
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <fieldset>
+                <div class="header-content-section">
+                    <StructuredContentEditor :disabled="true"
+                                             v-model="configuration.content" />
+                </div>
+                <div class="is-required-section" v-if="configuration.isConfirmationRequired">
+                    <CheckBox rules="required" v-model="completion.isConfirmed" label="" :text="configuration.confirmationText" />
+                </div>
+
+                <div class="footer-content-section">
+                    <RockButton :btnType="BtnType.Primary"
+                                @click="emits('componentCompleted', JSON.stringify(completion))">
+                        Complete
+                    </RockButton>
+                </div>
+            </fieldset>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <NotificationBox v-if="completion.dateConfirmed" alertType="success">{{ assignee?.name }} checked off that they completed this activity at {{ completion.dateConfirmed }}.</NotificationBox>
+            <NotificationBox v-if="!completion.dateConfirmed" alertType="warning">{{ assignee?.name }} has not checked off this activity.</NotificationBox>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch, } from "vue";
+    import { getLearningActivityEmits, getLearningActivityProps, ComponentScreen } from "./learningActivity";
+    import { CheckOffActivityCompletion, CheckOffActivityConfiguration } from "./checkOffLearningActivity";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
+    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+
+    // Get the required props and emits for learning activity components.
+    const props = defineProps({ ...getLearningActivityProps() });
+    const emits = defineEmits({ ...getLearningActivityEmits() });
+
+    const screenToShow = ref(props.screenToShow);
+    const assignTo = ref(props.assignTo ?? AssignTo.Student);
+    const currentPerson = ref(props.currentPerson ?? {} as LearningActivityParticipantBag);
+    const student = ref(props.student ?? {} as LearningActivityParticipantBag);
+
+    /** Parse the configuration/settings from the provided string. */
+    const componentSettingsJson = ref(props.componentSettingsJson ?? "{}");
+    const configuration = ref<CheckOffActivityConfiguration>({} as CheckOffActivityConfiguration);
+
+    try {
+        configuration.value = JSON.parse(componentSettingsJson.value) as CheckOffActivityConfiguration;
+    }
+    catch (error) {
+        configuration.value = { isConfirmationRequired: false, content: "", confirmationText: "" } as CheckOffActivityConfiguration;
+    }
+
+    /** Parse the completion from the provided string. */
+    const componentCompletionJson = ref(props.componentCompletionJson ?? "{}");
+    const completion = ref<CheckOffActivityCompletion>({} as CheckOffActivityCompletion);
+
+    try {
+        completion.value = JSON.parse(componentCompletionJson.value) as CheckOffActivityCompletion;
+    }
+    catch (error) {
+        completion.value = { isConfirmed: false } as CheckOffActivityCompletion;
+    }
+
+    const assignee = computed((): LearningActivityParticipantBag => {
+        if (assignTo.value === AssignTo.Facilitator && currentPerson.value.isFacilitator === true) {
+            return currentPerson.value;
+        }
+        else {
+            return student.value;
+        }
+    });
+
+    const panelTitle = computed((): string => {
+        switch (screenToShow.value) {
+            case ComponentScreen.Completion:
+                return props.activityName;
+            case ComponentScreen.Configuration:
+                return `Configure ${props.activityName}`;
+            case ComponentScreen.Scoring:
+                return `Score ${props.activityName}`;
+            case ComponentScreen.Summary:
+                return `${props.activityName} - Summary`;
+            default:
+                return props.activityName ?? "";
+        }
+    });
+
+    /** CSS classes for the panel. */
+    const containerClasses = computed(() => {
+        return [
+            `lms-${screenToShow.value}-container`,
+            `lms-check-off-${screenToShow.value}-container`
+        ];
+    });
+
+    watch(() => props.screenToShow, () => {
+        updateRefValue(screenToShow, props.screenToShow ?? ComponentScreen.Summary);
+    });
+
+    /** Watch for modified settings. */
+    const debouncedEmits = debounce(() => emits("componentSettingsChanged", JSON.stringify(configuration.value)));
+    watch(() => configuration, () => {
+        debouncedEmits();
+    }, { deep: true });
+
+    /** Watch for modified completion. */
+    watch(() => completion, () => {
+        if (completion.value.isConfirmed && !completion.value.dateConfirmed) {
+            completion.value.dateConfirmed = RockDateTime.now().toISOString();
+        }
+        emits("componentCompletionChanged", JSON.stringify(completion));
+    }, { deep: true });
+
+</script>

@@ -34,11 +34,11 @@
             </div>
         </div>
 
-        <div v-if="screenToShow === ComponentScreen.Summary">
+        <!-- <div v-if="screenToShow === ComponentScreen.Summary">
             <RockButton btnType="primary" @click="$emit('saveConfiguration', {})">
                 Save Summary
             </RockButton>
-        </div>
+        </div> -->
     </Panel>
 
 </template>
@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import { getLearningActivityEmits, getLearningActivityProps, ComponentScreen, ConfigurationValues } from "./learningActivity";
+    import { getLearningActivityEmits, getLearningActivityProps, ComponentScreen } from "./LearningActivity/./learningActivity";
     // import { VideoWatchLearningActivityValue } from "./LearningActivity/learningActivityBase.partial";
     //import { useHttp } from "@Obsidian/Utility/http";
     import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
@@ -82,7 +82,6 @@
             case ComponentScreen.Summary:
                 return "Summary";
         }
-        return "";
     });
 
     watch(() => props.screenToShow, () => {

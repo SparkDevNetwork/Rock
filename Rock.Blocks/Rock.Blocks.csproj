@@ -101,6 +101,7 @@
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
+    <Compile Include="Lms\LearningActivityCompletionDetail.cs" />
     <Compile Include="Lms\LearningActivityCompletionList.cs" />
     <Compile Include="Lms\LearningActivityDetail.cs" />
     <Compile Include="Lms\LearningClassDetail.cs" />

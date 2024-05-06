@@ -1,0 +1,178 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="points-earned-section">
+            <NumberBox v-model="pointsEarned"
+                       label="Points Earned"
+                       rules="required"
+                       inputGroupClasses="input-width-md">
+                <template #inputGroupAppend>
+                    <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                </template>
+            </NumberBox>
+        </div>
+        <div class="student-comments-section" v-if="isStudentCommentingEnabled">
+            {{ studentComment }}
+        </div>
+
+        <div class="facilitator-comments-section">
+            <TextBox v-model="facilitatorComment"
+                     label="Facilitator Comment"
+                     textMode="multiline" />
+        </div>
+
+        <div class="activity-component-section">
+            <!-- Pass the configuration and completion json values to the component. -->
+            <activityTypeComponent v-if="activityTypeComponent"
+                                   :activityName="activityName"
+                                   :assignTo="assignTo"
+                                   :binaryFile="binaryFile"
+                                   :currentPerson="currentPerson"
+                                   :currentPersonIsFacilitator="isFacilitator"
+                                   :pointsEarned="pointsEarned"
+                                   :pointsPossible="pointsPossible"
+                                   :screenToShow="screenToShow"
+                                   :student="student"
+                                   :componentSettingsJson="activityComponentSettingsJson"
+                                   :componentCompletionJson="activityComponentCompletionJson"
+                                   @componentCompletionChanged="onCompletionChanged" />
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { Component, PropType, computed, onMounted, ref, watch } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ComponentScreen } from "@Obsidian/Controls/LearningActivity/learningActivity";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningActivityCompletionBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningActivityCompletionDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningActivityCompletionBag>): void
+    }>();
+
+    // #region Values
+
+    const isStudentCommentingEnabled = propertyRef(props.modelValue.bag?.isStudentCommentingEnabled ?? false, "StudentCommentingEnabled");
+    const studentComment = propertyRef(props.modelValue.bag?.studentComment ?? "", "StudentComment");
+    const pointsPossible = propertyRef(props.modelValue.bag?.pointsPossible, "PointsPossible");
+    const activityName = propertyRef(props.modelValue.bag?.activityName ?? "", "ActivityName");
+    const isStudentCompleted = propertyRef(props.modelValue.bag?.isStudentCompleted ?? false, "IsStudentCompleted");
+    const isFacilitatorCompleted = propertyRef(props.modelValue.bag?.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
+    const activityComponentSettingsJson = propertyRef(props.modelValue.bag?.activityComponentCompletionJson ?? "{}", "ActivityComponentSettingsJson");
+    const assignTo = propertyRef(props.modelValue.bag?.assignTo ?? AssignTo.Student, "AssignTo");
+    const activityComponentCompletionJson = propertyRef(props.modelValue.bag?.activityComponentCompletionJson ?? "{}", "ActivityComponentCompletionJson");
+    const facilitatorComment = propertyRef(props.modelValue.bag?.facilitatorComment ?? "", "FacilitatorComments");
+    const pointsEarned = propertyRef(props.modelValue.bag?.pointsEarned, "PointedEarned");
+    const binaryFile = ref(props.modelValue.bag?.binaryFile ?? null);
+
+    const currentPerson = ref(props.modelValue.bag?.currentPerson);
+    const isFacilitator = ref(props.modelValue.bag?.currentPersonIsFacilitator);
+    const student = ref(props.modelValue.bag?.student);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+          isStudentCommentingEnabled
+        , studentComment
+        , pointsPossible
+        , activityName
+        , isStudentCompleted
+        , isFacilitatorCompleted
+        , activityComponentSettingsJson
+        , assignTo
+        , activityComponentCompletionJson
+        , facilitatorComment
+        , pointsEarned
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const screenToShow = computed(() => {
+        if (isFacilitatorCompleted.value === true) {
+            return ComponentScreen.Summary;
+        }
+        else {
+            return ComponentScreen.Scoring;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Handler for changes made to the completion JSON by the activity component. */
+    async function onCompletionChanged(completionJson: string): Promise<void> {
+        console.warn({ completionJson });
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(isStudentCommentingEnabled, props.modelValue.bag?.isStudentCommentingEnabled ?? false);
+        updateRefValue(studentComment, props.modelValue.bag?.studentComment ?? "");
+        updateRefValue(pointsPossible, props.modelValue.bag?.pointsPossible ?? 0);
+        updateRefValue(activityName, props.modelValue.bag?.activityName ?? "");
+        updateRefValue(isStudentCompleted, props.modelValue.bag?.isStudentCompleted ?? false);
+        updateRefValue(isFacilitatorCompleted, props.modelValue.bag?.isFacilitatorCompleted ?? false);
+        updateRefValue(activityComponentSettingsJson, props.modelValue.bag?.activityComponentSettingsJson ?? "");
+        updateRefValue(assignTo, props.modelValue.bag?.assignTo ?? AssignTo.Student);
+        updateRefValue(activityComponentCompletionJson, props.modelValue.bag?.activityComponentCompletionJson ?? "");
+        updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
+        updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningActivityCompletionBag> = {
+            bag: { ...props.modelValue.bag } as LearningActivityCompletionBag
+        };
+
+        setPropertiesBoxValue(newValue, "isStudentCommentingEnabled", isStudentCommentingEnabled.value);
+        setPropertiesBoxValue(newValue, "studentComment", studentComment.value);
+        setPropertiesBoxValue(newValue, "pointsPossible", pointsPossible.value);
+        setPropertiesBoxValue(newValue, "activityName", activityName.value);
+        setPropertiesBoxValue(newValue, "isStudentCompleted", isStudentCompleted.value);
+        setPropertiesBoxValue(newValue, "isFacilitatorCompleted", isFacilitatorCompleted.value);
+        setPropertiesBoxValue(newValue, "activityComponentSettingsJson", activityComponentSettingsJson.value);
+        setPropertiesBoxValue(newValue, "assignTo", assignTo.value as AssignTo);
+        setPropertiesBoxValue(newValue, "activityComponentCompletionJson", activityComponentCompletionJson.value);
+        setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
+        setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    let activityTypeComponent: Component| null;
+
+    onMounted(() => {
+        // The import path is relative to the Rock web root, but we're in a block
+        // so we need to prepend a path up to the web root from our 'Obsidian/Blocks/Domain'.
+        activityTypeComponent = defineAsyncComponent(() => import("../../../" + props.modelValue.bag?.activityComponentPath));
+    });
+</script>
