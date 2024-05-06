@@ -38,12 +38,8 @@ namespace Rock.Blocks.Communication
         {
             using ( var rockContext = new RockContext() )
             {
-
                 sparkDataConfig = Ncoa.GetSettings();
-
-
                 var bag = new NcoaProcessSavedSettingsBag();
-
                 var dataViewService = new DataViewService( rockContext );
                 var definedValueService = new DefinedValueService( rockContext );
 
@@ -51,12 +47,10 @@ namespace Rock.Blocks.Communication
                 {
                     bag.PersonDataView = dataViewService.Get( sparkDataConfig.NcoaSettings.PersonDataViewId.Value ).ToListItemBag();
                 }
-
                 if ( sparkDataConfig.NcoaSettings.InactiveRecordReasonId.HasValue )
                 {
                     bag.InactiveRecordReason = definedValueService.Get( sparkDataConfig.NcoaSettings.InactiveRecordReasonId.Value ).ToListItemBag();
                 }
-
                 bag.UploadFileReference = sparkDataConfig.NcoaSettings.UploadFileReference;
                 bag.MinimumMoveDistance = sparkDataConfig.NcoaSettings.MinimumMoveDistance;
                 bag.Is48MonthMoveChecked = sparkDataConfig.NcoaSettings.Is48MonthMoveChecked;
@@ -75,29 +69,25 @@ namespace Rock.Blocks.Communication
         /// </summary>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult PrepareExportFile(string dataViewValue)
+        public BlockActionResult PrepareExportFile( string dataViewValue )
         {
             var ncoaService = new Ncoa();
+            var bag = new NcoaProcessBag();
 
-            Dictionary<int, Rock.ViewModels.Blocks.Communication.NcoaProcess.NcoaProcessPersonAddressItem> addresses = ncoaService.GetAddresses( dataViewValue );
-            // if ( addresses.Count < SparkDataConfig.NCOA_MIN_ADDRESSES )
-            // 100
+            Dictionary<int, NcoaProcessPersonAddressBag> addresses = ncoaService.GetAddresses( dataViewValue );
+
+            //if ( addresses.Count < SparkDataConfig.NCOA_MIN_ADDRESSES )
+            //    100
             if ( addresses.Count < 20 )
             {
                 return ActionBadRequest( "A minimum of 100 unique records with valid addresses are required in order to return NCOA move data from the USPS when your file is processed." );
             }
 
-            var bag = new NcoaProcessBag();
             bag.Addresses = addresses;
-            // Need to add hyperlink.
             bag.SuccessMessage = "Now go to <a style=\"color:#006dcc;text-decoration:none;border:0;\" href=\"https://app.truencoa.com/\">TrueNCOA</a> to upload the file there.  When they are finshed processing, you can import their results in Step 2.";
 
-            var dataViewId = DataViewCache.Get( dataViewValue ).Id;
-
             sparkDataConfig = Ncoa.GetSettings();
-
-            sparkDataConfig.NcoaSettings.PersonDataViewId = dataViewId;
-
+            sparkDataConfig.NcoaSettings.PersonDataViewId = DataViewCache.Get( dataViewValue ).Id;
             Ncoa.SaveSettings( sparkDataConfig );
 
             return ActionOk( bag );
@@ -113,20 +103,14 @@ namespace Rock.Blocks.Communication
             var ncoaService = new Ncoa();
             using ( var rockContext = new RockContext() )
             {
-                var inactiveReason = DefinedValueCache.Get( bag.InactiveReason.Value.AsGuid() );
-
                 if (bag.NcoaFileUploadReference.Value != null)
                 {
-                    // with value from NcoaFileUploadReference find and deserialize binary data.
+                    var inactiveReason = DefinedValueCache.Get( bag.InactiveReason.Value.AsGuid() );
                     var binaryFileService = new BinaryFileService( rockContext );
                     var binaryFile = binaryFileService.Get( bag.NcoaFileUploadReference.Value );
-
                     var stringContnet = binaryFile.ContentsToString();
 
-                    List<NcoaReturnRecord> ncoaReturnRecords;
-                    ncoaService.NcoaRecordBuilder( stringContnet, out ncoaReturnRecords );
-                    
-                    // Another If check here.
+                    ncoaService.NcoaRecordBuilder( stringContnet, out List<NcoaReturnRecord> ncoaReturnRecords );
                     var (recordsUpdated, errorMessage) = ncoaService.ProcessNcoaResults( inactiveReason, bag.MarkInvalidAsPrevious, bag.Mark48MonthAsPrevious, bag.MinMoveDistance, ncoaReturnRecords);
 
                     if (!string.IsNullOrEmpty( errorMessage ) )
@@ -134,14 +118,12 @@ namespace Rock.Blocks.Communication
                         return ActionBadRequest(errorMessage );
                     }
 
+                    sparkDataConfig = Ncoa.GetSettings();
                     sparkDataConfig.NcoaSettings.UploadFileReference = bag.NcoaFileUploadReference;
                     sparkDataConfig.NcoaSettings.IsInvalidAddressesChecked = bag.MarkInvalidAsPrevious;
                     sparkDataConfig.NcoaSettings.Is48MonthMoveChecked = bag.Mark48MonthAsPrevious;
                     sparkDataConfig.NcoaSettings.MinimumMoveDistance = bag.MinMoveDistance;
                     sparkDataConfig.NcoaSettings.InactiveRecordReasonId = inactiveReason.Id;
-
-                    sparkDataConfig = Ncoa.GetSettings();
-
                     Ncoa.SaveSettings( sparkDataConfig );
 
                     bag.SuccessMessage = string.Format("'{0}' records updated.", recordsUpdated);

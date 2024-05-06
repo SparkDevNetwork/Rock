@@ -12,7 +12,7 @@
             database maintained by the U.S. Postal Service. The output will include details such as the person’s current address, move date, and
             move type (temporary or permanent).
         </p>
-        <p class="mb-5">Be sure to <a href="https://app.truencoa.com/Users/Register">sign-up with TrueNCOA</a> before you get started. This block will export the needed input file for TrueNCOA and allow you to
+        <p class="mb-4">Be sure to <a href="https://app.truencoa.com/Users/Register">sign-up with TrueNCOA</a> before you get started. This block will export the needed input file for TrueNCOA and allow you to
             import their results back into Rock.
         </p>
 
@@ -115,6 +115,8 @@ import { NcoaProcessSavedSettingsBag } from "@Obsidian/ViewModels/Blocks/Communi
 import { NcoaProcessBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { Workbook } from "@Obsidian/Libs/exceljs";
+import { downloadWorkbook } from "@Obsidian/Utility/file";
+import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessPersonAddressBag";
 
     const box = useConfigurationValues<NcoaProcessSavedSettingsBag>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -122,25 +124,20 @@ import { Workbook } from "@Obsidian/Libs/exceljs";
     const minMoveDistance = ref(box.minimumMoveDistance ?? 200);
     const isMark48Month = ref(box.is48MonthMoveChecked ?? true);
     const isMarkInvalidAddresses = ref(box.isInvalidAddressesChecked ?? true);
-    const selectedPersonDataView = ref(box.personDataView ?? {value: null});
-
+    const selectedPersonDataView = ref(box.personDataView ?? null);
     const selectedInactiveReason = ref<ListItemBag | null>(box.inactiveRecordReason ?? null);
-
     const importedFile = ref(box.uploadFileReference ?? null);
-
     const successMessage = ref("");
     const errorMessage = ref("");
     const isLoading = ref(false);
 
-    console.log("here is box: ", box);
-
-    const exportFile = async () => {
+    const exportFile = async (): Promise<void> => {
         isLoading.value = true;
-        const result = await invokeBlockAction<NcoaProcessBag>("PrepareExportFile", { dataViewValue: selectedPersonDataView.value.value});
+        const result = await invokeBlockAction<NcoaProcessBag>("PrepareExportFile", { dataViewValue: selectedPersonDataView.value?.value});
         // Generate Excel file and download
-        if (result.isSuccess) {
-            const workbook = generateDataForFile(result.data?.addresses);
-            await downloadWorkbook(workbook, "ExportedAddresses", "csv").then(() => {
+        if (result.isSuccess && result.data?.addresses != null) {
+            const workbook = generateDataForFile(result.data.addresses);
+            await downloadWorkbook(workbook, "ExportedAddresses", "xlsx").then(() => {
                 successMessage.value = result.data?.successMessage || "Success";
             });
         }
@@ -150,8 +147,7 @@ import { Workbook } from "@Obsidian/Libs/exceljs";
         isLoading.value = false;
     };
 
-    const processImportFile = async () => {
-
+    const processImportFile = async ():Promise<void> => {
         const bag = <NcoaProcessBag> {
             inactiveReason: selectedInactiveReason.value,
             mark48MonthAsPrevious: isMark48Month.value,
@@ -167,25 +163,17 @@ import { Workbook } from "@Obsidian/Libs/exceljs";
         else {
             errorMessage.value = result.errorMessage || "Error";
         }
-
-        // console.log(result);
     };
 
-    // Function to generate data for the excel/csv file
-    function generateDataForFile(data) :Workbook {
+    // Generates the Workbook and converts the data passed in from a dictionary to an array so that the file is properly formatted.
+    function generateDataForFile(data: Record<number, NcoaProcessPersonAddressBag>): Workbook {
         const workbook = new Workbook();
         const worksheet = workbook.addWorksheet();
 
-        // Extracting keys from the data dictionary
+        // Converting the dictionary to an array.
         const keys = Object.keys(data);
-
-        // Extracting header row
         const headerRow = Object.keys(data[keys[0]]) as string[];
-
-        // Creating array to hold data rows
         const dataArray = [headerRow];
-
-        // Pushing data rows
         keys.forEach(key => {
             const rowData = Object.values(data[key]).map(value => String(value));
             dataArray.push(rowData);
@@ -197,40 +185,6 @@ import { Workbook } from "@Obsidian/Libs/exceljs";
         });
 
         return workbook;
-    }
-
-    /**
-     * Triggers an automatic download of the workbook so it can be saved to
-     * the filesystem.
-     *
-     * @param workbook The workbook to be downloaded by the browser.
-     * @param title The title of the workbook, this is used as the base for the filename.
-     * @param format The format to use when downloading the workbook.
-     */
-     async function downloadWorkbook(workbook: Workbook, title: string, format: "csv" | "xlsx"): Promise<void> {
-        // Get the export data.
-        const buffer = format === "xlsx"
-            ? await workbook.xlsx.writeBuffer()
-            : await workbook.csv.writeBuffer();
-
-        // Create the URL that contains the file data.
-        const url = URL.createObjectURL(new Blob([buffer], {
-            type: "application/octet-stream"
-        }));
-
-        // Create a fake hyperlink to simulate an attempt to download a file.
-        const element = document.createElement("a");
-        element.innerText = "Download";
-        element.style.position = "absolute";
-        element.style.top = "-100px";
-        element.style.left = "0";
-        element.href = url;
-        element.download = `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`;
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-
-        setTimeout(() => URL.revokeObjectURL(url), 100);
     }
 
 </script>

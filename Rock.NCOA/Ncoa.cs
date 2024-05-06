@@ -96,7 +96,7 @@ namespace Rock.NCOA
         /// </summary>
         /// <param name="dataViewValue">The data view identifier.</param>
         /// <returns>Directory of addresses</returns>
-        public Dictionary<int, Rock.ViewModels.Blocks.Communication.NcoaProcess.NcoaProcessPersonAddressItem> GetAddresses( string dataViewValue )
+        public Dictionary<int, NcoaProcessPersonAddressBag> GetAddresses( string dataViewValue )
         {
             if ( dataViewValue == null )
             {
@@ -167,7 +167,7 @@ namespace Rock.NCOA
                         .Select( g => new
                         {
                             g.PersonId,
-                            HomeLocation = new Rock.ViewModels.Blocks.Communication.NcoaProcess.NcoaProcessPersonAddressItem()
+                            HomeLocation = new NcoaProcessPersonAddressBag()
                             {
                                 PersonId = g.PersonId,
                                 FamilyId = g.GroupId,

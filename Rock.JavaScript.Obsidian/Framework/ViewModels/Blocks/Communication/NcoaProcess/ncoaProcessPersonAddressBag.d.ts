@@ -21,21 +21,41 @@
 // </copyright>
 //
 
-import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessPersonAddressBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+/** The Person and Address data used to pass to NCOA */
+export type NcoaProcessPersonAddressBag = {
+    /** Gets or sets the city. */
+    city?: string | null;
 
-export type NcoaProcessBag = {
-    addresses?: Record<number, NcoaProcessPersonAddressBag> | null;
+    /** Gets or sets the country. */
+    country?: string | null;
 
-    inactiveReason?: ListItemBag | null;
+    /** Gets or sets the family identifier. */
+    familyId: number;
 
-    mark48MonthAsPrevious: boolean;
+    /** Gets or sets the first name. */
+    firstName?: string | null;
 
-    markInvalidAsPrevious: boolean;
+    /** Gets or sets the last name. */
+    lastName?: string | null;
 
-    minMoveDistance: number;
+    /** Gets or sets the location identifier. */
+    locationId: number;
 
-    ncoaFileUploadReference?: ListItemBag | null;
+    /** Gets or sets the person alias identifier. */
+    personAliasId: number;
 
-    successMessage?: string | null;
+    /** Gets or sets the person identifier. */
+    personId: number;
+
+    /** Gets or sets the postal code. */
+    postalCode?: string | null;
+
+    /** Gets or sets the state. */
+    state?: string | null;
+
+    /** Gets or sets the street1. */
+    street1?: string | null;
+
+    /** Gets or sets the street2. */
+    street2?: string | null;
 };
