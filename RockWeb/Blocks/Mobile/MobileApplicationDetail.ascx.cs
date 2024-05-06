@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 
 using Humanizer;
@@ -1254,9 +1253,14 @@ namespace RockWeb.Blocks.Mobile
         /// <summary>
         /// Handles the Click event of the lbDeploy control.
         /// </summary>
+        /// <remarks>
+        /// "async void" is not normal, but WebForms has special logic to deal with
+        /// it that allows await to be used and ensures HttpContext is propogated
+        /// along the async call chain.
+        /// </remarks>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbDeploy_Click( object sender, EventArgs e )
+        protected async void lbDeploy_Click( object sender, EventArgs e )
         {
             var applicationId = PageParameter( "SiteId" ).AsInteger();
 
@@ -1264,11 +1268,10 @@ namespace RockWeb.Blocks.Mobile
             {
                 var siteService = new SiteService( rockContext );
 
-                var task = Task.Run( async () => await siteService.BuildMobileApplicationAsync( applicationId ) );
-                task.Wait();
-
-                ShowDetail( applicationId );
+                await siteService.BuildMobileApplicationAsync( applicationId );
             }
+
+            ShowDetail( applicationId );
         }
 
         #endregion

@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -25,6 +26,8 @@ using DotLiquid;
 using Rock.Data;
 using Rock.Lava.Blocks;
 using Rock.Lava.DotLiquid;
+using Rock.Observability;
+using Rock.Web.Cache.NonEntities;
 
 namespace Rock.Lava.RockLiquid.Blocks
 {
@@ -90,34 +93,41 @@ namespace Rock.Lava.RockLiquid.Blocks
                     sqlTimeout = parms["timeout"].AsIntegerOrNull();
                 }
 
-                switch ( parms["statement"] )
+                var sqlText = sql.ToString();
+
+                using ( var activity = ObservabilityHelper.StartActivity( "Database Command", ActivityKind.Client ) )
                 {
-                    case "select":
-                        var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), sqlTimeout );
+                    DbCommandObservabilityCache.UpdateActivity( activity, sqlText, parms, p => p );
 
-                        context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamicTypeCollection();
-                        break;
-                    case "command":
-                        var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
+                    switch ( parms["statement"] )
+                    {
+                        case "select":
+                            var results = DbService.GetDataSet( sqlText, CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), sqlTimeout );
 
-                        foreach ( var p in parms )
-                        {
-                            sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
-                        }
+                            context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamicTypeCollection();
+                            break;
+                        case "command":
+                            var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
 
-                        using ( var rockContext = new RockContext() )
-                        {
-                            if ( sqlTimeout != null )
+                            foreach ( var p in parms )
                             {
-                                rockContext.Database.CommandTimeout = sqlTimeout;
+                                sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
                             }
-                            int numOfRowEffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
 
-                            context.Scopes.Last()[parms["return"]] = numOfRowEffected;
-                        }
-                        break;
-                    default:
-                        break;
+                            using ( var rockContext = new RockContext() )
+                            {
+                                if ( sqlTimeout != null )
+                                {
+                                    rockContext.Database.CommandTimeout = sqlTimeout;
+                                }
+                                int numOfRowEffected = rockContext.Database.ExecuteSqlCommand( sqlText, sqlParameters.ToArray() );
+
+                                context.Scopes.Last()[parms["return"]] = numOfRowEffected;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }

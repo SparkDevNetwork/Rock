@@ -235,6 +235,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_166_UPDATE_ACHIEVEMENTTYPE_TARGETCOUNT_COLUMN = "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5";
 
         /// <summary>
+        /// The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX = "2B2E2C6F-0184-4797-9D39-E8FC700D9887";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";

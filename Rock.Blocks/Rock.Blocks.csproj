@@ -69,8 +69,10 @@
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
+    <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
     <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
+    <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
@@ -88,6 +90,7 @@
     <Compile Include="Engagement\AchievementTypeList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
+    <Compile Include="Finance\BenevolenceRequestList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
@@ -97,6 +100,8 @@
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
+    <Compile Include="Prayer\PrayerCommentList.cs" />
+    <Compile Include="Prayer\PrayerRequestList.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Reporting\ReportList.cs" />
     <Compile Include="Reporting\VolunteerGenerosityAnalysis.cs" />

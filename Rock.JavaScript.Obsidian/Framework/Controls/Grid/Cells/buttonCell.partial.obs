@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <button class="btn btn-default btn-sm"
+                :title="title"
+                :disabled="isDisabled"
+                @click.stop="onClick">
+            <i :class="iconClass"></i>
+        </button>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { computed, ref } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    const isRunning = ref(false);
+
+    const isDisabled = computed((): boolean => {
+        return isRunning.value;
+    });
+
+    const title = computed((): string | undefined => {
+        if (typeof props.column.props.title === "string") {
+            return props.column.props.title;
+        }
+
+        return undefined;
+    });
+
+    const iconClass = computed((): string => {
+        if (typeof props.column.props.iconClass === "string") {
+            return props.column.props.iconClass;
+        }
+
+        return "";
+    });
+
+    async function onClick(event: Event): Promise<void> {
+        const key = props.grid.getRowKey(props.row);
+
+        // Remove focus from the button.
+        if (event.target instanceof HTMLElement) {
+            event.target.blur();
+        }
+
+        // Make sure we have valid data to work with.
+        if (!key || typeof props.column.props.onClick !== "function") {
+            return;
+        }
+
+        // Disable the button until the action completes.
+        isRunning.value = true;
+
+        try {
+            const result = props.column.props.onClick(key, props.grid);
+
+            // If the onClick function is asynchronous, wait for it.
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+        finally {
+            // Re-enable the button at the end.
+            isRunning.value = false;
+        }
+    }
+
+</script>
+

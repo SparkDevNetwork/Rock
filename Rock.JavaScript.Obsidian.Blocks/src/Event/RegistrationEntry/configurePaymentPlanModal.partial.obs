@@ -1,0 +1,409 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
+<template>
+    <Modal v-model="internalIsShown"
+           :isSaveButtonDisabled="!paymentDeadlineDate"
+           :saveText="paymentDeadlineDate ? 'Select' : ''"
+           title="Configure Payment Plan"
+           @save="onConfigurePaymentPlan">
+        <template v-if="paymentDeadlineDate">
+            <StaticFormControl :modelValue="`The total amount of ${originalRegistrationAmount} is payable by ${paymentDeadlineDate.toASPString('MMMM dd, yyyy')}.`" />
+
+            <div class="row">
+                <div class="col">
+                    <DropDownList :modelValue="paymentFrequencyGuid ?? ''"
+                                  :items="paymentFrequencyItems"
+                                  label="Select Your Desired Payment Frequency"
+                                  rules="required"
+                                  @update:modelValue="v => paymentFrequencyGuid = (v as string)" />
+                </div>
+            </div>
+
+            <div :class="['row', !paymentFrequencyGuid ? 'invisible' : '']">
+                <div class="col-sm-6">
+                    <CurrencyBox v-model="amountToPayTodayAsNumber"
+                                 label="Amount To Pay Today"
+                                 :rules="['required', validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining]"
+                                 @blur="coerceAmountToPayToday">
+
+                        <template #append>
+                            <small>A minimum of {{ calculatedMinimumAmountToPayToday }} is due today.</small>
+                        </template>
+                    </CurrencyBox>
+                </div>
+
+                <div class="col-sm-6" v-if="numberOfPaymentsItems.length">
+                    <DropDownList v-model="numberOfPayments"
+                                  :items="numberOfPaymentsItems"
+                                  label="Number of Payments"
+                                  rules="required"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+
+            <div :class="['row', !paymentFrequencyGuid || calculatedAmountPerPayment.isInvalid ? 'invisible' : '']">
+                <div class="col">
+                    <RockLabel label="Plan Summary">Plan Summary</RockLabel>
+                </div>
+            </div>
+
+            <div :class="['row', !paymentFrequencyGuid || calculatedAmountPerPayment.isInvalid ? 'invisible' : '']">
+                <div class="col-sm-6">
+                    <div>Amount Due Today</div>
+                    <div>
+                        {{ amountToPayToday }}
+                        <template v-if="amountToPayTodaySuffix"><small>&nbsp;({{ amountToPayTodaySuffix }})</small></template>
+                    </div>
+                </div>
+
+                <div class="col-sm-6" v-if="numberOfPaymentsItems.length && calculatedAmountPerPayment.isGreaterThan(0)">
+                    <div>{{ selectedFrequencyText }} Payment Amount</div>
+                    <div>{{ paymentAmountMessage }}</div>
+                </div>
+            </div>
+        </template>
+        <template v-else>
+            A payment deadline date is required to create a payment plan.
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch, nextTick } from "vue";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CurrentRegistrationEntryState, PaymentPlanFrequency, RegistrationCostSummary, use } from "./utils.partial";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { Guid } from "@Obsidian/Types";
+    import { ValidationResult } from "@Obsidian/ValidationRules";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { createCurrency, createZeroCurrency, Currency, CurrencyOptions, createReadonlyCurrencyOptions } from "./currency.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        paymentPlanFrequencies: {
+            type: Object as PropType<PaymentPlanFrequency[]>,
+            required: true,
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void
+    }>();
+
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const { readonlyRegistrationCostSummary } = use(RegistrationCostSummary);
+    const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
+        precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
+        symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
+    });
+    const zeroCurrency = createZeroCurrency(currencyOptions);
+
+    //#region Values
+
+    const paymentFrequencyGuid = ref<Guid | null>(registrationEntryState.paymentPlan?.transactionFrequencyGuid ?? null);
+    const internalNumberOfPayments = ref<string>("");
+    const numberOfPayments = computed<string>({
+        get(): string {
+            // Default to "2" if the selected number of payments is cleared out.
+            return internalNumberOfPayments.value || "2";
+        },
+        set(value: string): void {
+            internalNumberOfPayments.value = value;
+        }
+    });
+
+    const amountToPayTodayAsNumber = ref<number>(registrationEntryState.amountToPayToday);
+    const amountToPayTodayAdjustment = ref<Currency>(zeroCurrency);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const paymentAmountMessage = computed<string>(() => {
+        if (calculatedAmountPerPayment.value.isInvalid) {
+            return "Number of Payments is required";
+        }
+        else {
+            return `${calculatedAmountPerPayment.value} × ${numberOfPaymentsAsInteger.value}`;
+        }
+    });
+
+    const internalIsShown = useVModelPassthrough(props, "modelValue", emit);
+
+    const selectedFrequencyText = computed<string>(() => {
+        return registrationEntryState.viewModel.paymentPlanFrequencies?.find(l => l.value === paymentFrequencyGuid.value)?.text ?? "";
+    });
+
+    const amountToPayToday = computed<Currency>(() => createCurrency(amountToPayTodayAsNumber.value, currencyOptions));
+
+    const amountToPayTodaySuffix = computed<string>(() => {
+        if (amountToPayToday.value.isEqualTo(registrationRemainingAmount.value)) {
+            return `pay in full`;
+        }
+        else if (!amountToPayTodayAdjustment.value.isZero) {
+            return `added ${amountToPayTodayAdjustment.value} to evenly distribute the remaining payments`;
+        }
+        else {
+            return "";
+        }
+    });
+
+    /**
+     * This is the total amount remaining for the registration to be considered fully paid.
+     */
+    const registrationRemainingAmount = computed<Currency>(() => createCurrency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions));
+
+    /** Gets the minimum remaining amount to be paid today, before the recurring payments, in order to get evenly split recurring payments. */
+    const calculatedMinimumAmountToPayToday = computed<Currency>(() => createCurrency(readonlyRegistrationCostSummary.value.minimumRemainingAmount, currencyOptions));
+
+    // /** Gets the original amount for the registration, including paid amounts. */
+    const originalRegistrationAmount = computed<Currency>(() => createCurrency(readonlyRegistrationCostSummary.value.paidAmount, currencyOptions).add(createCurrency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions)));
+
+    ///** Gets the amount per recurring payment. */
+    const calculatedAmountPerPayment = computed<Currency>(() => {
+        if (numberOfPaymentsAsInteger.value <= 0
+            || registrationRemainingAmount.value.isZero
+            || registrationRemainingAmount.value.isNegative
+            || amountToPayToday.value.isNegative) {
+            return zeroCurrency;
+        }
+        else {
+            return createCurrency(readonlyRegistrationCostSummary.value.remainingAmount, currencyOptions).subtract(amountToPayToday.value).divide(numberOfPaymentsAsInteger.value).quotient;
+        }
+    });
+
+    /** Gets the number of payments as a number. */
+    const numberOfPaymentsAsInteger = computed<number>(() => {
+        return parseInt(numberOfPayments.value);
+    });
+
+    const paymentPlanAmountToDivide = computed<Currency>(() => registrationRemainingAmount.value.subtract(amountToPayToday.value));
+
+    /** Gets the items for the Number of Payments drop-down control. */
+    const numberOfPaymentsItems = computed<ListItemBag[]>(() => {
+        if (!paymentPlanFrequency.value) {
+            // A frequency must be selected to show the number of payments list.
+            return [];
+        }
+
+        function getNumberRange(start: number, stop: number): number[] {
+            if (start > stop) {
+                // Make sure start is less than stop.
+                const oldStart = start;
+                start = stop;
+                stop = oldStart;
+            }
+            return Array(stop - start + 1).fill(0).map((v, i) => i + start);
+        }
+
+        const maxNumberOfPayments: number = paymentPlanFrequency.value.maxNumberOfPayments;
+
+        let stop = false;
+        const numberRange = getNumberRange(2, maxNumberOfPayments)
+            .filter(numb => {
+                // Remove "Number of Payments" items that would result in 0.00 per payment;
+                // it doesn't make sense to have a payment plan where you pay 0.00 each week, month, etc.
+                // Since the numbers are sorted in ascending order,
+                // can filter subsequent numbers once we find one that results in 0.00 per payment.
+                if (stop || paymentPlanAmountToDivide.value.divide(numb).quotient.isZero) {
+                    stop = true;
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            });
+
+        // Convert the number of payments to an array of list bags.
+        return numberRange.map(n => ({
+            text: n.toString(),
+            value: n.toString()
+        }));
+    });
+
+    /** Gets the items for the payment frequency drop-down control. */
+    const paymentFrequencyItems = computed<ListItemBag[]>(() => {
+        return props.paymentPlanFrequencies?.map(frequency => frequency.listItemBag) ?? [];
+    });
+
+    /** Gets the payment deadline date as a RockDateTime. */
+    const paymentDeadlineDate = computed<RockDateTime | null>(() => {
+        if (!registrationEntryState.viewModel.paymentDeadlineDate) {
+            return null;
+        }
+
+        return RockDateTime.parseISO(registrationEntryState.viewModel.paymentDeadlineDate);
+    });
+
+    /** Gets the selected payment frequency as a TransactionFrequency. */
+    const paymentPlanFrequency = computed<PaymentPlanFrequency>(() => {
+        return props.paymentPlanFrequencies.find(p => p.listItemBag.value === paymentFrequencyGuid.value)!;
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    function validateAmountToPayTodayRule(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (amountToPayToday.value.isLessThan(calculatedMinimumAmountToPayToday.value)) {
+            return "must be greater than or equal to the minimum amount";
+        }
+        else {
+            return true;
+        }
+    }
+
+    function validateAmountToPayTodayLessThanRemaining(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (registrationRemainingAmount.value.isLessThan(amountToPayToday.value)) {
+            return "must be less than the minimum amount";
+        }
+        else {
+            return true;
+        }
+    }
+
+    const coercedAmountToPayToday = ref<Currency | null>(null);
+    const coercedNumberOfPayments = ref<number | null>(null);
+    const coercedPaymentFrequencyGuid = ref<Guid | null>(null);
+
+    /**
+     * Recalculates the amount to add to it to make the planned payments an even amount.
+     *
+     * If the registration amount is 3.00,
+     * and the individual enters 0.99 in "Amount To Pay Today",
+     * and the individual selects 2 planned payments,
+     * then this method will add 0.01 to the "Amount To Pay Today" bringing it to 1.00,
+     * so that the amount per payment is an even 1.00.
+     *
+     * 0.99 [original "Amount To Pay Today"]
+     * + 0.01 [amount added to "Amount To Pay Today"]
+     * + (1.00 [amount per payment] * 2 [number of payments])
+     * = 3.00 [registration amount]
+     */
+    function coerceAmountToPayToday(): void {
+        const dataToCheck = {
+            amountToPayToday: amountToPayTodayAsNumber.value,
+            numberOfPayments: numberOfPaymentsAsInteger.value === null || numberOfPaymentsAsInteger.value === undefined ? 0 : numberOfPaymentsAsInteger.value,
+            paymentFrequencyGuid: paymentFrequencyGuid.value,
+        };
+        const lastCoercedData = {
+            amountToPayToday: coercedAmountToPayToday.value,
+            numberOfPayments: coercedNumberOfPayments.value,
+            paymentFrequencyGuid: coercedPaymentFrequencyGuid.value,
+        };
+
+        function storeLastCoercion(amountToPay?: Currency): void {
+            if (typeof amountToPay === "undefined") {
+                amountToPay = createCurrency(dataToCheck.amountToPayToday, currencyOptions);
+            }
+            coercedAmountToPayToday.value = amountToPay;
+            coercedNumberOfPayments.value = dataToCheck.numberOfPayments;
+            coercedPaymentFrequencyGuid.value = dataToCheck.paymentFrequencyGuid;
+        }
+
+        function coerce(newAmount: Currency, adjustment: Currency): void {
+            // Keep track of the last coerced data so this function does not coerce more than once.
+            storeLastCoercion(newAmount);
+
+            nextTick(() => {
+                amountToPayTodayAsNumber.value = newAmount.number;
+                amountToPayTodayAdjustment.value = adjustment;
+            });
+        }
+
+        function noCoercionNeeded(): void {
+            storeLastCoercion();
+            nextTick(() => {
+                amountToPayTodayAdjustment.value = zeroCurrency;
+            });
+        }
+
+        if (dataToCheck.amountToPayToday === null || dataToCheck.amountToPayToday === undefined) {
+            // The individual cleared the amount to pay today field,
+            // so set it to zero.
+            coerce(zeroCurrency, zeroCurrency);
+        }
+        else if (lastCoercedData.amountToPayToday
+            && lastCoercedData.amountToPayToday.isEqualTo(dataToCheck.amountToPayToday)
+            && lastCoercedData.numberOfPayments === dataToCheck.numberOfPayments
+            && lastCoercedData.paymentFrequencyGuid === dataToCheck.paymentFrequencyGuid) {
+            // Skip if the amount to pay today has already been coerced for the amount of payments.
+            // This prevents infinite loops and issues where the adjustment can get cleared out.
+            noCoercionNeeded();
+        }
+        else if (registrationRemainingAmount.value.isLessThan(dataToCheck.amountToPayToday)) {
+            // The individual entered more than the amount needed for the registration,
+            // so set it to the registration amount.
+            coerce(registrationRemainingAmount.value, zeroCurrency);
+        }
+        else if (dataToCheck.amountToPayToday < 0) {
+            // The individual entered a negative number,
+            // so set it to zero.
+            coerce(zeroCurrency, zeroCurrency);
+        }
+        else {
+            // The individual entered an amount between 0 and the registration amount,
+            // so check if the remaining balance can be evenly divided by the number of payments.
+            const amountToBeDividedForPaymentPlan = registrationRemainingAmount.value.subtract(dataToCheck.amountToPayToday);
+            const { remainder: adjustment } = amountToBeDividedForPaymentPlan.divide(dataToCheck.numberOfPayments);
+
+            if (adjustment.isZero) {
+                // The individual entered an amount that can be evenly divided by the number of payments,
+                // so no coercion is needed.
+                noCoercionNeeded();
+            }
+            else {
+                // The individual entered an amount that cannot be evenly divided by the number of payments,
+                // so adjust the amount to pay today so that it can be divided evenly.
+                coerce(adjustment.add(dataToCheck.amountToPayToday), adjustment);
+            }
+        }
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onConfigurePaymentPlan(): void {
+        // Coerce the amount to pay today one last time before setting the payment plan values.
+        coerceAmountToPayToday();
+
+        nextTick(() => {
+            // Set the values on the shared state.
+            registrationEntryState.amountToPayToday = amountToPayToday.value.number;
+            registrationEntryState.paymentPlan = {
+                transactionFrequencyGuid: paymentFrequencyGuid.value!,
+                amountPerPayment: calculatedAmountPerPayment.value.number,
+                numberOfPayments: numberOfPaymentsAsInteger.value,
+                transactionFrequencyText: selectedFrequencyText.value,
+                startDate: paymentPlanFrequency.value.startPaymentDate.toISOString(),
+            };
+
+            // Close the modal.
+            internalIsShown.value = false;
+        });
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(numberOfPaymentsAsInteger, coerceAmountToPayToday);
+
+    watch(() => props.modelValue, (isShown) => {
+        if (isShown) {
+            amountToPayTodayAsNumber.value = readonlyRegistrationCostSummary.value.minimumRemainingAmount;
+            coerceAmountToPayToday();
+        }
+    });
+
+    //#endregion
+</script>

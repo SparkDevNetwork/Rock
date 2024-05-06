@@ -1,0 +1,70 @@
+<template>
+    <Modal v-model="isVisible"
+           title="Preview the Dataset JSON"
+           :cancelText="'OK'"
+           @close="onClose">
+
+        <!-- Preview Message -->
+        <NotificationBox v-if="previewMessage"
+                         :alertType="previewMessageType"
+                         :dismissible="false">
+            {{ previewMessage }}
+        </NotificationBox>
+
+        <!-- JSON Data -->
+        <div v-if="jsonData">
+            <label style="font-weight: normal; font-size: medium;">Build Script output</label>
+            <pre>{{ jsonData }}</pre>
+        </div>
+
+        <!-- Data Truncation Warning -->
+        <NotificationBox v-if="isDataTruncated"
+                         alertType="info"
+                         :dismissible="false">
+            The displayed JSON data is truncated due to it's size.
+        </NotificationBox>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch, defineProps, defineEmits, PropType } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const isVisible = ref(false);
+    const jsonData = ref("");
+    const previewMessage = ref("");
+    const previewMessageType = ref("info");
+    const isDataTruncated = ref(false);
+
+    const props = defineProps({
+        modelValue: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            type: Object as PropType<Record<string, any> | null>,
+            required: false,
+            default: null
+        },
+    });
+
+    const emit = defineEmits({
+        "update:modelValue": (value) => true,
+    });
+
+    watch(() => props.modelValue, (newValue) => {
+        if (newValue) {
+            isVisible.value = true;
+            jsonData.value = newValue.jsonData;
+            previewMessage.value = newValue.previewMessage;
+            previewMessageType.value = newValue.previewMessageType;
+            isDataTruncated.value = newValue.isDataTruncated;
+        }
+        else {
+            isVisible.value = false;
+        }
+    });
+
+    function onClose(): void {
+        isVisible.value = false;
+        emit("update:modelValue", null);
+    }
+</script>

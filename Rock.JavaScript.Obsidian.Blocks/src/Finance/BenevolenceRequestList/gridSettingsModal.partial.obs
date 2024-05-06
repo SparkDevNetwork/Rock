@@ -1,0 +1,170 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <DateRangePicker v-model="startDate"
+                                 label="Date Range" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox v-model="firstName" label="First Name" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox v-model="lastName" label="Last Name" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="governmentId" label="Government ID" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="caseWorker"
+                              label="Assigned To"
+                              :items="caseWorkerItems" />
+            </div>
+
+            <div class="col-md-4">
+                <DefinedValuePicker v-model="result"
+                                    label="Result"
+                                    showBlankItem
+                                    :definedTypeGuid="DefinedType.BenevolenceResultType" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DefinedValuePicker v-model="requestStatus"
+                                    label="Request Status"
+                                    showBlankItem
+                                    :definedTypeGuid="DefinedType.BenevolenceRequestStatus" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBoxList v-model="benevolenceTypes"
+                              label="Benevolence Types"
+                              :items="benevolenceTypeItems"
+                              :horizontal="true"
+                              :repeatColumns="2" />
+            </div>
+
+            <div class="col-md-4">
+                <CampusPicker v-model="campus"
+                              includeInactive
+                              showBlankItem
+                              label="Campus" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        caseWorkerItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        benevolenceTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const startDate = ref<DateRangeParts>({
+        lowerValue: props.modelValue.startDateLowerValue,
+        upperValue: props.modelValue.startDateUpperValue,
+    });
+    const firstName = ref(props.modelValue.firstName ?? "");
+    const lastName = ref(props.modelValue.lastName ?? "");
+    const governmentId = ref(props.modelValue.governmentId ?? "");
+    const caseWorker = ref(props.modelValue.caseWorker ?? "");
+    const result = ref(props.modelValue.result);
+    const requestStatus = ref(props.modelValue.requestStatus);
+    const benevolenceTypes = ref(props.modelValue.benevolenceTypes);
+    const campus = ref(props.modelValue.campus);
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            startDateLowerValue: startDate.value?.lowerValue,
+            startDateUpperValue: startDate.value?.upperValue,
+            firstName: firstName.value,
+            lastName: lastName.value,
+            governmentId: governmentId.value,
+            caseWorker: caseWorker.value,
+            result: result.value,
+            requestStatus: requestStatus.value,
+            benevolenceTypes: benevolenceTypes.value,
+            campus: campus.value,
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        startDate.value = {
+            lowerValue: props.modelValue.startDateLowerValue,
+            upperValue: props.modelValue.startDateUpperValue,
+        };
+        firstName.value = props.modelValue.firstName ?? "";
+        lastName.value = props.modelValue.lastName ?? "";
+        governmentId.value = props.modelValue.governmentId ?? "";
+        caseWorker.value = props.modelValue.caseWorker ?? "";
+        result.value = props.modelValue.result;
+        requestStatus.value = props.modelValue.requestStatus;
+        benevolenceTypes.value = props.modelValue.benevolenceTypes;
+        campus.value = props.modelValue.campus;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

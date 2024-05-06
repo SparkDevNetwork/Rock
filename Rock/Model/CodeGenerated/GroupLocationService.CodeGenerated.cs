@@ -118,6 +118,7 @@ namespace Rock.Model
             target.GroupMemberPersonAliasId = source.GroupMemberPersonAliasId;
             target.IsMailingLocation = source.IsMailingLocation;
             target.IsMappedLocation = source.IsMappedLocation;
+            target.IsOverflowLocation = source.IsOverflowLocation;
             target.LocationId = source.LocationId;
             target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;

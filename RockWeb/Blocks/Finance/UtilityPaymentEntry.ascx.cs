@@ -3457,8 +3457,6 @@ mission. We are so grateful for your commitment.</p>
                 }
             }
 
-            var transactionEntity = this.GetTransactionEntity();
-
             PopulateTransactionDetails( scheduledTransaction.ScheduledTransactionDetails );
 
             scheduledTransaction.Summary = paymentInfo.Comment1;
@@ -3594,7 +3592,7 @@ mission. We are so grateful for your commitment.</p>
 
             TransactionCode = transaction.TransactionCode;
         }
-
+        
         /// <summary>
         /// Populates the transaction details for a FinancialTransaction or ScheduledFinancialTransaction
         /// </summary>

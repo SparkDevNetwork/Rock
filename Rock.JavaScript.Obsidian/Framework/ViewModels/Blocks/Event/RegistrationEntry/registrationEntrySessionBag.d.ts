@@ -24,6 +24,7 @@
 import { Guid } from "@Obsidian/Types";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
+import { RegistrationEntryPaymentPlanBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryPaymentPlanBag";
 
 /** RegistrationEntryBlockSession */
 export type RegistrationEntrySessionBag = {
@@ -50,6 +51,9 @@ export type RegistrationEntrySessionBag = {
 
     /** Gets or sets the group identifier used for this RegistrationInstance. Note a RegistrationInstance can have multiple GroupIds so the one used (based on the linkage slug) has to be stored. */
     groupId?: number | null;
+
+    /** Gets or sets the payment plan that has been configured for the registration. */
+    paymentPlan?: RegistrationEntryPaymentPlanBag | null;
 
     /** Gets or sets the previously paid. */
     previouslyPaid: number;

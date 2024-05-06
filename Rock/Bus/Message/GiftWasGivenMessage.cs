@@ -81,7 +81,7 @@ namespace Rock.Bus.Message
         /// Publishes the gift event.
         /// </summary>
         /// <param name="transactionId">The transaction identifier.</param>
-        /// <param name="eventType">Type of the event.</param>
+        /// <param name="eventType">Type of the event. May be null if using an <see cref="IStatusProvidingGateway"/> gateway component.</param>
         /// <param name="gatewaySupportedCardTypesDefinedValueGuid">[Optional] The <see cref="Guid"/> of the <see cref="DefinedValue"/> that indicates the credit card types supported by the <see cref="FinancialGateway"/> for a specified currency.</param>
         /// <param name="gatewayCurrencyUnitMultiple">[Optional] The <see cref="Guid"/> of the <see cref="DefinedValue"/> that indicates the "unit multiple" (e.g., 100 for dollars) of the currency specified by the gatway.</param>
         public static void PublishTransactionEvent( int transactionId, string eventType = null, Guid? gatewaySupportedCardTypesDefinedValueGuid = null, Guid? gatewayCurrencyUnitMultiple = null )
@@ -103,9 +103,7 @@ namespace Rock.Bus.Message
 
                 if ( data != null )
                 {
-                    var statusGateway = gatewayComponent as IStatusProvidingGateway;
-
-                    if ( eventType.IsNullOrWhiteSpace() )
+                    if ( eventType.IsNullOrWhiteSpace() && gatewayComponent is IStatusProvidingGateway statusGateway )
                     {
                         eventType =
                             statusGateway.IsPendingStatus( data.FinancialTransaction.Status ) ? GiftEventTypes.GiftPending :

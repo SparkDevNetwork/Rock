@@ -62,8 +62,10 @@
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonMergeRequestList\PersonMergeRequestListOptionsBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationInstanceLinkageList\RegistrationInstanceLinkageListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceFeeList\RegistrationInstanceFeeListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestControllerList\RestControllerListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersistedDatasetList\PersistedDatasetListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
@@ -92,6 +94,13 @@
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\ExtensionMethods.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryPaymentPlanBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceRequestList\BenevolenceRequestListOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceRequestList\ResultTypeBag.cs" />
     <Compile Include="Blocks\Finance\BusinessContactList\BusinessContactBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrantBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrarBag.cs" />
@@ -104,6 +113,7 @@
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryFormFieldBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryInitializationBox.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryLineItemBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryCreatePaymentPlanRequestBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySessionBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySignatureDocumentBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySuccessBag.cs" />
@@ -148,6 +158,7 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduleToolbox\SignUpsBag.cs" />
     <Compile Include="Blocks\Internal\IBlockBox.cs" />
     <Compile Include="Blocks\Internal\IDetailBlockBox.cs" />
+    <Compile Include="Blocks\Prayer\PrayerCommentList\PrayerCommentListOptionsBag.cs" />
     <Compile Include="Blocks\Prayer\PrayerRequestList\PrayerRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
@@ -405,11 +416,6 @@
     <Compile Include="Blocks\Event\InteractiveExperiences\InteractiveExperienceDetail\InteractiveExperienceVisualizerTypeBag.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\LiveExperienceOccurrences\LiveExperiencesOccurrencesInitializationBox.cs" />
     <Compile Include="Blocks\Event\InteractiveExperiences\LiveExperience\LiveExperienceInitializationBox.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResult.cs" />
     <Compile Include="Blocks\Group\GroupSchedulePreference\AssignmentScheduleAndLocationBag.cs" />
     <Compile Include="Blocks\Group\GroupScheduleSignup\PersonScheduleSignupDataBag.cs" />
     <Compile Include="Blocks\Group\GroupScheduleSignup\PersonScheduleSignupBag.cs" />

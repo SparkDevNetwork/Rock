@@ -114,5 +114,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if this instance is shared value; otherwise, <c>false</c>.
         /// </value>
         public bool IsSharedValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether editing the field is restricted when a value is already on the person's record.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if editing the field is restricted when a value is already on the person's record; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLockedIfValuesExist { get; set; }
     }
 }

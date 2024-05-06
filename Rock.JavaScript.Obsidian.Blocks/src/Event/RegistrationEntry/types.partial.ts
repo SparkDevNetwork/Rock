@@ -20,6 +20,7 @@ import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEnt
 import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
 import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
+import { RegistrationEntryCreatePaymentPlanRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCreatePaymentPlanRequestBag";
 
 export const enum Step {
     Intro = "intro",
@@ -66,4 +67,5 @@ export type RegistrationEntryState = {
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;
     ownFamilyGuid: Guid;
+    paymentPlan: RegistrationEntryCreatePaymentPlanRequestBag | null;
 };

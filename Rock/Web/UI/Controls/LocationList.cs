@@ -219,9 +219,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
+            writer.AddAttribute( "id", this.ClientID );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
+          
             _ddlLocations.RenderControl( writer );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-btn" );

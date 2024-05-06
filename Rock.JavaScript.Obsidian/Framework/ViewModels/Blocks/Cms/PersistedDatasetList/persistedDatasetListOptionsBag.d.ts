@@ -21,20 +21,6 @@
 // </copyright>
 //
 
-/** A bag that contains all data for the Volunteer Generosity Analysis block. */
-export type VolunteerGenerositySetupBag = {
-    /** Gets or sets the estimated refresh time of the persisted dataset.  */
-    estimatedRefreshTime: number;
-
-    /** Gets or sets the last updated date time.  */
-    lastUpdated?: string | null;
-
-    /** Gets or sets the bool that shows/hides the campus filter. */
-    showCampusFilter: boolean;
-
-    /** Gets or sets the list of unique campuses. */
-    uniqueCampuses?: string[] | null;
-
-    /** Gets or sets the list of unique groups  */
-    uniqueGroups?: string[] | null;
+/** Class PersistedDatasetDetailOptionsBag. */
+export type PersistedDatasetListOptionsBag = {
 };

@@ -326,6 +326,13 @@ $('.template-form > .panel-body').on('validation-error', function() {
             isSharedValueField.HeaderText = "Common";
             _gFields.Columns.Add( isSharedValueField );
 
+            var lockExistingValueField = new BoolField
+            {
+                DataField = nameof( RegistrationTemplateFormField.IsLockedIfValuesExist ),
+                HeaderText = "Lock Existing Value"
+            };
+            _gFields.Columns.Add( lockExistingValueField );
+
             var showCurrentValueField = new BoolField();
             showCurrentValueField.DataField = "ShowCurrentValue";
             showCurrentValueField.HeaderText = "Use Current Value";

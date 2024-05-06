@@ -161,7 +161,7 @@ namespace Rock.Blocks.Prayer
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${PrayerRequest.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {PrayerRequest.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

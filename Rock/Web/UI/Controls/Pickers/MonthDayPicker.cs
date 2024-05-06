@@ -316,10 +316,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // Don't remove Id as this is required if this control is defined as attribute Field in Bulk Update
             bool needsAutoPostBack = SelectedMonthDayChanged != null;
             monthDropDownList.AutoPostBack = needsAutoPostBack;
             dayDropDownList.AutoPostBack = needsAutoPostBack;
-
+            writer.AddAttribute( "id", this.ClientID );
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);
 

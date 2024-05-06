@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
@@ -466,6 +467,7 @@ namespace Rock.Model
             AllowExternalRegistrationUpdates = template.AllowExternalRegistrationUpdates;
             ShowSmsOptIn = template.ShowSmsOptIn;
             SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
+            ConnectionStatusValueId = template.ConnectionStatusValueId;
 
             // Workflow type ids
             WorkflowTypeIds = new List<int>();
@@ -497,6 +499,24 @@ namespace Rock.Model
             ExternalGatewayMerchantId = instance.ExternalGatewayMerchantId;
             FinancialAccountId = instance.AccountId;
             BatchNamePrefix = template.BatchNamePrefix;
+
+            // Payment plan
+            IsPaymentPlanAllowed = template.IsPaymentPlanAllowed;
+            PaymentDeadlineDate = instance.PaymentDeadlineDate;
+            PaymentPlanFrequencyValueIds = template.PaymentPlanFrequencyValueIdsCollection.ToList();
+            if ( PaymentPlanFrequencyValueIds?.Any() != true )
+            {
+                // If no payment plan frequencies were selected in the template,
+                // then allow any frequency defined in the gateway.
+                PaymentPlanFrequencyValueIds = template
+                    .FinancialGateway
+                    ?.GetGatewayComponent()
+                    ?.SupportedPaymentSchedules
+                    // Ignore "One-Time" option.
+                    ?.Where( f => f.Guid != SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
+                    .Select( f => f.Id )
+                    .ToList() ?? new List<int>();
+            }
 
             // Group placement
             GroupTypeId = template.GroupTypeId;
@@ -770,6 +790,38 @@ namespace Rock.Model
         /// The batch name prefix.
         /// </value>
         public string BatchNamePrefix { get; private set; }
+
+        /// <summary>
+        /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPaymentPlanAllowed { get; private set; }
+        
+        /// <summary>
+        /// Gets the payment deadline date.
+        /// </summary>
+        /// <value>
+        /// The payment deadline date.
+        /// </value>
+        public DateTime? PaymentDeadlineDate { get; private set; }
+
+        /// <summary>
+        /// Gets the collection of payment plan frequency value IDs from which a registrant can select.
+        /// </summary>
+        /// <value>
+        /// The collection of payment plan frequency value IDs from which a registrant can select.
+        /// </value>
+        public List<int> PaymentPlanFrequencyValueIds { get; private set; }
+
+        /// <summary>
+        /// Gets the connection status value identifier.
+        /// </summary>
+        /// <value>
+        /// The connection status value identifier.
+        /// </value>
+        public int? ConnectionStatusValueId { get; private set; }
 
         /// <summary>
         /// Gets the group type identifier.

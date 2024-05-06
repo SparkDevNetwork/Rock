@@ -384,7 +384,7 @@ namespace RockWeb.Blocks.Finance
             {
                 return;
             }
-
+            
             using ( var rockContext = new RockContext() )
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
@@ -395,6 +395,12 @@ namespace RockWeb.Blocks.Finance
 
                 if ( financialScheduledTransaction == null )
                 {
+                    return;
+                }
+                else if ( IsEventRegistrationTransactionType( financialScheduledTransaction ) )
+                {
+                    // Prevent reactivating Event Registration financial scheduled transactions.
+                    ShowErrorMessage( "Event Registration Scheduled Transactions cannot be reactivated once canceled." );
                     return;
                 }
 
@@ -853,9 +859,27 @@ namespace RockWeb.Blocks.Finance
             gAccountsView.DataBind();
 
             btnRefresh.Visible = gateway != null && gateway.GetScheduledPaymentStatusSupported;
-            btnUpdate.Visible = gateway != null && gateway.UpdateScheduledPaymentSupported;
+            var isEventRegistrationTransactionType = IsEventRegistrationTransactionType( financialScheduledTransaction );
+            btnUpdate.Visible =
+                !isEventRegistrationTransactionType
+                && gateway != null
+                && gateway.UpdateScheduledPaymentSupported;
             btnCancelSchedule.Visible = financialScheduledTransaction.IsActive && gateway.UpdateScheduledPaymentSupported;
-            btnReactivateSchedule.Visible = !financialScheduledTransaction.IsActive && gateway != null && gateway.ReactivateScheduledPaymentSupported;
+            btnReactivateSchedule.Visible =
+                !isEventRegistrationTransactionType
+                && !financialScheduledTransaction.IsActive && gateway != null && gateway.ReactivateScheduledPaymentSupported;
+        }
+
+        /// <summary>
+        /// Determines if the financial scheduled transaction is an event registration.
+        /// </summary>
+        /// <param name="financialScheduledTransaction">The financial scheduled transaction.</param>
+        private bool IsEventRegistrationTransactionType( FinancialScheduledTransaction financialScheduledTransaction )
+        {
+            var eventRegistrationTransactionTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid() );
+
+            return eventRegistrationTransactionTypeValueId.HasValue
+                && eventRegistrationTransactionTypeValueId == financialScheduledTransaction?.TransactionTypeValueId;
         }
 
         /// <summary>

@@ -1402,8 +1402,11 @@ namespace RockWeb.Blocks.WorkFlow
 
             lPersonEntryPostHtml.Text = postHtml.ResolveMergeFields( mergeFields );
 
+            // Set the visibility of the Address Control.
+            // If hidden, also hide the containing column to ensure remaining columns are left-aligned.
             var promptForAddress = ( formPersonEntrySettings.Address != WorkflowActionFormPersonEntryOption.Hidden ) && formPersonEntrySettings.AddressTypeValueId.HasValue;
             acPersonEntryAddress.Visible = promptForAddress;
+            pnlPersonEntryRow2Column1.Visible = promptForAddress;
 
             if ( setValues )
             {

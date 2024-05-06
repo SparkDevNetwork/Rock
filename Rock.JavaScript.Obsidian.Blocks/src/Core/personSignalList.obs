@@ -10,13 +10,13 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <TextColumn name="name" title="Name" field="name" :filter="textValueFilter" width="16%" />
+        <TextColumn name="name" title="Name" field="name" :filter="textValueFilter" width="16%" visiblePriority="xs" />
 
-        <PersonColumn name="owner" title="Owner" field="owner" :filter="textValueFilter" width="16%" />
+        <PersonColumn name="owner" title="Owner" field="owner" width="16%" visiblePriority="xs" />
 
-        <TextColumn name="note" title="Note" field="note" :filter="textValueFilter" width="70%" />
+        <TextColumn name="note" title="Note" field="note" :filter="textValueFilter" width="70%" visiblePriority="lg" />
 
-        <DateColumn name="expirationDate" title="Expiration Date" field="expirationDate" :filter="dateValueFilter" />
+        <DateColumn name="expirationDate" title="Expiration Date" field="expirationDate" :filter="dateValueFilter" visiblePriority="sm" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 

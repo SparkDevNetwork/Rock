@@ -1012,7 +1012,7 @@ namespace RockWeb.Blocks.Mobile
                 Text = "<i class='fa fa-times'></i>",
                 ToolTip = "Delete Block"
             };
-            btnDeleteBlock.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Block.FriendlyTypeName );
+            btnDeleteBlock.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" block');", block.Name );
 
             pnlAdminButtons.Controls.Add( btnDeleteBlock );
 

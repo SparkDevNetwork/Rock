@@ -1025,7 +1025,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         checkinArea.Visible = true;
                         btnSave.Visible = true;
                         btnDelete.Visible = true;
-                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in area", "This action cannot be undone." );
+                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" check-in area', '{1}');", groupType.Name, "This action cannot be undone." );
 
                     }
                     else
@@ -1096,7 +1096,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         checkinGroup.Visible = true;
                         btnSave.Visible = true;
                         btnDelete.Visible = true;
-                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in group", "<br>Any attendance records connected with this group will be lost. This action cannot be undone." );
+                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" check-in group', '{1}');", group.Name, "<br>Any attendance records connected with this group will be lost. This action cannot be undone." );
                     }
                     else
                     {

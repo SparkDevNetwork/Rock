@@ -111,7 +111,7 @@ namespace Rock.Financial
         Order = 9 )]
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY )]
-    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, ISettlementGateway
+    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, ISettlementGateway, IScheduledNumberOfPaymentsGateway
     {
         #region Attribute Keys
 
@@ -258,6 +258,7 @@ namespace Rock.Financial
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
@@ -383,27 +384,28 @@ namespace Rock.Financial
         /// <returns></returns>
         public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
-            errorMessage = string.Empty;
-
             if ( ValidateCard( financialGateway, paymentInfo, out errorMessage ) )
             {
-                var scheduledTransaction = new FinancialScheduledTransaction();
-                scheduledTransaction.IsActive = true;
-                scheduledTransaction.StartDate = schedule.StartDate;
-                scheduledTransaction.NextPaymentDate = schedule.StartDate;
-                scheduledTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-                scheduledTransaction.GatewayScheduleId = "Subscription_" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-                scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
-                scheduledTransaction.Status = FinancialScheduledTransactionStatus.Active;
-                scheduledTransaction.StatusMessage = "active";
-
-                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail()
+                var scheduledTransaction = new FinancialScheduledTransaction
                 {
-                    ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
-                    ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
-                    CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
-                    AccountNumberMasked = paymentInfo.MaskedNumber,
-                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( paymentInfo.MaskedNumber )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
+                    IsActive = true,
+                    StartDate = schedule.StartDate,
+                    NextPaymentDate = schedule.StartDate,
+                    TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" ),
+                    GatewayScheduleId = "Subscription_" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" ),
+                    LastStatusUpdateDateTime = RockDateTime.Now,
+                    Status = FinancialScheduledTransactionStatus.Active,
+                    StatusMessage = "active",
+                    NumberOfPayments = schedule.NumberOfPayments,
+
+                    FinancialPaymentDetail = new FinancialPaymentDetail()
+                    {
+                        ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
+                        ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
+                        CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
+                        AccountNumberMasked = "************6789",
+                        CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( "************6789" )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
+                    }
                 };
 
                 return scheduledTransaction;
@@ -470,6 +472,7 @@ namespace Rock.Financial
             if ( !transaction.IsActive )
             {
                 transaction.NextPaymentDate = null;
+                transaction.Status = FinancialScheduledTransactionStatus.Canceled;
             }
 
             errorMessage = string.Empty;

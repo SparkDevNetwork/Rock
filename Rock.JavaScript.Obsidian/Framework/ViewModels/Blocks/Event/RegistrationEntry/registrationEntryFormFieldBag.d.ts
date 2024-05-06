@@ -39,6 +39,9 @@ export type RegistrationEntryFormFieldBag = {
     /** Gets or sets the unique identifier. */
     guid: Guid;
 
+    /** Gets or sets a value indicating whether editing the field is restricted when a value is already on the person's record. */
+    isLockedIfValuesExist: boolean;
+
     /** Gets or sets a value indicating whether this instance is required. */
     isRequired: boolean;
 

@@ -21,14 +21,19 @@
 // </copyright>
 //
 
-/** Bag for donation data within the Volunteer Generosity Analysis block. */
-export type VolunteerGenerosityDonationBag = {
-    /** Gets or sets the month. */
-    month?: string | null;
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    /** Gets or sets the month name. */
-    monthNameAbbreviated?: string | null;
+/** The additional configuration options for the Registration Instance Linkage List block. */
+export type RegistrationInstanceLinkageListOptionsBag = {
+    /** Gets or sets the campus items. */
+    campusItems?: ListItemBag[] | null;
 
-    /** Gets or sets the year. */
-    year?: string | null;
+    /** Gets or sets the name for the exported excel or csv file. */
+    exportFileName?: string | null;
+
+    /** Gets or sets the title for the exported excel or csv file. */
+    exportTitle?: string | null;
+
+    /** Gets or sets the registration template identifier key. */
+    registrationTemplateIdKey?: string | null;
 };
