@@ -2628,7 +2628,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                     if ( lavaFields.Any() )
                                     {
                                         var mergeFieldName = boundField.HeaderText.Replace( " ", string.Empty ).RemoveSpecialCharacters();
-                                        lavaDataFields.AddOrIgnore( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = boundField } );
+                                        lavaDataFields.TryAdd( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = boundField } );
                                     }
 
                                     boundPropNames.Add( prop.Name );
@@ -2647,7 +2647,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             if ( lavaFields.Any() )
                             {
                                 var mergeFieldName = prop.Name;
-                                lavaDataFields.AddOrIgnore( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
+                                lavaDataFields.TryAdd( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
                             }
 
                             var headerText = prop.Name.SplitCase();

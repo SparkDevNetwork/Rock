@@ -326,7 +326,7 @@ namespace Rock.Blocks.CheckIn
                     locationPath = locationNames.AsDelimited( " > " );
                 }
 
-                _locationPaths.AddOrIgnore( location.Id, locationPath );
+                _locationPaths.TryAdd( location.Id, locationPath );
             }
 
             return listItems;

@@ -310,7 +310,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     Analyzer = string.Empty
                 };
 
-                index.MappingProperties.AddOrIgnore( propertyName, dynamicPropertyIndexMapping );
+                index.MappingProperties.TryAdd( propertyName, dynamicPropertyIndexMapping );
             }
         }
 
