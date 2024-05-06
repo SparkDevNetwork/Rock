@@ -1,0 +1,219 @@
+<template>
+    <div class="worksurface-container">
+        <div ref="containerElement"
+             class="worksurface">
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.worksurface-container {
+    position: relative;
+    margin: 12px;
+}
+
+.worksurface {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--theme-white);
+    border-radius: 12px;
+}
+</style>
+
+<script setup lang="ts">
+    import Konva from "@Obsidian/Libs/konva";
+    import { onBeforeMount, onMounted, PropType, ref, watch } from "vue";
+    import { Size } from "./types.partial";
+    import { TransformHelper, useNodeDragBoundFunc } from "./utils.partial";
+
+    const props = defineProps({
+        labelSize: {
+            type: Object as PropType<Size>,
+            required: true
+        },
+
+        showGrid: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        snapToGrid: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    /* Grid size in 1/n fractions of an inch. */
+    const gridSnapFraction = 4;
+
+    // /** Minimum snap position in 1/n fractions of an inch. */
+    // const minimumSnapFraction = 32;
+
+    const containerElement = ref<HTMLDivElement | undefined>();
+    let stage: Konva.Stage | undefined;
+    let transformHelper: TransformHelper | undefined;
+    const gridLayer = new Konva.Layer();
+    const pixelsPerInch = 72 * window.devicePixelRatio;
+
+    /**
+     * Gets the pixel position on the canvas.
+     *
+     * @param offset The offset position in inches.
+     *
+     * @returns The pixel position as a floating point number.
+     */
+    function getPixelForOffset(offset: number): number {
+        return offset * pixelsPerInch;
+    }
+
+    /**
+     * Gets the offset in inches of the pixel position.
+     *
+     * @param pixel The pixel position.
+     *
+     * @returns The offset in inches.
+     */
+    function getOffsetForPixel(pixel: number): number {
+        return pixel / pixelsPerInch;
+    }
+
+    /**
+     * Draws the grid lines onto the grid layer. This will clear the layer
+     * if no grid lines should be displayed.
+     */
+    function drawGridLines(): void {
+        gridLayer.destroyChildren();
+
+        if (!stage || !props.showGrid) {
+            return;
+        }
+
+        const width = stage.width();
+        const height = stage.height();
+        const gridStepSize = 1.0 / gridSnapFraction;
+
+        for (let step = gridStepSize; step < props.labelSize.width; step += gridStepSize) {
+            gridLayer.add(new Konva.Line({
+                x: getPixelForOffset(step),
+                points: [0, 0, 0, height],
+                stroke: "rgba(0, 0, 0, 0.1)",
+                strokeWidth: 1
+            }));
+        }
+
+        for (let step = gridStepSize; step < props.labelSize.height; step += gridStepSize) {
+            gridLayer.add(new Konva.Line({
+                y: getPixelForOffset(step),
+                points: [0, 0, width, 0],
+                stroke: "rgba(0, 0, 0, 0.1)",
+                strokeWidth: 1
+            }));
+        }
+
+        gridLayer.draw();
+    }
+
+    function snapPixel(pixel: number): number {
+        let offset = getOffsetForPixel(pixel);
+
+        if (props.showGrid && props.snapToGrid) {
+            offset = 1.0 / gridSnapFraction * Math.round(gridSnapFraction * offset);
+        }
+        // else {
+        //     offset = 1.0 / minimumSnapFraction * Math.floor(minimumSnapFraction * offset);
+        // }
+
+        return getPixelForOffset(offset);
+    }
+
+    onMounted(() => {
+        if (!containerElement.value) {
+            return;
+        }
+
+        stage = new Konva.Stage({
+            container: containerElement.value,
+            width: props.labelSize.width * pixelsPerInch,
+            height: props.labelSize.height * pixelsPerInch,
+        });
+
+        const nodeDragBoundFunc = useNodeDragBoundFunc(stage, snapPixel);
+
+        const layer = new Konva.Layer();
+        stage.add(layer);
+
+        stage.add(gridLayer);
+        drawGridLines();
+
+        const textblock: Konva.Text = new Konva.Text({
+            x: 50, y: 50, width: 100, height: 100,
+            fill: "black",
+            color: "white",
+            text: "This is some text.",
+            draggable: true,
+            dragBoundFunc: nodeDragBoundFunc
+        });
+
+        layer.add(textblock);
+
+        const textblock2: Konva.Text = new Konva.Text({
+            x: 250, y: 50, width: 100, height: 100,
+            fill: "black",
+            color: "white",
+            text: "This is other text.",
+            draggable: true,
+            dragBoundFunc: nodeDragBoundFunc
+        });
+
+        layer.add(textblock2);
+
+        var tr = new Konva.Transformer({
+            nodes: [],
+            rotationSnaps: [0, 90, 180, 270],
+            rotationSnapTolerance: 45,
+            rotateAnchorOffset: 25,
+            flipEnabled: false,
+            keepRatio: false
+
+        });
+        layer.add(tr);
+
+        transformHelper = new TransformHelper(stage, tr, snapPixel);
+
+        // clicks should select/deselect shapes
+        stage.on("click tap", function (e) {
+            // If they clicked on the background, deselect everything.
+            if (e.target === stage) {
+                tr.nodes([]);
+                return;
+            }
+
+            // Select the node, only single selection supported for now.
+            tr.nodes([e.target]);
+        });
+
+        layer.draw();
+    });
+
+    onBeforeMount(() => {
+        stage?.destroy();
+        stage = undefined;
+
+        transformHelper?.destroy();
+        transformHelper = undefined;
+    });
+
+    watch(() => props.labelSize, () => {
+        if (stage) {
+            stage.width(props.labelSize.width * pixelsPerInch);
+            stage.height(props.labelSize.height * pixelsPerInch);
+        }
+
+        drawGridLines();
+    });
+
+    watch(() => props.showGrid, () => {
+        drawGridLines();
+    });
+</script>

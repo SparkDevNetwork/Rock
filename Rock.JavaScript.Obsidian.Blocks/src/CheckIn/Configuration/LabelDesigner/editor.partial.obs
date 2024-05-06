@@ -24,7 +24,9 @@
         </div>
 
         <div class="editor-content">
-            <div>Editor Placeholder</div>
+            <Worksurface :labelSize="props.labelSize"
+                         :showGrid="isGridVisible"
+                         :snapToGrid="isGridLocked" />
 
             <div class="editor-features">
                 <Switch v-model="isGridVisible"
@@ -98,10 +100,17 @@
 
 <script setup lang="ts">
     import Switch from "@Obsidian/Controls/switch.obs";
-    import { ref } from "vue";
+    import Worksurface from "./worksurface.partial.obs";
+    import { PropType, ref } from "vue";
+    import { Size } from "./types.partial";
 
     const isGridVisible = ref(false);
     const isGridLocked = ref(false);
 
-    const props = defineProps();
+    const props = defineProps({
+        labelSize: {
+            type: Object as PropType<Size>,
+            required: true
+        }
+    });
 </script>

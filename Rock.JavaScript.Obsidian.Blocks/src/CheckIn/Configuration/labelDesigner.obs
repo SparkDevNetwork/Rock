@@ -9,10 +9,7 @@
             <div class="panel-body-fill" style="display: flex;">
                 <Menu />
 
-                <Editor />
-                <!-- <div style="display: flex; justify-content: center; align-items: center; flex-grow: 1; background-color: var(--theme-lightest);">
-                    <div ref="containerElement" class="container"></div>
-                </div> -->
+                <Editor :labelSize="labelSize" />
             </div>
 
             <template #footerActions>
@@ -43,109 +40,12 @@
 
 <script setup lang="ts">
     import Editor from "./LabelDesigner/editor.partial.obs";
-    import Konva from "@Obsidian/Libs/konva";
     import LabelDimensionsButton from "./LabelDesigner/labelDimensionsButton.partial.obs";
     import Menu from "./LabelDesigner/menu.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { onMounted, ref } from "vue";
+    import { ref } from "vue";
     import { Size } from "./LabelDesigner/types.partial";
 
-    const containerElement = ref<HTMLDivElement | undefined>();
     const labelSize = ref<Size>({ width: 4, height: 2 });
-
-    onMounted(() => {
-        if (!containerElement.value) {
-            return;
-        }
-
-        const baseScale = containerElement.value.clientWidth / 4;
-        const stage = new Konva.Stage({
-            container: containerElement.value,
-            width: baseScale * 4,
-            height: baseScale * 1,
-        });
-        stage.setAttrs({
-            height: baseScale * 2
-        });
-
-        const layer = new Konva.Layer();
-        stage.add(layer);
-
-        const textblock: Konva.Text = new Konva.Text({
-            x: 50, y: 50, width: 100, height: 100,
-            fill: "black",
-            color: "white",
-            text: "This is some text.",
-            draggable: true,
-            dragBoundFunc(pos) {
-                // const realRect = textblock.getClientRect();
-
-                const newPos: Konva.Vector2d = {
-                    x: Math.max(0, Math.min(pos.x, stage.width() - textblock.width())),
-                    y: Math.max(0, Math.min(pos.y, stage.height() - textblock.height()))
-                };
-
-                return newPos;
-            },
-        });
-
-        layer.add(textblock);
-
-        var tr = new Konva.Transformer({
-            nodes: [textblock],
-            rotationSnaps: [0, 90, 180, 270],
-            rotationSnapTolerance: 45,
-            rotateAnchorOffset: 25
-        });
-        layer.add(tr);
-
-        textblock.on("transform", function (ev) {
-            textblock.setAttrs({
-                width: Math.max(textblock.width() * textblock.scaleX(), 10),
-                height: Math.max(textblock.height() * textblock.scaleY(), 10),
-                scaleX: 1,
-                scaleY: 1
-            });
-        });
-
-        // clicks should select/deselect shapes
-        stage.on("click tap", function (e) {
-            // if click on empty area - remove all selections
-            if (e.target === stage) {
-                tr.nodes([]);
-                return;
-            }
-
-            // console.log(e.target.hasName("rect"), e.target);
-            // // do nothing if clicked NOT on our rectangles
-            // if (!e.target.hasName("rect")) {
-            //     return;
-            // }
-
-            // do we pressed shift or ctrl?
-            const metaPressed = e.evt.shiftKey || e.evt.ctrlKey || e.evt.metaKey;
-            const isSelected = tr.nodes().indexOf(e.target) >= 0;
-
-            if (!metaPressed && !isSelected) {
-                // if no key pressed and the node is not selected
-                // select just one
-                tr.nodes([e.target]);
-            }
-            else if (metaPressed && isSelected) {
-                // if we pressed keys and node was selected
-                // we need to remove it from selection:
-                const nodes = tr.nodes().slice(); // use slice to have new copy of array
-                // remove node from array
-                nodes.splice(nodes.indexOf(e.target), 1);
-                tr.nodes(nodes);
-            }
-            else if (metaPressed && !isSelected) {
-                // add the node into selection
-                const nodes = tr.nodes().concat([e.target]);
-                tr.nodes(nodes);
-            }
-        });
-        layer.draw();
-    });
 </script>
