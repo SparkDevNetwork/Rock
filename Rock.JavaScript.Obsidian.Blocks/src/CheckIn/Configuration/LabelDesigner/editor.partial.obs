@@ -24,7 +24,8 @@
         </div>
 
         <div class="editor-content">
-            <Worksurface :labelSize="props.labelSize"
+            <Worksurface v-model:labelFields="labelFields"
+                         :labelSize="props.labelSize"
                          :showGrid="isGridVisible"
                          :snapToGrid="isGridLocked" />
 
@@ -102,7 +103,8 @@
     import Switch from "@Obsidian/Controls/switch.obs";
     import Worksurface from "./worksurface.partial.obs";
     import { PropType, ref } from "vue";
-    import { Size } from "./types.partial";
+    import { LabelFieldBag, Size } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const isGridVisible = ref(false);
     const isGridLocked = ref(false);
@@ -111,6 +113,17 @@
         labelSize: {
             type: Object as PropType<Size>,
             required: true
+        },
+
+        labelFields: {
+            type: Array as PropType<LabelFieldBag[]>,
+            required: true
         }
     });
+
+    const emit = defineEmits<{
+        (e: "update:labelFields", value: LabelFieldBag[]): void;
+    }>();
+
+    const labelFields = useVModelPassthrough(props, "labelFields", emit);
 </script>

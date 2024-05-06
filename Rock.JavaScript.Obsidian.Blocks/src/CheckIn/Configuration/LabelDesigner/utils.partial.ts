@@ -1,4 +1,5 @@
 import Konva from "@Obsidian/Libs/konva";
+import { LabelFieldBag, LabelFieldType } from "./types.partial";
 
 // #region Worksurface Utilities
 
@@ -246,4 +247,67 @@ export function useNodeDragBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
 
     return nodeDragBoundFunc;
 }
+
+/**
+ * Creates a new shape for the specified field type.
+ *
+ * @param fieldType The field type that specifies what kind of shape to create.
+ *
+ * @returns A new shape or `undefined` if the field type was not recognized.
+ */
+export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Shape | undefined {
+    if (fieldType === LabelFieldType.Text) {
+        return new Konva.Text();
+    }
+    else if (fieldType === LabelFieldType.Rectangle) {
+        return new Konva.Rect();
+    }
+
+    return undefined;
+}
+
+/**
+ * Attempts to update a shape to match the information in the field. The
+ * position and size are not updated. If the shape is not the right type then
+ * `false` will be returned.
+ *
+ * @param shape The shape object to be updated.
+ * @param field The field to use as the source of truth.
+ *
+ * @returns `true` if the shape was updated or `false` if it could not be updated.
+ */
+export function updateShapeFromField(shape: Konva.Shape, field: LabelFieldBag): boolean {
+    if (field.fieldType === LabelFieldType.Text && shape instanceof Konva.Text) {
+        updateTextShapeFromField(shape, field);
+        return true;
+    }
+    else if (field.fieldType === LabelFieldType.Rectangle && shape instanceof Konva.Rect) {
+        updateRectShapeFromField(shape, field);
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Updates the text shape with data from the field.
+ *
+ * @param shape The shape to be updated.
+ * @param field The field to use as the source of truth.
+ */
+function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void {
+    shape.fill("black");
+    shape.text("Text Block");
+}
+
+/**
+ * Updates the rectangle shape with data from the field.
+ *
+ * @param shape The shape to be updated.
+ * @param field The field to use as the source of truth.
+ */
+function updateRectShapeFromField(shape: Konva.Rect, field: LabelFieldBag): void {
+    shape.fill("black");
+}
+
 // #endregion

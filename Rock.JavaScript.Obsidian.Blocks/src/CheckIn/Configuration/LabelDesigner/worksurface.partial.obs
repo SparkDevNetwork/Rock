@@ -23,11 +23,16 @@
 
 <script setup lang="ts">
     import Konva from "@Obsidian/Libs/konva";
-    import { onBeforeMount, onMounted, PropType, ref, watch } from "vue";
-    import { Size } from "./types.partial";
-    import { TransformHelper, useNodeDragBoundFunc } from "./utils.partial";
+    import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { LabelFieldBag, LabelFieldType, Size } from "./types.partial";
+    import { createShapeForFieldType, TransformHelper, updateShapeFromField, useNodeDragBoundFunc } from "./utils.partial";
 
     const props = defineProps({
+        labelFields: {
+            type: Array as PropType<LabelFieldBag[]>,
+            required: true
+        },
+
         labelSize: {
             type: Object as PropType<Size>,
             required: true
@@ -53,6 +58,8 @@
     const containerElement = ref<HTMLDivElement | undefined>();
     let stage: Konva.Stage | undefined;
     let transformHelper: TransformHelper | undefined;
+    let nodeLayer: Konva.Layer | undefined;
+    let nodeDragBoundFunc: ((this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d) | undefined;
     const gridLayer = new Konva.Layer();
     const pixelsPerInch = 72 * window.devicePixelRatio;
 
@@ -127,6 +134,56 @@
         return getPixelForOffset(offset);
     }
 
+    function createOrUpdateNodes(): void {
+        if (!nodeDragBoundFunc || !nodeLayer) {
+            return;
+        }
+
+        for (const field of props.labelFields) {
+            let shape: Konva.Shape | undefined;
+
+            nodeLayer.children.find(n => n.id() === field.guid);
+
+            if (shape) {
+                // Try to update the node, if we can't update it then remove
+                // it so it gets re-created.
+                if (updateShapeFromField(shape, field)) {
+                    continue;
+                }
+                else {
+                    shape.remove();
+                    shape = undefined;
+                }
+            }
+
+            if (!shape) {
+                shape = createShapeForFieldType(field.fieldType);
+
+                // Shouldn't happen, but skip the node.
+                if (!shape) {
+                    console.error(`Could not create node for field type ${field.fieldType}.`);
+                    continue;
+                }
+
+                shape.setAttrs({
+                    draggable: true,
+                    dragBoundFunc: nodeDragBoundFunc
+                });
+
+                nodeLayer.add(shape);
+            }
+
+            shape.setAttrs({
+                x: getPixelForOffset(field.left),
+                y: getPixelForOffset(field.top),
+                width: getPixelForOffset(field.width),
+                height: getPixelForOffset(field.height)
+            });
+
+            updateShapeFromField(shape, field);
+        }
+    }
+
     onMounted(() => {
         if (!containerElement.value) {
             return;
@@ -138,35 +195,18 @@
             height: props.labelSize.height * pixelsPerInch,
         });
 
-        const nodeDragBoundFunc = useNodeDragBoundFunc(stage, snapPixel);
+        nodeDragBoundFunc = useNodeDragBoundFunc(stage, snapPixel);
 
-        const layer = new Konva.Layer();
-        stage.add(layer);
+        nodeLayer = new Konva.Layer();
+        stage.add(nodeLayer);
 
         stage.add(gridLayer);
         drawGridLines();
 
-        const textblock: Konva.Text = new Konva.Text({
-            x: 50, y: 50, width: 100, height: 100,
-            fill: "black",
-            color: "white",
-            text: "This is some text.",
-            draggable: true,
-            dragBoundFunc: nodeDragBoundFunc
-        });
+        createOrUpdateNodes();
 
-        layer.add(textblock);
-
-        const textblock2: Konva.Text = new Konva.Text({
-            x: 250, y: 50, width: 100, height: 100,
-            fill: "black",
-            color: "white",
-            text: "This is other text.",
-            draggable: true,
-            dragBoundFunc: nodeDragBoundFunc
-        });
-
-        layer.add(textblock2);
+        const transformerLayer = new Konva.Layer();
+        stage.add(transformerLayer);
 
         var tr = new Konva.Transformer({
             nodes: [],
@@ -177,7 +217,8 @@
             keepRatio: false
 
         });
-        layer.add(tr);
+
+        transformerLayer.add(tr);
 
         transformHelper = new TransformHelper(stage, tr, snapPixel);
 
@@ -193,10 +234,10 @@
             tr.nodes([e.target]);
         });
 
-        layer.draw();
+        stage.draw();
     });
 
-    onBeforeMount(() => {
+    onBeforeUnmount(() => {
         stage?.destroy();
         stage = undefined;
 

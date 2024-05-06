@@ -9,7 +9,8 @@
             <div class="panel-body-fill" style="display: flex;">
                 <Menu />
 
-                <Editor :labelSize="labelSize" />
+                <Editor v-model:labelFields="labelFields"
+                        :labelSize="labelSize" />
             </div>
 
             <template #footerActions>
@@ -44,8 +45,62 @@
     import Menu from "./LabelDesigner/menu.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { ref } from "vue";
-    import { Size } from "./LabelDesigner/types.partial";
+    import { computed, ref } from "vue";
+    import { LabelBag, LabelFieldBag, LabelFieldType, Size } from "./LabelDesigner/types.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
-    const labelSize = ref<Size>({ width: 4, height: 2 });
+    const labelSize = computed<Size>({
+        get() {
+            return {
+                width: label.value.width,
+                height: label.value.height
+            };
+        },
+        set(value) {
+            label.value.width = value.width;
+            label.value.height = value.height;
+        }
+    });
+
+    const labelFields = computed<LabelFieldBag[]>({
+        get() {
+            return label.value.fields ?? [];
+        },
+        set(value) {
+            label.value.fields = value;
+        }
+    });
+
+    const label = ref<LabelBag>({
+        width: 4.0,
+        height: 2.0,
+        fields: [
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Rectangle,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 2,
+                top: 0.25,
+                width: 1,
+                height: 1,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {}
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 1,
+                top: 0.25,
+                width: 1,
+                height: 0.5,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {}
+            },
+        ]
+    });
 </script>
