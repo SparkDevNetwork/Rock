@@ -36,6 +36,16 @@
                     zIndexOffset: 1050
                 });
 
+                // Listen to actions from external code.
+                if (options.actions) {
+                    // Update the bootstrap datepicker when external code sets the date.
+                    options.actions.onSetLocalDate = (localDate) => {
+                        $datePickerInputGroup.data("datepicker")
+                            .setDate(localDate) // Set the date.
+                            .fill();            // Update the UI.
+                    };
+                }
+
                 // note: using 'change' instead of datePicker's 'changeDate' so that both manual entry and picking from calender works
                 datePicker.on('change', function (e) {
                     if (options.postbackScript) {

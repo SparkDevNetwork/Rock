@@ -145,29 +145,36 @@ export const RegistrationCostSummary: InjectionKey<{
 }> = Symbol("registration-cost-summary");
 
 export type TransactionFrequency = {
+    readonly definedValueGuid: Guid;
+
     /** Determines if this transaction frequency matches the definedValueGuid. */
-    hasDefinedValueGuid(definedValueGuid: Guid): boolean;
+    hasDefinedValueGuid(guid: Guid): boolean;
 
     /** Gets the number of transactions between the first and second dates, inclusively. */
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number;
 
-    getNextTransactionDate(): RockDateTime;
+    /** Returns the desired date if it is valid; otherwise, the next valid date is returned or null if there are no valid dates. */
+    getValidTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, desiredDate: RockDateTime): RockDateTime | null;
+
+    /** Returns the next valid date following the previous date or null if there are no valid dates. */
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null;
 
     maxNumberOfPaymentsForOneYear: number;
 };
 
 const transactionFrequencyOneTime: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: Guid): boolean {
-        return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyOneTime);
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyOneTime;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
     },
 
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
-        // Add a day to the second date so this function only has to check
-        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
-        const dayAfterSecondDate = secondDateTime.addDays(1).date;
-        const firstDate = firstDateTime.date;
+        const date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
 
-        if (firstDate.isEarlierThan(dayAfterSecondDate)) {
+        if (date) {
             return 1;
         }
         else {
@@ -175,9 +182,37 @@ const transactionFrequencyOneTime: TransactionFrequency = {
         }
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Always use today's date for one-time transactions.
-        return RockDateTime.now().date;
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        firstDate = firstDate.date;
+        secondDate = secondDate.date;
+        desiredDate = desiredDate.date;
+        const today = RockDateTime.now().date;
+        const tomorrow = today.addDays(1);
+
+        const earliestPossibleDate =
+            firstDate.isLaterThan(today)
+                ? firstDate // First date is in the future (including tomorrow).
+                : tomorrow; // Tomorrow is the earliest date.
+
+        if (desiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return desiredDate;
+        }
+    },
+
+    getNextTransactionDate(_firstDateTime: RockDateTime, _secondDateTime: RockDateTime, _previousDate: RockDateTime): RockDateTime | null {
+        // One-time frequency doesn't have a next date so return null.
+        return null;
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -186,64 +221,118 @@ const transactionFrequencyOneTime: TransactionFrequency = {
 };
 
 const transactionFrequencyWeekly: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
-        return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyWeekly);
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyWeekly;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
     },
 
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
-        // Add a day to the second date so this function only has to check
-        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
-        const dayAfterSecondDate = secondDateTime.addDays(1).date;
-        let date = firstDateTime.date;
-
+        let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(dayAfterSecondDate)) {
+        while (date) {
             numberOfTransactions++;
-
-            // Add 7 days.
-            date = date.addDays(7);
+            date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
 
         return numberOfTransactions;
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Always use tomorrow's date for recurring transactions.
-        return RockDateTime.now().addDays(1).date;
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        firstDate = firstDate.date;
+        secondDate = secondDate.date;
+        desiredDate = desiredDate.date;
+        const today = RockDateTime.now().date;
+        const tomorrow = today.addDays(1);
+
+        const earliestPossibleDate =
+            firstDate.isLaterThan(today)
+                ? firstDate // First date is in the future (including tomorrow).
+                : tomorrow; // Tomorrow is the earliest date.
+
+        if (desiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return desiredDate;
+        }
+    },
+
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null {
+        previousDate = previousDate.date;
+        const desiredDate = previousDate.addDays(7);
+        return this.getValidTransactionDate(firstDateTime, secondDateTime, desiredDate);
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
         return 52;
-    }
+    },
 };
 
 const transactionFrequencyBiWeekly: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
-        return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyBiweekly);
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyBiweekly;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
     },
 
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
-        // Add a day to the second date so this function only has to check
-        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
-        const dayAfterSecondDate = secondDateTime.addDays(1).date;
-        let date = firstDateTime.date;
-
+        let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(dayAfterSecondDate)) {
+        while (date) {
             numberOfTransactions++;
-
-            // Add 14 days.
-            date = date.addDays(14);
+            date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
 
         return numberOfTransactions;
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Always use tomorrow's date for recurring transactions.
-        return RockDateTime.now().addDays(1).date;
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        firstDate = firstDate.date;
+        secondDate = secondDate.date;
+        desiredDate = desiredDate.date;
+        const today = RockDateTime.now().date;
+        const tomorrow = today.addDays(1);
+
+        const earliestPossibleDate =
+            firstDate.isLaterThan(today)
+                ? firstDate // First date is in the future (including tomorrow).
+                : tomorrow; // Tomorrow is the earliest date.
+
+        if (desiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return desiredDate;
+        }
+    },
+
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null {
+        previousDate = previousDate.date;
+        const desiredDate = previousDate.addDays(14);
+        return this.getValidTransactionDate(firstDateTime, secondDateTime, desiredDate);
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -256,16 +345,18 @@ type GetNextDayOption = "end-of-month";
 
 /**
  * From the starting date, finds the next day matching one the specified days.
+ *
+ * If the `startingDate` matches a `potentialDay`, then `startingDate` is returned.
  * @param potentialDays Represents the days of the month; e.g., 1 is the 1st, 2 is the 2nd, etc.
  * @example
- * // Assume current date is 2-8-2024.
- * getNextDay(13, 15, 31); // 2-13-2024
- * getNextDay(1, 15); // 2-15-2024
- * getNextDay(1); // 3-1-2024
- * getNextDay(8); // 2-8-2024
- * getNextDay("end-of-month"); // 2-29-2024
+ * // Assume date is a Date object with the value 2-8-2024.
+ * getNextDay(date, 13, 15, 31); // 2-13-2024
+ * getNextDay(date, 1, 15); // 2-15-2024
+ * getNextDay(date, 1); // 3-1-2024
+ * getNextDay(date, 8); // 2-8-2024
+ * getNextDay(date, "end-of-month"); // 2-29-2024
  */
-function getNextDay(startingDate: RockDateTime, ...potentialDays: (number | GetNextDayOption)[]): RockDateTime | null {
+function getNextDay(startingDate: RockDateTime, ...potentialDays: (number | GetNextDayOption)[]): RockDateTime {
     let date = startingDate;
 
     potentialDays = potentialDays
@@ -337,55 +428,116 @@ function getNextDay(startingDate: RockDateTime, ...potentialDays: (number | GetN
     }
 
     // If this code is reached, then it's likely that the arguments are invalid.
-    return null;
+    throw "An unexpected error occurred while processing payment dates.";
 }
 
-const transactionFrequencyTwiceAMonth: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
-        return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyFirstAndFifteenth) || areEqual(definedValueGuid, DefinedValue.TransactionFrequencyTwicemonthly);
+const transactionFrequencyFirstAndFifteenth: TransactionFrequency = {
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyFirstAndFifteenth;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
     },
 
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
-        // For twice a month frequency, this will check how many 1st and 15th days are between the two dates.
-
-        // Add a day to the second date so this function only has to check
-        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
-        const dayAfterSecondDate = secondDateTime.addDays(1).date;
-        let date = firstDateTime.date;
-
-        if (date.day > 15) {
-            // Set the date to the 1st of the next month.
-            date = date.addDays(1 - date.day).addMonths(1);
-        }
-        else if (date.day < 15 && date.day > 1) {
-            // Set the date to the 15th of the current month.
-            date = date.addDays(15 - date.day);
-        }
-
+        let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(dayAfterSecondDate)) {
-            if (date.day === 1 || date.day === 15) {
-                numberOfTransactions++;
-            }
-
-            if (date.day < 15) {
-                // Set the date to the 15th of the current month.
-                date = date.addDays(15 - date.day);
-            }
-            else {
-                // Set the date to the 1st of the next month.
-                date = date.addDays(-14).addMonths(1);
-            }
+        while (date) {
+            numberOfTransactions++;
+            date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
 
         return numberOfTransactions;
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Get the first 1st or 15th after tomorrow.
-        const tomorrow = RockDateTime.now().addDays(1).date;
-        return getNextDay(tomorrow, ...[1, 15]) ?? tomorrow;
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        const earliestPossibleDate = getNextDay(firstDate.date, 1, 15);
+        secondDate = secondDate.date;
+        const earliestDesiredDate = getNextDay(desiredDate.date, 1, 15);
+        
+
+        if (earliestDesiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (earliestDesiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return earliestDesiredDate;
+        }
+    },
+
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null {
+        previousDate = previousDate.date;
+        const desiredDate = getNextDay(previousDate.addDays(1), ...[1, 15]);
+        return this.getValidTransactionDate(firstDateTime, secondDateTime, desiredDate);
+    },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 24;
+    }
+};
+
+const transactionFrequencyTwiceMonthly: TransactionFrequency = {
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyTwicemonthly;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
+    },
+
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+        let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
+        let numberOfTransactions = 0;
+
+        while (date) {
+            numberOfTransactions++;
+            date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
+        }
+
+        return numberOfTransactions;
+    },
+
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        firstDate = firstDate.date;
+        secondDate = secondDate.date;
+        desiredDate = desiredDate.date;
+        const today = RockDateTime.now().date;
+        const tomorrow = today.addDays(1);
+
+        const earliestPossibleDate =
+            firstDate.isLaterThan(today)
+                ? firstDate // First date is in the future (including tomorrow).
+                : tomorrow; // Tomorrow is the earliest date.
+
+        if (desiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return desiredDate;
+        }
+    },
+
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null {
+        previousDate = previousDate.date;
+        const desiredDate = getNextDay(previousDate.addDays(1), ...[1, 15]);
+        return this.getValidTransactionDate(firstDateTime, secondDateTime, desiredDate);
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -394,37 +546,70 @@ const transactionFrequencyTwiceAMonth: TransactionFrequency = {
 };
 
 const transactionFrequencyMonthly: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
-        return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyMonthly);
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyMonthly;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
     },
 
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
-        // Add a day to the second date so this function only has to check
-        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
-        const dayAfterSecondDate = secondDateTime.addDays(1).date;
-        let date = firstDateTime.date;
-
-        // If the first date is the last day of the month
-        // then this function will increment by 1 months and
-        // automatically choose the last day of the month.
-        const getNextDate: (d: RockDateTime) => RockDateTime =
-            date.isEqualTo(firstDateTime.endOfMonth().date)
-                ? (d: RockDateTime) => d.addMonths(1).endOfMonth().date
-                : (d: RockDateTime) => d.addMonths(1);
-
+        let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(dayAfterSecondDate)) {
+        while (date) {
             numberOfTransactions++;
-            date = getNextDate(date);
+            date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
 
         return numberOfTransactions;
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Always use tomorrow's date for recurring transactions.
-        return RockDateTime.now().addDays(1).date;
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        firstDate = firstDate.date;
+        secondDate = secondDate.date;
+        desiredDate = desiredDate.date;
+        const today = RockDateTime.now().date;
+        const tomorrow = today.addDays(1);
+
+        const earliestPossibleDate =
+            firstDate.isLaterThan(today)
+                ? firstDate // First date is in the future (including tomorrow).
+                : tomorrow; // Tomorrow is the earliest date.
+
+        if (desiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return desiredDate;
+        }
+    },
+
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null {
+        firstDateTime = firstDateTime.date;
+        previousDate = previousDate.date;
+        let desiredDate: RockDateTime;
+
+        // If the first date is the last day of the month
+        // then this function will increment by 1 months and
+        // automatically choose the last day of the month.
+        if (firstDateTime.isEqualTo(firstDateTime.endOfMonth().date)) {
+            desiredDate = previousDate.addMonths(1).endOfMonth().date;
+        }
+        else {
+            desiredDate = previousDate.addMonths(1);
+        }
+
+        return this.getValidTransactionDate(firstDateTime, secondDateTime, desiredDate);
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -433,37 +618,70 @@ const transactionFrequencyMonthly: TransactionFrequency = {
 };
 
 const transactionFrequencyQuarterly: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
-        return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyQuarterly);
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyQuarterly;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
     },
 
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
-        // Add a day to the second date so this function only has to check
-        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
-        const dayAfterSecondDate = secondDateTime.addDays(1).date;
-        let date = firstDateTime.date;
-
-        // If the first date is the last day of the month
-        // then this function will increment by 3 months and
-        // automatically choose the last day of the month.
-        const getNextDate: (d: RockDateTime) => RockDateTime =
-            date.isEqualTo(firstDateTime.endOfMonth().date)
-                ? (d: RockDateTime) => d.addMonths(3).endOfMonth().date
-                : (d: RockDateTime) => d.addMonths(3);
-
+        let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(dayAfterSecondDate)) {
+        while (date) {
             numberOfTransactions++;
-            date = getNextDate(date);
+            date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
 
         return numberOfTransactions;
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Always use tomorrow's date for recurring transactions.
-        return RockDateTime.now().addDays(1).date;
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        firstDate = firstDate.date;
+        secondDate = secondDate.date;
+        desiredDate = desiredDate.date;
+        const today = RockDateTime.now().date;
+        const tomorrow = today.addDays(1);
+
+        const earliestPossibleDate =
+            firstDate.isLaterThan(today)
+                ? firstDate // First date is in the future (including tomorrow).
+                : tomorrow; // Tomorrow is the earliest date.
+
+        if (desiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return desiredDate;
+        }
+    },
+
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null {
+        firstDateTime = firstDateTime.date;
+        previousDate = previousDate.date;
+        let desiredDate: RockDateTime;
+
+        // If the first date is the last day of the month
+        // then this function will increment by 3 months and
+        // automatically choose the last day of the month.
+        if (firstDateTime.isEqualTo(firstDateTime.endOfMonth().date)) {
+            desiredDate = previousDate.addMonths(3).endOfMonth().date;
+        }
+        else {
+            desiredDate = previousDate.addMonths(3);
+        }
+
+        return this.getValidTransactionDate(firstDateTime, secondDateTime, desiredDate);
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -472,37 +690,70 @@ const transactionFrequencyQuarterly: TransactionFrequency = {
 };
 
 const transactionFrequencyTwiceAYear: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
-        return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyTwiceyearly);
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyTwiceyearly;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
     },
 
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
-        // Add a day to the second date so this function only has to check
-        // isEarlierThan(dayAfterSecondDate) instead of isEarlierThan(secondDate) || isEqualTo(secondDate).
-        const dayAfterSecondDate = secondDateTime.addDays(1).date;
-        let date = firstDateTime.date;
-
-        // If the first date is the last day of the month
-        // then this function will increment by 6 months and
-        // automatically choose the last day of the month.
-        const getNextDate: (d: RockDateTime) => RockDateTime =
-            date.isEqualTo(firstDateTime.endOfMonth().date)
-                ? (d: RockDateTime) => d.addMonths(6).endOfMonth().date
-                : (d: RockDateTime) => d.addMonths(6);
-
+        let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(dayAfterSecondDate)) {
+        while (date) {
             numberOfTransactions++;
-            date = getNextDate(date);
+            date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
 
         return numberOfTransactions;
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Always use tomorrow's date for recurring transactions.
-        return RockDateTime.now().addDays(1).date;
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        firstDate = firstDate.date;
+        secondDate = secondDate.date;
+        desiredDate = desiredDate.date;
+        const today = RockDateTime.now().date;
+        const tomorrow = today.addDays(1);
+
+        const earliestPossibleDate =
+            firstDate.isLaterThan(today)
+                ? firstDate // First date is in the future (including tomorrow).
+                : tomorrow; // Tomorrow is the earliest date.
+
+        if (desiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return desiredDate;
+        }
+    },
+
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null {
+        firstDateTime = firstDateTime.date;
+        previousDate = previousDate.date;
+        let desiredDate: RockDateTime;
+
+        // If the first date is the last day of the month
+        // then this function will increment by 6 months and
+        // automatically choose the last day of the month.
+        if (firstDateTime.isEqualTo(firstDateTime.endOfMonth().date)) {
+            desiredDate = previousDate.addMonths(6).endOfMonth().date;
+        }
+        else {
+            desiredDate = previousDate.addMonths(6);
+        }
+
+        return this.getValidTransactionDate(firstDateTime, secondDateTime, desiredDate);
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -511,35 +762,70 @@ const transactionFrequencyTwiceAYear: TransactionFrequency = {
 };
 
 const transactionFrequencyYearly: TransactionFrequency = {
-    hasDefinedValueGuid(definedValueGuid: string): boolean {
-        return areEqual(definedValueGuid, DefinedValue.TransactionFrequencyYearly);
+    get definedValueGuid(): Guid {
+        return DefinedValue.TransactionFrequencyYearly;
+    },
+
+    hasDefinedValueGuid(guid: Guid): boolean {
+        return areEqual(guid, this.definedValueGuid);
     },
 
     getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
-        let date = firstDateTime.date;
-        const dayAfterSecondDate = secondDateTime.addDays(1).date;
-
-        // If the first date is the last day of the month
-        // then this function will increment by 1 year and
-        // automatically choose the last day of the month.
-        const getNextDate: (d: RockDateTime) => RockDateTime =
-            date.isEqualTo(firstDateTime.endOfMonth().date)
-                ? (d: RockDateTime) => d.addYears(1).endOfMonth().date
-                : (d: RockDateTime) => d.addYears(1);
-
+        let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date.isEarlierThan(dayAfterSecondDate)) {
+        while (date) {
             numberOfTransactions++;
-            date = getNextDate(date);
+            date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
 
         return numberOfTransactions;
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Always use tomorrow's date for recurring transactions.
-        return RockDateTime.now().addDays(1).date;
+    getValidTransactionDate(firstDate: RockDateTime, secondDate: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        firstDate = firstDate.date;
+        secondDate = secondDate.date;
+        desiredDate = desiredDate.date;
+        const today = RockDateTime.now().date;
+        const tomorrow = today.addDays(1);
+
+        const earliestPossibleDate =
+            firstDate.isLaterThan(today)
+                ? firstDate // First date is in the future (including tomorrow).
+                : tomorrow; // Tomorrow is the earliest date.
+
+        if (desiredDate.isLaterThan(secondDate)) {
+            // The desired date is after the second date,
+            // so there are no more valid dates.
+            return null;
+        }
+        else if (desiredDate.isEarlierThan(earliestPossibleDate)) {
+            // The desired date is before the earliest possible date (first date or tomorrow).
+            // The next valid date to use is the earliest possible date.
+            return earliestPossibleDate;
+        }
+        else {
+            // The desired date is valid (falls between the first and second dates).
+            return desiredDate;
+        }
+    },
+
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null {
+        firstDateTime = firstDateTime.date;
+        previousDate = previousDate.date;
+        let desiredDate: RockDateTime;
+
+        // If the first date is the last day of the month
+        // then this function will increment by 1 year and
+        // automatically choose the last day of the month.
+        if (firstDateTime.isEqualTo(firstDateTime.endOfMonth().date)) {
+            desiredDate = previousDate.addYears(1).endOfMonth().date;
+        }
+        else {
+            desiredDate = previousDate.addMonths(1);
+        }
+
+        return this.getValidTransactionDate(firstDateTime, secondDateTime, desiredDate);
     },
 
     get maxNumberOfPaymentsForOneYear(): number {
@@ -551,29 +837,37 @@ const transactionFrequencies: TransactionFrequency[] = [
     transactionFrequencyOneTime,
     transactionFrequencyWeekly,
     transactionFrequencyBiWeekly,
-    transactionFrequencyTwiceAMonth,
+    transactionFrequencyFirstAndFifteenth,
+    transactionFrequencyTwiceMonthly,
     transactionFrequencyMonthly,
     transactionFrequencyQuarterly,
     transactionFrequencyTwiceAYear,
     transactionFrequencyYearly
 ];
 
-export const nullTransactionFrequency: TransactionFrequency = {
-    hasDefinedValueGuid(_definedValueGuid: string): boolean {
+export const noopTransactionFrequency: TransactionFrequency = {
+    get definedValueGuid(): string {
+        return "";
+    },
+
+    hasDefinedValueGuid(_guid: Guid): boolean {
         return false;
+    },
+
+    get maxNumberOfPaymentsForOneYear(): number {
+        return 0;
     },
 
     getMaxNumberOfTransactionsBetweenDates(_firstDateTime: RockDateTime, _secondDateTime: RockDateTime): number {
         return 0;
     },
 
-    getNextTransactionDate(): RockDateTime {
-        // Always use an invalid date for null transactions to prevent them from being scheduled.
-        return RockDateTime.now().addDays(-7).date;
+    getValidTransactionDate(_firstDateTime: RockDateTime, _secondDateTime: RockDateTime, _desiredDate: RockDateTime): RockDateTime | null {
+        return null;
     },
 
-    get maxNumberOfPaymentsForOneYear(): number {
-        return 0;
+    getNextTransactionDate: function (_firstDateTime: RockDateTime, _secondDateTime: RockDateTime, _previousDate: RockDateTime): RockDateTime | null {
+        return null;
     }
 };
 
@@ -589,10 +883,14 @@ export function getTransactionFrequency(definedValueGuid: Guid): TransactionFreq
 
 export type PaymentPlanFrequency = {
     transactionFrequency: TransactionFrequency;
-    startPaymentDate: RockDateTime;
+    startPaymentDate: RockDateTime | null;
     paymentDeadlineDate: RockDateTime;
     maxNumberOfPayments: number;
     listItemBag: ListItemBag;
+    /** Returns the desired date if it is valid; otherwise, the next valid date is returned or null if there are no valid dates. */
+    getValidTransactionDate(desiredDate: RockDateTime): RockDateTime | null;
+    /** Returns the next valid date following the previous date or null if there are no valid dates. */
+    getNextTransactionDate(previousDate: RockDateTime): RockDateTime | null;
 };
 
 // function isListItemBagArray(value: unknown): value is ListItemBag[] {
@@ -627,16 +925,47 @@ export type PaymentPlanFrequency = {
 // }
 
 export function getPaymentPlanFrequency(listItemBag: ListItemBag, paymentDeadlineDate: RockDateTime): PaymentPlanFrequency {
-    const transactionFrequency = getTransactionFrequency(listItemBag.value ?? "") ?? nullTransactionFrequency;
-    const startPaymentDate = transactionFrequency.getNextTransactionDate();
-    return {
-        listItemBag: listItemBag,
-        transactionFrequency,
-        startPaymentDate,
-        paymentDeadlineDate,
-        maxNumberOfPayments: transactionFrequency.getMaxNumberOfTransactionsBetweenDates(startPaymentDate, paymentDeadlineDate)
-    };
+    const transactionFrequency = getTransactionFrequency(listItemBag?.value ?? "") ?? noopTransactionFrequency;
+
+    // Although tomorrow is the earliest possible date in the current implementation,
+    // keep that logic in the `getValidTransactionDate` function.
+    const today = RockDateTime.now().date;
+    const startPaymentDate = transactionFrequency.getValidTransactionDate(today, paymentDeadlineDate, today);
+
+    if (startPaymentDate) {
+        return {
+            listItemBag: listItemBag,
+            transactionFrequency,
+            startPaymentDate,
+            paymentDeadlineDate,
+            maxNumberOfPayments: transactionFrequency.getMaxNumberOfTransactionsBetweenDates(startPaymentDate, paymentDeadlineDate),
+            getNextTransactionDate(previousDate: RockDateTime) {
+                return transactionFrequency.getNextTransactionDate(startPaymentDate, paymentDeadlineDate, previousDate);
+            },
+            getValidTransactionDate(desiredDate: RockDateTime) {
+                return transactionFrequency.getValidTransactionDate(startPaymentDate, paymentDeadlineDate, desiredDate);
+            }
+        };
+    }
+    else {
+        return noopPaymentPlanFrequency;
+    }
 }
+
+export const noopPaymentPlanFrequency: PaymentPlanFrequency = {
+    listItemBag: {},
+    transactionFrequency: noopTransactionFrequency,
+    maxNumberOfPayments: 0,
+    // Start and end dates don't matter.
+    startPaymentDate: null,
+    paymentDeadlineDate: RockDateTime.now().date.addDays(-1),
+    getNextTransactionDate(_previousDate: RockDateTime) {
+        return null;
+    },
+    getValidTransactionDate(_desiredDate: RockDateTime) {
+        return null;
+    }
+};
 
 export function formatCurrency(value: number, overrides?: Partial<CurrencyInfoBag> | null | undefined): string {
     const currencyBag: CurrencyInfoBag = {
