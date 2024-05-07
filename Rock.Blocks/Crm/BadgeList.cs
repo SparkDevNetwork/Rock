@@ -125,6 +125,7 @@ namespace Rock.Blocks.Crm
         {
             return new GridBuilder<Model.Badge>()
                 .WithBlock( this )
+                .AddTextField( "id", a => a.Id.ToString() )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "badgeName", a => a.Name )
                 .AddTextField( "badgeType", a => a.EntityType?.FriendlyName )
