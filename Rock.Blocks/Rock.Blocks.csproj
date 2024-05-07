@@ -112,6 +112,7 @@
     <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\AuditList.cs" />

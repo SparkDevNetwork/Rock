@@ -89,6 +89,7 @@
     <Compile Include="Blocks\Cms\PersonalLinkList\SavePersonalLinkRequestBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
