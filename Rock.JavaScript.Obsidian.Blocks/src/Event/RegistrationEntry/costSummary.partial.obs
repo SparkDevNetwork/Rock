@@ -61,14 +61,24 @@
                     </div>
                 </div>
 
-                <div v-if="registrationEntryState.viewModel.session?.paymentPlan" class="form-group static-control">
-                    <label class="control-label">Payment Plan</label>
-                    <div class="control-wrapper">
-                        <div class="form-control-static">
-                            {{ formatCurrency(registrationEntryState.viewModel.session.paymentPlan.amountPerPayment, registrationEntryState.viewModel.currencyInfo) }} x {{ registrationEntryState.viewModel.session.paymentPlan.remainingNumberOfPayments }} ({{ registrationEntryState.viewModel.session.paymentPlan.transactionFrequencyText }})
+                <template v-if="registrationEntryState.viewModel.session?.activePaymentPlan">
+                    <div class="form-group static-control">
+                        <label class="control-label">Payment Plan</label>
+                        <div class="control-wrapper">
+                            <div class="form-control-static">
+                                <div>
+                                    {{ formatCurrency(registrationEntryState.viewModel.session.activePaymentPlan.amountPerPayment, registrationEntryState.viewModel.currencyInfo) }} x {{ registrationEntryState.viewModel.session.activePaymentPlan.remainingNumberOfPayments }} ({{ registrationEntryState.viewModel.session.activePaymentPlan.transactionFrequencyText }})
+                                </div>
+                                <RockButton btnType="link"
+                                            btnSize="xs"
+                                            :disabled="isDeletePaymentPlanModalShown"
+                                            @click="isDeletePaymentPlanModalShown = true">Delete</RockButton>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </template>
+
+                <NotificationBox v-if="deletePaymentPlanErrorMessage" alertType="danger">{{ deletePaymentPlanErrorMessage }}</NotificationBox>
 
                 <template v-if="showAmountDueToday && maxAmountCanBePaid && !isPaymentPlanConfigured">
                     <div class="form-group static-control">
@@ -95,7 +105,7 @@
                         </div>
                     </div>
 
-                    <div v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs) && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.paymentPlan" class="form-group">
+                    <div v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs) && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.activePaymentPlan" class="form-group">
                         <RockButton btnType="default" btnSize="xs" @click="onConfigurePaymentPlanClicked">Configure a Payment Plan</RockButton>
                     </div>
                 </template>
@@ -124,6 +134,12 @@
                                v-model="isConfigurePaymentPlanModalShown"
                                :paymentDeadlineDate="paymentPlanArgs.paymentPlanDeadlineDate"
                                :paymentPlanFrequencies="paymentPlanArgs.paymentPlanFrequencies" />
+
+    <Modal v-model="isDeletePaymentPlanModalShown"
+           saveText="Delete"
+           @save="onDeletePaymentPlan">
+        <p>Are you sure you want to delete this payment plan?</p>
+    </Modal>
 </template>
 
 <style scoped>
@@ -139,6 +155,8 @@
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { RegistrationEntryCostSummaryBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCostSummaryBag";
@@ -175,6 +193,8 @@
     const lineItems = ref<RegistrationEntryCostSummaryBag[]>([]);
     const isConfigurePaymentPlanModalShown = ref<boolean>(false);
     const isPaymentPlanConfigured = ref<boolean>(!!registrationEntryState.paymentPlan?.numberOfPayments && !!registrationEntryState.paymentPlan?.amountPerPayment);
+    const isDeletePaymentPlanModalShown = ref<boolean>(false);
+    const deletePaymentPlanErrorMessage = ref<string>("");
 
     // #endregion
 
@@ -368,7 +388,7 @@
     /** The max amount that can be paid today */
     const maxAmountCanBePaid = computed<number>(() => {
         // The max amount is the discounted total less the previously paid amount and any planned payment amount.
-        const plannedPaymentAmount = registrationEntryState.viewModel.session?.paymentPlan?.remainingPlannedAmount ?? 0;
+        const plannedPaymentAmount = registrationEntryState.viewModel.session?.activePaymentPlan?.remainingPlannedAmount ?? 0;
         const balance = discountedTotal.value - amountPreviouslyPaid.value - plannedPaymentAmount;
 
         if (balance > 0) {
@@ -427,7 +447,7 @@
     // #region Functions
 
     /** Retrieve the line item costs from the server */
-    async function fetchData(): Promise<void> {
+    async function fetchCostData(): Promise<void> {
         isLoading.value = true;
         lineItems.value = [];
 
@@ -456,6 +476,51 @@
 
     // #region Event Handlers
 
+    /**
+     * Event handler for the payment plan deleted event.
+     */
+    async function onPaymentPlanDeleted(): Promise<void> {
+        if (registrationEntryState.viewModel.session) {
+            registrationEntryState.viewModel.session.activePaymentPlan = null;
+        }
+        registrationEntryState.paymentPlan = null;
+
+        // Refresh the cost data as the previous payment plan may have reduced it.
+        await fetchCostData();
+    }
+
+    /**
+     * Handler for the delete payment plan event.
+     */
+    async function onDeletePaymentPlan(): Promise<void> {
+        isLoading.value = true;
+        isDeletePaymentPlanModalShown.value = false;
+        deletePaymentPlanErrorMessage.value = "";
+
+        try {
+            const activePaymentPlan = registrationEntryState.viewModel.session?.activePaymentPlan;
+
+            if (!activePaymentPlan) {
+                // This shouldn't happen as the delete button should only
+                // be shown when there is an active payment plan to delete.
+                await onPaymentPlanDeleted();
+            }
+            else {
+                const result = await invokeBlockAction("DeletePaymentPlan");
+
+                if (result?.isSuccess) {
+                    await onPaymentPlanDeleted();
+                }
+                else {
+                    deletePaymentPlanErrorMessage.value = result.errorMessage ?? "An unknown error occurred while attempting to delete the payment plan.";
+                }
+            }
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
     function onConfigurePaymentPlanClicked(): void {
         // Open the modal on the next tick to avoid situations where the modal cannot be reopened.
         nextTick(() => {
@@ -464,7 +529,6 @@
     }
 
     function onUnconfigurePaymentPlanClicked(): void {
-        // Open the modal on the next tick to avoid situations where the modal cannot be reopened.
         registrationEntryState.paymentPlan = null;
     }
 
@@ -492,10 +556,10 @@
     });
 
     watch(() => registrationEntryState.discountCode, async (): Promise<void> => {
-        await fetchData();
+        await fetchCostData();
     });
 
     // #endregion
 
-    fetchData();
+    fetchCostData();
 </script>

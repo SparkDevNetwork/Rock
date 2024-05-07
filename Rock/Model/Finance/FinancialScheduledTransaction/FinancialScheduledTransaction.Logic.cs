@@ -87,6 +87,11 @@ namespace Rock.Model
     public sealed class PaymentPlan
     {
         /// <summary>
+        /// Gets or sets the financial scheduled transaction unique identifier.
+        /// </summary>
+        public Guid FinancialScheduledTransactionGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the amount per payment.
         /// </summary>
         public decimal AmountPerPayment { get; set; }

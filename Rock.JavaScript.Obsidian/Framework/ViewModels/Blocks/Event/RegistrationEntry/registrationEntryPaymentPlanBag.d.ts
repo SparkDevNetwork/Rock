@@ -28,6 +28,9 @@ export type RegistrationEntryPaymentPlanBag = {
     /** Gets or sets the amount to pay per payment. */
     amountPerPayment: number;
 
+    /** Gets or sets the financial scheduled transaction unique identifier. */
+    financialScheduledTransactionGuid: Guid;
+
     processedNumberOfPayments: number;
 
     processedPlannedAmount: number;

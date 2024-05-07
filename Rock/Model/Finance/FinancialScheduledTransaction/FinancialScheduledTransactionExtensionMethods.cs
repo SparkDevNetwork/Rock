@@ -52,6 +52,7 @@ namespace Rock.Model
                         ? null
                         : new
                         {
+                            FinancialScheduledTransactionGuid = financialScheduledTransaction.Guid,
                             financialScheduledTransaction.IsActive,
 
                             // There should only be one scheduled transaction detail for a payment plan,
@@ -76,6 +77,7 @@ namespace Rock.Model
                         ? null
                         : new PaymentPlan
                         {
+                            FinancialScheduledTransactionGuid = pair.PaymentPlanData.FinancialScheduledTransactionGuid,
                             IsActive = pair.PaymentPlanData.IsActive,
 
                             StartDate = pair.PaymentPlanData.StartDate,
@@ -126,6 +128,7 @@ namespace Rock.Model
 
             var paymentPlanData = new
             {
+                FinancialScheduledTransactionGuid = financialScheduledTransaction.Guid,
                 financialScheduledTransaction.IsActive,
 
                 // There should only be one scheduled transaction detail for a payment plan,
@@ -144,6 +147,7 @@ namespace Rock.Model
 
             return new PaymentPlan
             {
+                FinancialScheduledTransactionGuid = paymentPlanData.FinancialScheduledTransactionGuid,
                 IsActive = paymentPlanData.IsActive,
 
                 StartDate = paymentPlanData.StartDate,
