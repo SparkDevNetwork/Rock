@@ -81,7 +81,7 @@
         // 2. There is an existing payment plan AND the amount remaining is not covered by it.
         // 3. There is no payment plan AND there is an amount remaining.
 
-        const previousPaymentPlan = registrationEntryState.viewModel.session?.paymentPlan;
+        const previousPaymentPlan = registrationEntryState.viewModel.session?.activePaymentPlan;
         const currentPaymentPlan = registrationEntryState.paymentPlan;
         const currentAmountToPayToday = registrationEntryState.amountToPayToday;
         const isCurrentPaymentPlanConfigured = !!currentPaymentPlan?.numberOfPayments && !!currentPaymentPlan.amountPerPayment;

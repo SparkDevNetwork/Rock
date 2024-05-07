@@ -8,6 +8,11 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
     public class RegistrationEntryPaymentPlanBag
     {
         /// <summary>
+        /// Gets or sets the financial scheduled transaction unique identifier.
+        /// </summary>
+        public Guid FinancialScheduledTransactionGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction frequency unique identifier.
         /// </summary>
         /// <value>

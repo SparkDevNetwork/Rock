@@ -138,9 +138,9 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public int? DiscountMaxRegistrants { get; set; }
 
         /// <summary>
-        /// Gets or sets the payment plan that has been configured for the registration.
+        /// Gets or sets the active payment plan that has been configured for the registration.
         /// </summary>
-        public RegistrationEntryPaymentPlanBag PaymentPlan { get; set; }
+        public RegistrationEntryPaymentPlanBag ActivePaymentPlan { get; set; }
 
         /// <inheritdoc/>
         List<RegistrantInfo> IRegistrationEntryBlockArgs.Registrants
