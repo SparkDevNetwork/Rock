@@ -103,7 +103,7 @@
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const semester = propertyRef(props.modelValue.bag?.semester?.value ?? "", "Semester");
     const schedule = propertyRef(props.modelValue.bag?.schedule, "Schedule");
-    const location = propertyRef(props.modelValue.bag?.location ?? {}, "Location");
+    const location = propertyRef(props.modelValue.bag?.location ?? null, "Location");
     const campus = propertyRef(props.modelValue.bag?.campus, "Campus");
     const gradingSystem = propertyRef(props.modelValue.bag?.gradingSystem?.value ?? "", "GradingSystem");
 
@@ -147,7 +147,7 @@
         updateRefValue(description, props.modelValue.bag?.description ?? "");
         updateRefValue(semester, props.modelValue.bag?.semester?.value ?? "");
         updateRefValue(schedule, props.modelValue.bag?.schedule ?? {});
-        updateRefValue(location, props.modelValue.bag?.location ?? {});
+        updateRefValue(location, props.modelValue.bag?.location ?? null);
         updateRefValue(campus, props.modelValue.bag?.campus ?? {});
         updateRefValue(gradingSystem, props.modelValue.bag?.gradingSystem?.value ?? "");
     });

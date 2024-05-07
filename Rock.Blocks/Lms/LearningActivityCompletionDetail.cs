@@ -60,8 +60,6 @@ namespace Rock.Blocks.Lms
             public const string LearningProgramId = "LearningProgramId";
             public const string LearningCourseId = "LearningCourseId";
             public const string LearningClassId = "LearningClassId";
-            public const string AutoEdit = "AutoEdit";
-            public const string ReturnUrl = "returnurl";
         }
 
         private static class NavigationUrlKey
@@ -192,6 +190,8 @@ namespace Rock.Blocks.Lms
 
             var scales = new LearningClassService( RockContext )
                 .GetClassScales( entity.LearningActivity.LearningClassId );
+
+            var now = RockDateTime.Now;
             
             return new LearningActivityCompletionBag
             {
@@ -204,10 +204,12 @@ namespace Rock.Blocks.Lms
                 BinaryFile = binaryFile?.ToListItemBag(),
                 CompletedDate = entity.CompletedDate,
                 CurrentPerson = currentPersonBag,
+                DueDate = entity.DueDate,
                 FacilitatorComment = entity.FacilitatorComment,
                 GradeText = entity.GradeText( scales ),
                 IsGradePassing = entity.Grade().IsPassing,
                 IsFacilitatorCompleted = entity.IsFacilitatorCompleted,
+                IsPastDue = entity.DueDate != null && entity.DueDate >= now,
                 IsStudentCompleted = entity.IsStudentCompleted,
                 PointsEarned = entity.PointsEarned,
                 PointsPossible = entity.LearningActivity.Points,
@@ -304,9 +306,7 @@ namespace Rock.Blocks.Lms
                 [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
                 [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
                 [PageParameterKey.LearningActivityId] = PageParameter( PageParameterKey.LearningActivityId ),
-                [PageParameterKey.LearningActivityCompletionId] = PageParameter( PageParameterKey.LearningActivityCompletionId ),
-                [PageParameterKey.AutoEdit] = "true",
-                [PageParameterKey.ReturnUrl] = this.GetCurrentPageUrl()
+                [PageParameterKey.LearningActivityCompletionId] = PageParameter( PageParameterKey.LearningActivityCompletionId )
             };
 
             return this.GetParentPageUrl( queryParams );

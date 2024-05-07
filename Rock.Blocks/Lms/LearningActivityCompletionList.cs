@@ -66,6 +66,12 @@ namespace Rock.Blocks.Lms
         private static class PageParameterKey
         {
             public const string LearningActivityId = "LearningActivityId";
+            public const string AutoEdit = "autoEdit";
+            public const string ReturnUrl = "returnUrl";
+            public const string LearningActivityCompletionId = "LearningActivityCompletionId";
+            public const string LearningProgramId = "LearningProgramId";
+            public const string LearningCourseId = "LearningCourseId";
+            public const string LearningClassId = "LearningClassId";
         }
 
         #endregion Keys
@@ -114,9 +120,19 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.AutoEdit] = "true",
+                [PageParameterKey.LearningActivityCompletionId] = "((Key))",
+                [PageParameterKey.LearningProgramId] = PageParameter(PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
+                [PageParameterKey.LearningActivityId] = PageParameter( PageParameterKey.LearningActivityId )
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningActivityCompletionId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 

@@ -75,6 +75,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public LearningActivityParticipantBag CurrentPerson { get; set; }
 
         /// <summary>
+        /// Gets or sets the due date for the activity instance.
+        /// </summary>
+        public DateTime? DueDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the facilitator's comment.
         /// </summary>
         public string FacilitatorComment { get; set; }
@@ -98,6 +103,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// Indicates whether or not the related activity instance for the student has been completed by the facilitator.
         /// </summary>
         public bool IsFacilitatorCompleted { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the related activity instance for the student is currently past due.
+        /// </summary>
+        public bool IsPastDue { get; set; }
 
         /// <summary>
         /// Indicates whether or not student commenting is enabled for this activity.

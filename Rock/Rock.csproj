@@ -1058,6 +1058,7 @@
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
+    <Compile Include="Jobs\SendLearningActivityNotifications.cs" />
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdateAnalyticsSourcePostalCode.cs" />
@@ -1187,6 +1188,7 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.Logic.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.cs" />
+    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletionService.cs" />
     <Compile Include="Model\LMS\LearningActivity\LearningActivityService.cs" />
     <Compile Include="Model\LMS\LearningActivity\LearningActivity.cs" />
     <Compile Include="Model\LMS\LearningActivity\LearningActivity.Logic.cs" />
@@ -1304,6 +1306,7 @@
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
+    <Compile Include="Plugin\HotFixes\199_Lms_Data.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />

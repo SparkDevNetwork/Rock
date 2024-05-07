@@ -361,5 +361,10 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.UpdatePersistedDatasets" /> job.
         /// </summary>
         public const string UPDATE_PERSISTED_DATASETS = "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA";
+
+        /// <summary>
+        /// The job for sending available learning activity notifications. <see cref="Rock.Jobs.SendLearningActivityNotifications"/>.
+        /// </summary>
+        public const string SEND_LEARNING_ACTIVITY_NOTIFICATIONS = "0075859b-8dc3-4e95-9075-89198886fcb4";
     }
 }

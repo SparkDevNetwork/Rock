@@ -23,25 +23,24 @@
 
         <div class="activity-component-section">
             <!-- Pass the configuration and completion json values to the component. -->
-            <activityTypeComponent v-if="activityTypeComponent"
+            <activityTypeComponent
                                    :activityName="activityName"
                                    :assignTo="assignTo"
                                    :binaryFile="binaryFile"
-                                   :currentPerson="currentPerson"
-                                   :currentPersonIsFacilitator="isFacilitator"
                                    :pointsEarned="pointsEarned"
                                    :pointsPossible="pointsPossible"
-                                   :screenToShow="screenToShow"
                                    :student="student"
                                    :componentSettingsJson="activityComponentSettingsJson"
                                    :componentCompletionJson="activityComponentCompletionJson"
+                                   :screenToShow="screenToShow"
+                                   :currentPerson="currentPerson"
                                    @componentCompletionChanged="onCompletionChanged" />
         </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { Component, PropType, computed, onMounted, ref, watch } from "vue";
+    import { Component, PropType, computed, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -70,22 +69,26 @@
 
     // #region Values
 
+    // The dynamically imported activity component for the learning activity.
+    let activityTypeComponent: Component| null;
+
     const isStudentCommentingEnabled = propertyRef(props.modelValue.bag?.isStudentCommentingEnabled ?? false, "StudentCommentingEnabled");
     const studentComment = propertyRef(props.modelValue.bag?.studentComment ?? "", "StudentComment");
     const pointsPossible = propertyRef(props.modelValue.bag?.pointsPossible, "PointsPossible");
     const activityName = propertyRef(props.modelValue.bag?.activityName ?? "", "ActivityName");
     const isStudentCompleted = propertyRef(props.modelValue.bag?.isStudentCompleted ?? false, "IsStudentCompleted");
     const isFacilitatorCompleted = propertyRef(props.modelValue.bag?.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
-    const activityComponentSettingsJson = propertyRef(props.modelValue.bag?.activityComponentCompletionJson ?? "{}", "ActivityComponentSettingsJson");
+    const activityComponentSettingsJson = propertyRef(props.modelValue.bag?.activityComponentSettingsJson ?? "{}", "ActivityComponentSettingsJson");
     const assignTo = propertyRef(props.modelValue.bag?.assignTo ?? AssignTo.Student, "AssignTo");
     const activityComponentCompletionJson = propertyRef(props.modelValue.bag?.activityComponentCompletionJson ?? "{}", "ActivityComponentCompletionJson");
     const facilitatorComment = propertyRef(props.modelValue.bag?.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(props.modelValue.bag?.pointsEarned, "PointedEarned");
     const binaryFile = ref(props.modelValue.bag?.binaryFile ?? null);
+    const isPastDue = ref(props.modelValue.bag?.isPastDue ?? false);
 
     const currentPerson = ref(props.modelValue.bag?.currentPerson);
-    const isFacilitator = ref(props.modelValue.bag?.currentPersonIsFacilitator);
     const student = ref(props.modelValue.bag?.student);
+    const activityComponentPath = ref(props.modelValue.bag?.activityComponentPath ?? "");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -107,12 +110,16 @@
 
     // #region Computed Values
 
+    const requiresScoring = computed(() =>
+        isStudentCompleted.value === true && isFacilitatorCompleted.value === false
+    );
+
     const screenToShow = computed(() => {
-        if (isFacilitatorCompleted.value === true) {
-            return ComponentScreen.Summary;
+        if ([isPastDue.value, requiresScoring.value].includes(true)) {
+            return ComponentScreen.Scoring;
         }
         else {
-            return ComponentScreen.Scoring;
+            return ComponentScreen.Summary;
         }
     });
 
@@ -127,6 +134,7 @@
     /** Handler for changes made to the completion JSON by the activity component. */
     async function onCompletionChanged(completionJson: string): Promise<void> {
         console.warn({ completionJson });
+        // Auto-save?
     }
 
     // #endregion
@@ -168,11 +176,10 @@
         emit("update:modelValue", newValue);
     });
 
-    let activityTypeComponent: Component| null;
-
-    onMounted(() => {
+    if (activityComponentPath.value.length > 0) {
         // The import path is relative to the Rock web root, but we're in a block
         // so we need to prepend a path up to the web root from our 'Obsidian/Blocks/Domain'.
-        activityTypeComponent = defineAsyncComponent(() => import("../../../" + props.modelValue.bag?.activityComponentPath));
-    });
+        activityTypeComponent = defineAsyncComponent(() => import("../../../" + activityComponentPath.value));
+    }
+
 </script>

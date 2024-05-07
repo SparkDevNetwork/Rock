@@ -53,11 +53,11 @@
 
     const learningActivityCompletionViewBag = ref(config.entity);
     const learningActivityCompletionEditBag = ref<ValidPropertiesBox<LearningActivityCompletionBag>>({
-        bag: {} as LearningActivityCompletionBag
+        bag: config.entity as LearningActivityCompletionBag
     });
 
     // Initialize in edit mode.
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,

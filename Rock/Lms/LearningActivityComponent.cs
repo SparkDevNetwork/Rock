@@ -89,38 +89,6 @@ namespace Rock.Lms
         /// </value>
         public virtual string Name { get; set; }
 
-        //#region Abstract Methods
-
-        ///// <summary>
-        ///// Gets the HTML for the configuration screen based on the <see cref="Rock.Model.LearningActivity"/>.
-        ///// </summary>
-        ///// <param name="learningActivity">The learning activity.</param>
-        ///// <returns>HTML markup for configuring the <see cref="LearningActivity"/>.</returns>
-        //public abstract string ConfigurationScreenHtml( LearningActivity learningActivity );
-
-        ///// <summary>
-        ///// Gets the HTML for the completion screen based on the <see cref="Rock.Model.LearningActivity"/>
-        ///// and <see cref="Rock.Model.LearningParticipant"/> accessing the component.
-        ///// </summary>
-        ///// <param name="learningActivity">The learning activity.</param>
-        ///// <param name="participant">The learning participant the HTML screen will be shown to.</param>
-        ///// <returns>HTML markup for completing the <see cref="LearningActivity"/>.</returns>
-        //public abstract string CompletionScreenHtml( LearningActivity learningActivity, LearningParticipant participant );
-
-        ///// <summary>
-        ///// Gets the HTML for the scoring screen based on the <see cref="Rock.Model.LearningActivity"/>.
-        ///// </summary>
-        ///// <param name="learningActivity">The learning activity.</param>
-        ///// <returns>HTML markup for the <see cref="Rock.Model.LearningParticipant">Facilitator</see> to score the <see cref="LearningActivity"/>.</returns>
-        //public abstract string FacilitatorScoringScreenHtml( LearningActivity learningActivity );
-
-        ///// <summary>
-        ///// Gets the HTML for the summary screen based on the <see cref="Rock.Model.LearningActivity"/>.
-        ///// </summary>
-        ///// <param name="learningActivity">The learning activity.</param>
-        ///// <returns>HTML markup for configuring the <see cref="LearningActivity"/>.</returns>
-        //public abstract string SummaryScreenHtml( LearningActivity learningActivity );
-
         //#endregion Abstract Methods
     }
 }

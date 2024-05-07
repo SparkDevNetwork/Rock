@@ -63,11 +63,17 @@ export type LearningActivityCompletionBag = {
     /** Indicates whether or not the current person is a facilitator of the activity. */
     currentPersonIsFacilitator: boolean;
 
+    /** Gets or sets the due date for the activity instance. */
+    dueDate: string | null;
+
     /** Gets or sets the facilitator's comment. */
     facilitatorComment?: string | null;
 
     /** Indicates whether or not the related activity instance for the student has been completed by the facilitator. */
     isFacilitatorCompleted: boolean;
+
+    /** Indicates whether or not the related activity instance for the student is currently past due. */
+    isPastDue: boolean;
 
     /** Indicates whether or not student commenting is enabled for this activity. */
     isStudentCommentingEnabled: boolean;
