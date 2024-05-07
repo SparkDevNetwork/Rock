@@ -84,7 +84,7 @@
                         </div>
                     </div>
 
-                    <Rock:RockTextBox ID="tbSendMessage" runat="server" Label="Message" />
+                    <Rock:RockTextBox ID="tbSendMessage" runat="server" Label="Message" DisableTextTrim />
 
                     <asp:LinkButton ID="lbSendMessage" runat="server" Text="Send" CssClass="btn btn-primary margin-t-sm" OnClick="lbSendMessage_Click" />
 
