@@ -1,11 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="successMessage"
-        alertType="success"
-        v-html="successMessage" />
-    <NotificationBox v-if="errorMessage"
-        v-text="errorMessage"
-        alertType="warning" />
     <Panel title="National Change of Address (NCOA) Processing">
         <p><strong>Enhance Your Data</strong></p>
         <p>TrueNCOA provides a service to non-profits to validate and update person address data leveraging the National Change of Address (NCOA)
@@ -94,6 +88,12 @@
                 </div>
             </div>
         </div>
+        <NotificationBox v-if="successMessage"
+            alertType="success"
+            v-html="successMessage" />
+        <NotificationBox v-if="errorMessage"
+            v-text="errorMessage"
+            alertType="warning" />
     </Panel>
 </template>
 
@@ -132,6 +132,8 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
     const isLoading = ref(false);
 
     const exportFile = async (): Promise<void> => {
+        successMessage.value = "";
+        errorMessage.value = "";
         isLoading.value = true;
         const result = await invokeBlockAction<NcoaProcessBag>("PrepareExportFile", { dataViewValue: selectedPersonDataView.value?.value});
         // Generate Excel file and download
@@ -148,6 +150,9 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
     };
 
     const processImportFile = async ():Promise<void> => {
+        successMessage.value = "";
+        errorMessage.value = "";
+
         const bag = <NcoaProcessBag> {
             inactiveReason: selectedInactiveReason.value,
             mark48MonthAsPrevious: isMark48Month.value,

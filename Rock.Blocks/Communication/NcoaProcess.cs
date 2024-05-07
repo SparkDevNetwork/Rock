@@ -77,8 +77,7 @@ namespace Rock.Blocks.Communication
             Dictionary<int, NcoaProcessPersonAddressBag> addresses = ncoaService.GetAddresses( dataViewValue );
 
             //if ( addresses.Count < SparkDataConfig.NCOA_MIN_ADDRESSES )
-            //    100
-            if ( addresses.Count < 20 )
+            if ( addresses.Count < 100 )
             {
                 return ActionBadRequest( "A minimum of 100 unique records with valid addresses are required in order to return NCOA move data from the USPS when your file is processed." );
             }
@@ -111,7 +110,7 @@ namespace Rock.Blocks.Communication
                     var stringContnet = binaryFile.ContentsToString();
 
                     ncoaService.NcoaRecordBuilder( stringContnet, out List<NcoaReturnRecord> ncoaReturnRecords );
-                    var (recordsUpdated, errorMessage) = ncoaService.ProcessNcoaResults( inactiveReason, bag.MarkInvalidAsPrevious, bag.Mark48MonthAsPrevious, bag.MinMoveDistance, ncoaReturnRecords);
+                    var (recordsUpdated, errorMessage) = ncoaService.PendingExport( inactiveReason, bag.MarkInvalidAsPrevious, bag.Mark48MonthAsPrevious, bag.MinMoveDistance, ncoaReturnRecords);
 
                     if (!string.IsNullOrEmpty( errorMessage ) )
                     {
@@ -126,7 +125,7 @@ namespace Rock.Blocks.Communication
                     sparkDataConfig.NcoaSettings.InactiveRecordReasonId = inactiveReason.Id;
                     Ncoa.SaveSettings( sparkDataConfig );
 
-                    bag.SuccessMessage = string.Format("'{0}' records updated.", recordsUpdated);
+                    bag.SuccessMessage = string.Format("{0} records updated.", recordsUpdated);
 
                     return ActionOk(bag);
                 }

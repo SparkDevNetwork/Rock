@@ -18,6 +18,8 @@ using Rock.Web.Cache;
 using Rock.ViewModels.Blocks.Communication.NcoaProcess;
 using Rock.SystemKey;
 using Rock.Utility.Settings.SparkData;
+using Rock.Jobs;
+using Rock.Utility.SparkDataApi;
 
 namespace Rock.NCOA
 {
@@ -192,6 +194,126 @@ namespace Rock.NCOA
                 }
 
                 throw new Exception( "Get Address: Could not find expected constant, type or value" );
+            }
+        }
+
+        /// <summary>
+        /// Resume a pending export: Checks if the export is complete. If the export is complete, then download the export, process the addresses and sent a notification.
+        /// </summary>
+        /// <param name="sparkDataConfig">The spark data configuration.</param>
+        public (int recordsUpdated, string errorMessage) PendingExport( DefinedValueCache inactiveReason, bool markInvalidAsPrevious, bool mark48MonthAsPrevious, decimal? minMoveDistance, List<NcoaReturnRecord> ncoaReturnRecords, SparkDataConfig sparkDataConfig = null )
+        {
+            if ( sparkDataConfig == null )
+            {
+                sparkDataConfig = GetSettings();
+            }
+
+            try
+            {
+                var ncoaHistoryList = ncoaReturnRecords.Select( r => r.ToNcoaHistory() ).ToList();
+                FilterDuplicateLocations( ncoaHistoryList );
+
+                // Making sure that the database is empty to avoid adding duplicate data.
+                using ( var rockContext = new RockContext() )
+                {
+                    NcoaHistoryService ncoaHistoryService = new NcoaHistoryService( rockContext );
+                    ncoaHistoryService.DeleteRange( ncoaHistoryService.Queryable() );
+                    rockContext.SaveChanges();
+                }
+
+                if ( ncoaReturnRecords != null && ncoaReturnRecords.Count != 0 )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var ncoaHistoryService = new NcoaHistoryService( rockContext );
+                        ncoaHistoryService.AddRange( ncoaHistoryList );
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                var (recordsUpdated, errorMessage) = ProcessNcoaResults( inactiveReason, markInvalidAsPrevious, mark48MonthAsPrevious, minMoveDistance, ncoaReturnRecords );
+
+                sparkDataConfig.NcoaSettings.LastRunDate = RockDateTime.Now;
+                sparkDataConfig.NcoaSettings.CurrentReportStatus = "Complete";
+                sparkDataConfig.NcoaSettings.FileName = null;
+                SaveSettings( sparkDataConfig );
+
+                if ( !string.IsNullOrEmpty( errorMessage ) )
+                {
+                    return (0, errorMessage);
+                }
+                return (recordsUpdated, "");
+            }
+            catch ( Exception ex )
+            {
+                throw new NoRetryAggregateException( "Failed to process NCOA export.", ex );
+            }
+        }
+
+        /// <summary>
+        /// Marks the duplicate locations as ManualUpdateRequired so that they are not processed.
+        /// </summary>
+        /// <param name="ncoaHistoryList">The NCOA history list.</param>
+        private void FilterDuplicateLocations( List<NcoaHistory> ncoaHistoryList )
+        {
+            // Get all duplicate addresses/locations and sort the result by move date descending.
+            var duplicateLocations = ncoaHistoryList.OrderByDescending( x => x.MoveDate ).GroupBy( x => x.PersonAliasId + "_" + x.FamilyId + "_" + x.LocationId )
+          .Where( g => g.Count() > 1 )
+          .ToList();
+
+            // Find the latest valid move address
+            foreach ( var duplicateLocationsGroup in duplicateLocations )
+            {
+                bool foundLocation = false;
+                foreach ( var location in duplicateLocationsGroup )
+                {
+                    if ( !foundLocation )
+                    {
+                        if ( location.MoveType != MoveType.None && location.AddressStatus == AddressStatus.Valid )
+                        {
+                            foundLocation = true;
+                            location.Processed = Processed.NotProcessed;
+                        }
+                        else
+                        {
+                            location.Processed = Processed.ManualUpdateRequired;
+                        }
+                    }
+                    else
+                    {
+                        location.Processed = Processed.ManualUpdateRequired;
+                    }
+                }
+
+                // If there is no valid move address, find latest valid address
+                if ( !foundLocation )
+                {
+                    foreach ( var location in duplicateLocationsGroup )
+                    {
+                        if ( !foundLocation )
+                        {
+                            if ( location.AddressStatus == AddressStatus.Valid )
+                            {
+                                foundLocation = true;
+                                location.Processed = Processed.NotProcessed;
+                            }
+                            else
+                            {
+                                location.Processed = Processed.ManualUpdateRequired;
+                            }
+                        }
+                        else
+                        {
+                            location.Processed = Processed.ManualUpdateRequired;
+                        }
+                    }
+                }
+
+                // If there is no valid address, use the latest address
+                if ( !foundLocation )
+                {
+                    duplicateLocationsGroup.First().Processed = Processed.NotProcessed;
+                }
             }
         }
 

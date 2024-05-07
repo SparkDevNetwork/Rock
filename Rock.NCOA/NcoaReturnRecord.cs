@@ -850,7 +850,7 @@ namespace Rock.NCOA
         /// <returns>NcoaHistory</returns>
         public NcoaHistory ToNcoaHistory()
         {
-            var ids = InputIndividualId?.Split( '_' );
+            //var ids = InputIndividualId?.Split( '_' );
 
             double? adjustedMoveDistance = MoveDistance;
             if ( adjustedMoveDistance.HasValue && adjustedMoveDistance.Value >= 10_000 )
@@ -860,10 +860,10 @@ namespace Rock.NCOA
 
             var ncoaHistory = new NcoaHistory()
             {
-                //PersonId = ( ids?[0] ).AsInteger(),
-                PersonAliasId = ( ids?[1] ).AsInteger(),
-                FamilyId = ( ids?[2] ).AsInteger(),
-                LocationId = ( ids?[3] ).AsInteger(),
+                //PersonId = PersonId,
+                PersonAliasId = InputPersonAliasId.ToIntSafe(),
+                FamilyId = InputFamilyId.ToIntSafe(),
+                LocationId = InputLocationId.ToIntSafe(),
                 AddressStatus = AddressStatus == "V" ? Model.AddressStatus.Valid : Model.AddressStatus.Invalid,
                 MoveDate = NcoaDateToDateTime( MoveDate ),
                 MoveDistance = ( decimal? ) adjustedMoveDistance,
