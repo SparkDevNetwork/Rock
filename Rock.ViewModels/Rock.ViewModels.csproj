@@ -85,6 +85,7 @@
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementTypeList\AchievementTypeListOptionsBag.cs" />
+	<Compile Include="Blocks\CheckIn\AttendanceList\AttendanceListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionTypeList\ConnectionTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\GetAvailableCampusesBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />

@@ -110,6 +110,7 @@
     <Content Include="src\Engagement\streakTypeExclusionDetail.obs" />
     <Content Include="src\Engagement\StreakTypeExclusionDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StreakTypeExclusionDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\attendanceList.obs" />
     <Content Include="src\Event\eventCalendarDetail.obs" />
     <Content Include="src\Event\EventCalendarDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventCalendarDetail\viewPanel.partial.obs" />
@@ -349,6 +350,7 @@
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
     <Folder Include="src\Engagement\StreakTypeExclusionDetail\" />
+    <Folder Include="src\Event\AttendanceList\" />
     <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventItemDetail\" />
     <Folder Include="src\Event\RegistrationInstanceLinkageList\" />
@@ -520,6 +522,7 @@
     <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\AttendanceList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationInstanceLinkageList\types.partial.ts" />
