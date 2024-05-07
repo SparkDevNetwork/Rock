@@ -47,3 +47,62 @@ export enum LabelFieldType {
     Image = 5,
     Barcode = 6
 }
+
+export type TextFieldConfigurationBag = {
+    sourceKey?: string | null;
+
+    formatterGuid?: Guid | null;
+
+    collectionFormat: TextCollectionFormat;
+
+    placeholderText?: string | null;
+
+    staticTextTemplate?: string | null;
+
+    dynamicTextTemplate?: string | null;
+
+    fontSize: number;
+
+    variableFontSize?: Record<string, string> | null;
+
+    horizontalAlignment: HorizontalTextAlignment;
+
+    isBold: boolean;
+
+    isColorInverted: boolean;
+
+    isCondensed: boolean;
+};
+
+export type RectangleFieldConfigurationBag = {
+    isBlack: boolean;
+
+    isFilled: boolean;
+
+    borderThickness: number;
+
+    cornerRadius: number;
+};
+
+/** Convert a type so that all properties are optional strings or nulls. */
+export type StringRecord<T> = {
+    [K in keyof T]?: string | null
+};
+
+export enum HorizontalTextAlignment {
+    Left = 0,
+
+    Center = 1,
+
+    Right = 2
+}
+
+export enum TextCollectionFormat {
+    FirstItemOnly = 0,
+
+    CommaDelimited = 1,
+
+    OnePerLine = 2,
+
+    TwoColumn = 3
+}

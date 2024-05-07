@@ -80,26 +80,201 @@
                 fieldType: LabelFieldType.Rectangle,
                 subFieldType: 0,
                 isIncludedOnPreview: true,
-                left: 2,
-                top: 0.25,
-                width: 1,
-                height: 1,
+                left: 0,
+                top: 0,
+                width: 4,
+                height: 0.66,
                 rotationAngle: 0,
                 customDataValue: "",
-                configurationValues: {}
+                configurationValues: {
+                    isBlack: "true",
+                    isFilled: "true",
+                }
             },
             {
                 guid: newGuid(),
                 fieldType: LabelFieldType.Text,
                 subFieldType: 0,
                 isIncludedOnPreview: true,
-                left: 1,
-                top: 0.25,
-                width: 1,
+                left: 2.18,
+                top: 0.05,
+                width: 1.82,
+                height: 0.66,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    placeholderText: "WWW",
+                    fontSize: "48",
+                    isColorInverted: "true"
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 1.95,
+                top: 0.13,
+                width: 0.3,
                 height: 0.5,
                 rotationAngle: 0,
                 customDataValue: "",
-                configurationValues: {}
+                configurationValues: {
+                    placeholderText: "3",
+                    fontSize: "35",
+                    isColorInverted: "true"
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 1.65,
+                top: 0.13,
+                width: 0.3,
+                height: 0.5,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    placeholderText: "2",
+                    fontSize: "35",
+                    isColorInverted: "true"
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 1.68,
+                top: 0.51,
+                width: 0.25,
+                height: 0.25,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    placeholderText: "4",
+                    fontSize: "10",
+                    isColorInverted: "true"
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 0.025,
+                top: 0.75,
+                width: 0.75,
+                height: 0.75,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    placeholderText: "5",
+                    fontSize: "52",
+                    isColorInverted: "false"
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 0.025,
+                top: 1.4,
+                width: 0.25,
+                height: 0.25,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    placeholderText: "6",
+                    fontSize: "16",
+                    isColorInverted: "false"
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 0.045,
+                top: 1.7,
+                width: 0.15,
+                height: 0.15,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    placeholderText: "9",
+                    fontSize: "10",
+                    isColorInverted: "false"
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Rectangle,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 3.08,
+                top: 1.675,
+                width: 0.384,
+                height: 0.275,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    isBlack: "true",
+                    isFilled: "true",
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Rectangle,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 3.54,
+                top: 1.675,
+                width: 0.33,
+                height: 0.275,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    isBlack: "true",
+                    isFilled: "true",
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 3.08,
+                top: 1.7,
+                width: 0.384,
+                height: 0.275,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    placeholderText: "AAA",
+                    fontSize: "16",
+                    isColorInverted: "true"
+                }
+            },
+            {
+                guid: newGuid(),
+                fieldType: LabelFieldType.Text,
+                subFieldType: 0,
+                isIncludedOnPreview: true,
+                left: 3.54,
+                top: 1.7,
+                width: 0.33,
+                height: 0.275,
+                rotationAngle: 0,
+                customDataValue: "",
+                configurationValues: {
+                    placeholderText: "LLL",
+                    fontSize: "16",
+                    isColorInverted: "true"
+                }
             },
         ]
     });
