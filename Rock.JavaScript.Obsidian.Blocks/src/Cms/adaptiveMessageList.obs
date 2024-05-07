@@ -1,5 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <div class="row mb-2">
+        <div class="col">
+            <a href="/admin/cms/adaptive-messages/attributes" class='btn btn-xs btn-default pull-right'><i class="fa fa-plus"></i> Adaptive Message Attributes</a>
+        </div>
+    </div>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
@@ -13,27 +18,20 @@
           @selectItem="onSelectItem">
         <SelectColumn />
 
-        <Column name="name"
-                title="Name"
-                :filter="textValueFilter"
-                :filterValue="getRowNameFilterValue"
-                :quickFilterValue="getRowNameFilterValue"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <div>
-                    <div>
-                        <span class="text-semibold">{{ row.name }}</span> <span class="text-muted text-xs">{{ row.id }}</span>
-                    </div>
-                    <div v-if="row.description">
-                        {{ row.description }}
-                    </div>
-                </div>
+        <!-- Name column that will always show in the Grid -->
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               :filter="textValueFilter"
+                               :filterValuex="getRowNameFilterValue"
+                               :quickFilterValuex="getRowNameFilterValue"
+                               visiblePriority="xs"
+                               :hideOnScreen="false"
+                               :excludeFromExport="true">
+            <template #detailFormat="{ row }">
+                <template v-if="row.description">{{ row.description }}</template>
             </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-        </Column>
+        </HighlightDetailColumn>
 
        <Column name="categories"
                 title="Categories"
@@ -83,7 +81,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { NumberColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, numberValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { NumberColumn, HighlightDetailColumn, textValueFilter, DeleteColumn, SelectColumn, numberValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/adaptiveMessageListOptionsBag";

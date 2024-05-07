@@ -49,7 +49,7 @@ namespace Rock.Plugin.HotFixes
         private void AddAdaptiveMessageRelatedPagesUp()
         {
             RockMigrationHelper.AddPage( true, "B892DF6D-4789-4AC3-9E6C-2BFE0D9E30E4", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Adaptive Message Attributes", "", "222ED9E3-06C0-438F-B520-C899B8835650", "fa fa-list-ul" );
-            RockMigrationHelper.AddPage( true, "B892DF6D-4789-4AC3-9E6C-2BFE0D9E30E4", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Adaptive Message", "", "73112D38-E051-4452-AEF9-E473EEDD0BCB", "fa fa-comment" );
+            RockMigrationHelper.AddPage( true, "B892DF6D-4789-4AC3-9E6C-2BFE0D9E30E4", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Adaptive Messages", "", "73112D38-E051-4452-AEF9-E473EEDD0BCB", "fa fa-comment" );
             RockMigrationHelper.AddPage( true, "73112D38-E051-4452-AEF9-E473EEDD0BCB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Adaptive Message Detail", "", "BEC30E90-0434-43C4-B839-09E11775E497", "" );
             RockMigrationHelper.AddPage( true, "BEC30E90-0434-43C4-B839-09E11775E497", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Adaptive Message Adaptation Detail", "", "FE12A90C-C20F-4F23-A1B1-528E0C5FDA83", "" );
             RockMigrationHelper.AddPageRoute( "222ED9E3-06C0-438F-B520-C899B8835650", "admin/cms/adaptive-message/attributes", "E612018C-FD4B-4F6F-9BCD-3B76B58CC8AB" );
