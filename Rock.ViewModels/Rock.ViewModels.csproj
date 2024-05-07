@@ -160,6 +160,7 @@
     <Compile Include="Blocks\Engagement\AchievementAttemptList\AchievementAttemptListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementTypeList\AchievementTypeListOptionsBag.cs" />
+	<Compile Include="Blocks\CheckIn\AttendanceList\AttendanceListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionTypeList\ConnectionTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpFinder\GetAvailableCampusesBag.cs" />
     <Compile Include="Blocks\Engagement\StepParticipantList\StepParticipantListOptionsBag.cs" />

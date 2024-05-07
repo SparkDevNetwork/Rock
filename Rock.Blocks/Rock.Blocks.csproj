@@ -165,6 +165,7 @@
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
     <Compile Include="Engagement\AchievementTypeList.cs" />
+	<Compile Include="CheckIn\AttendanceList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Engagement\StepParticipantList.cs" />
     <Compile Include="Engagement\StepProgramList.cs" />
