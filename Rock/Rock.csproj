@@ -791,6 +791,7 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\NewItemCacheAddedMessage.cs" />
     <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
@@ -2240,6 +2241,7 @@
     <Compile Include="Web\Cache\NonEntities\PersonOrVisitorCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersonPreferenceCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RateLimiterCache.cs" />
+    <Compile Include="Web\Cache\RockCacheAllIdUpdater.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />
