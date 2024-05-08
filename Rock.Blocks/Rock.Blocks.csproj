@@ -85,7 +85,7 @@
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
     <Compile Include="Engagement\AchievementTypeList.cs" />
-	<Compile Include="CheckIn\AttendanceList.cs" />
+    <Compile Include="CheckIn\AttendanceList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\BenevolenceRequestList.cs" />
@@ -94,6 +94,7 @@
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\BusinessContactList.cs" />
+    <Compile Include="Event\RegistrationInstancePaymentList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Fundraising\FundraisingDonationList.cs" />

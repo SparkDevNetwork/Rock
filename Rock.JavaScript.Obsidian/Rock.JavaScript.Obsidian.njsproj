@@ -381,6 +381,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\RegistrationInstanceFeeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\RegistrationInstanceLinkageList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\RegistrationInstancePaymentList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BenevolenceRequestList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\BusinessContactList\" />
@@ -942,6 +943,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationEntry\registrationEntryCreatePaymentPlanRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationInstanceFeeList\registrationInstanceFeeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationInstanceLinkageList\registrationInstanceLinkageListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\RegistrationInstancePaymentList\registrationInstancePaymentListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BenevolenceRequestList\benevolenceRequestListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BenevolenceRequestList\benevolenceResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\BenevolenceRequestList\resultTypeValueBag.d.ts" />
