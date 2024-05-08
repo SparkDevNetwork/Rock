@@ -18,6 +18,7 @@
                       title="Name"
                       field="name"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
                       :hideAvatar="true"
                       :showAsLink="true"
                       visiblePriority="xs" />
@@ -26,13 +27,13 @@
                     title="Birthdate"
                     field="birthDate"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <TextColumn name="email"
                     title="Email"
                     field="email"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <TextColumn name="homePhone"
                     :title="config.options?.homePhoneDefinedValueText ?? 'Home'"
@@ -44,15 +45,16 @@
                     :title="config.options?.mobilePhoneDefinedValueText ?? 'Mobile'"
                     field="cellPhone"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <PersonColumn name="spouse"
                       title="Spouse"
                       field="spouse"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getSpouseNameFilterValue"
                       :hideAvatar="true"
                       :showAsLink="true"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <template #gridFooterAppend>
             <div class="d-flex" style="padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
@@ -73,10 +75,10 @@
     import { PersonFollowingListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/PersonFollowingList/personFollowingListOptionsBag";
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./PersonFollowingList/types.partial";
     import { reactive, ref } from "vue";
     import { IGridState } from "@Obsidian/Types/Controls/grid";
     import { Guid } from "@Obsidian/Types";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<PersonFollowingListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -104,6 +106,26 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["name"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the spouse column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getSpouseNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["spouse"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion

@@ -22,7 +22,7 @@
                     title="Suggestion Type"
                     field="entityType"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <BooleanColumn name="isActive"
                        title="Active"

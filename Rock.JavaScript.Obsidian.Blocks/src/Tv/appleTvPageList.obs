@@ -25,7 +25,7 @@
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <Column name="cacheControlHeaderSettings"
                 title="Cache Settings"

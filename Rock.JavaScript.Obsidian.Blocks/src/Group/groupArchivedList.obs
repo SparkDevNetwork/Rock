@@ -29,13 +29,13 @@
                     field="description"
                     :filter="textValueFilter"
                     width="45%"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <DateColumn name="createdDate"
                     title="Created"
                     field="createdDate"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <DateColumn name="archivedDate"
                     title="Archived"
@@ -46,8 +46,10 @@
         <PersonColumn name="archivedBy"
                       title="Archived By"
                       field="archivedBy"
+                      :hideAvatar="true"
                       :filter="pickExistingValueFilter"
-                      visiblePriority="xs" />
+                      :filterValue="archivedByFilterValue"
+                      visiblePriority="md" />
 
         <Column name="location"
                 width="58"
@@ -79,6 +81,7 @@
     import { GridSettingsOptions, PreferenceKey } from "./GroupArchivedList/types.partial";
     import GridSettingsModal from "./GroupArchivedList/gridSettingsModal.partial.obs";
     import { computed, reactive, ref, watch } from "vue";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<GroupArchivedListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -131,6 +134,11 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    function archivedByFilterValue(row: Record<string, unknown>): string {
+        const person = row["archivedBy"] as PersonFieldBag;
+        return `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion

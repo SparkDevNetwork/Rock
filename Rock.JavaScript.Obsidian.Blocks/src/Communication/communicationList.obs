@@ -14,7 +14,7 @@
           @selectItem="onSelectItem">
 
         <Column name="typeIcon"
-                visiblePriority="xs"
+                visiblePriority="md"
                 width="150px">
             <template #format="{ row }">
                 <div class="text-center"><i :class="communicationTypeIcons[row.communicationType]"></i></div>
@@ -32,7 +32,7 @@
                 title="Status"
                 :filter="textValueFilter"
                 :filterValue="getStatusFilterValue"
-                visiblePriority="xs">
+                visiblePriority="md">
             <template #format="{ row }">
                 {{ CommunicationStatusDescription[row.status] }}
             </template>
@@ -44,7 +44,7 @@
 
         <Column name="details"
                 title="Details"
-                visiblePriority="xs">
+                visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">
                     <div v-if="row.sender">
@@ -98,7 +98,7 @@
         <ButtonColumn name="copy"
                       title="Copy"
                       iconClass="fa fa-clone"
-                      visiblePriority="xs"
+                      visiblePriority="md"
                       @click="onCopyClick" />
 
         <DeleteColumn :rowDisabled="onDeleteRowDisabled" @click="onDeleteClick" />

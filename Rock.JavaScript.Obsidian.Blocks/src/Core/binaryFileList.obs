@@ -30,7 +30,7 @@
                         title="Last Modified"
                         field="lastModified"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="md" />
 
         <BooleanColumn name="isSystem"
                        title="System"

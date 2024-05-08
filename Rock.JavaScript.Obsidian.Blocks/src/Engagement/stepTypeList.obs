@@ -41,26 +41,27 @@
         <BooleanColumn name="hasEndDate"
                        title="Spans Time"
                        field="hasEndDate"
-                       visiblePriority="xs" />
+                       visiblePriority="md" />
 
         <BooleanColumn name="allowMultiple"
                        title="Allow Multiple"
                        field="allowMultiple"
-                       visiblePriority="xs" />
+                       visiblePriority="md" />
 
         <NumberColumn name="startedCount"
                       title="Started"
                       field="startedCount"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <NumberColumn name="completedCount"
                       title="Completed"
                       field="completedCount"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <ButtonColumn v-if="config.options?.isBulkEntryColumnVisible"
                       name="bulkEntry"
                       iconClass="fa fa-truck"
+                      visiblePriority="md"
                       @click="bulkEntry" />
 
         <SecurityColumn v-if="config.options?.isSecurityColumnVisible" />

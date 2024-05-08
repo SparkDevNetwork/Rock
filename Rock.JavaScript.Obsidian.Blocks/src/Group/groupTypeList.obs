@@ -27,19 +27,19 @@
                     field="purpose"
                     :filter="textValueFilter"
                     width="15%"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <NumberColumn name="groupsCount"
                       title="Group Count"
                       field="groupsCount"
                       :filter="numberValueFilter"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <BooleanColumn name="showInNavigation"
                        title="Show In Navigation"
                        field="showInNavigation"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="md" />
 
         <BooleanColumn name="isSystem"
                        title="System"

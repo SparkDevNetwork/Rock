@@ -24,7 +24,7 @@
                     field="summary"
                     :filter="textValueFilter"
                     width="80%"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <Column name="Status"
                 title="Status"

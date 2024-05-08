@@ -32,7 +32,7 @@
 
         <Column name="status"
                 title="Status"
-                visiblePriority="xs"
+                visiblePriority="md"
                 :filter="textValueFilter"
                 :filterValue="getStatusRowFilterValue">
             <template #format="{ row }">
@@ -47,7 +47,7 @@
         <Column name="statusMessage"
                 title="Status Message"
                 width="25%"
-                visiblePriority="xs">
+                visiblePriority="md">
             <template #format="{ row }">
                 <span v-html="row.statusMessage"></span>
             </template>

@@ -37,7 +37,6 @@ namespace Rock.Blocks.Engagement
     /// <summary>
     /// Displays a list of achievement attempts.
     /// </summary>
-
     [DisplayName( "Achievement Attempt List" )]
     [Category( "Achievements" )]
     [Description( "Lists all the people that have made an attempt at earning an achievement." )]

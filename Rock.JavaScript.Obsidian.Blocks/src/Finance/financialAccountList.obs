@@ -31,27 +31,27 @@
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       visiblePriority="xs" />
+                       visiblePriority="md" />
 
         <BooleanColumn name="isPublic"
                        title="Public"
                        field="isPublic"
-                       visiblePriority="xs" />
+                       visiblePriority="md" />
 
         <BooleanColumn name="isTaxDeductible"
                        title="Tax Deductible"
                        field="isTaxDeductible"
-                       visiblePriority="xs" />
+                       visiblePriority="md" />
 
         <DateColumn name="startDate"
                     title="Starts On"
                     field="startDate"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <DateColumn name="endDate"
                     title="Ends On"
                     field="endDate"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 

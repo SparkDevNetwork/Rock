@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid v-if="!config.options?.canViewBlock"
+    <Grid v-if="config.options?.canViewBlock"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
@@ -28,30 +28,30 @@
                     title="Achievement"
                     field="achievement"
                     :filter="textValueFilter"
-                    visiblePriority="xs"
+                    visiblePriority="md"
                     width="30%" />
 
         <DateColumn name="startDate"
                     title="Start Date"
                     field="startDate"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <DateColumn name="endDate"
                     title="End Date"
                     field="endDate"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <BooleanColumn name="isSuccessful"
                        title="Successful"
                        field="isSuccessful"
-                       visiblePriority="xs" />
+                       visiblePriority="md" />
 
         <BooleanColumn name="isClosed"
                        title="Closed"
                        field="isClosed"
-                       visiblePriority="xs" />
+                       visiblePriority="md" />
 
         <Column name="progress"
                 title="Progress"
@@ -70,7 +70,7 @@
         </Column>
 
         <Column name="achiever"
-                visiblePriority="xs"
+                visiblePriority="md"
                 itemClass="grid-columncommand"
                 width="57px">
             <template #format="{ row }">

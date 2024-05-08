@@ -59,13 +59,13 @@
                            :infoMinimum="1"
                            :warningMinimum="0"
                            :warningMaximum="0"
-                           visiblePriority="xs" />
+                           visiblePriority="md" />
 
         <Column name="isActive"
                 title="Status"
                 field="isActive"
                 :filter="booleanValueFilter"
-                visiblePriority="xs">
+                visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.isActive" class="label label-success">
                     Active
@@ -80,7 +80,7 @@
                 title="Approval Status"
                 field="isApproved"
                 :filter="booleanValueFilter"
-                visiblePriority="xs">
+                visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.isApproved" class="label label-info">
                     Approved
