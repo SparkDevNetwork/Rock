@@ -30,7 +30,7 @@
         <Column name="requestedBy"
                 title="Name"
                 :filter="textValueFilter"
-                :filterValue="getNameFilterValue"
+                :filterValue="getPersonNameFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`">{{ row.requestedByFullName }}</a></span>
@@ -67,6 +67,7 @@
                       field="caseWorker"
                       :hideAvatar="true"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="md" />
 
         <TextColumn name="resultSummary"
@@ -297,7 +298,7 @@
     *
     * @param row The row to be filtered.
     */
-    function getNameFilterValue(row: Record<string, unknown>): string {
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
         const requestedBy = row.requestedBy as PersonFieldBag;
 
         if (requestedBy) {
