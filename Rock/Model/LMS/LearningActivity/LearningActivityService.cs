@@ -135,5 +135,33 @@ namespace Rock.Model
                 AverageGradePercent = averagePercent
             };
         }
+
+        /// <summary>
+        /// Creates a new Activity with Attributes by copying values from the specified activity.
+        /// </summary>
+        /// <param name="key">The identifer to use for retreiving the Activity to use as a template for the copy.</param>
+        /// <returns>
+        ///     A new Activity whose properties and <see cref="AttributeValue" />s match the properties and <see cref="AttributeValue" />s
+        ///     of the Activity whose <paramref name="key"/> was provided.
+        /// </returns>
+        public LearningActivity Copy( string key )
+        {
+            var activity = Get( key );
+            var newActivity = activity.CloneWithoutIdentity();
+            newActivity.Name += " - Copy";
+            this.Add( newActivity );
+            activity.LoadAttributes();
+            newActivity.LoadAttributes();
+            newActivity.CopyAttributesFrom( activity );
+
+            var rockContext = this.Context as RockContext;
+
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                newActivity.SaveAttributeValues( rockContext );
+            } );
+            return newActivity;
+        }
     }
 }

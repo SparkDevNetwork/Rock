@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 
-using Rock.Attribute;
 using Rock.Extension;
 
 namespace Rock.Obsidian
@@ -43,10 +42,7 @@ namespace Rock.Obsidian
         /// <summary>
         /// Gets or sets the path to the Obsidian component's .obs file.
         /// </summary>
-        /// <remarks>
-        /// The path should be relative to the RockWeb directory.
-        /// </remarks>
-        public virtual string FilePath { get; set; }
+        public virtual string ComponentUrl { get; set; }
 
         #endregion
 
@@ -58,7 +54,7 @@ namespace Rock.Obsidian
         /// <param name="componentFilePath">The path to the Obsidian component's .obs file.</param>
         public ObsidianComponent(string componentFilePath)
         {
-            FilePath = componentFilePath;
+            ComponentUrl = componentFilePath;
         }
 
         /// <summary>

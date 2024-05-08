@@ -29,37 +29,17 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
     public class LearningActivityCompletionBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets the Learning Activity Bag for this completion instance.
+        /// </summary>
+        public LearningActivityBag ActivityBag { get; set; }
+
+        /// <summary>
         /// Gets or sets the completion json for the activity component.
         /// </summary>
         public string ActivityComponentCompletionJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the Activity Component.
-        /// </summary>
-        public string ActivityComponentName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path to the Activity Component .obs file.
-        /// </summary>
-        public string ActivityComponentPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the settings json for the activity component.
-        /// </summary>
-        public string ActivityComponentSettingsJson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the Learning Activity.
-        /// </summary>
-        public string ActivityName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the party responsible for completing the activity.
-        /// </summary>
-        public AssignTo AssignTo { get; set; }
-
-        /// <summary>
-        /// Gets or sets the binary file for use by the activity component.
+        /// Gets or sets the binary file of the completion for use by the activity component.
         /// </summary>
         public ListItemBag BinaryFile { get; set; }
 
@@ -70,11 +50,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public DateTime? CompletedDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the currently logged in person.
-        /// </summary>
-        public LearningActivityParticipantBag CurrentPerson { get; set; }
-
-        /// <summary>
         /// Gets or sets the due date for the activity instance.
         /// </summary>
         public DateTime? DueDate { get; set; }
@@ -83,11 +58,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// Gets or sets the facilitator's comment.
         /// </summary>
         public string FacilitatorComment { get; set; }
-
-        /// <summary>
-        /// Indicates whether or not the current person is a facilitator of the activity.
-        /// </summary>
-        public bool CurrentPersonIsFacilitator { get; set; }
 
         /// <summary>
         /// Gets or sets the text for the achieved grade.
@@ -123,11 +93,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// Gets or sets the number of points the student earned by completing the activity.
         /// </summary>
         public int PointsEarned { get; set; }
-
-        /// <summary>
-        /// Gets or sets the total number of points possible for the entire activity.
-        /// </summary>
-        public int PointsPossible { get; set; }
 
         /// <summary>
         /// Gets or sets the student's comment.

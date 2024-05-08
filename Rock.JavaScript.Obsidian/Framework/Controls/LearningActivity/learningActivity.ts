@@ -17,8 +17,8 @@
 
 import { PropType } from "vue";
 import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
-import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
 
 /** Determines how the component should be rendered. */
 export enum ComponentScreen {
@@ -32,30 +32,14 @@ export enum ComponentScreen {
  * The basic properties that all learning activity components must support.
  */
 type LearningActivityComponentBaseProps = {
-
-    activityName: {
-        type: PropType<string>;
-        default:() => "";
+    activityBag: {
+        type: PropType<LearningActivityBag>;
+        required: true;
     };
 
-    assignTo: {
-        type: PropType<AssignTo>;
-        default: () => 0;
-    };
-
-    binaryFile: {
-        type: PropType<ListItemBag>,
-        required: false
-    },
-
-    componentSettingsJson: {
-        type: PropType<string>;
-        default: () => "{}";
-    };
-
-    componentCompletionJson: {
-        type: PropType<string>;
-        default: () => "{}";
+    completionBag: {
+        type: PropType<LearningActivityCompletionBag>;
+        required: false;
     };
 
     currentPerson: {
@@ -63,120 +47,62 @@ type LearningActivityComponentBaseProps = {
         required: false;
     };
 
-    pointsEarned: {
-        type: PropType<number>;
-        required: false
-    };
-
-    pointsPossible: {
-        type: PropType<number>;
-        required: false
-    };
-
     screenToShow: {
         type: PropType<ComponentScreen>,
         default: ComponentScreen.Summary
     };
-
-    student: {
-        type: PropType<LearningActivityParticipantBag>;
-        required: false;
-    };
 };
+
 
 /**
  * The emits that all Learning Activity Components are expected to emit.
  * Failure to implement all emits could result in unexpected behavior.
  */
 type LearningActivityComponentBaseEmits = {
-    /** Emitted when there are changes to the configuration of a component. */
-    componentSettingsChanged(configurationValues: string): void;
+    /** The model change event for the LearningActivityBag of the component. */
+    ["update:activityBag"]: (activityBag: LearningActivityBag) => void;
 
-    /** Emitted when the completion of a component has been modified. */
-    componentCompletionChanged(_componentCompletionAsJson: string): void;
+    /** The model change event for the LearningActivityCompletionBag of the component. */
+    ["update:completionBag"]: (completionBag: LearningActivityCompletionBag) => void;
+    //(e: "update:completionBag", completionBag: LearningActivityCompletionBag): void;
 
-    /** Emitted when the completion of a component has been finalized. */
-    componentCompleted(_componentCompletionAsJson: string): void;
-
-    /** Emitted when the completion of a component has been cancelled.
-      *  It's expected the parent of the component will discard any changes. */
-    componentCompletionCancelled(): void;
+    /**
+     * @description Emitted when the screen's complete or cancel button has been clicked.
+     * @param isSuccess True if the button click was for a completion; false if cancelled.
+     */
+    completed(isSuccess: boolean): void;
 };
 
 /**
  * Get the standard properties that all learning activity components must support.
  */
-export function getLearningActivityProps(): LearningActivityComponentBaseProps {
-    return {
+export const learningActivityProps: LearningActivityComponentBaseProps = {
+    activityBag: {
+        type: Object as PropType<LearningActivityBag>,
+        required: true,
+    },
 
-        activityName: {
-            type: String as PropType<string>,
-            default:() => ""
-        },
+    completionBag: {
+        type: Object as PropType<LearningActivityCompletionBag>,
+        required: false,
+    },
 
-        assignTo: {
-            type: Object as PropType<AssignTo>,
-            default: () => AssignTo.Student
-        },
+    currentPerson: {
+        type: Object as PropType<LearningActivityParticipantBag>,
+        required: false,
+    },
 
-        binaryFile: {
-            type: Object as PropType<ListItemBag>,
-            required: false
-        },
-
-        componentCompletionJson: {
-            type: String as PropType<string>,
-            default: () => "{}"
-        },
-
-        componentSettingsJson: {
-            type: String as PropType<string>,
-            default: () => "{}"
-        },
-
-        currentPerson: {
-            type: Object as PropType<LearningActivityParticipantBag>,
-            required: false,
-        },
-
-        pointsEarned: {
-            type: Number as PropType<number>,
-            required: false
-        },
-
-        pointsPossible: {
-            type: Number as PropType<number>,
-            required: false
-        },
-
-        screenToShow: {
-            type: Object as PropType<ComponentScreen>,
-            default: ComponentScreen.Summary
-        },
-
-        student: {
-            type: Object as PropType<LearningActivityParticipantBag>,
-            required: false,
-        },
-    };
-}
+    screenToShow: {
+        type: Object as PropType<ComponentScreen>,
+        default: ComponentScreen.Summary
+    }
+};
 
 /**
- * Get the standard properties that all learning activity components must support.
+ * Get the standard emits that all learning activity components must support.
  */
-export function getLearningActivityEmits(): LearningActivityComponentBaseEmits {
-    return {
-        componentSettingsChanged(_componentSettingsAsJson: string): void {
-
-        },
-        componentCompletionChanged(_componentCompletionAsJson: string): void {
-
-        },
-        componentCompleted(_componentCompletionAsJson: string): void {
-
-        },
-        componentCompletionCancelled(): void {
-
-        }
-    };
-}
+export const learningActivityEmits: LearningActivityComponentBaseEmits = {
+    completed(): void { },
+    ["update:activityBag"](_bag: LearningActivityBag): void { },
+    ["update:completionBag"](_bag: LearningActivityCompletionBag): void { }
+};

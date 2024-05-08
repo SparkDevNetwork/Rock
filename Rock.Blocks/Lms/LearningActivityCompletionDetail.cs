@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -28,6 +29,7 @@ using Rock.Security;
 using Rock.SystemGuid;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
+using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -172,7 +174,16 @@ namespace Rock.Blocks.Lms
             // Get the LearningActivityComponent based on the EntityType
             var componentEntityType = EntityTypeCache.Get( entity.LearningActivity.ActivityComponentId );
             var activityComponent = Rock.Lms.LearningActivityContainer.GetComponent( componentEntityType.Name );
-           
+
+            var activityComponentBag = new LearningActivityComponentBag
+            {
+                Name = activityComponent.Name,
+                ComponentUrl = activityComponent.ComponentUrl,
+                HighlightColor = activityComponent.HighlightColor,
+                IconCssClass = activityComponent.IconCssClass,
+                Guid = activityComponent.EntityType.Guid.ToString()
+            };
+
             var binaryFile = entity.BinaryFileId > 0 ?
                 new BinaryFileService( RockContext ).GetNoTracking( entity.BinaryFileId.Value ) :
                 null;
@@ -192,18 +203,31 @@ namespace Rock.Blocks.Lms
                 .GetClassScales( entity.LearningActivity.LearningClassId );
 
             var now = RockDateTime.Now;
+            var activityDescriptionAsHtml = entity.LearningActivity.Description.IsNotNullOrWhiteSpace() ?
+                new StructuredContentHelper( entity.LearningActivity.Description ).Render() :
+                string.Empty;
+
+            var activityBag = new LearningActivityBag
+            {
+                ActivityComponent = activityComponentBag,
+                ActivityComponentSettingsJson = entity.LearningActivity.ActivityComponentSettingsJson,
+                AssignTo = entity.LearningActivity.AssignTo,
+                CurrentPerson = currentPersonBag,
+                Description = entity.LearningActivity.Description,
+                DescriptionAsHtml = activityDescriptionAsHtml,
+                IsStudentCommentingEnabled = entity.LearningActivity.IsStudentCommentingEnabled,
+                Name = entity.LearningActivity.Name,
+                Order = entity.LearningActivity.Order,
+                Points = entity.LearningActivity.Points
+            };
             
             return new LearningActivityCompletionBag
             {
                 IdKey = entity.IdKey,
+                ActivityBag = activityBag,
                 ActivityComponentCompletionJson = entity.ActivityComponentCompletionJson,
-                ActivityComponentSettingsJson = entity.LearningActivity.ActivityComponentSettingsJson,
-                ActivityComponentPath = activityComponent.FilePath,
-                ActivityName = entity.LearningActivity.Name,
-                AssignTo = entity.LearningActivity.AssignTo,
                 BinaryFile = binaryFile?.ToListItemBag(),
                 CompletedDate = entity.CompletedDate,
-                CurrentPerson = currentPersonBag,
                 DueDate = entity.DueDate,
                 FacilitatorComment = entity.FacilitatorComment,
                 GradeText = entity.GradeText( scales ),
@@ -212,7 +236,6 @@ namespace Rock.Blocks.Lms
                 IsPastDue = entity.DueDate != null && entity.DueDate >= now,
                 IsStudentCompleted = entity.IsStudentCompleted,
                 PointsEarned = entity.PointsEarned,
-                PointsPossible = entity.LearningActivity.Points,
                 Student = studentBag,
                 StudentComment = entity.StudentComment,
                 WasCompletedOnTime = entity.WasCompletedOnTime

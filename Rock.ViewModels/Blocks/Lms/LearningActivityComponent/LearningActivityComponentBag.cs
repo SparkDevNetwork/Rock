@@ -25,24 +25,28 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
     public class LearningActivityComponentBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the id of the related LearningActivityComponent for this activity.
-        /// </summary>
-        public int ActivityComponentId { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the activity component.
         /// </summary>
-        public string ActivityComponentName { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the path to the activity component .obs file (relative to the web root).
+        /// Gets or sets the url to the activity component.
         /// </summary>
-        public string ActivityComponentPath { get; set; }
+        public string ComponentUrl { get; set; }
 
+        /// <summary>
+        /// Gets or sets the highlight color of the activity component.
+        /// </summary>
         public string HighlightColor { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class of the activity component.
+        /// </summary>
         public string IconCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the guid of the activity component.
+        /// </summary>
         public string Guid { get; set; }
     }
 }

@@ -22,46 +22,27 @@
 //
 
 import { ListItemBag } from "../../../Utility/listItemBag";
-import { AssignTo } from "../../../../Enums/Lms/assignTo";
-import { CurrentPersonBag } from "../../../Crm/currentPersonBag";
 import { LearningActivityParticipantBag } from "../LearningActivityComponent/learningActivityParticipantBag";
+import { LearningActivityBag } from "../LearningActivityDetail/learningActivityBag";
 
 /** The additional configuration options for the Learning Activity Completion List block. */
 export type LearningActivityCompletionBag = {
     /**  */
     idKey?: string | null;
 
+    /** Gets or sets the Learning Activity Bag for this completion instance. */
+    activityBag?: LearningActivityBag | null;
+
     /** Gets or sets the completion json for the activity component. */
     activityComponentCompletionJson?: string | null;
 
-    /** Gets or sets the name of the Activity Component. */
-    activityComponentName?: string | null;
-
-    /** Gets or sets the path to the Activity Component .obs file.  */
-    activityComponentPath?: string | null;
-
-    /** Gets or sets the settings json for the activity component. */
-    activityComponentSettingsJson?: string | null;
-
-    /** Gets or sets the name of the Learning Activity. */
-    activityName?: string | null;
-
-    /** Gets or sets the party responsible for completing the activity. */
-    assignTo: AssignTo;
-
-    /** Gets or sets the binary file for use by the activity component. */
+    /** Gets or sets the binary file of the completion for use by the activity component. */
     binaryFile?: ListItemBag | null;
 
     /** Gets or sets the date the student
      *  completed the related Rock.Model.LearningActivity.
     */
     completedDate?: string | null;
-
-    /** Gets or sets the currently logged in person. */
-    currentPerson?: CurrentPersonBag | null;
-
-    /** Indicates whether or not the current person is a facilitator of the activity. */
-    currentPersonIsFacilitator: boolean;
 
     /** Gets or sets the due date for the activity instance. */
     dueDate: string | null;
@@ -83,9 +64,6 @@ export type LearningActivityCompletionBag = {
 
     /** Gets or sets the number of points the student earned by completing the activity. */
     pointsEarned?: number | null;
-
-    /** Gets or sets the total number of points possible for the entire activity. */
-    pointsPossible?: number | null;
 
     /** Gets or sets the student's comment. */
     studentComment?: string | null;

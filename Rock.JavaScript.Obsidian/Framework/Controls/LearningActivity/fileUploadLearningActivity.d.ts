@@ -16,7 +16,9 @@
 //
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
+//rename to .partial.ts
+// move to internal folder
+// if splitting component .obsfiles name: .screen.obs
 export type FileUploadActivityConfiguration = {
     instructions: string;
     rubric: string;

@@ -30,7 +30,7 @@
 
                 <div class="footer-content-section">
                     <RockButton :btnType="BtnType.Primary"
-                                @click="emits('componentCompleted', JSON.stringify(completion))">
+                                @click="emits('completed', true)">
                         Complete
                     </RockButton>
                 </div>
@@ -38,15 +38,19 @@
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
-            <NotificationBox v-if="completion.dateConfirmed" alertType="success">{{ assignee?.name }} checked off that they completed this activity at {{ completion.dateConfirmed }}.</NotificationBox>
-            <NotificationBox v-if="!completion.dateConfirmed" alertType="warning">{{ assignee?.name }} has not checked off this activity.</NotificationBox>
+            <NotificationBox v-if="completion.dateConfirmed" alertType="success">
+                {{ assignee?.name ?? defaultAssigneeDescription }} checked off that they completed this activity at {{ completion.dateConfirmed }}.
+            </NotificationBox>
+            <NotificationBox v-if="!completion.dateConfirmed" alertType="warning">
+                {{ assignee?.name ?? defaultAssigneeDescription }} has not checked off this activity.
+            </NotificationBox>
         </div>
     </Panel>
 </template>
 
 <script setup lang="ts">
     import { computed, ref, watch, } from "vue";
-    import { getLearningActivityEmits, getLearningActivityProps, ComponentScreen } from "./learningActivity";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen } from "./learningActivity";
     import { CheckOffActivityCompletion, CheckOffActivityConfiguration } from "./checkOffLearningActivity";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
@@ -54,24 +58,28 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { debounce } from "@Obsidian/Utility/util";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
-    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
 
     // Get the required props and emits for learning activity components.
-    const props = defineProps({ ...getLearningActivityProps() });
-    const emits = defineEmits({ ...getLearningActivityEmits() });
-
-    const screenToShow = ref(props.screenToShow);
-    const assignTo = ref(props.assignTo ?? AssignTo.Student);
+    const props = defineProps({ ...learningActivityProps });
+    const emits = defineEmits({ ...learningActivityEmits });
+    const activityBag = propertyRef(props.activityBag ?? {}, "ActivityBag");
+    const completionBag = propertyRef(props.completionBag ?? {} as LearningActivityCompletionBag, "CompletionBag");
     const currentPerson = ref(props.currentPerson ?? {} as LearningActivityParticipantBag);
-    const student = ref(props.student ?? {} as LearningActivityParticipantBag);
+    const screenToShow = ref(props.screenToShow);
+
+    const assignTo = ref(activityBag.value.assignTo ?? AssignTo.Student);
+    const defaultAssigneeDescription = `The ${AssignToDescription[assignTo.value]}`;
+    const student = ref(completionBag.value.student ?? {} as LearningActivityParticipantBag);
+    const activityName = ref(activityBag.value.name ?? "");
 
     /** Parse the configuration/settings from the provided string. */
-    const componentSettingsJson = ref(props.componentSettingsJson ?? "{}");
+    const componentSettingsJson = ref(activityBag.value.activityComponentSettingsJson ?? "{}");
     const configuration = ref<CheckOffActivityConfiguration>({} as CheckOffActivityConfiguration);
 
     try {
@@ -82,7 +90,7 @@
     }
 
     /** Parse the completion from the provided string. */
-    const componentCompletionJson = ref(props.componentCompletionJson ?? "{}");
+    const componentCompletionJson = ref(completionBag.value?.activityComponentCompletionJson ?? "{}");
     const completion = ref<CheckOffActivityCompletion>({} as CheckOffActivityCompletion);
 
     try {
@@ -104,15 +112,15 @@
     const panelTitle = computed((): string => {
         switch (screenToShow.value) {
             case ComponentScreen.Completion:
-                return props.activityName;
+                return activityName.value;
             case ComponentScreen.Configuration:
-                return `Configure ${props.activityName}`;
+                return `Configure ${activityName.value}`;
             case ComponentScreen.Scoring:
-                return `Score ${props.activityName}`;
+                return `Score ${activityName.value}`;
             case ComponentScreen.Summary:
-                return `${props.activityName} - Summary`;
+                return `${activityName.value} - Summary`;
             default:
-                return props.activityName ?? "";
+                return activityName.value ?? "";
         }
     });
 
@@ -129,17 +137,17 @@
     });
 
     /** Watch for modified settings. */
-    const debouncedEmits = debounce(() => emits("componentSettingsChanged", JSON.stringify(configuration.value)));
+    const debouncedActivityBagEmits = debounce(() => emits("update:activityBag", activityBag.value));
     watch(() => configuration, () => {
-        debouncedEmits();
+        debouncedActivityBagEmits();
     }, { deep: true });
 
     /** Watch for modified completion. */
+    const debouncedCompletionBagEmits = debounce(
+        () => emits("update:completionBag", completionBag.value ?? {})
+    );
     watch(() => completion, () => {
-        if (completion.value.isConfirmed && !completion.value.dateConfirmed) {
-            completion.value.dateConfirmed = RockDateTime.now().toISOString();
-        }
-        emits("componentCompletionChanged", JSON.stringify(completion));
+        debouncedCompletionBagEmits();
     }, { deep: true });
 
 </script>

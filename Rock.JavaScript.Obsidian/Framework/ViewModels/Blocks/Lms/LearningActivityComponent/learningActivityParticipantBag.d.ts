@@ -23,8 +23,9 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** The additional configuration options for the Learning Activity Completion List block. */
+/** The information pertaining to a learning activity participant. */
 export type LearningActivityParticipantBag = {
+    /** Gets or sets the Guid of the related participant (GroupMember.Guid). */
     guid?: Guid | null;
 
     /** Gets or sets the id key of the related participant. */

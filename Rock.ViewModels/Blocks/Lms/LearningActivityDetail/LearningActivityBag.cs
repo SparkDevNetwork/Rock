@@ -28,10 +28,10 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
     public class LearningActivityBag : EntityBagBase
     {
         /// <summary>
-        /// The id of the related ActivityComponent for this LearningActivity.
+        /// Gets or sets the learning activity component for the activity.
         /// </summary>
-        public int ActivityComponentId { get; set; }
-
+        public LearningActivityComponentBag ActivityComponent { get; set; }
+        
         /// <summary>
         /// Gets or sets the json config for the activity component before completion.
         /// </summary>
@@ -92,11 +92,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         /// Gets or sets the currently logged in person.
         /// </summary>
         public LearningActivityParticipantBag CurrentPerson { get; set; }
-
-        /// <summary>
-        /// Indicates whether or not the current person is a facilitator of the activity.
-        /// </summary>
-        public bool CurrentPersonIsFacilitator { get; set; }
 
         /// <summary>
         /// Gets or sets the description of the activity.

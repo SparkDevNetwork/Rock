@@ -391,26 +391,45 @@ namespace Rock.Blocks.Lms
                 .FirstOrDefault( a => a.Id == entityId );
         }
 
+        private Dictionary<string, string> GetCurrentPageParams(string keyPlaceholder = "")
+        {
+            if ( !string.IsNullOrWhiteSpace( keyPlaceholder ) )
+            {
+                return new Dictionary<string, string>
+                {
+                    [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                    [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                    [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
+                    [keyPlaceholder] = "((Key))"
+                };
+            }
+
+            return new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
+            };
+        }
+
+
         /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var queryParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
-                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
-                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId )
-            };
-
+            var currentPageParams = GetCurrentPageParams();
+            var activityDetailParams = GetCurrentPageParams( "LearningActivityId" );
+            var participantDetailParams = GetCurrentPageParams( "LearningParticipantId" );
+            
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ActivityDetailPage] = this.GetLinkedPageUrl( AttributeKey.ActivityDetailPage, queryParams ),
-                [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, queryParams ),
-                [NavigationUrlKey.FacilitatorDetailPage] = this.GetLinkedPageUrl( AttributeKey.FacilitatorDetailPage, queryParams ),
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams ),
-                [NavigationUrlKey.StudentDetailPage] = this.GetLinkedPageUrl( AttributeKey.StudentDetailPage, queryParams )
+                [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, currentPageParams ),
+                [NavigationUrlKey.ActivityDetailPage] = this.GetLinkedPageUrl( AttributeKey.ActivityDetailPage, activityDetailParams ),
+                [NavigationUrlKey.FacilitatorDetailPage] = this.GetLinkedPageUrl( AttributeKey.FacilitatorDetailPage, participantDetailParams ),
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( currentPageParams ),
+                [NavigationUrlKey.StudentDetailPage] = this.GetLinkedPageUrl( AttributeKey.StudentDetailPage, participantDetailParams )
             };
         }
 
@@ -482,6 +501,34 @@ namespace Rock.Blocks.Lms
                 Bag = bag,
                 ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
             } );
+        }
+
+        /// <summary>
+        /// Copy the Class to create as a new Class
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult Copy( string key )
+        {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( $"Not authorized to copy {LearningClass.FriendlyTypeName}." );
+            }
+
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return ActionNotFound();
+            }
+
+            var copiedEntity = new LearningClassService( RockContext ).Copy( key );
+
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = copiedEntity.IdKey
+            };
+
+            return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( queryParams ) );
         }
 
         /// <summary>

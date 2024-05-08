@@ -74,8 +74,8 @@
     const panelName = computed((): string => {
         return [
             learningActivityCompletionViewBag.value?.student?.name  ?? "",
-            learningActivityCompletionViewBag.value?.activityName ?? "",
-            learningActivityCompletionViewBag.value?.activityComponentName ?? ""
+            learningActivityCompletionViewBag.value?.activityBag?.name ?? "",
+            learningActivityCompletionViewBag.value?.activityBag?.activityComponent?.name ?? ""
         ].filter(s => s.length > 0).join(" - ");
     });
 

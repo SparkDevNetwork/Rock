@@ -51,6 +51,7 @@
     import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
     import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
     const config = useConfigurationValues<DetailBlockBox<LearningClassBag, LearningClassDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -73,15 +74,6 @@
     });
 
     // #endregion
-
-    // Check to see if this is a request to clone an existing record.
-    const params = new URLSearchParams(window.location.search);
-    const cloneId = ref((params.get("clone")) ?? "");
-
-    if (cloneId.value.length > 0) {
-        // Call to clone must come after initializing view bags.
-        clone(cloneId.value);
-    }
 
     // #region Computed Values
 
@@ -158,16 +150,7 @@
                 iconCssClass: "fa fa-clone",
                 title: "Copy",
                 type: "default",
-                handler: async () => {
-                    // Reload the current page replacing the current IdKey with 0 and a search param to clone the same id.
-                    const currentIdKey = learningClassViewBag.value?.idKey ?? "";
-                    const currentSearch = location.search ?? "";
-                    location.href = [
-                        location.href.replace(currentIdKey, "0"),
-                        currentSearch.length === 0 ? "?" : "",
-                        `clone=${currentIdKey}`
-                    ].join("");
-                }
+                handler: onCopy
             });
         }
 
@@ -206,33 +189,18 @@
     // #region Event Handlers
 
     /**
-     * Handles the click event of the "Clone" button.
+     * Called when the copy icon on the detail block has been clicked.
      */
-     async function clone(key: string): Promise<boolean> {
-        if (key.length === 0 || key == "0") {
-            errorMessage.value = "Invalid Id detected while trying to clone learning class.";
-            return false;
+     async function onCopy(): Promise<void> {
+        errorMessage.value = "";
+        var result = await invokeBlockAction<string>("Copy", {
+                    key: learningClassViewBag.value?.idKey ?? ""
+        });
+        if (result.isSuccess && result.data && typeof result.data === "string") {
+            window.location.href = makeUrlRedirectSafe(result.data);
+            return;
         }
-
-        const result = await invokeBlockAction<ValidPropertiesBox<LearningClassBag>>("Clone", { key });
-
-        if (!result.isSuccess) {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to clone learning class.";
-            return false;
-        }
-
-        if (result.isSuccess && result.data && result.data.bag) {
-            learningClassEditBag.value = {
-                bag: result.data.bag,
-                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
-            };
-
-            panelMode.value = DetailPanelMode.Add;
-            return true;
-        }
-        else {
-            return false;
-        }
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to copy class.";
     }
 
     /**

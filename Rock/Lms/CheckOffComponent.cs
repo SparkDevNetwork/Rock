@@ -31,6 +31,6 @@ namespace Rock.Lms
         /// <summary>
         /// Initializes a new instance of the CheckOffComponent.
         /// </summary>
-        public CheckOffComponent(): base(@"Obsidian/Controls/LearningActivity/checkOffLearningActivity.obs") { }
+        public CheckOffComponent(): base(@"/Obsidian/Controls/LearningActivity/checkOffLearningActivity.obs") { }
     }
 }

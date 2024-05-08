@@ -21,8 +21,8 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { LearningActivityComponentBag } from "./learningActivityComponentBag";
+import { ListItemBag } from "../../../Utility/listItemBag";
+import { LearningActivityComponentBag } from "../LearningActivityComponent/learningActivityComponentBag";
 
 /** The additional configuration options for the Learning Activity Detail block. */
 export type LearningActivityDetailOptionsBag = {

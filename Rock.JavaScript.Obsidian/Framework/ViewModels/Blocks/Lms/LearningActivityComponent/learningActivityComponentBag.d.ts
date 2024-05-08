@@ -21,21 +21,23 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Learning Activity Detail block. */
+/** The information pertaining to a Learning Actiivty Component. */
 export type LearningActivityComponentBag = {
-    /** Gets or sets the id of the related LearningActivityComponent for this activity. */
-    activityComponentId: number;
+    /** Gets or sets the id key of the activity component. */
+    idKey?: string | null;
 
     /** Gets or sets the name of the activity component. */
-    activityComponentName?: string | null;
+    name?: string | null;
 
-    /** Gets or sets the path to the activity component .obs file (relative to the web root). */
-    activityComponentPath?: string | null;
+    /** Gets or sets the url to the activity component. */
+    componentUrl?: string | null;
 
+    /** Gets or sets the highlight color of the activity component. */
     highlightColor?: string | null;
 
-    /**  */
+    /** Gets or sets the icon CSS class of the activity component. */
     iconCssClass?: string | null;
 
+    /** Gets or sets the guid of the activity component. */
     guid?: string | null;
 };

@@ -27,11 +27,12 @@ import { DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculation
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { LearningActivityParticipantBag } from "../LearningActivityComponent/learningActivityParticipantBag";
+import { LearningActivityComponentBag } from "../LearningActivityComponent/learningActivityComponentBag";
 
 /** The item details for the Learning Activity Detail block. */
 export type LearningActivityBag = {
-    /** The id of the related ActivityComponent for this LearningActivity. */
-    activityComponentId?: number | null;
+    /** Gets or sets the learning activity component for the activity. */
+    activityComponent?: LearningActivityComponentBag | null;
 
     /** Gets or sets the json config for the activity component before completion. */
     activityComponentSettingsJson?: string | null;

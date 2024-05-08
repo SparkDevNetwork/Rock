@@ -99,10 +99,10 @@ namespace Rock.Blocks.Lms
             var components = LearningActivityContainer.Instance.Components;
 
             // Get the list of Activity Components (for rendering the actual Obsidian component.
-            options.ActivityTypes = components.Select( component => new LearningActivityComponentBag {
-                ActivityComponentId = component.Value.Value.EntityType.Id,
-                ActivityComponentName = component.Value.Value.Name,
-                ActivityComponentPath = component.Value.Value.FilePath,
+            options.ActivityTypes = components.Select( component => new LearningActivityComponentBag
+            {
+                Name = component.Value.Value.Name,
+                ComponentUrl = component.Value.Value.ComponentUrl,
                 HighlightColor = component.Value.Value.HighlightColor,
                 IconCssClass = component.Value.Value.IconCssClass,
                 Guid = component.Value.Value.EntityType.Guid.ToString()
@@ -112,7 +112,7 @@ namespace Rock.Blocks.Lms
             options.ActivityTypeListItems = options.ActivityTypes.Select( a => new ListItemBag
             {
                 Value = a.Guid,
-                Text = a.ActivityComponentName
+                Text = a.Name
             } ).ToList();
 
             return options;
@@ -185,16 +185,14 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
         /// <returns>A <see cref="LearningActivityBag"/> that represents the entity.</returns>
-        private LearningActivityBag GetCommonEntityBag( LearningActivity entity, bool includeStatistics = true )
+        private LearningActivityBag GetCommonEntityBag( LearningActivity entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var completionStatistics = includeStatistics ?
-                new LearningActivityService( RockContext ).GetCompletionStatistics( entity ) :
-                new LearningActivityCompletionStatistics();
+            var completionStatistics = new LearningActivityService( RockContext ).GetCompletionStatistics( entity );
 
             // Get the current persons info.
             var currentPerson = GetCurrentPerson();
@@ -206,10 +204,26 @@ namespace Rock.Blocks.Lms
                 IsFacilitator = isClassFacilitator
             };
 
+            var activityComponentBag = new LearningActivityComponentBag();
+            if ( entity.ActivityComponentId > 0 )
+            {
+                var componentEntityType = EntityTypeCache.Get( entity.ActivityComponentId );
+                var activityComponent = Rock.Lms.LearningActivityContainer.GetComponent( componentEntityType.Name );
+
+                activityComponentBag = new LearningActivityComponentBag
+                {
+                    Name = activityComponent.Name,
+                    ComponentUrl = activityComponent.ComponentUrl,
+                    HighlightColor = activityComponent.HighlightColor,
+                    IconCssClass = activityComponent.IconCssClass,
+                    Guid = activityComponent.EntityType.Guid.ToString()
+                };
+            }
+
             return new LearningActivityBag
             {
                 IdKey = entity.IdKey,
-                ActivityComponentId = entity.ActivityComponentId,
+                ActivityComponent = activityComponentBag,
                 ActivityComponentSettingsJson = entity.ActivityComponentSettingsJson,
                 AssignTo = entity.AssignTo,
                 AvailableDateCalculationMethod = entity.AvailableDateCalculationMethod,
@@ -278,14 +292,19 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Bag.ActivityComponentId ),
-                () => entity.ActivityComponentId = box.Bag.ActivityComponentId );
+            box.IfValidProperty( nameof( box.Bag.ActivityComponent.IdKey ),
+                () =>
+                {
+                    var componentEntityTypeId = Rock.Utility.IdHasher.Instance.GetId( box.Bag.IdKey );
+                    if ( componentEntityTypeId.HasValue )
+                        entity.ActivityComponentId = componentEntityTypeId.Value;
+                } );
 
             box.IfValidProperty( nameof( box.Bag.ActivityComponentSettingsJson ),
                 () => entity.ActivityComponentSettingsJson = box.Bag.ActivityComponentSettingsJson );
 
             box.IfValidProperty( nameof( box.Bag.AssignTo ),
-                () => entity.AssignTo = box.Bag.AssignTo);
+                () => entity.AssignTo = box.Bag.AssignTo );
 
             box.IfValidProperty( nameof( box.Bag.AvailableDateCalculationMethod ),
                 () => entity.AvailableDateCalculationMethod = box.Bag.AvailableDateCalculationMethod );
@@ -532,34 +551,32 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Gets the box that will contain all the information needed to begin
-        /// the clone operation.
+        /// Copy the Activity to create as a new Activity
         /// </summary>
-        /// <param name="key">The identifier of the entity to be cloned.</param>
-        /// <returns>A box that contains the entity and any other information required.</returns>
         [BlockAction]
-        public BlockActionResult Clone( string key )
+        public BlockActionResult Copy( string key )
         {
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return actionError;
+                return ActionForbidden( $"Not authorized to copy {LearningActivity.FriendlyTypeName}." );
             }
 
-            // The GetEntityBagForEdit includes some statistics info that we won't need for a clone.
-            // Instead call the commonEntityBag which is called by GetEntityBagForEdit and ignore statistics.
-            var includeStatistics = false;
-            var bag = GetCommonEntityBag( entity, includeStatistics );
-
-            // Remove the id and update the name.
-            // GetEntityBagForEdit depends on properties which are removed by CloneWithoutIdentity.
-            bag.IdKey = string.Empty;
-            bag.Name += " - Copy";
-
-            return ActionOk( new ValidPropertiesBox<LearningActivityBag>
+            if ( key.IsNullOrWhiteSpace() )
             {
-                Bag = bag,
-                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-            } );
+                return ActionNotFound();
+            }
+
+            var copiedEntity = new LearningActivityService( new RockContext() ).Copy( key );
+
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
+                [PageParameterKey.LearningActivityId] = copiedEntity.IdKey
+            };
+
+            return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( queryParams ) );
         }
 
 

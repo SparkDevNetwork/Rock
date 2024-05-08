@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
@@ -26,6 +27,90 @@ namespace Rock.Model
 {
     public partial class LearningClassService
     {
+        /// <summary>
+        /// Creates a new <see cref="LearningClass" /> with Attributes by copying values from the specified learning class.
+        /// </summary>
+        /// <param name="id">The identifer to use for retreiving the <see cref="LearningClass"/> to use as a template for the copy.</param>
+        /// <returns>
+        ///     A new class whose properties and <see cref="AttributeValue" />s match the properties and <see cref="AttributeValue" />s
+        ///     of the class whose <paramref name="id"/> was provided.
+        /// </returns>
+        public LearningClass Copy( int id )
+        {
+            var learningClass = Get( id );
+
+            return Copy( learningClass );
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LearningClass" /> with Attributes by copying values from the specified learning class.
+        /// </summary>
+        /// <param name="key">The identifer to use for retreiving the <see cref="LearningClass"/> to use as a template for the copy.</param>
+        /// <returns>
+        ///     A new class whose properties and <see cref="AttributeValue" />s match the properties and <see cref="AttributeValue" />s
+        ///     of the class whose <paramref name="key"/> was provided.
+        /// </returns>
+        public LearningClass Copy( string key )
+        {
+            var learningClass = Get( key );
+
+            return Copy( learningClass );
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LearningClass" /> with Attributes by copying values from the specified learning class.
+        /// </summary>
+        /// <param name="learningClass">The <see cref="LearningClass"/> to use as a template for the copy.</param>
+        /// <returns>
+        ///     A new class whose properties and <see cref="AttributeValue" />s match the properties and <see cref="AttributeValue" />s
+        ///     of the class whose <paramref name="key"/> was provided.
+        /// </returns>
+        public LearningClass Copy( LearningClass learningClass, bool includeActivities = true)
+        {
+            var newLearningClass = learningClass.CloneWithoutIdentity();
+            newLearningClass.Name += " - Copy";
+            this.Add( newLearningClass );
+            learningClass.LoadAttributes();
+            newLearningClass.LoadAttributes();
+            newLearningClass.CopyAttributesFrom( learningClass );
+
+            var rockContext = this.Context as RockContext;
+            var newActivities = new List<LearningActivity>();
+
+            // If we're also copying activities populate a list of new activities.
+            if ( includeActivities )
+            {
+                var activityService = new LearningActivityService( rockContext );
+                var activities = activityService.Queryable().Where( c => c.LearningClassId == learningClass.Id ).ToList();
+
+                foreach ( var activity in activities )
+                {
+                    var newActivity = activity.CloneWithoutIdentity();
+                    newActivity.LearningClassId = newLearningClass.Id;
+                    activityService.Add( newActivity );
+                    activity.LoadAttributes();
+                    newActivity.LoadAttributes();
+                    newActivity.CopyAttributesFrom( activity );
+                }
+            }
+
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                newLearningClass.SaveAttributeValues( rockContext );
+
+                // If there are new activities save the attributes for those as well.
+                foreach ( var newActivity in newActivities )
+                {
+                    rockContext.SaveChanges();
+                    newActivity.SaveAttributeValues( rockContext );
+                }
+            } );
+
+
+            return newLearningClass;
+        }
+
         /// <summary>
         /// Gets the related <see cref="GroupType"/> for the <see cref="LearningClass"/> with the specified id key.
         /// </summary>
@@ -79,7 +164,7 @@ namespace Rock.Model
         public TResult GetCourseDefaultClass<TResult>( string courseIdKey, Expression<Func<LearningClass, TResult>> selector )
         {
             var courseId = IdHasher.Instance.GetId( courseIdKey ).ToIntSafe();
-            if (courseId == 0)
+            if ( courseId == 0 )
             {
                 return default;
             }
@@ -108,7 +193,7 @@ namespace Rock.Model
                 return default;
             }
 
-            return GetCourseDefaultClass(course, selector );
+            return GetCourseDefaultClass( course, selector );
         }
 
         /// <summary>
@@ -132,7 +217,7 @@ namespace Rock.Model
                 .Where( c => c.IsActive )
                 .OrderBy( t => t.Order )
                 .AsQueryable()
-                .DefaultIfEmpty(new LearningClass())
+                .DefaultIfEmpty( new LearningClass() )
                 .Select( selector )
                 .FirstOrDefault();
         }
