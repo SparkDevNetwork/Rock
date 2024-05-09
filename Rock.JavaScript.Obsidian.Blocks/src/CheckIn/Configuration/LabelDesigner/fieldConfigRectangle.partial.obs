@@ -40,7 +40,7 @@
     ];
 
     watch(color, () => {
-        props.labelManager.applyToSelectedField(field => {
+        props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
             const fieldConfig = field.configurationValues as StringRecord<RectangleFieldConfigurationBag>;

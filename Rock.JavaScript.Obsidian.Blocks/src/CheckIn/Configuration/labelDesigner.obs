@@ -60,7 +60,7 @@
             };
         },
         set(value) {
-            labelManager.apply(label => {
+            labelManager.mutate(label => {
                 label.width = value.width;
                 label.height = value.height;
             });
