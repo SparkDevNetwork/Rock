@@ -68,7 +68,7 @@
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
+                      :filterValue="getAssignedToFilterValue"
                       visiblePriority="md" />
 
         <TextColumn name="resultSummary"
