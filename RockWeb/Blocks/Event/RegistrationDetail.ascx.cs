@@ -3205,8 +3205,15 @@ namespace RockWeb.Blocks.Event
 
             var balanceAfterPaymentPlan = this.Registration.BalanceDue - paymentPlanConfiguration.PlannedAmount;
             var remainderSuffix = balanceAfterPaymentPlan > 0 ? $" (this will leave a remaining balance of { balanceAfterPaymentPlan.FormatAsCurrency() })" : string.Empty;
-            lPaymentPlanSummaryPaymentAmount.Text =
-                $"{ paymentPlanConfiguration.AmountPerPayment.FormatAsCurrency() } × { paymentPlanConfiguration.NumberOfPayments } { paymentPlanConfiguration.PaymentFrequencyConfiguration.PaymentFrequency }{ remainderSuffix }";
+            if ( paymentPlanConfiguration.NumberOfPayments > 0 && paymentPlanConfiguration.PaymentFrequencyConfiguration != null )
+            {
+                lPaymentPlanSummaryPaymentAmount.Text =
+                    $"{paymentPlanConfiguration.AmountPerPayment.FormatAsCurrency()} × {paymentPlanConfiguration.NumberOfPayments} {paymentPlanConfiguration.PaymentFrequencyConfiguration.PaymentFrequency}{remainderSuffix}";
+            }
+            else
+            {
+                lPaymentPlanSummaryPaymentAmount.Text = string.Empty;
+            }
 
             if ( paymentPlanConfiguration.AmountPerPayment > 0 )
             { 
