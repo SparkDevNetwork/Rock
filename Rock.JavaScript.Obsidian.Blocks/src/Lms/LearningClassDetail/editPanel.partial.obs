@@ -42,6 +42,7 @@
             </div>
             <div class="col-md-6">
                 <LocationPicker v-model="location"
+                                :allowedPickerModes="pickerMode"
                                 label="Location" />
             </div>
             <div class="col-md-6">
@@ -68,6 +69,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+    import { LocationPickerMode, LocationPickerModeFlag } from "@Obsidian/Enums/Controls/locationPickerMode";
     import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
@@ -94,6 +96,8 @@
     }>();
 
     // #region Values
+
+    const pickerMode = (LocationPickerMode.Named + LocationPickerMode.Address) as LocationPickerModeFlag;
 
     const isAcademicCalendarMode = props.options.programConfigurationMode === ConfigurationMode.AcademicCalendar;
 

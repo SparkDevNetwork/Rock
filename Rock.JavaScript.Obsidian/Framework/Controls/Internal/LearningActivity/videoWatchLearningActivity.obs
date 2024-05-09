@@ -45,8 +45,8 @@
 
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
-    import { getLearningActivityEmits, getLearningActivityProps, ComponentScreen } from "./LearningActivity/./learningActivity";
+    import { ref, watch } from "vue";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen } from "./learningActivity";
     // import { VideoWatchLearningActivityValue } from "./LearningActivity/learningActivityBase.partial";
     //import { useHttp } from "@Obsidian/Utility/http";
     import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
@@ -65,25 +65,13 @@
     const footerContent = ref("");
     const completionThreshold = ref(0);
 
-    const props = defineProps({ ...getLearningActivityProps() });
+    const props = defineProps({ ...learningActivityProps });
 
-    const _emits = defineEmits({ ...getLearningActivityEmits() });
+    const _emits = defineEmits({ ...learningActivityEmits });
 
     const screenToShow = ref(props.screenToShow);
 
-    const panelTitle = computed((): string => {
-        switch (screenToShow.value) {
-            case ComponentScreen.Completion:
-                return "Activity";
-            case ComponentScreen.Configuration:
-                return "Configure Activity";
-            case ComponentScreen.Scoring:
-                return "Score Activity";
-            case ComponentScreen.Summary:
-                return "Summary";
-        }
-    });
-
+    const panelTitle = ref("Video Watch TEMP");
     watch(() => props.screenToShow, () => {
         updateRefValue(screenToShow, props.screenToShow ?? ComponentScreen.Summary);
     });

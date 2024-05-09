@@ -60,14 +60,14 @@
                     </div>
 
                     <div class="score-section">
-                        <NumberBox v-model="pointsEarned"
+                        <NumberBox v-model="activityBag.points"
                             label="Score"
                             rules="required"
                             :min="0"
-                            :max="pointsPossible"
+                            :max="activityBag.points"
                             inputGroupClasses="input-width-md">
                         <template #inputGroupAppend>
-                            <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                            <span class="input-group-addon">out of {{ activityBag.points }}</span>
                         </template>
                     </NumberBox>
                     </div>
@@ -75,11 +75,11 @@
 
                 <div class="footer-section">
                     <RockButton :btnType="BtnType.Primary"
-                                @click="emits('componentCompletionChanged', JSON.stringify(binaryFile))">
+                                @click="emits('completed', true)">
                         Complete
                     </RockButton>
                     <RockButton :btnType="BtnType.Link"
-                                @click="emits('componentCompletionCancelled')">
+                                @click="emits('completed', false)">
                         Cancel
                     </RockButton>
                 </div>
@@ -120,8 +120,8 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, ref, watch, } from "vue";
-    import { learningActivityEmits, learningActivityProps, ComponentScreen } from "./learningActivity";
+    import { ref, watch, } from "vue";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { FileUploadActivityCompletion, FileUploadActivityConfiguration } from "./fileUploadLearningActivity";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
@@ -134,8 +134,6 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { debounce } from "@Obsidian/Utility/util";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
-    import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
 
@@ -146,77 +144,23 @@
     // Get the bags
     const activityBag = propertyRef(props.activityBag ?? {}, "ActivityBag");
     const completionBag = propertyRef(props.completionBag ?? {} as LearningActivityCompletionBag, "CompletionBag");
-    const currentPerson = ref(props.currentPerson ?? {} as LearningActivityParticipantBag);
     const screenToShow = ref(props.screenToShow);
 
-    const assignTo = ref(activityBag.value.assignTo ?? AssignTo.Student);
-    const defaultAssigneeDescription = `The ${AssignToDescription[assignTo.value]}`;
-    const student = ref(completionBag.value.student ?? {} as LearningActivityParticipantBag);
-    const activityName = ref(activityBag.value.name ?? "");
-
-    /** Parse the configuration/settings from the provided string. */
-    const componentSettingsJson = ref(props.activityBag.activityComponentSettingsJson ?? "{}");
-    const configuration = ref<FileUploadActivityConfiguration>({} as FileUploadActivityConfiguration);
-
-    try {
-        configuration.value = JSON.parse(componentSettingsJson.value) as FileUploadActivityConfiguration;
-    }
-    catch (error) {
-        configuration.value = { } as FileUploadActivityConfiguration;
-    }
-
-    /** Parse the completion from the provided string. */
-    const componentCompletionJson = ref(props.completionBag?.activityComponentCompletionJson ?? "{}");
-    const completion = ref<FileUploadActivityCompletion>({} as FileUploadActivityCompletion);
-
-    try {
-        completion.value = JSON.parse(componentCompletionJson.value) as FileUploadActivityCompletion;
-    }
-    catch (error) {
-        completion.value = { } as FileUploadActivityCompletion;
-    }
-
-    const assignee = computed((): LearningActivityParticipantBag => {
-        if (assignTo.value === AssignTo.Facilitator && currentPerson.value.isFacilitator === true) {
-            return currentPerson.value;
-        }
-        else {
-            return student.value;
-        }
-    });
-
-    const binaryFile = ref(props.completionBag?.binaryFile ?? null);
-
-    const panelTitle = computed((): string => {
-        switch (screenToShow.value) {
-            case ComponentScreen.Completion:
-                return activityName.value;
-            case ComponentScreen.Configuration:
-                return `Configure ${activityName.value}`;
-            case ComponentScreen.Scoring:
-                return `Score ${activityName.value}`;
-            case ComponentScreen.Summary:
-                return `${activityName.value} - Summary`;
-            default:
-                return activityName.value ?? "";
-        }
-    });
-
-    const fileUrl = computed((): string => {
-        if (binaryFile.value?.value) {
-            return `/GetFile.ashx?guid=${binaryFile.value.value}`;
-        }
-
-        return "";
-    });
-
-    /** CSS classes for the panel. */
-    const containerClasses = computed(() => {
-        return [
-            `lms-${screenToShow.value}-container`,
-            `lms-file-upload-${screenToShow.value}-container`
-        ];
-    });
+    /** Initialize the base component and take the refs we need for this component. */
+    const {
+        assignee,
+        binaryFile,
+        completion,
+        configuration,
+        containerClasses,
+        defaultAssigneeDescription,
+        fileUrl,
+        panelTitle
+    } = useLearningComponent<FileUploadActivityConfiguration, FileUploadActivityCompletion>(
+        activityBag,
+        completionBag,
+        screenToShow
+    );
 
     watch(() => props.screenToShow, () => {
         updateRefValue(screenToShow, props.screenToShow ?? ComponentScreen.Summary);

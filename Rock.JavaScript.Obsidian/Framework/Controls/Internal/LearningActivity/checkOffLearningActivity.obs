@@ -49,8 +49,8 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, watch, } from "vue";
-    import { learningActivityEmits, learningActivityProps, ComponentScreen } from "./learningActivity";
+    import { ref, watch, } from "vue";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { CheckOffActivityCompletion, CheckOffActivityConfiguration } from "./checkOffLearningActivity";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
@@ -61,8 +61,6 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { debounce } from "@Obsidian/Utility/util";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
-    import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
 
     // Get the required props and emits for learning activity components.
@@ -70,67 +68,21 @@
     const emits = defineEmits({ ...learningActivityEmits });
     const activityBag = propertyRef(props.activityBag ?? {}, "ActivityBag");
     const completionBag = propertyRef(props.completionBag ?? {} as LearningActivityCompletionBag, "CompletionBag");
-    const currentPerson = ref(props.currentPerson ?? {} as LearningActivityParticipantBag);
     const screenToShow = ref(props.screenToShow);
 
-    const assignTo = ref(activityBag.value.assignTo ?? AssignTo.Student);
-    const defaultAssigneeDescription = `The ${AssignToDescription[assignTo.value]}`;
-    const student = ref(completionBag.value.student ?? {} as LearningActivityParticipantBag);
-    const activityName = ref(activityBag.value.name ?? "");
-
-    /** Parse the configuration/settings from the provided string. */
-    const componentSettingsJson = ref(activityBag.value.activityComponentSettingsJson ?? "{}");
-    const configuration = ref<CheckOffActivityConfiguration>({} as CheckOffActivityConfiguration);
-
-    try {
-        configuration.value = JSON.parse(componentSettingsJson.value) as CheckOffActivityConfiguration;
-    }
-    catch (error) {
-        configuration.value = { isConfirmationRequired: false, content: "", confirmationText: "" } as CheckOffActivityConfiguration;
-    }
-
-    /** Parse the completion from the provided string. */
-    const componentCompletionJson = ref(completionBag.value?.activityComponentCompletionJson ?? "{}");
-    const completion = ref<CheckOffActivityCompletion>({} as CheckOffActivityCompletion);
-
-    try {
-        completion.value = JSON.parse(componentCompletionJson.value) as CheckOffActivityCompletion;
-    }
-    catch (error) {
-        completion.value = { isConfirmed: false } as CheckOffActivityCompletion;
-    }
-
-    const assignee = computed((): LearningActivityParticipantBag => {
-        if (assignTo.value === AssignTo.Facilitator && currentPerson.value.isFacilitator === true) {
-            return currentPerson.value;
-        }
-        else {
-            return student.value;
-        }
-    });
-
-    const panelTitle = computed((): string => {
-        switch (screenToShow.value) {
-            case ComponentScreen.Completion:
-                return activityName.value;
-            case ComponentScreen.Configuration:
-                return `Configure ${activityName.value}`;
-            case ComponentScreen.Scoring:
-                return `Score ${activityName.value}`;
-            case ComponentScreen.Summary:
-                return `${activityName.value} - Summary`;
-            default:
-                return activityName.value ?? "";
-        }
-    });
-
-    /** CSS classes for the panel. */
-    const containerClasses = computed(() => {
-        return [
-            `lms-${screenToShow.value}-container`,
-            `lms-check-off-${screenToShow.value}-container`
-        ];
-    });
+    /** Initialize the base component and take the refs we need for this component. */
+    const {
+        assignee,
+        completion,
+        configuration,
+        containerClasses,
+        defaultAssigneeDescription,
+        panelTitle
+    } = useLearningComponent<CheckOffActivityConfiguration, CheckOffActivityCompletion>(
+        activityBag,
+        completionBag,
+        screenToShow
+    );
 
     watch(() => props.screenToShow, () => {
         updateRefValue(screenToShow, props.screenToShow ?? ComponentScreen.Summary);

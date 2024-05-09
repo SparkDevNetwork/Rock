@@ -31,6 +31,6 @@ namespace Rock.Lms
         /// <summary>
         /// Initializes a new instance of the CheckOffComponent.
         /// </summary>
-        public FileUploadComponent(): base(@"/Obsidian/Controls/LearningActivity/fileUploadLearningActivity.obs") { }
+        public FileUploadComponent(): base( @"/Obsidian/Controls/Internal/LearningActivity/fileUploadLearningActivity.obs" ) { }
     }
 }

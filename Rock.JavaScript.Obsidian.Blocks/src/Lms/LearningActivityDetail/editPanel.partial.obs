@@ -125,7 +125,7 @@
                 <DropDownList
                               v-model="activityComponentValue"
                               :grouped="false"
-                              :items="activityTypes"
+                              :items="activityComponentListItems"
                               rules="required"
                               label="Activity Type"
                               :multiple="false"
@@ -142,9 +142,8 @@
                 :showBlankItem="false" />
 
         <!-- Pass the configuration and completion json values to the component. -->
-        <activityTypeComponent v-if="activityTypeComponent"
+        <activityTypeComponent
                                v-model:activityBag="activityBag"
-                               :currentPerson="activityBag.currentPerson"
                                :screenToShow="screenToShow" />
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -152,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, defineAsyncComponent, reactive, ref, watch } from "vue";
+    import { Component, PropType, computed, defineAsyncComponent, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -203,9 +202,8 @@
     const availableDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(AvailableDateCalculationMethodDescription ?? []));
     const dueDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(DueDateCalculationMethodDescription ?? []));
     const assignTos = ref<ListItemBag[]>(enumToListItemBag(AssignToDescription ?? []));
-    const activityTypes = ref<ListItemBag[]>(props.options?.activityTypeListItems ?? []);
-    const activityTypeComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
-
+    const activityComponentListItems = ref<ListItemBag[]>(props.options?.activityTypeListItems ?? []);
+    const activityComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
     const activityBag = reactive(props.modelValue.bag ?? {} as LearningActivityBag);
 
     const taskBinaryFile = propertyRef(activityBag.taskBinaryFile ?? null, "TaskBinaryFile");
@@ -261,12 +259,14 @@
 
     // #endregion
 
-    const activityTypeComponent = computed(() => {
-        console.warn({activityBag: activityBag});
-        const componentUrl = activityComponent.value.componentUrl ?? "";
+    const activityTypeComponent = computed((): Component | null => {
+        const selectedComponent = activityComponents.value.find(c => c.guid === activityComponentValue.value);
+
+        const componentUrl = selectedComponent?.componentUrl ?? "";
         if (componentUrl.length > 0) {
             return defineAsyncComponent(() => import(componentUrl));
         }
+        return null;
     });
 
     // Watch for changes made by the activity component and update any applicable values.

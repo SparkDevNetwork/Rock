@@ -26,7 +26,6 @@
             <activityTypeComponent
                                    v-model:activityBag="activityBag"
                                    v-model:completionBag="completionBag"
-                                   :currentPerson="currentPerson"
                                    :screenToShow="screenToShow" />
         </div>
     </fieldset>
@@ -78,8 +77,6 @@
     const facilitatorComment = propertyRef(completionBag.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.pointsEarned, "PointedEarned");
     const isPastDue = ref(completionBag.isPastDue ?? false);
-
-    const currentPerson = ref(activityBag.currentPerson);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
