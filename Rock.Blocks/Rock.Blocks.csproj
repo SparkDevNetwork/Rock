@@ -120,7 +120,6 @@
     <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
     <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
-	<Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Communication\CommunicationList.cs" />
     <Compile Include="Communication\SmsPipelineList.cs" />

@@ -454,6 +454,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// </value>
         public bool DisableCaptchaSupport { get; set; }
 
+        /// <summary>
         /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
         /// </summary>
         /// <value>
