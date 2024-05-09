@@ -2426,9 +2426,22 @@ namespace RockWeb.Blocks.Event
                 lNextPaymentDate.Text = nextPaymentDate.Value.ToShortDateString();
                 lNextPaymentDate.Visible = true;
 
-                // Disallow updates if the next payment date is today.
-                lbChangePaymentPlan.Enabled = nextPaymentDate.Value.Date != RockDateTime.Today;
-                spanChangeButtonWrapper.Attributes["title"] = ( lbChangePaymentPlan.Enabled ) ? "" : "The plan cannot be changed because the next payment is today (and may be in process).";
+                // Disallow updates if the next payment date is today
+                if ( nextPaymentDate.Value.Date == RockDateTime.Today )
+                {
+                    lbChangePaymentPlan.Enabled = false;
+                    spanChangeButtonWrapper.Attributes["title"] = "The plan cannot be changed because the next payment is today (and may be in process).";
+                }
+                else if ( this.Registration.BalanceDue <= 0 )
+                {
+                    lbChangePaymentPlan.Enabled = false;
+                    spanChangeButtonWrapper.Attributes["title"] = "The plan cannot be changed because the amount remaining is zero.";
+                }
+                else
+                {
+                    lbChangePaymentPlan.Enabled = true;
+                    spanChangeButtonWrapper.Attributes["title"] = string.Empty;
+                }
 
                 // Allow deletion if the recurring payment has more payments.
                 lbDeletePaymentPlan.Enabled = true;
