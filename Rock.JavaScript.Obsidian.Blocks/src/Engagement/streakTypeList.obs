@@ -37,13 +37,13 @@
                     title="Start Date"
                     field="startDate"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <NumberColumn name="enrollmentCount"
                       title="Enrollments"
                       field="enrollmentCount"
                       :filter="numberValueFilter"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <SecurityColumn />
 

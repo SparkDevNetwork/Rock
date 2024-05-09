@@ -112,11 +112,14 @@
     <Compile Include="Cms\PersonalLinkList.cs" />
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
+    <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\AuditList.cs" />
+    <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
+    <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
-	<Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Communication\CommunicationList.cs" />
     <Compile Include="Communication\SmsPipelineList.cs" />
@@ -162,11 +165,13 @@
     <Compile Include="Engagement\AchievementTypeDetail.cs" />
     <Compile Include="Engagement\ConnectionOpportunityList.cs" />
     <Compile Include="Engagement\AchievementTypeList.cs" />
+    <Compile Include="CheckIn\AttendanceList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Engagement\StepParticipantList.cs" />
     <Compile Include="Engagement\StepProgramList.cs" />
     <Compile Include="CheckIn\AttendanceHistoryList.cs" />
     <Compile Include="Engagement\StreakTypeList.cs" />
+    <Compile Include="Engagement\StepTypeList.cs" />
     <Compile Include="Event\EventCalendarItemList.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="Finance\BenevolenceTypeDetail.cs" />
@@ -174,6 +179,7 @@
     <Compile Include="Finance\FinancialAccountDetail.cs" />
     <Compile Include="Finance\FinancialAccountList.cs" />
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
+    <Compile Include="Finance\BenevolenceRequestList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />

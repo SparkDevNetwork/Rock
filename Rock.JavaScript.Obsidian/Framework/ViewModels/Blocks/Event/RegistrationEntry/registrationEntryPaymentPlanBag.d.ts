@@ -26,14 +26,29 @@ import { Guid } from "@Obsidian/Types";
 /** Contains the payment plan information for the Registration Entry block. */
 export type RegistrationEntryPaymentPlanBag = {
     /** Gets or sets the amount to pay per payment. */
-    amountToPayPerPayment: number;
+    amountPerPayment: number;
 
-    /** Gets or sets the number of payments. */
-    numberOfPayments: number;
+    /** Gets or sets the financial scheduled transaction unique identifier. */
+    financialScheduledTransactionGuid: Guid;
+
+    processedNumberOfPayments: number;
+
+    processedPlannedAmount: number;
+
+    remainingNumberOfPayments: number;
+
+    remainingPlannedAmount: number;
 
     /** Gets or sets the start date of the recurring payments. */
     startDate?: string | null;
 
+    /** Gets or sets the number of payments. */
+    totalNumberOfPayments: number;
+
+    totalPlannedAmount: number;
+
     /** Gets or sets the transaction frequency unique identifier. */
     transactionFrequencyGuid: Guid;
+
+    transactionFrequencyText?: string | null;
 };

@@ -453,5 +453,42 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
         /// </value>
         public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
+        /// Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPaymentPlanAllowed { get; set; }
+        
+        /// <summary>
+        /// Gets the payment deadline date.
+        /// </summary>
+        /// <value>
+        /// The payment deadline date.
+        /// </value>
+        public DateTimeOffset? PaymentDeadlineDate { get; set; }
+
+        /// <summary>
+        /// Gets the collection of payment plan frequencies from which a registrant can select.
+        /// </summary>
+        /// <value>
+        /// The collection of payment plan frequencies from which a registrant can select.
+        /// </value>
+        public List<ListItemBag> PaymentPlanFrequencies { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the payment plan has been configured.
+        /// </summary>
+        public bool IsPaymentPlanConfigured { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency information.
+        /// </summary>
+        /// <value>
+        /// The currency information.
+        /// </value>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }

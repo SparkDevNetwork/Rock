@@ -21,7 +21,7 @@
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
-                    visiblePriority="xs"
+                    visiblePriority="md"
                     width="30%" />
 
         <TextColumn name="binaryFileType"
@@ -34,7 +34,7 @@
                       title="Requested Documents"
                       field="documents"
                       :filter="numberValueFilter"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <SecurityColumn />
 

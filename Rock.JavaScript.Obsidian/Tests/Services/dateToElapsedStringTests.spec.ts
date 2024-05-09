@@ -131,7 +131,7 @@ describe("formatAspDate Suite", () => {
     });
 
     it("Elapsed Months less than one from the date produces singular noun", () => {
-        assert.strictEqual(RockDateTime.now().addMonths(1).addDays(5).toElapsedString(), "1 Month From Now");
+        assert.strictEqual(RockDateTime.now().addMonths(1).addDays(2).toElapsedString(), "1 Month From Now");
     });
 
     it("Elapsed Months greater than from the date produces plural noun", () => {

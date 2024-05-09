@@ -166,7 +166,7 @@ namespace Rock.Blocks.Reporting
                 if ( BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || interaction.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
                 {
                     var mergeFields = RequestContext.GetCommonMergeFields( GetCurrentPerson() );
-                    mergeFields.AddOrIgnore( MergeFieldKeys.Person, GetCurrentPerson() );
+                    mergeFields.TryAdd( MergeFieldKeys.Person, GetCurrentPerson() );
                     mergeFields.Add( MergeFieldKeys.InteractionDetailPage,  LinkedPageRoute( MergeFieldKeys.InteractionDetailPage ) );
                     mergeFields.Add( MergeFieldKeys.InteractionChannel, interaction.InteractionComponent.InteractionChannel );
                     mergeFields.Add( MergeFieldKeys.InteractionComponent, interaction.InteractionComponent );

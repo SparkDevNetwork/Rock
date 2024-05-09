@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="d-flex flex-fill align-items-center">
-        <div class="mr-2 flex-shrink-0"
+        <div v-if="!hideAvatar" class="mr-2 flex-shrink-0"
              :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${photoUrl}')`, 'background-size': 'cover' }">
         </div>
         <div class="flex-grow-1">
@@ -23,6 +23,7 @@
     const props = defineProps(standardCellProps);
 
     const showAsLink = props.column.props.showAsLink;
+    const hideAvatar = props.column.props.hideAvatar;
     const idKey = computed((): string | undefined => {
         if (!props.column.field) {
             return undefined;

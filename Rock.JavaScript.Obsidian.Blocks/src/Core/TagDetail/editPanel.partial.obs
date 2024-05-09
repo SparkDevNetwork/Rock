@@ -43,6 +43,7 @@
 
                 <EntityTypePicker v-model="entityType"
                                   :multiple="false"
+                                  :showBlankItem="true"
                                   :enhanceForLongLists="true"
                                   label="Entity Type" />
 

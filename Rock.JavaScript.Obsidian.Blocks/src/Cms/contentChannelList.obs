@@ -23,7 +23,7 @@
                     title="Type"
                     field="contentChannelType"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <Column name="channelUrl"
                 title="Channel URL"
@@ -43,17 +43,17 @@
                            title="Total Items"
                            field="totalItems"
                            :infoMinimum="1"
-                           visiblePriority="xs" />
+                           visiblePriority="md" />
 
         <NumberBadgeColumn name="activeItems"
                            title="Active Items"
                            field="activeItems"
                            :infoMinimum="1"
-                           visiblePriority="xs" />
+                           visiblePriority="md" />
 
         <Column name="itemLastCreated"
                 title="Last Item Created"
-                visiblePriority="xs">
+                visiblePriority="md">
             <template #format="{ row }">
                 {{ getElapsedTime(row.itemLastCreated) }}
             </template>

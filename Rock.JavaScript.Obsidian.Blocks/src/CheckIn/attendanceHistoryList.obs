@@ -33,20 +33,30 @@
                     title="Campus"
                     field="campus"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <TextColumn name="schedule"
                     title="Schedule"
                     field="schedule"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
+
+        <PersonColumn v-if="config.options?.isPersonColumnVisible"
+                      name="person"
+                      title="Person"
+                      field="person"
+                      :showAsLink="true"
+                      :hideAvatar="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      visiblePriority="xs" />
 
         <Column v-if="config.options?.isGroupColumnVisible"
                 name="group"
                 title="Group"
                 :filter="textValueFilter"
                 :filterValue="getGroupFilterValue"
-                visiblePriority="xs">
+                visiblePriority="md">
             <template #format="{ row }">
                 <div class="text">
                     <div>{{ row.groupName }}</div>
@@ -59,24 +69,17 @@
             </template>
         </Column>
 
-        <PersonColumn v-if="config.options?.isPersonColumnVisible"
-                      name="person"
-                      title="Person"
-                      field="person"
-                      :filter="pickExistingValueFilter"
-                      visiblePriority="xs" />
-
         <DateTimeColumn name="startDateTime"
                         title="Start Date Time"
                         field="startDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="md" />
 
         <DateTimeColumn name="endDateTime"
                         title="End Date Time"
                         field="endDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="md" />
 
         <BooleanColumn name="didAttend"
                        title="Attended"
@@ -89,7 +92,7 @@
                        v-model:visible="isGridSettingsVisible"
                        :groupItems="config.options?.groupItems ?? []"
                        :showGroupPicker="config.options?.isGroupColumnVisible"
-                       :showPersonPicker="config.options?.isPersonColumnVisible"/>
+                       :showPersonPicker="config.options?.isPersonColumnVisible" />
 </template>
 
 <script setup lang="ts">
@@ -102,6 +105,7 @@
     import { GridSettingsOptions, PreferenceKey } from "./AttendanceHistoryList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./AttendanceHistoryList/gridSettingsModal.partial.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<AttendanceHistoryListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -163,6 +167,16 @@
     function getLocationFilterValue(row: Record<string, unknown>): string {
         let filterValue = `${row["location"]} ${row["locationPath"]}`;
         return filterValue;
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

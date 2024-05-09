@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava.RockLiquid.Blocks;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Reporting.DataFilter.Group;
@@ -42,10 +43,6 @@ namespace Rock.Blocks.Group
     [Description( "Lists Groups that have been archived." )]
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
-
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the group details.",
-        Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "b67a0c89-1550-4960-8aaf-baa713be3277" )]
     [Rock.SystemGuid.BlockTypeGuid( "972ad143-8294-4462-b2a7-1b36ea127374" )]
@@ -160,6 +157,11 @@ namespace Rock.Blocks.Group
             }
 
             return queryable;
+        }
+
+        protected override IQueryable<Model.Group> GetOrderedListQueryable( IQueryable<Model.Group> queryable, RockContext rockContext )
+        {
+            return queryable.OrderByDescending( g => g.ArchivedDateTime );
         }
 
         /// <inheritdoc/>

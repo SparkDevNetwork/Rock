@@ -1,0 +1,181 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Following"
+          :entityTypeGuid="EntityType.Following"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :showBulkUpdate="true"
+          :showCommunicate="true"
+          :showPersonMerge="true"
+          @selectedKeysChanged="onSelectedKeysChanged">
+        <SelectColumn />
+
+        <PersonColumn name="name"
+                      title="Name"
+                      field="name"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      visiblePriority="xs" />
+
+        <DateColumn name="birthDate"
+                    title="Birthdate"
+                    field="birthDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="email"
+                    title="Email"
+                    field="email"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="homePhone"
+                    :title="config.options?.homePhoneDefinedValueText ?? 'Home'"
+                    field="homePhone"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="cellPhone"
+                    :title="config.options?.mobilePhoneDefinedValueText ?? 'Mobile'"
+                    field="cellPhone"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <PersonColumn name="spouse"
+                      title="Spouse"
+                      field="spouse"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getSpouseNameFilterValue"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      visiblePriority="md" />
+
+        <template #gridFooterAppend>
+            <div class="d-flex" style="padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+                <RockButton @click="onUnfollowClick">
+                    <i class='fa fa-flag-o'></i> Unfollow
+                </RockButton>
+            </div>
+        </template>
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { PersonColumn, SelectColumn, DateColumn, TextColumn, pickExistingValueFilter, dateValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PersonFollowingListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/PersonFollowingList/personFollowingListOptionsBag";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref } from "vue";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { Guid } from "@Obsidian/Types";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const config = useConfigurationValues<ListBlockBox<PersonFollowingListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    const selectedKeys = ref<string[]>([]);
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["name"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the spouse column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getSpouseNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["spouse"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the individual changes which rows are selected.
+     *
+     * @param state The state object that describes the grid.
+     */
+    function onSelectedKeysChanged(state: IGridState): void {
+        selectedKeys.value = [...state.selectedKeys];
+    }
+
+    /**
+     * Called when the individual clicks the Unfollow button, sends a request to the server
+     * with the selected person's to be unfollowed.
+     */
+    async function onUnfollowClick(): Promise<void> {
+        let selectedGuids: string[] = [];
+        if (selectedKeys.value.length > 0) {
+
+            const confirmed = await confirm("Are you sure you want to unfollow the selected people?");
+
+            if (!confirmed) {
+                return;
+            }
+
+            for (const key of selectedKeys.value) {
+                const row = gridData?.rows?.find(r => r.idKey === key);
+                if (row) {
+                    const guid = row["guid"] as Guid;
+                    selectedGuids.push(guid);
+                }
+            }
+
+            if (selectedGuids.length > 0) {
+                const result = await invokeBlockAction("Unfollow", {
+                    selectedPersons: selectedGuids
+                });
+
+                if (result.isSuccess) {
+                    gridDataSource.value = loadGridData();
+                }
+            }
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

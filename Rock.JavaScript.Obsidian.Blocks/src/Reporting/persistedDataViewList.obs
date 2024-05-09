@@ -25,19 +25,19 @@
                       title="Time to build (ms)"
                       field="persistedLastRunDurationMilliseconds"
                       :filter="numberValueFilter"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <NumberColumn name="runCount"
                       title="Run Count"
                       field="runCount"
                       :filter="numberValueFilter"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <DateTimeColumn name="lastRunDateTime"
                         title="Last Run Date Time"
                         field="lastRunDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="md" />
 
         <DateTimeColumn name="persistedLastRefreshDateTime"
                         title="Last Refresh"

@@ -137,7 +137,7 @@ namespace Rock.Blocks.Reporting
                 if ( BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || interactionComponent.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
                 {
                     var mergeFields = RequestContext.GetCommonMergeFields( GetCurrentPerson() );
-                    mergeFields.AddOrIgnore( MergeFieldKeys.Person, GetCurrentPerson() );
+                    mergeFields.TryAdd( MergeFieldKeys.Person, GetCurrentPerson() );
                     mergeFields.Add( MergeFieldKeys.InteractionChannel, interactionComponent.InteractionChannel );
                     mergeFields.Add( MergeFieldKeys.InteractionComponent, interactionComponent );
                     mergeFields.Add( MergeFieldKeys.InteractionComponentEntity, interactionEntity );

@@ -129,7 +129,7 @@ namespace Rock.NMI
         DefaultValue = null,
         Order = 10 )]
     [Rock.SystemGuid.EntityTypeGuid( "B8282486-7866-4ED5-9F24-093D25FF0820")]
-    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianHostedGatewayComponent, IAutomatedGatewayComponent
+    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianHostedGatewayComponent, IAutomatedGatewayComponent, IScheduledNumberOfPaymentsGateway
     {
         #region Attribute Keys
 
@@ -1214,12 +1214,12 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     string prefix = element.Name.LocalName;
                     foreach ( XElement childElement in element.Elements() )
                     {
-                        additionalLavaFields.AddOrIgnore( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
+                        additionalLavaFields.TryAdd( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
                     }
                 }
                 else
                 {
-                    additionalLavaFields.AddOrIgnore( element.Name.LocalName, element.Value.Trim() );
+                    additionalLavaFields.TryAdd( element.Name.LocalName, element.Value.Trim() );
                 }
             }
 

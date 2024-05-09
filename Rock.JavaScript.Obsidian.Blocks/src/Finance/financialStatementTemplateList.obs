@@ -25,7 +25,7 @@
                     field="description"
                     :filter="textValueFilter"
                     width="70%"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <BooleanColumn name="isActive"
                        title="Active"

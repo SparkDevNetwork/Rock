@@ -28,7 +28,7 @@
                     title="Category"
                     field="category"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <BooleanColumn name="isActive"
                        title="Active"

@@ -199,7 +199,7 @@ namespace Rock.SignNow
                             {
                                 foreach ( JObject document in documents )
                                 {
-                                    templates.AddOrIgnore(
+                                    templates.TryAdd(
                                         document.Value<string>( "id" ),
                                         document.Value<string>( "document_name" ) );
                                 }

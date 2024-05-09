@@ -28,6 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -49,7 +50,16 @@ namespace RockWeb.Blocks.Event
         Order = 0
         )]
 
-    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+    [CodeEditorField(
+        "Default Confirmation Email",
+        Key = AttributeKey.DefaultConfirmationEmail,
+        Description = "The default Confirmation Email Template value to use for a new template",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = false,
+        Order = 1,
+        DefaultValue = @"{{ 'Global' | Attribute:'EmailHeader' }}
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Confirmation: {{ RegistrationInstance.Name }}</h1>
 
 {% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
@@ -122,7 +132,13 @@ namespace RockWeb.Blocks.Event
         Total Paid: {{ Registration.TotalPaid | FormatAsCurrency }}<br/>
     {% endif %}
 
-    Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
+    {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
+    
+    {% if paymentPlan and paymentPlan.IsActive %}
+        Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} ×{{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})<br/>
+    {% else %}
+        Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
+    {% endif %}
 </p>
 {% endif %}
 
@@ -137,8 +153,19 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
-    [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+{{ 'Global' | Attribute:'EmailFooter' }}"
+        )]
+
+    [CodeEditorField(
+        "Default Reminder Email",
+        Key = AttributeKey.DefaultReminderEmail,
+        Description = "The default Reminder Email Template value to use for a new template",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = false,
+        Order = 2,
+        DefaultValue = @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
 
@@ -194,8 +221,19 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 2 )]
-    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
+{{ 'Global' | Attribute:'EmailFooter' }}"
+        )]
+
+    [CodeEditorField(
+        "Default Success Text",
+        Key = AttributeKey.DefaultSuccessText,
+        Description = "The success text default to use for a new template",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = false,
+        Order = 3,
+        DefaultValue = @"
 {% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
 {% assign registrantCount = registrants | Size %}
 {% if registrantCount > 0 %}
@@ -261,19 +299,39 @@ namespace RockWeb.Blocks.Event
         Paid {{ payment.Amount | FormatAsCurrency }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
         <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
+    
     {% assign paymentCount = Registration.Payments | Size %}
+        
     {% if paymentCount > 1 %}
         Total Paid: {{ Registration.TotalPaid | FormatAsCurrency }}<br/>
     {% endif %}
-    Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
+
+    {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
+    
+    {% if paymentPlan and paymentPlan.IsActive %}
+        Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} × {{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})
+    {% else %}
+        Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
+    {% endif %}
 </p>
 {% endif %}
 
 <p>
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions
     please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>", "", 3 )]
-    [CodeEditorField( "Default Payment Reminder Email", "The default Payment Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+</p>"
+        )]
+
+    [CodeEditorField(
+        "Default Payment Reminder Email",
+        Key = AttributeKey.DefaultPaymentReminderEmail,
+        Description = "The default Payment Reminder Email Template value to use for a new template",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = false,
+        Order = 4,
+        DefaultValue = @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
@@ -322,8 +380,19 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 4 )]
-    [CodeEditorField( "Default Wait List Transition Email", "The default Wait List Transition Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+{{ 'Global' | Attribute:'EmailFooter' }}"
+        )]
+
+    [CodeEditorField(
+        "Default Wait List Transition Email",
+        Key = AttributeKey.DefaultWaitListTransitionEmail,
+        Description = "The default Wait List Transition Email Template value to use for a new template",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = false,
+        Order = 5,
+        DefaultValue = @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 
 <h1>{{ RegistrationInstance.Name }} Wait List Update</h1>
@@ -366,7 +435,9 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 5 )]
+{{ 'Global' | Attribute:'EmailFooter' }}"
+        )]
+
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.EVENT_REGISTRATION_TEMPLATE_DETAIL )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
@@ -463,8 +534,8 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            string json = ViewState[ViewStateKey.FormStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            var json = ViewState[ViewStateKey.FormStateJSON] as string;
+            if ( json.IsNullOrWhiteSpace() )
             {
                 FormState = new List<RegistrationTemplateForm>();
             }
@@ -474,7 +545,7 @@ namespace RockWeb.Blocks.Event
             }
 
             json = ViewState[ViewStateKey.FormFieldsStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            if ( json.IsNullOrWhiteSpace() )
             {
                 FormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
             }
@@ -484,7 +555,7 @@ namespace RockWeb.Blocks.Event
             }
 
             json = ViewState[ViewStateKey.RegistrationAttributesStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            if ( json.IsNullOrWhiteSpace() )
             {
                 RegistrationAttributesState = new List<Attribute>();
             }
@@ -500,7 +571,7 @@ namespace RockWeb.Blocks.Event
             }
 
             json = ViewState[ViewStateKey.DiscountStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            if ( json.IsNullOrWhiteSpace() )
             {
                 DiscountState = new List<RegistrationTemplateDiscount>();
             }
@@ -510,7 +581,7 @@ namespace RockWeb.Blocks.Event
             }
 
             json = ViewState[ViewStateKey.RegistrationTemplatePlacementStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            if ( json.IsNullOrWhiteSpace() )
             {
                 RegistrationTemplatePlacementState = new List<RegistrationTemplatePlacement>();
             }
@@ -520,7 +591,7 @@ namespace RockWeb.Blocks.Event
             }
 
             json = ViewState[ViewStateKey.RegistrationTemplatePlacementGuidGroupIdsStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            if ( json.IsNullOrWhiteSpace() )
             {
                 RegistrationTemplatePlacementGuidGroupIdsState = new Dictionary<Guid, List<int>>();
             }
@@ -530,7 +601,7 @@ namespace RockWeb.Blocks.Event
             }
 
             json = ViewState[ViewStateKey.FeeStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            if ( json.IsNullOrWhiteSpace() )
             {
                 FeeState = new List<RegistrationTemplateFee>();
             }
@@ -540,7 +611,7 @@ namespace RockWeb.Blocks.Event
             }
 
             json = ViewState[ViewStateKey.FeeItemsEditStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            if ( json.IsNullOrWhiteSpace() )
             {
                 FeeItemsEditState = new List<RegistrationTemplateFeeItem>();
             }
@@ -550,7 +621,7 @@ namespace RockWeb.Blocks.Event
             }
 
             json = ViewState[ViewStateKey.SignatureDocumentTemplateStateJSON] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
+            if ( json.IsNullOrWhiteSpace() )
             {
                 SignatureDocumentTemplateState = new List<SignatureDocumentTemplate>();
             }
@@ -577,7 +648,9 @@ namespace RockWeb.Blocks.Event
             gRegistrationAttributes.GridRebind += gRegistrationAttributes_GridRebind;
             gRegistrationAttributes.GridReorder += gRegistrationAttributes_GridReorder;
 
-            SecurityField registrationAttributeSecurityField = gRegistrationAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
+
+            var registrationAttributeSecurityField = gRegistrationAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
             registrationAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
 
             // assign discounts grid actions
@@ -621,7 +694,7 @@ The first registrant's information will be used to complete the registrar inform
 The logged-in person's information will be used to complete the registrar information form and the form will not be displayed.  (If the logged in person's email is not known, a prompt for email will be shown.)
 ";
 
-            string deleteScript = @"
+            var deleteScript = @"
     $('a.js-delete-template').click(function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this registration template? All of the instances, and the registrations and registrants from each instance will also be deleted!', function (result) {
@@ -660,17 +733,17 @@ The logged-in person's information will be used to complete the registrar inform
 
                 ShowDialog();
 
-                string postbackArgs = Request.Params["__EVENTARGUMENT"];
-                if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+                var postbackArgs = Request.Params["__EVENTARGUMENT"];
+                if ( postbackArgs.IsNotNullOrWhiteSpace() )
                 {
-                    string[] nameValue = postbackArgs.Split( new char[] { ':' } );
-                    if ( nameValue.Count() == 2 )
+                    var nameValue = postbackArgs.Split( new char[] { ':' } );
+                    if ( nameValue.Length == 2 )
                     {
-                        string[] values = nameValue[1].Split( new char[] { ';' } );
-                        if ( values.Count() == 2 )
+                        var values = nameValue[1].Split( new char[] { ';' } );
+                        if ( values.Length == 2 )
                         {
-                            Guid guid = values[0].AsGuid();
-                            int newIndex = values[1].AsInteger();
+                            var guid = values[0].AsGuid();
+                            var newIndex = values[1].AsInteger();
 
                             switch ( nameValue[0] )
                             {
@@ -695,10 +768,10 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationTemplateId = PageParameter( pageReference, PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+            var registrationTemplateId = PageParameter( pageReference, PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
             if ( registrationTemplateId.HasValue )
             {
-                RegistrationTemplate registrationTemplate = GetRegistrationTemplate( registrationTemplateId.Value );
+                var registrationTemplate = GetRegistrationTemplate( registrationTemplateId.Value );
                 if ( registrationTemplate != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( registrationTemplate.ToString(), pageReference ) );
@@ -836,149 +909,159 @@ The logged-in person's information will be used to complete the registrar inform
         protected void btnCopy_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
+            var registrationTemplate = new RegistrationTemplateService( rockContext )
+                .Get( hfRegistrationTemplateId.Value.AsInteger() );
 
-            if ( registrationTemplate != null )
+            // If the registration template was not found,
+            // then there is nothing to copy.
+            if ( registrationTemplate == null )
             {
-                // Load the state objects for the source registration template
-                LoadStateDetails( registrationTemplate, rockContext );
-
-                // clone the registration template
-                var newRegistrationTemplate = registrationTemplate.CloneWithoutIdentity();
-                newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
-
-                // Create temporary state objects for the new registration template
-                var newFormState = new List<RegistrationTemplateForm>();
-                var newFormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
-                var newDiscountState = new List<RegistrationTemplateDiscount>();
-                var newFeeState = new List<RegistrationTemplateFee>();
-                var newAttributeState = new List<Attribute>();
-                var newRegistrationTemplatePlacementState = new List<RegistrationTemplatePlacement>();
-
-                foreach ( var form in FormState )
-                {
-                    var newForm = form.Clone( false );
-                    newForm.RegistrationTemplateId = 0;
-                    newForm.Id = 0;
-                    newForm.Guid = Guid.NewGuid();
-                    newFormState.Add( newForm );
-
-                    if ( FormFieldsState.ContainsKey( form.Guid ) )
-                    {
-                        newFormFieldsState.Add( newForm.Guid, new List<RegistrationTemplateFormField>() );
-                        var mapKeys = new Dictionary<Guid, Guid>();
-                        foreach ( var formField in FormFieldsState[form.Guid] )
-                        {
-                            var newFormField = formField.Clone( false );
-                            newFormField.RegistrationTemplateFormId = 0;
-                            newFormField.Id = 0;
-                            newFormField.Guid = Guid.NewGuid();
-                            newFormFieldsState[newForm.Guid].Add( newFormField );
-                            mapKeys.Add( formField.Guid, newFormField.Guid );
-
-                            if ( formField.FieldSource != RegistrationFieldSource.PersonField )
-                            {
-                                newFormField.Attribute = formField.Attribute;
-                            }
-
-                            if ( formField.FieldSource == RegistrationFieldSource.RegistrantAttribute && formField.Attribute != null )
-                            {
-                                var newAttribute = formField.Attribute.Clone( false );
-                                newAttribute.Id = 0;
-                                newAttribute.Guid = Guid.NewGuid();
-                                newAttribute.IsSystem = false;
-
-                                newFormField.AttributeId = null;
-                                newFormField.Attribute = newAttribute;
-
-                                foreach ( var qualifier in formField.Attribute.AttributeQualifiers )
-                                {
-                                    var newQualifier = qualifier.Clone( false );
-                                    newQualifier.Id = 0;
-                                    newQualifier.Guid = Guid.NewGuid();
-                                    newQualifier.IsSystem = false;
-                                    newAttribute.AttributeQualifiers.Add( qualifier );
-                                }
-                            }
-                        }
-
-                        var newFormFieldsWithRules = newFormFieldsState[newForm.Guid]
-                                                        .Where( a => a.FieldVisibilityRules.RuleList
-                                                                        .Any( b => b.ComparedToFormFieldGuid.HasValue ) );
-                        foreach ( var newFormField in newFormFieldsWithRules )
-                        {
-                            foreach ( var rule in newFormField.FieldVisibilityRules.RuleList.Where( a => a.ComparedToFormFieldGuid.HasValue ) )
-                            {
-                                rule.ComparedToFormFieldGuid = mapKeys.GetValueOrNull( rule.ComparedToFormFieldGuid.Value );
-                            }
-                        }
-                    }
-                }
-
-                foreach ( var discount in DiscountState )
-                {
-                    var newDiscount = discount.Clone( false );
-                    newDiscount.RegistrationTemplateId = 0;
-                    newDiscount.Id = 0;
-                    newDiscount.Guid = Guid.NewGuid();
-                    newDiscountState.Add( newDiscount );
-                }
-
-                foreach ( var fee in FeeState )
-                {
-                    var newFee = fee.Clone( false );
-                    newFee.RegistrationTemplateId = 0;
-                    newFee.Id = 0;
-                    newFee.Guid = Guid.NewGuid();
-                    newFeeState.Add( newFee );
-                    foreach ( var item in fee.FeeItems )
-                    {
-                        var feeItem = item.Clone( false );
-                        feeItem.Id = 0;
-                        feeItem.Guid = Guid.NewGuid();
-                        newFee.FeeItems.Add( feeItem );
-                    }
-                }
-
-                foreach ( var attribute in RegistrationAttributesState )
-                {
-                    var newAttribute = attribute.Clone( false );
-                    newAttribute.EntityTypeQualifierValue = null;
-                    newAttribute.Id = 0;
-                    newAttribute.Guid = Guid.NewGuid();
-                    newAttributeState.Add( newAttribute );
-                }
-
-                foreach ( var registrationTemplatePlacement in RegistrationTemplatePlacementState )
-                {
-                    var newRegistrationTemplatePlacement = registrationTemplatePlacement.Clone( false );
-                    newRegistrationTemplatePlacement.Id = 0;
-                    newRegistrationTemplatePlacement.Guid = Guid.NewGuid();
-                    newRegistrationTemplatePlacementState.Add( newRegistrationTemplatePlacement );
-
-                    // Find the existing Guid in the list of group ids and update it.
-                    if (RegistrationTemplatePlacementGuidGroupIdsState.ContainsKey(registrationTemplatePlacement.Guid))
-                    {
-                        // Remove the old Guid and then replace it with the new Guid in the GuidGroupIds State.
-                        var intList = new List<int>();
-                        if (RegistrationTemplatePlacementGuidGroupIdsState.TryGetValue( registrationTemplatePlacement.Guid, out intList ))
-                        {
-                            RegistrationTemplatePlacementGuidGroupIdsState.AddOrReplace( newRegistrationTemplatePlacement.Guid, intList );
-                            RegistrationTemplatePlacementGuidGroupIdsState.Remove( registrationTemplatePlacement.Guid );
-                        }
-                    }
-                }
-
-                FormState = newFormState;
-                FormFieldsState = newFormFieldsState;
-                DiscountState = newDiscountState;
-                FeeState = newFeeState;
-                RegistrationAttributesState = newAttributeState;
-                RegistrationTemplatePlacementState = newRegistrationTemplatePlacementState;
-
-                hfRegistrationTemplateId.Value = newRegistrationTemplate.Id.ToString();
-                ShowEditDetails( newRegistrationTemplate, rockContext );
+                return;
             }
+
+            // Load the state objects for the source registration template.
+            LoadStateDetails( registrationTemplate, rockContext );
+
+            // Clone the registration template.
+            var newRegistrationTemplate = registrationTemplate.CloneWithoutIdentity();
+            newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
+
+            // Create temporary state objects for the new registration template.
+            var newFormState = new List<RegistrationTemplateForm>();
+            var newFormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
+            var newDiscountState = new List<RegistrationTemplateDiscount>();
+            var newFeeState = new List<RegistrationTemplateFee>();
+            var newAttributeState = new List<Attribute>();
+            var newRegistrationTemplatePlacementState = new List<RegistrationTemplatePlacement>();
+
+            foreach ( var form in FormState )
+            {
+                var newForm = form.Clone( false );
+                newForm.RegistrationTemplateId = 0;
+                newForm.Id = 0;
+                newForm.Guid = Guid.NewGuid();
+                newFormState.Add( newForm );
+
+                // If the form is not in the forms dictionary,
+                // then skip to the next form.
+                if ( !FormFieldsState.ContainsKey( form.Guid ) )
+                {
+                    continue;
+                }
+
+                newFormFieldsState.Add( newForm.Guid, new List<RegistrationTemplateFormField>() );
+                var mapKeys = new Dictionary<Guid, Guid>();
+                foreach ( var formField in FormFieldsState[form.Guid] )
+                {
+                    var newFormField = formField.Clone( false );
+                    newFormField.RegistrationTemplateFormId = 0;
+                    newFormField.Id = 0;
+                    newFormField.Guid = Guid.NewGuid();
+                    newFormFieldsState[newForm.Guid].Add( newFormField );
+                    mapKeys.Add( formField.Guid, newFormField.Guid );
+
+                    if ( formField.FieldSource != RegistrationFieldSource.PersonField )
+                    {
+                        newFormField.Attribute = formField.Attribute;
+                    }
+
+                    if ( formField.FieldSource == RegistrationFieldSource.RegistrantAttribute
+                         && formField.Attribute != null )
+                    {
+                        var newAttribute = formField.Attribute.Clone( false );
+                        newAttribute.Id = 0;
+                        newAttribute.Guid = Guid.NewGuid();
+                        newAttribute.IsSystem = false;
+
+                        newFormField.AttributeId = null;
+                        newFormField.Attribute = newAttribute;
+
+                        foreach ( var qualifier in formField.Attribute.AttributeQualifiers )
+                        {
+                            var newQualifier = qualifier.Clone( false );
+                            newQualifier.Id = 0;
+                            newQualifier.Guid = Guid.NewGuid();
+                            newQualifier.IsSystem = false;
+                            newAttribute.AttributeQualifiers.Add( qualifier );
+                        }
+                    }
+                }
+
+                var newFormFieldsWithRules = newFormFieldsState[newForm.Guid]
+                    .Where( a => a.FieldVisibilityRules.RuleList
+                    .Any( b => b.ComparedToFormFieldGuid.HasValue ) );
+                foreach ( var newFormField in newFormFieldsWithRules )
+                {
+                    foreach ( var rule in newFormField.FieldVisibilityRules.RuleList.Where( a => a.ComparedToFormFieldGuid.HasValue ) )
+                    {
+                        rule.ComparedToFormFieldGuid = mapKeys.GetValueOrNull( rule.ComparedToFormFieldGuid.Value );
+                    }
+                }
+            }
+
+            foreach ( var discount in DiscountState )
+            {
+                var newDiscount = discount.Clone( false );
+                newDiscount.RegistrationTemplateId = 0;
+                newDiscount.Id = 0;
+                newDiscount.Guid = Guid.NewGuid();
+                newDiscountState.Add( newDiscount );
+            }
+
+            foreach ( var fee in FeeState )
+            {
+                var newFee = fee.Clone( false );
+                newFee.RegistrationTemplateId = 0;
+                newFee.Id = 0;
+                newFee.Guid = Guid.NewGuid();
+                newFeeState.Add( newFee );
+                foreach ( var item in fee.FeeItems )
+                {
+                    var feeItem = item.Clone( false );
+                    feeItem.Id = 0;
+                    feeItem.Guid = Guid.NewGuid();
+                    newFee.FeeItems.Add( feeItem );
+                }
+            }
+
+            foreach ( var attribute in RegistrationAttributesState )
+            {
+                var newAttribute = attribute.Clone( false );
+                newAttribute.EntityTypeQualifierValue = null;
+                newAttribute.Id = 0;
+                newAttribute.Guid = Guid.NewGuid();
+                newAttributeState.Add( newAttribute );
+            }
+
+            foreach ( var registrationTemplatePlacement in RegistrationTemplatePlacementState )
+            {
+                var newRegistrationTemplatePlacement = registrationTemplatePlacement.Clone( false );
+                newRegistrationTemplatePlacement.Id = 0;
+                newRegistrationTemplatePlacement.Guid = Guid.NewGuid();
+                newRegistrationTemplatePlacementState.Add( newRegistrationTemplatePlacement );
+
+                // Find the existing Guid in the list of group ids and update it.
+                if ( RegistrationTemplatePlacementGuidGroupIdsState.ContainsKey( registrationTemplatePlacement.Guid ) )
+                {
+                    // Remove the old Guid and then replace it with the new Guid in the GuidGroupIds State.
+                    var intList = new List<int>();
+                    if ( RegistrationTemplatePlacementGuidGroupIdsState.TryGetValue( registrationTemplatePlacement.Guid, out intList ) )
+                    {
+                        RegistrationTemplatePlacementGuidGroupIdsState.AddOrReplace( newRegistrationTemplatePlacement.Guid, intList );
+                        RegistrationTemplatePlacementGuidGroupIdsState.Remove( registrationTemplatePlacement.Guid );
+                    }
+                }
+            }
+
+            FormState = newFormState;
+            FormFieldsState = newFormFieldsState;
+            DiscountState = newDiscountState;
+            FeeState = newFeeState;
+            RegistrationAttributesState = newAttributeState;
+            RegistrationTemplatePlacementState = newRegistrationTemplatePlacementState;
+
+            hfRegistrationTemplateId.Value = newRegistrationTemplate.Id.ToString();
+            ShowEditDetails( newRegistrationTemplate, rockContext );
         }
 
         /// <summary>
@@ -991,30 +1074,31 @@ The logged-in person's information will be used to complete the registrar inform
             ParseControls( true );
 
             var rockContext = new RockContext();
+        
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
-            RegistrationTemplate registrationTemplate = null;
-            SignatureDocumentTemplate documentTemplate = GetSelectedTemplate();
+            var registrationTemplate = ( RegistrationTemplate ) null;
+            var documentTemplate = GetSelectedTemplate();
 
-            int? registrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
+            var registrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
             if ( registrationTemplateId.HasValue )
             {
                 registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
             }
 
-            bool newTemplate = false;
+            var newTemplate = false;
             if ( registrationTemplate == null )
             {
                 newTemplate = true;
                 registrationTemplate = new RegistrationTemplate();
             }
 
-            RegistrationNotify notify = RegistrationNotify.None;
-            foreach ( ListItem li in cblNotify.Items )
+            var notify = RegistrationNotify.None;
+            foreach ( var li in cblNotify.Items.Cast<ListItem>() )
             {
                 if ( li.Selected )
                 {
-                    notify = notify | ( RegistrationNotify ) li.Value.AsInteger();
+                    notify |= ( RegistrationNotify ) li.Value.AsInteger();
                 }
             }
 
@@ -1025,6 +1109,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             registrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             registrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            registrationTemplate.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
             registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             // Rock’s signature system is only in-line enabled so if a new (non-legacy) template is selected
             // RegistrationTemplate.SignatureDocumentAction should be embed, if not then defer to the user's choice.
@@ -1049,7 +1134,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.DefaultPayment = cbDefaultPaymentAmount.Value;
             registrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
 
-            if ( IsRedirectionGateway() )
+            if ( IsRedirectionGateway( rockContext ) )
             {
                 registrationTemplate.BatchNamePrefix = null;
             }
@@ -1058,7 +1143,12 @@ The logged-in person's information will be used to complete the registrar inform
                 registrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
             }
 
-            ShowHideBatchPrefixTextbox();
+            ShowHideBatchPrefixTextbox( rockContext );
+
+            // Payment Plans Feature
+            var paymentPlansFeatureData = GetPaymentPlansFeatureDataFromControls( rockContext );
+            registrationTemplate.IsPaymentPlanAllowed = paymentPlansFeatureData.IsPaymentPlanAllowed;
+            registrationTemplate.PaymentPlanFrequencyValueIdsCollection = paymentPlansFeatureData.PaymentPlanFrequencyValueIds;
 
             registrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
             registrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
@@ -1081,15 +1171,16 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.WaitListTransitionSubject = tbWaitListTransitionSubject.Text;
             registrationTemplate.WaitListTransitionEmailTemplate = ceWaitListTransitionEmailTemplate.Text;
 
-            registrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
-            registrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Person" : tbRegistrantTerm.Text;
-            registrationTemplate.FeeTerm = string.IsNullOrWhiteSpace( tbFeeTerm.Text ) ? "Additional Options" : tbFeeTerm.Text;
-            registrationTemplate.DiscountCodeTerm = string.IsNullOrWhiteSpace( tbDiscountCodeTerm.Text ) ? "Discount Code" : tbDiscountCodeTerm.Text;
-            registrationTemplate.RegistrationAttributeTitleStart = string.IsNullOrWhiteSpace( tbRegistrationAttributeTitleStart.Text ) ? "Registration Information" : tbRegistrationAttributeTitleStart.Text;
-            registrationTemplate.RegistrationAttributeTitleEnd = string.IsNullOrWhiteSpace( tbRegistrationAttributeTitleEnd.Text ) ? "Registration Information" : tbRegistrationAttributeTitleEnd.Text;
+            registrationTemplate.RegistrationTerm = tbRegistrationTerm.Text.IsNullOrWhiteSpace() ? "Registration" : tbRegistrationTerm.Text;
+            registrationTemplate.RegistrantTerm = tbRegistrantTerm.Text.IsNullOrWhiteSpace() ? "Person" : tbRegistrantTerm.Text;
+            registrationTemplate.FeeTerm = tbFeeTerm.Text.IsNullOrWhiteSpace() ? "Additional Options" : tbFeeTerm.Text;
+            registrationTemplate.DiscountCodeTerm = tbDiscountCodeTerm.Text.IsNullOrWhiteSpace() ? "Discount Code" : tbDiscountCodeTerm.Text;
+            registrationTemplate.RegistrationAttributeTitleStart = tbRegistrationAttributeTitleStart.Text.IsNullOrWhiteSpace() ? "Registration Information" : tbRegistrationAttributeTitleStart.Text;
+            registrationTemplate.RegistrationAttributeTitleEnd = tbRegistrationAttributeTitleEnd.Text.IsNullOrWhiteSpace() ? "Registration Information" : tbRegistrationAttributeTitleEnd.Text;
             registrationTemplate.SuccessTitle = tbSuccessTitle.Text;
             registrationTemplate.SuccessText = ceSuccessText.Text;
             registrationTemplate.RegistrationInstructions = heInstructions.Text;
+
             if ( !Page.IsValid || !registrationTemplate.IsValid )
             {
                 return;
@@ -1115,10 +1206,14 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             // Get the valid group member attributes
-            var group = new Group();
-            group.GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0;
-            var groupMember = new GroupMember();
-            groupMember.Group = group;
+            var group = new Group
+            {
+                GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0
+            };
+            var groupMember = new GroupMember
+            {
+                Group = group
+            };
             groupMember.LoadAttributes();
             var validGroupMemberAttributeIds = groupMember.Attributes.Select( a => a.Value.Id ).ToList();
 
@@ -1127,9 +1222,9 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 foreach ( var formField in fieldList
                     .Where( a =>
-                        a.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
-                        a.AttributeId.HasValue &&
-                        !validGroupMemberAttributeIds.Contains( a.AttributeId.Value ) )
+                        a.FieldSource == RegistrationFieldSource.GroupMemberAttribute
+                        && a.AttributeId.HasValue
+                        && !validGroupMemberAttributeIds.Contains( a.AttributeId.Value ) )
                     .ToList() )
                 {
                     fieldList.Remove( formField );
@@ -1138,7 +1233,8 @@ The logged-in person's information will be used to complete the registrar inform
 
             // Perform Validation
             var validationErrors = new List<string>();
-            if ( ( ( registrationTemplate.SetCostOnInstance ?? false ) || registrationTemplate.Cost > 0 || FeeState.Any() ) && !registrationTemplate.FinancialGatewayId.HasValue )
+            if ( ( ( registrationTemplate.SetCostOnInstance ?? false ) || registrationTemplate.Cost > 0 || FeeState.Any() )
+                 && !registrationTemplate.FinancialGatewayId.HasValue )
             {
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
@@ -1146,11 +1242,11 @@ The logged-in person's information will be used to complete the registrar inform
             if ( validationErrors.Any() )
             {
                 nbValidationError.Visible = true;
-                nbValidationError.Text = "<ul class='list-unstyled'><li>" + validationErrors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                nbValidationError.Text = $"<ul class='list-unstyled'><li>{validationErrors.AsDelimited( "</li><li>" )}</li></ul>";
             }
             else
             {
-                // Save the entity field changes to registration template
+                // Save the entity field changes to the registration template.
                 try
                 {
                     if ( registrationTemplate.Id.Equals( 0 ) )
@@ -1176,8 +1272,8 @@ The logged-in person's information will be used to complete the registrar inform
                     foreach ( var form in registrationTemplateFormService
                         .Queryable()
                         .Where( f =>
-                            f.RegistrationTemplateId == registrationTemplate.Id &&
-                            !formUiGuids.Contains( f.Guid ) ) )
+                            f.RegistrationTemplateId == registrationTemplate.Id
+                            && !formUiGuids.Contains( f.Guid ) ) )
                     {
                         foreach ( var formField in form.Fields.ToList() )
                         {
@@ -1193,8 +1289,8 @@ The logged-in person's information will be used to complete the registrar inform
                     foreach ( var formField in registrationTemplateFormFieldService
                         .Queryable()
                         .Where( a =>
-                            formUiGuids.Contains( a.RegistrationTemplateForm.Guid ) &&
-                            !fieldUiGuids.Contains( a.Guid ) ) )
+                            formUiGuids.Contains( a.RegistrationTemplateForm.Guid )
+                            && !fieldUiGuids.Contains( a.Guid ) ) )
                     {
                         registrationTemplateFormFieldService.Delete( formField );
                     }
@@ -1204,8 +1300,8 @@ The logged-in person's information will be used to complete the registrar inform
                     foreach ( var discount in registrationTemplateDiscountService
                         .Queryable()
                         .Where( d =>
-                            d.RegistrationTemplateId == registrationTemplate.Id &&
-                            !discountUiGuids.Contains( d.Guid ) ) )
+                            d.RegistrationTemplateId == registrationTemplate.Id
+                            && !discountUiGuids.Contains( d.Guid ) ) )
                     {
                         registrationTemplateDiscountService.Delete( discount );
                     }
@@ -1215,8 +1311,8 @@ The logged-in person's information will be used to complete the registrar inform
                     var deletedfees = registrationTemplateFeeService
                         .Queryable()
                         .Where( d =>
-                            d.RegistrationTemplateId == registrationTemplate.Id &&
-                            !feeUiGuids.Contains( d.Guid ) )
+                            d.RegistrationTemplateId == registrationTemplate.Id
+                            && !feeUiGuids.Contains( d.Guid ) )
                         .ToList();
 
                     var deletedFeeIds = deletedfees.Select( f => f.Id ).ToList();
@@ -1238,8 +1334,8 @@ The logged-in person's information will be used to complete the registrar inform
                     var deletedRegistrationTemplatePlacements = registrationTemplatePlacementService
                         .Queryable()
                         .Where( d =>
-                            d.RegistrationTemplateId == registrationTemplate.Id &&
-                            !registrationTemplatePlacementGuids.Contains( d.Guid ) )
+                            d.RegistrationTemplateId == registrationTemplate.Id
+                            && !registrationTemplatePlacementGuids.Contains( d.Guid ) )
                         .ToList();
 
                     foreach ( var deletedRegistrationTemplatePlacement in deletedRegistrationTemplatePlacements )
@@ -1247,14 +1343,14 @@ The logged-in person's information will be used to complete the registrar inform
                         registrationTemplatePlacementService.Delete( deletedRegistrationTemplatePlacement );
                     }
 
-                    int? registrationRegistrantEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
+                    var registrationRegistrantEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
                     var registrationRegistrantAttributeQualifierColumn = "RegistrationTemplateId";
                     var registrationRegistrantAttributeQualifierValue = registrationTemplate.Id.ToString();
                     var registrantAttributesUI = FormFieldsState
                         .SelectMany( s =>
                             s.Value.Where( a =>
-                                a.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
-                                a.Attribute != null ) )
+                                a.FieldSource == RegistrationFieldSource.RegistrantAttribute
+                                && a.Attribute != null ) )
                         .Select( f => f.Attribute )
                         .ToList();
                     var selectedAttributeGuids = registrantAttributesUI.Select( a => a.Guid );
@@ -1289,18 +1385,20 @@ The logged-in person's information will be used to complete the registrar inform
                     }
 
                     // add/updated forms/fields
-                    foreach ( var formUI in FormState )
+                    foreach ( var formUi in FormState )
                     {
-                        var form = registrationTemplate.Forms.FirstOrDefault( f => f.Guid.Equals( formUI.Guid ) );
+                        var form = registrationTemplate.Forms.FirstOrDefault( f => f.Guid.Equals( formUi.Guid ) );
                         if ( form == null )
                         {
-                            form = new RegistrationTemplateForm();
-                            form.Guid = formUI.Guid;
+                            form = new RegistrationTemplateForm
+                            {
+                                Guid = formUi.Guid
+                            };
                             registrationTemplate.Forms.Add( form );
                         }
 
-                        form.Name = formUI.Name;
-                        form.Order = formUI.Order;
+                        form.Name = formUi.Name;
+                        form.Order = formUi.Order;
 
                         if ( FormFieldsState.ContainsKey( form.Guid ) )
                         {
@@ -1309,15 +1407,17 @@ The logged-in person's information will be used to complete the registrar inform
                                 var formField = form.Fields.FirstOrDefault( a => a.Guid.Equals( formFieldUI.Guid ) );
                                 if ( formField == null )
                                 {
-                                    formField = new RegistrationTemplateFormField();
-                                    formField.Guid = formFieldUI.Guid;
+                                    formField = new RegistrationTemplateFormField
+                                    {
+                                        Guid = formFieldUI.Guid
+                                    };
                                     form.Fields.Add( formField );
                                 }
 
                                 formField.AttributeId = formFieldUI.AttributeId;
-                                if ( !formField.AttributeId.HasValue &&
-                                    formFieldUI.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
-                                    formFieldUI.Attribute != null )
+                                if ( !formField.AttributeId.HasValue
+                                     && formFieldUI.FieldSource == RegistrationFieldSource.RegistrantAttribute
+                                     && formFieldUI.Attribute != null )
                                 {
                                     var attr = AttributeCache.Get( formFieldUI.Attribute.Guid, rockContext );
                                     if ( attr != null )
@@ -1335,6 +1435,7 @@ The logged-in person's information will be used to complete the registrar inform
                                 formField.PostText = formFieldUI.PostText;
                                 formField.IsGridField = formFieldUI.IsGridField;
                                 formField.IsRequired = formFieldUI.IsRequired;
+                                formField.IsLockedIfValuesExist = formFieldUI.IsLockedIfValuesExist;
                                 formField.Order = formFieldUI.Order;
                                 formField.ShowOnWaitlist = formFieldUI.ShowOnWaitlist;
                                 formField.FieldVisibilityRules = formFieldUI.FieldVisibilityRules;
@@ -1348,8 +1449,10 @@ The logged-in person's information will be used to complete the registrar inform
                         var discount = registrationTemplate.Discounts.FirstOrDefault( a => a.Guid.Equals( discountUI.Guid ) );
                         if ( discount == null )
                         {
-                            discount = new RegistrationTemplateDiscount();
-                            discount.Guid = discountUI.Guid;
+                            discount = new RegistrationTemplateDiscount
+                            {
+                                Guid = discountUI.Guid
+                            };
                             registrationTemplate.Discounts.Add( discount );
                         }
 
@@ -1371,8 +1474,10 @@ The logged-in person's information will be used to complete the registrar inform
                         var fee = registrationTemplate.Fees.FirstOrDefault( a => a.Guid.Equals( feeUI.Guid ) );
                         if ( fee == null )
                         {
-                            fee = new RegistrationTemplateFee();
-                            fee.Guid = feeUI.Guid;
+                            fee = new RegistrationTemplateFee
+                            {
+                                Guid = feeUI.Guid
+                            };
                             registrationTemplate.Fees.Add( fee );
                         }
 
@@ -1420,8 +1525,10 @@ The logged-in person's information will be used to complete the registrar inform
                         var registrationTemplatePlacement = registrationTemplate.Placements.FirstOrDefault( a => a.Guid.Equals( registrationTemplatePlacementUI.Guid ) );
                         if ( registrationTemplatePlacement == null )
                         {
-                            registrationTemplatePlacement = new RegistrationTemplatePlacement();
-                            registrationTemplatePlacement.Guid = registrationTemplatePlacementUI.Guid;
+                            registrationTemplatePlacement = new RegistrationTemplatePlacement
+                            {
+                                Guid = registrationTemplatePlacementUI.Guid
+                            };
                             registrationTemplate.Placements.Add( registrationTemplatePlacement );
                         }
 
@@ -1464,24 +1571,26 @@ The logged-in person's information will be used to complete the registrar inform
                         registrationTemplate.AllowSecurityRole( Authorization.EDIT, staffUsers, rockContext );
                     }
 
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["RegistrationTemplateId"] = registrationTemplate.Id.ToString();
+                    var qryParams = new Dictionary<string, string>
+                    {
+                        ["RegistrationTemplateId"] = registrationTemplate.Id.ToString()
+                    };
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 // Catch and display any validation errors from the data layer.
                 catch ( Exception ex ) when ( ex.InnerException is DbEntityValidationException )
                 {
-                    var vex = ( DbEntityValidationException )ex.InnerException;
+                    var vex = ( DbEntityValidationException ) ex.InnerException;
                     foreach ( var entityValidationError in vex.EntityValidationErrors )
                     {
                         foreach ( var ve in entityValidationError.ValidationErrors )
                         {
-                            var entityType = EntityTypeCache.Get( entityValidationError.Entry.Entity.GetType(), createIfNotFound:false );
-                            validationErrors.Add( $"{entityType.FriendlyName }: {ve.ErrorMessage}" );
+                            var entityType = EntityTypeCache.Get( entityValidationError.Entry.Entity.GetType(), createIfNotFound: false );
+                            validationErrors.Add( $"{entityType.FriendlyName}: {ve.ErrorMessage}" );
                         }
                     }
                     nbValidationError.Visible = true;
-                    nbValidationError.Text = "<ul class='list-unstyled'><li>" + validationErrors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                    nbValidationError.Text = $"<ul class='list-unstyled'><li>{validationErrors.AsDelimited( "</li><li>" )}</li></ul>";
                 }
             }
         }
@@ -1525,12 +1634,14 @@ The logged-in person's information will be used to complete the registrar inform
         {
             if ( hfRegistrationTemplateId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+                var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Canceling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page.
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["CategoryId"] = parentCategoryId.ToString();
+                    var qryParams = new Dictionary<string, string>
+                    {
+                        ["CategoryId"] = parentCategoryId.ToString()
+                    };
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -1541,9 +1652,9 @@ The logged-in person's information will be used to complete the registrar inform
             }
             else
             {
-                // Canceling on Edit.  Return to Details.
-                RegistrationTemplateService service = new RegistrationTemplateService( new RockContext() );
-                RegistrationTemplate item = service.Get( int.Parse( hfRegistrationTemplateId.Value ) );
+                // Canceling on Edit. Return to Details.
+                var service = new RegistrationTemplateService( new RockContext() );
+                var item = service.Get( int.Parse( hfRegistrationTemplateId.Value ) );
                 ShowReadonlyDetails( item );
             }
         }
@@ -1589,9 +1700,11 @@ The logged-in person's information will be used to complete the registrar inform
         {
             ParseControls();
 
-            var form = new RegistrationTemplateForm();
-            form.Guid = Guid.NewGuid();
-            form.Order = FormState.Any() ? FormState.Max( a => a.Order ) + 1 : 0;
+            var form = new RegistrationTemplateForm
+            {
+                Guid = Guid.NewGuid(),
+                Order = FormState.Any() ? FormState.Max( a => a.Order ) + 1 : 0
+            };
             FormState.Add( form );
 
             FormFieldsState.Add( form.Guid, new List<RegistrationTemplateFormField>() );
@@ -1709,10 +1822,9 @@ The logged-in person's information will be used to complete the registrar inform
                   On Field Delete, we need to also remove all the existing references of current field in filter rule list.
                 */
                 var newFormFieldsWithRules = FormFieldsState[e.FormGuid]
-                    .Where( a => a.FieldVisibilityRules.RuleList.Any()
-                     && a.FieldVisibilityRules.RuleList.Any( b =>
-                         b.ComparedToFormFieldGuid.HasValue
-                         && b.ComparedToFormFieldGuid == e.FormFieldGuid ) );
+                    .Where( a => a.FieldVisibilityRules.RuleList?.Any( b =>
+                        b.ComparedToFormFieldGuid.HasValue
+                        && b.ComparedToFormFieldGuid == e.FormFieldGuid ) == true );
 
                 foreach ( var newFormField in newFormFieldsWithRules )
                 {
@@ -1790,14 +1902,14 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( !FormFieldsState.ContainsKey( formGuid ) )
             {
-                // Just swallow this error for now
+                // Just swallow this error for now.
                 return true;
             }
 
             var attributeFormField = CreateFormField( formGuid );
             if ( attributeFormField == null )
             {
-                // There was a problem with the form field. Return false so the error can display
+                // There was a problem with the form field. Return false so the error can display.
                 return false;
             }
 
@@ -1845,6 +1957,7 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             attributeFormField.ShowOnWaitlist = cbShowOnWaitList.Checked;
+            attributeFormField.IsLockedIfValuesExist = cbLockExistingValue.Checked;
 
             if ( attributeId.HasValue )
             {
@@ -1984,7 +2097,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Moved up
                     foreach ( var otherItem in DiscountState.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
                     {
-                        otherItem.Order = otherItem.Order + 1;
+                        otherItem.Order++;
                     }
                 }
                 else
@@ -1992,7 +2105,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Moved Down
                     foreach ( var otherItem in DiscountState.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
                     {
-                        otherItem.Order = otherItem.Order - 1;
+                        otherItem.Order--;
                     }
                 }
 
@@ -2020,7 +2133,7 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 DiscountState.Remove( discount );
 
-                int order = 0;
+                var order = 0;
                 DiscountState.OrderBy( f => f.Order ).ToList().ForEach( f => f.Order = order++ );
             }
 
@@ -2062,9 +2175,11 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( discount == null )
             {
-                discount = new RegistrationTemplateDiscount();
-                discount.Guid = Guid.NewGuid();
-                discount.Order = DiscountState.Any() ? DiscountState.Max( d => d.Order ) + 1 : 0;
+                discount = new RegistrationTemplateDiscount
+                {
+                    Guid = Guid.NewGuid(),
+                    Order = DiscountState.Any() ? DiscountState.Max( d => d.Order ) + 1 : 0
+                };
                 DiscountState.Add( discount );
             }
 
@@ -2180,7 +2295,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Moved up
                     foreach ( var otherItem in FeeState.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
                     {
-                        otherItem.Order = otherItem.Order + 1;
+                        otherItem.Order++;
                     }
                 }
                 else
@@ -2188,14 +2303,14 @@ The logged-in person's information will be used to complete the registrar inform
                     // Moved Down
                     foreach ( var otherItem in FeeState.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
                     {
-                        otherItem.Order = otherItem.Order - 1;
+                        otherItem.Order--;
                     }
                 }
 
                 movedItem.Order = e.NewIndex;
             }
 
-            int order = 0;
+            var order = 0;
             FeeState.OrderBy( f => f.Order ).ToList().ForEach( f => f.Order = order++ );
 
             BuildControls();
@@ -2216,7 +2331,7 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 FeeState.Remove( fee );
 
-                int order = 0;
+                var order = 0;
                 FeeState.OrderBy( f => f.Order ).ToList().ForEach( f => f.Order = order++ );
             }
 
@@ -2249,9 +2364,11 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( fee == null )
             {
-                fee = new RegistrationTemplateFee();
-                fee.Guid = Guid.NewGuid();
-                fee.Order = FeeState.Any() ? FeeState.Max( d => d.Order ) + 1 : 0;
+                fee = new RegistrationTemplateFee
+                {
+                    Guid = Guid.NewGuid(),
+                    Order = FeeState.Any() ? FeeState.Max( d => d.Order ) + 1 : 0
+                };
                 FeeState.Add( fee );
             }
 
@@ -2268,11 +2385,13 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
-                RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
-                registrationTemplateFeeItem.Guid = hfFeeItemSingleGuid.Value.AsGuid();
-                registrationTemplateFeeItem.Name = fee.Name;
-                registrationTemplateFeeItem.Cost = cbFeeItemSingleCost.Value ?? 0.00M;
-                registrationTemplateFeeItem.MaximumUsageCount = nbFeeItemSingleMaximumUsageCount.Text.AsIntegerOrNull();
+                var registrationTemplateFeeItem = new RegistrationTemplateFeeItem
+                {
+                    Guid = hfFeeItemSingleGuid.Value.AsGuid(),
+                    Name = fee.Name,
+                    Cost = cbFeeItemSingleCost.Value ?? 0.00M,
+                    MaximumUsageCount = nbFeeItemSingleMaximumUsageCount.Text.AsIntegerOrNull()
+                };
                 fee.FeeItems.Add( registrationTemplateFeeItem );
             }
             else
@@ -2299,7 +2418,6 @@ The logged-in person's information will be used to complete the registrar inform
             var result = true;
             foreach ( var item in rptFeeItemsMultiple.Items.OfType<RepeaterItem>() )
             {
-                RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
                 var nbFeeItemWarning = item.FindControl( "nbFeeItemWarning" ) as NotificationBox;
                 var tbFeeItemName = item.FindControl( "tbFeeItemName" ) as RockTextBox;
                 var cbFeeItemCost = item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
@@ -2332,19 +2450,21 @@ The logged-in person's information will be used to complete the registrar inform
             var feeItems = new List<RegistrationTemplateFeeItem>();
             foreach ( var item in rptFeeItemsMultiple.Items.OfType<RepeaterItem>() )
             {
-                RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
                 var hfFeeItemGuid = item.FindControl( "hfFeeItemGuid" ) as HiddenField;
                 var hfFeeItemId = item.FindControl( "hfFeeItemId" ) as HiddenField;
                 var tbFeeItemName = item.FindControl( "tbFeeItemName" ) as RockTextBox;
                 var cbFeeItemCost = item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
                 var nbMaximumUsageCount = item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
 
-                registrationTemplateFeeItem.Guid = hfFeeItemGuid.Value.AsGuid();
-                registrationTemplateFeeItem.Id = hfFeeItemId.Value.AsInteger();
-                registrationTemplateFeeItem.Order = feeItemOrder++;
-                registrationTemplateFeeItem.Name = tbFeeItemName.Text;
-                registrationTemplateFeeItem.Cost = cbFeeItemCost.Value ?? 0.00M;
-                registrationTemplateFeeItem.MaximumUsageCount = nbMaximumUsageCount.Text.AsIntegerOrNull();
+                var registrationTemplateFeeItem = new RegistrationTemplateFeeItem
+                {
+                    Guid = hfFeeItemGuid.Value.AsGuid(),
+                    Id = hfFeeItemId.Value.AsInteger(),
+                    Order = feeItemOrder++,
+                    Name = tbFeeItemName.Text,
+                    Cost = cbFeeItemCost.Value ?? 0.00M,
+                    MaximumUsageCount = nbMaximumUsageCount.Text.AsIntegerOrNull()
+                };
                 feeItems.Add( registrationTemplateFeeItem );
             }
 
@@ -2397,8 +2517,9 @@ The logged-in person's information will be used to complete the registrar inform
         /// <returns></returns>
         private RegistrationTemplate GetRegistrationTemplate( int registrationTemplateId, RockContext rockContext = null )
         {
-            string key = string.Format( "RegistrationTemplate:{0}", registrationTemplateId );
-            RegistrationTemplate registrationTemplate = RockPage.GetSharedItem( key ) as RegistrationTemplate;
+            var key = $"RegistrationTemplate:{registrationTemplateId}";
+            var registrationTemplate = RockPage.GetSharedItem( key ) as RegistrationTemplate;
+
             if ( registrationTemplate == null )
             {
                 rockContext = rockContext ?? new RockContext();
@@ -2417,8 +2538,8 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         private void ShowDetail()
         {
-            int? registrationTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
-            int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+            var registrationTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
 
             if ( !registrationTemplateId.HasValue )
             {
@@ -2436,39 +2557,41 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( registrationTemplate == null )
             {
-                registrationTemplate = new RegistrationTemplate();
-                registrationTemplate.Id = 0;
-                registrationTemplate.IsActive = true;
-                registrationTemplate.CategoryId = parentCategoryId;
-                registrationTemplate.ConfirmationFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
-                registrationTemplate.ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}";
-                registrationTemplate.ConfirmationSubject = "{{ RegistrationInstance.Name }} Confirmation";
-                registrationTemplate.ConfirmationEmailTemplate = GetAttributeValue( AttributeKey.DefaultConfirmationEmail );
-                registrationTemplate.ReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
-                registrationTemplate.ReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
-                registrationTemplate.ReminderSubject = "{{ RegistrationInstance.Name }} Reminder";
-                registrationTemplate.ReminderEmailTemplate = GetAttributeValue( AttributeKey.DefaultReminderEmail );
-                registrationTemplate.Notify = RegistrationNotify.None;
-                registrationTemplate.SuccessTitle = "Congratulations {{ Registration.FirstName }}";
-                registrationTemplate.SuccessText = GetAttributeValue( AttributeKey.DefaultSuccessText );
-                registrationTemplate.PaymentReminderEmailTemplate = GetAttributeValue( AttributeKey.DefaultPaymentReminderEmail );
-                registrationTemplate.PaymentReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
-                registrationTemplate.PaymentReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
-                registrationTemplate.PaymentReminderSubject = "{{ RegistrationInstance.Name }} Payment Reminder";
-                registrationTemplate.WaitListTransitionEmailTemplate = GetAttributeValue( AttributeKey.DefaultWaitListTransitionEmail );
-                registrationTemplate.WaitListTransitionFromEmail = "{{ RegistrationInstance.ContactEmail }}";
-                registrationTemplate.WaitListTransitionFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
-                registrationTemplate.WaitListTransitionSubject = "{{ RegistrationInstance.Name }} Wait List Update";
-                registrationTemplate.AllowMultipleRegistrants = true;
-                registrationTemplate.MaxRegistrants = 10;
-                registrationTemplate.GroupMemberStatus = GroupMemberStatus.Active;
+                registrationTemplate = new RegistrationTemplate
+                {
+                    Id = 0,
+                    IsActive = true,
+                    CategoryId = parentCategoryId,
+                    ConfirmationFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
+                    ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}",
+                    ConfirmationSubject = "{{ RegistrationInstance.Name }} Confirmation",
+                    ConfirmationEmailTemplate = GetAttributeValue( AttributeKey.DefaultConfirmationEmail ),
+                    ReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
+                    ReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}",
+                    ReminderSubject = "{{ RegistrationInstance.Name }} Reminder",
+                    ReminderEmailTemplate = GetAttributeValue( AttributeKey.DefaultReminderEmail ),
+                    Notify = RegistrationNotify.None,
+                    SuccessTitle = "Congratulations {{ Registration.FirstName }}",
+                    SuccessText = GetAttributeValue( AttributeKey.DefaultSuccessText ),
+                    PaymentReminderEmailTemplate = GetAttributeValue( AttributeKey.DefaultPaymentReminderEmail ),
+                    PaymentReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}",
+                    PaymentReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
+                    PaymentReminderSubject = "{{ RegistrationInstance.Name }} Payment Reminder",
+                    WaitListTransitionEmailTemplate = GetAttributeValue( AttributeKey.DefaultWaitListTransitionEmail ),
+                    WaitListTransitionFromEmail = "{{ RegistrationInstance.ContactEmail }}",
+                    WaitListTransitionFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}",
+                    WaitListTransitionSubject = "{{ RegistrationInstance.Name }} Wait List Update",
+                    AllowMultipleRegistrants = true,
+                    MaxRegistrants = 10,
+                    GroupMemberStatus = GroupMemberStatus.Active
+                };
             }
 
             pnlDetails.Visible = true;
             hfRegistrationTemplateId.Value = registrationTemplate.Id.ToString();
 
-            // render UI based on Authorized
-            bool readOnly = false;
+            // Render UI based on Authorized.
+            var readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
 
@@ -2481,9 +2604,9 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             // Only show the placements button if a linked page is defined AND this template has any placement records
-            bool showPlacementsButton = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RegistrationTemplatePlacementPage ) ) &&
-                registrationTemplate.Id > 0 &&
-                new RegistrationTemplatePlacementService( rockContext ).GetRegistrationTemplatePlacementCountByRegistrationTemplate( registrationTemplate.Id ) > 0;
+            var showPlacementsButton = GetAttributeValue( AttributeKey.RegistrationTemplatePlacementPage ).IsNotNullOrWhiteSpace()
+                && registrationTemplate.Id > 0
+                && new RegistrationTemplateService( rockContext ).HasRegistrationTemplatePlacements( registrationTemplate.Id );
 
             btnPlacements.ToolTip = registrationTemplate.Name + " Placement";
             btnPlacements.Visible = showPlacementsButton;
@@ -2532,10 +2655,12 @@ The logged-in person's information will be used to complete the registrar inform
                 // If no forms, add at one
                 if ( !registrationTemplate.Forms.Any() )
                 {
-                    var form = new RegistrationTemplateForm();
-                    form.Guid = Guid.NewGuid();
-                    form.Order = 0;
-                    form.Name = "Default Form";
+                    var form = new RegistrationTemplateForm
+                    {
+                        Guid = Guid.NewGuid(),
+                        Order = 0,
+                        Name = "Default Form"
+                    };
                     registrationTemplate.Forms.Add( form );
                 }
 
@@ -2544,36 +2669,40 @@ The logged-in person's information will be used to complete the registrar inform
                 // Add first name field if it doesn't exist
                 if ( !defaultForm.Fields
                     .Any( f =>
-                        f.FieldSource == RegistrationFieldSource.PersonField &&
-                        f.PersonFieldType == RegistrationPersonFieldType.FirstName ) )
+                        f.FieldSource == RegistrationFieldSource.PersonField
+                        && f.PersonFieldType == RegistrationPersonFieldType.FirstName ) )
                 {
-                    var formField = new RegistrationTemplateFormField();
-                    formField.FieldSource = RegistrationFieldSource.PersonField;
-                    formField.PersonFieldType = RegistrationPersonFieldType.FirstName;
-                    formField.IsGridField = true;
-                    formField.IsRequired = true;
-                    formField.ShowOnWaitlist = true;
-                    formField.PreText = @"<div class='row'><div class='col-md-6'>";
-                    formField.PostText = "    </div>";
-                    formField.Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0;
+                    var formField = new RegistrationTemplateFormField
+                    {
+                        FieldSource = RegistrationFieldSource.PersonField,
+                        PersonFieldType = RegistrationPersonFieldType.FirstName,
+                        IsGridField = true,
+                        IsRequired = true,
+                        ShowOnWaitlist = true,
+                        PreText = @"<div class='row'><div class='col-md-6'>",
+                        PostText = "    </div>",
+                        Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0
+                    };
                     defaultForm.Fields.Add( formField );
                 }
 
                 // Add last name field if it doesn't exist
                 if ( !defaultForm.Fields
                     .Any( f =>
-                        f.FieldSource == RegistrationFieldSource.PersonField &&
-                        f.PersonFieldType == RegistrationPersonFieldType.LastName ) )
+                        f.FieldSource == RegistrationFieldSource.PersonField
+                        && f.PersonFieldType == RegistrationPersonFieldType.LastName ) )
                 {
-                    var formField = new RegistrationTemplateFormField();
-                    formField.FieldSource = RegistrationFieldSource.PersonField;
-                    formField.PersonFieldType = RegistrationPersonFieldType.LastName;
-                    formField.IsGridField = true;
-                    formField.IsRequired = true;
-                    formField.ShowOnWaitlist = true;
-                    formField.PreText = "    <div class='col-md-6'>";
-                    formField.PostText = @"    </div></div>";
-                    formField.Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0;
+                    var formField = new RegistrationTemplateFormField
+                    {
+                        FieldSource = RegistrationFieldSource.PersonField,
+                        PersonFieldType = RegistrationPersonFieldType.LastName,
+                        IsGridField = true,
+                        IsRequired = true,
+                        ShowOnWaitlist = true,
+                        PreText = "    <div class='col-md-6'>",
+                        PostText = @"    </div></div>",
+                        Order = defaultForm.Fields.Any() ? defaultForm.Fields.Max( f => f.Order ) + 1 : 0
+                    };
                     defaultForm.Fields.Add( formField );
                 }
 
@@ -2590,8 +2719,8 @@ The logged-in person's information will be used to complete the registrar inform
                 var attributeService = new AttributeService( rockContext );
                 RegistrationAttributesState = attributeService.GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
                     .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToString() ) )
+                        a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase )
+                        && a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToString() ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name )
                     .ToList();
@@ -2622,9 +2751,9 @@ The logged-in person's information will be used to complete the registrar inform
             hfHasRegistrations.Value = new RegistrationInstanceService( rockContext )
                 .Queryable().AsNoTracking()
                 .Any( i =>
-
-                    i.RegistrationTemplateId == registrationTemplateId &&
-                    i.Registrations.Any( r => !r.IsTemporary ) ).ToString();
+                    i.RegistrationTemplateId == registrationTemplateId
+                    && i.Registrations.Any( r => !r.IsTemporary ) )
+                .ToString();
         }
 
         /// <summary>
@@ -2663,6 +2792,7 @@ The logged-in person's information will be used to complete the registrar inform
             rpGroupTypeRole.GroupTypeId = registrationTemplate.GroupTypeId ?? 0;
             rpGroupTypeRole.GroupRoleId = registrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
+            dvpConnectionStatus.SetValue( registrationTemplate.ConnectionStatusValueId );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
             cbDisplayInLine.Visible = isLegacySignatureSelected;
@@ -2670,9 +2800,9 @@ The logged-in person's information will be used to complete the registrar inform
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
 
-            foreach ( ListItem li in cblNotify.Items )
+            foreach ( var li in cblNotify.Items.Cast<ListItem>() )
             {
-                RegistrationNotify notify = ( RegistrationNotify ) li.Value.AsInteger();
+                var notify = ( RegistrationNotify ) li.Value.AsInteger();
                 li.Selected = ( registrationTemplate.Notify & notify ) == notify;
             }
 
@@ -2694,7 +2824,7 @@ The logged-in person's information will be used to complete the registrar inform
             cbDefaultPaymentAmount.Value = registrationTemplate.DefaultPayment;
             fgpFinancialGateway.SetValue( registrationTemplate.FinancialGatewayId );
 
-            if ( IsRedirectionGateway() )
+            if ( IsRedirectionGateway( rockContext ) )
             {
                 txtBatchNamePrefix.Text = string.Empty;
             }
@@ -2704,7 +2834,8 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             SetCostVisibility();
-            ShowHideBatchPrefixTextbox();
+            ShowHideBatchPrefixTextbox( rockContext );
+            ShowHidePaymentPlansFeature( GetPaymentPlansFeatureDataFromRegistrationTemplate( rockContext, registrationTemplate ) );
 
             tbConfirmationFromName.Text = registrationTemplate.ConfirmationFromName;
             tbConfirmationFromEmail.Text = registrationTemplate.ConfirmationFromEmail;
@@ -2762,7 +2893,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         private void SetCostVisibility()
         {
-            bool setCostOnTemplate = tglSetCostOnTemplate.Checked;
+            var setCostOnTemplate = tglSetCostOnTemplate.Checked;
             cbCost.Visible = setCostOnTemplate;
             cbMinimumInitialPayment.Visible = setCostOnTemplate;
             cbDefaultPaymentAmount.Visible = setCostOnTemplate;
@@ -2792,68 +2923,64 @@ The logged-in person's information will be used to complete the registrar inform
             lGroupType.Text = registrationTemplate.GroupType != null ? registrationTemplate.GroupType.Name : string.Empty;
             lDescription.Text = registrationTemplate.Description;
             lRequiredSignedDocument.Text = registrationTemplate.RequiredSignatureDocumentTemplate != null ? registrationTemplate.RequiredSignatureDocumentTemplate.Name : string.Empty;
-            lRequiredSignedDocument.Visible = !string.IsNullOrWhiteSpace( lRequiredSignedDocument.Text );
+            lRequiredSignedDocument.Visible = lRequiredSignedDocument.Text.IsNotNullOrWhiteSpace();
             lWorkflowType.Text = registrationTemplate.RegistrationWorkflowType != null ? registrationTemplate.RegistrationWorkflowType.Name : string.Empty;
-            lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
-            rcwRegistrantFormsSummary.Label = string.Format( "<strong>Registrant Forms</strong> ({0}) <i class='fa fa-caret-down'></i>", registrationTemplate.Forms.Count() );
+            lWorkflowType.Visible = lWorkflowType.Text.IsNotNullOrWhiteSpace();
+            rcwRegistrantFormsSummary.Label = $"<strong>Registrant Forms</strong> ({registrationTemplate.Forms.Count}) <i class='fa fa-caret-down'></i>";
             lRegistrantFormsSummary.Text = string.Empty;
 
             if ( registrationTemplate.Forms.Any() )
             {
-                StringBuilder formsSummaryTextBuilder = new StringBuilder();
+                var formsSummaryTextBuilder = new StringBuilder();
                 foreach ( var form in registrationTemplate.Forms.OrderBy( a => a.Order ) )
                 {
-                    string formTextFormat = @"<br/><strong>{0}</strong>{1}";
-                    StringBuilder formFieldTextBuilder = new StringBuilder();
+                    var formFieldTextBuilder = new StringBuilder();
 
                     foreach ( var formField in form.Fields.OrderBy( a => a.Order ) )
                     {
-                        string formFieldName = ( formField.Attribute != null ) ? formField.Attribute.Name : formField.PersonFieldType.ConvertToString();
-                        string fieldTypeName = ( formField.Attribute != null ) ? FieldTypeCache.GetName( formField.Attribute.FieldTypeId ) : string.Empty;
-                        formFieldTextBuilder.AppendFormat(
-                            @"<div class='row'>
+                        var formFieldName = ( formField.Attribute != null ) ? formField.Attribute.Name : formField.PersonFieldType.ConvertToString();
+                        var fieldTypeName = ( formField.Attribute != null ) ? FieldTypeCache.GetName( formField.Attribute.FieldTypeId ) : string.Empty;
+                        formFieldTextBuilder.Append(
+                            $@"<div class='row'>
                                 <div class='col-sm-1'></div>
-                                <div class='col-sm-4'>{0}</div>
-                                <div class='col-sm-3'>{1}</div>
-                                <div class='col-sm-4'>{2}</div>
-                            </div>",
-                            formFieldName,
-                            fieldTypeName,
-                            formField.FieldSource.ConvertToString() );
+                                <div class='col-sm-4'>{formFieldName}</div>
+                                <div class='col-sm-3'>{fieldTypeName}</div>
+                                <div class='col-sm-4'>{formField.FieldSource.ConvertToString()}</div>
+                            </div>" );
                     }
 
-                    formsSummaryTextBuilder.AppendFormat( formTextFormat, form.Name, formFieldTextBuilder.ToString() );
+                    formsSummaryTextBuilder.Append( $"<br/><strong>{form.Name}</strong>{formFieldTextBuilder}" );
                 }
 
                 lRegistrantFormsSummary.Text = formsSummaryTextBuilder.ToString();
             }
             else
             {
-                lRegistrantFormsSummary.Text = "<div>" + None.TextHtml + "</div>";
+                lRegistrantFormsSummary.Text = $"<div>{None.TextHtml}</div>";
             }
 
-            var registrationAttributeNameList = new AttributeService( new RockContext() ).GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
+            var registrationAttributeNameList = new AttributeService( new RockContext() )
+                .GetByEntityTypeId( new Registration().TypeId, true )
+                .AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToString() ) )
+                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase )
+                    && a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToString() ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToAttributeCacheList();
 
             rcwRegistrationAttributesSummary.Visible = registrationAttributeNameList.Any();
-            rcwRegistrationAttributesSummary.Label = string.Format( "<strong>Registration Attributes</strong> ({0}) <i class='fa fa-caret-down'></i>", registrationAttributeNameList.Count() );
+            rcwRegistrationAttributesSummary.Label = $"<strong>Registration Attributes</strong> ({registrationAttributeNameList.Count}) <i class='fa fa-caret-down'></i>";
 
-            StringBuilder registrationAttributeTextBuilder = new StringBuilder();
+            var registrationAttributeTextBuilder = new StringBuilder();
             foreach ( var registrationAttribute in registrationAttributeNameList )
             {
-                registrationAttributeTextBuilder.AppendFormat(
-                        @"<div class='row'>
-                                <div class='col-sm-1'></div>
-                                <div class='col-sm-4'>{0}</div>
-                                <div class='col-sm-7'>{1}</div>
-                            </div>",
-                        registrationAttribute.Name,
-                        registrationAttribute.FieldType.Name );
+                registrationAttributeTextBuilder.Append(
+                    $@"<div class='row'>
+                        <div class='col-sm-1'></div>
+                        <div class='col-sm-4'>{registrationAttribute.Name}</div>
+                        <div class='col-sm-7'>{registrationAttribute.FieldType.Name}</div>
+                    </div>" );
             }
 
             lRegistrationAttributesSummary.Text = registrationAttributeTextBuilder.ToString();
@@ -2868,40 +2995,19 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 lCost.Text = registrationTemplate.Cost.FormatAsCurrency();
                 lMinimumInitialPayment.Visible = registrationTemplate.MinimumInitialPayment.HasValue;
-                lMinimumInitialPayment.Text = registrationTemplate.MinimumInitialPayment.HasValue ?
-                    registrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : string.Empty;
+                lMinimumInitialPayment.Text =
+                    registrationTemplate.MinimumInitialPayment.HasValue
+                    ? registrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency()
+                    : string.Empty;
                 lDefaultPaymentAmount.Visible = registrationTemplate.DefaultPayment.HasValue;
-                lDefaultPaymentAmount.Text = registrationTemplate.DefaultPayment.HasValue ?
-                    registrationTemplate.DefaultPayment.Value.FormatAsCurrency() : string.Empty;
+                lDefaultPaymentAmount.Text =
+                    registrationTemplate.DefaultPayment.HasValue
+                    ? registrationTemplate.DefaultPayment.Value.FormatAsCurrency()
+                    : string.Empty;
             }
 
             rFees.DataSource = registrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
-        }
-
-        /// <summary>
-        /// Adds the "is-inactive" CSS class if the item is not active.
-        /// </summary>
-        /// <param name="isActive">The is active.</param>
-        /// <returns></returns>
-        protected string FormatInactiveRow( string isActive )
-        {
-            try
-            {
-                if ( bool.Parse( isActive ) == false )
-                {
-                    return "class=\"row\"";
-                }
-                else
-                {
-                    return "class=\"row is-inactive\"";
-                }
-            }
-            catch ( Exception )
-            {
-                // If there is a problem with this then just show the row as active.
-                return "class=\"row\"";
-            }
         }
 
         /// <summary>
@@ -2913,7 +3019,7 @@ The logged-in person's information will be used to complete the registrar inform
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
 
-            this.HideSecondaryBlocks( editable );
+            HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -2977,7 +3083,7 @@ The logged-in person's information will be used to complete the registrar inform
             ExpandedForms = new List<Guid>();
             FormState = new List<RegistrationTemplateForm>();
 
-            int order = 0;
+            var order = 0;
             foreach ( var formEditor in phForms.ControlsOfTypeRecursive<RegistrationTemplateFormEditor>() )
             {
                 var form = formEditor.GetForm( expandInvalid );
@@ -3004,8 +3110,8 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 var orderedForms = FormState.OrderBy( f => f.Order ).ToList();
                 var defaultFormGuid = orderedForms.First().Guid;
-                Panel pnlDefaultForm = new Panel() { CssClass = "js-default-form" };
-                Panel pnlOptionalForms = new Panel() { CssClass = "js-optional-form-list" };
+                var pnlDefaultForm = new Panel() { CssClass = "js-default-form" };
+                var pnlOptionalForms = new Panel() { CssClass = "js-optional-form-list" };
                 phForms.Controls.Add( pnlDefaultForm );
                 phForms.Controls.Add( pnlOptionalForms );
                 foreach ( var form in orderedForms )
@@ -3040,12 +3146,14 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="showInvalid">if set to <c>true</c> [show invalid].</param>
         private void BuildFormControl( Control parentControl, bool setValues, RegistrationTemplateForm form, Guid? activeFormGuid, Guid defaultFormGuid, bool showInvalid )
         {
-            var registrationTemplateFormEditor = new RegistrationTemplateFormEditor();
-            registrationTemplateFormEditor.ID = form.Guid.ToString( "N" );
+            var registrationTemplateFormEditor = new RegistrationTemplateFormEditor
+            {
+                ID = form.Guid.ToString( "N" )
+            };
             parentControl.Controls.Add( registrationTemplateFormEditor );
 
             // if this is the default form, don't let it get deleted. Also, there is some special logic to disable deleting FirstName,LastName fields on default form.
-            bool isDefaultForm = form.Guid == defaultFormGuid;
+            var isDefaultForm = form.Guid == defaultFormGuid;
             registrationTemplateFormEditor.IsDeleteEnabled = !isDefaultForm;
             registrationTemplateFormEditor.IsDefaultForm = isDefaultForm;
 
@@ -3123,8 +3231,8 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgFieldFilter_SaveClick( object sender, EventArgs e )
         {
-            Guid formGuid = hfFormGuidFilter.Value.AsGuid();
-            Guid formFieldGuid = hfFormFieldGuidFilter.Value.AsGuid();
+            var formGuid = hfFormGuidFilter.Value.AsGuid();
+            var formFieldGuid = hfFormFieldGuidFilter.Value.AsGuid();
             var formField = FormFieldsState[formGuid].FirstOrDefault( a => a.Guid == formFieldGuid );
             formField.FieldVisibilityRules = fvreFieldVisibilityRulesEditor.GetFieldVisibilityRules();
 
@@ -3162,14 +3270,16 @@ The logged-in person's information will be used to complete the registrar inform
                     .Where( field => field.FieldSource == RegistrationFieldSource.GroupMemberAttribute )
                     .ToList();
 
-                RegistrationTemplateFormField formField = fieldList.FirstOrDefault( a => a.Guid.Equals( formFieldGuid ) );
+                var formField = fieldList.FirstOrDefault( a => a.Guid.Equals( formFieldGuid ) );
                 if ( formField == null )
                 {
                     lFieldSource.Visible = false;
                     ddlFieldSource.Visible = true;
-                    formField = new RegistrationTemplateFormField();
-                    formField.Guid = formFieldGuid;
-                    formField.FieldSource = RegistrationFieldSource.PersonAttribute;
+                    formField = new RegistrationTemplateFormField
+                    {
+                        Guid = formFieldGuid,
+                        FieldSource = RegistrationFieldSource.PersonAttribute
+                    };
                 }
                 else
                 {
@@ -3219,7 +3329,7 @@ The logged-in person's information will be used to complete the registrar inform
                     if ( attr.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         var listItem = new ListItem( attr.Name, attr.Id.ToString() );
-                        listItem.Attributes.Add( "title", string.Format( "{0} - {1}", attr.Id.ToString(), attr.Key ) );
+                        listItem.Attributes.Add( "title", $"{attr.Id} - {attr.Key}" );
                         ddlPersonAttributes.Items.Add( listItem );
                     }
                 }
@@ -3227,11 +3337,15 @@ The logged-in person's information will be used to complete the registrar inform
                 // Populate the Group Member Attribute picker and skip any attributes
                 // that already exist on the form.
                 ddlGroupTypeAttributes.Items.Clear();
-                var group = new Group();
-                group.GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0;
-                var groupMember = new GroupMember();
-                groupMember.Group = group;
-                groupMember.GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0;
+                var group = new Group
+                {
+                    GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0
+                };
+                var groupMember = new GroupMember
+                {
+                    Group = group,
+                    GroupTypeId = gtpGroupType.SelectedGroupTypeId ?? 0
+                };
                 groupMember.LoadAttributes();
                 foreach ( var attr in groupMember.Attributes
                     .OrderBy( a => a.Value.Name )
@@ -3254,8 +3368,10 @@ The logged-in person's information will be used to complete the registrar inform
                     }
                 }
 
-                var attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                var attribute = new Attribute
+                {
+                    FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id
+                };
 
                 if ( formField.FieldSource == RegistrationFieldSource.PersonField )
                 {
@@ -3282,6 +3398,7 @@ The logged-in person's information will be used to complete the registrar inform
 
                 cbInternalField.Checked = formField.IsInternal;
                 cbShowOnWaitList.Checked = formField.FieldSource != RegistrationFieldSource.GroupMemberAttribute && formField.ShowOnWaitlist;
+                cbLockExistingValue.Checked = formField.IsLockedIfValuesExist;
                 cbShowOnGrid.Checked = formField.IsGridField;
                 cbRequireInInitialEntry.Checked = formField.IsRequired;
                 cbUsePersonCurrentValue.Checked = formField.ShowCurrentValue;
@@ -3305,7 +3422,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         private void SetFieldDisplay()
         {
-            bool protectedField = lPersonField.Visible;
+            var protectedField = lPersonField.Visible;
 
             ddlFieldSource.Enabled = !protectedField;
 
@@ -3327,11 +3444,11 @@ The logged-in person's information will be used to complete the registrar inform
             cbInternalField.Visible = true;
             cbCommonValue.Visible = true;
             cbUsePersonCurrentValue.Visible =
-                fieldSource == RegistrationFieldSource.PersonAttribute ||
-                fieldSource == RegistrationFieldSource.PersonField;
+                fieldSource == RegistrationFieldSource.PersonAttribute
+                || fieldSource == RegistrationFieldSource.PersonField;
 
             // If this is a RegistrantAttribute, the ShowOnGrid is determined by the Attribute's ShowOnGrid, so we don't need to show the top ShowOnGrid option
-            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute );
+            cbShowOnGrid.Visible = fieldSource != RegistrationFieldSource.RegistrantAttribute;
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrantAttribute;
 
             edtRegistrantAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrantAttribute;
@@ -3367,7 +3484,7 @@ The logged-in person's information will be used to complete the registrar inform
                 }
             }
 
-            int order = 0;
+            var order = 0;
             foreach ( var item in FormState )
             {
                 item.Order = order++;
@@ -3392,7 +3509,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Moved up
                     foreach ( var otherItem in fieldList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
                     {
-                        otherItem.Order = otherItem.Order + 1;
+                        otherItem.Order++;
                     }
                 }
                 else
@@ -3400,7 +3517,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Moved Down
                     foreach ( var otherItem in fieldList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
                     {
-                        otherItem.Order = otherItem.Order - 1;
+                        otherItem.Order--;
                     }
                 }
 
@@ -3415,7 +3532,7 @@ The logged-in person's information will be used to complete the registrar inform
         private void ReOrderFields( List<RegistrationTemplateFormField> fieldList )
         {
             fieldList = fieldList.OrderBy( a => a.Order ).ToList();
-            int order = 0;
+            var order = 0;
             fieldList.ForEach( a => a.Order = order++ );
         }
 
@@ -3430,8 +3547,8 @@ The logged-in person's information will be used to complete the registrar inform
         {
             gRegistrationAttributes.AddCssClass( "attribute-grid" );
 
-            // ensure Registration Attributes have order set
-            int order = 0;
+            // Ensure Registration Attributes have order set.
+            var order = 0;
             RegistrationAttributesState.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
 
             gRegistrationAttributes.DataSource = RegistrationAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
@@ -3479,20 +3596,22 @@ The logged-in person's information will be used to complete the registrar inform
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
-                attribute = new Attribute();
-                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                attribute = new Attribute
+                {
+                    FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id
+                };
                 if ( hfRegistrationTemplateId.Value.AsInteger() > 0 )
                 {
                     attribute.EntityTypeQualifierColumn = "RegistrationTemplateId";
                     attribute.EntityTypeQualifierValue = hfRegistrationTemplateId.Value;
                 }
 
-                edtRegistrationAttributes.ActionTitle = ActionTitle.Add( "attribute for " + tbName.Text + " registrations" );
+                edtRegistrationAttributes.ActionTitle = ActionTitle.Add( $"attribute for {tbName.Text} registrations" );
             }
             else
             {
                 attribute = RegistrationAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                edtRegistrationAttributes.ActionTitle = ActionTitle.Edit( "attribute for " + tbName.Text + " registrations" );
+                edtRegistrationAttributes.ActionTitle = ActionTitle.Edit( $"attribute for {tbName.Text} registrations" );
             }
 
             var reservedKeyNames = new List<string>();
@@ -3511,7 +3630,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrationAttribute_SaveClick( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            var attribute = new Attribute();
             edtRegistrationAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
@@ -3564,7 +3683,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRegistrationAttributes_Delete( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            var attributeGuid = ( Guid ) e.RowKeyValue;
             RegistrationAttributesState.RemoveEntity( attributeGuid );
 
             BindRegistrationAttributesGrid();
@@ -3586,7 +3705,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Moved up
                     foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
                     {
-                        otherItem.Order = otherItem.Order + 1;
+                        otherItem.Order++;
                     }
                 }
                 else
@@ -3594,7 +3713,7 @@ The logged-in person's information will be used to complete the registrar inform
                     // Moved Down
                     foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
                     {
-                        otherItem.Order = otherItem.Order - 1;
+                        otherItem.Order--;
                     }
                 }
 
@@ -3619,9 +3738,9 @@ The logged-in person's information will be used to complete the registrar inform
                         d.Guid,
                         d.Id,
                         d.Code,
-                        Discount = d.DiscountAmount > 0 ?
-                            d.DiscountAmount.FormatAsCurrency() :
-                            d.DiscountPercentage.ToString( "P2" ),
+                        Discount = d.DiscountAmount > 0
+                            ? d.DiscountAmount.FormatAsCurrency()
+                            : d.DiscountPercentage.ToString( "P2" ),
                         Limits = d.DiscountLimitsString
                     } ).ToList();
                 gDiscounts.DataBind();
@@ -3634,11 +3753,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="discountGuid">The discount unique identifier.</param>
         private void ShowDiscountEdit( Guid discountGuid )
         {
-            var discount = DiscountState.FirstOrDefault( d => d.Guid.Equals( discountGuid ) );
-            if ( discount == null )
-            {
-                discount = new RegistrationTemplateDiscount();
-            }
+            var discount = DiscountState.FirstOrDefault( d => d.Guid.Equals( discountGuid ) ) ?? new RegistrationTemplateDiscount();
 
             hfDiscountGuid.Value = discount.Guid.ToString();
             tbDiscountCode.Text = discount.Code;
@@ -3705,11 +3820,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="feeGuid">The fee unique identifier.</param>
         private void ShowFeeEdit( Guid feeGuid )
         {
-            var fee = FeeState.FirstOrDefault( d => d.Guid.Equals( feeGuid ) );
-            if ( fee == null )
-            {
-                fee = new RegistrationTemplateFee();
-            }
+            var fee = FeeState.FirstOrDefault( d => d.Guid.Equals( feeGuid ) ) ?? new RegistrationTemplateFee();
 
             // make a copy of FeeItems to FeeItemsEditState
             FeeItemsEditState = fee.FeeItems.ToList();
@@ -3754,22 +3865,26 @@ The logged-in person's information will be used to complete the registrar inform
                 singleFeeItem = feeItems.FirstOrDefault();
                 if ( feeItems.Count > 1 )
                 {
-                    bool canUseSingleFeeType = true;
+                    var canUseSingleFeeType = true;
                     var rockContext = new RockContext();
                     var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
                     var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
                     var configuredFeeItemIds = feeItems.Select( a => a.Id ).ToList();
-                    var usedFeeQuery = registrationRegistrantFeeService.Queryable()
+                    var usedFeeQuery = registrationRegistrantFeeService
+                        .Queryable()
                         .Where( a => a.RegistrationTemplateFeeItemId.HasValue && configuredFeeItemIds.Contains( a.RegistrationTemplateFeeItemId.Value ) );
-                    var usedFeeItemList = registrationTemplateFeeItemService.Queryable().Where( a => usedFeeQuery.Any( x => x.RegistrationTemplateFeeItemId == a.Id ) ).ToList();
+                    var usedFeeItemList = registrationTemplateFeeItemService
+                        .Queryable()
+                        .Where( a => usedFeeQuery.Any( x => x.RegistrationTemplateFeeItemId == a.Id ) )
+                        .ToList();
 
-                    if ( usedFeeItemList.Count() > 1 )
+                    if ( usedFeeItemList.Count > 1 )
                     {
                         canUseSingleFeeType = false;
                     }
                     else if ( usedFeeItemList.Count == 1 )
                     {
-                        // only one FeeItem has been used, so have that bee the single fee item
+                        // Only one FeeItem has been used, so have that be the single FeeItem.
                         singleFeeItem = usedFeeItemList.First();
                     }
 
@@ -3805,7 +3920,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptFeeItemsMultiple_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            RegistrationTemplateFeeItem registrationTemplateFeeItem = e.Item.DataItem as RegistrationTemplateFeeItem;
+            var registrationTemplateFeeItem = e.Item.DataItem as RegistrationTemplateFeeItem;
             if ( registrationTemplateFeeItem != null )
             {
                 var hfFeeItemId = e.Item.FindControl( "hfFeeItemId" ) as HiddenField;
@@ -3838,8 +3953,7 @@ The logged-in person's information will be used to complete the registrar inform
             var feeItem = feeItems.FirstOrDefault( a => a.Guid == feeItemGuid );
             if ( feeItem != null )
             {
-                string errorMessage;
-                if ( !new RegistrationTemplateFeeItemService( new RockContext() ).CanDelete( feeItem, out errorMessage ) )
+                if ( !new RegistrationTemplateFeeItemService( new RockContext() ).CanDelete( feeItem, out var errorMessage ) )
                 {
                     nbFeeItemsConfigurationWarning.Text = errorMessage;
                     nbFeeItemsConfigurationWarning.Visible = true;
@@ -3873,13 +3987,13 @@ The logged-in person's information will be used to complete the registrar inform
         /// <returns></returns>
         protected string FormatFeeItems( ICollection<RegistrationTemplateFeeItem> feeItems )
         {
-            List<string> feeItemsHtml = new List<string>();
+            var feeItemsHtml = new List<string>();
             foreach ( var feeItem in feeItems )
             {
-                string feeItemHtml = string.Format( "{0}-{1}", feeItem.Name, feeItem.Cost.FormatAsCurrency() );
+                var feeItemHtml = $"{feeItem.Name}-{feeItem.Cost.FormatAsCurrency()}";
                 if ( feeItem.MaximumUsageCount.HasValue )
                 {
-                    feeItemHtml += " ( max: " + feeItem.MaximumUsageCount.Value.ToString() + " )";
+                    feeItemHtml += $" ( max: {feeItem.MaximumUsageCount.Value} )";
                 }
 
                 feeItemsHtml.Add( feeItemHtml );
@@ -3910,10 +4024,7 @@ The logged-in person's information will be used to complete the registrar inform
         private void ShowDialog( bool setValues = false )
         {
             var activeDialog = this.ControlsOfTypeRecursive<ModalDialog>().FirstOrDefault( a => a.ID == hfActiveDialogID.Value );
-            if ( activeDialog != null )
-            {
-                activeDialog.Show();
-            }
+            activeDialog?.Show();
         }
 
         /// <summary>
@@ -3922,10 +4033,7 @@ The logged-in person's information will be used to complete the registrar inform
         private void HideDialog()
         {
             var activeDialog = this.ControlsOfTypeRecursive<ModalDialog>().FirstOrDefault( a => a.ID == hfActiveDialogID.Value );
-            if ( activeDialog != null )
-            {
-                activeDialog.Hide();
-            }
+            activeDialog?.Hide();
 
             hfActiveDialogID.Value = string.Empty;
         }
@@ -3953,20 +4061,25 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gPlacementConfigurations_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            RegistrationTemplatePlacement registrationTemplatePlacement = e.Row.DataItem as RegistrationTemplatePlacement;
+            var registrationTemplatePlacement = e.Row.DataItem as RegistrationTemplatePlacement;
+
             if ( registrationTemplatePlacement == null )
             {
                 return;
             }
 
-            Literal lPlacementName = e.Row.FindControl( "lPlacementName" ) as Literal;
+            var lPlacementName = e.Row.FindControl( "lPlacementName" ) as Literal;
             lPlacementName.Text = registrationTemplatePlacement.Name;
 
-            Literal lGroupTypeName = e.Row.FindControl( "lGroupTypeName" ) as Literal;
+            var lGroupTypeName = e.Row.FindControl( "lGroupTypeName" ) as Literal;
             lGroupTypeName.Text = GroupTypeCache.Get( registrationTemplatePlacement.GroupTypeId ).Name;
-            Literal lSharedGroupNames = e.Row.FindControl( "lSharedGroupNames" ) as Literal;
+
+            var lSharedGroupNames = e.Row.FindControl( "lSharedGroupNames" ) as Literal;
             var sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid );
-            var sharedGroupNameList = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).Select( a => a.Name ).ToList();
+            var sharedGroupNameList = new GroupService( new RockContext() )
+                .GetByIds( sharedGroupIds )
+                .Select( a => a.Name )
+                .ToList();
 
             lSharedGroupNames.Text = sharedGroupNameList.AsDelimited( ", ", " and " );
         }
@@ -4014,7 +4127,7 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             // make sure Order is cleaned up with no gaps, etc
-            int order = 0;
+            var order = 0;
             RegistrationTemplatePlacementState.OrderBy( d => d.Order ).ToList().ForEach( d => d.Order = order++ );
 
             BuildControls();
@@ -4039,12 +4152,11 @@ The logged-in person's information will be used to complete the registrar inform
         {
             hfRegistrationPlacementConfigurationGuid.Value = registrationPlacementConfigurationGuid.ToString();
 
-            var registrationTemplatePlacement = RegistrationTemplatePlacementState.FirstOrDefault( a => a.Guid == registrationPlacementConfigurationGuid );
-            if ( registrationTemplatePlacement == null )
-            {
-                registrationTemplatePlacement = new RegistrationTemplatePlacement();
-                registrationTemplatePlacement.Guid = registrationPlacementConfigurationGuid;
-            }
+            var registrationTemplatePlacement = RegistrationTemplatePlacementState.FirstOrDefault( a => a.Guid == registrationPlacementConfigurationGuid )
+                ?? new RegistrationTemplatePlacement
+                {
+                    Guid = registrationPlacementConfigurationGuid
+                };
 
             tbPlacementConfigurationName.Text = registrationTemplatePlacement.Name;
             gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId = registrationTemplatePlacement.GroupTypeId;
@@ -4061,10 +4173,14 @@ The logged-in person's information will be used to complete the registrar inform
             cbPlacementConfigurationAllowMultiple.Checked = registrationTemplatePlacement.AllowMultiplePlacements;
             tbPlacementConfigurationIconCssClass.Text = registrationTemplatePlacement.IconCssClass;
 
-            List<int> sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationPlacementConfigurationGuid ) ?? new List<int>();
+            var sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationPlacementConfigurationGuid ) ?? new List<int>();
             hfPlacementConfigurationSharedGroupIdList.Value = sharedGroupIds.AsDelimited( "," );
 
-            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() )
+                .GetByIds( sharedGroupIds )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
             gPlacementConfigurationSharedGroups.DataBind();
 
             dlgPlacementConfiguration.Show();
@@ -4163,7 +4279,7 @@ The logged-in person's information will be used to complete the registrar inform
             var selectedGroupId = gpPlacementConfigurationAddSharedGroup.GroupId;
             if ( selectedGroupId.HasValue )
             {
-                GroupTypeCache groupType = null;
+                var groupType = ( GroupTypeCache ) null;
                 if ( gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.HasValue )
                 {
                     groupType = GroupTypeCache.Get( gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.Value );
@@ -4176,12 +4292,16 @@ The logged-in person's information will be used to complete the registrar inform
                     return;
                 }
 
-                var placementGroup = new GroupService( new RockContext() ).Get( selectedGroupId.Value );
+                var placementGroupTypeId = new GroupService( new RockContext() )
+                    .Queryable()
+                    .Where( g => g.Id == selectedGroupId.Value )
+                    .Select( g => g.GroupTypeId )
+                    .FirstOrDefault();
 
-                if ( groupType.Id != placementGroup.GroupTypeId )
+                if ( groupType.Id != placementGroupTypeId )
                 {
                     nbAddPlacementGroupWarning.Visible = true;
-                    nbAddPlacementGroupWarning.Text = "Group must have group type of " + groupType.Name + ".";
+                    nbAddPlacementGroupWarning.Text = $"Group must have group type of {groupType.Name}.";
                     return;
                 }
 
@@ -4213,7 +4333,11 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="sharedGroupIds">The shared group ids.</param>
         private void BindPlacementConfigurationSharedGroups( List<int> sharedGroupIds )
         {
-            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() )
+                .GetByIds( sharedGroupIds )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
             gPlacementConfigurationSharedGroups.DataBind();
         }
 
@@ -4221,28 +4345,149 @@ The logged-in person's information will be used to complete the registrar inform
 
         protected void fgpFinancialGateway_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ShowHideBatchPrefixTextbox();
+            using ( var rockContext = new RockContext() )
+            {
+                ShowHideBatchPrefixTextbox( rockContext );
+                ShowHidePaymentPlansFeature( GetPaymentPlansFeatureDataFromControls( rockContext ) );
+            }
         }
 
-        private void ShowHideBatchPrefixTextbox()
+        private void ShowHideBatchPrefixTextbox( RockContext rockContext )
         {
-            txtBatchNamePrefix.Visible = !IsRedirectionGateway();
+            txtBatchNamePrefix.Visible = !IsRedirectionGateway( rockContext );
         }
 
-        private bool IsRedirectionGateway()
+        private bool IsRedirectionGateway( RockContext rockContext )
         {
             var gatewayId = fgpFinancialGateway.SelectedValueAsInt();
 
             // validate gateway
             if ( gatewayId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    return new FinancialGatewayService( rockContext ).IsRedirectionGateway( gatewayId );
-                }
+                return new FinancialGatewayService( rockContext ).IsRedirectionGateway( gatewayId );
             }
 
             return false;
         }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbEnablePaymentPlans control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbEnablePaymentPlans_CheckedChanged( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                ShowHidePaymentPlansFeature( GetPaymentPlansFeatureDataFromControls( rockContext ) );
+            }
+        }
+
+        private bool IsPaymentPlansFeatureSupportedByFinancialGateway( GatewayComponent financialGatewayComponent )
+        {
+            if ( financialGatewayComponent == null )
+            {
+                return false;
+            }
+
+            return financialGatewayComponent is IScheduledNumberOfPaymentsGateway;
+        }
+
+        private GatewayComponent GetFinancialGatewayComponent( RockContext rockContext, int? financialGatewayId )
+        {
+            if ( financialGatewayId.HasValue )
+            {
+                return new FinancialGatewayService( rockContext ).Get( financialGatewayId.Value )?.GetGatewayComponent();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private void ShowHidePaymentPlansFeature( PaymentPlansFeatureData paymentPlansFeatureData )
+        {
+            cbEnablePaymentPlans.Enabled = paymentPlansFeatureData.IsPaymentPlansFeatureSupported;
+            cbEnablePaymentPlans.Checked = paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed );
+            cblSelectablePaymentFrequencies.Visible = paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed );
+
+            // Clear selectable payment frequencies before adding them.
+            cblSelectablePaymentFrequencies.Items.Clear();
+
+            if ( paymentPlansFeatureData.IsPaymentPlansFeatureSupported )
+            {
+                // The financial gateway is configured for payment plans
+                // so set the control values for the feature.
+                var frequencies = paymentPlansFeatureData
+                    .FinancialGatewayComponent
+                    ?.SupportedPaymentSchedules
+                    // Ignore "One-Time" option.
+                    ?.Where( f => f.Guid != Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
+                    ?.ToList() ?? new List<DefinedValueCache>();
+                foreach ( var frequency in frequencies )
+                {
+                    cblSelectablePaymentFrequencies.Items.Add(
+                        new ListItem
+                        {
+                            Text = frequency.Value,
+                            Value = frequency.Id.ToString(),
+                            Selected = paymentPlansFeatureData.PaymentPlanFrequencyValueIds.Contains( frequency.Id ),
+                        } );
+                }
+            }
+        }
+
+        private PaymentPlansFeatureData GetPaymentPlansFeatureDataFromControls( RockContext rockContext )
+        {
+            var financialGatewayComponent = GetFinancialGatewayComponent( rockContext, fgpFinancialGateway.SelectedValueAsId() );
+            var isPaymentPlansFeatureSupported = IsPaymentPlansFeatureSupportedByFinancialGateway( financialGatewayComponent );
+
+            return new PaymentPlansFeatureData
+            {
+                FinancialGatewayComponent = financialGatewayComponent,
+                IsPaymentPlansFeatureSupported = isPaymentPlansFeatureSupported,
+                IsPaymentPlanAllowed = isPaymentPlansFeatureSupported ? cbEnablePaymentPlans.Checked : false,
+                PaymentPlanFrequencyValueIds = isPaymentPlansFeatureSupported ? cblSelectablePaymentFrequencies.SelectedValuesAsInt : new List<int>(),
+            };
+        }
+
+        private PaymentPlansFeatureData GetPaymentPlansFeatureDataFromRegistrationTemplate( RockContext rockContext, RegistrationTemplate registrationTemplate )
+        {
+            var financialGatewayComponent = GetFinancialGatewayComponent( rockContext, registrationTemplate?.FinancialGatewayId );
+            var isPaymentPlansFeatureSupported = IsPaymentPlansFeatureSupportedByFinancialGateway( financialGatewayComponent );
+            
+            return new PaymentPlansFeatureData
+            {
+                FinancialGatewayComponent = financialGatewayComponent,
+                IsPaymentPlansFeatureSupported = isPaymentPlansFeatureSupported,
+                IsPaymentPlanAllowed = isPaymentPlansFeatureSupported ? registrationTemplate.IsPaymentPlanAllowed : false,
+                PaymentPlanFrequencyValueIds = isPaymentPlansFeatureSupported ? registrationTemplate.PaymentPlanFrequencyValueIdsCollection : new List<int>(),
+            };
+        }
+
+        #region Helper Classes
+
+        private class PaymentPlansFeatureData
+        {
+            public GatewayComponent FinancialGatewayComponent { get; set; }
+
+            public bool IsPaymentPlansFeatureSupported { get; set; }
+
+            public bool IsPaymentPlanAllowed { get; set; }
+
+            public ICollection<int> PaymentPlanFrequencyValueIds { get; set; }
+
+            public T GetValueIfFeatureSupportedOrDefault<T>( Func<PaymentPlansFeatureData, T> predicate )
+            {
+                if ( this.IsPaymentPlansFeatureSupported )
+                {
+                    return predicate( this );
+                }
+
+                return default( T );
+            }
+        }
+
+        #endregion
     }
 }

@@ -791,6 +791,7 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\NewItemCacheAddedMessage.cs" />
     <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
@@ -1050,6 +1051,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV152CreateAttributeValue_ValueAsPersonId_Index.cs" />
     <Compile Include="Jobs\PostV154DataMigrationsUpdateAgeBracketValues.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17RemoveLegacyPreferencesPostMigration.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV166DataMigrationsAddInteractionCreatedDateTimeIndex.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141AddMissingIndexes.cs" />
@@ -1174,6 +1176,8 @@
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplate.Logic.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionExtensionMethods.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
@@ -1271,6 +1275,7 @@
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
+    <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
@@ -2237,6 +2242,7 @@
     <Compile Include="Web\Cache\NonEntities\PersonOrVisitorCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersonPreferenceCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RateLimiterCache.cs" />
+    <Compile Include="Web\Cache\RockCacheAllIdUpdater.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />

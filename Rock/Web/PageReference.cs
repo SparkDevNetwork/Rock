@@ -347,12 +347,12 @@ namespace Rock.Web
 
             foreach ( var p in Parameters )
             {
-                parameters.AddOrIgnore( p.Key, p.Value );
+                parameters.TryAdd( p.Key, p.Value );
             }
 
             foreach ( var k in QueryString.AllKeys )
             {
-                parameters.AddOrIgnore( k, QueryString[k] );
+                parameters.TryAdd( k, QueryString[k] );
             }
 
             return parameters;
@@ -436,8 +436,15 @@ namespace Rock.Web
                 }
             }
 
-            // add base path to url -- Fixed bug #84
-            url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
+            if ( HttpContext.Current != null )
+            {
+                // add base path to url -- Fixed bug #84
+                url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
+            }
+            else
+            {
+                url = "/" + url;
+            }
 
             return url;
         }
@@ -865,14 +872,14 @@ namespace Rock.Web
             {
                 foreach ( var p in initialPageReference.Parameters )
                 {
-                    trackedPageParameters.AddOrIgnore( p.Key, p.Value );
+                    trackedPageParameters.TryAdd( p.Key, p.Value );
                 }
 
                 // As Querystring is a NameValueCollection, it may contain entries with key as null.
                 // However, adding null as a key to a Dictionary throws an exception and so we would like to filter those entries out of Querystring.
                 foreach ( var qs in initialPageReference.QueryString.AllKeys.Where( k => k != null ) )
                 {
-                    trackedPageParameters.AddOrIgnore( qs, initialPageReference.QueryString[qs] );
+                    trackedPageParameters.TryAdd( qs, initialPageReference.QueryString[qs] );
                 }
             }
 

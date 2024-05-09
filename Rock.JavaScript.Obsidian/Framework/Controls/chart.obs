@@ -64,6 +64,8 @@
         }
 
         // All other changes just need an update
+        chart.data = config.value.data;
+        chart.options = config.value.options;
         chart.update();
     }, { deep: true });
 

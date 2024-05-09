@@ -159,7 +159,7 @@ namespace Rock.Web.UI.Controls
                     // in the case of a Report, the MergeKeys are determined by the ColumnHeader, so add those as merge fields instead the Row object
                     foreach ( var keyValue in this.ToGridItemsDictionary( gridViewRow, gridViewRow.DataItem ) )
                     {
-                        mergeValues.AddOrIgnore( keyValue.Key, keyValue.Value );
+                        mergeValues.TryAdd( keyValue.Key, keyValue.Value );
                     }
                 } 
                 else

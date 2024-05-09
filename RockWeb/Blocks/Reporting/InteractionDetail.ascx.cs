@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Reporting
                 if ( interaction != null && ( UserCanEdit || interaction.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                    mergeFields.TryAdd( "Person", CurrentPerson );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", interaction.InteractionComponent.InteractionChannel );
                     mergeFields.Add( "InteractionComponent", interaction.InteractionComponent );

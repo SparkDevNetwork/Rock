@@ -225,6 +225,14 @@
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
                                 </div>
                             </asp:Panel>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DatePicker ID="dpPaymentDeadline" runat="server" Label="Payment Deadline"
+                                        Help="The date that all payments must be completed by. This date will be used by the payment plan feature to calculate the payment schedule and amount." />
+                                </div>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />

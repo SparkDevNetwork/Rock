@@ -25,12 +25,13 @@ import DateColumn from "./Grid/Columns/dateColumn.partial";
 import DateTimeColumn from "./Grid/Columns/dateTimeColumn.partial";
 import DeleteColumn from "./Grid/Columns/deleteColumn.partial";
 import EditColumn from "./Grid/Columns/editColumn.partial";
-import RockFieldColumn from "./Grid/Columns/rockFieldColumn.partial";
+import HighlightDetailColumn from "./Grid/Columns/highlightDetailColumn.partial";
 import LabelColumn from "./Grid/Columns/labelColumn.partial";
 import NumberBadgeColumn from "./Grid/Columns/numberBadgeColumn.partial";
 import NumberColumn from "./Grid/Columns/numberColumn.partial";
 import PersonColumn from "./Grid/Columns/personColumn.partial";
 import ReorderColumn from "./Grid/Columns/reorderColumn.partial";
+import RockFieldColumn from "./Grid/Columns/rockFieldColumn.partial";
 import SecurityColumn from "./Grid/Columns/securityColumn.partial";
 import SelectColumn from "./Grid/Columns/selectColumn.partial";
 import TextColumn from "./Grid/Columns/textColumn.partial";
@@ -43,12 +44,13 @@ import DateCell from "./Grid/Cells/dateCell.partial.obs";
 import DateTimeCell from "./Grid/Cells/dateTimeCell.partial.obs";
 import DeleteCell from "./Grid/Cells/deleteCell.partial.obs";
 import EditCell from "./Grid/Cells/editCell.partial.obs";
-import RockFieldCell from "./Grid/Cells/rockFieldCell.partial.obs";
+import HighlightDetailCell from "./Grid/Cells/highlightDetailCell.partial.obs";
 import LabelCell from "./Grid/Cells/labelCell.partial.obs";
 import NumberBadgeCell from "./Grid/Cells/numberBadgeCell.partial.obs";
 import NumberCell from "./Grid/Cells/numberCell.partial.obs";
 import PersonCell from "./Grid/Cells/personCell.partial.obs";
 import ReorderCell from "./Grid/Cells/reorderCell.partial.obs";
+import RockFieldCell from "./Grid/Cells/rockFieldCell.partial.obs";
 import SecurityCell from "./Grid/Cells/securityCell.partial.obs";
 import SelectCell from "./Grid/Cells/selectCell.partial.obs";
 import SelectHeaderCell from "./Grid/Cells/selectHeaderCell.partial.obs";
@@ -78,12 +80,13 @@ export {
     DateTimeColumn,
     DeleteColumn,
     EditColumn,
-    RockFieldColumn,
+    HighlightDetailColumn,
     LabelColumn,
     NumberBadgeColumn,
     NumberColumn,
     PersonColumn,
     ReorderColumn,
+    RockFieldColumn,
     SecurityColumn,
     SelectColumn,
     TextColumn,
@@ -99,12 +102,13 @@ export {
     DateTimeCell,
     DeleteCell,
     EditCell,
-    RockFieldCell,
+    HighlightDetailCell,
     LabelCell,
     NumberBadgeCell,
     NumberCell,
     PersonCell,
     ReorderCell,
+    RockFieldCell,
     SecurityCell,
     SelectCell,
     SelectHeaderCell,

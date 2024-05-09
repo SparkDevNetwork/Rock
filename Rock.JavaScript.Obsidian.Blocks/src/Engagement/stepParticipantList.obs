@@ -44,7 +44,7 @@
                     title="Date Started"
                     field="dateStarted"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <DateColumn name="dateCompleted"
                     title="Date Completed"
@@ -57,7 +57,7 @@
                     title="Campus"
                     field="campus"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <Column name="stepStatus"
                 title="Status"
@@ -77,11 +77,11 @@
                     title="Note"
                     field="note"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <ButtonColumn v-if="config.options?.personProfilePageUrl" name="user" iconClass="fa fa-user" @click="onPersonClick" />
+        <ButtonColumn v-if="config.options?.personProfilePageUrl" name="user" iconClass="fa fa-user" @click="onPersonClick" visiblePriority="md" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -286,7 +286,7 @@
                     // Dummy height and width for popover since content will originally be empty.
                     content.style.width = "300px";
                     content.style.height = "200px";
-                    content.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>'
+                    content.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
 
                     http.get<any>(dataUrl).then(response => {
                         // Let browser handle height and width.

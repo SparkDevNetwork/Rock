@@ -174,8 +174,8 @@
                                     v-model="audienceDataView"
                                     label="Audience Data View"
                                     help="A Data View that returns a list of people who are eligible to take this step." />
-                    <DataViewPicker v-else
-                                    v-model="autoCompleteDataView"
+
+                    <DataViewPicker v-model="autoCompleteDataView"
                                     label="Auto-Complete Data View"
                                     help="A Data View that returns a list of people who should be regarded as having completed this step." />
                 </div>
@@ -230,7 +230,7 @@
     import { StepTypeWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeWorkflowTriggerBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -540,6 +540,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
         updateRefValue(showCountOnBadge, props.modelValue.showCountOnBadge ?? false);
         updateRefValue(isDateRequired, props.modelValue.isDateRequired ?? false);
         updateRefValue(autoCompleteDataView, props.modelValue.autoCompleteDataView ?? {});
+        updateRefValue(audienceDataView, props.modelValue.audienceDataView ?? {});
         updateRefValue(allowManualEditing, props.modelValue.allowManualEditing ?? false);
         updateRefValue(preRequisites, props.modelValue.preRequisites ?? []);
         updateRefValue(availablePreRequisites, props.modelValue.availablePreRequisites ?? []);
@@ -548,7 +549,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, stepAttributes, stepWorkflowTriggers, ...propRefs], () => {
+    watch([attributeValues, stepAttributes, stepWorkflowTriggers, preRequisites, ...propRefs], () => {
         const newValue: StepTypeBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -566,7 +567,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
             preRequisites: preRequisites.value,
             cardLavaTemplate: cardLavaTemplate.value,
             stepAttributes: stepAttributes.value,
-            workflows: stepWorkflowTriggers.value
+            workflows: stepWorkflowTriggers.value,
+            audienceDataView: audienceDataView.value
         };
 
         emit("update:modelValue", newValue);

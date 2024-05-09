@@ -29,13 +29,13 @@
                     field="description"
                     :filter="textValueFilter"
                     width="45%"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <DateColumn name="createdDate"
                     title="Created"
                     field="createdDate"
                     :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <DateColumn name="archivedDate"
                     title="Archived"
@@ -46,12 +46,23 @@
         <PersonColumn name="archivedBy"
                       title="Archived By"
                       field="archivedBy"
+                      :hideAvatar="true"
                       :filter="pickExistingValueFilter"
-                      visiblePriority="xs" />
+                      :filterValue="archivedByFilterValue"
+                      visiblePriority="md" />
 
-        <ButtonColumn name="undoArchive"
-                      iconClass="fa fa-undo"
-                      @click="onUndoArchiveClick" />
+        <Column name="location"
+                width="58"
+                itemClass="grid-columncommand"
+                isiblePriority="xs">
+            <template #format="{ row }">
+                <button class="btn btn-default btn-sm"
+                        title="Unarchive"
+                        @click.prevent="onUndoArchiveClick(row.idKey)">
+                    <i class="fa fa-undo"></i>
+                </button>
+            </template>
+        </Column>
     </Grid>
 
     <GridSettingsModal v-model="gridSettings"
@@ -62,7 +73,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, dateValueFilter, DateColumn, ButtonColumn } from "@Obsidian/Controls/grid";
+    import Grid, { PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, dateValueFilter, DateColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GroupArchivedListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupArchivedList/groupArchivedListOptionsBag";
@@ -70,6 +81,7 @@
     import { GridSettingsOptions, PreferenceKey } from "./GroupArchivedList/types.partial";
     import GridSettingsModal from "./GroupArchivedList/gridSettingsModal.partial.obs";
     import { computed, reactive, ref, watch } from "vue";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<GroupArchivedListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -122,6 +134,11 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    function archivedByFilterValue(row: Record<string, unknown>): string {
+        const person = row["archivedBy"] as PersonFieldBag;
+        return `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion

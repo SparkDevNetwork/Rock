@@ -167,7 +167,7 @@ namespace Rock.CheckIn
                 }
 
                 // If this Person's birthday is today, simply return "Today".
-                int daysToBirthday = _person.DaysToBirthday;
+                var daysToBirthday = _person.DaysToBirthdayOrNull;
                 if ( daysToBirthday == 0 )
                 {
                     return "Today";
@@ -187,7 +187,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                return _person.DaysToBirthday < 7;
+                return _person.DaysToBirthdayOrNull < 7;
             }
         }
 

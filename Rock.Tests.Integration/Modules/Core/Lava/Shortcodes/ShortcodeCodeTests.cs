@@ -25,13 +25,13 @@ using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
+namespace Rock.Tests.Integration.Modules.Core.Lava.Shortcodes
 {
     /// <summary>
     /// Test for shortcodes that are defined and implemented as code components rather than as parameterized Lava templates.
     /// </summary>
     [TestClass]
-    public class ShortcodeCodeTests : LavaIntegrationTestBase
+    public partial class ShortcodeCodeTests : LavaIntegrationTestBase
     {
         [TestMethod]
         public void Shortcode_WithMergeFieldAsParameter_CorrectlyResolvesParameters()
@@ -244,42 +244,6 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
         public void BootstrapAlertShortcode_VariousTypes_ProducesCorrectHtml( string input, string expectedResult )
         {
             TestHelper.AssertTemplateOutput( expectedResult, input );
-        }
-
-        #endregion
-
-        #region ScheduledContent
-
-        [TestMethod]
-        public void ScheduledContentShortcode_Basic_EmitsCorrectHtml()
-        {
-            var input = @"
-{[ scheduledcontent scheduleid:'1' asatdate:'2020-10-17 16:35' ]}
-Schedule Name: {{ Schedule.Name }}
-<br>
-Schedule Live: {{ IsLive }}
-<br>
-{[ endscheduledcontent ]}
-";
-
-            var expectedOutput = @"
-ScheduleName:Saturday4:30pm<br>ScheduleLive:true<br>
-";
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
-        }
-
-        [TestMethod]
-        public void ScheduledContentShortcode_ContainedInCaptureBlock_EmitsCorrectOutput()
-        {
-            var input = @"
-{% capture isScheduleActive %}{[ scheduledcontent scheduleid:'6' ]}true{[ endscheduledcontent ]}
-{% endcapture %}
-Schedule Active = {{isScheduleActive}}
-";
-            var expectedOutput = @"Schedule Active = true";
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         #endregion

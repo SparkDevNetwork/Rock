@@ -12,6 +12,7 @@ using Rock.Workflow.Action;
 namespace Rock.Tests.Integration.Modules.Core.Workflow.Action
 {
     [TestClass]
+    [TestCategory("Core.Workflow")]
     public class BackgroundCheckRequestTests : DatabaseTestsBase
     {
         [TestMethod]
