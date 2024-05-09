@@ -419,6 +419,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Security\ForgotUserName\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Security\RestKeyList\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\" />
@@ -1106,6 +1107,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\passwordlessLoginMfaBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyList\restKeyListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\appleTvAppBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\appleTvAppDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\appleTvPageBag.d.ts" />

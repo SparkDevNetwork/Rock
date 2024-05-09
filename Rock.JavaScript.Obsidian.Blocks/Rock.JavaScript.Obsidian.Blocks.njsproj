@@ -61,6 +61,7 @@
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
     <Content Include="src\Core\definedValueList.obs" />
     <Content Include="src\Core\personSignalList.obs" />
+    <Content Include="src\Security\restKeyList.obs" />
     <Content Include="src\Crm\personMergeRequestList.obs" />
     <Content Include="src\Core\followingEventTypeDetail.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
@@ -323,6 +324,7 @@
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\DefinedValueList\" />
     <Folder Include="src\Core\PersonSignalList\" />
+    <Folder Include="src\Security\RestKeyList\" />
     <Folder Include="src\Crm\PersonMergeRequestList\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
@@ -485,6 +487,7 @@
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DefinedValueList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\PersonSignalList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Security\RestKeyList\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\PersonMergeRequestList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />

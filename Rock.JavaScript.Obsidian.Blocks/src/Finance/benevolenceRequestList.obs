@@ -67,7 +67,7 @@
                       field="caseWorker"
                       :hideAvatar="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
+                      :filterValue="getAssignedToFilterValue"
                       visiblePriority="md" />
 
         <TextColumn name="resultSummary"
@@ -307,6 +307,16 @@
         else {
             return `${row.firstName} ${row.lastName}`;
         }
+    }
+
+    /**
+    * Gets the filter value text to use for the assigned to column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getAssignedToFilterValue(row: Record<string, unknown>): string {
+        const person = row["caseWorker"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**
