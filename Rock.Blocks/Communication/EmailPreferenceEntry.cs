@@ -344,7 +344,20 @@ We have unsubscribed you from the following lists:
                     return name;
                 } ).ToList();
 
-                box.UnsubscribeFromListOptions = viewableCommunicationLists.ToListItemBagList();
+                // Call ToListItemBagList( Func<...> ) passing this function for setting the ListItemBag's Text value using
+                // the "PublicName" attribute name if it exists.
+                box.UnsubscribeFromListOptions = viewableCommunicationLists.ToListItemBagList( e =>
+                    {
+                        var a = ( ( Rock.Model.Group ) e );
+                        var name = a.GetAttributeValue( AttributeKey.PublicName );
+                        if ( name.IsNullOrWhiteSpace() )
+                        {
+                            name = a.Name;
+                        }
+
+                        return name;
+                    }
+                );
             }
 
             box.EmailsAllowedText = availableOptions.Contains( EMAILS_ALLOWED ) ? GetAttributeValue( AttributeKey.EmailsAllowedText ).ResolveMergeFields( mergeFields ) : null;
