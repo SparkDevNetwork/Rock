@@ -643,7 +643,7 @@ namespace Rock.Model
                         }
 
                         DateTime bday = DateTime.MinValue;
-                        while ( !DateTime.TryParse( BirthMonth.Value.ToString() + "/" + day.ToString() + "/" + year.ToString(), out bday ) && day > 28 )
+                        while ( !DateTime.TryParse( $"{year}-{month}-{day}", out bday ) && day > 28 )
                         {
                             day--;
                         }
@@ -729,7 +729,7 @@ namespace Rock.Model
                     }
 
                     DateTime aday = DateTime.MinValue;
-                    while ( !DateTime.TryParse( month.ToString() + "/" + day.ToString() + "/" + year.ToString(), out aday ) && day > 28 )
+                    while ( !DateTime.TryParse( $"{year}-{month}-{day}", out aday ) && day > 28 )
                     {
                         day--;
                     }
