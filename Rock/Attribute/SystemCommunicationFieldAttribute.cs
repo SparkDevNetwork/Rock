@@ -24,6 +24,8 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class SystemCommunicationFieldAttribute : FieldAttribute
     {
+        private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemCommunicationFieldAttribute"/> class.
         /// </summary>
@@ -37,7 +39,10 @@ namespace Rock.Attribute
         public SystemCommunicationFieldAttribute( string name, string description = "", bool required = true, string defaultSystemCommunicationGuid = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultSystemCommunicationGuid, category, order, key, typeof( Rock.Field.Types.SystemCommunicationFieldType ).FullName )
         {
+
+            IncludeInactive = false;
         }
+
 
         /// <summary>
         /// Gets or sets the default System Communication template unique identifier.
@@ -51,6 +56,25 @@ namespace Rock.Attribute
             set
             {
                 this.DefaultValue = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating if inactive items will be included.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if inactive items will be included; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeInactive
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }

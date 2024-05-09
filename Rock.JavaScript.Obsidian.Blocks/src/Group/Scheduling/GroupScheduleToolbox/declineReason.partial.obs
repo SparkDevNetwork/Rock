@@ -40,6 +40,7 @@
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { SaveDeclineReasonRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveDeclineReasonRequestBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -80,7 +81,8 @@
 
     const isVisible = useVModelPassthrough(props, "isVisible", emit);
 
-    const selectedPersonGuid = inject(SelectedPersonGuid);
+    /** The selected person guid (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
 
     const isSavingDeclineReason = ref(false);
 
@@ -110,8 +112,8 @@
         isSavingDeclineReason.value = true;
 
         const bag: SaveDeclineReasonRequestBag = {
-            selectedPersonGuid: selectedPersonGuid?.value,
-            attendanceGuid: props.attendanceGuid,
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            attendanceGuid: toGuidOrNull(props.attendanceGuid) ?? emptyGuid,
             wasSchedulePreviouslyConfirmed: props.wasSchedulePreviouslyConfirmed,
             declineReason: declineReason.value,
             declineReasonNote: declineReasonNote.value

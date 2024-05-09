@@ -418,6 +418,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="savedState">An object that represents the control state to restore.</param>
         protected override void LoadViewState( object savedState )
         {
+            EnsureChildControls();
+
             base.LoadViewState( savedState );
 
             var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;

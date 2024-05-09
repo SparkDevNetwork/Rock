@@ -20,6 +20,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -40,10 +41,16 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Email field.
  */
 export class EmailFieldType extends FieldTypeBase {
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         const textValue = this.getTextValue(value, configurationValues);
 
-        return textValue ? `<a href="mailto:${textValue}">${textValue}</a>` : "";
+        const html = textValue ? `<a href="mailto:${textValue}">${textValue}</a>` : "";
+
+        if (isEscaped) {
+            escapeHtml(html);
+        }
+
+        return html;
     }
 
     public override getEditComponent(): Component {

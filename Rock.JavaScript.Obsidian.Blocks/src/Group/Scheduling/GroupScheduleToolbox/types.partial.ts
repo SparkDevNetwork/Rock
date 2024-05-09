@@ -27,7 +27,7 @@ export const enum PageParameterKey {
 }
 
 /**
- * An injection key to provide the selected person unique identifier.
+ * An injection key to provide the selected person unique identifier (or empty string if none selected).
  */
 export const SelectedPersonGuid: InjectionKey<Ref<string>> = Symbol("selected-person-guid");
 

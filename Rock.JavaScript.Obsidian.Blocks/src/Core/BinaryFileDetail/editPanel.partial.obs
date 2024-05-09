@@ -57,6 +57,7 @@
     import { BinaryFileBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileBag";
     import { BinaryFileDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileDetailOptionsBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -93,7 +94,7 @@
     const showBinaryFileType = ref(props.modelValue.showBinaryFileType);
     const workflowNotificationMessage = ref(props.modelValue.workflowNotificationMessage ?? "");
     const orphanedBinaryFileIdList = ref(props.modelValue.orphanedBinaryFileIdList ?? []);
-    const binaryFileTypeGuid = ref(props.modelValue.binaryFileType?.value ?? BinaryFiletype.Default);
+    const binaryFileTypeGuid = ref(toGuidOrNull(props.modelValue.binaryFileType?.value) ?? BinaryFiletype.Default);
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -174,7 +175,7 @@
         updateRefValue(fileName, props.modelValue.fileName ?? "");
         updateRefValue(mimeType, props.modelValue.mimeType ?? "");
         updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
-        updateRefValue(binaryFileTypeGuid, props.modelValue.binaryFileType?.value ?? BinaryFiletype.Default);
+        updateRefValue(binaryFileTypeGuid, toGuidOrNull(props.modelValue.binaryFileType?.value) ?? BinaryFiletype.Default);
         updateRefValue(workflowNotificationMessage, props.modelValue.workflowNotificationMessage ?? "");
         updateRefValue(orphanedBinaryFileIdList, props.modelValue.orphanedBinaryFileIdList ?? []);
     });

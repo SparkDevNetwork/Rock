@@ -97,6 +97,8 @@ export const BlockType = {
     MobileCoreAttributeValues: "DF110543-C295-4DD9-B06E-82640AC63610",
     /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.Search block type. */
     MobileCoreSearch: "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.SmartSearch block type. */
+    MobileCoreSmartSearch: "9AA64485-9641-4A06-9450-B5244BC1464A",
     /** The mobile group members &gt; Group Members block type. */
     MobileCrmGroupMembers: "1F1E7598-8D51-4750-8D61-E5791A226FDB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */

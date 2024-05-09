@@ -64,7 +64,7 @@
 
                 <InteractionChannelPicker label="Interaction Channel" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="interactionComponentInteractionChannel" showBlankItem />
 
-                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntity" :interactionChannelGuid="interactionComponentInteractionChannel?.value ?? ''" showBlankItem />
+                <InteractionComponentPicker label="Interaction Component" v-if="modelValue.structureType == StreakStructureType.InteractionComponent" v-model="structureEntity" :interactionChannelGuid="toGuidOrNull(interactionComponentInteractionChannel?.value)" showBlankItem />
 
                 <DefinedValuePicker label="Interaction Medium" v-if="modelValue.structureType == StreakStructureType.InteractionMedium" v-model="structureEntity" :definedTypeGuid="DefinedType.InteractionChannelMedium" showBlankItem />
 
@@ -116,7 +116,8 @@
     import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
-    import { StreakOccurrenceFrequencyDescription } from "@Obsidian/Enums/Engagement/streakOccurrenceFrequency";
+    import { StreakOccurrenceFrequency, StreakOccurrenceFrequencyDescription } from "@Obsidian/Enums/Engagement/streakOccurrenceFrequency";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -150,7 +151,7 @@
     const structureType = propertyRef(props.modelValue?.structureType?.toString() ?? "None", "StructureType");
     const structureEntity = propertyRef(props.modelValue?.structureEntity ?? {}, "StructureEntity");
     const includeChildAccounts = propertyRef(props.modelValue?.includeChildAccounts ?? {}, "IncludeChildAccounts");
-    const interactionComponentInteractionChannel = ref(props.modelValue?.interactionComponentInteractionChannel);
+    const interactionComponentInteractionChannel = ref<ListItemBag | null | undefined>(props.modelValue?.interactionComponentInteractionChannel);
     const streakStructureTypes = ref<ListItemBag[]>(enumToListItemBag(StreakStructureTypeDescription));
     const streakOccurrenceFrequencies = ref<ListItemBag[]>(enumToListItemBag(StreakOccurrenceFrequencyDescription));
 
@@ -207,8 +208,8 @@
             requiresEnrollment: requiresEnrollment.value,
             enableAttendance: enableAttendance.value,
             firstDayOfWeek: parseInt(firstDayOfWeek.value ?? "0"),
-            occurrenceFrequency: toNumber(occurrenceFrequency.value),
-            structureType: toNumberOrNull(structureType.value),
+            occurrenceFrequency: toNumber(occurrenceFrequency.value) as StreakOccurrenceFrequency,
+            structureType: toNumberOrNull(structureType.value) as StreakStructureType,
             structureEntity: props.modelValue?.structureType?.toString() == structureType.value ? structureEntity.value: {},
             includeChildAccounts: includeChildAccounts.value
         };

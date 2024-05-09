@@ -22,11 +22,11 @@
         <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource" :disabled="disabled">
             <template #inputGroupAppend v-if="allowAdd">
                 <span class="input-group-btn">
-                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    <RockButton @click="showAddForm" :disabled="!isAddAllowed" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
                 </span>
             </template>
             <template #append="{ isInputGroupSupported }" v-if="allowAdd">
-                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :btnType="BtnType.Link">Add Item</RockButton>
+                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :disabled="!isAddAllowed" :btnType="BtnType.Link">Add Item</RockButton>
             </template>
         </BaseAsyncPicker>
     </template>
@@ -41,7 +41,7 @@
     import { DefinedValuePickerSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerSaveNewValueOptionsBag";
     import { DefinedValuePickerGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetAttributesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
     import RockLabel from "./rockLabel.obs";
     import RockForm from "./rockForm.obs";
@@ -53,6 +53,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -67,7 +68,7 @@
         },
 
         definedTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null | undefined>,
             required: false
         },
 
@@ -93,9 +94,10 @@
     const itemsSource = ref<(() => Promise<ListItemBag[]>) | null>(null);
 
     async function loadItems(): Promise<ListItemBag[]> {
-        const options: Partial<DefinedValuePickerGetDefinedValuesOptionsBag> = {
-            definedTypeGuid: props.definedTypeGuid,
-            securityGrantToken: securityGrantToken.value
+        const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
+            definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
+            securityGrantToken: securityGrantToken.value,
+            includeInactive: false,
         };
         const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
         const result = await http.post<ListItemBag[]>(url, undefined, options);
@@ -126,8 +128,13 @@
     const fetchError = ref<false | string>(false);
     const saveError = ref<false | string>(false);
 
+    const isAddAllowed = computed<boolean>(() => {
+        // Only allow adding if the defined type guid is valid.
+        return props.allowAdd && !!toGuidOrNull(props.definedTypeGuid);
+    });
+
     async function showAddForm(): Promise<void> {
-        if (!props.allowAdd) return;
+        if (!isAddAllowed.value) return;
 
         isShowingAddForm.value = true;
 
@@ -136,8 +143,8 @@
             fetchError.value = false;
             saveError.value = false;
 
-            const options: Partial<DefinedValuePickerGetAttributesOptionsBag> = {
-                definedTypeGuid: props.definedTypeGuid,
+            const options: DefinedValuePickerGetAttributesOptionsBag = {
+                definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
                 securityGrantToken: securityGrantToken.value
             };
             const url = "/api/v2/Controls/DefinedValuePickerGetAttributes";
@@ -168,8 +175,8 @@
         isLoading.value = true;
         saveError.value = false;
 
-        const options: Partial<DefinedValuePickerSaveNewValueOptionsBag> = {
-            definedTypeGuid: props.definedTypeGuid,
+        const options: DefinedValuePickerSaveNewValueOptionsBag = {
+            definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value,
             value: newValue.value,
             description: newDescription.value,

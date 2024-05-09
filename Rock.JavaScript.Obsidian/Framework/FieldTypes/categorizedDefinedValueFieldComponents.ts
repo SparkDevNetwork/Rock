@@ -23,6 +23,8 @@ import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.ob
 import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./categorizedDefinedValueField.partial";
+import { Guid } from "@Obsidian/Types";
+import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
 export const EditComponent = defineComponent({
     name: "CategorizedDefinedValueField.Edit",
@@ -36,9 +38,9 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         const internalValue = ref<ListItemBag>({});
-        const definedTypeValue = computed((): string | null | undefined => {
+        const definedTypeValue = computed<Guid>(() => {
             const definedType = JSON.parse(props.configurationValues[ConfigurationValueKey.DefinedType] || "{}") as ListItemBag;
-            return definedType.value;
+            return toGuidOrNull(definedType.value) ?? emptyGuid;
         });
 
         const selectableValues = computed((): ListItemBag[] => {

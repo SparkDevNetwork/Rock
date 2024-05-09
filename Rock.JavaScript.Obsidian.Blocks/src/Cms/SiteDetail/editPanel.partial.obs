@@ -245,6 +245,7 @@
     import { SiteBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteBag";
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -336,9 +337,13 @@
     // #region Event Handlers
 
     async function onAddAttribute(): Promise<void> {
-        const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", {
-            attributeGuid: null
-        });
+        const request: {
+            attributeGuid?: Guid | null | undefined;
+        } = {
+            attributeGuid: null,
+        };
+
+        const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", request);
 
         if (response.isSuccess && response.data) {
             siteAttribute.value = response.data.editableAttribute;

@@ -23,7 +23,6 @@
 </template>
 
 <script setup="" lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { PropType, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
@@ -62,7 +61,7 @@
 
     const internalValue = ref([...props.modelValue]);
     const formFieldProps = useStandardRockFormFieldProps(props);
-    const uniqueIdForItem = (uniqueId: Guid, item: KeyValueItem): string => `${uniqueId}-${(item.key ?? "").replace(" ", "-")}`;
+    const uniqueIdForItem = (uniqueId: string, item: KeyValueItem): string => `${uniqueId}-${(item.key ?? "").replace(" ", "-")}`;
 
     const valueForItem = (item: KeyValueItem): string => item.value ?? "";
     const cssClasses = (value: string[], item: KeyValueItem): string => {

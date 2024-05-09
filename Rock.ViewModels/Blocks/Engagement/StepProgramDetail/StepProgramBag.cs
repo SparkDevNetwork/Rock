@@ -131,5 +131,13 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         ///   <c>true</c> if the current user has the can administrate authorization; otherwise, <c>false</c>.
         /// </value>
         public bool CanAdministrate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status options.
+        /// </summary>
+        /// <value>
+        /// The status options.
+        /// </value>
+        public List<ListItemBag> StatusOptions { get; set; }
     }
 }

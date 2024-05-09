@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using Rock.Data;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 namespace Rock.Model
@@ -35,4 +36,22 @@ namespace Rock.Model
     {
         // intentionally blank.  See AnalyticsSourceCampusBase.
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsSourceCampus Configuration Class
+    /// </summary>
+    public partial class AnalyticsSourceCampusConfiguration : EntityTypeConfiguration<AnalyticsSourceCampus>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsSourceCampusConfiguration"/> class.
+        /// </summary>
+        public AnalyticsSourceCampusConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

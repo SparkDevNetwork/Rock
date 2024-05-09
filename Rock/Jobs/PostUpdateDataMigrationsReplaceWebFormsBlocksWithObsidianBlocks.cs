@@ -61,6 +61,12 @@ namespace Rock.Jobs
         DefaultBooleanValue = false,
         Order = 3 )]
 
+    [KeyValueListField( "Webform BlockType Attribute Keys To Ignore During Validation",
+        Description = "A Guid [key] of the old Webform BlockType and the [value] as a comma delimited list of BlockType Attribute keys to ignore when validating the Obsidian and Webforms blocks have the same keys.",
+        Key = AttributeKey.BlockAttributeKeysToIgnore,
+        IsRequired = false,
+        Order = 4 )]
+
     [RockInternal( "1.16" )]
     internal class PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks : RockJob
     {
@@ -72,6 +78,7 @@ namespace Rock.Jobs
             public const string ShouldKeepOldBlocks = "ShouldKeepOldBlocks";
             public const string BlockTypeGuidReplacementPairs = "BlockTypeGuidReplacementPairs";
             public const string MigrationStrategy = "MigrationStrategy";
+            public const string BlockAttributeKeysToIgnore = "BlockAttributeKeysToIgnore";
         }
 
         #endregion
@@ -87,6 +94,16 @@ namespace Rock.Jobs
                 return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().AsGuidOrNull().Value );
+            }
+        }
+
+        private Dictionary<Guid, HashSet<string>> BlockAttributeKeysToIgnore
+        {
+            get
+            {
+                return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
+                    // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
+                    .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().SplitDelimitedValues().ToHashSet() );
             }
         }
 
@@ -151,6 +168,7 @@ namespace Rock.Jobs
                 var serviceJob = ( new ServiceJobService( rockContext ) ).Get( this.ServiceJobId );
                 serviceJob.IsSystem = false;
                 rockContext.SaveChanges();
+
                 throw new RockJobWarningException( string.Join( ",\n", ErrorMessage ) );
             }
 
@@ -165,6 +183,9 @@ namespace Rock.Jobs
         {
             // get the configured timeout, or default to 240 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
+
+            // Register the attributes of the new block type in the database if not already registered.
+            BlockTypeService.VerifyBlockTypeInstanceProperties( BlockTypeGuidReplacementPairs.Values.Select( g => BlockTypeCache.GetId( g ).Value ).ToArray() );
 
             foreach ( var blockTypeGuidPair in BlockTypeGuidReplacementPairs )
             {
@@ -219,6 +240,25 @@ namespace Rock.Jobs
                 return;
             }
 
+            var blockEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.BLOCK.AsGuid() );
+
+            var oldBlockTypeAttributeKeys = AttributeCache.GetByEntityTypeQualifier( blockEntityTypeId, "BlockTypeId", oldBlockTypeId.ToString(), false )
+                .Select( a => a.Key )
+                .ToHashSet( StringComparer.OrdinalIgnoreCase );
+            oldBlockTypeAttributeKeys.RemoveAll( BlockAttributeKeysToIgnore.GetValueOrDefault( oldBlockTypeGuid, new HashSet<string>() ) );
+            var newBlockTypeAttributeKeys = AttributeCache.GetByEntityTypeQualifier( blockEntityTypeId, "BlockTypeId", newBlockTypeId.ToString(), false )
+                .Select( a => a.Key )
+                .ToHashSet( StringComparer.OrdinalIgnoreCase );
+
+            // If the new block type fails to have all the required attributes of the old block type which it is replacing, skip it.
+            if ( !oldBlockTypeAttributeKeys.IsSubsetOf( newBlockTypeAttributeKeys ) )
+            {
+                var missingBlockAttributes = new HashSet<string>( oldBlockTypeAttributeKeys, StringComparer.OrdinalIgnoreCase );
+                missingBlockAttributes.RemoveAll( newBlockTypeAttributeKeys );
+                ErrorMessage.Add( $"The new {BlockTypeCache.Get( newBlockTypeId.Value ).Name} block does not have the attribute(s): {missingBlockAttributes.Select( a => a ).JoinStrings( ", " )} of the previous {BlockTypeCache.Get( oldBlockTypeId.Value ).Name} block. Skipping this block for now." );
+                return;
+            }
+
             try
             {
                 var flushPageIds = new List<int>();
@@ -248,7 +288,7 @@ namespace Rock.Jobs
                         }
                     }
 
-                    CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings );
+                    CopyAttributeValuesFromOldBlocksToNewBlocks( rockContext, migrationHelper, copiedBlockMappings, oldBlockTypeAttributeKeys );
 
                     CopyAuthFromOldBlocksToNewBlocks( migrationHelper, copiedBlockMappings );
 
@@ -374,47 +414,29 @@ namespace Rock.Jobs
             return replacedBlocksMap;
         }
 
-        private static void CopyAttributeQualifiersAndValuesFromOldBlocksToNewBlocks( RockContext rockContext, MigrationHelper migrationHelper, Dictionary<Model.Block, Model.Block> copiedBlockMappings )
+        private static void CopyAttributeValuesFromOldBlocksToNewBlocks( RockContext rockContext, MigrationHelper migrationHelper, Dictionary<Model.Block, Model.Block> copiedBlockMappings, HashSet<string> oldBlockTypeAttributes )
         {
             // Load the attributes for old and new blocks so we can copy values.
             copiedBlockMappings.Keys.LoadAttributes( rockContext );
             copiedBlockMappings.Values.LoadAttributes( rockContext );
-
-            // Copy attribute qualifiers.
-            foreach ( var copiedBlockMapping in copiedBlockMappings )
-            {
-                var oldBlock = copiedBlockMapping.Key;
-                var newBlock = copiedBlockMapping.Value;
-
-                foreach ( var oldBlockAttributeValueKvp in oldBlock.Attributes )
-                {
-                    var oldBlockAttribute = oldBlockAttributeValueKvp.Value;
-
-                    // Check if the new block has an attribute with the same attribute key.
-                    if ( newBlock.Attributes.TryGetValue( oldBlockAttribute.Key, out var newBlockAttribute ) )
-                    {
-                        // Copy the attribute qualifiers from the old block attribute to the new block attribute.
-                        foreach ( var qualifierKvp in oldBlockAttribute.QualifierValues )
-                        {
-                            migrationHelper.AddAttributeQualifierForSQL( newBlockAttribute.Guid.ToString(), qualifierKvp.Key, qualifierKvp.Value.Value, Guid.NewGuid().ToString() );
-                        }
-                    }
-                }
-            }
 
             // Copy attribute values.
             foreach ( var copiedBlockMapping in copiedBlockMappings )
             {
                 var oldBlock = copiedBlockMapping.Key;
                 var newBlock = copiedBlockMapping.Value;
+                var oldBlockAttributeValues = oldBlock.AttributeValues
+                    .Where( a => oldBlockTypeAttributes.Contains( a.Key ) )
+                    .ToDictionary( a => a.Key, a => a.Value );
+                var newBlockAttributes = newBlock.Attributes.ToDictionary( a => a.Key, a => a.Value, StringComparer.OrdinalIgnoreCase );
 
                 // Copy attribute values from the old block to the new block.
-                foreach ( var oldBlockAttributeValueKvp in oldBlock.AttributeValues )
+                foreach ( var oldBlockAttributeValueKvp in oldBlockAttributeValues )
                 {
                     var oldBlockAttributeValue = oldBlockAttributeValueKvp.Value;
 
                     // Check if the new block has an attribute value with the same attribute key.
-                    if ( newBlock.Attributes.TryGetValue( oldBlockAttributeValueKvp.Key, out var newBlockAttribute ) )
+                    if ( newBlockAttributes.TryGetValue( oldBlockAttributeValueKvp.Key, out var newBlockAttribute ) )
                     {
                         // Copy the attribute value from the old block to the new block.
                         migrationHelper.AddBlockAttributeValue( newBlock.Guid.ToString(), newBlockAttribute.Guid.ToString(), oldBlockAttributeValue.Value );

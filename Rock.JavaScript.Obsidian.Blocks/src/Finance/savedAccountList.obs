@@ -1,0 +1,113 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="gridDefinition"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Payment Account"
+          :entityTypeGuid="EntityType.FinancialPersonSavedAccount"
+          stickyHeader
+          light
+          liveUpdates>
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="accountNumber"
+                    title="Account Number"
+                    field="accountNumber"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="accountType"
+                    title="Account Type"
+                    field="accountType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { SavedAccountListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/SavedAccountList/savedAccountListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { computed, reactive, ref } from "vue";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+
+    const config = useConfigurationValues<ListBlockBox<SavedAccountListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const gridDefinition = computed((): GridDefinitionBag | undefined => {
+        if (config.gridDefinition) {
+            config.gridDefinition.actionUrls = null;
+        }
+
+        return config.gridDefinition ?? undefined;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete financial person saved account.");
+        }
+    }
+
+    // #endregion
+    gridDataSource.value = loadGridData();
+</script>

@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** A bag that contains the update notes request information. */
 export type GroupAttendanceDetailUpdateNotesRequestBag = {
     /** Gets or sets the attendance occurrence unique identifier. */
-    attendanceOccurrenceGuid?: Guid | null;
+    attendanceOccurrenceGuid: Guid;
 
     /** Gets or sets the notes. */
     notes?: string | null;

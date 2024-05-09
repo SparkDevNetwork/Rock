@@ -20,7 +20,7 @@
     import { CurrencyBoxGetCurrencyInfoResultsBag } from "@Obsidian/ViewModels/Rest/Controls/currencyBoxGetCurrencyInfoResultsBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -39,8 +39,7 @@
         },
 
         currencyCodeDefinedValueGuid: {
-            type: String as PropType<Guid>,
-            default: emptyGuid
+            type: String as PropType<Guid | null | undefined>,
         }
     });
 
@@ -67,8 +66,9 @@
      * Loads the items from the server.
      */
     async function loadOptions(): Promise<void> {
-        const options: Partial<CurrencyBoxGetCurrencyInfoOptionsBag> = {
-            currencyCodeGuid: props.currencyCodeDefinedValueGuid
+        const options: CurrencyBoxGetCurrencyInfoOptionsBag = {
+            // Pass an emptyGuid when null to get the organization currency info.
+            currencyCodeGuid: toGuidOrNull(props.currencyCodeDefinedValueGuid) ?? emptyGuid
         };
         const result = await http.post<CurrencyBoxGetCurrencyInfoResultsBag>("/api/v2/Controls/CurrencyBoxGetCurrencyInfo", undefined, options);
 

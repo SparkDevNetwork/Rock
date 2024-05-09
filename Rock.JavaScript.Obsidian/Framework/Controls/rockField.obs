@@ -8,12 +8,12 @@
                 </label>
                 <div class="control-wrapper">
                     <div class="form-control-static">
-                        <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+                        <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" />
                     </div>
                 </div>
             </div>
         </template>
-        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" />
     </div>
     <div v-else>
         <component :is="editComponent"
@@ -31,6 +31,7 @@
     import { computed, PropType, provide } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const textField = getFieldType(FieldType.Text);
 
@@ -62,6 +63,10 @@
         dataEntryMode: {
             type: String as PropType<DataEntryMode>,
             default: undefined
+        },
+        isEscaped: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -70,7 +75,7 @@
     }>();
 
     const field = computed(() => {
-        const fieldType = getFieldType(props.attribute.fieldTypeGuid ?? "");
+        const fieldType = getFieldType(toGuidOrNull(props.attribute.fieldTypeGuid) ?? emptyGuid);
 
         return fieldType ?? textField;
     });

@@ -78,7 +78,8 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
@@ -153,7 +154,7 @@
             return (props.modelValue?.gender ?? 0).toString();
         },
         set(newValue: string) {
-            emit("update:modelValue", { ...props.modelValue, gender: toNumber(newValue) });
+            emit("update:modelValue", { ...props.modelValue, gender: toNumberOrNull(newValue) as Gender ?? Gender.Unknown });
         }
     });
 

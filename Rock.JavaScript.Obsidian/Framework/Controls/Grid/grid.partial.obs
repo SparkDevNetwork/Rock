@@ -39,6 +39,8 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :markInactiveRows="markInactiveRows"
+                      :rowClass="rowClass"
                       @click="onRowClick" />
         </div>
 
@@ -49,6 +51,8 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :markInactiveRows="markInactiveRows"
+                      :rowClass="rowClass"
                       @click="onRowClick" />
         </div>
 
@@ -58,6 +62,8 @@
                          :grid="gridState"
                          :tooltipField="tooltipField"
                          :isSelectable="isSelectionEnabled"
+                         :markInactiveRows="markInactiveRows"
+                         :rowClass="rowClass"
                          @click="onRowClick" />
 
         <div class="grid-footing">
@@ -607,7 +613,7 @@
          * The unique identifier of the entity type that the rows represent.
          */
         entityTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | undefined>,
             required: false
         },
 
@@ -699,6 +705,26 @@
          */
         showExport: {
             type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * If set to true, each row with an `isActive` property set to false
+         * will be visually distinct
+         */
+        markInactiveRows: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * A CSS class that will be applied to each row. If you supply a string,
+         * will apply that directly. You can also use a function that takes the
+         * row object and returns a string, which allows you to apply different
+         * classes to different rows depending on the row data.
+         */
+        rowClass: {
+            type: [String, Function] as PropType<string | ((row: Record<string, unknown>) => string)>,
             default: undefined
         },
 

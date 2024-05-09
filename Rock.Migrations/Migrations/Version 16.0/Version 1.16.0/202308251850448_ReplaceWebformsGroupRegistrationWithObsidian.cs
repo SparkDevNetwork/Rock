@@ -47,7 +47,9 @@ namespace Rock.Migrations
         private void ChopBlocksUp()
         {
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Group Registration",
                 blockTypeReplacements: new Dictionary<string, string> {
                     { "9D0EF3AC-D0F7-4FA7-9C64-E7B0855648C7", "5E000376-FF90-4962-A053-EC1473DA5C45" }, // Group Registration

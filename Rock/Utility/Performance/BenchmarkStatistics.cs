@@ -172,15 +172,15 @@ namespace Rock.Utility.Performance
 
             if ( timePerOp < 0.001 )
             {
-                str = $"{str}time={timePerOp * 1_000_000:N0}ns";
+                str = $"{str}time={timePerOp * 1_000_000:N0}ns/op";
             }
             else if ( timePerOp < 1 )
             {
-                str = $"{str}time={timePerOp * 1_000:N3}us";
+                str = $"{str}time={timePerOp * 1_000:N3}us/op";
             }
             else
             {
-                str = $"{str}time={timePerOp:N3}ms";
+                str = $"{str}time={timePerOp:N3}ms/op";
             }
 
             if ( GetAllocationsPerOperation().HasValue )

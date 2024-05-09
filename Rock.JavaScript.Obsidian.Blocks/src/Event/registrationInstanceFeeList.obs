@@ -1,0 +1,154 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Fee"
+          :entityTypeGuid="EntityType.RegistrationRegistrantFee"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :exportTitle="config.options?.exportTitleName ?? ''"
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true">
+
+        <TextColumn name="registrationId"
+                    title="Registration Id"
+                    field="registrationId"
+                    :hideOnScreen="true"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="registrationDate"
+                    title="Registration Date"
+                    field="registrationDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="registeredBy"
+                    title="Registered By"
+                    field="registeredBy"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="registrant"
+                    title="Registrant"
+                    field="registrant"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="registrantId"
+                    title="Registrant Id"
+                    field="registrantId"
+                    :hideOnScreen="true"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="feeName"
+                    title="Fee Name"
+                    field="feeName"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="feeItemName"
+                    title="Option"
+                    field="feeItemName"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <NumberColumn name="quantity"
+                      title="Quantity"
+                      field="quantity"
+                      :filter="numberValueFilter"
+                      visiblePriority="md" />
+
+        <CurrencyColumn name="cost"
+                        title="Cost"
+                        field="cost"
+                        :filter="numberValueFilter"
+                        visiblePriority="md" />
+
+        <CurrencyColumn name="feeTotal"
+                        title="Fee Total"
+                        field="feeTotal"
+                        :filter="numberValueFilter"
+                        visiblePriority="xs" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :feeNameItems="config.options?.feeNameItems ?? []"
+                       :feeOptionsItems="config.options?.feeOptionsItems ?? []"/>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { NumberColumn, numberValueFilter, dateValueFilter, textValueFilter, DateColumn, TextColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { RegistrationInstanceFeeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceFeeList/registrationInstanceFeeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PreferenceKey, GridSettingsOptions } from "./RegistrationInstanceFeeList/types.partial";
+    import GridSettingsModal from "./RegistrationInstanceFeeList/gridSettingsModal.partial.obs";
+    import { computed, reactive, ref, watch } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<RegistrationInstanceFeeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: preferences.getValue(PreferenceKey.FilterDateRange),
+        feeOptions: JSON.parse(preferences.getValue(PreferenceKey.FilterFeeOptions) || "[]"),
+        feeName: preferences.getValue(PreferenceKey.FilterFeeName),
+    });
+
+    // #endregion
+
+    //#region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateRange
+            || !!gridSettings.value.feeName
+            || gridSettings.value.feeOptions.length > 0;
+    });
+
+    //#endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ?? "");
+        preferences.setValue(PreferenceKey.FilterFeeName, gridSettings.value.feeName ?? "");
+        preferences.setValue(PreferenceKey.FilterFeeOptions, JSON.stringify(gridSettings.value.feeOptions));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

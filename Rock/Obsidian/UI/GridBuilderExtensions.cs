@@ -174,7 +174,7 @@ namespace Rock.Obsidian.UI
             AddDefaultGridActionUrls( builder, block );
 
             // Add any custom columns that are defined in the block settings.
-            AddCustomGridColumns( builder, block, options.LavaObject );
+            AddCustomGridColumns( builder, block, options?.LavaObject );
 
             // Add any custom actions that are defined in the block settings.
             AddCustomGridActions( builder, block );
@@ -306,6 +306,8 @@ namespace Rock.Obsidian.UI
             {
                 return;
             }
+
+            System.Diagnostics.Activity.Current?.AddTag( "rock.grid.custom_column", true );
 
             for ( int i = 0; i < additionalColumns.ColumnsConfig.Count; i++ )
             {

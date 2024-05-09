@@ -24,7 +24,7 @@
                  formGroupClasses="unavailability-notes"
                  :disabled="isSavingUnavailability" />
 
-        <DropDownList v-model="groupGuid"
+        <DropDownList v-model="groupGuidOrEmptyString"
                       label="Group"
                       formGroupClasses="unavailability-group"
                       :items="groups"
@@ -60,6 +60,7 @@
     import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/groupBag";
     import { SaveUnavailabilityRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveUnavailabilityRequestBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -94,12 +95,16 @@
 
     const isVisible = useVModelPassthrough(props, "isVisible", emit);
 
-    const selectedPersonGuid = inject(SelectedPersonGuid, ref(""));
+    /** The selected person unique identifier (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
 
     const dateRangeParts = ref<DateRangeParts>({});
     const notes = ref("");
-    const groupGuid = ref("");
-    const personGuids = ref<string[]>(selectedPersonGuid.value ? [selectedPersonGuid.value] : []);
+
+    /** The selected group unique identifier (or empty string if none selected). */
+    const groupGuidOrEmptyString = ref<string>("");
+
+    const personGuids = ref<string[]>(selectedPersonGuidOrEmptyString.value ? [selectedPersonGuidOrEmptyString.value] : []);
 
     const isSavingUnavailability = ref(false);
     const blockActionErrorMessage = ref("");
@@ -146,11 +151,11 @@
         blockActionErrorMessage.value = "";
 
         const bag: SaveUnavailabilityRequestBag = {
-            selectedPersonGuid: selectedPersonGuid.value,
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
             startDate: dateRangeParts.value?.lowerValue,
             endDate: dateRangeParts.value?.upperValue,
             notes: notes.value,
-            groupGuid: groupGuid.value,
+            groupGuid: toGuidOrNull(groupGuidOrEmptyString.value),
             personGuids: personGuids.value
         };
 
@@ -169,16 +174,16 @@
         // Reset the form.
         dateRangeParts.value = {};
         notes.value = "";
-        groupGuid.value = "";
-        personGuids.value = selectedPersonGuid.value ? [selectedPersonGuid.value] : [];
+        groupGuidOrEmptyString.value = "";
+        personGuids.value = selectedPersonGuidOrEmptyString.value ? [selectedPersonGuidOrEmptyString.value] : [];
     }
 
     // #endregion Event Handlers
 
     // #region Watchers
 
-    watch(selectedPersonGuid, () => {
-        personGuids.value = selectedPersonGuid.value ? [selectedPersonGuid.value] : [];
+    watch(selectedPersonGuidOrEmptyString, () => {
+        personGuids.value = selectedPersonGuidOrEmptyString.value ? [selectedPersonGuidOrEmptyString.value] : [];
     });
 
     // #endregion Watchers

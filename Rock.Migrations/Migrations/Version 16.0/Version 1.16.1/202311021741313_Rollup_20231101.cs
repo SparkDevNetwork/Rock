@@ -310,7 +310,9 @@ END" );
         /// </summary>
         private void SwapFinancialBatchListUp()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Swap Financial Batch List",
                 blockTypeReplacements: new Dictionary<string, string> {
                     { "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25", "F1950524-E959-440F-9CF6-1A8B9B7527D8" }, // Financial Batch List
@@ -335,7 +337,9 @@ END" );
         /// </summary>
         private void ChopSecurityBlocksUp()
         {
-            RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning disable CS0618 // Type or member is obsolete
+            RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Chop AccountEntry and Login",
                 blockTypeReplacements: new Dictionary<string, string> {
                     { "99362B60-71A5-44C6-BCFE-DDA9B00CC7F3", "E5C34503-DDAD-4881-8463-0E1E20B1675D" }, // Account Entry
@@ -578,7 +582,9 @@ END" );
         /// </summary>
         private void JPH_SwapAndChopGroupScheduleToolboxBlocksUp()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Group Schedule Toolbox",
                 blockTypeReplacements: new Dictionary<string, string>
                 {
@@ -589,7 +595,9 @@ END" );
 
             Sql( "UPDATE [BlockType] SET [Name] = 'Group Schedule Toolbox (Legacy)' WHERE [Guid] = '7F9CEA6F-DCE5-4F60-A551-924965289F1D';" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Group Schedule Toolbox v2",
                 blockTypeReplacements: new Dictionary<string, string>
                 {

@@ -29,7 +29,7 @@ import { Guid } from "@Obsidian/Types";
  */
 export type CategorizedValuePickerGetTreeOptionsBag = {
     /** GUID for the Defined Type we're grabbing categories/values of */
-    definedTypeGuid?: Guid | null;
+    definedTypeGuid: Guid;
 
     /** List of GUID values to include. If empty, include all, otherwise exclude all other values */
     onlyIncludeGuids?: Guid[] | null;

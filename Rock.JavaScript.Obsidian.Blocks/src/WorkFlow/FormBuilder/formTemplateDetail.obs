@@ -43,11 +43,12 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import EditPanel from "./FormTemplateDetail/editPanel.partial.obs";
     import { FormTemplateDetailConfiguration, TemplateDetail, TemplateEditDetail } from "./FormTemplateDetail/types.partial";
     import { provideSources } from "./FormTemplateDetail/utils.partial";
     import ViewPanel from "./FormTemplateDetail/viewPanel.partial.obs";
+    import { Guid } from "@Obsidian/Types";
 
     const config = useConfigurationValues<FormTemplateDetailConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -57,7 +58,7 @@
     const isEditable = ref(config.isEditable);
 
     // Start in edit mode if we have an empty guid.
-    const isEditMode = ref(areEqual(config.templateGuid ?? "", emptyGuid));
+    const isEditMode = ref(areEqual(config.templateGuid ?? emptyGuid, emptyGuid));
 
     /** True if the template being viewed is inactive. */
     const isInactive = computed(() => !(templateDetail.value?.isActive ?? false));
@@ -87,9 +88,12 @@
      * Event handler for when the individual clicks the Edit button.
      */
     async function onEditClick(): Promise<void> {
-        const result = await invokeBlockAction<TemplateEditDetail>("StartEdit", {
-            guid: config.templateGuid ?? ""
-        });
+        const request: {
+            guid: Guid;
+        } = {
+            guid: toGuidOrNull(config.templateGuid) ?? emptyGuid
+        };
+        const result = await invokeBlockAction<TemplateEditDetail>("StartEdit", request);
 
         if (result.isSuccess && result.data) {
             templateEditDetail.value = result.data;
@@ -102,7 +106,7 @@
      * while in edit mode.
      */
     function onEditCancelClick(): void {
-        if (config.parentUrl && areEqual(config.templateGuid ?? "", emptyGuid)) {
+        if (config.parentUrl && areEqual(config.templateGuid ?? emptyGuid, emptyGuid)) {
             window.location.href = config.parentUrl;
             return;
         }
@@ -116,10 +120,14 @@
      * to be submitted to the server.
      */
     async function onSubmit(): Promise<void> {
-        const result = await invokeBlockAction<TemplateDetail | string>("SaveTemplate", {
-            guid: config.templateGuid ?? "",
+        const request: {
+            guid: Guid;
+            template: TemplateEditDetail | null | undefined;
+        } = {
+            guid: toGuidOrNull(config.templateGuid) ?? emptyGuid,
             template: templateEditDetail.value
-        });
+        };
+        const result = await invokeBlockAction<TemplateDetail | string>("SaveTemplate", request);
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {

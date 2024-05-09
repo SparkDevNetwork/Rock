@@ -90,13 +90,28 @@
      */
     function modelValueToInternalValue(value: ListItemBag | ListItemBag[] | undefined | null, isMultiple: boolean): string | string[] {
         if (value === undefined || value === null) {
-            return isMultiple ? [] : "";
+            if (isMultiple && !isRadioButtonListStyle?.value) {
+                return [];
+            }
+            else {
+                return "";
+            }
         }
         else if (Array.isArray(value)) {
-            return value.map(v => v.value ?? "");
+            const valuesAsStrings = value.map(v => v.value ?? "");
+
+            if (isMultiple && !isRadioButtonListStyle?.value) {
+                return valuesAsStrings;
+            }
+            else {
+                return valuesAsStrings[0] ?? "";
+            }
+        }
+        else if (value.value) {
+            return isMultiple ? [value.value] : value.value;
         }
         else {
-            return value.value ?? "";
+            return isMultiple ? [] : "";
         }
     }
 

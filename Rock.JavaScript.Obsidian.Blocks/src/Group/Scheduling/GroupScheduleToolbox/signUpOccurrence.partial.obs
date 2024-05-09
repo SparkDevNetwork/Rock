@@ -62,7 +62,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { SaveSignUpRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveSignUpRequestBag";
     import { SaveSignUpResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveSignUpResponseBag";
@@ -70,6 +70,7 @@
     import { SignUpOccurrenceLocationBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceLocationBag";
     import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -91,7 +92,9 @@
 
     // #region Values
 
-    const selectedPersonGuid = inject(SelectedPersonGuid, ref(""));
+    /** The selected person unique identifier (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
+
     const selectedGroup = inject(SelectedGroup);
 
     const signUpOccurrence = ref<SignUpOccurrenceBag | null | undefined>(props.occurrence);
@@ -99,7 +102,7 @@
     const isChecked = ref(false);
     let oldIsChecked = isChecked.value;
 
-    const selectedLocationGuid = ref(getFirstLocationOrEmptyGuid(props.occurrence));
+    const selectedLocationGuid = ref<Guid>(getFirstLocationOrEmptyGuid(props.occurrence));
     let oldSelectedLocationGuid = selectedLocationGuid.value;
 
     const isSavingSignUp = ref(false);
@@ -163,9 +166,9 @@
      *
      * @param occurrence The occurrence from which to get the first location guid.
      */
-    function getFirstLocationOrEmptyGuid(occurrence: SignUpOccurrenceBag | null | undefined): string {
+    function getFirstLocationOrEmptyGuid(occurrence: SignUpOccurrenceBag | null | undefined): Guid {
         return occurrence?.locations?.length
-            ? occurrence.locations[0].locationGuid ?? emptyGuid
+            ? toGuidOrNull(occurrence.locations[0].locationGuid) ?? emptyGuid
             : emptyGuid;
     }
 
@@ -201,10 +204,10 @@
         saveSignUpErrorMessage.value = "";
 
         const bag: SaveSignUpRequestBag = {
-            selectedPersonGuid: selectedPersonGuid.value,
-            selectedGroupGuid: selectedGroup?.value?.guid,
-            selectedScheduleGuid: signUpOccurrence.value?.scheduleGuid,
-            selectedLocationGuid: selectedLocationGuid.value,
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(selectedGroup?.value?.guid) ?? emptyGuid,
+            selectedScheduleGuid: toGuidOrNull(signUpOccurrence.value?.scheduleGuid) ?? emptyGuid,
+            selectedLocationGuid: toGuidOrNull(selectedLocationGuid.value) ?? emptyGuid,
             occurrenceDateTime: signUpOccurrence.value?.occurrenceDateTime,
             isSigningUp: isChecked.value
         };

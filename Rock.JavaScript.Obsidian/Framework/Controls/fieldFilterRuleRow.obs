@@ -3,7 +3,7 @@
     <div class="filter-rule">
         <div class="filter-rule-fields row form-row">
             <div class="filter-rule-comparefield col-xs-12 col-md-4">
-                <DropDownList :items="attributeList" v-model="attributeGuid" :show-blank-item="false" />
+                <DropDownList :items="attributeList" v-model="attributeGuidOrEmptyString" :show-blank-item="false" />
             </div>
             <div class="filter-rule-fieldfilter col-xs-12 col-md-8">
                 <RockAttributeFilter :attribute="currentAttribute" v-model="comparisonValue" :filter-mode="1" required />
@@ -19,7 +19,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import DropDownList from "./dropDownList.obs";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -45,7 +45,7 @@
 
     let internalUpdate = false;
 
-    const attributeGuid = ref(props.modelValue.attributeGuid ?? "");
+    const attributeGuidOrEmptyString = ref<string>(props.modelValue.attributeGuid ?? "");
     const comparisonValue = ref<ComparisonValue>({
         comparisonType: props.modelValue.comparisonType,
         value: props.modelValue.value ?? ""
@@ -54,7 +54,7 @@
     // Current Selected Attribute/Property
     const currentAttribute = computed<PublicAttributeBag>(() => {
         const source = props.sources.find(source => {
-            return areEqual(attributeGuid.value, source.attribute?.attributeGuid ?? "");
+            return areEqual(attributeGuidOrEmptyString.value, source.attribute?.attributeGuid ?? "");
         }) || props.sources[0];
 
         return source.attribute as PublicAttributeBag;
@@ -79,7 +79,7 @@
         // Prevent a value reset.
         internalUpdate = true;
 
-        updateRefValue(attributeGuid, props.modelValue.attributeGuid ?? "");
+        updateRefValue(attributeGuidOrEmptyString, props.modelValue.attributeGuid ?? "");
         updateRefValue(comparisonValue, {
             comparisonType: props.modelValue.comparisonType,
             value: props.modelValue.value ?? ""
@@ -89,10 +89,10 @@
     });
 
     // Watch for changes to our internal values and update the model value.
-    watch([attributeGuid, comparisonValue], () => {
+    watch([attributeGuidOrEmptyString, comparisonValue], () => {
         const newValue: FieldFilterRuleBag = {
             ...props.modelValue,
-            attributeGuid: attributeGuid.value,
+            attributeGuid: toGuidOrNull(attributeGuidOrEmptyString.value),
             comparisonType: comparisonValue.value.comparisonType ?? 0,
             value: comparisonValue.value.value
         };
@@ -107,7 +107,7 @@
                 comparisonType: 0,
                 value: ""
             };
-            attributeGuid.value = currentAttribute.value.attributeGuid ?? "";
+            attributeGuidOrEmptyString.value = currentAttribute.value.attributeGuid;
         }
     });
 </script>

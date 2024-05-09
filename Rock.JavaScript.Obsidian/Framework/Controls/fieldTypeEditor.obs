@@ -3,7 +3,7 @@
     <div>
         <template v-if="isFieldTypesReady && !showConfigOnly">
             <StaticFormControl v-if="isFieldTypeReadOnly" label="Field Type" v-model="fieldTypeName" />
-            <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" enhanceForLongLists />
+            <DropDownList v-else label="Field Type" v-model="fieldTypeValueGuidOrEmptyString" :items="fieldTypeOptions" rules="required" enhanceForLongLists />
         </template>
         <NotificationBox v-if="fieldErrorMessage" alertType="warning">
             {{ fieldErrorMessage }}
@@ -21,11 +21,12 @@
     import StaticFormControl from "./staticFormControl.obs";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
     import { FieldTypeEditorUpdateAttributeConfigurationResultBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationResultBag";
+    import { FieldTypeEditorGetAvailableFieldTypesOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorGetAvailableFieldTypesOptionsBag";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { IFieldType } from "@Obsidian/Types/fieldType";
@@ -55,7 +56,7 @@
     const internalValue = ref(props.modelValue);
 
     /** The selected field type in the drop down list. */
-    const fieldTypeValue = ref(props.modelValue?.fieldTypeGuid ?? "");
+    const fieldTypeValueGuidOrEmptyString = ref<string>(props.modelValue?.fieldTypeGuid ?? "");
 
     // Tracks a pending resetToDefaults() call.
     let resetToDefaultsTimer: number | null = null;
@@ -71,12 +72,12 @@
     const editConfigurationValues = ref<Record<string, string>>({});
 
     const fieldType = computed((): IFieldType | null => {
-        if (!fieldTypeValue.value) {
+        if (!fieldTypeValueGuidOrEmptyString.value) {
             return null;
         }
 
         const option = fieldTypeOptions.value
-            .find(o => areEqual(o.value, fieldTypeValue.value) || areEqual(o.category, fieldTypeValue.value));
+            .find(o => areEqual(o.value, fieldTypeValueGuidOrEmptyString.value) || areEqual(o.category, fieldTypeValueGuidOrEmptyString.value));
 
         if (!option || (!option.value && !option.category)) {
             return null;
@@ -127,22 +128,22 @@
 
     /** The name of the currently selected field type. */
     const fieldTypeName = computed((): string => {
-        if (!fieldTypeValue.value) {
+        if (!fieldTypeValueGuidOrEmptyString.value) {
             return "";
         }
 
         const option = fieldTypeOptions.value
-            .find(o => areEqual(o.value, fieldTypeValue.value) || areEqual(o.category, fieldTypeValue.value));
+            .find(o => areEqual(o.value, fieldTypeValueGuidOrEmptyString.value) || areEqual(o.category, fieldTypeValueGuidOrEmptyString.value));
 
-            return option?.text ?? "";
+        return option?.text ?? "";
     });
 
     const defaultValueAttribute = computed((): PublicAttributeBag => {
         const option = fieldTypeOptions.value
-            .find(o => areEqual(o.value, fieldTypeValue.value) || areEqual(o.category, fieldTypeValue.value));
+            .find(o => areEqual(o.value, fieldTypeValueGuidOrEmptyString.value) || areEqual(o.category, fieldTypeValueGuidOrEmptyString.value));
 
         return {
-            fieldTypeGuid: option?.category || fieldTypeValue.value,
+            fieldTypeGuid: option?.category || fieldTypeValueGuidOrEmptyString.value || emptyGuid,
             attributeGuid: newGuid(),
             configurationValues: editConfigurationValues.value,
             name: "Default Value",
@@ -170,7 +171,7 @@
         }
 
         const newValue: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
-            fieldTypeGuid: fieldTypeValue.value,
+            fieldTypeGuid: fieldTypeValueGuidOrEmptyString.value || emptyGuid,
             configurationValues: configurationValues.value,
             defaultValue: defaultValue.value ?? ""
         };
@@ -202,14 +203,16 @@
 
     /** Updates the field configuration from new data on the server. */
     function updateFieldConfiguration(currentDefaultValue: string): void {
-        if (fieldTypeValue.value === "") {
+        const fieldTypeGuid = toGuidOrNull(fieldTypeValueGuidOrEmptyString.value);
+
+        if (!fieldTypeGuid || areEqual(fieldTypeGuid, emptyGuid)) {
             resetToDefaults();
 
             return;
         }
 
         const update: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
-            fieldTypeGuid: fieldTypeValue.value,
+            fieldTypeGuid,
             configurationValues: configurationValues.value,
             defaultValue: currentDefaultValue
         };
@@ -263,7 +266,7 @@
     }
 
     // Called when the field type drop down value is changed.
-    watch(fieldTypeValue, () => {
+    watch(fieldTypeValueGuidOrEmptyString, () => {
         if (resetToDefaultsTimer === null) {
             resetToDefaultsTimer = window.setTimeout(resetToDefaults, 250);
         }
@@ -285,7 +288,8 @@
     });
 
     // Get all the available field types that the user is allowed to edit.
-    http.post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, {})
+    const options: FieldTypeEditorGetAvailableFieldTypesOptionsBag = {};
+    http.post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, options)
         .then(result => {
             if (result.isSuccess && result.data) {
                 fieldTypeOptions.value = result.data;
@@ -293,7 +297,7 @@
 
                 // If the field type is already selected then begin to load
                 // all the field configuration.
-                if (fieldTypeValue.value !== "") {
+                if (fieldTypeValueGuidOrEmptyString.value !== "") {
                     updateFieldConfiguration(props.modelValue?.defaultValue ?? "");
                 }
             }

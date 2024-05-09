@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PersonalLinkSectionDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -54,7 +55,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "e76598f7-f686-41ee-848c-58e10758027f" )]
     [Rock.SystemGuid.BlockTypeGuid( "1abc8de5-a64d-4e69-875a-4407d9a7b425" )]
-    public class PersonalLinkSectionDetail : RockDetailBlockType
+    public class PersonalLinkSectionDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -132,49 +133,42 @@ namespace Rock.Blocks.Cms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( DetailBlockBox<PersonalLinkSectionBag, PersonalLinkSectionDetailOptionsBag> box, bool loadAttributes, RockContext rockContext )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity( rockContext ) ?? new PersonalLinkSection { Id = 0 };
 
-            if ( entity != null )
+            var isViewable = entity.Id == 0 || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.Id == 0 || entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+            if ( loadAttributes )
             {
-                var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                entity.LoadAttributes( rockContext );
+            }
 
-                if ( loadAttributes )
+            if ( entity.Id != 0 )
+            {
+                // Existing entity was found, prepare for view mode by default.
+                if ( isViewable )
                 {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                if ( entity.Id != 0 )
-                {
-                    // Existing entity was found, prepare for view mode by default.
-                    if ( isViewable )
-                    {
-                        box.Entity = GetEntityBagForView( entity, loadAttributes );
-                        box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                        box.Entity.CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
-                    }
-                    else
-                    {
-                        box.ErrorMessage = EditModeMessage.NotAuthorizedToView( PersonalLinkSection.FriendlyTypeName );
-                    }
+                    box.Entity = GetEntityBagForView( entity, loadAttributes );
+                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity.CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
                 }
                 else
                 {
-                    // New entity is being created, prepare for edit mode by default.
-                    if ( box.IsEditable )
-                    {
-                        box.Entity = GetEntityBagForEdit( entity, loadAttributes );
-                        box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    }
-                    else
-                    {
-                        box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( PersonalLinkSection.FriendlyTypeName );
-                    }
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( PersonalLinkSection.FriendlyTypeName );
                 }
             }
             else
             {
-                box.ErrorMessage = $"The {PersonalLinkSection.FriendlyTypeName} was not found.";
+                // New entity is being created, prepare for edit mode by default.
+                if ( box.IsEditable )
+                {
+                    box.Entity = GetEntityBagForEdit( entity, loadAttributes );
+                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                }
+                else
+                {
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( PersonalLinkSection.FriendlyTypeName );
+                }
             }
         }
 
@@ -364,6 +358,34 @@ namespace Rock.Blocks.Cms
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var breadCrumbs = new List<IBreadCrumb>();
+                var key = pageReference.GetPageParameter( PageParameterKey.PersonalLinkSectionId );
+
+                if ( !string.IsNullOrWhiteSpace( key ) )
+                {
+                    var pageParameters = new Dictionary<string, string>();
+                    var name = new PersonalLinkSectionService( rockContext ).GetSelect( key, t => t.Name );
+
+                    name = !string.IsNullOrWhiteSpace( name ) ? $"{name.FixCase()} Link Section" : "New Section";
+
+                    pageParameters.Add( PageParameterKey.PersonalLinkSectionId, key );
+                    var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                    var breadCrumb = new BreadCrumbLink( name, breadCrumbPageRef );
+                    breadCrumbs.Add( breadCrumb );
+                }
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = breadCrumbs
+                };
+            }
         }
 
         #endregion
