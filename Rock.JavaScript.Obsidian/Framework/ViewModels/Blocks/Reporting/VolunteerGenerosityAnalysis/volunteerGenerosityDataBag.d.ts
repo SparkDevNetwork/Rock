@@ -35,6 +35,9 @@ export type VolunteerGenerosityDataBag = {
     /** Gets or sets the person's donation months */
     donationMonths?: string | null;
 
+    /** Gets or sets the person's bit mask */
+    donationMonthYearBitmask?: string | null;
+
     /** Gets or sets the person's giving identifier. */
     givingId?: string | null;
 
