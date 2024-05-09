@@ -2,32 +2,38 @@
     <div class="editor">
         <div class="menu-bar">
             <div class="left-actions">
+                <RockButton :disabled="!labelManager.canUndo.value" @click="() => labelManager.undo()">
+                    <i class="fa fa-undo"></i>
+                </RockButton>
 
+                <RockButton :disabled="!labelManager.canRedo.value" @click="() => labelManager.redo()">
+                    <i class="fa fa-redo"></i>
+                </RockButton>
             </div>
 
             <div class="center-actions">
-                <span class="action">
+                <RockButton>
                     <i class="fa fa-layer-group"></i>
                     Position
-                </span>
+                </RockButton>
             </div>
 
             <div class="right-actions">
-                <span class="action">
+                <RockButton>
                     <i class="fa fa-filter"></i>
-                </span>
+                </RockButton>
 
-                <span class="action">
+                <RockButton>
                     <i class="fa fa-trash"></i>
-                </span>
+                </RockButton>
             </div>
         </div>
 
         <div class="editor-content">
-            <Worksurface v-model:labelFields="labelFields"
-                         :labelSize="props.labelSize"
+            <Worksurface :labelManager="props.labelManager"
                          :showGrid="isGridVisible"
-                         :snapToGrid="isGridLocked" />
+                         :snapToGrid="isGridLocked"
+                         @selectionChanged="onSelectionChanged" />
 
             <div class="editor-features">
                 <Switch v-model="isGridVisible"
@@ -74,11 +80,12 @@
     justify-content: end;
 }
 
-.action {
-    padding-left: 5px;
-    padding-right: 5px;
-    cursor: pointer;
+.menu-bar .btn {
+    padding: 3px 6px;
     font-size: 16px;
+    color: var(--theme-black);
+    border-width: 0;
+    box-shadow: none;
 }
 
 .editor-content {
@@ -103,27 +110,25 @@
     import Switch from "@Obsidian/Controls/switch.obs";
     import Worksurface from "./worksurface.partial.obs";
     import { PropType, ref } from "vue";
-    import { LabelFieldBag, Size } from "./types.partial";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { Guid } from "@Obsidian/Types";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const isGridVisible = ref(false);
     const isGridLocked = ref(false);
 
     const props = defineProps({
-        labelSize: {
-            type: Object as PropType<Size>,
-            required: true
-        },
-
-        labelFields: {
-            type: Array as PropType<LabelFieldBag[]>,
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
             required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:labelFields", value: LabelFieldBag[]): void;
+        (e: "selectionChanged", value: Guid | undefined): void;
     }>();
 
-    const labelFields = useVModelPassthrough(props, "labelFields", emit);
+    function onSelectionChanged(selection: Guid | undefined): void {
+        emit("selectionChanged", selection);
+    }
 </script>

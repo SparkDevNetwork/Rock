@@ -37,17 +37,12 @@
     import Konva from "@Obsidian/Libs/konva";
     import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { TransformHelper } from "./transformHelper.partial";
-    import { LabelFieldBag, LabelFieldType, Size } from "./types.partial";
+    import { LabelUndoManager } from "./undoManager.partial";
     import { createShapeForFieldType, getOffsetForPixel, getPixelForOffset, updateShapeFromField, useNodeDragBoundFunc } from "./utils.partial";
 
     const props = defineProps({
-        labelFields: {
-            type: Array as PropType<LabelFieldBag[]>,
-            required: true
-        },
-
-        labelSize: {
-            type: Object as PropType<Size>,
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
             required: true
         },
 
@@ -93,7 +88,7 @@
         const height = stage.height();
         const gridStepSize = 1.0 / gridSnapFraction;
 
-        for (let step = gridStepSize; step < props.labelSize.width; step += gridStepSize) {
+        for (let step = gridStepSize; step < props.labelManager.current.value.width; step += gridStepSize) {
             gridLayer.add(new Konva.Line({
                 x: getPixelForOffset(step),
                 points: [0, 0, 0, height],
@@ -102,7 +97,7 @@
             }));
         }
 
-        for (let step = gridStepSize; step < props.labelSize.height; step += gridStepSize) {
+        for (let step = gridStepSize; step < props.labelManager.current.value.height; step += gridStepSize) {
             gridLayer.add(new Konva.Line({
                 y: getPixelForOffset(step),
                 points: [0, 0, width, 0],
@@ -132,10 +127,9 @@
             return;
         }
 
-        for (const field of props.labelFields) {
-            let shape: Konva.Shape | undefined;
-
-            nodeLayer.children.find(n => n.id() === field.guid);
+        for (const field of props.labelManager.current.value.fields ?? []) {
+            const node = nodeLayer.children.find(n => n.id() === field.guid);
+            let shape = node instanceof Konva.Shape ? node : undefined;
 
             if (shape) {
                 // Try to update the node, if we can't update it then remove
@@ -159,6 +153,7 @@
                 }
 
                 shape.setAttrs({
+                    id: field.guid,
                     draggable: true,
                     dragBoundFunc: nodeDragBoundFunc
                 });
@@ -183,7 +178,7 @@
         }
 
         const timeoutAt = Date.now() + timeout;
-        const requiredFonts = ["Roboto", "Roboto Condensed", "Roboto Flex"];
+        const requiredFonts = ["Roboto", "Roboto Condensed"];
         const fonts = await new Promise<FontFaceSet>(r => document.fonts.ready.then(r));
 
         for (const fontName of requiredFonts) {
@@ -219,8 +214,8 @@
 
         stage = new Konva.Stage({
             container: containerElement.value,
-            width: props.labelSize.width * pixelsPerInch,
-            height: props.labelSize.height * pixelsPerInch,
+            width: props.labelManager.current.value.width * pixelsPerInch,
+            height: props.labelManager.current.value.height * pixelsPerInch,
         });
 
         nodeDragBoundFunc = useNodeDragBoundFunc(stage, snapPixel);
@@ -255,11 +250,25 @@
             // If they clicked on the background, deselect everything.
             if (e.target === stage) {
                 tr.nodes([]);
+                props.labelManager.selectField(undefined);
+
                 return;
             }
 
-            // Select the node, only single selection supported for now.
+            const field = props.labelManager.current.value.fields?.find(f => f.guid === e.target.id());
+
+            if (!field) {
+                console.error(`Could not find field '${e.target.id()}'.`);
+
+                tr.nodes([]);
+                props.labelManager.selectField(undefined);
+
+                return;
+            }
+
+            // Select the node, only single selection supported.
             tr.nodes([e.target]);
+            props.labelManager.selectField(field.guid);
         });
 
         stage.draw();
@@ -273,10 +282,10 @@
         transformHelper = undefined;
     });
 
-    watch(() => props.labelSize, () => {
+    watch(props.labelManager.current, () => {
         if (stage) {
-            stage.width(props.labelSize.width * pixelsPerInch);
-            stage.height(props.labelSize.height * pixelsPerInch);
+            stage.width(props.labelManager.current.value.width * pixelsPerInch);
+            stage.height(props.labelManager.current.value.height * pixelsPerInch);
         }
 
         drawGridLines();
@@ -284,5 +293,9 @@
 
     watch(() => props.showGrid, () => {
         drawGridLines();
+    });
+
+    watch(props.labelManager.current, () => {
+        createOrUpdateNodes();
     });
 </script>

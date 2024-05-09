@@ -1,0 +1,54 @@
+<template>
+    <RadioButtonList label="Color"
+                     v-model="color"
+                     horizontal
+                     :repeatColumns="2"
+                     :items="colorItems" />
+</template>
+
+<script setup lang="ts">
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import { RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
+    import { LabelUndoManager } from "./undoManager.partial";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const configuration = computed((): StringRecord<RectangleFieldConfigurationBag> => {
+        return props.labelManager.selectedField.value
+            ?.configurationValues ?? {} as StringRecord<RectangleFieldConfigurationBag>;
+    });
+
+    const color = ref<"black" | "white">(asBoolean(configuration.value.isBlack) ? "black" : "white");
+
+    const colorItems: ListItemBag[] = [
+        {
+            value: "black",
+            text: "Black"
+        },
+        {
+            value: "white",
+            text: "White"
+        }
+    ];
+
+    watch(color, () => {
+        props.labelManager.applyToSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as StringRecord<RectangleFieldConfigurationBag>;
+            fieldConfig.isBlack = color.value === "black" ? "true" : "false";
+        });
+    });
+
+    watch(props.labelManager.selectedField, () => {
+        color.value = asBoolean(configuration.value.isBlack) ? "black" : "white";
+    });
+</script>

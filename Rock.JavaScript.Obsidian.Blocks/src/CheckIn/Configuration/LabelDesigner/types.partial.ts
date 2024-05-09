@@ -19,7 +19,7 @@ export type LabelFieldBag = {
 
     fieldType: LabelFieldType;
 
-    subFieldType: number;
+    fieldSubType: number;
 
     isIncludedOnPreview: boolean;
 
@@ -105,4 +105,14 @@ export enum TextCollectionFormat {
     OnePerLine = 2,
 
     TwoColumn = 3
+}
+
+export enum LabelTextFieldSubType {
+    Custom = 0,
+
+    AttendeeInfo = 1,
+
+    CheckInInfo = 2,
+
+    AchievementInfo = 3
 }
