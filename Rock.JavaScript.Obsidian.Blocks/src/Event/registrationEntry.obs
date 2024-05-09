@@ -64,7 +64,7 @@
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
     import { RegistrationCostSummaryInfo, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
-    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
+    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo, ConfigurePaymentPlan, PaymentPlanConfiguration } from "./RegistrationEntry/utils.partial";
     import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
@@ -157,6 +157,8 @@
         remainingAmount: 0,
         minimumRemainingAmount: 0
     });
+    const wipPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
+    const finalPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
 
     // #endregion
 
@@ -501,7 +503,7 @@
             || (
                 registrationEntryState.value.paymentPlan?.amountPerPayment
                 && registrationEntryState.value.paymentPlan?.numberOfPayments)
-            ) {
+        ) {
             registrationEntryState.value.currentStep = Step.Payment;
         }
         else {
@@ -579,6 +581,10 @@
                 }
             };
         }
+    });
+    provide(ConfigurePaymentPlan, {
+        wipPaymentPlanConfiguration,
+        finalPaymentPlanConfiguration,
     });
 
     onMounted(() => {

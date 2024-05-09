@@ -23,7 +23,7 @@ import {
     RegistrationCostSummaryInfo,
     RegistrantBasicInfo
 } from "./types.partial";
-import { InjectionKey, Ref, inject, nextTick } from "vue";
+import { DeepReadonly, InjectionKey, Ref, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
@@ -40,6 +40,7 @@ import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/Regi
 import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { Currency, createZeroCurrency } from "./currency.partial";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -144,14 +145,23 @@ export const RegistrationCostSummary: InjectionKey<{
     updateRegistrationCostSummary: (newValue: Partial<RegistrationCostSummaryInfo>) => void;
 }> = Symbol("registration-cost-summary");
 
+export const ConfigurePaymentPlan: InjectionKey<{
+    wipPaymentPlanConfiguration: Ref<PaymentPlanConfiguration | null | undefined>;
+    finalPaymentPlanConfiguration: Ref<PaymentPlanConfiguration | null | undefined>;
+}> = Symbol("registration-new-payment-plan-configuration");
+
 export type TransactionFrequency = {
     readonly definedValueGuid: Guid;
 
     /** Determines if this transaction frequency matches the definedValueGuid. */
     hasDefinedValueGuid(guid: Guid): boolean;
 
-    /** Gets the number of transactions between the first and second dates, inclusively. */
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number;
+    /**
+     * Gets the number of transactions between the first and second dates, inclusively.
+     *
+     * Assuming each transaction can pay as little as 1 cent (for USD), the amountToPay will also limit the max number of transactions; e.g., an amountToPay of $0.25 can only have a maximum of 25 transactions.
+     */
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number;
 
     /** Returns the desired date if it is valid; otherwise, the next valid date is returned or null if there are no valid dates. */
     getValidTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, desiredDate: RockDateTime): RockDateTime | null;
@@ -171,7 +181,11 @@ const transactionFrequencyOneTime: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        if (amountToPay.isZero || amountToPay.isNegative) {
+            return 0;
+        }
+
         const date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
 
         if (date) {
@@ -229,11 +243,12 @@ const transactionFrequencyWeekly: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        const maxNumberOfTransactionsForAmount = amountToPay.units;
         let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date) {
+        while (date && numberOfTransactions < maxNumberOfTransactionsForAmount) {
             numberOfTransactions++;
             date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
@@ -289,11 +304,12 @@ const transactionFrequencyBiWeekly: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        const maxNumberOfTransactionsForAmount = amountToPay.units;
         let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date) {
+        while (date && numberOfTransactions < maxNumberOfTransactionsForAmount) {
             numberOfTransactions++;
             date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
@@ -440,11 +456,12 @@ const transactionFrequencyFirstAndFifteenth: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        const maxNumberOfTransactionsForAmount = amountToPay.units;
         let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date) {
+        while (date && numberOfTransactions < maxNumberOfTransactionsForAmount) {
             numberOfTransactions++;
             date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
@@ -456,7 +473,7 @@ const transactionFrequencyFirstAndFifteenth: TransactionFrequency = {
         const earliestPossibleDate = getNextDay(firstDate.date, 1, 15);
         secondDate = secondDate.date;
         const earliestDesiredDate = getNextDay(desiredDate.date, 1, 15);
-        
+
 
         if (earliestDesiredDate.isLaterThan(secondDate)) {
             // The desired date is after the second date,
@@ -494,11 +511,12 @@ const transactionFrequencyTwiceMonthly: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        const maxNumberOfTransactionsForAmount = amountToPay.units;
         let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date) {
+        while (date && numberOfTransactions < maxNumberOfTransactionsForAmount) {
             numberOfTransactions++;
             date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
@@ -554,11 +572,12 @@ const transactionFrequencyMonthly: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        const maxNumberOfTransactionsForAmount = amountToPay.units;
         let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date) {
+        while (date && numberOfTransactions < maxNumberOfTransactionsForAmount) {
             numberOfTransactions++;
             date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
@@ -626,11 +645,12 @@ const transactionFrequencyQuarterly: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        const maxNumberOfTransactionsForAmount = amountToPay.units;
         let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date) {
+        while (date && numberOfTransactions < maxNumberOfTransactionsForAmount) {
             numberOfTransactions++;
             date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
@@ -698,11 +718,12 @@ const transactionFrequencyTwiceAYear: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        const maxNumberOfTransactionsForAmount = amountToPay.units;
         let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date) {
+        while (date && numberOfTransactions < maxNumberOfTransactionsForAmount) {
             numberOfTransactions++;
             date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
@@ -770,11 +791,12 @@ const transactionFrequencyYearly: TransactionFrequency = {
         return areEqual(guid, this.definedValueGuid);
     },
 
-    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: Currency): number {
+        const maxNumberOfTransactionsForAmount = amountToPay.units;
         let date = this.getValidTransactionDate(firstDateTime, secondDateTime, firstDateTime);
         let numberOfTransactions = 0;
 
-        while (date) {
+        while (date && numberOfTransactions < maxNumberOfTransactionsForAmount) {
             numberOfTransactions++;
             date = this.getNextTransactionDate(firstDateTime, secondDateTime, date);
         }
@@ -858,7 +880,7 @@ export const noopTransactionFrequency: TransactionFrequency = {
         return 0;
     },
 
-    getMaxNumberOfTransactionsBetweenDates(_firstDateTime: RockDateTime, _secondDateTime: RockDateTime): number {
+    getMaxNumberOfTransactionsBetweenDates(_firstDateTime: RockDateTime, _secondDateTime: RockDateTime, _amountToPay: Currency): number {
         return 0;
     },
 
@@ -924,13 +946,13 @@ export type PaymentPlanFrequency = {
 //     return paymentPlanFrequencies;
 // }
 
-export function getPaymentPlanFrequency(listItemBag: ListItemBag, paymentDeadlineDate: RockDateTime): PaymentPlanFrequency {
+export function getPaymentPlanFrequency(listItemBag: ListItemBag, desiredStartDate: RockDateTime, paymentDeadlineDate: RockDateTime, amountToPay: Currency): PaymentPlanFrequency {
     const transactionFrequency = getTransactionFrequency(listItemBag?.value ?? "") ?? noopTransactionFrequency;
 
     // Although tomorrow is the earliest possible date in the current implementation,
     // keep that logic in the `getValidTransactionDate` function.
     const today = RockDateTime.now().date;
-    const startPaymentDate = transactionFrequency.getValidTransactionDate(today, paymentDeadlineDate, today);
+    const startPaymentDate = transactionFrequency.getValidTransactionDate(today, paymentDeadlineDate, desiredStartDate);
 
     if (startPaymentDate) {
         return {
@@ -938,7 +960,7 @@ export function getPaymentPlanFrequency(listItemBag: ListItemBag, paymentDeadlin
             transactionFrequency,
             startPaymentDate,
             paymentDeadlineDate,
-            maxNumberOfPayments: transactionFrequency.getMaxNumberOfTransactionsBetweenDates(startPaymentDate, paymentDeadlineDate),
+            maxNumberOfPayments: transactionFrequency.getMaxNumberOfTransactionsBetweenDates(startPaymentDate, paymentDeadlineDate, amountToPay),
             getNextTransactionDate(previousDate: RockDateTime) {
                 return transactionFrequency.getNextTransactionDate(startPaymentDate, paymentDeadlineDate, previousDate);
             },
@@ -982,4 +1004,95 @@ export function formatCurrency(value: number, overrides?: Partial<CurrencyInfoBa
     else {
         return `${currencyBag.symbol}${asFormattedString(value, currencyBag.decimalPlaces)}`;
     }
+}
+
+export type PaymentPlanConfiguration = {
+    paymentPlanFrequencies: PaymentPlanFrequency[];
+    paymentPlanFrequency: PaymentPlanFrequency;
+    /** If this is null, then the payment plan does not have a valid frequency. */
+    startDate: RockDateTime | null;
+    endDate: RockDateTime;
+    amountToPayToday: Currency;
+    amountToPayTodayAdjustment: Currency;
+    amountToPayTodayPlusAdjustment: Currency;
+    numberOfPayments: number;
+    amountPerPayment: Currency;
+    minAmountToPayToday: Currency;
+};
+
+export type PaymentPlanConfigurationOptions = {
+    balanceDue: Currency;
+    desiredAllowedPaymentPlanFrequencies: PaymentPlanFrequency[];
+    desiredPaymentPlanFrequency: PaymentPlanFrequency;
+    desiredStartDate: RockDateTime;
+    endDate: RockDateTime;
+    amountToPayToday: Currency;
+    desiredNumberOfPayments: number;
+    minAmountToPayToday: Currency;
+};
+
+export function getPaymentPlanConfiguration(options: PaymentPlanConfigurationOptions): PaymentPlanConfiguration {
+    function getAllowedPaymentPlanFrequencies(prospectiveAllowedPaymentFrequencies: PaymentPlanFrequency[], startDate: RockDateTime, endDate: RockDateTime, amountForPaymentPlan: Currency): PaymentPlanFrequency[] {
+        return prospectiveAllowedPaymentFrequencies
+            .map(prospectiveAllowedPaymentFrequency => getPaymentPlanFrequency(prospectiveAllowedPaymentFrequency.listItemBag, startDate, endDate, amountForPaymentPlan))
+            .filter(prospectiveAllowedPaymentFrequency => prospectiveAllowedPaymentFrequency.maxNumberOfPayments >= 2);
+    }
+
+    function getAllowedPaymentPlanFrequency(allowedPaymentPlanFrequencies: PaymentPlanFrequency[], desiredPaymentPlanFrequency: PaymentPlanFrequency): PaymentPlanFrequency {
+        return allowedPaymentPlanFrequencies.find(allowedPaymentPlanFrequency => desiredPaymentPlanFrequency.transactionFrequency.hasDefinedValueGuid(allowedPaymentPlanFrequency.transactionFrequency.definedValueGuid)) ?? noopPaymentPlanFrequency;
+    }
+
+    function getNumberOfPayments(desiredNumberOfPayments: number, maxNumberOfPayments: number, minNumberOfPayments: number): number {
+        if (desiredNumberOfPayments > maxNumberOfPayments) {
+            return Math.max(maxNumberOfPayments, minNumberOfPayments);
+        }
+        else {
+            return Math.max(desiredNumberOfPayments, minNumberOfPayments);
+        }
+    }
+
+    const zero = createZeroCurrency(options.balanceDue.currencyOptions);
+
+    const minAmountToPayToday = options.minAmountToPayToday.noLessThan(zero);
+    const amountToPayToday = options.amountToPayToday.noLessThan(minAmountToPayToday);
+    const amountForPaymentPlan = options.balanceDue.subtract(amountToPayToday);
+
+    const allowedPaymentPlanFrequencies = getAllowedPaymentPlanFrequencies(
+        options.desiredAllowedPaymentPlanFrequencies,
+        options.desiredStartDate,
+        options.endDate,
+        amountForPaymentPlan
+    );
+
+    const paymentPlanFrequency = getAllowedPaymentPlanFrequency(
+        allowedPaymentPlanFrequencies,
+        options.desiredPaymentPlanFrequency);
+
+    // If startDate is null, then the payment plan doesn't have a valid payment plan frequency.
+    const startDate = paymentPlanFrequency.startPaymentDate;
+
+    const numberOfPayments = getNumberOfPayments(
+        options.desiredNumberOfPayments,
+        paymentPlanFrequency.maxNumberOfPayments,
+        0);
+
+    const { quotient: amountPerPayment, remainder: amountToPayTodayAdjustment } =
+        numberOfPayments !== 0
+            ? amountForPaymentPlan.divide(numberOfPayments)
+            : { quotient: zero, remainder: zero };
+
+    const paymentPlanConfiguration: PaymentPlanConfiguration = {
+        startDate,
+        endDate: options.endDate,
+        paymentPlanFrequencies: allowedPaymentPlanFrequencies,
+        paymentPlanFrequency,
+        numberOfPayments,
+        amountPerPayment,
+        amountToPayToday,
+        amountToPayTodayAdjustment,
+        amountToPayTodayPlusAdjustment: amountToPayToday.add(amountToPayTodayAdjustment),
+        minAmountToPayToday
+    };
+
+    return paymentPlanConfiguration;
 }

@@ -37,7 +37,7 @@ export const CurrencyFormatString = {
     defaultCodeSuffix: "-!#,###.% @",
     /**
      * Formats the currency as a decimal number without currency symbols.
-     * 
+     *
      * @example
      * createCurrency(-1.6789, defaultCurrencyOptions).format(CurrencyFormatString.decimal); // "-1.68"
      * createCurrency(1.6789, defaultCurrencyOptions).format(CurrencyFormatString.decimal); // "1.68"
@@ -206,12 +206,28 @@ export type Currency = {
     isLessThan(currency: Currency | number): boolean;
 
     /**
+     * Returns this currency limited by the provided value.
+     *
+     * @param limit The currency to which to compare.
+     * @returns `this` currency if it is equal to or greater than the limit; otherwise, `limit` is returned.
+     */
+    noLessThan(limit: Currency): Currency;
+
+    /**
      * Determines if this currency is greater than to another currency.
      *
      * @param currency The currency to which to compare.
      * @returns `true` if this currency is greater than the provided currency; otherwise, `false` is returned.
      */
     isGreaterThan(currency: Currency | number): boolean;
+
+    /**
+     * Returns this currency limited by the provided value.
+     *
+     * @param limit The currency to which to compare.
+     * @returns `this` currency if it is equal to or less than the limit; otherwise, `limit` is returned.
+     */
+    noGreaterThan(limit: Currency): Currency;
 
     /** Gets the absolute value of this currency. */
     abs(): Currency;
@@ -584,6 +600,10 @@ function isLessThan(currency1: Currency, currency2: Currency | number): boolean 
     return currency1.units < otherUnits;
 }
 
+function noLessThan(currency: Currency, limit: Currency): Currency {
+    return currency.isLessThan(limit) ? limit : currency;
+}
+
 /**
  * Returns `true` if `currency1` is greater than `currency2`.
  *
@@ -601,6 +621,10 @@ function isGreaterThan(currency1: Currency, currency2: Currency | number): boole
     const { units: otherUnits } = getCurrencyParts(currency2, currency1.precision);
 
     return currency1.units > otherUnits;
+}
+
+function noGreaterThan(currency: Currency, limit: Currency): Currency {
+    return currency.isGreaterThan(limit) ? limit : currency;
 }
 
 /**
@@ -791,7 +815,10 @@ function getCurrencyParts(currency: number | CurrencyParts, targetPrecision: num
     }
 
     if (minorUnits.length < targetPrecision) {
-        minorUnits = "0".repeat(targetPrecision - minorUnits.length) + minorUnits;
+        // 0.3 => "0" (major units) and "3" (minor units)
+        // "3".length < 2 (targetPrecision for USD)
+        // so we should add enough "0"s until the target precision is met.
+        minorUnits = minorUnits + "0".repeat(targetPrecision - minorUnits.length);
     }
     else if (minorUnits.length === targetPrecision + 1) {
         // Rounding the minor units resulted in an additional major unit
@@ -983,7 +1010,7 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         add(currency: Currency | number): Currency {
             const logAndReturn = (result: Currency): Currency => {
-                _isLoggingEnabled && console.debug(`${this} + ${currency} = ${result}`);
+                _isLoggingEnabled && console.trace(`${this} + ${currency} = ${result}`);
                 return result;
             };
 
@@ -992,7 +1019,7 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         negate(): Currency {
             const logAndReturn = (result: Currency): Currency => {
-                _isLoggingEnabled && console.debug(`-${this} = ${result}`);
+                _isLoggingEnabled && console.trace(`-${this} = ${result}`);
                 return result;
             };
 
@@ -1001,7 +1028,7 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         divide(divisor: number): { quotient: Currency, remainder: Currency } {
             const logAndReturn = (result: { quotient: Currency; remainder: Currency }): { quotient: Currency; remainder: Currency } => {
-                _isLoggingEnabled && console.debug(`${this} / ${divisor} = ${result.quotient} r${result.remainder}`);
+                _isLoggingEnabled && console.trace(`${this} / ${divisor} = ${result.quotient} r${result.remainder}`);
                 return result;
             };
 
@@ -1010,7 +1037,7 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         subtract(currency: number | Currency): Currency {
             const logAndReturn = (result: Currency): Currency => {
-                _isLoggingEnabled && console.debug(`${this} - ${currency} = ${result}`);
+                _isLoggingEnabled && console.trace(`${this} - ${currency} = ${result}`);
                 return result;
             };
 
@@ -1019,7 +1046,7 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         format(formatString: string = CurrencyFormatString.default): string {
             const logAndReturn = (result: string): string => {
-                _isLoggingEnabled && console.debug(`format with ${formatString} = ${result}`);
+                _isLoggingEnabled && console.trace(`format with ${formatString} = ${result}`);
                 return result;
             };
 
@@ -1028,7 +1055,7 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         isEqualTo(currency: Currency | number): boolean {
             const logAndReturn = (result: boolean): boolean => {
-                _isLoggingEnabled && console.debug(`${this} == ${currency} = ${result}`);
+                _isLoggingEnabled && console.trace(`${this} == ${currency} = ${result}`);
                 return result;
             };
 
@@ -1037,7 +1064,7 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         isNotEqualTo(currency: Currency | number): boolean {
             const logAndReturn = (result: boolean): boolean => {
-                _isLoggingEnabled && console.debug(`${this} != ${currency} = ${result}`);
+                _isLoggingEnabled && console.trace(`${this} != ${currency} = ${result}`);
                 return result;
             };
 
@@ -1046,25 +1073,43 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         isLessThan(currency: Currency | number): boolean {
             const logAndReturn = (result: boolean): boolean => {
-                _isLoggingEnabled && console.debug(`${this} < ${currency} = ${result}`);
+                _isLoggingEnabled && console.trace(`${this} < ${currency} = ${result}`);
                 return result;
             };
 
             return logAndReturn(isLessThan(this, currency));
         },
 
+        noLessThan(limit: Currency): Currency {
+            const logAndReturn = (result: Currency): Currency => {
+                _isLoggingEnabled && console.trace(`${this} no less than ${limit} = ${result}`);
+                return result;
+            };
+
+            return logAndReturn(noLessThan(this, limit));
+        },
+
         isGreaterThan(currency: Currency | number): boolean {
             const logAndReturn = (result: boolean): boolean => {
-                _isLoggingEnabled && console.debug(`${this} > ${currency} = ${result}`);
+                _isLoggingEnabled && console.trace(`${this} > ${currency} = ${result}`);
                 return result;
             };
 
             return logAndReturn(isGreaterThan(this, currency));
         },
 
+        noGreaterThan(limit: Currency): Currency {
+            const logAndReturn = (result: Currency): Currency => {
+                _isLoggingEnabled && console.trace(`${this} no greater than ${limit} = ${result}`);
+                return result;
+            };
+
+            return logAndReturn(noGreaterThan(this, limit));
+        },
+
         abs(): Currency {
             const logAndReturn = (result: Currency): Currency => {
-                _isLoggingEnabled && console.debug(`|${this}| = ${result}`);
+                _isLoggingEnabled && console.trace(`|${this}| = ${result}`);
                 return result;
             };
 
@@ -1073,7 +1118,7 @@ export function createCurrency(currency: number | CurrencyParts, options: Curren
 
         mod(divisor: number): Currency {
             const logAndReturn = (result: Currency): Currency => {
-                _isLoggingEnabled && console.debug(`${this} % ${divisor} = ${result}`);
+                _isLoggingEnabled && console.trace(`${this} % ${divisor} = ${result}`);
                 return result;
             };
 
