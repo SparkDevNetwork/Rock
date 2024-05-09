@@ -123,7 +123,7 @@
                     <RockLabel class="primary-label">Payment Plan</RockLabel>
                     <StaticFormControl label="Amount Due Today" :modelValue="formatCurrency(registrationEntryState.amountToPayToday, registrationEntryState.viewModel.currencyInfo)" />
                     <StaticFormControl :label="`${registrationEntryState.paymentPlan?.transactionFrequencyText} Payment Amount`" :modelValue="`${formatCurrency(registrationEntryState.paymentPlan?.amountPerPayment ?? 0, registrationEntryState.viewModel.currencyInfo)} x ${registrationEntryState.paymentPlan?.numberOfPayments ?? 0}`" />
-                    <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="default" btnSize="xs" @click="onOpenConfigurePaymentPlanModal">Change (WIP {{ !!wipPaymentPlanConfiguration }}) (Final {{ !!finalPaymentPlanConfiguration }})</RockButton>
+                    <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="default" btnSize="xs" @click="onOpenConfigurePaymentPlanModal">Change</RockButton>
                     <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="link" btnSize="xs" @click="onCancelPaymentPlanConfiguration">Cancel</RockButton>
                 </div>
             </div>
