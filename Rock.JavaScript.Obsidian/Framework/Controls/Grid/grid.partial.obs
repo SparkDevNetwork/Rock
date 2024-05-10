@@ -1066,7 +1066,8 @@
                 iconCssClass: "fa fa-plus-square",
                 isPrimary: true,
                 title: "Add item",
-                tooltip: "Add a new item."
+                tooltip: "Add a new item. (Alt+N)",
+                accesskey: "n"
             });
         }
 
