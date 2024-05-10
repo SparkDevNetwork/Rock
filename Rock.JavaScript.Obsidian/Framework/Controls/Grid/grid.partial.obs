@@ -40,6 +40,7 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
                       @click="onRowClick" />
@@ -52,6 +53,7 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
                       @click="onRowClick" />
@@ -63,6 +65,7 @@
                          :grid="gridState"
                          :tooltipField="tooltipField"
                          :isSelectable="isSelectionEnabled"
+                         :itemTerm="gridState.itemTerm"
                          :markInactiveRows="markInactiveRows"
                          :rowClass="rowClass"
                          @click="onRowClick" />
