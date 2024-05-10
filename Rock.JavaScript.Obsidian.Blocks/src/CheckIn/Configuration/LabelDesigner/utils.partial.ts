@@ -82,7 +82,20 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Shape 
         return new Konva.Text();
     }
     else if (fieldType === LabelFieldType.Rectangle) {
-        return new Konva.Rect();
+        const rect = new Konva.Rect();
+
+        rect.hitFunc((ctx, rc) => {
+            // By default a rectangle in outline mode will only hit test on the
+            // outline and not the inner (empty) content. So we override that
+            // to ensure the entire outline and fill area match a hit test.
+            ctx.beginPath();
+            ctx.rect(0, 0, rc.width(), rc.height());
+            ctx.closePath();
+            ctx._fill(rc);
+            ctx._stroke(rc);
+        });
+
+        return rect;
     }
 
     return undefined;
@@ -160,16 +173,20 @@ function updateRectShapeFromField(shape: Konva.Rect, field: LabelFieldBag): void
     const roundingIndex = toNumber(config.cornerRadius);
 
     if (asBoolean(config.isFilled)) {
+        shape.fillEnabled(true);
+        shape.strokeEnabled(false);
         shape.fill(asBoolean(config.isBlack) ? "black" : "white");
-        shape.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
+        shape.strokeWidth(0);
     }
     else {
+        shape.fillEnabled(false);
         shape.strokeEnabled(true);
         shape.strokeScaleEnabled(false);
-        shape.stroke(asBoolean(config.isBlack) ? "black" : "white");
         shape.strokeWidth(toNumber(config.borderThickness));
-        shape.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
+        shape.stroke(asBoolean(config.isBlack) ? "black" : "white");
     }
+
+    shape.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
 }
 
 // #endregion
