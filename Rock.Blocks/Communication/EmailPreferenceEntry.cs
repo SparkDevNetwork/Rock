@@ -377,7 +377,8 @@ We have unsubscribed you from the following lists:
                 {
                     box.EmailPreference = UNSUBSCRIBE;
                     box.UnsubscribeFromList = new List<ViewModels.Utility.ListItemBag>() { box.UnsubscribeFromListOptions.Find( l => l.Value == communication.ListGroup.Guid.ToString() ) };
-                    box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from the \"{communication.ListGroup}\" communication list. If you would like to be removed from all communications see the options below." : null;
+
+                    box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from the \"{GetName(communication.ListGroup)}\" communication list. If you would like to be removed from all communications see the options below." : null;
                 }
 
                 var anyOptionChecked = false;
@@ -700,6 +701,27 @@ We have unsubscribed you from the following lists:
             return _communication;
         }
 
+        /// <summary>
+        /// Gets the name of a communication list (group) using the Public Name if it exists.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        private string GetName( Rock.Model.Group communicationList )
+        {
+            if ( communicationList == null )
+            {
+                return string.Empty;
+            }
+
+            communicationList.LoadAttributes();
+            var name = communicationList.GetAttributeValue( AttributeKey.PublicName );
+            if ( name.IsNullOrWhiteSpace() )
+            {
+                name = communicationList.Name;
+            }
+
+            return name;
+        }
         #endregion Methods
 
         #region Block Actions
