@@ -377,7 +377,6 @@ We have unsubscribed you from the following lists:
                 {
                     box.EmailPreference = UNSUBSCRIBE;
                     box.UnsubscribeFromList = new List<ViewModels.Utility.ListItemBag>() { box.UnsubscribeFromListOptions.Find( l => l.Value == communication.ListGroup.Guid.ToString() ) };
-
                     box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from the \"{GetName(communication.ListGroup)}\" communication list. If you would like to be removed from all communications see the options below." : null;
                 }
 
