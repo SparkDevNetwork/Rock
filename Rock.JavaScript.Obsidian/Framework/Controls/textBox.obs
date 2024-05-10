@@ -16,7 +16,13 @@
                 <div :class="controlContainerClass">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                     <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" :class="formControlClass" :placeholder="placeholder" v-bind="field"></textarea>
-                    <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" :autocomplete="disableAutocomplete ? null : 'off'" />
+                    <div v-else>
+                        <div class="input-container" v-if="isClearable">
+                            <input v-model="internalValue" :id="uniqueId" :type="type" class="clearable-input" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" :autocomplete="disableAutocomplete ? null : 'off'">
+                            <i class="fa fa-times clear-icon" @click="internalValue = ''"></i>
+                        </div>
+                        <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" :autocomplete="disableAutocomplete ? null : 'off'" />
+                    </div>
                     <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>
                 <slot name="append" :isInputGroupSupported="true" />
@@ -78,6 +84,10 @@
         allowHtml: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        isClearable: {
+            type: Boolean as PropType<boolean>,
+            default: false,
         },
         ...standardRockFormFieldProps
     });
@@ -142,3 +152,23 @@
         return rules;
     });
 </script>
+
+<style scoped>
+
+.input-container {
+    display: flex;
+    align-items: center;
+}
+
+.clearable-input {
+    padding-right: 30px;
+}
+
+.clear-icon {
+    margin-left: -30px;
+    padding: 10px;
+    cursor: pointer;
+    color: #67717A;
+}
+
+</style>
