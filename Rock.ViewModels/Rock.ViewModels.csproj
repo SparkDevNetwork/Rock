@@ -80,6 +80,7 @@
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
     <Compile Include="Blocks\Finance\FinancialPersonBankAccountList\FinancialPersonBankAccountListOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialScheduledTransactionList\FinancialScheduledTransactionListOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageList\AppleTvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />

@@ -1,0 +1,197 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Scheduled Transaction"
+          :entityTypeGuid="EntityType.FinancialScheduledTransaction"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn />
+
+        <PersonColumn name="authorized"
+                      title="Contributor"
+                      field="authorized"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="xs" />
+
+        <CurrencyColumn name="amount"
+                        title="Amount"
+                        field="amount"
+                        :filter="numberValueFilter"
+                        width="100"
+                        visiblePriority="md">
+            <template #format="{ row }">
+                <div class="flex-grow-1 text-right">
+                    {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
+                </div>
+            </template>
+        </CurrencyColumn>
+
+        <Column name="accounts"
+                title="Accounts"
+                :filter="textValueFilter"
+                :filterValue="getRowAccountsFilterValue"
+                :quickFilterValue="getRowAccountsFilterValue"
+                visiblePriority="lg">
+            <template #format="{ row }">
+                <div class="text-sm">
+                    <div v-for="account in row.accounts">
+                        {{ account.name }}: {{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn name="transactionFrequency"
+                    title="Frequency"
+                    field="transactionFrequency"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+
+        <DateColumn name="createdDateTime"
+                    title="Created"
+                    field="createdDateTime"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn name="startDate"
+                    title="Starting"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn name="endDate"
+                    title="Ending"
+                    field="endDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn name="nextPayment"
+                    title="Next Payment"
+                    field="nextPayment"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="currencyType"
+                    title="Currency Type"
+                    field="currencyType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn v-if="showTransactionTypeColumn"
+                    name="transactionType"
+                    title="Transaction Type"
+                    field="transactionType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="gatewayScheduleId"
+                    title="Schedule ID"
+                    field="gatewayScheduleId"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       visiblePriority="xs" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, DateColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, TextColumn, textValueFilter, CurrencyColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FinancialScheduledTransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialScheduledTransactionList/financialScheduledTransactionListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, Row } from "./FinancialScheduledTransactionList/types.partial";
+    import { computed, reactive, ref } from "vue";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const config = useConfigurationValues<ListBlockBox<FinancialScheduledTransactionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+
+    const showTransactionTypeColumn = computed(() => {
+        return config.options?.showTransactionTypeColumn;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Gets the filter value text to use for the accounts column.
+     *
+     * @param row The row to be filtered.
+     */
+     function getRowAccountsFilterValue(row: Record<string, unknown>): string {
+        let filterValue = "";
+
+        for (const account of (row as Row).accounts) {
+            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount, config.options?.currencyInfo) ?? ""}`;
+        }
+
+        return filterValue;
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

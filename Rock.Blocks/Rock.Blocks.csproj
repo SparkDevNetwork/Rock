@@ -103,6 +103,7 @@
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
     <Compile Include="Finance\FinancialPersonBankAccountList.cs" />
+    <Compile Include="Finance\FinancialScheduledTransactionList.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
@@ -114,12 +115,12 @@
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
-    <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
     <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
+    <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Communication\CommunicationList.cs" />
     <Compile Include="Communication\SmsPipelineList.cs" />
