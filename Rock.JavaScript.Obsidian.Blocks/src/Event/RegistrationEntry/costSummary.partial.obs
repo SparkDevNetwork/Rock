@@ -105,7 +105,7 @@
                         </div>
                     </div>
 
-                    <div v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs) && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.activePaymentPlan" class="form-group">
+                    <div v-if="isPaymentPlanConfigurationSupported && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.activePaymentPlan" class="form-group">
                         <RockButton btnType="default" btnSize="xs" @click="onOpenConfigurePaymentPlanModal">Configure a Payment Plan</RockButton>
                     </div>
                 </template>
@@ -123,21 +123,15 @@
                     <RockLabel class="primary-label">Payment Plan</RockLabel>
                     <StaticFormControl label="Amount Due Today" :modelValue="formatCurrency(registrationEntryState.amountToPayToday, registrationEntryState.viewModel.currencyInfo)" />
                     <StaticFormControl :label="`${registrationEntryState.paymentPlan?.transactionFrequencyText} Payment Amount`" :modelValue="`${formatCurrency(registrationEntryState.paymentPlan?.amountPerPayment ?? 0, registrationEntryState.viewModel.currencyInfo)} x ${registrationEntryState.paymentPlan?.numberOfPayments ?? 0}`" />
-                    <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="default" btnSize="xs" @click="onOpenConfigurePaymentPlanModal">Change</RockButton>
-                    <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="link" btnSize="xs" @click="onCancelPaymentPlanConfiguration">Cancel</RockButton>
+                    <RockButton v-if="isPaymentPlanConfigurationSupported" btnType="default" btnSize="xs" @click="onOpenConfigurePaymentPlanModal">Change</RockButton>
+                    <RockButton v-if="isPaymentPlanConfigurationSupported" btnType="link" btnSize="xs" @click="onCancelPaymentPlanConfiguration">Cancel</RockButton>
                 </div>
             </div>
         </div>
     </Loading>
 
-    <ConfigurePaymentPlanModal v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs) && wipPaymentPlanConfiguration"
-                               v-model="isConfigurePaymentPlanModalShown"
-                               v-model:paymentPlanConfiguration="wipPaymentPlanConfiguration"
-                               :balanceDue="createCurrency(maxAmountCanBePaid, currencyOptions)"
-                               :currencyOptions="currencyOptions"
-                               :paymentDeadlineDate="paymentPlanArgs.paymentPlanDeadlineDate"
-                               :paymentPlanFrequencies="paymentPlanArgs.paymentPlanFrequencies"
-                               @configure="onConfigurePaymentPlan" />
+    <ConfigurePaymentPlanModal v-if="isPaymentPlanConfigurationSupported"
+                               v-model="isConfigurePaymentPlanModalShown" />
 
     <Modal v-model="isDeletePaymentPlanModalShown"
            saveText="Delete"
@@ -154,8 +148,8 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import { CurrencyFormatString, CurrencyOptions, createCurrency, createReadonlyCurrencyOptions } from "./currency.partial";
-    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary, formatCurrency, PaymentPlanFrequency, getPaymentPlanFrequency, PaymentPlanConfiguration, getPaymentPlanConfiguration, noopPaymentPlanFrequency, ConfigurePaymentPlan } from "./utils.partial";
+    import { Currency, CurrencyFormatString, CurrencyOptions, createCurrency, createReadonlyCurrencyOptions } from "./currency.partial";
+    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary, formatCurrency, useConfigureNewPaymentPlan } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
@@ -169,10 +163,6 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import ConfigurePaymentPlanModal from "./configurePaymentPlanModal.partial.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
-    import { Guid } from "@Obsidian/Types";
-    import { areEqual } from "@Obsidian/Utility/guid";
 
     enum RegistrationCostSummaryType {
         Cost = 0,
@@ -191,109 +181,28 @@
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
-    const { readonlyRegistrationCostSummary, updateRegistrationCostSummary } = use(RegistrationCostSummary);
+    const { updateRegistrationCostSummary } = use(RegistrationCostSummary);
     const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
         precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
         symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
     });
-    const { wipPaymentPlanConfiguration, finalPaymentPlanConfiguration } = use(ConfigurePaymentPlan);
+    const {
+        cancel,
+        init,
+        isConfigured: isPaymentPlanConfigured,
+        isPaymentPlanConfigurationSupported } = useConfigureNewPaymentPlan();
 
     // #region Values
 
     const isLoading = ref<boolean>(false);
     const lineItems = ref<RegistrationEntryCostSummaryBag[]>([]);
     const isConfigurePaymentPlanModalShown = ref<boolean>(false);
-    const isPaymentPlanConfigured = ref<boolean>(!!registrationEntryState.paymentPlan?.numberOfPayments && !!registrationEntryState.paymentPlan?.amountPerPayment);
     const isDeletePaymentPlanModalShown = ref<boolean>(false);
     const deletePaymentPlanErrorMessage = ref<string>("");
 
     // #endregion
 
     // #region Computed Values
-
-    type PaymentPlanArgs = {
-        paymentPlanDeadlineDate: RockDateTime;
-        paymentPlanFrequencies: PaymentPlanFrequency[];
-    };
-
-    const paymentPlanArgs = computed<Partial<PaymentPlanArgs>>(() => ({
-        paymentPlanDeadlineDate: paymentPlanDeadlineDate.value ?? undefined,
-        paymentPlanFrequencies: paymentPlanFrequencies.value,
-    }));
-
-    /** Gets whether or not the payment plan feature can be shown. */
-    function isPaymentPlanConfigurationSupported(args: Partial<PaymentPlanArgs>): args is PaymentPlanArgs {
-        if (!args.paymentPlanDeadlineDate) {
-            return false;
-        }
-
-        if (!args.paymentPlanFrequencies?.length) {
-            return false;
-        }
-
-        return true;
-    }
-
-    const paymentPlanDeadlineDate = computed<RockDateTime | null>(() => {
-        if (!registrationEntryState.viewModel.paymentDeadlineDate) {
-            return null;
-        }
-        else {
-            return RockDateTime.parseISO(registrationEntryState.viewModel.paymentDeadlineDate);
-        }
-    });
-
-    /** Gets the valid payment plan frequencies. */
-    const paymentPlanFrequencies = computed<PaymentPlanFrequency[]>(() => {
-        const desiredStartDate = RockDateTime.now().date;
-        const deadlineDate = paymentPlanDeadlineDate.value;
-
-        if (!deadlineDate) {
-            // The payment plan deadline date is required to calculate
-            // the max number of payments per payment plan frequency.
-            // If there is no deadline date, then return an empty array.
-            return [];
-        }
-
-        // When getting payment plan frequencies in this component,
-        // use the total remaining balance without accounting for
-        // amounts that MIGHT be paid now (like "Amount To Pay Today" or a NEW payment plan).
-        // The Configure Payment Plan modal will further filter these frequencies
-        // based on configured values in the modal.
-        const remainingBalance = createCurrency(maxAmountCanBePaid.value, currencyOptions);
-
-        const frequencies = (registrationEntryState.viewModel.paymentPlanFrequencies ?? [])
-            .map(listItemBag => getPaymentPlanFrequency(listItemBag, desiredStartDate, deadlineDate, remainingBalance))
-            // Only return frequencies that can make at least
-            // two payments for the given payment plan start date.
-            .filter(frequency => frequency.maxNumberOfPayments >= 2);
-
-        // Sort the frequencies.
-        const rank: Record<string, number> = {
-            [DefinedValue.TransactionFrequencyWeekly]: 1,
-            [DefinedValue.TransactionFrequencyBiweekly]: 2,
-            [DefinedValue.TransactionFrequencyFirstAndFifteenth]: 3,
-            [DefinedValue.TransactionFrequencyTwicemonthly]: 4,
-            [DefinedValue.TransactionFrequencyMonthly]: 5,
-            [DefinedValue.TransactionFrequencyQuarterly]: 6,
-            [DefinedValue.TransactionFrequencyTwiceyearly]: 7,
-            [DefinedValue.TransactionFrequencyOneTime]: 8,
-        };
-
-        frequencies.sort((a, b): number => {
-            const aOrder = a.listItemBag.value ? rank[a.listItemBag.value] : -1;
-            const bOrder = b.listItemBag.value ? rank[b.listItemBag.value] : -1;
-
-            return aOrder < bOrder ? -1 : bOrder < aOrder ? 1 : 0;
-        });
-
-        return frequencies;
-    });
-
-    /** Gets whether or not the payment plan feature can be shown. */
-    // const isPaymentPlanConfigurationSupported = computed<boolean>(() => {
-    //     return !!paymentPlanDeadlineDate.value && paymentPlanFrequencies.value.length > 0;
-    // });
 
     const currencyInfo = computed<CurrencyInfoBag>(() => {
         return registrationEntryState.viewModel.currencyInfo ?? {
@@ -461,6 +370,9 @@
         return rules;
     });
 
+    /** The balance due on the registration. */
+    const balanceDue = computed<Currency>(() => createCurrency(maxAmountCanBePaid.value, currencyOptions));
+
     // #endregion
 
     // #region Functions
@@ -553,125 +465,28 @@
      * Event handler that opens the Configure Payment Plan modal.
      */
     function onOpenConfigurePaymentPlanModal(): void {
-        if (finalPaymentPlanConfiguration.value) {
-            // Use the final payment plan configuration for the modal.
-            wipPaymentPlanConfiguration.value = finalPaymentPlanConfiguration.value;
-        }
-        else if (!wipPaymentPlanConfiguration.value) {
-            // Initialize the payment plan configuration from registration data.
-            const transactionFrequencyGuid: Guid | null = registrationEntryState.paymentPlan?.transactionFrequencyGuid ?? null;
-            const desiredPaymentPlanFrequency =
-                transactionFrequencyGuid
-                    ? paymentPlanFrequencies.value.find(p => areEqual(p.listItemBag.value, transactionFrequencyGuid)) ?? noopPaymentPlanFrequency
-                    : noopPaymentPlanFrequency;
-
-            const today: RockDateTime = RockDateTime.now().date;
-
-            wipPaymentPlanConfiguration.value = getPaymentPlanConfiguration({
-                amountToPayToday: createCurrency(
-                    registrationEntryState.paymentPlan
-                        ? registrationEntryState.amountToPayToday
-                        : readonlyRegistrationCostSummary.value.minimumRemainingAmount,
-                    currencyOptions),
-                balanceDue: createCurrency(maxAmountCanBePaid.value, currencyOptions),
-                desiredAllowedPaymentPlanFrequencies: paymentPlanFrequencies.value,
-                desiredNumberOfPayments: registrationEntryState.paymentPlan?.numberOfPayments ?? 0,
-                desiredPaymentPlanFrequency,
-                desiredStartDate: registrationEntryState.paymentPlan?.startDate
-                    ? RockDateTime.parseISO(registrationEntryState.paymentPlan.startDate) ?? today
-                    : today,
-                endDate: paymentPlanDeadlineDate.value ?? RockDateTime.now().addYears(1).date,
-                minAmountToPayToday: createCurrency(readonlyRegistrationCostSummary.value.minimumRemainingAmount, currencyOptions),
-            });
-        }
-
         isConfigurePaymentPlanModalShown.value = true;
     }
 
-    /**
-     * Event handler that cancels a newly configured payment plan.
-     *
-     * This does not modify an existing payment plan on the registration.
-     */
+    /** Event handler that removes the registration's payment plan configuration. */
     function onCancelPaymentPlanConfiguration(): void {
-        wipPaymentPlanConfiguration.value = null;
-        finalPaymentPlanConfiguration.value = null;
-        registrationEntryState.amountToPayToday = defaultPaymentAmount.value;
-        registrationEntryState.paymentPlan = null;
-    }
-
-    /**
-     * Event handler that configures a payment plan be added to the registration once it is submitted.
-     */
-    function onConfigurePaymentPlan(paymentPlanConfig: PaymentPlanConfiguration): void {
-        finalPaymentPlanConfiguration.value = paymentPlanConfig;
-        wipPaymentPlanConfiguration.value = null;
-        registrationEntryState.amountToPayToday = paymentPlanConfig.amountToPayTodayPlusAdjustment.number;
-        registrationEntryState.paymentPlan = {
-            transactionFrequencyGuid: paymentPlanConfig.paymentPlanFrequency.transactionFrequency.definedValueGuid,
-            amountPerPayment: paymentPlanConfig.amountPerPayment.number,
-            numberOfPayments: paymentPlanConfig.numberOfPayments,
-            transactionFrequencyText: paymentPlanConfig.paymentPlanFrequency.listItemBag.text,
-            startDate: paymentPlanConfig.startDate?.toISOString(),
-        };
+        cancel();
     }
 
     // #endregion
 
     // #region Watchers
 
-    // Updates the isPaymentPlanConfigured whenever the registration's payment plan is updated.
-    watch(
-        [
-            () => registrationEntryState.paymentPlan?.transactionFrequencyGuid,
-            () => registrationEntryState.paymentPlan?.amountPerPayment,
-            () => registrationEntryState.paymentPlan?.numberOfPayments
-        ],
-        () => {
-            isPaymentPlanConfigured.value =
-                !!registrationEntryState?.paymentPlan?.numberOfPayments
-                && !!registrationEntryState.paymentPlan.amountPerPayment;
-        });
-
     // Updates the amount to pay today whenever the default payment amount changes.
     watch(defaultPaymentAmount, () => {
-        if (finalPaymentPlanConfiguration.value) {
-            // A NEW payment plan is configured so update the final version using the updated default payment amount.
-            const finalConfig = finalPaymentPlanConfiguration.value;
-            finalPaymentPlanConfiguration.value = getPaymentPlanConfiguration({
-                amountToPayToday: finalConfig.amountToPayToday,
-                balanceDue: createCurrency(defaultPaymentAmount.value, currencyOptions),
-                desiredAllowedPaymentPlanFrequencies: finalConfig.paymentPlanFrequencies,
-                desiredNumberOfPayments: finalConfig.numberOfPayments,
-                desiredPaymentPlanFrequency: finalConfig.paymentPlanFrequency,
-                desiredStartDate: finalConfig.startDate ?? RockDateTime.now().date,
-                endDate: finalConfig.endDate,
-                minAmountToPayToday: finalConfig.minAmountToPayToday,
-            });
-            onConfigurePaymentPlan(finalPaymentPlanConfiguration.value);
-        }
-        else if (wipPaymentPlanConfiguration.value) {
-            // A payment plan is being configured is configured so update the WIP version using the updated default payment amount.
-            const wipConfig = wipPaymentPlanConfiguration.value;
-            wipPaymentPlanConfiguration.value = getPaymentPlanConfiguration({
-                amountToPayToday: wipConfig.amountToPayToday,
-                balanceDue: createCurrency(defaultPaymentAmount.value, currencyOptions),
-                desiredAllowedPaymentPlanFrequencies: wipConfig.paymentPlanFrequencies,
-                desiredNumberOfPayments: wipConfig.numberOfPayments,
-                desiredPaymentPlanFrequency: wipConfig.paymentPlanFrequency,
-                desiredStartDate: wipConfig.startDate ?? RockDateTime.now().date,
-                endDate: wipConfig.endDate,
-                minAmountToPayToday: wipConfig.minAmountToPayToday
-            });
-        }
-        else {
-            // A payment plan has not and is not being configured, so update the amount to pay today with the updated default payment amount.
+        if (!isPaymentPlanConfigured.value) {
+            // A payment plan has not been configured,
+            // so update the amount to pay today with the updated default payment amount.
             registrationEntryState.amountToPayToday = defaultPaymentAmount.value;
         }
     }, {
         // Immediately update the amount to pay today from the default payment amount if there isn't a configured payment plan.
-        // If there is one already, then it will be updated once it gets loaded.
-        immediate: !finalPaymentPlanConfiguration.value,
+        immediate: !isPaymentPlanConfigured.value,
     });
 
     watch(() => registrationEntryState.discountCode, async (): Promise<void> => {
@@ -681,4 +496,10 @@
     // #endregion
 
     fetchCostData();
+
+    watch(balanceDue, (balance) => {
+        init(balance);
+    }, {
+        immediate: false // don't make this immediate as balanceDue starts as 0.00.
+    });
 </script>

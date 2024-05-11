@@ -933,27 +933,19 @@ namespace Rock.Blocks.Event
         {
             if ( paymentPlan.TransactionFrequencyGuid == SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() )
             {
-                DateTime GetAllowedStartDate()
+                bool IsAllowedStartDate( DateTime startDate )
                 {
-                    var tomorrow = RockDateTime.Today.AddDays( 1 );
-                    if ( tomorrow.Day == 1 || tomorrow.Day == 15 )
+                    if ( startDate.Day == 1 || startDate.Day == 15 )
                     {
-                        return tomorrow;
-                    }
-                    else if ( tomorrow.Day < 15 )
-                    {
-                        return tomorrow.AddDays( 15 - tomorrow.Day );
+                        return true;
                     }
                     else
                     {
-                        // Day > 15 so return the 1st of the next month.
-                        return tomorrow.AddDays( -( tomorrow.Day - 1 ) ).AddMonths( 1 );
+                        return false;
                     }
                 }
 
-                var allowedStartDate = GetAllowedStartDate();
-
-                if ( paymentPlan.StartDate != allowedStartDate )
+                if ( !IsAllowedStartDate( paymentPlan.StartDate.Date ) )
                 {
                     errorMessage = $"The payment plan start date {paymentPlan.StartDate:d} is invalid";
                     return false;

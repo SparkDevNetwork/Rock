@@ -2,18 +2,19 @@
 
 <template>
     <Modal v-model="internalIsShown"
-           :isSaveButtonDisabled="!paymentDeadlineDate"
-           :saveText="paymentDeadlineDate ? 'Select' : ''"
+           :isSaveButtonDisabled="!wipPaymentPlanConfiguration?.endDate"
+           :saveText="wipPaymentPlanConfiguration?.endDate ? 'Select' : ''"
            title="Configure Payment Plan"
-           @save="onConfigurePaymentPlan">
-        <template v-if="paymentPlanConfiguration && paymentDeadlineDate.isLaterThan(RockDateTime.now())">
-            <StaticFormControl :modelValue="`The total amount of ${props.balanceDue} is payable by ${paymentDeadlineDate.toASPString('MMMM dd, yyyy')}.`" />
+           @save="onConfigurePaymentPlan"
+           @closeModal="onCancel">
+        <template v-if="wipPaymentPlanConfiguration && wipPaymentPlanConfiguration.endDate.isLaterThan(RockDateTime.now())">
+            <StaticFormControl :modelValue="`The total amount of ${wipPaymentPlanConfiguration.balanceDue} is payable by ${wipPaymentPlanConfiguration.endDate.toASPString('MMMM dd, yyyy')}.`" />
 
             <div class="row">
                 <div class="col">
-                    <DropDownList :modelValue="paymentPlanFrequency.transactionFrequency.definedValueGuid"
+                    <DropDownList :modelValue="paymentFrequencyGuidOrEmptyString"
                                   @update:modelValue="onUpdatePaymentFrequencyGuid"
-                                  :items="paymentFrequencyItems"
+                                  :items="paymentPlanFrequencyItems"
                                   label="Select Your Desired Payment Frequency"
                                   rules="required" />
                 </div>
@@ -30,14 +31,14 @@
 
             <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
                 <div class="col-sm-6">
-                    <CurrencyBox :modelValue="amountToPayTodayPlusAdjustmentCurrency.number"
+                    <CurrencyBox :modelValue="amountToPayTodayPlusAdjustmentCurrency?.number ?? 0"
                                  @update:modelValue="onUpdateAmountToPayToday"
                                  label="Amount To Pay Today"
                                  :rules="['required', validateAmountToPayTodayRule, validateAmountToPayTodayLessThanRemaining]"
                                  @blur="onBlurAmountToPayToday">
 
                         <template #append>
-                            <small>A minimum of {{ paymentPlanConfiguration?.minAmountToPayToday }} is due today.</small>
+                            <small>A minimum of {{ wipPaymentPlanConfiguration?.minAmountToPayToday }} is due today.</small>
                         </template>
                     </CurrencyBox>
                 </div>
@@ -52,23 +53,23 @@
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected || paymentPlanConfiguration.amountPerPayment.isInvalid ? 'invisible' : '']">
+            <div :class="['row', !isPaymentPlanFrequencySelected || wipPaymentPlanConfiguration.amountPerPayment.isInvalid ? 'invisible' : '']">
                 <div class="col">
                     <RockLabel label="Plan Summary">Plan Summary</RockLabel>
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected || paymentPlanConfiguration.amountPerPayment.isInvalid ? 'invisible' : '']">
+            <div :class="['row', !isPaymentPlanFrequencySelected || wipPaymentPlanConfiguration.amountPerPayment.isInvalid ? 'invisible' : '']">
                 <div class="col-sm-6">
                     <div>Amount Due Today</div>
                     <div>
-                        {{ amountToPayTodayPlusAdjustmentCurrency }}
+                        {{ wipPaymentPlanConfiguration.amountToPayTodayPlusAdjustment }}
                         <template v-if="amountToPayTodaySuffix"><small>&nbsp;({{ amountToPayTodaySuffix }})</small></template>
                     </div>
                 </div>
 
-                <div class="col-sm-6" v-if="numberOfPaymentsItems.length && paymentPlanConfiguration.amountPerPayment.isGreaterThan(0)">
-                    <div>{{ paymentPlanFrequency.listItemBag.text }} Payment Amount</div>
+                <div class="col-sm-6" v-if="numberOfPaymentsItems.length && wipPaymentPlanConfiguration.amountPerPayment.isGreaterThan(0)">
+                    <div>{{ wipPaymentPlanConfiguration.paymentPlanFrequency.listItemBag.text }} Payment Amount</div>
                     <div>{{ paymentAmountMessage }}</div>
                 </div>
             </div>
@@ -88,190 +89,86 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PaymentPlanConfiguration, PaymentPlanConfigurationOptions, PaymentPlanFrequency, getPaymentPlanConfiguration, noopPaymentPlanFrequency } from "./utils.partial";
+    import { PaymentPlanConfiguration, PaymentPlanFrequency, getNoopPaymentPlanFrequency, useConfigureNewPaymentPlan as useConfigurePaymentPlanFeature } from "./utils.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
     import { ValidationResult } from "@Obsidian/ValidationRules";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { createCurrency, createZeroCurrency, Currency, CurrencyOptions } from "./currency.partial";
+    import { Currency, createCurrency } from "./currency.partial";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { DateTimeCell } from "@Obsidian/Controls/grid";
 
     const props = defineProps({
         modelValue: {
             type: Boolean as PropType<boolean>,
             default: false,
-        },
-
-        /**
-         * The allowed payment plan frequencies.
-         */
-        paymentPlanFrequencies: {
-            type: Object as PropType<PaymentPlanFrequency[]>,
-            required: true,
-        },
-
-        paymentDeadlineDate: {
-            type: Object as PropType<RockDateTime>,
-            required: true,
-        },
-
-        currencyOptions: {
-            type: Object as PropType<CurrencyOptions>,
-            required: true,
-        },
-
-        /**
-         * The outstanding balance due (the amount that is still owed).
-         */
-        balanceDue: {
-            type: Object as PropType<Currency>,
-            required: true,
-        },
-
-        /** The payment plan configuration (reactive). */
-        paymentPlanConfiguration: {
-            type: Object as PropType<PaymentPlanConfiguration | undefined>,
-            required: true,
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;
-        (e: "update:paymentPlanConfiguration", value: PaymentPlanConfiguration): void;
-        (e: "configure", value: PaymentPlanConfiguration): void;
     }>();
 
-    const zeroCurrency = createZeroCurrency(props.currencyOptions);
+    const {
+        paymentPlanFrequencies,
+        wipPaymentPlanConfiguration,
+        configure,
+        initializeWorkInProgress,
+        reconfigureWorkInProgress } = useConfigurePaymentPlanFeature();
 
     //#region Values
 
     // Initialize refs with empty values,
     // then call a separate initialize function for code clarity.
-    const paymentFrequencyItems = ref<ListItemBag[]>(props.paymentPlanFrequencies?.map(frequency => frequency.listItemBag) ?? []);
-    const paymentPlanFrequency = ref<PaymentPlanFrequency>(noopPaymentPlanFrequency);
-    const startDateIsoString = ref<string>("");
-    const amountToPayToday = ref<Currency>(zeroCurrency);
-    const amountToPayTodayAdjustmentCurrency = ref<Currency>(zeroCurrency);
-    const amountToPayTodayPlusAdjustmentCurrency = ref<Currency>(zeroCurrency);
+    const paymentPlanFrequency = ref<PaymentPlanFrequency>();
+    const startDateIsoString = ref<string | null>(null);
+    const paymentFrequencyGuidOrEmptyString = ref<string>("");
+    const amountToPayToday = ref<number>(0);
+    const amountToPayTodayAdjustmentCurrency = ref<Currency | null | undefined>();
+    const amountToPayTodayPlusAdjustmentCurrency = ref<Currency | null | undefined>();
     const numberOfPayments = ref<number>(0);
-    const numberOfPaymentsItems = ref<ListItemBag[]>([]);
 
     //#endregion
 
     //#region Computed Values
 
+    /**
+     * The allowed payment plan frequencies.
+     */
+    const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => paymentPlanFrequencies.value.map(frequency => frequency.listItemBag) ?? []);
+
     const isPaymentPlanFrequencySelected = computed<boolean>(() => {
-        return !!paymentPlanFrequency.value.transactionFrequency.definedValueGuid;
+        return !!wipPaymentPlanConfiguration.value?.paymentPlanFrequency.transactionFrequency.definedValueGuid;
     });
 
     const paymentAmountMessage = computed<string>(() => {
-        if (!props.paymentPlanConfiguration || props.paymentPlanConfiguration.amountPerPayment.isInvalid) {
+        if (!wipPaymentPlanConfiguration.value || wipPaymentPlanConfiguration.value.amountPerPayment.isInvalid) {
             return "Number of Payments is required";
         }
         else {
-            return `${props.paymentPlanConfiguration.amountPerPayment} × ${numberOfPayments.value}`;
+            return `${wipPaymentPlanConfiguration.value.amountPerPayment} × ${wipPaymentPlanConfiguration.value.numberOfPayments}`;
         }
     });
 
     const internalIsShown = useVModelPassthrough(props, "modelValue", emit);
 
     const amountToPayTodaySuffix = computed<string>(() => {
-        if (amountToPayToday.value.isEqualTo(props.balanceDue)) {
+        if (!wipPaymentPlanConfiguration.value) {
+            return "";
+        }
+        else if (wipPaymentPlanConfiguration.value.balanceDue.isEqualTo(amountToPayToday.value ?? 0)) {
             return `pay in full`;
         }
-        else if (!amountToPayTodayAdjustmentCurrency.value.isZero) {
-            return `added ${amountToPayTodayAdjustmentCurrency.value} to evenly distribute the remaining payments`;
+        else if (!wipPaymentPlanConfiguration.value.amountToPayTodayAdjustment.isZero) {
+            return `added ${wipPaymentPlanConfiguration.value.amountToPayTodayAdjustment} to evenly distribute the remaining payments`;
         }
         else {
             return "";
         }
     });
 
-    // const numberOfPaymentsItems = ref<ListItemBag[]>([]);() => {
-    //     if (!paymentPlanFrequency.value) {
-    //         // A frequency must be selected to show the number of payments list.
-    //         return [];
-    //     }
-
-    //     function getNumberRange(start: number, stop: number): number[] {
-    //         if (start > stop) {
-    //             // Make sure start is less than stop.
-    //             const oldStart = start;
-    //             start = stop;
-    //             stop = oldStart;
-    //         }
-    //         return Array(stop - start + 1).fill(0).map((v, i) => i + start);
-    //     }
-
-    //     const maxNumberOfPayments: number = paymentPlanFrequency.value.maxNumberOfPayments;
-    //     const paymentPlanAmountToDivideCurrency: Currency = props.paymentPlanConfiguration?.
-    //     let stop = false;
-    //     const numberRange = getNumberRange(2, maxNumberOfPayments)
-    //         .filter(numb => {
-    //             // Remove "Number of Payments" items that would result in 0.00 per payment;
-    //             // it doesn't make sense to have a payment plan where you pay 0.00 each week, month, etc.
-    //             // Since the numbers are sorted in ascending order,
-    //             // can filter subsequent numbers once we find one that results in 0.00 per payment.
-    //             if (stop || paymentPlanAmountToDivideCurrency.value.divide(numb).quotient.isZero) {
-    //                 stop = true;
-    //                 return false;
-    //             }
-    //             else {
-    //                 return true;
-    //             }
-    //         });
-
-    //     // Convert the number of payments to an array of list bags.
-    //     return numberRange.map(n => ({
-    //         text: n.toString(),
-    //         value: n.toString()
-    //     }));
-    // });
-
-    //#endregion
-
-    //#region Functions
-
-    function validateAmountToPayTodayRule(_value: unknown, _params?: unknown[]): ValidationResult {
-        if (amountToPayToday.value.isLessThan(props.paymentPlanConfiguration?.minAmountToPayToday ?? 0)) {
-            return "must be greater than or equal to the minimum amount";
-        }
-        else {
-            return true;
-        }
-    }
-
-    function validateAmountToPayTodayLessThanRemaining(_value: unknown, _params?: unknown[]): ValidationResult {
-        if (props.balanceDue.isLessThan(amountToPayToday.value)) {
-            return "must be less than the minimum amount";
-        }
-        else {
-            return true;
-        }
-    }
-
-    function updatePaymentPlanConfiguration(overrides?: Partial<PaymentPlanConfigurationOptions>): PaymentPlanConfiguration {
-        // TypeScript requires this redundant cast.
-        const desiredPaymentPlanFrequency: PaymentPlanFrequency = paymentPlanFrequency.value as PaymentPlanFrequency;
-        const config = getPaymentPlanConfiguration({
-            amountToPayToday: amountToPayToday.value,
-            balanceDue: props.balanceDue,
-            desiredAllowedPaymentPlanFrequencies: props.paymentPlanFrequencies,
-            desiredNumberOfPayments: numberOfPayments.value,
-            desiredPaymentPlanFrequency,
-            desiredStartDate: RockDateTime.parseISO(startDateIsoString.value) ?? RockDateTime.now().date,
-            endDate: props.paymentDeadlineDate,
-            minAmountToPayToday: props.paymentPlanConfiguration?.minAmountToPayToday ?? zeroCurrency,
-            ...overrides
-        });
-
-        emit("update:paymentPlanConfiguration", config);
-
-        return config;
-    }
-
-    function updateModal(config: PaymentPlanConfiguration): void {
+    const numberOfPaymentsItems = computed<ListItemBag[]>(() => {
         function createRange(inclusiveStart: number, inclusiveEnd: number): number[] {
             const range: number[] = [];
 
@@ -282,22 +179,51 @@
             return range;
         }
 
-        paymentFrequencyItems.value = config.paymentPlanFrequencies.map(p => p.listItemBag);
+        if (!wipPaymentPlanConfiguration.value) {
+            return [];
+        }
+        else {
+            return createRange(2, wipPaymentPlanConfiguration.value.paymentPlanFrequency.maxNumberOfPayments)
+                .map(n => ({
+                    text: n.toString(),
+                    value: n.toString()
+                }));
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    function validateAmountToPayTodayRule(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (wipPaymentPlanConfiguration.value?.minAmountToPayToday?.isGreaterThan(amountToPayToday.value ?? 0)) {
+            return "must be greater than or equal to the minimum amount";
+        }
+        else {
+            return true;
+        }
+    }
+
+    function validateAmountToPayTodayLessThanRemaining(_value: unknown, _params?: unknown[]): ValidationResult {
+        if (wipPaymentPlanConfiguration.value?.balanceDue.isLessThan(amountToPayToday.value ?? 0)) {
+            return "must be less than the minimum amount";
+        }
+        else {
+            return true;
+        }
+    }
+
+    function updateModal(config: PaymentPlanConfiguration): void {
         paymentPlanFrequency.value = config.paymentPlanFrequency;
         startDateIsoString.value = config.startDate?.toISOString() ?? "";
-        numberOfPaymentsItems.value = createRange(2, config.paymentPlanFrequency.maxNumberOfPayments)
-            .map(n => ({
-                text: n + "",
-                value: n + ""
-            }));
         numberOfPayments.value = config.numberOfPayments;
-        // numberOfPaymentsItems - Updated in computed ref.
-        amountToPayToday.value = config.amountToPayToday;
+        amountToPayToday.value = config.amountToPayToday.number;
+        paymentFrequencyGuidOrEmptyString.value = config.paymentPlanFrequency.transactionFrequency.definedValueGuid;
 
         // Amount To Pay Today fields need to be zeroed out
         // and updated on the next tick for them to be properly update.
-        amountToPayTodayAdjustmentCurrency.value = zeroCurrency;
-        amountToPayTodayPlusAdjustmentCurrency.value = zeroCurrency;
+        amountToPayTodayAdjustmentCurrency.value = null;
+        amountToPayTodayPlusAdjustmentCurrency.value = null;
         nextTick(() => {
             amountToPayTodayAdjustmentCurrency.value = config.amountToPayTodayAdjustment;
             amountToPayTodayPlusAdjustmentCurrency.value = config.amountToPayToday.add(config.amountToPayTodayAdjustment);
@@ -309,30 +235,38 @@
     //#region Event Handlers
 
     function onUpdateNumberOfPaymentsStringOrEmpty(value: string | string[]): void {
-        let numberOfPayments;
+        let numbOfPayments: number;
         if (Array.isArray(value)) {
-            numberOfPayments = toNumber(value[0] ?? "");
+            numbOfPayments = toNumber(value[0] ?? "");
         }
         else {
-            numberOfPayments = toNumber(value);
+            numbOfPayments = toNumber(value);
         }
 
+        // Update the ref, then recalculate the payment plan configuration
+        // on the next tick (otherwise the UI won't know the ref changed).
+        numberOfPayments.value = numbOfPayments;
+
         nextTick(() => {
-            updatePaymentPlanConfiguration({
-                desiredNumberOfPayments: numberOfPayments
+            reconfigureWorkInProgress({
+                desiredNumberOfPayments: numbOfPayments
             });
         });
-    }
-
-    function onBlurAmountToPayToday(): void {
-        updatePaymentPlanConfiguration();
     }
 
     function onUpdateAmountToPayToday(value: number | null): void {
         // Only update the ref here. DO NOT recalculate on update;
         // otherwise, the value will get overwritten on each character entered.
         // Instead, calculate on blur.
-        amountToPayToday.value = createCurrency(value || 0, props.currencyOptions);
+        amountToPayToday.value = value ?? 0;
+    }
+
+    function onBlurAmountToPayToday(): void {
+        if (wipPaymentPlanConfiguration.value) {
+            reconfigureWorkInProgress({
+                amountToPayToday: createCurrency(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyOptions),
+            });
+        }
     }
 
     function onUpdateStartDateIsoString(value: string | null): void {
@@ -342,8 +276,14 @@
                 ? RockDateTime.parseISO(value) ?? today
                 : today;
 
-        updatePaymentPlanConfiguration({
-            desiredStartDate: desiredStartDateOverride
+        // Update the ref, then recalculate the payment plan configuration
+        // on the next tick (otherwise the UI won't know the ref changed).
+        startDateIsoString.value = desiredStartDateOverride.toISOString();
+
+        nextTick(() => {
+            reconfigureWorkInProgress({
+                desiredStartDate: desiredStartDateOverride
+            });
         });
     }
 
@@ -352,29 +292,53 @@
             throw "Multiple payment frequencies are not supported";
         }
 
-        updatePaymentPlanConfiguration({
-            desiredPaymentPlanFrequency: props.paymentPlanFrequencies.find(p => areEqual(p.listItemBag.value, guid)) ?? noopPaymentPlanFrequency
+        // Update the ref, then recalculate the payment plan configuration
+        // on the next tick (otherwise the UI won't know the ref changed).
+        paymentFrequencyGuidOrEmptyString.value = guid;
+
+        nextTick(() => {
+            reconfigureWorkInProgress({
+                desiredPaymentPlanFrequency: paymentPlanFrequencies.value.find(p => areEqual(p.listItemBag.value, guid))
+            });
         });
     }
 
     function onConfigurePaymentPlan(): void {
-        // Recalc the amount to pay today one last time before setting the payment plan values.
-        const config = updatePaymentPlanConfiguration();
+        if (wipPaymentPlanConfiguration.value) {
+            // Recalc the amount to pay today one last time before setting the payment plan values.
+            reconfigureWorkInProgress({
+                // The amount to pay today should manually be passed in here
+                // to handle the case where an individual pressed [Enter] while
+                // in the amount to pay today field (onBlur is not triggered).
+                amountToPayToday: createCurrency(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyOptions)
+            });
 
-        nextTick(() => {
-            // Close the modal.
+            configure(wipPaymentPlanConfiguration.value);
+
             internalIsShown.value = false;
-            emit("configure", config);
-        });
+        }
+    }
+
+    function onCancel(): void {
+        // Clear the "work in progress" plan before closing.
+        wipPaymentPlanConfiguration.value = null;
     }
 
     //#endregion
 
     //#region Watchers
 
-    watch([() => props.paymentPlanConfiguration, () => props.modelValue], ([config, isShown]) => {
-        if (isShown && config) {
+    watch(wipPaymentPlanConfiguration, (config) => {
+        if (config) {
             updateModal(config);
+        }
+    }, {
+        immediate: true
+    });
+
+    watch(() => props.modelValue, (isShown) => {
+        if (isShown && !wipPaymentPlanConfiguration.value) {
+            initializeWorkInProgress();
         }
     }, {
         immediate: true
