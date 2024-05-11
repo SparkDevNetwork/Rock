@@ -89,7 +89,7 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PaymentPlanConfiguration, PaymentPlanFrequency, noopPaymentPlanFrequency, useConfigureNewPaymentPlan as useConfigurePaymentPlanFeature } from "./utils.partial";
+    import { PaymentPlanConfiguration, PaymentPlanFrequency, getNoopPaymentPlanFrequency, useConfigureNewPaymentPlan as useConfigurePaymentPlanFeature } from "./utils.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
     import { ValidationResult } from "@Obsidian/ValidationRules";
@@ -97,6 +97,7 @@
     import { Currency, createCurrency } from "./currency.partial";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { DateTimeCell } from "@Obsidian/Controls/grid";
 
     const props = defineProps({
         modelValue: {
@@ -120,7 +121,7 @@
 
     // Initialize refs with empty values,
     // then call a separate initialize function for code clarity.
-    const paymentPlanFrequency = ref<PaymentPlanFrequency>(noopPaymentPlanFrequency);
+    const paymentPlanFrequency = ref<PaymentPlanFrequency>();
     const startDateIsoString = ref<string | null>(null);
     const paymentFrequencyGuidOrEmptyString = ref<string>("");
     const amountToPayToday = ref<number>(0);
@@ -135,7 +136,6 @@
     /**
      * The allowed payment plan frequencies.
      */
-    // TODO JMH The balance due should have a watcher that updates the work in progress whenever it changes.
     const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => paymentPlanFrequencies.value.map(frequency => frequency.listItemBag) ?? []);
 
     const isPaymentPlanFrequencySelected = computed<boolean>(() => {
@@ -295,24 +295,28 @@
         // Update the ref, then recalculate the payment plan configuration
         // on the next tick (otherwise the UI won't know the ref changed).
         paymentFrequencyGuidOrEmptyString.value = guid;
-        
+
         nextTick(() => {
             reconfigureWorkInProgress({
-                desiredPaymentPlanFrequency: paymentPlanFrequencies.value.find(p => areEqual(p.listItemBag.value, guid)) ?? noopPaymentPlanFrequency
+                desiredPaymentPlanFrequency: paymentPlanFrequencies.value.find(p => areEqual(p.listItemBag.value, guid))
             });
         });
     }
 
     function onConfigurePaymentPlan(): void {
-        // Recalc the amount to pay today one last time before setting the payment plan values.
-        reconfigureWorkInProgress();
-
         if (wipPaymentPlanConfiguration.value) {
-            configure(wipPaymentPlanConfiguration.value);
-        }
+            // Recalc the amount to pay today one last time before setting the payment plan values.
+            reconfigureWorkInProgress({
+                // The amount to pay today should manually be passed in here
+                // to handle the case where an individual pressed [Enter] while
+                // in the amount to pay today field (onBlur is not triggered).
+                amountToPayToday: createCurrency(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyOptions)
+            });
 
-        // Close the modal.
-        internalIsShown.value = false;
+            configure(wipPaymentPlanConfiguration.value);
+
+            internalIsShown.value = false;
+        }
     }
 
     function onCancel(): void {

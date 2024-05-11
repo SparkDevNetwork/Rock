@@ -159,7 +159,7 @@ const balanceDue = ref<Currency | undefined>();
 /**
  * Composable state for configuring a new payment plan.
  */
-// TODO JMH Add a return type.
+// TODO Add a return type.
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/explicit-module-boundary-types
 export function useConfigureNewPaymentPlan() {
     const registrationEntryState = use(CurrentRegistrationEntryState);
@@ -352,13 +352,15 @@ export function useConfigureNewPaymentPlan() {
             throw "Cannot initialize 'work in progress' payment plan before useConfigureNewPaymentPlan().init() is called.";
         }
 
+        const today: RockDateTime = RockDateTime.now().date;
+        const endDate: RockDateTime = paymentPlanDeadlineDate.value ?? RockDateTime.now().addYears(1).date;
         const transactionFrequencyGuid: Guid | null = registrationEntryState.paymentPlan?.transactionFrequencyGuid ?? null;
+        const noopPaymentPlanFrequency = getNoopPaymentPlanFrequency(today, endDate);
         const desiredPaymentPlanFrequency =
             transactionFrequencyGuid
-                ? paymentPlanFrequencies.value.find(p => areEqual(p.listItemBag.value, transactionFrequencyGuid)) ?? noopPaymentPlanFrequency
+                ? paymentPlanFrequencies.value.find(p => areEqual(p.listItemBag.value, transactionFrequencyGuid)) ?? noopTransactionFrequency
                 : noopPaymentPlanFrequency;
 
-        const today: RockDateTime = RockDateTime.now().date;
 
         wipPaymentPlanConfiguration.value = getPaymentPlanConfiguration({
             amountToPayToday: createCurrency(
@@ -369,11 +371,11 @@ export function useConfigureNewPaymentPlan() {
             balanceDue: balanceDue.value,
             desiredAllowedPaymentPlanFrequencies: paymentPlanFrequencies.value,
             desiredNumberOfPayments: registrationEntryState.paymentPlan?.numberOfPayments ?? 0,
-            desiredPaymentPlanFrequency,
+            desiredPaymentPlanFrequency: desiredPaymentPlanFrequency as PaymentPlanFrequency,
             desiredStartDate: registrationEntryState.paymentPlan?.startDate
                 ? RockDateTime.parseISO(registrationEntryState.paymentPlan.startDate) ?? today
                 : today,
-            endDate: paymentPlanDeadlineDate.value ?? RockDateTime.now().addYears(1).date,
+            endDate,
             minAmountToPayToday: createCurrency(readonlyRegistrationCostSummary.value.minimumRemainingAmount, balanceDue.value.currencyOptions),
         });
     }
@@ -1148,8 +1150,9 @@ export const noopTransactionFrequency: TransactionFrequency = {
         return 0;
     },
 
-    getValidTransactionDate(_firstDateTime: RockDateTime, _secondDateTime: RockDateTime, _desiredDate: RockDateTime): RockDateTime | null {
-        return null;
+    getValidTransactionDate(_firstDateTime: RockDateTime, _secondDateTime: RockDateTime, desiredDate: RockDateTime): RockDateTime | null {
+        // Allow the desired date to be selected.
+        return desiredDate;
     },
 
     getNextTransactionDate: function (_firstDateTime: RockDateTime, _secondDateTime: RockDateTime, _previousDate: RockDateTime): RockDateTime | null {
@@ -1207,24 +1210,25 @@ export function getPaymentPlanFrequency(listItemBag: ListItemBag, desiredStartDa
         };
     }
     else {
-        return noopPaymentPlanFrequency;
+        return getNoopPaymentPlanFrequency(desiredStartDate, paymentDeadlineDate);
     }
 }
 
-export const noopPaymentPlanFrequency: PaymentPlanFrequency = {
-    listItemBag: {},
-    transactionFrequency: noopTransactionFrequency,
-    maxNumberOfPayments: 0,
-    // Start and end dates don't matter.
-    startPaymentDate: RockDateTime.now().date,
-    paymentDeadlineDate: RockDateTime.now().date.addDays(-1),
-    getNextTransactionDate(_previousDate: RockDateTime) {
-        return null;
-    },
-    getValidTransactionDate(_desiredDate: RockDateTime) {
-        return null;
-    }
-};
+export function getNoopPaymentPlanFrequency(startPaymentDate: RockDateTime, paymentDeadlineDate: RockDateTime): PaymentPlanFrequency {
+    return {
+        listItemBag: {},
+        transactionFrequency: noopTransactionFrequency,
+        maxNumberOfPayments: 0,
+        startPaymentDate,
+        paymentDeadlineDate,
+        getNextTransactionDate(_previousDate: RockDateTime) {
+            return null;
+        },
+        getValidTransactionDate(_desiredDate: RockDateTime) {
+            return null;
+        }
+    };
+}
 
 //#endregion
 
@@ -1278,7 +1282,14 @@ export function getPaymentPlanConfiguration(options: PaymentPlanConfigurationOpt
     }
 
     function getAllowedPaymentPlanFrequency(allowedPaymentPlanFrequencies: PaymentPlanFrequency[], desiredPaymentPlanFrequency: PaymentPlanFrequency): PaymentPlanFrequency {
-        return allowedPaymentPlanFrequencies.find(allowedPaymentPlanFrequency => desiredPaymentPlanFrequency.transactionFrequency.hasDefinedValueGuid(allowedPaymentPlanFrequency.transactionFrequency.definedValueGuid)) ?? noopPaymentPlanFrequency;
+        const noopPaymentPlanFrequency = getNoopPaymentPlanFrequency(options.desiredStartDate, options.endDate);
+
+        if (desiredPaymentPlanFrequency) {
+            return allowedPaymentPlanFrequencies.find(allowedPaymentPlanFrequency => desiredPaymentPlanFrequency.transactionFrequency.hasDefinedValueGuid(allowedPaymentPlanFrequency.transactionFrequency.definedValueGuid)) ?? noopPaymentPlanFrequency;
+        }
+        else {
+            return noopPaymentPlanFrequency;
+        }
     }
 
     function getNumberOfPayments(desiredNumberOfPayments: number, maxNumberOfPayments: number, minNumberOfPayments: number): number {
