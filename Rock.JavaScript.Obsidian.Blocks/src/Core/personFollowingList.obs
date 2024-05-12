@@ -5,6 +5,7 @@
           keyField="idKey"
           itemTerm="Following"
           :entityTypeGuid="EntityType.Following"
+          personKeyField="idKey"
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"

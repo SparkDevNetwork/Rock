@@ -4,6 +4,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          personKeyField="personIdKey"
           :itemTerm="itemTerm"
           :entityTypeGuid="EntityType.Step"
           stickyHeader
