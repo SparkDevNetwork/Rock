@@ -248,6 +248,9 @@
         containerElement.addEventListener("drop", function (e) {
             e.preventDefault();
 
+            // Set the pointer positions from the mouse event.
+            stage.setPointersPositions(e);
+
             const pos = stage.getPointerPosition();
             let dragData: DragData | undefined;
 
@@ -263,9 +266,6 @@
             if (!dragData || !pos) {
                 return;
             }
-
-            // Set the pointer positions from the mouse event.
-            stage.setPointersPositions(e);
 
             const field = createDefaultField(dragData?.type ?? 0, dragData?.subtype ?? 0);
 

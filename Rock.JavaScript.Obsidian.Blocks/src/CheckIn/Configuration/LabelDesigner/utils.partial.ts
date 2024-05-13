@@ -72,6 +72,15 @@ export function useNodeDragBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
     return nodeDragBoundFunc;
 }
 
+/**
+ * Creates a new field to be used as a default when dragging a new control
+ * onto the worksurface.
+ *
+ * @param fieldType The field type to create.
+ * @param subtype The field subtype to create.
+ *
+ * @returns A new field instance object.
+ */
 export function createDefaultField(fieldType: LabelFieldType, subtype: number): LabelFieldBag {
     const field: LabelFieldBag = {
         guid: newGuid(),
@@ -86,7 +95,20 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         configurationValues: {}
     };
 
-    if (fieldType === LabelFieldType.Rectangle) {
+    if (fieldType === LabelFieldType.Text) {
+        const config = field.configurationValues as StringRecord<TextFieldConfigurationBag>;
+
+        config.fontSize = "14";
+        config.horizontalAlignment = `${HorizontalTextAlignment.Left}`;
+        config.isBold = "false";
+        config.isColorInverted = "false";
+        config.isCondensed = "false";
+        config.placeholderText = "Text 1";
+
+        field.width = 1.5;
+        field.height = 14/72;
+    }
+    else if (fieldType === LabelFieldType.Rectangle) {
         const config = field.configurationValues as StringRecord<RectangleFieldConfigurationBag>;
 
         config.isBlack = "true";
