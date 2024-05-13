@@ -1,31 +1,39 @@
 <template>
-    <div class="label-designer">
-        <Panel title="Label Designer"
-               hasFullscreen>
-            <template #headerActions>
-                <LabelDimensionsButton v-model="labelSize" />
-            </template>
+    <Panel title="Label Designer"
+           type="block"
+           hasFullscreen
+           class="label-designer">
+        <template #headerActions>
+            <LabelDimensionsButton v-model="labelSize" />
+        </template>
 
-            <div class="panel-body-fill" style="display: flex;">
-                <Menu :labelManager="labelManager" />
+        <div class="panel-body-fill" style="display: flex;">
+            <Menu :labelManager="labelManager" />
 
-                <Editor :labelManager="labelManager" @selectionChanged="onFieldSelectionChanged" />
-            </div>
+            <Editor :labelManager="labelManager" />
+        </div>
 
-            <template #footerActions>
-                <RockButton btnType="primary">Save</RockButton>
-            </template>
-        </Panel>
-    </div>
+        <template #footerActions>
+            <RockButton btnType="primary">Save</RockButton>
+        </template>
+    </Panel>
 </template>
 
 <style scoped>
-.label-designer {
+* :deep(.label-designer) {
     --menu-bar-height: 37px;
 }
 
+* :deep(.panel.label-designer > .panel-body) {
+    display: flex;
+    flex-direction: column;
+}
+
 .panel-body-fill {
-    margin: calc(var(--panel-body-padding) * -1);
+    margin-left: calc(var(--panel-body-padding) * -1);
+    margin-top: calc(var(--panel-body-padding) * -1);
+    margin-right: calc(var(--panel-body-padding) * -1);
+    flex-grow: 1;
 }
 
 .container {
