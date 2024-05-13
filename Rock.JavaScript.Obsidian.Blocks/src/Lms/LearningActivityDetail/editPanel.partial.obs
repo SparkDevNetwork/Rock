@@ -200,6 +200,9 @@
 
     // #region Values
 
+    // Keep track of the configuration if the user switches actyivity type components.
+    const typeConfigMap = new Map<string, string>();
+
     const availableDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(AvailableDateCalculationMethodDescription ?? []));
     const dueDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(DueDateCalculationMethodDescription ?? []));
     const assignTos = ref<ListItemBag[]>(enumToListItemBag(AssignToDescription ?? []));
@@ -270,6 +273,24 @@
         return null;
     });
 
+    // Make sure the configuration json is in sync with the selected activity type.
+    // This will prevent users from losing their configuration when switching activity types.
+    // We also need an empty configuration in order to instantiate the defaults in useLearningComponent.
+    watch(activityComponentValue, (newValue, oldValue) => {
+        if (oldValue != null && oldValue.length > 0 && activityComponentSettingsJson.value?.length > 0) {
+            // Set the old configuraton and map it to the activity type.
+            typeConfigMap.set(oldValue, activityComponentSettingsJson.value);
+
+            // Remove the configuration for proper instantiation of new config values.
+            activityComponentSettingsJson.value = "";
+        }
+
+        // Look for a configuration for the new activity type.
+        if (typeConfigMap.has(newValue)) {
+            activityComponentSettingsJson.value = typeConfigMap.get(newValue) ?? "";
+        }
+    }, {immediate: true});
+
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
         updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
@@ -323,10 +344,9 @@
         emit("update:modelValue", newValue);
     });
 
-    // watch(activityBag, () => {
-    //     console.warn("block", activityBag.value);
-    //     activityComponentSettingsJson.value = activityBag.value.activityComponentSettingsJson ?? "";
-    // });
+    watch(activityBag, () => {
+        activityComponentSettingsJson.value = activityBag.value.activityComponentSettingsJson ?? "";
+    });
 
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
