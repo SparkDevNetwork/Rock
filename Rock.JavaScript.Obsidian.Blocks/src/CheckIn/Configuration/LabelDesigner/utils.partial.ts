@@ -2,6 +2,7 @@ import Konva from "@Obsidian/Libs/konva";
 import { HorizontalTextAlignment, LabelFieldBag, LabelFieldType, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { Rectangle } from "./shapes.partial";
 
 // #region Worksurface Utilities
 
@@ -77,25 +78,12 @@ export function useNodeDragBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
  *
  * @returns A new shape or `undefined` if the field type was not recognized.
  */
-export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Shape | undefined {
+export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group | Konva.Shape | undefined {
     if (fieldType === LabelFieldType.Text) {
         return new Konva.Text();
     }
     else if (fieldType === LabelFieldType.Rectangle) {
-        const rect = new Konva.Rect();
-
-        rect.hitFunc((ctx, rc) => {
-            // By default a rectangle in outline mode will only hit test on the
-            // outline and not the inner (empty) content. So we override that
-            // to ensure the entire outline and fill area match a hit test.
-            ctx.beginPath();
-            ctx.rect(0, 0, rc.width(), rc.height());
-            ctx.closePath();
-            ctx._fill(rc);
-            ctx._stroke(rc);
-        });
-
-        return rect;
+        return new Rectangle();
     }
 
     return undefined;
@@ -111,12 +99,12 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Shape 
  *
  * @returns `true` if the shape was updated or `false` if it could not be updated.
  */
-export function updateShapeFromField(shape: Konva.Shape, field: LabelFieldBag): boolean {
+export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: LabelFieldBag): boolean {
     if (field.fieldType === LabelFieldType.Text && shape instanceof Konva.Text) {
         updateTextShapeFromField(shape, field);
         return true;
     }
-    else if (field.fieldType === LabelFieldType.Rectangle && shape instanceof Konva.Rect) {
+    else if (field.fieldType === LabelFieldType.Rectangle && shape instanceof Rectangle) {
         updateRectShapeFromField(shape, field);
         return true;
     }
@@ -137,7 +125,7 @@ function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void
 
     const config = field.configurationValues as StringRecord<TextFieldConfigurationBag>;
 
-    const fontSize =  toNumberOrNull(config.fontSize) ?? 12;
+    const fontSize = toNumberOrNull(config.fontSize) ?? 12;
     const alignment = toNumber(config.horizontalAlignment) as HorizontalTextAlignment;
 
     shape.fontFamily(asBoolean(config.isCondensed) ? "Roboto Condensed" : "Roboto");
@@ -163,7 +151,7 @@ function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateRectShapeFromField(shape: Konva.Rect, field: LabelFieldBag): void {
+function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag): void {
     if (!field.configurationValues) {
         return;
     }
@@ -173,20 +161,36 @@ function updateRectShapeFromField(shape: Konva.Rect, field: LabelFieldBag): void
     const roundingIndex = toNumber(config.cornerRadius);
 
     if (asBoolean(config.isFilled)) {
-        shape.fillEnabled(true);
-        shape.strokeEnabled(false);
-        shape.fill(asBoolean(config.isBlack) ? "black" : "white");
-        shape.strokeWidth(0);
+        shape.rect.fillEnabled(true);
+        shape.rect.strokeEnabled(false);
+        shape.rect.strokeWidth(0);
+        shape.rect.fill(asBoolean(config.isBlack) ? "black" : "white");
+
+        // Reset rectangle to fill entire height and width.
+        shape.rect.setAttrs({
+            x: 0,
+            y: 0,
+            width: shape.width(),
+            height: shape.height()
+        });
     }
     else {
-        shape.fillEnabled(false);
-        shape.strokeEnabled(true);
-        shape.strokeScaleEnabled(false);
-        shape.strokeWidth(toNumber(config.borderThickness));
-        shape.stroke(asBoolean(config.isBlack) ? "black" : "white");
+        shape.rect.fillEnabled(false);
+        shape.rect.strokeEnabled(true);
+        shape.rect.strokeWidth(toNumber(config.borderThickness));
+        shape.rect.stroke(asBoolean(config.isBlack) ? "black" : "white");
+
+        // The HTML Context always draws borders on center, so we need to adjust
+        // the rectangle to simulate an inner border.
+        shape.rect.setAttrs({
+            x: shape.rect.strokeWidth() / 2,
+            y: shape.rect.strokeWidth() / 2,
+            width: shape.width() - shape.rect.strokeWidth(),
+            height: shape.height() - shape.rect.strokeWidth()
+        });
     }
 
-    shape.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
+    shape.rect.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
 }
 
 // #endregion

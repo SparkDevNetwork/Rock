@@ -129,7 +129,7 @@
 
         for (const field of props.labelManager.current.value.fields ?? []) {
             const node = nodeLayer.children.find(n => n.id() === field.guid);
-            let shape = node instanceof Konva.Shape ? node : undefined;
+            let shape = (node instanceof Konva.Shape || node instanceof Konva.Group) ? node : undefined;
 
             if (shape) {
                 // Try to update the node, if we can't update it then remove
@@ -247,18 +247,26 @@
 
         // clicks should select/deselect shapes
         stage.on("click tap", function (e) {
+            let target: Konva.Node | null = e.target;
+
+            // If we selected something without an id, it might be nested in
+            // a group. Walk up the tree until we find an id.
+            while (target && !target.id()) {
+                target = target.parent;
+            }
+
             // If they clicked on the background, deselect everything.
-            if (e.target === stage) {
+            if (!target || target === stage) {
                 tr.nodes([]);
                 props.labelManager.selectField(undefined);
 
                 return;
             }
 
-            const field = props.labelManager.current.value.fields?.find(f => f.guid === e.target.id());
+            const field = props.labelManager.current.value.fields?.find(f => f.guid === target?.id());
 
             if (!field) {
-                console.error(`Could not find field '${e.target.id()}'.`);
+                console.error(`Could not find field '${target.id()}'.`);
 
                 tr.nodes([]);
                 props.labelManager.selectField(undefined);
@@ -267,7 +275,7 @@
             }
 
             // Select the node, only single selection supported.
-            tr.nodes([e.target]);
+            tr.nodes([target]);
             props.labelManager.selectField(field.guid);
         });
 
