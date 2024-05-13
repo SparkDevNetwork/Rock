@@ -1729,11 +1729,36 @@ namespace RockWeb.Blocks.Event
                 hlCost.Visible = true;
                 hlCost.Text = registration.DiscountedCost.FormatAsCurrency();
 
-                decimal balanceDue = registration.BalanceDue;
+                var balanceDue = registration.BalanceDue;
                 hlBalance.Visible = true;
                 hlBalance.Text = balanceDue.FormatAsCurrency();
-                hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger :
-                    balanceDue < 0 ? LabelType.Warning : LabelType.Success;
+                
+                var isPaymentPlanActive = registration.IsPaymentPlanActive;
+
+                if ( balanceDue > 0.0m )
+                {
+                    if ( !isPaymentPlanActive )
+                    {
+                        hlBalance.LabelType = LabelType.Danger;
+                    }
+                    else
+                    {
+                        hlBalance.LabelType = LabelType.Warning;
+                    }
+                }
+                else if ( balanceDue < 0.0m )
+                {
+                    hlBalance.LabelType = LabelType.Warning;
+                }
+                else
+                {
+                    hlBalance.LabelType = LabelType.Success;
+                }
+
+                if ( isPaymentPlanActive )
+                {
+                    hlBalance.IconCssClass = "fa fa-calendar-day";
+                }
             }
             else
             {
