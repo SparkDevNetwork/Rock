@@ -52,13 +52,10 @@
     import Menu from "./LabelDesigner/menu.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, ref } from "vue";
+    import { computed } from "vue";
     import { LabelBag, LabelFieldType, Size } from "./LabelDesigner/types.partial";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
-    import { Guid } from "@Obsidian/Types";
-
-    const selectedFieldGuid = ref<Guid | undefined>();
 
     const labelSize = computed<Size>({
         get() {
@@ -284,8 +281,4 @@
     };
 
     const labelManager = new LabelUndoManager(label2);
-
-    function onFieldSelectionChanged(guid: Guid | undefined): void {
-        selectedFieldGuid.value = guid;
-    }
 </script>

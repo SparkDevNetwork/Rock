@@ -32,8 +32,7 @@
         <div class="editor-content">
             <Worksurface :labelManager="props.labelManager"
                          :showGrid="isGridVisible"
-                         :snapToGrid="isGridLocked"
-                         @selectionChanged="onSelectionChanged" />
+                         :snapToGrid="isGridLocked" />
 
             <div class="editor-features">
                 <Switch v-model="isGridVisible"
@@ -111,7 +110,6 @@
     import Worksurface from "./worksurface.partial.obs";
     import { PropType, ref } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { Guid } from "@Obsidian/Types";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const isGridVisible = ref(false);
@@ -123,12 +121,4 @@
             required: true
         }
     });
-
-    const emit = defineEmits<{
-        (e: "selectionChanged", value: Guid | undefined): void;
-    }>();
-
-    function onSelectionChanged(selection: Guid | undefined): void {
-        emit("selectionChanged", selection);
-    }
 </script>
