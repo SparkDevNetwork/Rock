@@ -15,10 +15,32 @@
 // </copyright>
 //
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { LearningComponentBaseDefaults } from "./learningActivity";
 
-export type VideoWatchLearningActivityValue = {
+export type VideoWatchActivityConfiguration = {
     completionThreshold: number;
     footerContent: string;
     headerContent: string;
     video: ListItemBag;
 };
+
+export type VideoWatchActivityCompletion = {
+    watchedPercentage: number;
+};
+
+export class VideoWatchActivityDefaults
+extends LearningComponentBaseDefaults<VideoWatchActivityConfiguration, VideoWatchActivityCompletion> {
+    override defaultConfig: VideoWatchActivityConfiguration;
+    constructor() {
+        super();
+        this.defaultConfig = {
+            completionThreshold: 0,
+            footerContent: "",
+            headerContent: "",
+            video: {} as ListItemBag
+        };
+        this.defaultCompletion = {
+            watchedPercentage: 0
+        };
+    }
+}

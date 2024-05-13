@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel :title="panelTitle" :hasFullscreen="true">
+    <Panel v-if="screenToShow !== ComponentScreen.Scoring" :title="panelTitle" :class="containerClasses" :hasFullscreen="true">
         <div class="learning-activity-video-file-configuration-container" v-if="screenToShow === ComponentScreen.Configuration">
             <div class="header-content-section" >
                 <RockLabel>Header Content</RockLabel>
@@ -34,72 +34,120 @@
             </div>
         </div>
 
-        <!-- <div v-if="screenToShow === ComponentScreen.Summary">
-            <RockButton btnType="primary" @click="$emit('saveConfiguration', {})">
-                Save Summary
-            </RockButton>
-        </div> -->
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <fieldset>
+                <div class="header-section">
+                    <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
+                </div>
+
+                <div class="video-section">
+
+                    <MediaPlayer v-model:watchedPercentage="watchedPercentage"
+                     :mediaElementGuid="video?.value ?? ''" />
+
+                </div>
+                <div class="footer-section">
+                    <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
+                </div>
+                <div class="footer-buttons">
+                    <RockButton :btnType="BtnType.Primary"
+                                @click="emits('completed', true)">
+                        Complete
+                    </RockButton>
+                </div>
+            </fieldset>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <NotificationBox :alertType="notificationAlertType">
+                {{ assignee?.name ?? defaultAssigneeDescription }} watched {{ watchedPercentage }}% of this video.
+            </NotificationBox>
+        </div>
     </Panel>
 
 </template>
 
 
 <script setup lang="ts">
-    import { ref, watch } from "vue";
-    import { learningActivityEmits, learningActivityProps, ComponentScreen } from "./learningActivity";
-    // import { VideoWatchLearningActivityValue } from "./LearningActivity/learningActivityBase.partial";
-    //import { useHttp } from "@Obsidian/Utility/http";
-    import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { computed, toRef, toValue, watch } from "vue";
+    import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { updateRefValue } from "@Obsidian/Utility/component";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
+    import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    import { VideoWatchActivityCompletion, VideoWatchActivityConfiguration, VideoWatchActivityDefaults } from "./videoWatchLearningActivity";
 
-    // const http = useHttp();
-    // const internalValue = ref({} as VideoWatchLearningActivityValue);
-    const video = ref({} as ListItemBag);
-    const headerContent = ref("");
-    const footerContent = ref("");
-    const completionThreshold = ref(0);
-
+    // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
+    const emits = defineEmits({ ...learningActivityEmits });
 
-    const _emits = defineEmits({ ...learningActivityEmits });
+    // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
+    const activityBag = toRef(() => props.activityBag);
+    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
 
-    const screenToShow = ref(props.screenToShow);
+    /** Initialize the base component and destructure the refs we need for use in this component. */
+    const {
+        assignee,
+        completionThreshold,
+        containerClasses,
+        defaultAssigneeDescription,
+        footerContent,
+        headerContent,
+        panelTitle,
+        video,
+        watchedPercentage
+    } = useLearningComponent<VideoWatchActivityConfiguration, VideoWatchActivityCompletion>(
+        activityBag,
+        completionBag,
+        screenToShow,
+        new VideoWatchActivityDefaults()
+    );
 
-    const panelTitle = ref("Video Watch TEMP");
-    watch(() => props.screenToShow, () => {
-        updateRefValue(screenToShow, props.screenToShow ?? ComponentScreen.Summary);
+    const notificationAlertType = computed(() => {
+        return watchedPercentage.value >= completionThreshold.value ?
+            "success":
+            "warning";
     });
-    // watch(() => props.modelValue, () => {
-    //     if (props.modelValue) {
-    //         try {
-    //             internalValue.value = JSON.parse(props.modelValue || "{}");
-    //         }
-    //         catch (error) {
-    //             internalValue.value = {} as VideoWatchLearningActivityValue;
-    //         }
 
-    //         video.value = internalValue.value.video;
-    //         headerContent.value = internalValue.value.headerContent ?? "";
-    //         footerContent.value = internalValue.value.footerContent ?? "";
-    //         completionThreshold.value = internalValue.value.completionThreshold ?? 0;
-    //     }
-    // }, { immediate: true });
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+            const updatedActivityBag = {
+                ...toValue(activityBag)
+            } as LearningActivityBag;
 
-    // watch(() => [video.value, headerContent, footerContent, completionThreshold], () => {
+            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+                completionThreshold: completionThreshold.value,
+                footerContent: footerContent.value,
+                headerContent: headerContent.value,
+                video: video.value
+            }) ?? "{}";
+            emits("update:activityBag", updatedActivityBag);
+    });
+    watch([completionThreshold, footerContent, headerContent, video], () => {
+        debouncedActivityBagEmits();
+    }, { deep: true });
 
-    //     const newValue = {
-    //         headerContent: headerContent.value,
-    //         video: video.value,
-    //         footerContent: footerContent.value,
-    //         completionThreshold: completionThreshold.value,
-    //     };
-    //     emit("update:modelValue", JSON.stringify(newValue));
-    // }, { deep: true });
+    /** Watch for modified component completion. */
+    const debouncedCompletionBagEmits = debounce(() => {
+            const updatedCompletionBag = {
+                ...toValue(completionBag)
+            } as LearningActivityCompletionBag;
 
+            updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
+                watchedPercentage: watchedPercentage.value
+            }) ?? "{}";
+            emits("update:completionBag", updatedCompletionBag);
+    });
+    watch(watchedPercentage, () => {
+        debouncedCompletionBagEmits();
+    }, { deep: true });
 </script>

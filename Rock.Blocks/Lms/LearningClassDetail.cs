@@ -210,14 +210,7 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            var locationItem = entity.GroupLocations?.FirstOrDefault()?.ToListItemBag() ?? new ListItemBag();
-            var textToRemove = entity.Name + " at ";
-
-            // The GroupLocation.ToString method includes the group name so we want to replace that before 
-            if ( locationItem.Text.IsNotNullOrWhiteSpace() && locationItem.Text.StartsWith( textToRemove ) )
-            {
-                locationItem.Text = locationItem.Text.Remove( 0, textToRemove.Length );
-            }
+            var locationItem = entity.GroupLocations?.FirstOrDefault();
 
             return new LearningClassBag
             {
@@ -225,7 +218,7 @@ namespace Rock.Blocks.Lms
                 Campus = entity.Campus?.ToListItemBag() ?? new ListItemBag(),
                 TakesAttendance = entity.GroupType?.TakesAttendance ?? false,
                 Description = entity.Description,
-                Location = locationItem,
+                Location = locationItem?.ToListItemBag( locationItem.Location.Name ) ?? new ListItemBag(),
                 IsActive = entity.IsActive,
                 IsPublic = entity.IsPublic,
                 CourseCode = entity.LearningCourse?.CourseCode,

@@ -148,17 +148,12 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const result = await invokeBlockAction<ValidPropertiesBox<LearningActivityCompletionBag> | string>("Save", {
+        const result = await invokeBlockAction<string>("Save", {
             box: learningActivityCompletionEditBag.value
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "object") {
-                learningActivityCompletionViewBag.value = result.data.bag;
-
-                return true;
-            }
-            else if (result.statusCode === 201 && typeof result.data === "string") {
+            if (result.statusCode === 200 && typeof result.data === "string") {
                 return result.data;
             }
         }

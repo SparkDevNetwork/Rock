@@ -32,12 +32,12 @@
 </template>
 
 <script setup lang="ts">
-    import { Component, PropType, computed, reactive, ref, watch } from "vue";
+    import { Component, PropType, computed, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { ComponentScreen } from "@Obsidian/Controls/LearningActivity/learningActivity";
+    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
@@ -65,18 +65,18 @@
     // The dynamically imported activity component for the learning activity.
     let activityTypeComponent: Component| null;
 
-    const activityBag = reactive(props.modelValue.bag?.activityBag ?? {} as LearningActivityBag);
-    const completionBag = reactive(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
+    const activityBag = ref(props.modelValue.bag?.activityBag ?? {} as LearningActivityBag);
+    const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
 
-    const isStudentCommentingEnabled = propertyRef(completionBag.isStudentCommentingEnabled ?? false, "StudentCommentingEnabled");
-    const studentComment = propertyRef(completionBag.studentComment ?? "", "StudentComment");
-    const pointsPossible = propertyRef(activityBag?.points, "PointsPossible");
-    const isStudentCompleted = propertyRef(completionBag.isStudentCompleted ?? false, "IsStudentCompleted");
-    const isFacilitatorCompleted = propertyRef(completionBag.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
-    const assignTo = propertyRef(activityBag.assignTo ?? AssignTo.Student, "AssignTo");
-    const facilitatorComment = propertyRef(completionBag.facilitatorComment ?? "", "FacilitatorComments");
-    const pointsEarned = propertyRef(completionBag.pointsEarned, "PointedEarned");
-    const isPastDue = ref(completionBag.isPastDue ?? false);
+    const isStudentCommentingEnabled = propertyRef(completionBag.value.isStudentCommentingEnabled ?? false, "StudentCommentingEnabled");
+    const studentComment = propertyRef(completionBag.value.studentComment ?? "", "StudentComment");
+    const pointsPossible = propertyRef(activityBag.value?.points, "PointsPossible");
+    const isStudentCompleted = propertyRef(completionBag.value.isStudentCompleted ?? false, "IsStudentCompleted");
+    const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
+    const assignTo = propertyRef(activityBag.value.assignTo ?? AssignTo.Student, "AssignTo");
+    const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
+    const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointedEarned");
+    const isPastDue = ref(completionBag.value.isPastDue ?? false);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -116,12 +116,6 @@
 
     // #region Event Handlers
 
-    /** Handler for changes made to the completion JSON by the activity component. */
-    async function onCompletionChanged(completionJson: string): Promise<void> {
-        console.warn({ completionJson });
-        // Auto-save?
-    }
-
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
@@ -151,7 +145,7 @@
         emit("update:modelValue", newValue);
     });
 
-    const componentUrl = activityBag.activityComponent?.componentUrl ?? "";
+    const componentUrl = activityBag.value.activityComponent?.componentUrl ?? "";
 
     if (componentUrl.length > 0) {
         activityTypeComponent = defineAsyncComponent(() => import(componentUrl));

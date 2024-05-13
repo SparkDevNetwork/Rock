@@ -16,6 +16,7 @@
 //
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { LearningComponentBaseDefaults } from "./learningActivity";
 //rename to .partial.ts
 // move to internal folder
 // if splitting component .obsfiles name: .screen.obs
@@ -31,3 +32,23 @@ export type FileUploadActivityCompletion = {
     rubric: string;
     file: ListItemBag;
 };
+
+
+export class FileUploadActivityDefaults
+extends LearningComponentBaseDefaults<FileUploadActivityConfiguration, FileUploadActivityCompletion> {
+    override defaultConfig: FileUploadActivityConfiguration;
+    constructor() {
+        super();
+        this.defaultConfig = {
+            instructions: "",
+            rubric: "",
+            showRubricOnScoring: false,
+            showRubricOnUpload: false
+        };
+        this.defaultCompletion = {
+            instructions: "",
+            rubric: "",
+            file: {} as ListItemBag
+        };
+    }
+}

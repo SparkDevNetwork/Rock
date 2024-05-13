@@ -105,6 +105,7 @@ namespace Rock.Blocks.Lms
                 ComponentUrl = component.Value.Value.ComponentUrl,
                 HighlightColor = component.Value.Value.HighlightColor,
                 IconCssClass = component.Value.Value.IconCssClass,
+                IdKey = component.Value.Value.EntityType.IdKey,
                 Guid = component.Value.Value.EntityType.Guid.ToString()
             } ).ToList();
 
@@ -208,15 +209,16 @@ namespace Rock.Blocks.Lms
             if ( entity.ActivityComponentId > 0 )
             {
                 var componentEntityType = EntityTypeCache.Get( entity.ActivityComponentId );
-                var activityComponent = Rock.Lms.LearningActivityContainer.GetComponent( componentEntityType.Name );
+                var activityComponent = LearningActivityContainer.GetComponent( componentEntityType.Name );
 
                 activityComponentBag = new LearningActivityComponentBag
                 {
-                    Name = activityComponent.Name,
-                    ComponentUrl = activityComponent.ComponentUrl,
-                    HighlightColor = activityComponent.HighlightColor,
-                    IconCssClass = activityComponent.IconCssClass,
-                    Guid = activityComponent.EntityType.Guid.ToString()
+                    ComponentUrl = activityComponent?.ComponentUrl,
+                    Guid = activityComponent?.EntityType.Guid.ToString(),
+                    HighlightColor = activityComponent?.HighlightColor,
+                    IconCssClass = activityComponent?.IconCssClass,
+                    IdKey = activityComponent?.EntityType.IdKey,
+                    Name = activityComponent?.Name,
                 };
             }
 
@@ -292,10 +294,10 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Bag.ActivityComponent.IdKey ),
+            box.IfValidProperty( nameof( box.Bag.ActivityComponent ),
                 () =>
                 {
-                    var componentEntityTypeId = Rock.Utility.IdHasher.Instance.GetId( box.Bag.IdKey );
+                    var componentEntityTypeId = Rock.Utility.IdHasher.Instance.GetId( box.Bag?.ActivityComponent?.IdKey );
                     if ( componentEntityTypeId.HasValue )
                         entity.ActivityComponentId = componentEntityTypeId.Value;
                 } );

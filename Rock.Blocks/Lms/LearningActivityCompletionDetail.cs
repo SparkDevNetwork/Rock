@@ -177,11 +177,12 @@ namespace Rock.Blocks.Lms
 
             var activityComponentBag = new LearningActivityComponentBag
             {
-                Name = activityComponent.Name,
-                ComponentUrl = activityComponent.ComponentUrl,
-                HighlightColor = activityComponent.HighlightColor,
-                IconCssClass = activityComponent.IconCssClass,
-                Guid = activityComponent.EntityType.Guid.ToString()
+                Name = activityComponent?.Name,
+                ComponentUrl = activityComponent?.ComponentUrl,
+                HighlightColor = activityComponent?.HighlightColor,
+                IconCssClass = activityComponent?.IconCssClass,
+                IdKey = activityComponent?.EntityType.IdKey,
+                Guid = activityComponent?.EntityType.Guid.ToString()
             };
 
             var binaryFile = entity.BinaryFileId > 0 ?
@@ -441,11 +442,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetEntityBagForEdit( entity );
 
-            return ActionOk( new ValidPropertiesBox<LearningActivityCompletionBag>
-            {
-                Bag = bag,
-                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-            } );
+            return ActionOk( ParentPageUrl() );
         }
 
         /// <summary>

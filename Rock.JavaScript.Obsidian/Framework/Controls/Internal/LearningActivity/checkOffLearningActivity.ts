@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+import { LearningComponentBaseDefaults } from "./learningActivity";
+
 export type CheckOffActivityConfiguration = {
     isConfirmationRequired: boolean;
     confirmationText: string;
@@ -23,5 +25,22 @@ export type CheckOffActivityConfiguration = {
 
 export type CheckOffActivityCompletion = {
     isConfirmed: boolean;
-    dateConfirmed?: string | null;
+    dateConfirmed: string | null;
 };
+
+export class CheckOffActivityDefaults
+extends LearningComponentBaseDefaults<CheckOffActivityConfiguration, CheckOffActivityCompletion>{
+    override defaultConfig: CheckOffActivityConfiguration;
+    constructor() {
+        super();
+        this.defaultConfig = {
+            isConfirmationRequired: true,
+            content: "",
+            confirmationText: ""
+        };
+        this.defaultCompletion = {
+            isConfirmed: false,
+            dateConfirmed: ""
+        };
+    }
+}

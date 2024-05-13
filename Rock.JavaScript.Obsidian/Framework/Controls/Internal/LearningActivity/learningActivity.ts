@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { ComputedRef, PropType, Ref, computed, ref, watch } from "vue";
+import { ComputedRef, MaybeRefOrGetter, PropType, Ref, computed, isRef, reactive, ref, toRefs, toValue } from "vue";
 import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
 import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
 import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
@@ -93,20 +93,22 @@ export const learningActivityProps: LearningActivityComponentBaseProps = {
  * Get the standard emits that all learning activity components must support.
  */
 export const learningActivityEmits: LearningActivityComponentBaseEmits = {
-    completed(): void { },
+    completed(_isSuccess: boolean): void { },
     ["update:activityBag"](_bag: LearningActivityBag): void { },
     ["update:completionBag"](_bag: LearningActivityCompletionBag): void { }
 };
 
-type LearningComponent<TConfig extends object, TCompletion extends object> = {
-    //activityName: Ref<string>;
-    assignee: Ref<LearningActivityParticipantBag>;
-    assignTo: Ref<AssignTo>;
+type ToRef<T> = {
+    [Property in keyof T]: Ref<T[Property]>;
+};
+
+type LearningComponentBaseProps = {
+    activityName: ComputedRef<string>;
+    assignee: ComputedRef<LearningActivityParticipantBag>;
+    assignTo: ComputedRef<AssignTo>;
     binaryFile: Ref<ListItemBag | null>;
-    completion: TCompletion;
-    configuration: TConfig;
     containerClasses: ComputedRef<string[]>;
-    currentPerson: LearningActivityParticipantBag;
+    currentPerson: ComputedRef<LearningActivityParticipantBag>;
     defaultAssigneeDescription: ComputedRef<string>;
     fileUrl: ComputedRef<string>;
     panelTitle: ComputedRef<string>;
@@ -114,55 +116,76 @@ type LearningComponent<TConfig extends object, TCompletion extends object> = {
 };
 
 /**
- * Initializes the base functionality and properties common to all learning activity components.
+ * Default implementation of the learning component state for internal use.
  *
- * @returns The properties common to all learning activity components.
+ * @private The is an internal class that should not be used by plugins as it may change at any time.
+ */
+type LearningComponent<TConfig, TCompletion> =
+    LearningComponentBaseProps &
+    ToRef<Exclude<TConfig, LearningComponentBaseProps>> &
+    ToRef<Exclude<TCompletion, LearningComponentBaseProps>>;
+
+export abstract class LearningComponentBaseDefaults<TConfig, TCompletion> {
+    defaultConfig!: TConfig;
+    defaultCompletion!: TCompletion;
+}
+
+/**
+ * Initializes the base functionality and properties common to all learning activity components.
+ * And parses the component Settings and Completion JSON into the specified types.
+ *
+ * @param activityBag The LearningActivityBag for the activity.
+ * @param completionBag The LearningActivityCompletionBag for the activty.
+ * @param screenToShow The screen that should be shown to the current user.
+ * @param defaults A class extending the LearningComponentBaseDefaults which initializes default values for the control.
+ *      NOTE: Failure to provide this class with all fields initialized
+ *      will result in no TConfig or TCompletion ref's to be returned by the composable.
+ * @returns The properties common to all learning activity components
+ *  and the parsed settings and completion objects.
  */
 export function useLearningComponent<TConfig extends object, TCompletion extends object>(
-    activityBag: Ref<LearningActivityBag>,
-    completionBag: Ref<LearningActivityCompletionBag>,
-    screenToShow: Ref<ComponentScreen>
+    activityBag: MaybeRefOrGetter<LearningActivityBag>,
+    completionBag: MaybeRefOrGetter<LearningActivityCompletionBag>,
+    screenToShow: MaybeRefOrGetter<ComponentScreen>,
+    defaults: LearningComponentBaseDefaults<TConfig, TCompletion>
 ): LearningComponent<TConfig, TCompletion> {
+    let configuration = defaults.defaultConfig;
 
-    let configuration = { } as TConfig;
     try {
-        configuration = JSON.parse(activityBag.value?.activityComponentSettingsJson ?? "{}") as TConfig;
+        configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "{}");
     }
     catch (error) {
-        // Intentionally ignored error.
+        /* Intentionally ignored error. */
     }
 
-    let completion = { } as TCompletion;
+    let completion = defaults.defaultCompletion;
     try {
-        completion = JSON.parse(completionBag.value?.activityComponentCompletionJson ?? "{}") as TCompletion;
+        completion = JSON.parse(toValue(completionBag)?.activityComponentCompletionJson ?? "{}");
     }
     catch (error) {
-        // Intentionally ignored error.
+        /* Intentionally ignored error. */
     }
 
-    const assignTo = ref(activityBag.value?.assignTo ?? AssignTo.Student);
-    const defaultAssigneeDescription = computed(() => `The ${AssignToDescription[assignTo.value]}`);
-    const currentPerson = activityBag.value?.currentPerson ?? {} as LearningActivityParticipantBag;
-    const student = ref(completionBag?.value?.student ?? {} as LearningActivityParticipantBag);
-    //const activityName = ref(activityBag?.value?.name ?? "");
+    const assignTo = ref(toValue(activityBag)?.assignTo ?? AssignTo.Student);
+    const defaultAssigneeDescription = computed(() => `The ${AssignToDescription[toValue(activityBag)?.assignTo ?? AssignTo.Student]}`);
+    const currentPerson = computed(() => toValue(activityBag)?.currentPerson ?? {} as LearningActivityParticipantBag);
+    const student = ref(toValue(completionBag)?.student ?? {} as LearningActivityParticipantBag);
+    const activityName = ref(toValue(activityBag)?.name ?? "");
 
     const assignee = computed((): LearningActivityParticipantBag => {
-        if (assignTo.value === AssignTo.Facilitator && activityBag.value.currentPerson?.isFacilitator === true) {
-            return activityBag.value.currentPerson;
+        if (assignTo.value === AssignTo.Facilitator && currentPerson.value.isFacilitator === true) {
+            return currentPerson.value;
         }
         else {
             return student.value;
         }
     });
 
-    const binaryFile = ref<ListItemBag | null>(completionBag?.value?.binaryFile ?? null);
+    const binaryFile = ref<ListItemBag | null>(toValue(completionBag)?.binaryFile ?? null);
 
-    const panelTitle = computed((): string => {
-        console.warn("computing panelTitle", activityBag.value?.name);
-        const activityName = activityBag.value?.name ?? "";
-        switch (screenToShow.value) {
-            case ComponentScreen.Completion:
-                return activityName;
+    const panelTitle = computed(() => {
+        const activityName = toValue(activityBag).name ?? "";
+        switch (toValue(screenToShow)) {
             case ComponentScreen.Configuration:
                 return `Configure ${activityName}`;
             case ComponentScreen.Scoring:
@@ -170,13 +193,13 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
             case ComponentScreen.Summary:
                 return `${activityName} - Summary`;
             default:
-                return activityName ?? "";
+                return activityName;
         }
     });
 
     const fileUrl = computed((): string => {
-        if (completionBag?.value?.binaryFile?.value) {
-            return `/GetFile.ashx?guid=${completionBag?.value?.binaryFile?.value}`;
+        if (toValue(completionBag)?.binaryFile?.value) {
+            return `/GetFile.ashx?guid=${toValue(completionBag)?.binaryFile?.value}`;
         }
 
         return "";
@@ -184,28 +207,42 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
 
     /** CSS classes for the panel. */
     const containerClasses = computed((): string[] => {
+        const screenName = toValue(screenToShow);
         return [
-            `lms-${screenToShow.value}-container`,
-            `lms-file-upload-${screenToShow.value}-container`
+            `lms-${screenName}-container`,
+            `lms-file-upload-${screenName}-container`
         ];
     });
 
-    watch(() => [activityBag, completionBag], () => {
-        console.warn("update to bag", {activityBag:activityBag});
-    });
+    /*
+        Get the properties of the generic types - TConfig and TCompletion.
+        Assuming the LearningComponentBaseDefaults was given with proper values
+        all fields should be initialized and therefore returned as ref's.
+     */
+    const dynamicProps: {[key: string]: unknown} = {};
+    for (const key in configuration) {
+        if (Object.prototype.hasOwnProperty.call(configuration, key)) {
+            dynamicProps[key] = ref(configuration[key]);
+        }
+    }
+
+    for (const key in completion) {
+        if (Object.prototype.hasOwnProperty.call(completion, key)) {
+            dynamicProps[key] = ref(completion[key]);
+        }
+    }
 
     return {
-        //activityName,
+        activityName,
         assignee,
         assignTo,
         binaryFile,
-        completion,
-        configuration,
         containerClasses,
         currentPerson,
         defaultAssigneeDescription,
+        ...dynamicProps,
         fileUrl,
         panelTitle,
         student
-    };
+    } as LearningComponent<TConfig, TCompletion>;
 }

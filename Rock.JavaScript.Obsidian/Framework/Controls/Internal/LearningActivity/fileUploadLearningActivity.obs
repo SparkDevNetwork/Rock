@@ -3,26 +3,26 @@
     <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="instructions-section">
-                <StructuredContentEditor label="Instructions" v-model="configuration.instructions" />
+                <StructuredContentEditor label="Instructions" v-model="instructions" />
             </div>
             <div class="rubric-section">
-                <StructuredContentEditor label="Grading Rubric" v-model="configuration.rubric" />
+                <StructuredContentEditor label="Grading Rubric" v-model="rubric" />
             </div>
             <div class="show-rubric-on-upload-section">
-                <CheckBox v-model="configuration.showRubricOnUpload" label="Show Rubric on Upload" />
+                <CheckBox v-model="showRubricOnUpload" label="Show Rubric on Upload" />
             </div>
             <div class="show-rubric-on-scoring-section">
-                <CheckBox v-model="configuration.showRubricOnScoring" label="Show Rubric on Scoring" />
+                <CheckBox v-model="showRubricOnScoring" label="Show Rubric on Scoring" />
             </div>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Completion">
             <fieldset>
                 <div class="instructions-section">
-                    <StructuredContentEditor :disabled="true" label="Instructions" v-model="configuration.instructions" />
+                    <StructuredContentEditor :disabled="true" label="Instructions" v-model="instructions" />
                 </div>
-                <div class="rubric-section" v-if="configuration.showRubricOnUpload">
-                    <StructuredContentEditor :disabled="true" label="Grading Rubric" v-model="configuration.rubric" />
+                <div class="rubric-section" v-if="showRubricOnUpload">
+                    <StructuredContentEditor :disabled="true" label="Grading Rubric" v-model="rubric" />
                 </div>
 
 
@@ -46,10 +46,10 @@
         <div v-if="screenToShow === ComponentScreen.Scoring">
             <fieldset>
                 <div class="instructions-section">
-                    <StructuredContentEditor :disabled="true" label="Instructions" v-model="configuration.instructions" />
+                    <StructuredContentEditor :disabled="true" label="Instructions" v-model="instructions" />
                 </div>
-                <div class="rubric-section" v-if="configuration.showRubricOnScoring">
-                    <StructuredContentEditor :disabled="true" label="Grading Rubric" v-model="configuration.rubric" />
+                <div class="rubric-section" v-if="showRubricOnScoring">
+                    <StructuredContentEditor :disabled="true" label="Grading Rubric" v-model="rubric" />
                 </div>
 
 
@@ -60,7 +60,7 @@
                     </div>
 
                     <div class="score-section">
-                        <NumberBox v-model="activityBag.points"
+                        <NumberBox v-model="completionBag.pointsEarned"
                             label="Score"
                             rules="required"
                             :min="0"
@@ -120,64 +120,82 @@
 </style>
 
 <script setup lang="ts">
-    import { ref, watch, } from "vue";
-    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    import { FileUploadActivityCompletion, FileUploadActivityConfiguration } from "./fileUploadLearningActivity";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { toRef, toValue, watch, } from "vue";
+    import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import { debounce } from "@Obsidian/Utility/util";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    import { FileUploadActivityCompletion, FileUploadActivityConfiguration, FileUploadActivityDefaults } from "./fileUploadLearningActivity";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
     const emits = defineEmits({ ...learningActivityEmits });
 
-    // Get the bags
-    const activityBag = propertyRef(props.activityBag ?? {}, "ActivityBag");
-    const completionBag = propertyRef(props.completionBag ?? {} as LearningActivityCompletionBag, "CompletionBag");
-    const screenToShow = ref(props.screenToShow);
+    // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
+    const activityBag = toRef(() => props.activityBag);
+    const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
 
-    /** Initialize the base component and take the refs we need for this component. */
+    /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
         assignee,
         binaryFile,
-        completion,
-        configuration,
         containerClasses,
         defaultAssigneeDescription,
         fileUrl,
-        panelTitle
+        instructions,
+        panelTitle,
+        rubric,
+        showRubricOnScoring,
+        showRubricOnUpload,
     } = useLearningComponent<FileUploadActivityConfiguration, FileUploadActivityCompletion>(
         activityBag,
         completionBag,
-        screenToShow
+        screenToShow,
+        new FileUploadActivityDefaults()
     );
 
-    watch(() => props.screenToShow, () => {
-        updateRefValue(screenToShow, props.screenToShow ?? ComponentScreen.Summary);
-    });
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+            const updatedActivityBag = {
+                ...toValue(activityBag)
+            } as LearningActivityBag;
 
-    /** Watch for modified settings. */
-    const debouncedActivityBagEmits = debounce(() => emits("update:activityBag", activityBag.value));
-    watch(() => configuration, () => {
+            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+                instructions: instructions.value,
+                rubric: rubric.value,
+                showRubricOnScoring: showRubricOnScoring.value,
+                showRubricOnUpload: showRubricOnUpload.value
+            }) ?? "{}";
+
+            emits("update:activityBag", updatedActivityBag);
+    });
+    watch([instructions, rubric, showRubricOnScoring, showRubricOnUpload], () => {
         debouncedActivityBagEmits();
     }, { deep: true });
 
-    /** Watch for modified completion. */
-    const debouncedCompletionBagEmits = debounce(
-        () => emits("update:completionBag", completionBag.value ?? {})
-    );
-    watch(() => [binaryFile, completion], () => {
+    /** Watch for modified component completion. */
+    const debouncedCompletionBagEmits = debounce(() => {
+            const updatedCompletionBag = {
+                ...toValue(completionBag)
+            } as LearningActivityCompletionBag;
+
+            updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
+                binaryFile: binaryFile.value
+            }) ?? "{}";
+            emits("update:completionBag", updatedCompletionBag);
+    });
+    watch([binaryFile], () => {
         debouncedCompletionBagEmits();
     }, { deep: true });
-
 </script>
