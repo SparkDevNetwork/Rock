@@ -35,12 +35,13 @@
 
 <script setup lang="ts">
     import Konva from "@Obsidian/Libs/konva";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { KonvaEventObject } from "konva/lib/Node";
     import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { TransformHelper } from "./transformHelper.partial";
     import { DragData } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { createDefaultField, createShapeForFieldType, getOffsetForPixel, getPixelForOffset, updateShapeFromField, useNodeDragBoundFunc } from "./utils.partial";
+    import { createDefaultField, createShapeForFieldType, getOffsetForPixel, getPixelForOffset, pixelsPerInch, updateShapeFromField, useNodeDragBoundFunc } from "./utils.partial";
 
     const props = defineProps({
         labelManager: {
@@ -62,18 +63,13 @@
     /* Grid size in 1/n fractions of an inch. */
     const gridSnapFraction = 4;
 
-    // /** Minimum snap position in 1/n fractions of an inch. */
-    // const minimumSnapFraction = 32;
-
     const containerElement = ref<HTMLDivElement | undefined>();
     const fontLoaderElement = ref<HTMLDivElement | undefined>();
     let stage: Konva.Stage | undefined;
-    let transformer: Konva.Transformer;
     let transformHelper: TransformHelper | undefined;
-    let nodeLayer: Konva.Layer | undefined;
+    const nodeLayer = new Konva.Layer();
     let nodeDragBoundFunc: ((this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d) | undefined;
     const gridLayer = new Konva.Layer();
-    const pixelsPerInch = 72 * window.devicePixelRatio;
 
 
     /**
@@ -112,40 +108,39 @@
         gridLayer.draw();
     }
 
+    /**
+     * Snaps the pixel position to the nearest grid line if grid snapping is
+     * enabled.
+     *
+     * @param pixel The original pixel position in the canvas.
+     *
+     * @returns The new pixel position after the snap.
+     */
     function snapPixel(pixel: number): number {
         let offset = getOffsetForPixel(pixel);
 
         if (props.showGrid && props.snapToGrid) {
             offset = 1.0 / gridSnapFraction * Math.round(gridSnapFraction * offset);
         }
-        // else {
-        //     offset = 1.0 / minimumSnapFraction * Math.floor(minimumSnapFraction * offset);
-        // }
 
         return getPixelForOffset(offset);
     }
 
+    /**
+     * Creates or updates all nodes in Konva to match our current list of fields.
+     */
     function createOrUpdateNodes(): void {
         if (!nodeDragBoundFunc || !nodeLayer) {
             return;
         }
 
+        // Add or update any nodes for fields that we have.
         for (const field of props.labelManager.current.value.fields ?? []) {
             const node = nodeLayer.children.find(n => n.id() === field.guid);
             let shape = (node instanceof Konva.Shape || node instanceof Konva.Group) ? node : undefined;
 
-            if (shape) {
-                // Try to update the node, if we can't update it then remove
-                // it so it gets re-created.
-                if (updateShapeFromField(shape, field)) {
-                    continue;
-                }
-                else {
-                    shape.remove();
-                    shape = undefined;
-                }
-            }
-
+            // If we didn't find a node or couldn't update it then try to
+            // create a new node.
             if (!shape) {
                 shape = createShapeForFieldType(field.fieldType);
 
@@ -164,6 +159,7 @@
                 nodeLayer.add(shape);
             }
 
+            // Set the position and size of the node.
             shape.setAttrs({
                 x: getPixelForOffset(field.left),
                 y: getPixelForOffset(field.top),
@@ -186,9 +182,15 @@
 
         // Update selection.
         const nodes = nodeLayer.children.filter(n => areEqual(n.id(), props.labelManager.selectedField.value?.guid));
-        transformer?.nodes(nodes);
+        transformHelper?.transformer.nodes(nodes);
     }
 
+    /**
+     * Waits up to the specified timeout for the custom fonts to be loaded by
+     * the browser. This also initiates the loading of the fonts.
+     *
+     * @param timeout The timeout in milliseconds after which we will complete.
+     */
     async function waitForFonts(timeout: number): Promise<void> {
         if (!document.fonts || !fontLoaderElement.value) {
             return;
@@ -198,6 +200,8 @@
         const requiredFonts = ["Roboto", "Roboto Condensed"];
         const fonts = await new Promise<FontFaceSet>(r => document.fonts.ready.then(r));
 
+        // Create div elements for each font we require. This will force the
+        // browser to start loading the font from the CSS reference.
         for (const fontName of requiredFonts) {
             const d = document.createElement("div");
             d.style.fontFamily = fontName;
@@ -205,6 +209,7 @@
             fontLoaderElement.value.append(d);
         }
 
+        // Wait for the fonts to become ready.
         while (Date.now() < timeoutAt) {
             const readyFonts = [...fonts]
                 .filter(f => f.status === "loaded")
@@ -215,10 +220,141 @@
                 break;
             }
 
+            // Pause for 50ms and check again.
             await new Promise<void>(r => setTimeout(r, 50));
         }
 
         fontLoaderElement.value.innerHTML = "";
+    }
+
+    /**
+     * Configures a stage to receive drops from the menu control gallary.
+     *
+     * @param stage The stage to be configured.
+     */
+    function configureStageDrop(stage: Konva.Stage): void {
+        var containerElement = stage.container();
+
+        containerElement.addEventListener("dragover", function (e) {
+            // This is required otherwise the tell the browser we will accept
+            // the drop.
+            e.preventDefault();
+
+            if (e.dataTransfer) {
+                e.dataTransfer.dropEffect = "copy";
+            }
+        });
+
+        containerElement.addEventListener("drop", function (e) {
+            e.preventDefault();
+
+            const pos = stage.getPointerPosition();
+            let dragData: DragData | undefined;
+
+            try {
+                if (e.dataTransfer) {
+                    dragData = JSON.parse(e.dataTransfer.getData("element-type"));
+                }
+            }
+            catch {
+                dragData = undefined;
+            }
+
+            if (!dragData || !pos) {
+                return;
+            }
+
+            // Set the pointer positions from the mouse event.
+            stage.setPointersPositions(e);
+
+            const field = createDefaultField(dragData?.type ?? 0, dragData?.subtype ?? 0);
+
+            field.left = getOffsetForPixel(pos.x) - (field.width / 2);
+            field.top = getOffsetForPixel(pos.y) - (field.height / 2);
+
+            // Add the new field to the label.
+            props.labelManager.mutate(label => {
+                label.fields ??= [];
+                label.fields.push(field);
+            });
+
+            props.labelManager.selectField(field.guid);
+        });
+    }
+
+    /**
+     * Event handler for when a node on the stage is clicked or tapped.
+     * Translates the event data into selection information.
+     *
+     * @param e The object describing the event.
+     */
+    function onStageNodeSelected(e: KonvaEventObject<MouseEvent> | KonvaEventObject<TouchEvent>): void {
+        let target: Konva.Node | null = e.target;
+
+        // If we selected something without an id, it might be nested in
+        // a group. Walk up the tree until we find an id.
+        while (target && !target.id()) {
+            target = target.parent;
+        }
+
+        // If they clicked on the background, deselect everything.
+        if (!target || target === stage) {
+            transformHelper?.transformer.nodes([]);
+            props.labelManager.selectField(undefined);
+
+            return;
+        }
+
+        const field = props.labelManager.current.value.fields?.find(f => f.guid === target?.id());
+
+        if (!field) {
+            console.error(`Could not find field '${target.id()}'.`);
+
+            transformHelper?.transformer.nodes([]);
+            props.labelManager.selectField(undefined);
+
+            return;
+        }
+
+        // Select the node, only single selection supported.
+        transformHelper?.transformer.nodes([target]);
+        props.labelManager.selectField(field.guid);
+    }
+
+    /**
+     * Event handler for the end of a drag operation to move a node around.
+     *
+     * @param e The object that describes the event.
+     */
+    function onNodeDragEnd(e: KonvaEventObject<DragEvent>): void {
+        props.labelManager.mutate(label => {
+            const field = label.fields?.find(f => areEqual(f.guid, e.target.id()));
+
+            if (!field) {
+                return;
+            }
+
+            field.left = getOffsetForPixel(e.target.x());
+            field.top = getOffsetForPixel(e.target.y());
+        });
+    }
+
+    /**
+     * Event handler for the end of a transform operation to resize a node.
+     *
+     * @param e The object that describes the event.
+     */
+    function onNodeTransformEnd(e: KonvaEventObject<unknown>): void {
+        props.labelManager.mutate(label => {
+            const field = label.fields?.find(f => areEqual(f.guid, e.target.id()));
+
+            if (!field) {
+                return;
+            }
+
+            field.width = getOffsetForPixel(e.target.width());
+            field.height = getOffsetForPixel(e.target.height());
+        });
     }
 
     onMounted(async () => {
@@ -237,113 +373,24 @@
 
         nodeDragBoundFunc = useNodeDragBoundFunc(stage, snapPixel);
 
-        nodeLayer = new Konva.Layer();
         stage.add(nodeLayer);
-
         stage.add(gridLayer);
-        drawGridLines();
-
-        createOrUpdateNodes();
 
         const transformerLayer = new Konva.Layer();
         stage.add(transformerLayer);
 
-        transformer = new Konva.Transformer({
-            nodes: [],
-            rotationSnaps: [0, 90, 180, 270],
-            rotationSnapTolerance: 45,
-            rotateAnchorOffset: 25,
-            flipEnabled: false,
-            keepRatio: false
+        transformHelper = new TransformHelper(stage, snapPixel);
+        transformerLayer.add(transformHelper.transformer);
 
-        });
+        stage.on("click", onStageNodeSelected);
+        stage.on("tap", onStageNodeSelected);
+        stage.on("dragend", onNodeDragEnd);
+        transformHelper.transformer.on("transformend", onNodeTransformEnd);
 
-        transformerLayer.add(transformer);
+        configureStageDrop(stage);
+        createOrUpdateNodes();
 
-        transformHelper = new TransformHelper(stage, transformer, snapPixel);
-
-        // clicks should select/deselect shapes
-        stage.on("click tap", function (e) {
-            let target: Konva.Node | null = e.target;
-
-            // If we selected something without an id, it might be nested in
-            // a group. Walk up the tree until we find an id.
-            while (target && !target.id()) {
-                target = target.parent;
-            }
-
-            // If they clicked on the background, deselect everything.
-            if (!target || target === stage) {
-                transformer.nodes([]);
-                props.labelManager.selectField(undefined);
-
-                return;
-            }
-
-            const field = props.labelManager.current.value.fields?.find(f => f.guid === target?.id());
-
-            if (!field) {
-                console.error(`Could not find field '${target.id()}'.`);
-
-                transformer.nodes([]);
-                props.labelManager.selectField(undefined);
-
-                return;
-            }
-
-            // Select the node, only single selection supported.
-            transformer.nodes([target]);
-            props.labelManager.selectField(field.guid);
-        });
-
-        var con = stage.container();
-        con.addEventListener("dragover", function (e) {
-            // This is required otherwise the tell the browser we will accept
-            // the drop.
-            e.preventDefault();
-
-            if (e.dataTransfer) {
-                e.dataTransfer.dropEffect = "copy";
-            }
-        });
-
-        con.addEventListener("drop", function (e) {
-            e.preventDefault();
-
-            let dragData: DragData | undefined;
-
-            try {
-                if (e.dataTransfer) {
-                    dragData = JSON.parse(e.dataTransfer?.getData("element-type"));
-                }
-            }
-            catch {
-                dragData = undefined;
-            }
-
-            if (!dragData || !stage) {
-                return;
-            }
-
-            // Set the pointer positions from the mouse event.
-            stage.setPointersPositions(e);
-
-            const pos = stage.getPointerPosition();
-            if (pos) {
-                const field = createDefaultField(dragData?.type ?? 0, dragData?.subtype ?? 0);
-
-                field.left = getOffsetForPixel(pos.x) - (field.width / 2);
-                field.top = getOffsetForPixel(pos.y) - (field.height / 2);
-
-                props.labelManager.mutate(label => {
-                    label.fields ??= [];
-                    label.fields.push(field);
-                });
-
-                props.labelManager.selectField(field.guid);
-            }
-        });
-
+        drawGridLines();
         stage.draw();
     });
 

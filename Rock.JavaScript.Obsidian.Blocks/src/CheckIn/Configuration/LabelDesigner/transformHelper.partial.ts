@@ -16,8 +16,9 @@ type TransformValues = {
  * label. It also enforces minimum size constraints.
  */
 export class TransformHelper {
-    private readonly stage: Konva.Stage;
-    private readonly transformer: Konva.Transformer;
+    public readonly stage: Konva.Stage;
+    public readonly transformer: Konva.Transformer;
+
     private readonly snapPixel: (pixel: number) => number;
 
     private original?: TransformValues;
@@ -30,13 +31,20 @@ export class TransformHelper {
      * the worksurface.
      *
      * @param stage The stage the transformer is attached to.
-     * @param transformer The transformer.
      * @param snapPixel The function that will handle pixel snapping.
      */
-    constructor(stage: Konva.Stage, transformer: Konva.Transformer, snapPixel: (pixel: number) => number) {
+    constructor(stage: Konva.Stage, snapPixel: (pixel: number) => number) {
         this.stage = stage;
-        this.transformer = transformer;
         this.snapPixel = snapPixel;
+
+        this.transformer = new Konva.Transformer({
+            nodes: [],
+            rotationSnaps: [0, 90, 180, 270],
+            rotationSnapTolerance: 45,
+            rotateAnchorOffset: 25,
+            flipEnabled: false,
+            keepRatio: false
+        });
 
         this.transformer.on("transformstart", event => this.transformStart(event));
         this.transformer.on("transform", event => this.transform(event));
