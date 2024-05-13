@@ -15,8 +15,22 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
+
 export const enum NavigationUrlKey {
-    DetailPage = "DetailPage"
+    ViewPage = "ViewPage",
+    AddPage = "AddPage"
+}
+
+export const enum PreferenceKey {
+    FilterAccount = "filter-account",
+    FilterDateRangeUpper = "filter-date-range-upper",
+    FilterDateRangeLower = "filter-date-range-lower",
+    FilterIncludeInctiveSchedules = "filter-include-inctive-schedules",
+    FilterFrequency = "filter-frequency",
+    FilterAmountRangeFrom = "filter-amount-range-from",
+    FilterAmountRangeTo = "filter-amount-range-to"
 }
 
 export type Row = {
@@ -29,4 +43,20 @@ export type AccountAmount = {
     name: string;
 
     amount: number;
+};
+
+export type GridSettingsOptions = {
+    dateRange?: string | null;
+
+    account: ListItemBag;
+
+    frequency?: ListItemBag | null;
+
+    includeInactiveSchedules: boolean;
+
+    startDate?: string | null;
+
+    endDate?: string | null;
+
+    amountRange?: NumberRangeModelValue | undefined;
 };

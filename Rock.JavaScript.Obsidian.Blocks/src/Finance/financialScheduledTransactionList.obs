@@ -8,6 +8,9 @@
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"
+          gridSettingsm
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
         <SelectColumn />
@@ -107,27 +110,44 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
     </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, BooleanColumn, PersonColumn, DateColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, TextColumn, textValueFilter, CurrencyColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FinancialScheduledTransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialScheduledTransactionList/financialScheduledTransactionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, Row } from "./FinancialScheduledTransactionList/types.partial";
-    import { computed, reactive, ref } from "vue";
-    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey, Row } from "./FinancialScheduledTransactionList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./FinancialScheduledTransactionList/gridSettingsModal.partial.obs";
+    import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<FinancialScheduledTransactionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        endDate: preferences.getValue(PreferenceKey.FilterDateRangeUpper),
+        startDate: preferences.getValue(PreferenceKey.FilterDateRangeLower),
+        account: JSON.parse(preferences.getValue(PreferenceKey.FilterAccount) || "[]"),
+        includeInactiveSchedules: asBoolean(preferences.getValue(PreferenceKey.FilterIncludeInctiveSchedules)),
+        frequency: JSON.parse(preferences.getValue(PreferenceKey.FilterFrequency) || "{}"),
+        amountRange: {
+            lower: toNumberOrNull(preferences.getValue(PreferenceKey.FilterAmountRangeFrom)),
+            upper: toNumberOrNull(preferences.getValue(PreferenceKey.FilterAmountRangeTo))
+        },
+    });
 
     const showTransactionTypeColumn = computed(() => {
         return config.options?.showTransactionTypeColumn;
@@ -136,6 +156,16 @@
     // #endregion
 
     // #region Functions
+
+     /** `true` if the grid settings is performing any filtering. */
+     const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.startDate
+            || !!gridSettings.value.endDate
+            || !!gridSettings.value.amountRange
+            || !!gridSettings.value.frequency
+            || !!gridSettings.value.account
+            || !!gridSettings.value.includeInactiveSchedules;
+    });
 
     /**
      * Called when the grid is requesting the row data be loaded.
@@ -162,9 +192,26 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        if (config.navigationUrls?.[NavigationUrlKey.ViewPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.ViewPage].replace("((Key))", key);
         }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+     function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.AddPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.AddPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
     }
 
     /**
@@ -182,14 +229,19 @@
         return filterValue;
     }
 
-    /**
-     * Called when the Add button has been clicked by the indivual.
-     */
-    function onAddItem(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
-        }
-    }
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateRangeUpper, gridSettings.value.endDate ?? "");
+        preferences.setValue(PreferenceKey.FilterDateRangeLower, gridSettings.value.startDate ?? "");
+        preferences.setValue(PreferenceKey.FilterAmountRangeFrom, gridSettings.value.amountRange?.lower?.toString() ?? "");
+        preferences.setValue(PreferenceKey.FilterAmountRangeTo, gridSettings.value.amountRange?.upper?.toString() ?? "");
+        preferences.setValue(PreferenceKey.FilterIncludeInctiveSchedules, asTrueFalseOrNull(gridSettings.value.includeInactiveSchedules) ?? "");
+        preferences.setValue(PreferenceKey.FilterFrequency, JSON.stringify(gridSettings.value.frequency));
+        preferences.setValue(PreferenceKey.FilterAccount, JSON.stringify(gridSettings.value.account));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
 
     // #endregion
 

@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web.ModelBinding;
 
+using Rock.Address;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -27,7 +30,9 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialScheduledTransactionList;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 using static Rock.Blocks.Finance.FinancialScheduledTransactionList;
 
@@ -84,7 +89,7 @@ namespace Rock.Blocks.Finance
     [Rock.SystemGuid.EntityTypeGuid( "946127ec-adec-46c9-8181-a405c137a8a3" )]
     [Rock.SystemGuid.BlockTypeGuid( "2db92ea3-f3b3-496e-a1f0-8eebd8dc928a" )]
     [CustomizedGrid]
-    [Rock.Web.UI.ContextAware( typeof( Person ) )]
+    [Rock.Web.UI.ContextAware]
     public class FinancialScheduledTransactionList : RockListBlockType<FinancialScheduledTransactionData>
     {
         #region Keys
@@ -122,27 +127,74 @@ namespace Rock.Blocks.Finance
 
         private static class NavigationUrlKey
         {
-            public const string DetailPage = "DetailPage";
+            public const string ViewPage = "ViewPage";
+            public const string AddPage = "AddPage";
         }
 
         private static class PreferenceKey
         {
-            public const string FilterCategory = "filter-category";
-            public const string FilterActiveStatus = "filter-active-status";
+            public const string FilterAmountRangeFrom = "filter-amount-range-from";
+            public const string FilterAmountRangeTo = "filter-amount-range-to";
+            public const string FilterAccount = "filter-account";
+            public const string FilterFrequency = "filter-frequency";
+            public const string FilterIncludeInctiveSchedules = "filter-include-inctive-schedules";
+            public const string FilterDateRangeLower = "filter-date-range-lower";
+            public const string FilterDateRangeUpper = "filter-date-range-upper";
         }
 
         #endregion Keys
 
+        #region Fields
+
+        private Person _person;
+
+        #endregion
+
         #region Properties
+        protected DateTime? FilterDateRangeUpper => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterDateRangeUpper )
+            .AsDateTime();
 
-        //protected string FilterTitle => GetBlockPersonPreferences()
-        //    .GetValue( PreferenceKey.FilterActiveStatus );
+        protected DateTime? FilterDateRangeLower => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterDateRangeLower )
+            .AsDateTime();
 
-        //protected string FilterRequest => GetBlockPersonPreferences()
-        //    .GetValue( PreferenceKey.FilterRequest );
+        /// <summary>
+        /// Determines whether or not to include inactive schedules in the result.
+        /// </summary>
+        /// <value>
+        /// The filter include schedules.
+        /// </value>
+        protected string FilterIncludeInctiveSchedules => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterIncludeInctiveSchedules );
 
-        //protected string FilterActive => GetBlockPersonPreferences()
-        //    .GetValue( PreferenceKey.FilterActive );
+        /// <summary>
+        /// Gets frequency guid with which to filter the results.
+        /// </summary>
+        /// <value>
+        /// The name of the account.
+        /// </value>
+        protected Guid? FilterFrequency => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterFrequency )
+            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+        protected decimal? FilterAmountRangeFrom => GetBlockPersonPreferences()
+           .GetValue( PreferenceKey.FilterAmountRangeFrom ).AsDecimalOrNull();
+
+        protected decimal? FilterAmountRangeTo => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterAmountRangeTo ).AsDecimalOrNull();
+
+        /// <summary>
+        /// Gets the account identifier to use when filtering the scheduled transactions. Only
+        /// scheduled transactions with a detail item going to
+        /// this account will be included.
+        /// </summary>
+        /// <value>
+        /// The account identifier to use when filtering the scheduled transactions.
+        /// </value>
+        protected Guid? FilterAccount => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterAccount )
+            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
 
         #endregion
 
@@ -151,6 +203,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            InitializeContextEntities();
             var box = new ListBlockBox<FinancialScheduledTransactionListOptionsBag>();
             var builder = GetGridBuilder();
 
@@ -183,7 +236,7 @@ namespace Rock.Blocks.Finance
         {
             var entity = new FinancialScheduledTransaction();
 
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.AddPage ) );
         }
 
         /// <summary>
@@ -192,9 +245,28 @@ namespace Rock.Blocks.Finance
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var addPageLinkedUrl = string.Empty;
+            var addScheduledTransactionPage = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.AddPage ) );
+            if ( addScheduledTransactionPage != null )
+            {
+                if ( _person != null && !_person.IsPersonTokenUsageAllowed() )
+                {
+                    // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
+                    var personKey = _person.GetImpersonationToken(
+                        RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addScheduledTransactionPage.PageId );
+
+                    if ( personKey.IsNotNullOrWhiteSpace() )
+                    {
+                        addScheduledTransactionPage.QueryString["Person"] = personKey;
+                        addPageLinkedUrl = addScheduledTransactionPage.BuildUrl();
+                    }
+                }
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.ViewPage, "FinancialScheduledTransactionId", "((Key))" )
+                [NavigationUrlKey.ViewPage] = this.GetLinkedPageUrl( AttributeKey.ViewPage, "FinancialScheduledTransactionId", "((Key))" ),
+                [NavigationUrlKey.AddPage] = addPageLinkedUrl
             };
         }
 
@@ -208,12 +280,10 @@ namespace Rock.Blocks.Finance
             int? personId = null;
             int? givingGroupId = null;
 
-
-            var person = GetPerson( rockContext );
-            if ( person != null )
+            if ( _person != null )
             {
-                personId = person.Id;
-                givingGroupId = person.GivingGroupId;
+                personId = _person.Id;
+                givingGroupId = _person.GivingGroupId;
             }
 
             var qry = new FinancialScheduledTransactionService( rockContext )
@@ -237,52 +307,47 @@ namespace Rock.Blocks.Finance
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
             }
 
-            //// Amount Range
-            //var nre = new NumberRangeEditor();
-            //nre.DelimitedValues = gfSettings.GetFilterPreference( "Amount" );
-            //if ( nre.LowerValue.HasValue )
-            //{
-            //    qry = qry.Where( t => t.ScheduledTransactionDetails.Sum( d => d.Amount ) >= nre.LowerValue.Value );
-            //}
+            // Amount Range
+            if ( FilterAmountRangeFrom.HasValue )
+            {
+                qry = qry.Where( t => t.ScheduledTransactionDetails.Sum( d => d.Amount ) >= FilterAmountRangeFrom.Value );
+            }
 
-            //if ( nre.UpperValue.HasValue )
-            //{
-            //    qry = qry.Where( t => t.ScheduledTransactionDetails.Sum( d => d.Amount ) <= nre.UpperValue.Value );
-            //}
+            if ( FilterAmountRangeTo.HasValue )
+            {
+                qry = qry.Where( t => t.ScheduledTransactionDetails.Sum( d => d.Amount ) <= FilterAmountRangeTo.Value );
+            }
 
-            //// Frequency
-            //int? frequencyTypeId = gfSettings.GetFilterPreference( "Frequency" ).AsIntegerOrNull();
-            //if ( frequencyTypeId.HasValue )
-            //{
-            //    qry = qry.Where( t => t.TransactionFrequencyValueId == frequencyTypeId.Value );
-            //}
+            // Frequency
+            if ( FilterFrequency.HasValue )
+            {
+                qry = qry.Where( t => t.TransactionFrequencyValue.Guid == FilterFrequency.Value );
+            }
 
-            //// Date Range
-            //var drp = new DateRangePicker();
-            //drp.DelimitedValues = gfSettings.GetFilterPreference( "Created" );
-            //if ( drp.LowerValue.HasValue )
-            //{
-            //    qry = qry.Where( t => t.CreatedDateTime >= drp.LowerValue.Value );
-            //}
+            // Date Range
+            if ( FilterDateRangeLower.HasValue )
+            {
+                qry = qry.Where( t => t.CreatedDateTime >= FilterDateRangeLower.Value );
+            }
 
-            //if ( drp.UpperValue.HasValue )
-            //{
-            //    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-            //    qry = qry.Where( t => t.CreatedDateTime < upperDate );
-            //}
+            if ( FilterDateRangeUpper.HasValue )
+            {
+                DateTime upperDate = FilterDateRangeUpper.Value.Date.AddDays( 1 );
+                qry = qry.Where( t => t.CreatedDateTime < upperDate );
+            }
 
-            //// Account Id
-            //int accountId = int.MinValue;
-            //if ( int.TryParse( gfSettings.GetFilterPreference( "Account" ), out accountId ) && ddlAccount.Visible )
-            //{
-            //    qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => d.AccountId == accountId ) );
-            //}
+            // Account Id
+            if ( FilterAccount.HasValue )
+            {
+                qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => d.Account.Guid == FilterAccount.Value ) );
+            }
 
-            //// Active only (no filter)
-            //if ( string.IsNullOrWhiteSpace( gfSettings.GetFilterPreference( "Include Inactive" ) ) )
-            //{
-            //    qry = qry.Where( t => t.IsActive );
-            //}
+            // Active only (no filter)
+            bool includeInctiveSchedules = FilterIncludeInctiveSchedules.AsBoolean();
+            if ( includeInctiveSchedules )
+            {
+                qry = qry.Where( t => t.IsActive );
+            }
 
             if ( givingGroupId.HasValue )
             {
@@ -297,7 +362,7 @@ namespace Rock.Blocks.Finance
 
             return qry;
 
-            
+
         }
 
         /// <inheritdoc/>
@@ -322,6 +387,12 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override List<FinancialScheduledTransactionData> GetListItems( IQueryable<FinancialScheduledTransactionData> queryable, RockContext rockContext )
         {
+            var contextEntityType = GetContextEntityType();
+            if ( contextEntityType == typeof( Person ) && _person == null )
+            {
+                return new List<FinancialScheduledTransactionData>();
+            }
+
             // Load all the scheduleTransaction into memory.
             var items = queryable.ToList();
             var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
@@ -388,21 +459,20 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Gets the person object.
+        /// Initializes the context entities and returns a boolean value indicating whether or not the block has a valid context entity
+        /// based on the configuration of the <see cref="Rock.Web.UI.ContextAwareAttribute"/> attribute.
         /// </summary>
-        /// <returns>A <see cref="Person"/> object to use or <c>null</c> if we were unable to determine one.</returns>
-        private Person GetPerson( RockContext rockContext )
+        /// <returns></returns>
+        private bool InitializeContextEntities()
         {
-            var person = RequestContext.GetContextEntity<Person>();
-
-            if ( person != null )
+            var contextEntityType = GetContextEntityType();
+            if ( contextEntityType == typeof( Person ) )
             {
-                return person;
+                _person = RequestContext.GetContextEntity<Person>();
+                return _person != null;
             }
 
-            var personKey = RequestContext.GetPageParameter( "personId" );
-
-            return new PersonService( rockContext ).Get( personKey, !PageCache.Layout.Site.DisablePredictableIds );
+            return true;
         }
 
         #endregion
@@ -442,6 +512,7 @@ namespace Rock.Blocks.Finance
         }
 
         #endregion
+
         #region Supported Classes
 
         /// <summary>
