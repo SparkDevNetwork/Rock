@@ -20,17 +20,53 @@
         </div>
 
         <div v-if="!isComponentMenuSelected" class="control-list">
-            <ControlButton icon="fa fa-user" title="Attendee Info" />
-            <ControlButton icon="fa fa-calendar-check" title="Check-in Info" />
-            <ControlButton icon="fa fa-medal" title="Achievement Info" />
-            <ControlButton icon="fa fa-grip-lines" title="Line" />
-            <ControlButton icon="fa fa-font" title="Text" />
-            <ControlButton icon="fa fa-square" title="Rectangle" />
-            <ControlButton icon="fa fa-circle" title="Ellipse" />
-            <ControlButton icon="fa fa-icons" title="Icon" />
-            <ControlButton icon="fa fa-image" title="Image" />
-            <ControlButton icon="fa fa-id-badge" title="Attendee Photo" />
-            <ControlButton icon="fa fa-qrcode" title="Barcode" />
+            <ControlButton icon="fa fa-user"
+                           title="Attendee Info"
+                           :type="LabelFieldType.Text"
+                           :subtype="LabelTextFieldSubType.AttendeeInfo" />
+
+            <ControlButton icon="fa fa-calendar-check"
+                           title="Check-in Info"
+                           :type="LabelFieldType.Text"
+                           :subtype="LabelTextFieldSubType.CheckInInfo" />
+
+            <ControlButton icon="fa fa-medal"
+                           title="Achievement Info"
+                           :type="LabelFieldType.Text"
+                           :subtype="LabelTextFieldSubType.AchievementInfo" />
+
+            <ControlButton icon="fa fa-grip-lines"
+                           title="Line"
+                           :type="LabelFieldType.Line" />
+
+            <ControlButton icon="fa fa-font"
+                           title="Text"
+                           :type="LabelFieldType.Text"
+                           :subtype="LabelTextFieldSubType.Custom" />
+
+            <ControlButton icon="fa fa-square"
+                           title="Rectangle"
+                           :type="LabelFieldType.Rectangle" />
+
+            <ControlButton icon="fa fa-circle"
+                           title="Ellipse"
+                           :type="LabelFieldType.Ellipse" />
+
+            <ControlButton icon="fa fa-icons"
+                           title="Icon"
+                           :type="LabelFieldType.Icon" />
+
+            <ControlButton icon="fa fa-image"
+                           title="Image"
+                           :type="LabelFieldType.Image" />
+
+            <ControlButton icon="fa fa-id-badge"
+                           title="Attendee Photo"
+                           :type="0" />
+
+            <ControlButton icon="fa fa-qrcode"
+                           title="Barcode"
+                           :type="LabelFieldType.Barcode" />
         </div>
 
         <div v-else class="p-3">
@@ -109,7 +145,50 @@
     });
 
     const isComponentMenuSelected = ref(!!props.labelManager.selectedField.value);
-    const fieldConfigurationComponent = ref<Component>(FieldConfigRectangle);
+    const fieldConfigurationComponent = computed((): Component | undefined => {
+        const field = props.labelManager?.current.value
+            .fields?.find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
+
+        if (!field) {
+            return undefined;
+        }
+
+        if (field.fieldType === LabelFieldType.Text) {
+            if (field.fieldSubType === LabelTextFieldSubType.AttendeeInfo) {
+                return undefined;
+            }
+            else if (field.fieldSubType === LabelTextFieldSubType.CheckInInfo) {
+                return undefined;
+            }
+            else if (field.fieldSubType === LabelTextFieldSubType.AchievementInfo) {
+                return undefined;
+            }
+            else {
+                return undefined;
+            }
+        }
+        else if (field.fieldType === LabelFieldType.Line) {
+            return undefined;
+        }
+        else if (field.fieldType === LabelFieldType.Rectangle) {
+            return FieldConfigRectangle;
+        }
+        else if (field.fieldType === LabelFieldType.Ellipse) {
+            return undefined;
+        }
+        else if (field.fieldType === LabelFieldType.Icon) {
+            return undefined;
+        }
+        else if (field.fieldType === LabelFieldType.Image) {
+            return undefined;
+        }
+        else if (field.fieldType === LabelFieldType.Barcode) {
+            return undefined;
+        }
+        else {
+            undefined;
+        }
+    });
 
     const selectedComponentType = computed((): string | undefined => {
         const field = props.labelManager?.current.value

@@ -6,6 +6,12 @@ export type Size = {
     height: number;
 };
 
+export type DragData = {
+    type: LabelFieldType;
+
+    subtype: number;
+};
+
 export type LabelBag = {
     width: number;
 

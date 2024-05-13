@@ -3,6 +3,7 @@ import { HorizontalTextAlignment, LabelFieldBag, LabelFieldType, RectangleFieldC
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { Rectangle } from "./shapes.partial";
+import { newGuid } from "@Obsidian/Utility/guid";
 
 // #region Worksurface Utilities
 
@@ -69,6 +70,32 @@ export function useNodeDragBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
     }
 
     return nodeDragBoundFunc;
+}
+
+export function createDefaultField(fieldType: LabelFieldType, subtype: number): LabelFieldBag {
+    const field: LabelFieldBag = {
+        guid: newGuid(),
+        fieldType: fieldType,
+        fieldSubType: subtype,
+        left: 0,
+        top: 0,
+        width: 0.75,
+        height: 0.75,
+        isIncludedOnPreview: true,
+        rotationAngle: 0,
+        configurationValues: {}
+    };
+
+    if (fieldType === LabelFieldType.Rectangle) {
+        const config = field.configurationValues as StringRecord<RectangleFieldConfigurationBag>;
+
+        config.isBlack = "true";
+        config.isFilled = "true";
+        config.borderThickness = "0";
+        config.cornerRadius = "0";
+    }
+
+    return field;
 }
 
 /**

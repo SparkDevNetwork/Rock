@@ -35,10 +35,12 @@
 
 <script setup lang="ts">
     import Konva from "@Obsidian/Libs/konva";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { TransformHelper } from "./transformHelper.partial";
+    import { DragData } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { createShapeForFieldType, getOffsetForPixel, getPixelForOffset, updateShapeFromField, useNodeDragBoundFunc } from "./utils.partial";
+    import { createDefaultField, createShapeForFieldType, getOffsetForPixel, getPixelForOffset, updateShapeFromField, useNodeDragBoundFunc } from "./utils.partial";
 
     const props = defineProps({
         labelManager: {
@@ -66,6 +68,7 @@
     const containerElement = ref<HTMLDivElement | undefined>();
     const fontLoaderElement = ref<HTMLDivElement | undefined>();
     let stage: Konva.Stage | undefined;
+    let transformer: Konva.Transformer;
     let transformHelper: TransformHelper | undefined;
     let nodeLayer: Konva.Layer | undefined;
     let nodeDragBoundFunc: ((this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d) | undefined;
@@ -170,6 +173,20 @@
 
             updateShapeFromField(shape, field);
         }
+
+        // Remove any nodes that no longer exist as fields.
+        const fieldGuids = props.labelManager.current.value.fields?.map(f => f.guid) ?? [];
+        for (let childIndex = 0; childIndex < nodeLayer.children.length; childIndex++) {
+            const child = nodeLayer.children[childIndex];
+
+            if (!fieldGuids.some(g => areEqual(g, child.id()))) {
+                child.destroy();
+            }
+        }
+
+        // Update selection.
+        const nodes = nodeLayer.children.filter(n => areEqual(n.id(), props.labelManager.selectedField.value?.guid));
+        transformer?.nodes(nodes);
     }
 
     async function waitForFonts(timeout: number): Promise<void> {
@@ -231,7 +248,7 @@
         const transformerLayer = new Konva.Layer();
         stage.add(transformerLayer);
 
-        var tr = new Konva.Transformer({
+        transformer = new Konva.Transformer({
             nodes: [],
             rotationSnaps: [0, 90, 180, 270],
             rotationSnapTolerance: 45,
@@ -241,9 +258,9 @@
 
         });
 
-        transformerLayer.add(tr);
+        transformerLayer.add(transformer);
 
-        transformHelper = new TransformHelper(stage, tr, snapPixel);
+        transformHelper = new TransformHelper(stage, transformer, snapPixel);
 
         // clicks should select/deselect shapes
         stage.on("click tap", function (e) {
@@ -257,7 +274,7 @@
 
             // If they clicked on the background, deselect everything.
             if (!target || target === stage) {
-                tr.nodes([]);
+                transformer.nodes([]);
                 props.labelManager.selectField(undefined);
 
                 return;
@@ -268,15 +285,63 @@
             if (!field) {
                 console.error(`Could not find field '${target.id()}'.`);
 
-                tr.nodes([]);
+                transformer.nodes([]);
                 props.labelManager.selectField(undefined);
 
                 return;
             }
 
             // Select the node, only single selection supported.
-            tr.nodes([target]);
+            transformer.nodes([target]);
             props.labelManager.selectField(field.guid);
+        });
+
+        var con = stage.container();
+        con.addEventListener("dragover", function (e) {
+            // This is required otherwise the tell the browser we will accept
+            // the drop.
+            e.preventDefault();
+
+            if (e.dataTransfer) {
+                e.dataTransfer.dropEffect = "copy";
+            }
+        });
+
+        con.addEventListener("drop", function (e) {
+            e.preventDefault();
+
+            let dragData: DragData | undefined;
+
+            try {
+                if (e.dataTransfer) {
+                    dragData = JSON.parse(e.dataTransfer?.getData("element-type"));
+                }
+            }
+            catch {
+                dragData = undefined;
+            }
+
+            if (!dragData || !stage) {
+                return;
+            }
+
+            // Set the pointer positions from the mouse event.
+            stage.setPointersPositions(e);
+
+            const pos = stage.getPointerPosition();
+            if (pos) {
+                const field = createDefaultField(dragData?.type ?? 0, dragData?.subtype ?? 0);
+
+                field.left = getOffsetForPixel(pos.x) - (field.width / 2);
+                field.top = getOffsetForPixel(pos.y) - (field.height / 2);
+
+                props.labelManager.mutate(label => {
+                    label.fields ??= [];
+                    label.fields.push(field);
+                });
+
+                props.labelManager.selectField(field.guid);
+            }
         });
 
         stage.draw();

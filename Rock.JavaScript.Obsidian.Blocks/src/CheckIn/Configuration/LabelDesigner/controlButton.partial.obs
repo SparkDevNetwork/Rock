@@ -1,5 +1,5 @@
 <template>
-    <div class="icon-button">
+    <div ref="dragElement" class="icon-button" draggable="true">
         <i class="icon" :class="props.icon"></i>
         <span class="title text-sm">{{ props.title }}</span>
     </div>
@@ -31,7 +31,8 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { onMounted, PropType, ref } from "vue";
+import { LabelFieldType } from "./types.partial";
 
     const props = defineProps({
         icon: {
@@ -42,6 +43,31 @@
         title: {
             type: String as PropType<string>,
             required: true
+        },
+
+        type: {
+            type: Number as PropType<LabelFieldType>,
+            required: true
+        },
+
+        subtype: {
+            type: Number as PropType<number>,
+            required: false
         }
+    });
+
+    const dragElement = ref<HTMLElement>();
+
+    onMounted(() => {
+        if (!dragElement.value) {
+            return;
+        }
+
+        dragElement.value.addEventListener("dragstart", e => {
+            e.dataTransfer?.setData("element-type", JSON.stringify({
+                type: props.type,
+                subtype: props.subtype ?? 0
+            }));
+        });
     });
 </script>
