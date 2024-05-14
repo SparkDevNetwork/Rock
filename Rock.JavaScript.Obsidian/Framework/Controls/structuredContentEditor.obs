@@ -95,9 +95,7 @@
     //#region Computed Values
 
     /** Determines if the control should be in a disabled state. */
-    const isDisabled = computed((): boolean => {
-        return props.disabled;
-    });
+    const isDisabled = computed((): boolean =>  props.disabled);
 
     const containerId = computed<string>(() => containerRef.value?.id ?? "");
     const internalRules = computed<ValidationRule | ValidationRule[]>(() => {
@@ -240,15 +238,12 @@
     //#region Watchers
 
     watch(() => props.disabled, async (newValue, oldValue) => {
-            console.warn("disabled", {editor});
         if (newValue === oldValue) {
             return;
         }
 
         if (newValue === true) {
-            console.warn("disabled", {editor});
             setReadonlyContent();
-           //getAsHtml(savedData as never).then((newHtml => htmlContent.value = newHtml ?? ""));
         }
 
         toggleReadOnly();
@@ -283,6 +278,5 @@
 
         // Initialize the editor.
         await initialize();
-
     });
 </script>

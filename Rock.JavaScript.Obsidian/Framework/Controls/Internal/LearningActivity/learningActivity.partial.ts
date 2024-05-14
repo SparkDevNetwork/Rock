@@ -152,18 +152,18 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     let configuration = defaults.defaultConfig;
 
     try {
-        configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "{}");
+        configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "");
     }
     catch (error) {
-        /* Intentionally ignored error. */
+        configuration = defaults.defaultConfig;
     }
 
     let completion = defaults.defaultCompletion;
     try {
-        completion = JSON.parse(toValue(completionBag)?.activityComponentCompletionJson ?? "{}");
+        completion = JSON.parse(toValue(completionBag)?.activityComponentCompletionJson ?? "");
     }
     catch (error) {
-        /* Intentionally ignored error. */
+        completion = defaults.defaultCompletion;
     }
 
     const assignTo = ref(toValue(activityBag)?.assignTo ?? AssignTo.Student);

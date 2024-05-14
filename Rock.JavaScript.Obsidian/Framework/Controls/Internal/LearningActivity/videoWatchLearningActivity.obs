@@ -13,7 +13,7 @@
                     <MediaElementPicker v-model="video" media-element-label="Video" />
                 </div>
                 <div class="completion-threshold-field">
-                    <NumberBox v-model="completionThreshold"
+                    <NumberBox v-model="completionThresholdForView"
                             :decimalCount="0"
                             :minimumValue="0"
                             :maximumValue="100"
@@ -41,16 +41,14 @@
                 </div>
 
                 <div class="video-section">
-
                     <MediaPlayer v-model:watchedPercentage="watchedPercentage"
                      :mediaElementGuid="video?.value ?? ''" />
-
                 </div>
                 <div class="footer-section">
                     <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
                 </div>
                 <div class="footer-buttons">
-                    <RockButton :btnType="BtnType.Primary"
+                    <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
                                 @click="emits('completed', true)">
                         Complete
                     </RockButton>
@@ -64,12 +62,9 @@
             </NotificationBox>
         </div>
     </Panel>
-
 </template>
-
-
 <script setup lang="ts">
-    import { computed, toRef, toValue, watch } from "vue";
+    import { computed, ref, toRef, toValue, watch } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
@@ -82,8 +77,8 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
-    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    import { VideoWatchActivityCompletion, VideoWatchActivityConfiguration, VideoWatchActivityDefaults } from "./videoWatchLearningActivity";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity.partial";
+    import { VideoWatchActivityCompletion, VideoWatchActivityConfiguration, VideoWatchActivityDefaults } from "./videoWatchLearningActivity.partial";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -112,10 +107,19 @@
         new VideoWatchActivityDefaults()
     );
 
-    const notificationAlertType = computed(() => {
-        return watchedPercentage.value >= completionThreshold.value ?
-            "success":
-            "warning";
+    const hasPassedThreshold = computed(() => watchedPercentage.value >= completionThreshold.value);
+    const notificationAlertType = computed(() => hasPassedThreshold ? "success": "warning");
+
+    // The threshold control should show as a number between 0 and 100;
+    // while the saved value will be normalized as a decimal < 1.
+    const completionThresholdForView = ref((
+        completionThreshold.value < 1 ?
+        completionThreshold.value * 100 :
+        completionThreshold.value
+    ));
+
+    watch(completionThresholdForView,() => {
+        completionThreshold.value = completionThresholdForView.value / 100;
     });
 
     /** Watch for modified component settings. */
@@ -129,7 +133,8 @@
                 footerContent: footerContent.value,
                 headerContent: headerContent.value,
                 video: video.value
-            }) ?? "{}";
+            }) ?? "";
+
             emits("update:activityBag", updatedActivityBag);
     });
     watch([completionThreshold, footerContent, headerContent, video], () => {
@@ -138,6 +143,8 @@
 
     /** Watch for modified component completion. */
     const debouncedCompletionBagEmits = debounce(() => {
+        // Only update completion bag when we're on the completion screen.
+        if (screenToShow.value === ComponentScreen.Completion) {
             const updatedCompletionBag = {
                 ...toValue(completionBag)
             } as LearningActivityCompletionBag;
@@ -146,8 +153,9 @@
                 watchedPercentage: watchedPercentage.value
             }) ?? "{}";
             emits("update:completionBag", updatedCompletionBag);
+        }
     });
     watch(watchedPercentage, () => {
-        debouncedCompletionBagEmits();
+            debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

@@ -14,33 +14,32 @@
 // limitations under the License.
 // </copyright>
 //
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { LearningComponentBaseDefaults } from "./learningActivity";
 
-export type VideoWatchActivityConfiguration = {
-    completionThreshold: number;
-    footerContent: string;
-    headerContent: string;
-    video: ListItemBag;
+import { LearningComponentBaseDefaults } from "./learningActivity.partial";
+
+export type CheckOffActivityConfiguration = {
+    isConfirmationRequired: boolean;
+    confirmationText: string;
+    content: string;
 };
 
-export type VideoWatchActivityCompletion = {
-    watchedPercentage: number;
+export type CheckOffActivityCompletion = {
+    isConfirmed: boolean;
+    dateConfirmed: string | null;
 };
 
-export class VideoWatchActivityDefaults
-extends LearningComponentBaseDefaults<VideoWatchActivityConfiguration, VideoWatchActivityCompletion> {
-    override defaultConfig: VideoWatchActivityConfiguration;
+export class CheckOffActivityDefaults
+extends LearningComponentBaseDefaults<CheckOffActivityConfiguration, CheckOffActivityCompletion>{
     constructor() {
         super();
         this.defaultConfig = {
-            completionThreshold: 0,
-            footerContent: "",
-            headerContent: "",
-            video: {} as ListItemBag
+            isConfirmationRequired: true,
+            content: "",
+            confirmationText: ""
         };
         this.defaultCompletion = {
-            watchedPercentage: 0
+            isConfirmed: false,
+            dateConfirmed: ""
         };
     }
 }

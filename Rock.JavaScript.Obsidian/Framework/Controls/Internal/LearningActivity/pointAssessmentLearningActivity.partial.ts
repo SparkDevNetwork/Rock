@@ -15,40 +15,25 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { LearningComponentBaseDefaults } from "./learningActivity";
+import { LearningComponentBaseDefaults } from "./learningActivity.partial";
 //rename to .partial.ts
 // move to internal folder
 // if splitting component .obsfiles name: .screen.obs
-export type FileUploadActivityConfiguration = {
+export type PointAssessmentActivityConfiguration = {
     instructions: string;
-    rubric: string;
-    showRubricOnUpload: boolean;
-    showRubricOnScoring: boolean;
 };
 
-export type FileUploadActivityCompletion = {
-    instructions: string;
-    rubric: string;
-    file: ListItemBag;
+export type PointAssessmentActivityCompletion = {
 };
 
 
-export class FileUploadActivityDefaults
-extends LearningComponentBaseDefaults<FileUploadActivityConfiguration, FileUploadActivityCompletion> {
-    override defaultConfig: FileUploadActivityConfiguration;
+export class PointAssessmentActivityDefaults
+extends LearningComponentBaseDefaults<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion> {
+    override defaultConfig: PointAssessmentActivityConfiguration;
     constructor() {
         super();
         this.defaultConfig = {
             instructions: "",
-            rubric: "",
-            showRubricOnScoring: false,
-            showRubricOnUpload: false
-        };
-        this.defaultCompletion = {
-            instructions: "",
-            rubric: "",
-            file: {} as ListItemBag
         };
     }
 }

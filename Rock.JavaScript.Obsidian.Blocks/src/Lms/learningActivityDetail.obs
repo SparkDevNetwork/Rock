@@ -162,7 +162,6 @@
                     key: learningActivityViewBag.value?.idKey ?? ""
         });
         if (result.isSuccess && result.data && typeof result.data === "string") {
-            console.warn(makeUrlRedirectSafe(result.data));
             window.location.href = makeUrlRedirectSafe(result.data);
             return;
         }

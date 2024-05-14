@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 
+using Rock.Attribute;
 using Rock.Extension;
 
 namespace Rock.Obsidian
@@ -7,6 +8,15 @@ namespace Rock.Obsidian
     /// <summary>
     /// The base class for a <see cref="Component"/> whose functionality is implemented in Obsidian.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         <strong>This is an internal API</strong> that supports the Rock
+    ///         infrastructure and not subject to the same compatibility standards
+    ///         as public APIs. It may be changed or removed without notice in any
+    ///         release and should therefore not be directly used in any plug-ins.
+    ///     </para>
+    /// </remarks>
+    [RockInternal( "1.17" )]
     public abstract class ObsidianComponent : Component
     {
         #region Properties
