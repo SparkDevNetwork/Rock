@@ -7,15 +7,17 @@
             <LabelDimensionsButton v-model="labelSize" />
         </template>
 
-        <div class="panel-body-fill" style="display: flex;">
-            <Menu :labelManager="labelManager" />
+        <div class="panel-flex-fill-body">
+            <div style="display: flex; flex-grow: 1; overflow: hidden">
+                <Menu :labelManager="labelManager" />
 
-            <Editor :labelManager="labelManager" />
+                <Editor :labelManager="labelManager" />
+            </div>
+
+            <div class="actions">
+                <RockButton btnType="primary">Save</RockButton>
+            </div>
         </div>
-
-        <template #footerActions>
-            <RockButton btnType="primary">Save</RockButton>
-        </template>
     </Panel>
 </template>
 
@@ -27,6 +29,10 @@
 * :deep(.panel.label-designer > .panel-body) {
     display: flex;
     flex-direction: column;
+}
+
+.panel-flex-fill-body .actions:last-of-type {
+    margin: 0;
 }
 
 .panel-body-fill {

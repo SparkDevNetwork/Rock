@@ -69,7 +69,7 @@
                            :type="LabelFieldType.Barcode" />
         </div>
 
-        <div v-else class="p-3">
+        <div v-else class="p-3" style="overflow-y: auto;">
             <component :is="fieldConfigurationComponent" :labelManager="labelManager" />
         </div>
     </div>
@@ -78,11 +78,14 @@
 <style scoped>
 .menu {
     width: 360px;
+    display: flex;
+    flex-direction: column;
 }
 
 .menu-bar {
     height: var(--menu-bar-height);
     display: flex;
+    flex-shrink: 0;
 }
 
 .menu-item {
@@ -126,6 +129,7 @@
     flex-wrap: wrap;
     padding: 20px;
     gap: 10px;
+    overflow-y: auto;
 }
 </style>
 
