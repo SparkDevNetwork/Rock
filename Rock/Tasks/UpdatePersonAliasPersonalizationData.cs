@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Threading;
 
 using Rock.Data;
@@ -40,11 +41,19 @@ namespace Rock.Tasks
 
                 if ( personalizationSegment != null )
                 {
-                    personalizationSegmentService.UpdatePersonAliasPersonalizationData( PersonalizationSegmentCache.Get( message.PersonalizationSegmentId ) );
-
-                    personalizationSegment.IsDirty = false;
-
-                    rockContext.SaveChanges();
+                    try
+                    {
+                        personalizationSegmentService.UpdatePersonAliasPersonalizationData( PersonalizationSegmentCache.Get( message.PersonalizationSegmentId ) );
+                    }
+                    catch ( Exception exception )
+                    {
+                        ExceptionLogService.LogException( exception, null, null, null, null );
+                    }
+                    finally
+                    {
+                        personalizationSegment.IsDirty = false;
+                        rockContext.SaveChanges();
+                    }
                 }
             }
         }
