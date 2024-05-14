@@ -278,10 +278,11 @@
             expireDateTime: expiresOn.value,
             persistedScheduleIntervalType: typeOfInterval.value,
             persistenceType: isPersistenceEnabled.value ? persistenceType.value : null,
-            persistedScheduleType: isPersistenceEnabled.value ? persistedScheduleType.value : null,
+            persistedScheduleType: isPersistenceEnabled.value ? typeOfSchedule.value : null,
             refreshInterval: isPersistenceEnabled.value && typeOfPersistence.value === "Interval" ? intervalMinutes.value : null,
-            persistedSchedule: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" ? persistedSchedule.value : null,
-            persistedScheduleId: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && selectedNamedSchedule.value ? parseInt(selectedNamedSchedule.value) : null
+            persistedSchedule: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "Unique" ? persistedSchedule.value : null,
+            persistedScheduleId: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "NamedSchedule" && selectedNamedSchedule.value ? parseInt(selectedNamedSchedule.value) : null,
+            friendlyScheduleText: props.modelValue.friendlyScheduleText,
         };
         emit("update:modelValue", newValue);
     }

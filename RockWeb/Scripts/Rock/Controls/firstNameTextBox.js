@@ -14,7 +14,11 @@
             clientValidate: function (validator, args) {
                 const firstNameTextBox = document.getElementById(this.options.id);
                 const notAllowedStrings = this.options.notAllowedStrings;
-                let firstName = firstNameTextBox?.value?.toUpperCase();
+                let firstName = undefined;
+
+                if (firstNameTextBox) {
+                    firstName = firstNameTextBox.value.toUpperCase();
+                }
 
                 let isValid = true;
                 let invalidString;

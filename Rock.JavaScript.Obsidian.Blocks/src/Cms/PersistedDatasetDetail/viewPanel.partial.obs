@@ -112,8 +112,8 @@
             valueBuilder.addTextValue("Schedule ID", props.modelValue.persistedScheduleId.toString());
         }
 
-        if (props.modelValue.persistedSchedule) {
-            valueBuilder.addTextValue("Persisted Schedule", props.modelValue.friendlyScheduleText ?? "Schedule not available");
+        if (props.modelValue.friendlyScheduleText) {
+            valueBuilder.addTextValue("Persisted Schedule", props.modelValue.friendlyScheduleText || "Schedule not available");
         }
 
         if (props.modelValue.refreshInterval) {
