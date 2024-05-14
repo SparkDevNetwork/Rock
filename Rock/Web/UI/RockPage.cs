@@ -2558,7 +2558,9 @@ Sys.Application.add_load(function () {
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
-        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
+        const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+
+        return !match ? '' : match.pop();
     };
     var interactionArgs = <jsonData>;
     if (!interactionArgs.<userIdProperty>) {
