@@ -76,7 +76,6 @@ namespace Rock.Blocks.Communication
 
             Dictionary<int, NcoaProcessPersonAddressBag> addresses = ncoaService.GetAddresses( dataViewValue );
 
-            //if ( addresses.Count < SparkDataConfig.NCOA_MIN_ADDRESSES )
             if ( addresses.Count < 100 )
             {
                 return ActionBadRequest( "A minimum of 100 unique records with valid addresses are required in order to return NCOA move data from the USPS when your file is processed." );
