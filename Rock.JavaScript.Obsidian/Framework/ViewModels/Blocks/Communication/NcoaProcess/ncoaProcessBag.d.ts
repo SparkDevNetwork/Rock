@@ -25,17 +25,24 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type NcoaProcessBag = {
+    /** Gets or sets the addresses that will be exported into the file used in the NCOA process. */
     addresses?: Record<number, NcoaProcessPersonAddressBag> | null;
 
+    /** Gets or sets the Id of the Inactive Record Reason to use when inactivating people due to moving beyond the configured number of miles. */
     inactiveReason?: ListItemBag | null;
 
+    /** Gets or sets the boolean determining if a move in the 19-48 month catagory should be marked as a previous address. */
     mark48MonthAsPrevious: boolean;
 
+    /** Gets or sets the boolean determining invalid addresses should be marked as previous addresses. */
     markInvalidAsPrevious: boolean;
 
+    /** Gets or sets the minimum move distance to use when determining inactivating people. */
     minMoveDistance: number;
 
+    /** Gets or sets the reference to the uploaded file. */
     ncoaFileUploadReference?: ListItemBag | null;
 
+    /** Gets or sets the success message. */
     successMessage?: string | null;
 };
