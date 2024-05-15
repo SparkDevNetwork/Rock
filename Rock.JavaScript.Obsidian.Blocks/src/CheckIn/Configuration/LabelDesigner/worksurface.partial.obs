@@ -38,10 +38,11 @@
     import { areEqual } from "@Obsidian/Utility/guid";
     import { KonvaEventObject } from "konva/lib/Node";
     import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { createShapeForFieldType, LineTransformer, updateShapeFromField } from "./shapes.partial";
     import { TransformHelper } from "./transformHelper.partial";
     import { DragData } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { createDefaultField, createShapeForFieldType, getOffsetForPixel, getPixelForOffset, pixelsPerInch, updateShapeFromField, useNodeDragBoundFunc } from "./utils.partial";
+    import { createDefaultField, getOffsetForPixel, getPixelForOffset, pixelsPerInch, useNodeDragBoundFunc, usePositionBoundFunc } from "./utils.partial";
 
     const props = defineProps({
         labelManager: {
@@ -67,6 +68,7 @@
     const fontLoaderElement = ref<HTMLDivElement | undefined>();
     let stage: Konva.Stage | undefined;
     let transformHelper: TransformHelper | undefined;
+    let lineTransformer: LineTransformer | undefined;
     const nodeLayer = new Konva.Layer();
     let nodeDragBoundFunc: ((this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d) | undefined;
     const gridLayer = new Konva.Layer();
@@ -159,14 +161,6 @@
                 nodeLayer.add(shape);
             }
 
-            // Set the position and size of the node.
-            shape.setAttrs({
-                x: getPixelForOffset(field.left),
-                y: getPixelForOffset(field.top),
-                width: getPixelForOffset(field.width),
-                height: getPixelForOffset(field.height)
-            });
-
             updateShapeFromField(shape, field);
         }
 
@@ -182,7 +176,15 @@
 
         // Update selection.
         const nodes = nodeLayer.children.filter(n => areEqual(n.id(), props.labelManager.selectedField.value?.guid));
-        transformHelper?.transformer.nodes(nodes);
+
+        if (nodes.length === 1 && nodes[0] instanceof Konva.Line) {
+            lineTransformer?.node(nodes[0]);
+            transformHelper?.transformer.nodes([]);
+        }
+        else {
+            transformHelper?.transformer.nodes(nodes);
+            lineTransformer?.node(undefined);
+        }
     }
 
     /**
@@ -300,6 +302,7 @@
         // If they clicked on the background, deselect everything.
         if (!target || target === stage) {
             transformHelper?.transformer.nodes([]);
+            lineTransformer?.node(undefined);
             props.labelManager.selectField(undefined);
 
             return;
@@ -311,13 +314,22 @@
             console.error(`Could not find field '${target.id()}'.`);
 
             transformHelper?.transformer.nodes([]);
+            lineTransformer?.node(undefined);
             props.labelManager.selectField(undefined);
 
             return;
         }
 
         // Select the node, only single selection supported.
-        transformHelper?.transformer.nodes([target]);
+        if (target instanceof Konva.Line) {
+            lineTransformer?.node(target);
+            transformHelper?.transformer.nodes([]);
+        }
+        else {
+            transformHelper?.transformer.nodes([target]);
+            lineTransformer?.node(undefined);
+        }
+
         props.labelManager.selectField(field.guid);
     }
 
@@ -359,6 +371,27 @@
         });
     }
 
+    /**
+     * Event handler for the end of a transform operation to modify a line's
+     * anchor positions.
+     *
+     * @param line The line that was modified.
+     */
+     function onLineTransformEnd(line: Konva.Line): void {
+        props.labelManager.mutate(label => {
+            const field = label.fields?.find(f => areEqual(f.guid, line.id()));
+
+            if (!field) {
+                return;
+            }
+
+            field.left = getOffsetForPixel(line.x());
+            field.top = getOffsetForPixel(line.y());
+            field.width = getOffsetForPixel(line.points()[2]);
+            field.height = getOffsetForPixel(line.points()[3]);
+        });
+    }
+
     onMounted(async () => {
         if (!containerElement.value) {
             return;
@@ -374,6 +407,7 @@
         });
 
         nodeDragBoundFunc = useNodeDragBoundFunc(stage, snapPixel);
+        const positionBoundFunc = usePositionBoundFunc(stage, snapPixel);
 
         stage.add(nodeLayer);
         stage.add(gridLayer);
@@ -382,7 +416,9 @@
         stage.add(transformerLayer);
 
         transformHelper = new TransformHelper(stage, snapPixel);
+        lineTransformer = new LineTransformer(positionBoundFunc, onLineTransformEnd);
         transformerLayer.add(transformHelper.transformer);
+        transformerLayer.add(lineTransformer);
 
         stage.on("click", onStageNodeSelected);
         stage.on("tap", onStageNodeSelected);

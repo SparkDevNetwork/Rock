@@ -135,8 +135,9 @@
 
 <script setup lang="ts">
     import ControlButton from "./controlButton.partial.obs";
-    import FieldConfigRectangle from "./fieldConfigRectangle.partial.obs";
     import FieldConfigCustomText from "./fieldConfigCustomText.partial.obs";
+    import FieldConfigLine from "./fieldConfigLine.partial.obs";
+    import FieldConfigRectangle from "./fieldConfigRectangle.partial.obs";
     import { Component, computed, PropType, ref, watch } from "vue";
     import { LabelFieldType, LabelTextFieldSubType } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
@@ -173,7 +174,7 @@
             }
         }
         else if (field.fieldType === LabelFieldType.Line) {
-            return undefined;
+            return FieldConfigLine;
         }
         else if (field.fieldType === LabelFieldType.Rectangle) {
             return FieldConfigRectangle;

@@ -15,7 +15,8 @@
             </div>
 
             <div class="actions">
-                <RockButton btnType="primary">Save</RockButton>
+                <RockButton btnType="primary"
+                @click="onSave">Save</RockButton>
             </div>
         </div>
     </Panel>
@@ -77,6 +78,10 @@
             });
         }
     });
+
+    function onSave(): void {
+        console.log(labelManager.current.value);
+    }
 
     const label2: LabelBag = {
         width: 4.0,
@@ -285,6 +290,7 @@
             },
         ]
     };
+    label2.fields = [];
 
     const labelManager = new LabelUndoManager(label2);
 </script>

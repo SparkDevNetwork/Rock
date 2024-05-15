@@ -1,8 +1,5 @@
 import Konva from "@Obsidian/Libs/konva";
-import { HorizontalTextAlignment, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
-import { asBoolean } from "@Obsidian/Utility/booleanUtils";
-import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { Rectangle } from "./shapes.partial";
+import { HorizontalTextAlignment, LabelFieldBag, LabelFieldType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
 import { newGuid } from "@Obsidian/Utility/guid";
 
 // #region Worksurface Utilities
@@ -32,41 +29,112 @@ export function getOffsetForPixel(pixel: number): number {
 }
 
 /**
- * Creates a function that will handle node drag bounding operations for the
+ * Creates a function that will handle position bounding operations for the
  * stage. This ensures drag operations stay within the label and also handles
  * snapping.
  *
  * @param stage The stage the function will operate on.
  * @param snapPixel The function that will handle pixel snapping.
- * @returns A function that can be passed to the `dragBoundFunc` property.
+ *
+ * @returns A function that can be used to keep a position and size within the stage.
  */
-export function useNodeDragBoundFunc(stage: Konva.Stage, snapPixel: (pixel: number) => number): (this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d {
-    function nodeDragBoundFunc(this: Konva.Node, pos: Konva.Vector2d): Konva.Vector2d {
-        if (!stage) {
-            return pos;
+export function usePositionBoundFunc(stage: Konva.Stage, snapPixel: (pixel: number) => number): (pos: Konva.Vector2d, size: Konva.Vector2d) => Konva.Vector2d {
+    function positionBoundFunc(pos: Konva.Vector2d, size: Konva.Vector2d): Konva.Vector2d {
+        let newX = pos.x;
+        let newY = pos.y;
+        const width = size.x;
+        const height = size.y;
+
+        if (width >= 0) {
+            // Clamp the x position to the left edge of the label.
+            if (newX <= 0) {
+                newX = 0;
+            }
+
+            newX = snapPixel(newX);
+
+            // Clamp the x position so the shape doesn't extend past the right
+            // edge of the label.
+            if (newX >= stage.width() - width) {
+                newX = stage.width() - width;
+            }
+        }
+        else {
+            // Clamp the x position to the left edge of the label.
+            if (newX <= Math.abs(width)) {
+                newX = Math.abs(width);
+            }
+
+            newX = snapPixel(newX + width) - width;
+
+            // Clamp the x position so the shape doesn't extend past the right
+            // edge of the label.
+            if (newX >= stage.width()) {
+                newX = stage.width();
+            }
         }
 
-        // Get the new x and y positions, clamped to the left and top edges
-        // of the label.
-        let newX = pos.x <= 0 ? 0 : snapPixel(pos.x);
-        let newY = pos.y <= 0 ? 0 : snapPixel(pos.y);
+        if (height >= 0) {
+            // Clamp the y position to the top edge of the label.
+            if (newY <= 0) {
+                newY = 0;
+            }
 
-        // Clamp the x position so it doesn't extend past the right edge of
-        // the label.
-        if (newX >= stage.width() - this.width()) {
-            newX = stage.width() - this.width();
+            newY = snapPixel(newY);
+
+            // Clamp the y position so the shape doesn't extend past the bottom
+            // edge of the label.
+            if (newY >= stage.height() - height) {
+                newY = stage.height() - height;
+            }
         }
+        else {
+            // Clamp the y position to the top edge of the label.
+            if (newY <= Math.abs(height)) {
+                newY = Math.abs(height);
+            }
 
-        // Clamp the y position so it doesn't extend past the bottom edge of
-        // the label.
-        if (newY >= stage.height() - this.height()) {
-            newY = stage.height() - this.height();
+            newY = snapPixel(newY + height) - height;
+
+            // Clamp the y position so the shape doesn't extend past the bottom
+            // edge of the label.
+            if (newY >= stage.height()) {
+                newY = stage.height();
+            }
         }
 
         return {
             x: newX,
             y: newY
         };
+    }
+
+    return positionBoundFunc;
+}
+
+/**
+ * Creates a function that will handle node drag bounding operations for the
+ * stage. This ensures drag operations stay within the label and also handles
+ * snapping.
+ *
+ * @param stage The stage the function will operate on.
+ * @param snapPixel The function that will handle pixel snapping.
+ *
+ * @returns A function that can be passed to the `dragBoundFunc` property.
+ */
+export function useNodeDragBoundFunc(stage: Konva.Stage, snapPixel: (pixel: number) => number): (this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d {
+    const positionBoundFunc = usePositionBoundFunc(stage, snapPixel);
+
+    function nodeDragBoundFunc(this: Konva.Node, pos: Konva.Vector2d): Konva.Vector2d {
+        let width = this.width();
+        let height = this.height();
+
+        if (this instanceof Konva.Line) {
+            width = this.points()[2];
+            height = this.points()[3];
+        }
+
+        return positionBoundFunc(pos, { x: width, y: height });
     }
 
     return nodeDragBoundFunc;
@@ -106,7 +174,7 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         config.placeholderText = "Text 1";
 
         field.width = 1.5;
-        field.height = 14/72;
+        field.height = 14 / 72;
     }
     else if (fieldType === LabelFieldType.Rectangle) {
         const config = field.configurationValues as StringRecord<RectangleFieldConfigurationBag>;
@@ -116,141 +184,14 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         config.borderThickness = "0";
         config.cornerRadius = "0";
     }
+    else if (fieldType === LabelFieldType.Line) {
+        const config = field.configurationValues as StringRecord<LineFieldConfigurationBag>;
+
+        field.height = 0;
+        config.thickness = "1";
+    }
 
     return field;
-}
-
-/**
- * Creates a new shape for the specified field type.
- *
- * @param fieldType The field type that specifies what kind of shape to create.
- *
- * @returns A new shape or `undefined` if the field type was not recognized.
- */
-export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group | Konva.Shape | undefined {
-    if (fieldType === LabelFieldType.Text) {
-        return new Konva.Text();
-    }
-    else if (fieldType === LabelFieldType.Rectangle) {
-        return new Rectangle();
-    }
-
-    return undefined;
-}
-
-/**
- * Attempts to update a shape to match the information in the field. The
- * position and size are not updated. If the shape is not the right type then
- * `false` will be returned.
- *
- * @param shape The shape object to be updated.
- * @param field The field to use as the source of truth.
- *
- * @returns `true` if the shape was updated or `false` if it could not be updated.
- */
-export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: LabelFieldBag): boolean {
-    if (field.fieldType === LabelFieldType.Text && shape instanceof Konva.Text) {
-        updateTextShapeFromField(shape, field);
-        return true;
-    }
-    else if (field.fieldType === LabelFieldType.Rectangle && shape instanceof Rectangle) {
-        updateRectShapeFromField(shape, field);
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * Updates the text shape with data from the field.
- *
- * @param shape The shape to be updated.
- * @param field The field to use as the source of truth.
- */
-function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void {
-    if (!field.configurationValues) {
-        return;
-    }
-
-    const config = field.configurationValues as StringRecord<TextFieldConfigurationBag>;
-
-    const fontSize = toNumberOrNull(config.fontSize) ?? 12;
-    const alignment = toNumber(config.horizontalAlignment) as HorizontalTextAlignment;
-
-    shape.fontFamily(asBoolean(config.isCondensed) ? "Roboto Condensed" : "Roboto");
-    shape.fontStyle(asBoolean(config.isBold) ? "bold" : "normal");
-    shape.globalCompositeOperation(asBoolean(config.isColorInverted) ? "xor" : "source-over");
-    shape.fontSize(fontSize * window.devicePixelRatio);
-
-    if (field.fieldSubType === LabelTextFieldSubType.Custom) {
-        if (asBoolean(config.isDynamicText)) {
-            shape.text(config.placeholderText ?? "");
-        }
-        else {
-            shape.text(config.staticTextTemplate ?? "");
-        }
-    }
-    else {
-        shape.text(config.placeholderText ?? "");
-    }
-
-    if (alignment === HorizontalTextAlignment.Center) {
-        shape.align("center");
-    }
-    else if (alignment === HorizontalTextAlignment.Right) {
-        shape.align("right");
-    }
-    else {
-        shape.align("left");
-    }
-}
-
-/**
- * Updates the rectangle shape with data from the field.
- *
- * @param shape The shape to be updated.
- * @param field The field to use as the source of truth.
- */
-function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag): void {
-    if (!field.configurationValues) {
-        return;
-    }
-
-    const config = field.configurationValues as StringRecord<RectangleFieldConfigurationBag>;
-
-    const roundingIndex = toNumber(config.cornerRadius);
-
-    if (asBoolean(config.isFilled)) {
-        shape.rect.fillEnabled(true);
-        shape.rect.strokeEnabled(false);
-        shape.rect.strokeWidth(0);
-        shape.rect.fill(asBoolean(config.isBlack) ? "black" : "white");
-
-        // Reset rectangle to fill entire height and width.
-        shape.rect.setAttrs({
-            x: 0,
-            y: 0,
-            width: shape.width(),
-            height: shape.height()
-        });
-    }
-    else {
-        shape.rect.fillEnabled(false);
-        shape.rect.strokeEnabled(true);
-        shape.rect.strokeWidth(toNumber(config.borderThickness));
-        shape.rect.stroke(asBoolean(config.isBlack) ? "black" : "white");
-
-        // The HTML Context always draws borders on center, so we need to adjust
-        // the rectangle to simulate an inner border.
-        shape.rect.setAttrs({
-            x: shape.rect.strokeWidth() / 2,
-            y: shape.rect.strokeWidth() / 2,
-            width: shape.width() - shape.rect.strokeWidth(),
-            height: shape.height() - shape.rect.strokeWidth()
-        });
-    }
-
-    shape.rect.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
 }
 
 // #endregion
