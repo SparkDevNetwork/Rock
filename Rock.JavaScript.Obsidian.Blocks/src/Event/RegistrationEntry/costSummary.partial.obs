@@ -148,7 +148,6 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import { Currency, CurrencyFormatString, CurrencyOptions, createCurrency, createReadonlyCurrencyOptions } from "./currency.partial";
     import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary, formatCurrency, useConfigureNewPaymentPlan } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
@@ -159,6 +158,7 @@
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { RegistrationEntryCostSummaryBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCostSummaryBag";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { RockCurrency } from "@Obsidian/Utility/currency";
     import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import ConfigurePaymentPlanModal from "./configurePaymentPlanModal.partial.obs";
@@ -182,10 +182,6 @@
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const { updateRegistrationCostSummary } = use(RegistrationCostSummary);
-    const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
-        precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
-        symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
-    });
     const {
         cancel,
         init,
@@ -344,14 +340,10 @@
 
     /** The validation rules for the amount to pay today */
     const amountToPayTodayRules = computed<ValidationRule[]>(() => {
-        const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
-            precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
-            symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
-        });
         const rules: ValidationRule[] = [];
 
-        let min = createCurrency(amountDueToday.value, currencyOptions);
-        const max = createCurrency(maxAmountCanBePaid.value, currencyOptions);
+        let min = RockCurrency.create(amountDueToday.value, currencyInfo.value);
+        const max = RockCurrency.create(maxAmountCanBePaid.value, currencyInfo.value);
 
         if (min.isGreaterThan(max)) {
             min = max;
@@ -364,14 +356,14 @@
             rules.push("notblank");
         }
 
-        rules.push(`gte:${min.format(CurrencyFormatString.decimal)}`);
-        rules.push(`lte:${max.format(CurrencyFormatString.decimal)}`);
+        rules.push(`gte:${min}`);
+        rules.push(`lte:${max}`);
 
         return rules;
     });
 
     /** The balance due on the registration. */
-    const balanceDue = computed<Currency>(() => createCurrency(maxAmountCanBePaid.value, currencyOptions));
+    const balanceDue = computed<RockCurrency>(() => RockCurrency.create(maxAmountCanBePaid.value, currencyInfo.value));
 
     // #endregion
 
