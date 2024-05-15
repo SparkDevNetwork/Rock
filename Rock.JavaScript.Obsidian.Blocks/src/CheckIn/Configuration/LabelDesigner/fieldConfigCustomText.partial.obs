@@ -1,0 +1,113 @@
+<template>
+    <div class="form-group">
+        <div class="btn-group btn-group-sm">
+            <RockButton :btnType="!isDynamicText ? 'primary' : 'default'"
+                        @click="onFixedTextClick">Fixed Text</RockButton>
+            <RockButton :btnType="isDynamicText ? 'primary' : 'default'"
+                        @click="onDynamicTextClick">Dynamic Text</RockButton>
+        </div>
+    </div>
+
+    <TextBox v-if="!isDynamicText"
+             label="Text"
+             v-model="staticText" />
+
+    <div v-if="isDynamicText" class="form-group">
+        <RockButton>
+            <i class="fa fa-edit"></i>
+            Edit Lava Template
+        </RockButton>
+    </div>
+
+    <TextBox v-if="isDynamicText"
+             label="Placeholder Text"
+             v-model="placeholderText" />
+
+    <FieldConfigText :labelManager="labelManager">
+        <template #iconButtons>
+            <RockButton v-if="isDynamicText"
+                        btnType="default"
+                        btnSize="sm"
+                        @click="onAdaptiveFontSizeClick">
+                <i class="fa fa-text-width"></i>
+            </RockButton>
+        </template>
+    </FieldConfigText>
+</template>
+
+<script setup lang="ts">
+    import FieldConfigText from "./fieldConfigText.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { PropType, ref, watch } from "vue";
+    import { TextFieldConfigurationBag, StringRecord } from "./types.partial";
+    import { LabelUndoManager } from "./undoManager.partial";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const isDynamicText = ref(false);
+    const staticText = ref("");
+    const dynamicText = ref("");
+    const placeholderText = ref("");
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+     function setInternalValues(): void {
+        const configuration = props.labelManager.selectedField.value
+            ?.configurationValues ?? {} as StringRecord<TextFieldConfigurationBag>;
+
+        isDynamicText.value = asBoolean(configuration.isDynamicText);
+        staticText.value = configuration.staticTextTemplate ?? "";
+        dynamicText.value = configuration.dynamicTextTemplate ?? "";
+        placeholderText.value = configuration.placeholderText ?? "";
+    }
+
+    /**
+     * Event handler for when the Fixed Text button is clicked.
+     */
+    function onFixedTextClick(): void {
+        isDynamicText.value = false;
+    }
+
+    /**
+     * Event handler for when the Dynamic Text button is clicked.
+     */
+    function onDynamicTextClick(): void {
+        isDynamicText.value = true;
+    }
+
+    /**
+     * Event handler for when the Adaptive Font Size button is clicked.
+     */
+    function onAdaptiveFontSizeClick(): void {
+        // Intentaionll blank for now.
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([isDynamicText, staticText, dynamicText, placeholderText], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as StringRecord<TextFieldConfigurationBag>;
+
+            fieldConfig.isDynamicText = isDynamicText.value ? "true" : "false";
+            fieldConfig.staticTextTemplate = staticText.value;
+            fieldConfig.dynamicTextTemplate = dynamicText.value;
+            fieldConfig.placeholderText = placeholderText.value;
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>

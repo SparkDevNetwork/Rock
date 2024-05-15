@@ -1,5 +1,5 @@
 import Konva from "@Obsidian/Libs/konva";
-import { HorizontalTextAlignment, LabelFieldBag, LabelFieldType, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
+import { HorizontalTextAlignment, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { Rectangle } from "./shapes.partial";
@@ -179,9 +179,20 @@ function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void
 
     shape.fontFamily(asBoolean(config.isCondensed) ? "Roboto Condensed" : "Roboto");
     shape.fontStyle(asBoolean(config.isBold) ? "bold" : "normal");
-    shape.fill(asBoolean(config.isColorInverted) ? "white" : "black");
-    shape.text(config.placeholderText ?? "");
+    shape.globalCompositeOperation(asBoolean(config.isColorInverted) ? "xor" : "source-over");
     shape.fontSize(fontSize * window.devicePixelRatio);
+
+    if (field.fieldSubType === LabelTextFieldSubType.Custom) {
+        if (asBoolean(config.isDynamicText)) {
+            shape.text(config.placeholderText ?? "");
+        }
+        else {
+            shape.text(config.staticTextTemplate ?? "");
+        }
+    }
+    else {
+        shape.text(config.placeholderText ?? "");
+    }
 
     if (alignment === HorizontalTextAlignment.Center) {
         shape.align("center");

@@ -352,6 +352,8 @@
                 return;
             }
 
+            field.left = getOffsetForPixel(e.target.x());
+            field.top = getOffsetForPixel(e.target.y());
             field.width = getOffsetForPixel(e.target.width());
             field.height = getOffsetForPixel(e.target.height());
         });

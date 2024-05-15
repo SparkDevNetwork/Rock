@@ -63,6 +63,8 @@ export type TextFieldConfigurationBag = {
 
     placeholderText?: string | null;
 
+    isDynamicText: boolean;
+
     staticTextTemplate?: string | null;
 
     dynamicTextTemplate?: string | null;
@@ -78,6 +80,8 @@ export type TextFieldConfigurationBag = {
     isColorInverted: boolean;
 
     isCondensed: boolean;
+
+    maxLength: number;
 };
 
 export type RectangleFieldConfigurationBag = {

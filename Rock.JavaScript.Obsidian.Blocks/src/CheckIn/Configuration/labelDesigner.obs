@@ -110,7 +110,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "WWW",
+                    staticTextTemplate: "WWW",
                     fontSize: "48",
                     isColorInverted: "true"
                 }
@@ -127,7 +127,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "3",
+                    staticTextTemplate: "3",
                     fontSize: "35",
                     isColorInverted: "true"
                 }
@@ -144,7 +144,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "2",
+                    staticTextTemplate: "2",
                     fontSize: "35",
                     isColorInverted: "true"
                 }
@@ -161,7 +161,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "4",
+                    staticTextTemplate: "4",
                     fontSize: "10",
                     isColorInverted: "true"
                 }
@@ -178,7 +178,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "5",
+                    staticTextTemplate: "5",
                     fontSize: "52",
                     isColorInverted: "false"
                 }
@@ -195,7 +195,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "6",
+                    staticTextTemplate: "6",
                     fontSize: "16",
                     isColorInverted: "false"
                 }
@@ -212,7 +212,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "9",
+                    staticTextTemplate: "9",
                     fontSize: "10",
                     isColorInverted: "false"
                 }
@@ -261,7 +261,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "AAA",
+                    staticTextTemplate: "AAA",
                     fontSize: "16",
                     isColorInverted: "true"
                 }
@@ -278,7 +278,7 @@
                 rotationAngle: 0,
                 customDataValue: "",
                 configurationValues: {
-                    placeholderText: "LLL",
+                    staticTextTemplate: "LLL",
                     fontSize: "16",
                     isColorInverted: "true"
                 }

@@ -1,0 +1,142 @@
+<template>
+    <NumberBox label="Font Size"
+               v-model.lazy="fontSize" />
+
+    <div class="form-group" style="display: flex;">
+        <div style="flex-grow: 1;">
+            <div class="btn-group">
+                <RockButton v-for="item in alignmentItems"
+                            :btnType="alignment === item.value ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="onAlignmentClick(item.value)">
+                    <i :class="item.text"></i>
+                </RockButton>
+            </div>
+        </div>
+
+        <slot name="iconButtons" />
+    </div>
+
+    <div class="form-group">
+        <RockLabel>Options</RockLabel>
+
+        <div class="control-wrapper">
+            <InlineCheckBox label="Bold"
+                            v-model="isBold" />
+
+            <InlineCheckBox label="Invert Colors"
+                            v-model="isColorInverted" />
+
+            <InlineCheckBox label="Condensed Text"
+                            v-model="isCondensed" />
+        </div>
+    </div>
+
+    <NumberBox label="Max Length"
+               v-model="maxLength"
+               :minimumValue="0" />
+</template>
+
+<script setup lang="ts">
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { PropType, ref, watch } from "vue";
+    import { TextFieldConfigurationBag, StringRecord, HorizontalTextAlignment } from "./types.partial";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    type AlignmentValue = `${HorizontalTextAlignment.Left}` | `${HorizontalTextAlignment.Center}` | `${HorizontalTextAlignment.Right}`;
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const fontSize = ref<number | null>(12);
+    const alignment = ref<AlignmentValue>(`${HorizontalTextAlignment.Left}`);
+    const isBold = ref(false);
+    const isColorInverted = ref(false);
+    const isCondensed = ref(false);
+    const maxLength = ref<number | null>(null);
+
+    const alignmentItems: ListItemBag[] = [
+        {
+            value: `${HorizontalTextAlignment.Left}`,
+            text: "fa fa-align-left"
+        },
+        {
+            value: `${HorizontalTextAlignment.Center}`,
+            text: "fa fa-align-center"
+        },
+        {
+            value: `${HorizontalTextAlignment.Right}`,
+            text: "fa fa-align-right"
+        }
+    ];
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = props.labelManager.selectedField.value
+            ?.configurationValues ?? {} as StringRecord<TextFieldConfigurationBag>;
+
+        fontSize.value = toNumberOrNull(configuration.fontSize) ?? 12;
+        alignment.value = getAlignment(configuration.horizontalAlignment);
+        isBold.value = asBoolean(configuration.isBold);
+        isColorInverted.value = asBoolean(configuration.isColorInverted);
+        isCondensed.value = asBoolean(configuration.isCondensed);
+        maxLength.value = toNumberOrNull(configuration.maxLength);
+    }
+
+    /**
+     * Gets the alignment value representation used in the UI control.
+     *
+     * @param value The value stored in the configuration.
+     *
+     * @returns The value for the UI control.
+     */
+    function getAlignment(value: string | null | undefined): AlignmentValue {
+        const align = toNumberOrNull(value) as HorizontalTextAlignment | undefined ?? HorizontalTextAlignment.Left;
+
+        return `${align}`;
+    }
+
+    /**
+     * Event handler for the text alignment buttons.
+     *
+     * @param value The value that was selected.
+     */
+    function onAlignmentClick(value: string | undefined | null): void {
+        alignment.value = value as AlignmentValue;
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([fontSize, alignment, isBold, isColorInverted, isCondensed, maxLength], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as StringRecord<TextFieldConfigurationBag>;
+
+            fieldConfig.fontSize = `${fontSize.value}`;
+            fieldConfig.horizontalAlignment = alignment.value.toString();
+            fieldConfig.isBold = isBold.value ? "true" : "false";
+            fieldConfig.isColorInverted = isColorInverted.value ? "true" : "false";
+            fieldConfig.isCondensed = isCondensed.value ? "true" : "false";
+            fieldConfig.maxLength = `${maxLength.value}`;
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>
