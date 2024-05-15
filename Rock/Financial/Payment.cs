@@ -284,7 +284,7 @@ namespace Rock.Financial
             }
             else
             {
-                return System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+                return RockDateTime.ToFourDigitYearForCreditCardExpiration( year.Value );
             }
         }
         /// <summary>

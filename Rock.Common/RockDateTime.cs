@@ -341,9 +341,9 @@ namespace Rock
 
         /// <summary>
         /// Converts the year value to the appropriate century by using the
-        /// TwoDigitYearMax property.  For example, if the TwoDigitYearMax value is 2049,
-        /// then a two digit value of 50 will get converted to 1950 while a two digit
-        /// value of 49 will get converted to 2049.
+        /// TwoDigitYearMax property.  For example, if the TwoDigitYearMax value is 2059,
+        /// then a two digit value of 60 will get converted to 1960 while a two digit
+        /// value of 59 will get converted to 2059.
         /// </summary>
         /// <remarks>Taken from https://github.com/dotnet/runtime/blob/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/System.Private.CoreLib/src/System/Globalization/Calendar.cs#L669C1-L685</remarks>
         /// <param name="year"></param>
