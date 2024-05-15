@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,27 +16,9 @@
 //
 
 
-using System.Collections.Generic;
-
-namespace Rock.ViewModels.Blocks.Cms.PageList
-{
-    public class PageListSettingsPageBag
-    {
-        public int Id { get; set; }
-
-        public string Title { get; set; }
-
-        public int? ParentPageId { get; set; }
-
-        public string Description { get; set; }
-
-        public string Icon { get; set; }
-
-        public bool PageDisplayDescription { get; set; }
-
-        public List<PageListSettingsPageBag> Children { get; set; }
-
-        public string Url { get; set; }
-
-    }
+export const enum PreferenceKey {
+    SelectedCategoryIndex = "selected-category-index",
+    SelectedCategoryTitle = "selected-category-title",
+    IsSortedAlphabetically = "is-sorted-alphabetically"
 }
+

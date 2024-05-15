@@ -21,9 +21,20 @@
 // </copyright>
 //
 
-import { PageListSettingsPageBag } from "@Obsidian/ViewModels/Blocks/Cms/PageList/pageListSettingsPageBag";
+export type PageSearchPageBag = {
+    children?: PageSearchPageBag[] | null;
 
-/** The additional configuration options for the Page List block. */
-export type PageListOptionsBag = {
-    pages?: PageListSettingsPageBag[] | null;
+    description?: string | null;
+
+    icon?: string | null;
+
+    id: number;
+
+    pageDisplayDescription: boolean;
+
+    parentPageId?: number | null;
+
+    title?: string | null;
+
+    url?: string | null;
 };

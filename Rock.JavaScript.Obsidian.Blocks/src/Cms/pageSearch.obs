@@ -1,0 +1,181 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+
+    <Panel :hasTitle="false">
+        <div class="row">
+            <div class="col-md-3 col-lg-2" >
+                <ul style="list-style-type: none">
+                    <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" :class="['categories', {active: currentCategoryIndex === index}]" style="border-radius: 4px;">{{ page.title }}</li>
+                </ul>
+            </div>
+            <div class="col-md-9 col-lg-10">
+                <div class="filter-container">
+                    <div ref="searchContainer">
+                        <TextBox v-model="searchText" placeholder="Search" class="form-control input-width-xxl" isClearable  />
+                    </div>
+                    <div>
+                        <RockButton @click="sortChildrenAlphabetically" btnType="default" class="sort-button" :class="{active: isSortedAlphabetically}">
+                            <i class="fa fa-sort-alpha-down"></i>
+                        </RockButton>
+                        <RockButton @click="sortByOriginalOrder" btnType="default" class="sort-button" :class="{active: !isSortedAlphabetically}">
+                            <i class="fa fa-list"></i>
+                        </RockButton>
+                    </div>
+                </div>
+                <div v-for="(category, index) in sortedCategories.filter(c => c.title === currentCategoryTitle || currentCategoryTitle === 'All')" :key="index" style="width: 100%;">
+                    <div v-if="category.children && category.children.length > 0 && filteredSettings(category).length > 0">
+                        <h2 >{{ category.title }}</h2>
+                        <div class="list-as-blocks">
+                            <ul class="mb-5">
+                                <li v-for="(setting, index) in filteredSettings(category)" :key="index" >
+                                    <a :href="setting.url ?? parrentUrl" v-if="setting.pageDisplayDescription" :title="setting.description ?? ''">
+                                            <i v-if="setting.icon != ''" :class="setting.icon"></i>
+                                        <h3>{{ setting.title }}</h3>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Panel>
+
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, usePersonPreferences } from "@Obsidian/Utility/block";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { PageSearchBag } from "@Obsidian/ViewModels/Blocks/Cms/PageSearch/pageSearchBag";
+    import { PageSearchPageBag } from "@Obsidian/ViewModels/Blocks/Cms/PageSearch/pageSearchPageBag";
+    import { onMounted, ref, nextTick, computed } from "vue";
+    import { PreferenceKey } from "./PageSearch/types.partial";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+
+// #region Values
+
+const config = useConfigurationValues<PageSearchBag>();
+    const preferences = usePersonPreferences().blockPreferences;
+    const parrentUrl = window.location.href;
+    const currentCategoryIndex = ref(toNumberOrNull(preferences.getValue(PreferenceKey.SelectedCategoryIndex)) ?? 0);
+    const currentCategoryTitle = ref<string | null | undefined>(preferences.getValue(PreferenceKey.SelectedCategoryTitle) ?? "All");
+    const pages = ref<PageSearchPageBag[]>([{id: -1, title: "All", children: [], icon: null, description: null, parentPageId: null, pageDisplayDescription: false}, ...config.pages ?? []]);
+    const searchText = ref("");
+    const searchContainer = ref<HTMLElement>();
+    const isSortedAlphabetically = ref(preferences.getValue(PreferenceKey.IsSortedAlphabetically) === "true");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const sortedCategories = computed<PageSearchPageBag[]>(() => {
+        if (isSortedAlphabetically.value) {
+            return pages.value.map(category => {
+                if (category.children && category.children.length > 0) {
+                    const sortedChildren = [...category.children].sort((a, b) => {
+                        if (a.pageDisplayDescription && b.pageDisplayDescription) {
+                            const titleA = (a.title ?? "").toLowerCase();
+                            const titleB = (b.title ?? "").toLowerCase();
+                            return titleA.localeCompare(titleB);
+                        }
+                        return 0;
+                    });
+                    return { ...category, children: sortedChildren };
+                }
+                else {
+                    return category;
+                }
+            });
+        }
+        return pages.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    onMounted(() => {
+        nextTick(() => {
+            const searchBox = searchContainer.value?.querySelector("input") as HTMLInputElement | null;
+            searchBox?.focus();
+        });
+    });
+
+    async function selectCategory(page: PageSearchPageBag, index: number): Promise<void> {
+        currentCategoryIndex.value = index;
+        currentCategoryTitle.value = page.title;
+        searchText.value = "";
+
+        preferences.setValue(PreferenceKey.SelectedCategoryIndex, currentCategoryIndex.value.toString());
+        preferences.setValue(PreferenceKey.SelectedCategoryTitle, currentCategoryTitle.value ?? "All");
+        await preferences.save();
+    }
+
+    // Todo: come back and maybe refine.
+    async function sortChildrenAlphabetically(): Promise<void> {
+        isSortedAlphabetically.value = true;
+        preferences.setValue(PreferenceKey.IsSortedAlphabetically, isSortedAlphabetically.value.toString());
+        await preferences.save();
+    }
+
+    async function sortByOriginalOrder(): Promise<void> {
+        isSortedAlphabetically.value = false;
+        preferences.setValue(PreferenceKey.IsSortedAlphabetically, isSortedAlphabetically.value.toString());
+        await preferences.save();
+    }
+
+    const filteredSettings = (category: PageSearchPageBag): PageSearchPageBag[] => {
+        if (category.children) {
+            return category.children.filter(c => c.parentPageId === category.id && c.title?.toLowerCase().includes(searchText.value.toLowerCase()));
+        }
+        return [];
+    };
+
+    // #endregion
+
+</script>
+
+<style scoped>
+
+.active {
+    background-color: #EE7725;
+    color: #FFFFFF;
+}
+
+.categories {
+    cursor: pointer;
+    width: 150px;
+    text-align: left;
+    padding: 2px 10px;
+}
+
+.filter-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sort-button {
+    padding: 8px 16px;
+    box-shadow: none;
+}
+
+.sort-button:focus {
+    background-color: #EE7725;
+    color: #FFFFFF;
+}
+
+.sort-button:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.sort-button:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+</style>

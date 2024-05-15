@@ -18,13 +18,25 @@
 
 using System.Collections.Generic;
 
-namespace Rock.ViewModels.Blocks.Cms.PageList
+namespace Rock.ViewModels.Blocks.Cms.PageSearch
 {
-    /// <summary>
-    /// The additional configuration options for the Page List block.
-    /// </summary>
-    public class PageListOptionsBag
+    public class PageSearchPageBag
     {
-        public List<PageListSettingsPageBag> pages { get; set; }
+        public int Id { get; set; }
+
+        public string Title { get; set; }
+
+        public int? ParentPageId { get; set; }
+
+        public string Description { get; set; }
+
+        public string Icon { get; set; }
+
+        public bool PageDisplayDescription { get; set; }
+
+        public List<PageSearchPageBag> Children { get; set; }
+
+        public string Url { get; set; }
+
     }
 }
