@@ -101,7 +101,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.ShowTransferOption,
-        Order = 5 )]
+        Order = 6 )]
 
     #endregion
 
