@@ -1,11 +1,20 @@
 <template>
+    <RadioButtonList label="Color"
+                     v-model="color"
+                     horizontal
+                     :repeatColumns="2"
+                     :items="colorItems" />
+
     <NumberBox label="Line Thickness"
                v-model.lazy="thickness" />
 </template>
 
 <script setup lang="ts">
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, ref, watch } from "vue";
     import { StringRecord, LineFieldConfigurationBag } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
@@ -17,7 +26,19 @@
         }
     });
 
+    const color = ref<"black" | "white">("black");
     const thickness = ref<number | null>(1);
+
+    const colorItems: ListItemBag[] = [
+        {
+            value: "black",
+            text: "Black"
+        },
+        {
+            value: "white",
+            text: "White"
+        }
+    ];
 
     /**
      * Set the internal values to match those from the selected field.
@@ -26,16 +47,18 @@
         const configuration = props.labelManager.selectedField.value
             ?.configurationValues ?? {} as StringRecord<LineFieldConfigurationBag>;
 
+        color.value = asBoolean(configuration.isBlack) ? "black" : "white";
         thickness.value = toNumberOrNull(configuration.thickness) ?? 1;
     }
 
     // Watch for changes in the UI that require an update to the label.
-    watch([thickness], () => {
+    watch([color, thickness], () => {
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
             const fieldConfig = field.configurationValues as StringRecord<LineFieldConfigurationBag>;
 
+            fieldConfig.isBlack = color.value === "black" ? "true" : "false";
             fieldConfig.thickness = `${thickness.value}`;
         });
     });

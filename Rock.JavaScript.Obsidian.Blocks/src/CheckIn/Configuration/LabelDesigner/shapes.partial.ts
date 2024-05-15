@@ -346,7 +346,7 @@ function updateLineShapeFromField(shape: Konva.Line, field: LabelFieldBag): void
     // Update configured values.
     shape.strokeWidth(Math.max(toNumber(config.thickness), 1));
     shape.hitStrokeWidth(Math.max(toNumber(config.thickness), 4));
-    shape.stroke("black");
+    shape.stroke(asBoolean(config.isBlack) ? "black" : "white");
 }
 
 // #endregion

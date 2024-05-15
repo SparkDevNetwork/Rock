@@ -95,6 +95,8 @@ export type RectangleFieldConfigurationBag = {
 };
 
 export type LineFieldConfigurationBag = {
+    isBlack: boolean;
+
     thickness: number;
 };
 

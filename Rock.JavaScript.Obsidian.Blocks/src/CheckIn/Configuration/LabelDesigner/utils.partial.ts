@@ -188,6 +188,7 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         const config = field.configurationValues as StringRecord<LineFieldConfigurationBag>;
 
         field.height = 0;
+        config.isBlack = "true";
         config.thickness = "1";
     }
 
