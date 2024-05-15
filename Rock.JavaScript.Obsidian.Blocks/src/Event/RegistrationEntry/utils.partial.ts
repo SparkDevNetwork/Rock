@@ -146,6 +146,12 @@ export const RegistrationCostSummary: InjectionKey<{
     updateRegistrationCostSummary: (newValue: Partial<RegistrationCostSummaryInfo>) => void;
 }> = Symbol("registration-cost-summary");
 
+type PersonGuid = Guid; // Not the registrant guid.
+type FormFieldGuid = Guid;
+type FormFieldValue = unknown;
+/** An injection key to provide the original field values for each registrant. */
+export const OriginalFormFieldValues: InjectionKey<Ref<Record<PersonGuid, Record<FormFieldGuid, FormFieldValue>>>> = Symbol("original-field-values");
+
 // This global state must exist outside of the `useConfigureNewPaymentPlan()` composable
 // so that the summary component can repopulate the payment plan modal with the previous data.
 const wipPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();

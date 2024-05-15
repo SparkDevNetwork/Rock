@@ -1744,7 +1744,8 @@ namespace Rock.Blocks.Event
             {
                 var fields = form.Fields.Where( f =>
                 {
-                    if ( f.ShowCurrentValue && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
+                    // ShowCurrentValue means "Default to the person's current value for this field"
+                    if ( ( f.ShowCurrentValue || f.IsLockedIfValuesExist ) && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
                     {
                         return true;
                     }
@@ -1759,7 +1760,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( ( familySelection || f.ShowCurrentValue || f.IsLockedIfValuesExist ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName || f.PersonFieldType == RegistrationPersonFieldType.LastName;
                     }

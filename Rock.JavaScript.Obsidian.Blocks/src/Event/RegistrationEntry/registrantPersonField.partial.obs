@@ -4,7 +4,7 @@
     <NotificationBox v-else alertType="danger">Could not load the control for person field {{ fieldType }}.</NotificationBox>
 </template>
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType } from "vue";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -28,17 +28,15 @@
             type: Object as PropType<Record<Guid, unknown>>,
             required: true
         },
-        isKnownFamilyMember: {
+        disabled: {
             type: Boolean as PropType<boolean>,
-            required: true
+            default: false
         }
     });
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
 
     // #region Values
-
-    const isFieldLocked = computed<boolean>(() => props.field.isLockedIfValuesExist && !!props.fieldValues[props.field.guid] && props.isKnownFamilyMember);
 
     // #endregion
 
@@ -106,18 +104,16 @@
     const fieldControlComponentProps = computed(() => {
         const componentProps: Record<string, unknown> = {
             rules: props.field.isRequired ? "required" : "",
-            disabled: isFieldLocked.value
+            disabled: props.disabled
         };
 
         switch (props.field.personFieldType) {
             case RegistrationPersonFieldType.FirstName:
                 componentProps.label = "First Name";
-                componentProps.disabled = props.isKnownFamilyMember;
                 break;
 
             case RegistrationPersonFieldType.LastName:
                 componentProps.label = "Last Name";
-                componentProps.disabled = props.isKnownFamilyMember;
                 break;
 
             case RegistrationPersonFieldType.MiddleName:
