@@ -94,6 +94,15 @@ namespace Rock.Blocks.Types.Mobile.Connection
         Key = AttributeKey.ReminderPage,
         Order = 5 )]
 
+    [BooleanField(
+        "Show Transfer Option",
+        Description = "Indicates whether or not the 'Transfer' option should be shown.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.ShowTransferOption,
+        Order = 5 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL_BLOCK_TYPE )]
@@ -118,6 +127,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
             public const string WorkflowPage = "WorkflowPage";
 
             public const string ReminderPage = "ReminderPage";
+
+            public const string ShowTransferOption = "ShowTransferOption";
         }
 
         /// <summary>
@@ -165,8 +176,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </summary>
         protected Guid? ReminderPageGuid => GetAttributeValue( AttributeKey.ReminderPage ).AsGuidOrNull();
 
+        /// <summary>
+        /// Gets a value indicating whether to show the transfer option.
+        /// </summary>
+        protected bool ShowTransferOption => GetAttributeValue( AttributeKey.ShowTransferOption ).AsBoolean();
 
-       #endregion
+        #endregion
 
         #region IRockMobileBlockType Implementation
 
@@ -182,7 +197,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 GroupDetailPageGuid = GroupDetailPageGuid,
                 WorkflowPageGuid = WorkflowPageGuid,
                 ReminderPageGuid = ReminderPageGuid,
-                AreRemindersConfigured = CheckReminderConfiguration()
+                AreRemindersConfigured = CheckReminderConfiguration(),
+                ShowTransferOption = ShowTransferOption
             };
         }
 
@@ -368,7 +384,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             // so we only want to parse the Lava if the Shell Version > 1.4.24, when we updated
             // that.
             string activityContent = "";
-            if ( new Version( deviceData?.ShellVersion ?? "0") <= new Version( 1, 4, 0, 24 ) )
+            if ( new Version( deviceData?.ShellVersion ?? "0" ) <= new Version( 1, 4, 0, 24 ) )
             {
                 // Generate the content that will be used to display the activities.
                 mergeFields.Add( "Activities", activities );
@@ -394,7 +410,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     ActivityTypeGuid = a.ConnectionActivityType.Guid,
                     ConnectorGuid = a.ConnectorPersonAlias?.Person.Guid,
                     CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
-                    IsModifiable = IsActivityModifiable(a),
+                    IsModifiable = IsActivityModifiable( a ),
                     Note = a.Note.StripHtml(),
                     Guid = a.Guid,
                     ActivityType = a.ConnectionActivityType.ToString(),
@@ -1226,11 +1242,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // since they are only required when editing.
                 return (null, null, null, ActionUnauthorized());
             }
-            else if( readOnly && !request.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            else if ( readOnly && !request.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return (null, null, null, ActionUnauthorized());
             }
-            
+
             // Load up the activity types for this connection request and pull
             // in the Guid an Name to send to the client.
             var activityTypes = connectionActivityTypeService.Queryable()
@@ -1253,6 +1269,180 @@ namespace Rock.Blocks.Types.Mobile.Connection
             }
 
             return (activity, connectors, activityTypes, null);
+        }
+
+        /// <summary>
+        /// Gets the transfer details of a connection request.
+        /// </summary>
+        /// <param name="request">The connection request for which to get the transfer details.</param>
+        /// <returns>The transfer bag containing the connection request transfer details.</returns>
+        private ConnectionRequestTransferBag GetConnectionRequestTransferDetails( ConnectionRequest request )
+        {
+            var connectionType = request.ConnectionOpportunity.ConnectionType;
+
+            var opportunities = connectionType.ConnectionOpportunities.Select( r => new OpportunityTransferOptionBag
+            {
+                OpportunityName = r.Name,
+                OpportunityGuid = r.Guid,
+                ShowCampusOnTransfer = r.ShowCampusOnTransfer,
+                ShowStatusOnTransfer = r.ShowStatusOnTransfer,
+            } ).ToList();
+
+            var statuses = connectionType.ConnectionStatuses.OrderBy( a => a.Order ).ThenByDescending( cs => cs.IsDefault ).ThenBy( a => a.Name );
+
+            var currentConnectorName = request.ConnectorPersonAlias?.Person?.FullName;
+
+            return new ConnectionRequestTransferBag
+            {
+                AvailableOpportunities = opportunities,
+                AvailableStatuses = statuses.Select( s => new ListItemBag
+                {
+                    Text = s.Name,
+                    Value = s.Guid.ToString()
+                } ).ToList(),
+                Requester = new ListItemBag
+                {
+                    Text = request.PersonAlias.Person.FullName,
+                    Value = request.PersonAlias.Guid.ToString()
+                },
+                CurrentConnectorFullName = currentConnectorName,
+            };
+        }
+
+        /// <summary>
+        /// Transfers a connection request with the specified options.
+        /// </summary>
+        /// <param name="connectionRequest">The connection request to transfer.</param>
+        /// <param name="options">The options for transferring the connection request.</param>
+        /// <param name="rockContext">The RockContext to use for the operation.</param>
+        /// <returns>True if the connection request transfer was successful; otherwise, false.</returns>
+        private bool TransferConnectionRequest( ConnectionRequest connectionRequest, ConnectionRequestTransferOptions options, RockContext rockContext )
+        {
+            var connectionActivityTypeService = new ConnectionActivityTypeService( rockContext );
+            var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+            var isEditable = connectionRequest.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+            if ( connectionRequest == null || !isEditable )
+            {
+                return false;
+            }
+
+            //
+            // Put the original values of the Connection Request into memory so we can compare them later.
+            //
+            int? sourceConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
+            int sourceOpportunityId = connectionRequest.ConnectionOpportunityId;
+
+            //
+            // Ensure that the transferred activity type exists.
+            //
+            var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
+            var transferredActivityId = connectionActivityTypeService.Queryable()
+                .Where( t => t.Guid == guid )
+                .Select( t => t.Id )
+                .FirstOrDefault();
+
+            if ( transferredActivityId > 0 )
+            {
+                var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( options.OpportunityGuid );
+
+                connectionRequest.ConnectionOpportunityId = newOpportunity.Id;
+
+                //
+                // Set the new connection status, which requires a lookup.
+                //
+                if ( newOpportunity.ShowStatusOnTransfer && options.StatusGuid.HasValue )
+                {
+                    var connectionStatusService = new ConnectionStatusService( rockContext );
+
+                    // Set the status which requires a lookup.
+                    var status = connectionStatusService.Queryable()
+                        .Where( s => s.ConnectionTypeId == newOpportunity.ConnectionTypeId
+                            && s.Guid == options.StatusGuid )
+                        .SingleOrDefault();
+
+                    connectionRequest.ConnectionStatusId = status.Id;
+                }
+
+                //
+                // Set the new campus.
+                //
+                if ( newOpportunity.ShowCampusOnTransfer && options.CampusGuid.HasValue )
+                {
+                    var campusId = CampusCache.GetId( options.CampusGuid.Value );
+                    connectionRequest.CampusId = campusId;
+                }
+
+                connectionRequest.AssignedGroupId = null;
+                connectionRequest.AssignedGroupMemberRoleId = null;
+                connectionRequest.AssignedGroupMemberStatus = null;
+
+                //
+                // Set the new connector.
+                //
+                if ( options.UseCurrentConnector )
+                {
+                    // Just keep the current connector.
+                }
+                else if ( options.UseDefaultConnector )
+                {
+                    // Use the default connector for the new opportunity.
+                    if ( newOpportunity != null )
+                    {
+                        connectionRequest.ConnectorPersonAliasId = newOpportunity.GetDefaultConnectorPersonAliasId( connectionRequest.CampusId );
+                    }
+
+                    // If for some reason we couldn't find a default connector then just
+                    // set it to null.
+                    else
+                    {
+                        connectionRequest.ConnectorPersonAliasId = null;
+                    }
+                }
+                else if ( options.UseNoConnector )
+                {
+                    connectionRequest.ConnectorPersonAliasId = null;
+                }
+                // A connector was manually specified.
+                else if ( options.ConnectorGuid != null )
+                {
+                    var connectorPersonId = new PersonService( rockContext ).GetId( options.ConnectorGuid.Value );
+                    int? connectorPersonAliasId = null;
+
+                    if ( connectorPersonId.HasValue )
+                    {
+                        var connectorPerson = new PersonService( rockContext ).Get( connectorPersonId.Value );
+                        if ( connectorPerson != null )
+                        {
+                            connectorPersonAliasId = connectorPerson.PrimaryAliasId;
+                        }
+                    }
+
+                    connectionRequest.ConnectorPersonAliasId = connectorPersonAliasId;
+                }
+
+                // if the Opportunity and Connector haven't changed then don't transfer.
+                if ( connectionRequest.ConnectionOpportunityId == sourceOpportunityId && connectionRequest.ConnectorPersonAliasId == sourceConnectorPersonAliasId )
+                {
+                    return false;
+                }
+
+                // Add a new request activity to log the transfer.
+                connectionRequestActivityService.Add( new ConnectionRequestActivity
+                {
+                    ConnectionRequestId = connectionRequest.Id,
+                    ConnectionOpportunityId = newOpportunity.Id,
+                    ConnectionActivityTypeId = transferredActivityId,
+                    Note = options.Note,
+                    ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId
+                } );
+
+                rockContext.SaveChanges();
+
+                return true;
+            }
+
+            return false;
         }
 
         #endregion
@@ -1587,7 +1777,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             {
                 var requestActivityBag = GetConnectionRequestActivityBag( rockContext, connectionRequestGuid, activityGuid, readOnly );
 
-                if( requestActivityBag.Error != null )
+                if ( requestActivityBag.Error != null )
                 {
                     return requestActivityBag.Error;
                 }
@@ -1783,7 +1973,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionBadRequest( "Unable to find that connection activity type." );
                 }
 
-                if( !activity.ConnectorGuid.HasValue )
+                if ( !activity.ConnectorGuid.HasValue )
                 {
                     return ActionBadRequest( "Invalid connector was specified." );
 
@@ -1841,12 +2031,12 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
                 var request = connectionRequestService.Get( connectionRequestGuid, !disablePredictableIds );
 
-                if( activity == null )
+                if ( activity == null )
                 {
                     return ActionNotFound( "Unable to find that specific activity." );
                 }
 
-                if( request == null )
+                if ( request == null )
                 {
                     return ActionNotFound( "Unable to find that specific connection request." );
                 }
@@ -2166,6 +2356,125 @@ namespace Rock.Blocks.Types.Mobile.Connection
             // that is what we want anyway. If we changed any values then
             // all the in-memory navigation properties are probably incorrect.
             return GetRequestDetails( connectionRequestGuid );
+        }
+
+        /// <summary>
+        /// Gets the details of a request transfer.
+        /// </summary>
+        /// <param name="connectionRequestKey">The GUID of the connection request.</param>
+        [BlockAction]
+        public BlockActionResult GetRequestTransferDetails( string connectionRequestKey )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestKey, !disablePredictableIds )
+                    .FirstOrDefault();
+
+                if ( request == null )
+                {
+                    return ActionNotFound();
+                }
+                else if ( !request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionUnauthorized();
+                }
+
+                return ActionOk( GetConnectionRequestTransferDetails( request ) );
+            }
+        }
+
+        /// <summary>
+        /// Transfers a request using the specified connection request key and transfer options.
+        /// </summary>
+        /// <param name="connectionRequestKey">The key of the connection request to transfer.</param>
+        /// <param name="options">The transfer options to apply.</param>
+        [BlockAction]
+        public BlockActionResult TransferRequest( string connectionRequestKey, ConnectionRequestTransferOptions options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+                var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
+
+                // Load the connection request and include the opportunity and type
+                // to speed up the security check.
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestKey, !disablePredictableIds )
+                    .Include( r => r.ConnectionOpportunity.ConnectionType )
+                    .Include( r => r.Campus )
+                    .Include( r => r.ConnectorPersonAlias.Person )
+                    .Include( r => r.ConnectionStatus )
+                    .FirstOrDefault();
+
+                if ( request == null )
+                {
+                    return ActionNotFound();
+                }
+                else if ( !request.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return ActionUnauthorized();
+                }
+
+                var transferred = TransferConnectionRequest( request, options, rockContext );
+
+                if ( !transferred )
+                {
+                    return ActionInternalServerError( "Failed to transfer your connection request." );
+                }
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Gets the connectors for a transfer option.
+        /// </summary>
+        /// <param name="campusGuid">The ID of the campus.</param>
+        /// <param name="opportunityGuid">The ID of the opportunity.</param>
+        [BlockAction]
+        public BlockActionResult GetConnectorsForTransferOption( Guid opportunityGuid, Guid? campusGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Get the list of connectors.
+                var connectorPersonData = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
+                    .Where( a => a.ConnectionOpportunity.Guid == opportunityGuid
+                             && ( !campusGuid.HasValue || a.Campus == null || a.Campus.Guid == campusGuid.Value ) )
+                    .SelectMany( a => a.ConnectorGroup.Members )
+                    .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Select( a => new
+                    {
+                        FirstName = a.Person.FirstName,
+                        LastName = a.Person.LastName,
+                        Guid = a.Person.Guid.ToString()
+                    } )
+                    .ToList();
+
+                // Calculate FullName in memory and filter out any duplicate person GUIDs.
+                var connectorList = connectorPersonData
+                    .Select( person => new ListItemBag
+                    {
+                        Text = $"{person.FirstName} {person.LastName}",
+                        Value = person.Guid.ToString()
+                    } )
+                    .GroupBy( item => item.Value )
+                    .Select( group => group.First() )
+                    .ToList();
+
+                // Add the current person as an option if not already in the list.
+                var currentPerson = RequestContext.CurrentPerson;
+                if ( currentPerson != null && !connectorList.Any( bag => bag.Value == currentPerson.Guid.ToString() ) )
+                {
+                    connectorList.Add( new ListItemBag
+                    {
+                        Text = currentPerson.FullName,
+                        Value = currentPerson.Guid.ToString()
+                    } );
+                }
+
+                return ActionOk( connectorList );
+            }
         }
 
         #endregion
@@ -2814,6 +3123,105 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// </summary>
             /// <value>The values for the attributes.</value>
             public Dictionary<string, string> Values { get; set; }
+        }
+
+        /// <summary>
+        /// A bag with information about transferring a connection request.
+        /// </summary>
+        public class ConnectionRequestTransferBag
+        {
+            /// <summary>
+            /// Gets or sets the requester of the list item bag.
+            /// </summary>
+            public ListItemBag Requester { get; set; }
+
+            /// <summary>
+            /// Gets or sets the list of available opportunities.
+            /// </summary>
+            public List<OpportunityTransferOptionBag> AvailableOpportunities { get; set; }
+
+            /// <summary>
+            /// Gets or sets the list of available statuses.
+            /// </summary>
+            public List<ListItemBag> AvailableStatuses { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the current connector.
+            /// </summary>
+            public string CurrentConnectorFullName { get; set; }
+        }
+
+        /// <summary>
+        /// Represents the configuration of the opportunity when it comes to a transfer.
+        /// </summary>
+        public class OpportunityTransferOptionBag
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether to show the status field on transfer.
+            /// </summary>
+            public bool ShowStatusOnTransfer { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether to show the campus field on transfer.
+            /// </summary>
+            public bool ShowCampusOnTransfer { get; set; }
+
+            /// <summary>
+            /// Gets or sets the text (the name of the opportunity).
+            /// </summary>
+            /// <value>The text.</value>
+            public string OpportunityName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            public Guid OpportunityGuid { get; set; }
+        }
+
+        /// <summary>
+        /// Represents transfer options for a connection request.
+        /// </summary>
+        public class ConnectionRequestTransferOptions
+        {
+            /// <summary>
+            /// Gets or sets the opportunity.
+            /// </summary>
+            public Guid OpportunityGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the status.
+            /// </summary>
+            public Guid? StatusGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the campus.
+            /// </summary>
+            public Guid? CampusGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the note.
+            /// </summary>
+            public string Note { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether to use the current connector.
+            /// </summary>
+            public bool UseCurrentConnector { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether to use the default connector.
+            /// </summary>
+            public bool UseDefaultConnector { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether to use no connector.
+            /// </summary>
+            public bool UseNoConnector { get; set; }
+
+            /// <summary>
+            /// Gets or sets the ConnectorGuid.
+            /// </summary>
+            public Guid? ConnectorGuid { get; set; }
         }
 
         #endregion
