@@ -36,7 +36,7 @@ import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
-import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
 import { useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
 
 /** Provides a pattern for entity detail blocks. */
@@ -55,6 +55,13 @@ export default defineComponent({
     },
 
     props: {
+
+        /** If true then labels for the entity will be visible regardless of the panel mode. */
+        alwaysShowLabels: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** The name of the entity. This will be used to construct the panel title. */
         name: {
             type: String as PropType<string>,
@@ -405,11 +412,6 @@ export default defineComponent({
             return !isAutoEditMode.value || isEditMode.value;
         });
 
-        /** True if we have any labels to display. */
-        const hasLabels = computed((): boolean => {
-            return !!props.labels && props.labels.length > 0;
-        });
-
         /** The header actions that should be displayed in the panel title area. */
         const headerActions = computed((): PanelAction[] => {
             const actions = [...props.headerActions ?? []];
@@ -426,6 +428,14 @@ export default defineComponent({
 
             return actions;
         });
+
+        /** True if we have any labels to display and they should be visible. */
+        const showLabels = computed((): boolean => {
+            return !!props.labels && props.labels.length > 0 && (!isEditMode.value || props.alwaysShowLabels === true);
+        });
+
+        /** True if we're not in Edit mode and the isTagsVisible prop is true.. */
+        const showTags = computed(() => !isEditMode.value && props.isTagsVisible === true);
 
         // #endregion
 
@@ -778,7 +788,6 @@ export default defineComponent({
         return {
             entityTypeName,
             entityTypeGuid,
-            hasLabels,
             internalFooterSecondaryActions,
             internalHeaderSecondaryActions,
             panelTitle,
@@ -800,7 +809,9 @@ export default defineComponent({
             onEditSuspenseReady,
             onSaveClick,
             onSaveSubmit,
-            showAuditDetailsModal
+            showAuditDetailsModal,
+            showLabels,
+            showTags
         };
     },
 
@@ -819,18 +830,18 @@ export default defineComponent({
         </span>
     </template>
 
-    <template v-if="!isEditMode && (hasLabels || isTagsVisible)" #subheaderLeft>
+    <template v-if="showLabels || showTags" #subheaderLeft>
         <div class="d-flex">
-            <div v-if="hasLabels" class="label-group">
+            <div v-if="showLabels" class="label-group">
                 <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
                     <template v-if="action.title">{{ action.title }}</template>
                     <i v-else :class="action.iconCssClass"></i>
                 </span>
             </div>
 
-            <div v-if="isTagsVisible && hasLabels" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
+            <div v-if="showTags && showLabels" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
 
-            <div v-if="isTagsVisible" class="flex-grow-1">
+            <div v-if="showTags" class="flex-grow-1">
                 <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
             </div>
         </div>
