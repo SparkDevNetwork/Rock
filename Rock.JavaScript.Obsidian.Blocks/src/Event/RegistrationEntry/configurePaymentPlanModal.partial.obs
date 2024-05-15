@@ -94,7 +94,7 @@
     import { Guid } from "@Obsidian/Types";
     import { ValidationResult } from "@Obsidian/ValidationRules";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { RockCurrency } from "@Obsidian/Utility/currency";
+    import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
 

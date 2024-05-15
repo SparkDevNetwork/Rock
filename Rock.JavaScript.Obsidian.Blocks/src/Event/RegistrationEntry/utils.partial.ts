@@ -40,7 +40,7 @@ import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/Regi
 import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { RockCurrency } from "@Obsidian/Utility/currency";
+import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
 import { RegistrationEntryCreatePaymentPlanRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCreatePaymentPlanRequestBag";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
