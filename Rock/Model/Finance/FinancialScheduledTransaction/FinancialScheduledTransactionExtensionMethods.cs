@@ -37,7 +37,7 @@ namespace Rock.Model
         /// <param name="financialScheduledTransactionQuery">The source query.</param>
         /// <returns>An <see cref="IQueryable"/> of <see cref="FinancialScheduledTransaction"/> and their <see cref="PaymentPlan"/> representations.</returns>
         [RockInternal( "1.16.6" )]
-        public static IQueryable<FinancialScheduledTransactionPaymentPlanPair> GetPaymentPlanPairs( this IQueryable<FinancialScheduledTransaction> financialScheduledTransactionQuery )
+        public static IQueryable<FinancialScheduledTransactionPaymentPlanPair> SelectPaymentPlanPairs( this IQueryable<FinancialScheduledTransaction> financialScheduledTransactionQuery )
         {
             // IMPORTANT: Any updates to this logic should also be made to
             // - GetPaymentPlan( this FinancialScheduledTransaction financialScheduledTransaction )
@@ -102,7 +102,7 @@ namespace Rock.Model
         /// When possible, use <see cref="IncludePaymentPlanDependencies(IQueryable{Rock.Model.FinancialScheduledTransaction})"/>
         /// before accessing this to ensure dependent data is eagerly-loaded.
         /// <para>
-        /// Prefer <see cref="GetPaymentPlanPairs(IQueryable{FinancialScheduledTransaction})"/> if retrieving payment plan pairs in a query.
+        /// Prefer <see cref="SelectPaymentPlanPairs(IQueryable{FinancialScheduledTransaction})"/> if retrieving payment plan pairs in a query.
         /// </para>
         /// <para><strong>This is an internal API</strong> that supports the Rock
         /// infrastructure and not subject to the same compatibility standards
@@ -118,7 +118,7 @@ namespace Rock.Model
         public static PaymentPlan GetPaymentPlan( this FinancialScheduledTransaction financialScheduledTransaction )
         {
             // IMPORTANT: Any updates to this logic should also be made to
-            // - GetPaymentPlanPairs( this IQueryable<FinancialScheduledTransaction> financialTransactionsQuery )
+            // - SelectPaymentPlanPairs( this IQueryable<FinancialScheduledTransaction> financialTransactionsQuery )
             // - IncludePaymentPlanDependencies( this IQueryable<FinancialScheduledTransaction> financialScheduledTransactionQuery ).
 
             if ( financialScheduledTransaction == null )
