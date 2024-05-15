@@ -55,6 +55,13 @@ namespace Rock
         private static TimeZoneInfo _defaultTimeZoneInfo = TimeZoneInfo.Local;
 
         /// <summary>
+        /// This is something similar to the GregorianCalendar's TwoDigitYearMax property which we'll use to
+        /// fix the two-digit 'year' for credit card checking.
+        /// See https://learn.microsoft.com/en-us/dotnet/core/compatibility/globalization/8.0/twodigityearmax-default
+        /// </summary>
+        private const int TwoDigitYearMax = 2059;
+
+        /// <summary>
         /// Initializes the specified organization time zone information.
         /// </summary>
         /// <param name="organizationTimeZoneInfo">The organization time zone information.</param>
@@ -330,6 +337,33 @@ namespace Rock
             }
 
             return response;
+        }
+
+        /// <summary>
+        /// Converts the year value to the appropriate century by using the
+        /// TwoDigitYearMax property.  For example, if the TwoDigitYearMax value is 2049,
+        /// then a two digit value of 50 will get converted to 1950 while a two digit
+        /// value of 49 will get converted to 2049.
+        /// </summary>
+        /// <remarks>Taken from https://github.com/dotnet/runtime/blob/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/System.Private.CoreLib/src/System/Globalization/Calendar.cs#L669C1-L685</remarks>
+        /// <param name="year"></param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">if the number given is nagative</exception>
+        public static int ToFourDigitYearForCreditCardExpiration( int year )
+        {
+            if ( year < 0 )
+            {
+                throw new ArgumentOutOfRangeException( "year", "year cannot be negative." );
+            }
+
+            if ( year < 100 )
+            {
+                return ( TwoDigitYearMax / 100 - ( year > TwoDigitYearMax % 100 ? 1 : 0 ) ) * 100 + year;
+            }
+
+            // If the year value is above 100, just return the year value.  Don't have to do
+            // the TwoDigitYearMax comparison.
+            return year;
         }
     }
 }
