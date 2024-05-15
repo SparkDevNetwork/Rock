@@ -5,7 +5,7 @@
         <div class="row">
             <div class="col-md-3 col-lg-2" >
                 <ul style="list-style-type: none" class="pl-3" >
-                    <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" :class="['categories', {active: currentCategoryIndex === index}]" style="border-radius: 4px;">{{ page.title }}</li>
+                    <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" :class="['categories', {active: currentCategoryIndex === index}]">{{ page.title }}</li>
                 </ul>
             </div>
             <div class="col-md-9 col-lg-10">
@@ -151,6 +151,7 @@ const config = useConfigurationValues<PageSearchBag>();
     padding: 2px 10px;
     width: 70%;
     min-width: 150px;
+    border-radius: 4px;
 }
 
 .filter-container {
