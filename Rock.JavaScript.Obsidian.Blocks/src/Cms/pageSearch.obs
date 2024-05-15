@@ -4,14 +4,14 @@
     <Panel :hasTitle="false">
         <div class="row">
             <div class="col-md-3 col-lg-2" >
-                <ul style="list-style-type: none">
+                <ul style="list-style-type: none" class="pl-3" >
                     <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" :class="['categories', {active: currentCategoryIndex === index}]" style="border-radius: 4px;">{{ page.title }}</li>
                 </ul>
             </div>
             <div class="col-md-9 col-lg-10">
                 <div class="filter-container">
-                    <div ref="searchContainer">
-                        <TextBox v-model="searchText" placeholder="Search" class="form-control input-width-xxl" isClearable  />
+                    <div ref="searchContainer" class="search-input-container">
+                        <TextBox v-model="searchText" placeholder="Search" class="form-control" isClearable  />
                     </div>
                     <div>
                         <RockButton @click="sortChildrenAlphabetically" btnType="default" class="sort-button" :class="{active: isSortedAlphabetically}">
@@ -61,7 +61,7 @@ const config = useConfigurationValues<PageSearchBag>();
     const preferences = usePersonPreferences().blockPreferences;
     const parrentUrl = window.location.href;
     const currentCategoryIndex = ref(toNumberOrNull(preferences.getValue(PreferenceKey.SelectedCategoryIndex)) ?? 0);
-    const currentCategoryTitle = ref<string | null | undefined>(preferences.getValue(PreferenceKey.SelectedCategoryTitle) ?? "All");
+    const currentCategoryTitle = ref<string | null | undefined>(preferences.getValue(PreferenceKey.SelectedCategoryTitle).length > 0 ? preferences.getValue(PreferenceKey.SelectedCategoryTitle) : "All");
     const pages = ref<PageSearchPageBag[]>([{id: -1, title: "All", children: [], icon: null, description: null, parentPageId: null, pageDisplayDescription: false}, ...config.pages ?? []]);
     const searchText = ref("");
     const searchContainer = ref<HTMLElement>();
@@ -147,15 +147,23 @@ const config = useConfigurationValues<PageSearchBag>();
 
 .categories {
     cursor: pointer;
-    width: 150px;
     text-align: left;
     padding: 2px 10px;
+    width: 70%;
+    min-width: 150px;
 }
 
 .filter-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input-container {
+    width: 70%;
+    max-width: 700px;
+    min-width: 250px;
 }
 
 .sort-button {
