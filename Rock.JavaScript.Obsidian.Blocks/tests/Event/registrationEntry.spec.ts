@@ -1,5 +1,5 @@
-import RegistrationEntry from "../../src/Event/registrationEntry";
-import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mountBlock } from "../blocks";
 
 describe("RegistrationEntry", () => {
@@ -11,7 +11,7 @@ describe("RegistrationEntry", () => {
     });
 
     it("Displays custom not found message", () => {
-        const configuration: Partial<RegistrationEntryBlockViewModel> = {
+        const configuration: Partial<RegistrationEntryInitializationBox> = {
             registrationInstanceNotFoundMessage: "Custom Not Found"
         };
 
