@@ -136,7 +136,9 @@
     /**
      * The allowed payment plan frequencies.
      */
-    const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => paymentPlanFrequencies.value.map(frequency => frequency.listItemBag) ?? []);
+    const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => {
+        return paymentPlanFrequencies.value.map(frequency => frequency.listItemBag) ?? [];
+    });
 
     const isPaymentPlanFrequencySelected = computed<boolean>(() => {
         return !!wipPaymentPlanConfiguration.value?.paymentPlanFrequency.transactionFrequency.definedValueGuid;

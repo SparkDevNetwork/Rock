@@ -30,8 +30,15 @@ export function useConfigurePaymentPlanFeature() {
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const { readonlyRegistrationCostSummary } = use(RegistrationCostSummary);
 
-    const isConfigured = computed<boolean>(() => !!finalPaymentPlanConfiguration.value && !!registrationEntryState.paymentPlan);
-    const isWorkInProgress = computed<boolean>(() => !!wipPaymentPlanConfiguration.value);
+    const isConfigured = computed<boolean>(() => {
+        return !!finalPaymentPlanConfiguration.value
+            && !!registrationEntryState.paymentPlan;
+    });
+
+    const isWorkInProgress = computed<boolean>(() => {
+        return !!wipPaymentPlanConfiguration.value;
+    });
+
     const paymentPlanDeadlineDate = computed<RockDateTime | null>(() => {
         if (!registrationEntryState.viewModel.paymentDeadlineDate) {
             return null;

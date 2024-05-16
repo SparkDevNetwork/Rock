@@ -370,7 +370,9 @@
     });
 
     /** The balance due on the registration. */
-    const balanceDue = computed<RockCurrency>(() => RockCurrency.create(maxAmountCanBePaid.value, currencyInfo.value));
+    const balanceDue = computed<RockCurrency>(() => {
+        return RockCurrency.create(maxAmountCanBePaid.value, currencyInfo.value);
+    });
 
     // #endregion
 
