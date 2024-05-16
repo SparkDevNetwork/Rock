@@ -2317,7 +2317,7 @@ namespace Rock.Blocks.Group.Scheduling
                         response.occurrences.Add( scheduleOccurrence );
 
                         // Add a schedule Guid-to-ID dictionary entry, so the caller of this method will have access to any IDs they need.
-                        response.scheduleIdsByGuid.AddOrIgnore( gls.Schedule.Guid, gls.Schedule.Id );
+                        response.scheduleIdsByGuid.TryAdd( gls.Schedule.Guid, gls.Schedule.Id );
                     }
 
                     // Narrow the RSVP "Yes" count down to the specific location.
@@ -2354,7 +2354,7 @@ namespace Rock.Blocks.Group.Scheduling
                     scheduleOccurrence.Locations.Add( locationOccurrence );
 
                     // Add a location Guid-to-ID dictionary entry, so the caller of this method will have access to any IDs they need.
-                    response.locationIdsByGuid.AddOrIgnore( gls.Location.Guid, gls.Location.Id );
+                    response.locationIdsByGuid.TryAdd( gls.Location.Guid, gls.Location.Id );
                 }
             }
 
@@ -2389,7 +2389,7 @@ namespace Rock.Blocks.Group.Scheduling
                             LocationName = NO_LOCATION_PREFERENCE
                         } );
 
-                        response.locationIdsByGuid.AddOrIgnore( Guid.Empty, null );
+                        response.locationIdsByGuid.TryAdd( Guid.Empty, null );
                     }
                 }
             }

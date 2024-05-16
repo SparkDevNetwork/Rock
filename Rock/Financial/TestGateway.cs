@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -1054,7 +1055,23 @@ namespace Rock.Financial
             {
                 var expirationMonth = mmyy.Substring( 0, 2 ).AsIntegerOrNull() ?? 1;
                 var expirationYear = mmyy.Substring( 2, 2 ).AsIntegerOrNull() ?? 00;
-                var fourDigitYear = System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( expirationYear );
+
+                /*
+                     5/13/2024 - NA
+
+                      Calendar.TwoDigitYearMax defaulted to 2029 for GregorianCalendar and other Gregorian-like calendars.
+                      That value meant that two-digit years from 00 to 29 translated to 2000-2029. Two-digit years from
+                      30 to 99 translated to 1930-1999. 
+
+                      In .NET 8, the default TwoDigitYearMax property value for GregorianCalendar and other
+                      Gregorian-like calendars has now changed from 2029 to 2049.
+
+                      Therefore, please remove this after we update to .NET 8.
+
+                     Reason: See https://learn.microsoft.com/en-us/dotnet/core/compatibility/globalization/8.0/twodigityearmax-default
+                */
+
+                var fourDigitYear = RockDateTime.ToFourDigitYearForCreditCardExpiration( expirationYear );
                 expirationDate = new DateTime( fourDigitYear, expirationMonth, 1 );
             }
 

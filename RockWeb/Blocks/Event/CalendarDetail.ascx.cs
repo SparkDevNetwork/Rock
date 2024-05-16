@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.Event
         protected void dlgContentChannel_SaveClick( object sender, EventArgs e )
         {
             ListItem li = ddlContentChannel.SelectedItem;
-            ContentChannelsState.AddOrIgnore( li.Value.AsGuid(), li.Text );
+            ContentChannelsState.TryAdd( li.Value.AsGuid(), li.Text );
 
             BindContentChannelsGrid();
 

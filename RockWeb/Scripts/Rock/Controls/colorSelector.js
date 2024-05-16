@@ -127,7 +127,7 @@
             function rgbFuncToRgba(rgbFunc) {
                 var rgb = /^rgb[a]?\s*\(\s*(\d+)[, ]\s*(\d+)[, ]\s*(\d+)\)$/;
                 var rgbMatches = rgbFunc.match(rgb);
-                if (rgbMatches?.length) {
+                if (rgbMatches && rgbMatches.length) {
                     return [
                         parseInt(rgbMatches[1]),
                         parseInt(rgbMatches[2]),
@@ -138,7 +138,7 @@
 
                 var rgba = /^rgb[a]?\s*\(\s*(\d+)[, ]\s*(\d+)[, ]\s*(\d+)[, ]\s*(\d*(\.\d+)?)\)$/;
                 var rgbaMatches = rgbFunc.match(rgba);
-                if (rgbaMatches?.length) {
+                if (rgbaMatches && rgbMatches.length) {
                     return [
                         parseInt(rgbaMatches[1]),
                         parseInt(rgbaMatches[2]),

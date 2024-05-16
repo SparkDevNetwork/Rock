@@ -101,7 +101,7 @@ namespace Rock.Field
                     {
                         foreach ( DataRow row in dataTable.Rows )
                         {
-                            items.AddOrIgnore( row["value"].ToString(), row["text"].ToString() );
+                            items.TryAdd( row["value"].ToString(), row["text"].ToString() );
                         }
                     }
                 }
@@ -113,7 +113,7 @@ namespace Rock.Field
                         var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                         if ( keyValueArray.Length > 0 )
                         {
-                            items.AddOrIgnore( keyValueArray[0].Trim(), keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim() );
+                            items.TryAdd( keyValueArray[0].Trim(), keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim() );
                         }
                     }
                 }

@@ -822,7 +822,7 @@ namespace RockWeb.Blocks.Cms
                             if ( CurrentPerson != null )
                             {
                                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                                mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                                mergeFields.TryAdd( "Person", CurrentPerson );
                             }
 
                             mergeFields.Add( "CurrentBrowser", this.RockPage.BrowserClient );

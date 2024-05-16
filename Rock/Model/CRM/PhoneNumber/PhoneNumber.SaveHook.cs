@@ -106,7 +106,7 @@ namespace Rock.Model
                     case EntityContextState.Deleted:
                         {
                             personId = Entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
-                            PersonHistoryChanges.AddOrIgnore( personId, new History.HistoryChangeList() );
+                            PersonHistoryChanges.TryAdd( personId, new History.HistoryChangeList() );
                             var oldPhoneNumberTypeId = Entity.NumberTypeValueId;
                             History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), Entity.NumberFormatted, string.Empty );
 

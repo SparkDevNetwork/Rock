@@ -1,21 +1,30 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <DataRow v-for="(row, index) in props.rows"
+    <DataRow v-if="hasRows"
+             v-for="(row, index) in props.rows"
              :key="props.grid.getRowKey(row)"
              :columns="props.columns"
              :row="row"
              :grid="props.grid"
              :tooltipField="props.tooltipField"
              :isSelectable="isSelectable"
-             :isEven="(index + 1) % 2 === 0" :markInactiveRows="markInactiveRows"
+             :isEven="(index + 1) % 2 === 0"
+             :markInactiveRows="markInactiveRows"
              :class="getRowClass(row)"
              @click="onRowClick" />
+
+    <div class="grid-row" v-else>
+        <div class="grid-cell table-empty">
+            No {{ pluralItemTerm }} Found
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, computed } from "vue";
     import DataRow from "./dataRow.partial.obs";
     import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         /**
@@ -52,6 +61,12 @@
             default: false
         },
 
+        /** The term that identifies individual rows in the grid. */
+        itemTerm: {
+            type: String as PropType<string>,
+            default: "item"
+        },
+
         /**
          * If set to true, each row with an `isActive` property set to false
          * will be visually distinct
@@ -76,6 +91,16 @@
     const emit = defineEmits<{
         (e: "click", key: string): void
     }>();
+
+    /** Whether or not there are any rows given */
+    const hasRows = computed(() => {
+        return props.rows.length > 0;
+    });
+
+    /** Plural form of the itemTerm prop. */
+    const pluralItemTerm = computed(() => {
+        return pluralize(props.itemTerm);
+    });
 
     /**
      * Called when a single row has been clicked.

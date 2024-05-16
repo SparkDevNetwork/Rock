@@ -317,7 +317,9 @@
             interactions.forEach(interaction => interaction.addEventListener("mouseover", event => {
                 if (event.target.getAttribute("name") === "expander") {
                     let icon = event.target.querySelector(".fa-chevron-right");
-                    icon?.classList.add("fa-flip-horizontal");
+                    if (icon) {
+                        icon.classList.add("fa-flip-horizontal");
+                    }
 
                     interaction.classList.add("expanded");
                 }

@@ -148,7 +148,7 @@ namespace Rock
                     {
                         entityHistory = new Dictionary<int, List<int>>();
                     }
-                    entityHistory.AddOrIgnore( entityTypeCache.Id, new List<int>() );
+                    entityHistory.TryAdd( entityTypeCache.Id, new List<int>() );
                     if ( entityHistory[entityTypeCache.Id].Contains( entity.Id ) )
                     {
                         return "--See Previous Entry--";
@@ -199,7 +199,7 @@ namespace Rock
                     // Ignore the person property of the person's primary alias (prevent unnecessary recursion) 
                     if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
-                        result.AddOrIgnore( key, string.Empty );
+                        result.TryAdd( key, string.Empty );
                     }
                     else
                     {
@@ -265,12 +265,12 @@ namespace Rock
                             }
                             else
                             {
-                                result.AddOrIgnore( key, string.Empty );
+                                result.TryAdd( key, string.Empty );
                             }
                         }
                         catch ( Exception ex )
                         {
-                            result.AddOrIgnore( key, ex.ToString() );
+                            result.TryAdd( key, ex.ToString() );
                         }
                     }
                 }

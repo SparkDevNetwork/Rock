@@ -219,11 +219,12 @@ namespace RockWeb.Blocks.Cms
 
             List<Control> configControls = base.GetAdministrateControls( canConfig, canEdit );
 
-            // remove the "aBlockProperties" control since we'll be taking care of all that with our "lbConfigure" button
-            var aBlockProperties = configControls.FirstOrDefault( a => a.ID == "aBlockProperties" );
-            if ( aBlockProperties != null )
+            // remove the "aBlockProperties" control since we'll be replacing it with "lbConfigure" button
+            // replacing by the index ensures that the position of the Configure Gear in the Block Zone is consistent with that of the other blocks in Rock.
+            var aBlockPropertiesIndex = configControls.FindIndex( a => a.ID == "aBlockProperties" );
+            if ( aBlockPropertiesIndex >= 0 )
             {
-                configControls.Remove( aBlockProperties );
+                configControls.RemoveAt( aBlockPropertiesIndex );
             }
 
             if ( canConfig )
@@ -233,7 +234,14 @@ namespace RockWeb.Blocks.Cms
                 lbConfigure.CssClass = "edit";
                 lbConfigure.ToolTip = "Configure";
                 lbConfigure.Click += lbConfigure_Click;
-                configControls.Add( lbConfigure );
+                if ( aBlockPropertiesIndex >= 0 && aBlockPropertiesIndex < configControls.Count )
+                {
+                    configControls.Insert( aBlockPropertiesIndex, lbConfigure );
+                }
+                else
+                {
+                    configControls.Add( lbConfigure );
+                }
                 HtmlGenericControl iConfigure = new HtmlGenericControl( "i" );
                 iConfigure.Attributes.Add( "class", "fa fa-cog" );
 
@@ -732,7 +740,7 @@ namespace RockWeb.Blocks.Cms
         {
             var currentContentChannelItemId = hfContentChannelItemId.Value.AsInteger();
             ContentChannelItem contentChannelItem = e.Row.DataItem as ContentChannelItem;
-            if (contentChannelItem != null && contentChannelItem.Id == currentContentChannelItemId )
+            if ( contentChannelItem != null && contentChannelItem.Id == currentContentChannelItemId )
             {
                 e.Row.CssClass = "row-highlight";
             }

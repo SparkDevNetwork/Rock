@@ -18,13 +18,11 @@
             <template #gridHeaderPrepend>
                 <Panel :hasTitle="false">
                     <div class="d-flex justify-content-end">
-                        <button ref="refreshTooltip" class="btn btn-xs btn-default" @click.prevent="refreshData" :title="formatLastUpdated(lastUpdated) + ' - Estimated Refresh Time: ' + estimatedRefreshTime + ' seconds'">
+                        <button ref="refreshTooltip" class="btn btn-xs btn-default" @click.prevent="refreshData" :title="formatLastUpdated(lastUpdated) + '. Estimated refresh time ' + estimatedRefreshTime + 's.'">
                             {{ calculateTimeDifference(lastUpdated) }}
                             <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
-
-
 
                     <div class="row">
                         <div class="col-sm-4">
@@ -151,12 +149,6 @@
                     </div>
                 </template>
             </Column>
-
-            <template #gridFooterPrepend>
-                <div v-if="gridData && gridData.rows && gridData.rows.length === 0" class="no-data-message">
-                    Your filters have yielded no results. Please try another combination of filters.
-                </div>
-            </template>
         </Grid>
     </div>
 </template>
@@ -250,17 +242,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.no-data-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100px;
-    text-align: center;
-    font-size: larger;
-    color: var(--color-muted);
 }
 </style>
 

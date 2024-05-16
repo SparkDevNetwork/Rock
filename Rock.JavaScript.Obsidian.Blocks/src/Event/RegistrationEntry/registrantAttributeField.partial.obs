@@ -1,7 +1,7 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <template v-if="isVisible">
-        <RockField v-if="modifiedAttribute" v-model="value" isEditMode :attribute="modifiedAttribute" />
+        <RockField v-if="modifiedAttribute" v-model="value" :isEditMode="!disabled" :attribute="modifiedAttribute" :disabled="disabled" />
         <NotificationBox v-else alertType="danger">Could not resolve attribute field</NotificationBox>
     </template>
 </template>
@@ -32,6 +32,11 @@
         formFields: {
             type: Array as PropType<RegistrationEntryFormFieldBag[]>,
             required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

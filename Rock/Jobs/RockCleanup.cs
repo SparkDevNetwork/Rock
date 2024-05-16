@@ -1742,6 +1742,12 @@ namespace Rock.Jobs
                     return resultCount;
                 }
 
+                // Skip .gitignore files
+                if ( Path.GetFileName( filePath ).Equals( ".gitignore", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    continue;
+                }
+
                 DateTime fileActivityDate;
                 if ( compareFileDateModified )
                 {

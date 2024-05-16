@@ -3,6 +3,7 @@
     <button type="button"
             :class="buttonCssClass"
             :title="actionTooltip"
+            :accesskey="accesskey"
             @click.prevent.stop="onActionClick">
         <i :class="iconCssClass"></i>
     </button>
@@ -44,6 +45,11 @@
     /** The tooltip text to display for the action. */
     const actionTooltip = computed((): string | undefined => {
         return props.action.tooltip;
+    });
+
+    /** The accesskey for the action. */
+    const accesskey = computed((): string | undefined => {
+        return props.action.accesskey;
     });
 
     /** The CSS classes to be applied to the button. */

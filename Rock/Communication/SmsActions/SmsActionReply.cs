@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,11 +31,46 @@ namespace Rock.Communication.SmsActions
     [Description( "Sends a response to the message." )]
     [Export( typeof( SmsActionComponent ) )]
     [ExportMetadata( "ComponentName", "Reply" )]
-    [TextValueFilterField( "Message", "The message body content that will be filtered on.", false, order: 1, category: AttributeCategories.Filters )]
-    [MemoField( "Response", "The response that will be sent. <span class='tip tip-lava'></span>", true, order: 2, category: AttributeCategories.Response )]
+
+    #region Attributes
+
+    [TextValueFilterField( "Message",
+        Description = "The message body content that will be filtered on.",
+        Key = AttributeKeys.Message,
+        IsRequired = false,
+        Category = AttributeCategories.Filters,
+        Order = 1 )]
+
+    [MemoField( "Response",
+        Description = "The response that will be sent. <span class='tip tip-lava'></span>",
+        Key = AttributeKeys.Response,
+        IsRequired = true,
+        Category = AttributeCategories.Response,
+        Order = 2 )]
+
+    #endregion Attributes
+
     [Rock.SystemGuid.EntityTypeGuid( "029085A7-5750-4055-BC37-2272BD194E1D")]
     public class SmsActionReply : SmsActionComponent
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys for the attributes
+        /// </summary>
+        private static class AttributeKeys
+        {
+            /// <summary>
+            /// The message filter.
+            /// </summary>
+            public const string Message = "Message";
+
+            /// <summary>
+            /// The response.
+            /// </summary>
+            public const string Response = "Response";
+        }
+
         /// <summary>
         /// Categories for the attributes
         /// </summary>
@@ -46,6 +81,8 @@ namespace Rock.Communication.SmsActions
             /// </summary>
             public const string Response = "Response";
         }
+
+        #endregion Keys
 
         #region Properties
 
@@ -73,7 +110,7 @@ namespace Rock.Communication.SmsActions
         /// </value>
         public override string Description => "Sends a response back to the sender.";
 
-        #endregion
+        #endregion Properties
 
         #region Base Method Overrides
 
@@ -89,26 +126,28 @@ namespace Rock.Communication.SmsActions
         /// </returns>
         public override bool ShouldProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
-            //
             // Give the base class a chance to check it's own settings to see if we
             // should process this message.
-            //
             if ( !base.ShouldProcessMessage( action, message, out errorMessage ) )
             {
                 return false;
             }
 
-            //
+            // If the (required) "Response" attribute does not have a value, skip
+            // processing this action.
+            var responseMessage = action.GetAttributeValue( AttributeKeys.Response );
+            if ( string.IsNullOrWhiteSpace( responseMessage ) )
+            {
+                return false;
+            }
+
             // Get the filter expression for the message body.
-            //
-            var attribute = action.Attributes.ContainsKey( "Message" ) ? action.Attributes["Message"] : null;
-            var msg = GetAttributeValue( action, "Message" );
+            var attribute = action.Attributes.ContainsKey( AttributeKeys.Message ) ? action.Attributes[AttributeKeys.Message] : null;
+            var msg = GetAttributeValue( action, AttributeKeys.Message );
             var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
 
-            //
             // Evaluate the message against the filter and return the match state.
-            //
-            return filter != null ? filter.Evaluate( message, "Message" ) : true;
+            return filter != null ? filter.Evaluate( message, AttributeKeys.Message ) : true;
         }
 
         /// <summary>
@@ -122,18 +161,14 @@ namespace Rock.Communication.SmsActions
         {
             errorMessage = string.Empty;
 
-            //
             // Process the message with lava to get the response that should be sent back.
-            //
             var mergeObjects = new Dictionary<string, object>
             {
-                { "Message", message }
+                { AttributeKeys.Message, message }
             };
-            var responseMessage = action.GetAttributeValue( "Response" ).ResolveMergeFields( mergeObjects, message.FromPerson );
+            var responseMessage = action.GetAttributeValue( AttributeKeys.Response ).ResolveMergeFields( mergeObjects, message.FromPerson );
 
-            //
             // If there is no response message then return null.
-            //
             if ( string.IsNullOrWhiteSpace( responseMessage ) )
             {
                 return null;
@@ -145,6 +180,6 @@ namespace Rock.Communication.SmsActions
             };
         }
 
-        #endregion
+        #endregion Base Method Overrides
     }
 }

@@ -10,9 +10,8 @@
             <slot name="prepend" v-bind="slotProps"><!-- Pass the "prepend" slot to the NumberBox.--></slot>
         </template>
         <template #inputGroupPrepend="slotProps">
-            <slot name="inputGroupPrepend" v-bind="slotProps">
-                <span class="input-group-addon">{{ symbol }}</span>
-            </slot>
+            <slot name="inputGroupPrepend" v-bind="slotProps"></slot>
+            <span class="input-group-addon">{{ symbol }}</span>
         </template>
         <template v-if="$slots.inputGroupAppend" #inputGroupAppend="slotProps">
             <slot name="inputGroupAppend" v-bind="slotProps"><!-- Pass the "inputGroupAppend" slot to the NumberBox.--></slot>

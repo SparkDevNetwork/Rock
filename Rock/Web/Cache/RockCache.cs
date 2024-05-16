@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Newtonsoft.Json;
+
 using Rock.Attribute;
 using Rock.Utility.ExtensionMethods;
 
@@ -130,8 +131,8 @@ namespace Rock.Web.Cache
         /// <value>
         /// The object cache key references.
         /// </value>
-        [Obsolete("Use thread safe ObjectConcurrentCacheKeyReferences instead.")]
-        [RockObsolete("1.14")]
+        [Obsolete( "Use thread safe ObjectConcurrentCacheKeyReferences instead." )]
+        [RockObsolete( "1.14" )]
         public static List<CacheKeyReference> ObjectCacheKeyReferences
         {
             get
@@ -159,8 +160,8 @@ namespace Rock.Web.Cache
         /// <value>
         /// The string cache key references.
         /// </value>
-        [Obsolete("Use thread safe StringConcurrentCacheKeyReferences instead.")]
-        [RockObsolete("1.14")]
+        [Obsolete( "Use thread safe StringConcurrentCacheKeyReferences instead." )]
+        [RockObsolete( "1.14" )]
         public static List<CacheKeyReference> StringCacheKeyReferences
         {
             get
@@ -188,7 +189,7 @@ namespace Rock.Web.Cache
         /// The object cache key references.
         /// </value>
         [RockInternal( "1.14" )]
-        public static ConcurrentDictionary<string,CacheKeyReference> ObjectConcurrentCacheKeyReferences
+        public static ConcurrentDictionary<string, CacheKeyReference> ObjectConcurrentCacheKeyReferences
         {
             get
             {
@@ -196,12 +197,12 @@ namespace Rock.Web.Cache
                 {
                     _objectConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
                 }
-                
+
                 return _objectConcurrentCacheKeyReferences;
             }
         }
 
-        private static ConcurrentDictionary<string,CacheKeyReference> _objectConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
+        private static ConcurrentDictionary<string, CacheKeyReference> _objectConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
 
         /// <summary>
         /// Gets or sets the keys for items stored in the string cache. The region is optional, but the key
@@ -221,7 +222,7 @@ namespace Rock.Web.Cache
                 {
                     _stringConcurrentCacheKeyReferences = new ConcurrentDictionary<string, CacheKeyReference>();
                 }
-                
+
                 return _stringConcurrentCacheKeyReferences;
             }
         }
@@ -475,7 +476,7 @@ namespace Rock.Web.Cache
                     // Add the key to the list of keys associated with this tag.
                     value.Add( key );
                     RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTagKey, CACHE_TAG_REGION_NAME, value );
-                    _stringConcurrentCacheKeyReferences.AddOrIgnore( $"{cacheTag}{region}", new CacheKeyReference { Key = cacheTagKey, Region = region } );
+                    _stringConcurrentCacheKeyReferences.TryAdd( $"{cacheTag}{region}", new CacheKeyReference { Key = cacheTagKey, Region = region } );
                 }
             }
         }
@@ -797,7 +798,7 @@ namespace Rock.Web.Cache
         private static void AddOrUpdateObjectCacheKey( string region, string key )
         {
             var objectCacheReference = new CacheKeyReference { Region = region, Key = key };
-            _objectConcurrentCacheKeyReferences.AddOrIgnore( objectCacheReference.ToString(), objectCacheReference );
+            _objectConcurrentCacheKeyReferences.TryAdd( objectCacheReference.ToString(), objectCacheReference );
         }
 
         /// <summary>

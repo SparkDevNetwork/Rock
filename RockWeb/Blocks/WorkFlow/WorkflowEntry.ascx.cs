@@ -2317,7 +2317,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     foreach ( var key in pageReference.QueryString.AllKeys.Where( k => !k.Equals( PageParameterKey.Command, StringComparison.OrdinalIgnoreCase ) ) )
                     {
-                        pageReference.Parameters.AddOrIgnore( key, pageReference.QueryString[key] );
+                        pageReference.Parameters.TryAdd( key, pageReference.QueryString[key] );
                     }
 
                     pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();

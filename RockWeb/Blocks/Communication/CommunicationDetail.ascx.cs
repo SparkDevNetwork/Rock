@@ -2771,7 +2771,7 @@ namespace RockWeb.Blocks.Communication
             {
                 // since we order by ModifiedDateTime this will end up ignoring any order recipient records for the personid
                 // NOTE: We tried to do this in SQL but it caused performance issues, so we'll do it in C# instead.
-                recipients.AddOrIgnore( recipient.PersonId, recipient );
+                recipients.TryAdd( recipient.PersonId, recipient );
             }
 
             builder.FillDataColumnValues( dataTable, recipients );

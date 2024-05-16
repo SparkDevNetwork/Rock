@@ -65,12 +65,12 @@ namespace Rock.Model
         /// <param name="registrationsQuery"></param>
         /// <returns>An <see cref="IQueryable"/> of <see cref="Registration"/> and (active/inactive) <see cref="PaymentPlan"/> pairs. If a registration does not have a payment plan, the pair will contain the source registration and a <see langword="null"/> payment plan.</returns>
         [RockInternal( "1.16.6" )]
-        public static IQueryable<RegistrationPaymentPlanPair> GetPaymentPlanPairs( this IQueryable<Registration> registrationsQuery )
+        public static IQueryable<RegistrationPaymentPlanPair> SelectPaymentPlanPairs( this IQueryable<Registration> registrationsQuery )
         {
             // Create the payment plan subquery.
             var financialScheduledTransactionPaymentPlanPairs = registrationsQuery
                 .Select( r => r.PaymentPlanFinancialScheduledTransaction )
-                .GetPaymentPlanPairs();
+                .SelectPaymentPlanPairs();
 
             return registrationsQuery
                 .Select( r => new RegistrationPaymentPlanPair

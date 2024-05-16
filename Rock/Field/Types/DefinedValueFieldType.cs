@@ -155,32 +155,29 @@ namespace Rock.Field.Types
             }
 
             // Get the list of values that can be selected.
-            if ( usage == ConfigurationValueUsage.Edit || usage == ConfigurationValueUsage.Configure )
+            if ( definedType != null )
             {
-                if ( definedType != null )
-                {
-                    int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
-                        ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
-                        : null;
+                int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
+                    ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
+                    : null;
 
-                    var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+                var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
 
-                    publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
-                        .Where( v => ( includeInactive || v.IsActive )
-                            && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
-                        .OrderBy( v => v.Order )
-                        .Select( v => new
-                        {
-                            Value = v.Guid,
-                            Text = v.Value,
-                            v.Description
-                        } )
-                        .ToCamelCaseJson( false, true );
-                }
-                else
-                {
-                    publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
-                }
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
+                    .Where( v => ( includeInactive || v.IsActive )
+                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
+                    .OrderBy( v => v.Order )
+                    .Select( v => new
+                    {
+                        Value = v.Guid,
+                        Text = v.Value,
+                        v.Description
+                    } )
+                    .ToCamelCaseJson( false, true );
+            }
+            else
+            {
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
             }
 
             return publicConfigurationValues;

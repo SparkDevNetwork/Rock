@@ -2948,7 +2948,7 @@ namespace RockWeb.Blocks.Event
                 if ( family != null )
                 {
                     // This is the registrar's entry into the dictionary.
-                    multipleFamilyGroupIds.AddOrIgnore( family.Guid, family.Id );
+                    multipleFamilyGroupIds.TryAdd( family.Guid, family.Id );
 
                     if ( !singleFamilyId.HasValue )
                     {
@@ -3730,7 +3730,7 @@ namespace RockWeb.Blocks.Event
                 if ( family != null )
                 {
                     familyId = family.Id;
-                    multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
+                    multipleFamilyGroupIds.TryAdd( familyGuid, family.Id );
                     if ( !singleFamilyId.HasValue )
                     {
                         singleFamilyId = family.Id;
@@ -3764,7 +3764,7 @@ namespace RockWeb.Blocks.Event
                         familyId = familyGroup.Id;
 
                         // Store the family id for next person
-                        multipleFamilyGroupIds.AddOrIgnore( familyGuid, familyGroup.Id );
+                        multipleFamilyGroupIds.TryAdd( familyGuid, familyGroup.Id );
                         if ( !singleFamilyId.HasValue )
                         {
                             singleFamilyId = familyGroup.Id;

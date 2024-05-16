@@ -235,12 +235,6 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.EntityType ),
                 () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.FollowedEntityType ),
-                () => entity.FollowedEntityTypeId = box.Entity.FollowedEntityType.GetEntityId<EntityType>( rockContext ) );
-
-            box.IfValidProperty( nameof( box.Entity.FollowedEntityTypeId ),
-                () => entity.FollowedEntityTypeId = box.Entity.FollowedEntityTypeId );
-
             box.IfValidProperty( nameof( box.Entity.IncludeNonPublicRequests ),
                 () => entity.IncludeNonPublicRequests = box.Entity.IncludeNonPublicRequests );
 
@@ -436,6 +430,17 @@ namespace Rock.Blocks.Core
                 }
 
                 var isNew = entity.Id == 0;
+
+                entity.FollowedEntityTypeId = null;
+                var eventComponent = entity.GetEventComponent();
+                if ( eventComponent != null )
+                {
+                    var followedEntityType = EntityTypeCache.Get( eventComponent.FollowedType );
+                    if ( followedEntityType != null )
+                    {
+                        entity.FollowedEntityTypeId = followedEntityType.Id;
+                    }
+                }
 
                 rockContext.WrapTransaction( () =>
                 {

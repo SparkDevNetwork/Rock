@@ -4207,7 +4207,7 @@ namespace Rock.Model
 
             foreach ( var key in preferences.GetKeys() )
             {
-                prefs.AddOrIgnore( key, preferences.GetValue( key ) );
+                prefs.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return prefs;

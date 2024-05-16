@@ -1823,7 +1823,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( BirthDate.HasValue )
                 {
-                    return BirthDate.Age();
+                    if ( BirthDate.Value.Year != DateTime.MinValue.Year )
+                    {
+                        return BirthDate.Age();
+                    }
                 }
 
                 return null;

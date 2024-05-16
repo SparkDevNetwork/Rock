@@ -1325,7 +1325,7 @@ namespace RockWeb.Blocks.Connection
                                 int? personAliasId = person.PrimaryAliasId;
                                 if ( personAliasId.HasValue )
                                 {
-                                    defaultConnector.Options.AddOrIgnore(personAliasId.Value, person.FullName);
+                                    defaultConnector.Options.TryAdd(personAliasId.Value, person.FullName);
                                 }
                             }
 

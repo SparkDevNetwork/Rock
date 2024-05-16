@@ -4069,7 +4069,7 @@ namespace RockWeb.Blocks.Connection
             foreach ( var campaignConnectionItem in campaignConnectionItems )
             {
                 int pendingCount = CampaignConnectionHelper.GetPendingConnectionCount( campaignConnectionItem, CurrentPerson );
-                campaignConnectionItemsPendingCount.AddOrIgnore( campaignConnectionItem, pendingCount );
+                campaignConnectionItemsPendingCount.TryAdd( campaignConnectionItem, pendingCount );
                 var listItem = new ListItem();
                 listItem.Text = string.Format( "{0} ({1} pending connections)", campaignConnectionItem.Name, pendingCount );
                 listItem.Value = campaignConnectionItem.Guid.ToString();
@@ -4394,13 +4394,13 @@ namespace RockWeb.Blocks.Connection
                         .AsNoTracking()
                         .ToList();
 
-                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.TryAdd( p.Id, p ) );
                 }
 
                 // Add the current person as possible connector
                 if ( CurrentPerson != null )
                 {
-                    connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                    connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
                 }
 
                 // Add connectors to dropdown list

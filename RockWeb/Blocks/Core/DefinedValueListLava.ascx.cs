@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Core
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-            mergeFields.AddOrIgnore( "Person", CurrentPerson );
+            mergeFields.TryAdd( "Person", CurrentPerson );
 
 
             string selectedDefinedType = GetAttributeValue( AttributeKey.DefinedType );

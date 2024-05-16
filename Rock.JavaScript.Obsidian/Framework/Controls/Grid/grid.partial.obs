@@ -40,6 +40,7 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
                       @click="onRowClick" />
@@ -52,6 +53,7 @@
                       :grid="gridState"
                       :tooltipField="tooltipField"
                       :isSelectable="isSelectionEnabled"
+                      :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
                       @click="onRowClick" />
@@ -63,6 +65,7 @@
                          :grid="gridState"
                          :tooltipField="tooltipField"
                          :isSelectable="isSelectionEnabled"
+                         :itemTerm="gridState.itemTerm"
                          :markInactiveRows="markInactiveRows"
                          :rowClass="rowClass"
                          @click="onRowClick" />
@@ -1063,7 +1066,8 @@
                 iconCssClass: "fa fa-plus-square",
                 isPrimary: true,
                 title: "Add item",
-                tooltip: "Add a new item."
+                tooltip: "Add a new item. (Alt+N)",
+                accesskey: "n"
             });
         }
 
