@@ -2329,8 +2329,6 @@ namespace Rock.Blocks.Event
 
                  Duplicate prevention may be enhanced in the future to include suffix
                  or other identifying information.
-
-                 Reason: Registrant person matching updates to reduce duplicates
             */
             var currentPerson = GetCurrentPerson();
             if ( person == null && currentPerson != null && registrar.PrimaryAliasId != currentPerson.PrimaryAliasId )
