@@ -720,6 +720,7 @@ namespace Rock.Web.UI.Controls
                 _dtpSendReminder.SelectedDateTime = instance.SendReminderDateTime;
                 _dpPaymentDeadline.SelectedDate = instance.PaymentDeadlineDate;
                 _dpPaymentDeadline.Required = instance.RegistrationTemplate?.IsPaymentPlanAllowed == true;
+                _dpPaymentDeadline.Visible = instance.RegistrationTemplate?.IsPaymentPlanAllowed == true;
                 _cbReminderSent.Checked = instance.ReminderSent;
                 _htmlRegistrationInstructions.Text = instance.RegistrationInstructions;
                 _htmlAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
@@ -805,6 +806,7 @@ namespace Rock.Web.UI.Controls
                 _dtpSendReminder.SelectedDateTime = null;
                 _dpPaymentDeadline.SelectedDate = null;
                 _dpPaymentDeadline.Required = false;
+                _dpPaymentDeadline.Visible = false;
                 _cbReminderSent.Checked = false;
                 _nbTimeoutLengthMinutes.IntegerValue = null;
                 _nbTimeoutThreshold.IntegerValue = null;
@@ -1009,6 +1011,7 @@ namespace Rock.Web.UI.Controls
                 _dpPaymentDeadline.Label = "Payment Deadline";
                 _dpPaymentDeadline.Help = "The date that all payments must be completed by. This date will be used by the payment plan feature to calculate the payment schedule and amount.";
                 // _dpPaymentDeadline.Required is set in SetValue since it is dynamically driven by the RegistrationInstance.
+                // _dpPaymentDeadline.Visible is set in SetValue since it is dynamically driven by the RegistrationInstance.
                 Controls.Add( _dpPaymentDeadline );
 
                 _cbReminderSent = new RockCheckBox();
