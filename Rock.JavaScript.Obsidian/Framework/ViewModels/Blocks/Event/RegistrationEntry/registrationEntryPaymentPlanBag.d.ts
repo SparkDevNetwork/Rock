@@ -31,12 +31,16 @@ export type RegistrationEntryPaymentPlanBag = {
     /** Gets or sets the financial scheduled transaction unique identifier. */
     financialScheduledTransactionGuid: Guid;
 
+    /** Gets or sets the number of payments that have already been processed for this payment plan. */
     processedNumberOfPayments: number;
 
+    /** Gets or sets the amount that has already been processed for this payment plan. */
     processedPlannedAmount: number;
 
+    /** Gets or sets the remaining number of payments for this payment plan. */
     remainingNumberOfPayments: number;
 
+    /** Gets or sets the remaining amount that has not been paid for this payment plan. */
     remainingPlannedAmount: number;
 
     /** Gets or sets the start date of the recurring payments. */
@@ -45,10 +49,12 @@ export type RegistrationEntryPaymentPlanBag = {
     /** Gets or sets the number of payments. */
     totalNumberOfPayments: number;
 
+    /** Gets or sets the total amount that this payment plan will cover. */
     totalPlannedAmount: number;
 
     /** Gets or sets the transaction frequency unique identifier. */
     transactionFrequencyGuid: Guid;
 
+    /** Gets or sets the user-friendly text for the transaction frequency. */
     transactionFrequencyText?: string | null;
 };

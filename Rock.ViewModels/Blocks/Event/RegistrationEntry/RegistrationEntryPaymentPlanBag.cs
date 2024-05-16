@@ -61,32 +61,32 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public DateTimeOffset StartDate { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the user-friendly text for the transaction frequency.
         /// </summary>
         public string TransactionFrequencyText { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the total amount that this payment plan will cover.
         /// </summary>
         public decimal TotalPlannedAmount { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the remaining amount that has not been paid for this payment plan.
         /// </summary>
         public decimal RemainingPlannedAmount { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the remaining number of payments for this payment plan.
         /// </summary>
         public int RemainingNumberOfPayments { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the number of payments that have already been processed for this payment plan.
         /// </summary>
         public int ProcessedNumberOfPayments { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the amount that has already been processed for this payment plan.
         /// </summary>
         public decimal ProcessedPlannedAmount { get; set; }
     }
