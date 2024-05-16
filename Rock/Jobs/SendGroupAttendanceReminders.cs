@@ -46,6 +46,12 @@ namespace Rock.Jobs
         IsRequired = true,
         DefaultValue = "1",
         Order = 1 )]
+    [GroupTypeField( "Group Type",
+        Description = "The Group type to send attendance reminders for.",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP,
+        Order = 0,
+        Key = AttributeKey.GroupType)]
 
     #endregion Job Attributes
 
@@ -62,6 +68,12 @@ namespace Rock.Jobs
             /// The method to use when determining how the notice should be sent.
             /// </summary>
             public const string SendUsing = "SendUsing";
+
+            /// <summary>
+            /// The Group Type to limit what Groups get sent reminders.
+            /// </summary>
+            public const string GroupType = "GroupType"
+
         }
 
         #endregion Attribute Keys
@@ -106,9 +118,17 @@ namespace Rock.Jobs
                 }
             }
 
+            var selectedGroupType = GroupTypeCache.Get( GetAttributeValue( AttributeKey.GroupType ) );
+
             var groupTypeQry = new GroupTypeService( rockContext ).Queryable()
                 .Where( t => t.TakesAttendance && t.SendAttendanceReminder )
                 .Include( t => t.AttendanceReminderSystemCommunication );
+
+            if ( selectedGroupType != null )
+            {
+                groupTypeQry = groupTypeQry
+                    .Where( g => g.Id == selectedGroupType.Id );
+            }
 
             var groupTypeList = groupTypeQry.ToList();
             foreach ( var groupType in groupTypeList )
@@ -213,7 +233,7 @@ namespace Rock.Jobs
                 jobPreferredCommunicationType = CommunicationType.Email;
             }
 
-            var occurrences = GetOccurenceDates( groupType, rockContext );
+            var occurrences = GetOccurrenceDates( groupType, rockContext );
             var groupIds = occurrences.Where( o => o.Value.Any() ).Select( o => o.Key ).ToList();
             var leaders = GetGroupLeaders( groupIds, rockContext );
             var attendanceRemindersResults = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType );
@@ -245,13 +265,13 @@ namespace Rock.Jobs
         /// <param name="groupType">Type of the group.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private Dictionary<int, List<DateTime>> GetOccurenceDates( GroupType groupType, RockContext rockContext )
+        private Dictionary<int, List<GroupOccurrence>> GetOccurrenceDates( GroupType groupType, RockContext rockContext )
         {
             var dates = GetSearchDates( groupType );
             var startDate = dates.Min();
             var endDate = dates.Max().AddDays( 1 );
 
-            var occurrences = GetAllOccurenceDates( groupType, dates, startDate, endDate, rockContext );
+            var occurrences = GetAllOccurrenceDates( groupType, dates, startDate, endDate, rockContext );
 
             // Remove any occurrences during group type exclusion date ranges
             RemoveExclusionDates( groupType, occurrences );
@@ -288,7 +308,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Gets all occurence dates.
+        /// Gets all occurrence dates.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="dates">The dates.</param>
@@ -296,7 +316,7 @@ namespace Rock.Jobs
         /// <param name="endDate">The end date.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static Dictionary<int, List<DateTime>> GetAllOccurenceDates(
+        private static Dictionary<int, List<GroupOccurrence>> GetAllOccurrenceDates(
             GroupType groupType,
             List<DateTime> dates,
             DateTime startDate,
@@ -306,13 +326,13 @@ namespace Rock.Jobs
             var groupService = new GroupService( rockContext );
 
             // Find all 'occurrences' for the groups that occur on the affected dates
-            var occurrences = new Dictionary<int, List<DateTime>>();
+            var occurrences = new Dictionary<int, List<GroupOccurrence>>();
             var groupsToRemind = groupService
                 .Queryable( "Schedule" ).AsNoTracking()
                 .IsGroupType( groupType.Id )
                 .IsActive()
-                .HasSchedule()
-                .HasActiveLeader();
+                .HasActiveLeader()
+                .Where( g => g.ScheduleId.HasValue || g.GroupLocations.Any( gl => gl.Schedules.Any() ) );
 
             var currentTime = RockDateTime.Now.TimeOfDay;
             int groupTypeOffSetMinutes = groupType.AttendanceReminderSendStartOffsetMinutes ?? 0;
@@ -323,46 +343,20 @@ namespace Rock.Jobs
                 // Add the group 
                 occurrences.Add( group.Id, new List<DateTime>() );
 
-                // Check for a iCal schedule
-                if ( !string.IsNullOrWhiteSpace( group.Schedule.iCalendarContent ) )
+                if (group.ScheduleId.HasValue)
                 {
-                    // If schedule has an iCal schedule, get occurrences between first and last dates
-                    foreach ( var occurrence in group.Schedule.GetICalOccurrences( startDate, endDate ) )
-                    {
-                        var startTime = occurrence.Period.StartTime.Value;
-                        var sendRemindersStartingAt = startTime.TimeOfDay.Subtract( reminderTimeOffset );
-                        if ( dates.Contains( startTime.Date ) && currentTime >= sendRemindersStartingAt )
-                        {
-                            // Only include this occurrence if the current time is later than the time reminders
-                            // should be sent for the group.
-                            occurrences[group.Id].Add( startTime );
-                        }
-                    }
+                    var scheduleOccurrences = GetOccurrencesForSchedule(group.Schedule, dates, startDate, endDate, reminderTimeOffset);
+                    occurrences[group.Id].AddRange(scheduleOccurrences);
                 }
-                else
+                
+                var groupLocations = group.GroupLocations;
+                foreach (var groupLocation in groupLocations)
                 {
-                    // if schedule does not have an iCal, then check for weekly schedule and calculate occurrences starting with first attendance or current week
-                    if ( group.Schedule.WeeklyDayOfWeek.HasValue )
+                    var groupSchedules = groupLocation.Schedules;
+                    foreach (var schedule in groupSchedules)
                     {
-                        foreach ( var date in dates )
-                        {
-                            if ( date.DayOfWeek == group.Schedule.WeeklyDayOfWeek.Value )
-                            {
-                                var startTime = date;
-                                if ( group.Schedule.WeeklyTimeOfDay.HasValue )
-                                {
-                                    startTime = startTime.Add( group.Schedule.WeeklyTimeOfDay.Value );
-                                }
-
-                                var sendRemindersStartingAt = startTime.TimeOfDay.Subtract( reminderTimeOffset );
-                                if ( currentTime >= sendRemindersStartingAt )
-                                {
-                                    // Only include this occurrence if the current time is later than the time reminders
-                                    // should be sent for the group.
-                                    occurrences[group.Id].Add( startTime );
-                                }
-                            }
-                        }
+                        var scheduleOccurrences = GetOccurrencesForSchedule(schedule, dates, startDate, endDate, reminderTimeOffset, groupLocation.Location);
+                        occurrences[group.Id].AddRange(scheduleOccurrences);
                     }
                 }
             }
@@ -375,7 +369,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="occurrences">The occurrences.</param>
-        private void RemoveExclusionDates( GroupType groupType, Dictionary<int, List<DateTime>> occurrences )
+        private void RemoveExclusionDates( GroupType groupType, Dictionary<int, List<GroupOccurrence>> occurrences )
         {
             foreach ( var exclusion in groupType.GroupScheduleExclusions )
             {
@@ -383,12 +377,12 @@ namespace Rock.Jobs
                 {
                     foreach ( var keyVal in occurrences )
                     {
-                        foreach ( var occurrenceDate in keyVal.Value.ToList() )
+                        foreach ( var groupOccurrence in keyVal.Value.ToList() )
                         {
-                            if ( occurrenceDate >= exclusion.StartDate.Value &&
-                                occurrenceDate < exclusion.EndDate.Value.AddDays( 1 ) )
+                            if ( groupOccurrence.OccurrenceDate >= exclusion.StartDate.Value &&
+                                groupOccurrence.OccurrenceDate < exclusion.EndDate.Value.AddDays( 1 ) )
                             {
-                                keyVal.Value.Remove( occurrenceDate );
+                                keyVal.Value.Remove( groupOccurrence );
                             }
                         }
                     }
@@ -403,7 +397,7 @@ namespace Rock.Jobs
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void RemoveGroupsWithAttendenceData( Dictionary<int, List<DateTime>> occurrences, DateTime startDate, DateTime endDate, RockContext rockContext )
+        private void RemoveGroupsWithAttendenceData( Dictionary<int, List<GroupOccurrence>> occurrences, DateTime startDate, DateTime endDate, RockContext rockContext )
         {
             var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
             var occurrencesWithAttendence = attendanceOccurrenceService
@@ -416,14 +410,15 @@ namespace Rock.Jobs
                 .Select( a => new
                 {
                     GroupId = a.GroupId.Value,
-                    a.OccurrenceDate
+                    a.OccurrenceDate,
+                    a.LocationId
                 } )
                 .Distinct()
                 .ToList();
 
             foreach ( var occurrence in occurrencesWithAttendence )
             {
-                occurrences[occurrence.GroupId].RemoveAll( d => d.Date == occurrence.OccurrenceDate.Date );
+                occurrences[occurrence.GroupId].RemoveAll( d => d.Date == occurrence.OccurrenceDate.Date && d.Location?.Id == occurrence.LocationId );
             }
         }
 
@@ -457,7 +452,7 @@ namespace Rock.Jobs
         /// <param name="jobPreferredCommunicationType">Type of the job preferred communication.</param>
         /// <returns></returns>
         private SendMessageResult SendAttendanceReminders( List<GroupMember> leaders,
-                        Dictionary<int, List<DateTime>> occurrences,
+                        Dictionary<int, List<GroupOccurrence>> occurrences,
                         SystemCommunication systemCommunication,
                         CommunicationType jobPreferredCommunicationType )
         {
@@ -473,6 +468,23 @@ namespace Rock.Jobs
                     leader.CommunicationPreference,
                     leader.Person.CommunicationPreference );
 
+                var schedulePreferences = leader.GroupMemberAssignments.ToList();
+                
+                //If the leader has preferences, then only create messages for their preferences (scheduleId)
+                // If they don't have preferences, then we can send out messages for all the occurrences to them.
+                var leaderOccurrences = occurrences.FirstOrDefault( o => o.Key == leader.GroupId ).Value;
+                
+                if ( schedulePreferences.Count > 0)
+                {
+                    leaderOccurrences = leaderOccurrences
+                        .Where(leaderOccurrence => schedulePreferences
+                            .Any(schedulePreference =>
+                                IsScheduleMatch(leaderOccurrence, schedulePreference)
+                                && IsLocationMatch(leaderOccurrence, schedulePreference)
+                        ))
+                        .ToList();
+                }
+
                 var leaderOccurrences = occurrences.Where( o => o.Key == leader.GroupId );
                 foreach ( var leaderOccurrence in leaderOccurrences )
                 {
@@ -480,7 +492,9 @@ namespace Rock.Jobs
                     var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, leader.Person );
                     mergeObjects.Add( "Person", leader.Person );
                     mergeObjects.Add( "Group", leader.Group );
-                    mergeObjects.Add( "Occurrence", occurrenceDate );
+                    mergeObjects.Add( "Location", leaderOccurrence.Location );
+                    mergeObjects.Add( "Occurrence", leaderOccurrence.OccurrenceDate );
+                    mergeObjects.Add( "Schedule", leaderOccurrence.Schedule );
 
                     var sendResult = CommunicationHelper.SendMessage( leader.Person, mediumType, systemCommunication, mergeObjects );
 
@@ -492,7 +506,7 @@ namespace Rock.Jobs
                     {
                         // Set the AttendanceOccurrence.AttendanceReminderLastSentDateTime field so future runs
                         // know we already sent reminders for this ocurrence today.
-                        CreateAttendanceOccurenceForSentReminders( occurrenceDate, leader );
+                        CreateAttendanceOccurenceForSentReminders( leaderOccurrence, leader );
                     }
                 }
             }
@@ -501,54 +515,112 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Creates the attendance occurence for sent reminders (so that we know not to send the same reminder again today).
+        /// Determines if the schedule of a group occurrence matches the schedule preference of a group member.
+        /// </summary>
+        /// <param name="occurrence">The Group Occurrence to check against the schedule preference.</param>
+        /// <param name="schedulePreference">The schedule preference of the group member.</param>
+        /// <returns>
+        /// True if the schedule of the Group Occurrence is not null and matches the schedule ID of the schedule preference;
+        /// otherwise, false.
+        /// </returns>
+        private bool IsScheduleMatch(GroupOccurrence occurrence, GroupMemberAssignment schedulePreference)
+        {
+            return occurrence.Schedule != null
+                && schedulePreference.ScheduleId == occurrence.Schedule.Id;
+        }
+
+        /// <summary>
+        /// Determines if the location of a Group Occurrence matches the location preference of a group member.
+        /// </summary>
+        /// <param name="occurrence">The Group Occurrence to check against the location preference.</param>
+        /// <param name="schedulePreference">The location preference of the group member.</param>
+        /// <returns>
+        /// True if the location of the Group Occurrence is null, or the location preference is not set, or both
+        /// the location of the Group Occurrence and the location preference are set and match;
+        /// otherwise, false.
+        /// </returns>
+        private bool IsLocationMatch(GroupOccurrence occurrence, GroupMemberAssignment schedulePreference)
+        {
+            return occurrence.Location == null
+                || !schedulePreference.LocationId.HasValue
+                || (schedulePreference.LocationId.HasValue && occurrence.Location != null
+                    && schedulePreference.LocationId.Value == occurrence.Location.Id);
+        }
+
+        /// <summary>
+        /// Creates the attendance occurrence for sent reminders (so that we know not to send the same reminder again today).
         /// </summary>
         /// <param name="occurrenceDate">The occurrence date.</param>
         /// <param name="leader">The leader.</param>
-        private void CreateAttendanceOccurenceForSentReminders( DateTime occurrenceDate, GroupMember leader )
+        private void CreateAttendanceOccurrenceForSentReminders( GroupOccurrence occurrence, GroupMember leader )
         {
-            /*
-                3/16/2023 - SMC
-                The purpose of this method is to store the current time on an AttendanceOccurrence in the
-                AttendanceReminderLastSentDateTime field, so that we know attendance reminders have already
-                been sent for this occurrence today (so that when the job runs again on the same day, it does
-                not re-send the same notifications it already sent.
-
-                This method will first look for an existing AttendanceOccurrence record before creating one.
-                Note that we cannot use the AttendanceOccurrenceService.GetOrAdd() methods because the job is
-                unaware of the location, but we may need to read existing occurrences that have a location.
-
-                Reason: Tracking sent attendance reminders.
-            */
-
             using ( var rockContext = new RockContext() )
             {
-                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
-
-                // Check for an existing attendance occurrence record.
-                var attendanceOccurrence = attendanceOccurrenceService.Queryable()
-                    .Where(
-                        o => o.OccurrenceDate == occurrenceDate.Date
-                        && o.GroupId == leader.GroupId
-                        && o.ScheduleId == leader.Group.ScheduleId
-                    ).FirstOrDefault();
-
-                if ( attendanceOccurrence == null )
-                {
-                    // Create the AttendanceOccurrence record for this occurrence.
-                    attendanceOccurrence = new AttendanceOccurrence
-                    {
-                        OccurrenceDate = occurrenceDate,
-                        GroupId = leader.GroupId,
-                        ScheduleId = leader.Group.ScheduleId,
-                    };
-                    attendanceOccurrenceService.Add( attendanceOccurrence );
-                }
-
+                var attendanceOccurrenceService = new AttendanceOccurrenceService(rockContext);
+                var attendanceOccurrence = attendanceOccurrenceService.GetOrAdd( occurrence.OccurrenceDate, leader.GroupId, occurrence.Location?.Id, occurrence.Schedule.Id );
                 attendanceOccurrence.AttendanceReminderLastSentDateTime = RockDateTime.Now;
-
+        
                 rockContext.SaveChanges();
             }
         }
+
+        private static List<GroupOccurrence> GetOccurrencesForSchedule(
+            Schedule schedule,
+            List<DateTime> dates,
+            DateTime startDate,
+            DateTime endDate,
+            TimeSpan reminderTimeOffset,
+            Location location = null )
+        {
+            var occurrences = new List<GroupOccurrence>();
+    
+            if ( !string.IsNullOrWhiteSpace( schedule?.iCalendarContent ) )
+            {
+                var icalDates = schedule.GetICalOccurrences( startDate, endDate );
+                // If schedule has an iCal schedule, get occurrences between start and end dates
+                foreach( var occurrence in icalDates )
+                {
+                    var startTime = occurrence.Period.StartTime.Value;
+                    var sendRemindersStartingAt = startTime.TimeOfDay.Subtract( reminderTimeOffset );
+    
+                    if ( dates.Contains( startTime.Date ) && RockDateTime.Now.TimeOfDay >= sendRemindersStartingAt )
+                    {
+                        // Include this occurrence
+                        occurrences.Add( new GroupOccurrence { OccurrenceDate = startTime, Location = location, Schedule = schedule } );
+                    }
+                }
+            }
+            else if ( schedule?.WeeklyDayOfWeek.HasValue ?? false)
+            {
+                // If schedule does not have an iCal, then check for weekly schedule and calculate occurrences starting with first attendance or current week
+                foreach( var date in dates )
+                {
+                    if ( date.DayOfWeek == schedule.WeeklyDayOfWeek.Value )
+                    {
+                        var startTime = date;
+                        if ( schedule.WeeklyTimeOfDay.HasValue )
+                        {
+                            startTime = startTime.Add( schedule.WeeklyTimeOfDay.Value );
+                        }
+    
+                        var sendRemindersStartingAt = startTime.TimeOfDay.Subtract( reminderTimeOffset );
+                        if ( RockDateTime.Now.TimeOfDay >= sendRemindersStartingAt )
+                        {
+                            //Include this occurrence
+                            occurrences.Add( new GroupOccurrence { OccurrenceDate = startTime, Location = location, Schedule = schedule } );
+                        }
+                    }
+                }
+            }
+            return occurrences;
+        }
+    }
+
+    public class GroupOccurrence
+    {
+        public DateTime OccurrenceDate { get; set; }
+        public Location Location { get; set; }
+    
+        public Schedule Schedule { get; set; }
     }
 }
