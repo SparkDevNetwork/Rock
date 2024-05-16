@@ -63,8 +63,8 @@
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial.obs";
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
-    import { RegistrationCostSummaryInfo, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
-    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo, ConfigurePaymentPlan, PaymentPlanConfiguration, OriginalFormFieldValues } from "./RegistrationEntry/utils.partial";
+    import { PaymentPlanConfiguration, RegistrationCostSummaryInfo, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
+    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo, OriginalFormFieldValues, ConfigurePaymentPlan } from "./RegistrationEntry/utils.partial";
     import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";

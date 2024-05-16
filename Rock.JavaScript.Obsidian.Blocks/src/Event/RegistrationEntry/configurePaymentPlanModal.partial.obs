@@ -89,7 +89,7 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PaymentPlanConfiguration, PaymentPlanFrequency, getNoopPaymentPlanFrequency, useConfigureNewPaymentPlan as useConfigurePaymentPlanFeature } from "./utils.partial";
+    import { PaymentPlanConfiguration, PaymentPlanFrequency } from "./types.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
     import { ValidationResult } from "@Obsidian/ValidationRules";
@@ -97,6 +97,7 @@
     import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { useConfigurePaymentPlanFeature } from "./paymentPlans.partial";
 
     const props = defineProps({
         modelValue: {
