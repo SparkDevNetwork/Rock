@@ -89,7 +89,6 @@
                                     <StaticFormControl
                                                        v-if="adult1.isLastNameReadOnly"
                                                        label="Last Name"
-                                                       rules="required"
                                                        :modelValue="adult1.lastName" />
                                     <TextBox v-else
                                              v-model="adult1.lastName"
@@ -282,7 +281,6 @@
                                         <StaticFormControl
                                                            v-if="adult2.isFirstNameReadOnly"
                                                            label="First Name"
-                                                           rules="required"
                                                            :modelValue="adult2.firstName" />
                                         <TextBox v-else
                                                  v-model="adult2.firstName"
@@ -294,7 +292,6 @@
                                         <StaticFormControl
                                                            v-if="adult2.isLastNameReadOnly"
                                                            label="Last Name"
-                                                           rules="required"
                                                            :modelValue="adult2.lastName" />
                                         <TextBox v-else
                                                  v-model="adult2.lastName"
