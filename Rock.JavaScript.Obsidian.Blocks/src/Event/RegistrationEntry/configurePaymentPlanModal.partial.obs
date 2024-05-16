@@ -53,13 +53,13 @@
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected || wipPaymentPlanConfiguration.amountPerPayment.isInvalid ? 'invisible' : '']">
+            <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
                 <div class="col">
                     <RockLabel label="Plan Summary">Plan Summary</RockLabel>
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected || wipPaymentPlanConfiguration.amountPerPayment.isInvalid ? 'invisible' : '']">
+            <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
                 <div class="col-sm-6">
                     <div>Amount Due Today</div>
                     <div>
@@ -89,15 +89,15 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PaymentPlanConfiguration, PaymentPlanFrequency, getNoopPaymentPlanFrequency, useConfigureNewPaymentPlan as useConfigurePaymentPlanFeature } from "./utils.partial";
+    import { PaymentPlanConfiguration, PaymentPlanFrequency } from "./types.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
     import { ValidationResult } from "@Obsidian/ValidationRules";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { Currency, createCurrency } from "./currency.partial";
+    import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
-    import { DateTimeCell } from "@Obsidian/Controls/grid";
+    import { useConfigurePaymentPlanFeature } from "./paymentPlans.partial";
 
     const props = defineProps({
         modelValue: {
@@ -125,8 +125,8 @@
     const startDateIsoString = ref<string | null>(null);
     const paymentFrequencyGuidOrEmptyString = ref<string>("");
     const amountToPayToday = ref<number>(0);
-    const amountToPayTodayAdjustmentCurrency = ref<Currency | null | undefined>();
-    const amountToPayTodayPlusAdjustmentCurrency = ref<Currency | null | undefined>();
+    const amountToPayTodayAdjustmentCurrency = ref<RockCurrency | null | undefined>();
+    const amountToPayTodayPlusAdjustmentCurrency = ref<RockCurrency | null | undefined>();
     const numberOfPayments = ref<number>(0);
 
     //#endregion
@@ -136,14 +136,16 @@
     /**
      * The allowed payment plan frequencies.
      */
-    const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => paymentPlanFrequencies.value.map(frequency => frequency.listItemBag) ?? []);
+    const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => {
+        return paymentPlanFrequencies.value.map(frequency => frequency.listItemBag) ?? [];
+    });
 
     const isPaymentPlanFrequencySelected = computed<boolean>(() => {
         return !!wipPaymentPlanConfiguration.value?.paymentPlanFrequency.transactionFrequency.definedValueGuid;
     });
 
     const paymentAmountMessage = computed<string>(() => {
-        if (!wipPaymentPlanConfiguration.value || wipPaymentPlanConfiguration.value.amountPerPayment.isInvalid) {
+        if (!wipPaymentPlanConfiguration.value) {
             return "Number of Payments is required";
         }
         else {
@@ -264,7 +266,7 @@
     function onBlurAmountToPayToday(): void {
         if (wipPaymentPlanConfiguration.value) {
             reconfigureWorkInProgress({
-                amountToPayToday: createCurrency(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyOptions),
+                amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo),
             });
         }
     }
@@ -310,7 +312,7 @@
                 // The amount to pay today should manually be passed in here
                 // to handle the case where an individual pressed [Enter] while
                 // in the amount to pay today field (onBlur is not triggered).
-                amountToPayToday: createCurrency(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyOptions)
+                amountToPayToday: RockCurrency.create(amountToPayToday.value, wipPaymentPlanConfiguration.value.balanceDue.currencyInfo)
             });
 
             configure(wipPaymentPlanConfiguration.value);

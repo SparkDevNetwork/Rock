@@ -155,6 +155,7 @@ namespace Rock.Field.Types
                 }
             }
 
+            // Get the list of values that can be selected.
             if ( definedType != null )
             {
                 int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()

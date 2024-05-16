@@ -8,12 +8,12 @@
                 </label>
                 <div class="control-wrapper">
                     <div class="form-control-static">
-                        <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" />
+                        <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" v-bind="$attrs" />
                     </div>
                 </div>
             </div>
         </template>
-        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" />
+        <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" :isEscaped="isEscaped" v-bind="$attrs" />
     </div>
     <div v-else>
         <component :is="editComponent"
@@ -23,7 +23,8 @@
                    :configurationValues="configurationValues"
                    :rules="rules"
                    @updateConfigurationValue="onUpdateConfigurationValue"
-                   :dataEntryMode="dataEntryMode" />
+                   :dataEntryMode="dataEntryMode"
+                   v-bind="$attrs" />
     </div>
 </template>
 

@@ -1775,7 +1775,8 @@ namespace Rock.Blocks.Event
             {
                 var fields = form.Fields.Where( f =>
                 {
-                    if ( f.ShowCurrentValue && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
+                    // ShowCurrentValue means "Default to the person's current value for this field"
+                    if ( ( f.ShowCurrentValue || f.IsLockedIfValuesExist ) && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
                     {
                         return true;
                     }
@@ -1790,7 +1791,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( ( familySelection || f.ShowCurrentValue || f.IsLockedIfValuesExist ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName || f.PersonFieldType == RegistrationPersonFieldType.LastName;
                     }
@@ -3107,9 +3108,10 @@ namespace Rock.Blocks.Event
                 var financialGatewayService = new FinancialGatewayService( rockContext );
                 var paymentFinancialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
                 var gateway = paymentFinancialGateway?.GetGatewayComponent();
+                var paymentToken = string.Empty;
+                var wasRedirectedFromPayment = gateway is IPaymentTokenGateway paymentGateway && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out paymentToken );
 
-                if ( gateway is IPaymentTokenGateway paymentGateway
-                     && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out var paymentToken ) )
+                if ( wasRedirectedFromPayment )
                 {
                     args.GatewayToken = paymentToken;
 
@@ -4162,7 +4164,7 @@ namespace Rock.Blocks.Event
 
             rockContext.SaveChanges();
 
-            // TODO Should message be published to event bus?
+            // TODO Should message be published to event bus? No. As indicated by the class name, this event is exclusively used for non-event giving (or real "gift" giving).
             //Task.Run( () => Rock.Bus.Message.ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, Rock.Bus.Message.ScheduledGiftEventTypes.ScheduledGiftCreated ) );
         }
 
@@ -4467,7 +4469,7 @@ namespace Rock.Blocks.Event
                         ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
                     ) &&
                     r.RegistrationInstanceId == registrationContext.RegistrationSettings.RegistrationInstanceId )
-                .GetPaymentPlanPairs()
+                .SelectPaymentPlanPairs()
                 .FirstOrDefault();
 
             var registration = registrationPaymentPlanPair?.Registration;

@@ -3358,7 +3358,7 @@ namespace RockWeb.Blocks.Event
 
                     rockContext.SaveChanges();
 
-                    // TODO Should message be published to event bus?
+                    // TODO Should message be published to event bus? No. As indicated by the class name, this event is exclusively used for non-event giving (or real "gift" giving).
                     //Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( financialScheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
 
                     error = null;

@@ -67,7 +67,7 @@
                         <div class="control-wrapper">
                             <div class="form-control-static">
                                 <div>
-                                    {{ formatCurrency(registrationEntryState.viewModel.session.activePaymentPlan.amountPerPayment, registrationEntryState.viewModel.currencyInfo) }} x {{ registrationEntryState.viewModel.session.activePaymentPlan.remainingNumberOfPayments }} ({{ registrationEntryState.viewModel.session.activePaymentPlan.transactionFrequencyText }})
+                                    {{ toCurrencyOrNull(registrationEntryState.viewModel.session.activePaymentPlan.amountPerPayment, currencyInfo) ?? '(invalid)' }} x {{ registrationEntryState.viewModel.session.activePaymentPlan.remainingNumberOfPayments }} ({{ registrationEntryState.viewModel.session.activePaymentPlan.transactionFrequencyText }})
                                 </div>
                                 <RockButton btnType="link"
                                             btnSize="xs"
@@ -121,8 +121,8 @@
 
                 <div v-if="isPaymentPlanConfigured" class="payment-plan well">
                     <RockLabel class="primary-label">Payment Plan</RockLabel>
-                    <StaticFormControl label="Amount Due Today" :modelValue="formatCurrency(registrationEntryState.amountToPayToday, registrationEntryState.viewModel.currencyInfo)" />
-                    <StaticFormControl :label="`${registrationEntryState.paymentPlan?.transactionFrequencyText} Payment Amount`" :modelValue="`${formatCurrency(registrationEntryState.paymentPlan?.amountPerPayment ?? 0, registrationEntryState.viewModel.currencyInfo)} x ${registrationEntryState.paymentPlan?.numberOfPayments ?? 0}`" />
+                    <StaticFormControl label="Amount Due Today" :modelValue="toCurrencyOrNull(registrationEntryState.amountToPayToday, currencyInfo) ?? '(invalid)'" />
+                    <StaticFormControl :label="`${registrationEntryState.paymentPlan?.transactionFrequencyText} Payment Amount`" :modelValue="`${toCurrencyOrNull(registrationEntryState.paymentPlan?.amountPerPayment ?? 0, currencyInfo) ?? '(invalid)'} x ${registrationEntryState.paymentPlan?.numberOfPayments ?? 0}`" />
                     <RockButton v-if="isPaymentPlanConfigurationSupported" btnType="default" btnSize="xs" @click="onOpenConfigurePaymentPlanModal">Change</RockButton>
                     <RockButton v-if="isPaymentPlanConfigurationSupported" btnType="link" btnSize="xs" @click="onCancelPaymentPlanConfiguration">Cancel</RockButton>
                 </div>
@@ -148,8 +148,7 @@
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import { Currency, CurrencyFormatString, CurrencyOptions, createCurrency, createReadonlyCurrencyOptions } from "./currency.partial";
-    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary, formatCurrency, useConfigureNewPaymentPlan } from "./utils.partial";
+    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
@@ -159,10 +158,13 @@
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { RegistrationEntryCostSummaryBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCostSummaryBag";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import ConfigurePaymentPlanModal from "./configurePaymentPlanModal.partial.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { useConfigurePaymentPlanFeature } from "./paymentPlans.partial";
 
     enum RegistrationCostSummaryType {
         Cost = 0,
@@ -182,15 +184,11 @@
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const { updateRegistrationCostSummary } = use(RegistrationCostSummary);
-    const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
-        precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
-        symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
-    });
     const {
         cancel,
         init,
         isConfigured: isPaymentPlanConfigured,
-        isPaymentPlanConfigurationSupported } = useConfigureNewPaymentPlan();
+        isPaymentPlanConfigurationSupported } = useConfigurePaymentPlanFeature();
 
     // #region Values
 
@@ -213,14 +211,19 @@
 
     /** Line items with some extra info computed for table rendering */
     const augmentedLineItems = computed<AugmentedLineItem[]>(() => {
+        const currencyInfoWithoutSymbol: CurrencyInfoBag = {
+            ...currencyInfo.value,
+            symbol: ""
+        };
+
         return lineItems.value.map(li => ({
             ...li,
             isFee: li.type === RegistrationCostSummaryType.Fee,
             discountHelp: (hasDiscount.value && li.cost === li.discountedCost) ? "This item is not eligible for the discount." : "",
             // Ignore the currency symbol when formatting.
             // It will be prepended with a space in the template.
-            amountFormatted: formatCurrency(li.cost, { symbol: "" }),
-            discountedAmountFormatted: formatCurrency(li.discountedCost, { symbol: "" })
+            amountFormatted: toCurrencyOrNull(li.cost, currencyInfoWithoutSymbol) ?? "(invalid)",
+            discountedAmountFormatted: toCurrencyOrNull(li.discountedCost, currencyInfoWithoutSymbol) ?? "(invalid)"
         } as AugmentedLineItem));
     });
 
@@ -238,7 +241,7 @@
 
     /** The total before discounts as a formatted string */
     const totalFormatted = computed<string>(() => {
-        return formatCurrency(total.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(total.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The total cost before discounts */
@@ -279,7 +282,7 @@
 
     /** The total after discounts as a formatted string */
     const discountedTotalFormatted = computed<string>(() => {
-        return formatCurrency(discountedTotal.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(discountedTotal.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The min amount that must be paid today */
@@ -295,7 +298,7 @@
 
     /** The min amount that must be paid today as a formatted string */
     const amountDueTodayFormatted = computed<string>(() => {
-        return formatCurrency(amountDueToday.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(amountDueToday.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** Should the amount that is due today be shown */
@@ -310,7 +313,7 @@
 
     /** The amount previously paid formatted as a string */
     const amountPreviouslyPaidFormatted = computed<string>(() => {
-        return formatCurrency(amountPreviouslyPaid.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(amountPreviouslyPaid.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The max amount that can be paid today */
@@ -327,7 +330,7 @@
 
     /** The max amount that can be paid today as a formatted string */
     const maxAmountCanBePaidFormatted = computed<string>(() => {
-        return formatCurrency(maxAmountCanBePaid.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(maxAmountCanBePaid.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The amount that would remain if the user paid the amount indicated in the currency box */
@@ -339,19 +342,15 @@
 
     /** The amount that would remain if the user paid the amount indicated in the currency box as a formatted string */
     const amountRemainingFormatted = computed<string>(() => {
-        return formatCurrency(amountRemaining.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(amountRemaining.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The validation rules for the amount to pay today */
     const amountToPayTodayRules = computed<ValidationRule[]>(() => {
-        const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
-            precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
-            symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
-        });
         const rules: ValidationRule[] = [];
 
-        let min = createCurrency(amountDueToday.value, currencyOptions);
-        const max = createCurrency(maxAmountCanBePaid.value, currencyOptions);
+        let min = RockCurrency.create(amountDueToday.value, currencyInfo.value);
+        const max = RockCurrency.create(maxAmountCanBePaid.value, currencyInfo.value);
 
         if (min.isGreaterThan(max)) {
             min = max;
@@ -364,14 +363,16 @@
             rules.push("notblank");
         }
 
-        rules.push(`gte:${min.format(CurrencyFormatString.decimal)}`);
-        rules.push(`lte:${max.format(CurrencyFormatString.decimal)}`);
+        rules.push(`gte:${min}`);
+        rules.push(`lte:${max}`);
 
         return rules;
     });
 
     /** The balance due on the registration. */
-    const balanceDue = computed<Currency>(() => createCurrency(maxAmountCanBePaid.value, currencyOptions));
+    const balanceDue = computed<RockCurrency>(() => {
+        return RockCurrency.create(maxAmountCanBePaid.value, currencyInfo.value);
+    });
 
     // #endregion
 

@@ -16,8 +16,15 @@
 
                 <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
                     <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
-                        <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField && currentRegistrant.fieldValues" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
-                        <RegistrantAttributeField v-else-if="(field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute || field.fieldSource === fieldSources.groupMemberAttribute) && currentRegistrant.fieldValues" :field="field" :fieldValues="currentRegistrant.fieldValues" :formFields="currentFormFields" />
+                        <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField && currentRegistrant.fieldValues"
+                                               :field="field"
+                                               :fieldValues="currentRegistrant.fieldValues"
+                                               :disabled="isFieldDisabled(field)" />
+                        <RegistrantAttributeField v-else-if="(field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute || field.fieldSource === fieldSources.groupMemberAttribute) && currentRegistrant.fieldValues"
+                                                  :field="field"
+                                                  :fieldValues="currentRegistrant.fieldValues"
+                                                  :formFields="currentFormFields"
+                                                  :disabled="isFieldDisabled(field)" />
                         <NotificationBox alertType="danger" v-else>Could not resolve field source {{ field.fieldSource }}</NotificationBox>
                     </template>
                 </ItemsWithPreAndPostHtml>
@@ -61,7 +68,7 @@
     import FeeField from "./feeField.partial.obs";
     import RegistrantAttributeField from "./registrantAttributeField.partial.obs";
     import RegistrantPersonField from "./registrantPersonField.partial.obs";
-    import { convertComparisonValue, CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, scrollToTopAfterNextRender, use } from "./utils.partial";
+    import { convertComparisonValue, CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, OriginalFormFieldValues, scrollToTopAfterNextRender, use } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
     import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
@@ -89,6 +96,10 @@
     import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
     import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
     import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
+    import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 
     const props = defineProps({
         currentRegistrant: {
@@ -135,6 +146,8 @@
         groupMemberAttribute: RegistrationFieldSource.GroupMemberAttribute,
         registrantAttribute: RegistrationFieldSource.RegistrantAttribute
     } as const;
+
+    const originalFormFieldValues = use(OriginalFormFieldValues);
 
     // #region Values
 
@@ -360,6 +373,82 @@
 
     // #region Functions
 
+    function isFieldDisabled(field: RegistrationEntryFormFieldBag): boolean {
+        if (!props.currentRegistrant.personGuid) {
+            return false;
+        }
+
+        function isValueIn<TEnum>(value: TEnum, ...collection: TEnum[]): boolean {
+            return collection.some(v => v === value);
+        }
+
+        // Disable the field if it is for a known person
+        // and the field is not editable (hard-coded as first and last name currently).
+        if (field.fieldSource === RegistrationFieldSource.PersonField
+            && isValueIn(field.personFieldType, RegistrationPersonFieldType.FirstName, RegistrationPersonFieldType.LastName)) {
+            return true;
+        }
+
+        function hasExistingFieldValue(personGuid: Guid, fieldGuid: Guid): boolean {
+            // At this point originalFormFieldValues should contain the
+            // original form field values when a person is selected
+            // (or when the registrant form loads if no selection available).
+
+            const originalFieldValue = originalFormFieldValues.value[personGuid]?.[fieldGuid];
+
+            if (isValueIn(field.personFieldType, RegistrationPersonFieldType.Birthdate, RegistrationPersonFieldType.AnniversaryDate)) {
+                if (!originalFieldValue || (typeof originalFieldValue === "object" && !originalFieldValue["day"] && !originalFieldValue["month"] && !originalFieldValue["year"])) {
+                    // Date is not set.
+                    return false;
+                }
+                else {
+                    // Disable if the date is set.
+                    return true;
+                }
+            }
+            else if (isValueIn(field.personFieldType, RegistrationPersonFieldType.Gender)) {
+                if ((typeof originalFieldValue === "string"
+                    || typeof originalFieldValue === "number")
+                    && isValueIn(toNumber(originalFieldValue), Gender.Male, Gender.Female)) {
+                    // Disable if the gender value is set.
+                    return true;
+                }
+                else if (typeof originalFieldValue === "string"
+                    && isValueIn(originalFieldValue, GenderDescription[Gender.Male], GenderDescription[Gender.Female])) {
+                    // Disable if the gender value is set.
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            else if (field.personFieldType === RegistrationPersonFieldType.Address) {
+                const valueAsAddress = JSON.parse(JSON.stringify(originalFieldValue)) as AddressControlBag;
+                if (valueAsAddress?.city
+                    || valueAsAddress?.country
+                    || valueAsAddress?.locality
+                    || valueAsAddress?.postalCode
+                    || valueAsAddress?.state
+                    || valueAsAddress?.street1
+                    || valueAsAddress?.street2) {
+                    // Disable if any of the address fields have a value.
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            return originalFieldValue !== "" && originalFieldValue !== undefined && originalFieldValue !== null;
+        }
+
+        // Disable the field if it is for a known person
+        // and the field has the setting "Lock if values exist"
+        // and a field value exists.
+        return !!field.isLockedIfValuesExist
+            && hasExistingFieldValue(props.currentRegistrant.personGuid, field.guid);
+    }
+
     function isRuleMet(rule: RegistrationEntryVisibilityBag, fieldValues: Record<Guid, unknown>, formFields: RegistrationEntryFormFieldBag[]): boolean {
         const value = !rule.comparedToRegistrationTemplateFormFieldGuid ? "" : fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || "";
 
@@ -527,6 +616,24 @@
         }
     }
 
+    function setRegistrantFieldValues(fieldValues: Record<Guid, unknown>): void {
+        props.currentRegistrant.fieldValues = fieldValues;
+
+        // If this is the first time registrant field values are set
+        // for the selected person, also update the person's initial values
+        // so the "Lock existing values" feature can use them for comparison.
+        if (props.currentRegistrant.personGuid) {
+            if (!originalFormFieldValues.value[props.currentRegistrant.personGuid]) {
+                originalFormFieldValues.value = {
+                    ...originalFormFieldValues.value,
+                    [props.currentRegistrant.personGuid]: {
+                        ...fieldValues
+                    }
+                };
+            }
+        }
+    }
+
     /** Copy the values that are to have current values used */
     function copyValuesFromFamilyMember(): void {
         if (!familyMember.value || registrationEntryState.navBack || registrationEntryState.viewModel.isExistingRegistration) {
@@ -535,9 +642,9 @@
         }
 
         // If the family member selection is made then set all form fields where use existing value is enabled
-        if (!props.currentRegistrant.fieldValues) {
-            props.currentRegistrant.fieldValues = {};
-        }
+        const newFieldValues: Record<Guid, unknown> = {
+            ...(props.currentRegistrant.fieldValues ?? {})
+        };
 
         for (const form of viewModel.value.registrantForms ?? []) {
             for (const field of form.fields ?? []) {
@@ -560,20 +667,26 @@
                     const familyMemberValue = familyMember.value.fieldValues[field.guid];
 
                     if (!familyMemberValue) {
-                        delete props.currentRegistrant.fieldValues[field.guid];
+                        // There is no field value for the selected family member,
+                        // so add a blank field value.
+                        newFieldValues[field.guid] = undefined;
                     }
                     else if (typeof familyMemberValue === "object") {
-                        props.currentRegistrant.fieldValues[field.guid] = { ...familyMemberValue };
+                        newFieldValues[field.guid] = { ...familyMemberValue };
                     }
                     else {
-                        props.currentRegistrant.fieldValues[field.guid] = familyMemberValue;
+                        newFieldValues[field.guid] = familyMemberValue;
                     }
                 }
                 else {
-                    delete props.currentRegistrant.fieldValues[field.guid];
+                    // Current registrant doesn't have a record of this field value yet,
+                    // so add a blank field value.
+                    newFieldValues[field.guid] = undefined;
                 }
             }
         }
+
+        setRegistrantFieldValues(newFieldValues);
     }
 
     async function getFieldValues(): Promise<void> {
@@ -590,31 +703,35 @@
         const result = await invokeBlockAction<Record<Guid, unknown>>("GetDefaultAttributeFieldValues", request);
 
         if (result.isSuccess && result.data && viewModel.value.registrantForms) {
-            if (!props.currentRegistrant.fieldValues) {
-                props.currentRegistrant.fieldValues = {};
-            }
+            const newFieldValues: Record<Guid, unknown> = {
+                // Create a shallow copy of the current field values first.
+                // Field values may be overwritten below.
+                ...(props.currentRegistrant.fieldValues ?? {})
+            };
 
             for (const form of viewModel.value.registrantForms) {
                 if (form.fields) {
                     for (const field of form.fields) {
-                        // Check if we gota value for the attribute
+                        // Check if we got a value for the attribute
                         if (field.guid && field.guid in result.data) {
                             const formFieldValue = result.data[field.guid];
-                            const currentFormFieldValue = props.currentRegistrant.fieldValues[field.guid];
+                            const currentFormFieldValue = props.currentRegistrant.fieldValues?.[field.guid];
 
                             if (currentFormFieldValue === undefined || currentFormFieldValue === null || currentFormFieldValue === "") {
                                 if (typeof formFieldValue === "object" && typeof currentFormFieldValue === "object") {
                                     // Is this even possible? It was already determined that currentFormFieldValue is undefined | null | "".
-                                    props.currentRegistrant.fieldValues[field.guid] = { ...formFieldValue };
+                                    newFieldValues[field.guid] = { ...formFieldValue };
                                 }
                                 else {
-                                    props.currentRegistrant.fieldValues[field.guid] = formFieldValue;
+                                    newFieldValues[field.guid] = formFieldValue;
                                 }
                             }
                         }
                     }
                 }
             }
+
+            setRegistrantFieldValues(newFieldValues);
         }
     }
 
@@ -659,7 +776,11 @@
     watch(familyMember, () => {
         if (!familyMember.value) {
             // If the family member selection is cleared then clear all form fields
-            if (viewModel.value.registrantForms && props.currentRegistrant.fieldValues) {
+            if (viewModel.value.registrantForms) {
+                const newFieldValues: Record<string, unknown> = {
+                    ...(props.currentRegistrant.fieldValues ?? {})
+                };
+
                 for (const form of viewModel.value.registrantForms) {
                     if (form.fields) {
                         for (const field of form.fields) {
@@ -668,13 +789,18 @@
                             // selecting a family member either.
                             // Fixes issue #5610.
                             if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
-                                continue;
+                                newFieldValues[field.guid] = props.currentRegistrant.fieldValues?.[field.guid];
                             }
-
-                            delete props.currentRegistrant.fieldValues[field.guid];
+                            else {
+                                // Keep the field value property for the current registrant,
+                                // but set it to undefined instead of removing the property completely.
+                                newFieldValues[field.guid] = undefined;
+                            }
                         }
                     }
                 }
+
+                setRegistrantFieldValues(newFieldValues);
             }
         }
         else {
