@@ -3077,9 +3077,10 @@ namespace Rock.Blocks.Event
                 var financialGatewayService = new FinancialGatewayService( rockContext );
                 var paymentFinancialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
                 var gateway = paymentFinancialGateway?.GetGatewayComponent();
+                var paymentToken = string.Empty;
+                var wasRedirectedFromPayment = gateway is IPaymentTokenGateway paymentGateway && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out paymentToken );
 
-                if ( gateway is IPaymentTokenGateway paymentGateway
-                     && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out var paymentToken ) )
+                if ( wasRedirectedFromPayment )
                 {
                     args.GatewayToken = paymentToken;
 
