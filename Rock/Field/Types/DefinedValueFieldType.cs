@@ -21,6 +21,8 @@ using System.Linq.Expressions;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Microsoft.ServiceBus.Messaging;
+
 #endif
 
 using Rock.Attribute;
@@ -162,10 +164,17 @@ namespace Rock.Field.Types
                     : null;
 
                 var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
-
-                publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
+                var definedValues = definedType.DefinedValues
                     .Where( v => ( includeInactive || v.IsActive )
-                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
+                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) );
+
+                if ( usage == ConfigurationValueUsage.View )
+                {
+                    var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+                    definedValues = definedValues.Where( dv => selectedValues.Contains( dv.Guid ) );
+                }
+
+                publicConfigurationValues[VALUES_PUBLIC_KEY] = definedValues
                     .OrderBy( v => v.Order )
                     .Select( v => new
                     {
