@@ -52,6 +52,7 @@
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
     <Content Include="src\Cms\pageRouteList.obs" />
     <Content Include="src\Core\auditList.obs" />
+    <Content Include="src\Communication\systemCommunicationList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -316,6 +317,7 @@
     <Folder Include="src\Communication\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
+    <Folder Include="src\Communication\SystemCommunicationList\" />
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
@@ -471,6 +473,7 @@
     <TypeScriptCompile Include="src\Cms\SiteDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\CommunicationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\assetStorageProviderDetail.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.partial.ts" />
