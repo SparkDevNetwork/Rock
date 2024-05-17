@@ -43,15 +43,14 @@
                      :rules="addressRules"></Address>
         </fieldset>
 
-        <CampusPicker v-if="isCampusPickerShown"
-                      :disabled="disabled"
-                      :label="campusPickerLabel"
-                      @update:modelValue="onCampusChanged"
-                      :campusStatusFilter="campusStatusFilter"
-                      :campusTypeFilter="campusTypeFilter"
-                      :forceVisible="true"
-                      :includeInactive="true"
-                      :showBlankItem="true" />
+        <CampusPicker
+            v-if="isCampusPickerShown"
+            :disabled="disabled"
+            :label="campusPickerLabel"
+            @update:modelValue="onCampusChanged"
+            :campusStatusFilter="campusStatusFilter"
+            :campusTypeFilter="campusTypeFilter"
+            :showBlankItem="true" />
 
         <AttributeValuesContainer v-if="internalAttributes"
                                   v-model="internalAttributeValues"
