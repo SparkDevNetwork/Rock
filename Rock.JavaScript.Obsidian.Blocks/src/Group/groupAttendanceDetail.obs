@@ -16,7 +16,10 @@
         <Panel :title="panelTitle">
             <template v-if="config.isCampusFilteringAllowed" #headerActions>
                 <div class="mr-2">
-                    <CampusFilter v-model="campusFilter" v-model:campusGuid="campusGuid" />
+                    <CampusFilter v-model="campusFilter"
+                        v-model:campusGuid="campusGuid"
+                        :campusStatusFilter="config.campusStatusFilter"
+                        :campusTypeFilter="config.campusTypeFilter" />
                 </div>
             </template>
 

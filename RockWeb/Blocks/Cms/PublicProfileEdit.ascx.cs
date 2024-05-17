@@ -238,6 +238,24 @@ namespace RockWeb.Blocks.Cms
         DefaultValue = "Campus",
         Order = 25 )]
 
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 26 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 27 )]
+
     [CustomDropdownListField(
         "Gender",
         Key = AttributeKey.Gender,
@@ -245,7 +263,7 @@ namespace RockWeb.Blocks.Cms
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Required",
-        Order = 26 )]
+        Order = 28 )]
 
     [CustomDropdownListField(
         "Race",
@@ -254,7 +272,7 @@ namespace RockWeb.Blocks.Cms
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Hide",
-        Order = 28 )]
+        Order = 29 )]
 
     [CustomDropdownListField(
         "Ethnicity",
@@ -263,7 +281,7 @@ namespace RockWeb.Blocks.Cms
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Hide",
-        Order = 29 )]
+        Order = 30 )]
 
     [CodeEditorField( "View Template",
         Key = AttributeKey.ViewTemplate,
@@ -273,7 +291,7 @@ namespace RockWeb.Blocks.Cms
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = "{% include '~/Assets/Lava/PublicProfile.lava' %}",
-        Order = 30 )]
+        Order = 31 )]
 
     #endregion
 
@@ -307,6 +325,8 @@ namespace RockWeb.Blocks.Cms
             public const string PersonAttributesChildren = "PersonAttributes(children)";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string ViewTemplate = "ViewTemplate";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
@@ -1552,6 +1572,32 @@ namespace RockWeb.Blocks.Cms
                 if ( showCampus )
                 {
                     cpCampus.Campuses = CampusCache.All( false );
+
+                    var selectedCampusTypeIds = GetAttributeValue( AttributeKey.CampusTypes )
+                        .SplitDelimitedValues( true )
+                        .AsGuidList()
+                        .Select( a => DefinedValueCache.Get( a ) )
+                        .Where( a => a != null )
+                        .Select( a => a.Id )
+                        .ToList();
+
+                    if ( selectedCampusTypeIds.Any() )
+                    {
+                        cpCampus.CampusTypesFilter = selectedCampusTypeIds;
+                    }
+
+                    var selectedCampusStatusIds = GetAttributeValue( AttributeKey.CampusStatuses )
+                        .SplitDelimitedValues( true )
+                        .AsGuidList()
+                        .Select( a => DefinedValueCache.Get( a ) )
+                        .Where( a => a != null )
+                        .Select( a => a.Id )
+                        .ToList();
+
+                    if ( selectedCampusStatusIds.Any() )
+                    {
+                        cpCampus.CampusStatusFilter = selectedCampusStatusIds;
+                    }
 
                     // Use the current person's campus if this a new person
                     if ( personGuid == Guid.Empty )
