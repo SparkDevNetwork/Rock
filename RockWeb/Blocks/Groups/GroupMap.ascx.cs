@@ -34,6 +34,7 @@ using System.Collections.Generic;
 
 using System.Dynamic;
 using Rock.Web;
+using Nest;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -41,22 +42,126 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Displays a group (and any child groups) on a map." )]
 
-    [LinkedPage( "Group Page", "The page to display group details.", true, "", "", 0 )]
-    [LinkedPage( "Person Profile Page", "The page to display person details.", true, "", "", 1)]
-    [LinkedPage( "Map Page", "The page to display group map (typically this page).", true, "", "", 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 3 )]
-    [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
-    [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
-    [BooleanField( "Show Campuses Filter", "", false, order: 6 )]
-    [BooleanField("Show Child Groups as Default", "Defaults to showing all child groups if no user preference is set", false, order: 7, key: SHOW_CHILD_GROUPS_AS_DEFAULT_KEY )]
-    [CodeEditorField( "Info Window Contents", "Lava template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, DEFAULT_LAVA_TEMPLATE, "", 8 )]
+    [LinkedPage(  "Group Page",
+        Description = "The page to display group details.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 0,
+        Key = AttributeKey.GroupPage )]
+
+    [LinkedPage( "Person Profile Page",
+        Description = "The page to display person details.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 1,
+        Key = AttributeKey.PersonProfilePage )]
+
+    [LinkedPage( "Map Page",
+        Description = "The page to display group map (typically this page).",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 2,
+        Key = AttributeKey.MapPage )]
+
+    [DefinedValueField( "Map Style",
+        Description = "The map theme that should be used for styling the map.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MAP_STYLES,
+        DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE,
+        Category = "",
+        Order = 3,
+        Key = AttributeKey.MapStyle )]
+
+    [IntegerField( "Map Height",
+        Description = "Height of the map in pixels (default value is 600px)",
+        IsRequired = false,
+        DefaultIntegerValue = 600,
+        Category = "",
+        Order = 4,
+        Key = AttributeKey.MapHeight )]
+
+    [TextField( "Polygon Colors",
+        Description = "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).",
+        IsRequired = true,
+        DefaultValue = "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc",
+        Category = "",
+        Order = 5,
+        Key = AttributeKey.PolygonColors )]
+
+    [BooleanField( "Show Campuses Filter",
+        Description = "",
+        DefaultBooleanValue = false,
+        Order = 6,
+        Key = AttributeKey.ShowCampusesFilter )]
+
+    [DefinedValueField(
+        "Campus Types",
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 7,
+        Key = AttributeKey.CampusTypes )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 8,
+        Key = AttributeKey.CampusStatuses )]
+
+    [BooleanField("Show Child Groups as Default",
+        Description = "Defaults to showing all child groups if no user preference is set",
+        DefaultBooleanValue = false,
+        Order = 9,
+        Key = AttributeKey.ShowChildGroupsAsDefault )]
+
+    [CodeEditorField( "Info Window Contents",
+        Description = "Lava template for the info window. To suppress the window provide a blank template.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 600,
+        IsRequired = false,
+        DefaultValue = DEFAULT_LAVA_TEMPLATE,
+        Category ="",
+        Order = 10,
+        Key = AttributeKey.InfoWindowContents )]
 
     [Rock.SystemGuid.BlockTypeGuid( "967F0D2B-DB76-486A-B034-D22B9D9240D3" )]
     public partial class GroupMap : Rock.Web.UI.RockBlock
     {
+        #region Keys
 
-        #region constants
-        private const string SHOW_CHILD_GROUPS_AS_DEFAULT_KEY = "ShowChildGroupsAsDefault";
+        private static class AttributeKey
+        {
+            public const string GroupPage = "GroupPage";
+            public const string PersonProfilePage = "PersonProfilePage";
+            public const string MapPage = "MapPage";
+            public const string MapStyle = "MapStyle";
+            public const string MapHeight = "MapHeight";
+            public const string PolygonColors = "PolygonColors";
+            public const string ShowCampusesFilter = "ShowCampusesFilter";
+            public const string ShowChildGroupsAsDefault = "ShowChildGroupsAsDefault";
+            public const string InfoWindowContents = "InfoWindowContents";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
+        }
+
+        private static class PreferenceKey
+        {
+            public const string ShowChildGroups = "ShowChildGroups";
+            public const string GroupTypeIds = "GroupTypeIds";
+        }
+
+        #endregion
+
+        #region Constants
 
         private const string DEFAULT_LAVA_TEMPLATE = @"
 <div style='width:250px'>
@@ -530,14 +635,14 @@ namespace RockWeb.Blocks.Groups
                         && a.LocationSelectionMode != GroupLocationPickerMode.None).OrderBy( a => a.Name ).ToList();
 
                 var preferences = GetBlockPersonPreferences();
-                var selectedGroupTypeIds = preferences.GetValue( "GroupTypeIds" );
+                var selectedGroupTypeIds = preferences.GetValue( PreferenceKey.GroupTypeIds );
                 if ( !string.IsNullOrWhiteSpace( selectedGroupTypeIds ) )
                 {
                     var selectedGroupTypeIdList = selectedGroupTypeIds.Split( ',' ).AsIntegerList();
                     gtpGroupType.SelectedGroupTypeIds = selectedGroupTypeIdList;
                 }
 
-                var showChildGroups = preferences.GetValue( "ShowChildGroups" ).AsBooleanOrNull() ?? GetAttributeValue( SHOW_CHILD_GROUPS_AS_DEFAULT_KEY ).AsBoolean();
+                var showChildGroups = preferences.GetValue( PreferenceKey.ShowChildGroups ).AsBooleanOrNull() ?? GetAttributeValue( AttributeKey.ShowChildGroupsAsDefault ).AsBoolean();
                 cbShowAllGroups.Checked = showChildGroups;
 
                 var statuses = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
@@ -554,8 +659,8 @@ namespace RockWeb.Blocks.Groups
                 rptStatus.DataSource = statuses.Where( s => s.Color != "" ).ToList();
                 rptStatus.DataBind();
 
-                cpCampuses.Campuses = CampusCache.All();
-                cpCampuses.Visible = this.GetAttributeValue( "ShowCampusesFilter" ).AsBoolean();
+                cpCampuses.Campuses = GetCampuses();
+                cpCampuses.Visible = this.GetAttributeValue( AttributeKey.ShowCampusesFilter ).AsBoolean();
 
                 Map();
             }
@@ -595,13 +700,13 @@ namespace RockWeb.Blocks.Groups
             pnlMap.Visible = true;
 
             string mapStylingFormat = MAP_STYLING_FORMAT;
-            lMapStyling.Text = string.Format( mapStylingFormat, GetAttributeValue( "MapHeight" ) );
+            lMapStyling.Text = string.Format( mapStylingFormat, GetAttributeValue( AttributeKey.MapHeight ) );
 
             // add styling to map
             string styleCode = "null";
             var markerColors = new List<string>();
 
-            DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
+            DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( AttributeKey.MapStyle ).AsGuid() );
             if ( dvcMapStyle != null )
             {
                 styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
@@ -619,13 +724,13 @@ namespace RockWeb.Blocks.Groups
             _childGroupColor = ( markerColors.Count > 1 ? markerColors[1] : markerColors[0] ).Replace( "#", string.Empty );
             _memberColor = ( markerColors.Count > 2 ? markerColors[2] : markerColors[0] ).Replace( "#", string.Empty );
 
-            var polygonColorList = GetAttributeValue( "PolygonColors" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            var polygonColorList = GetAttributeValue( AttributeKey.PolygonColors ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             string polygonColors = "\"" + polygonColorList.AsDelimited( "\", \"" ) + "\"";
 
-            string template = HttpUtility.HtmlEncode( GetAttributeValue( "InfoWindowContents" ).Replace( Environment.NewLine, string.Empty ).Replace( "\n", string.Empty ) );
-            string groupPage = GetAttributeValue( "GroupPage" );
-            string personProfilePage = GetAttributeValue( "PersonProfilePage" );
-            string mapPage = GetAttributeValue( "MapPage" );
+            string template = HttpUtility.HtmlEncode( GetAttributeValue( AttributeKey.InfoWindowContents ).Replace( Environment.NewLine, string.Empty ).Replace( "\n", string.Empty ) );
+            string groupPage = GetAttributeValue( AttributeKey.GroupPage );
+            string personProfilePage = GetAttributeValue( AttributeKey.PersonProfilePage );
+            string mapPage = GetAttributeValue( AttributeKey.MapPage );
             string infoWindowJson = string.Format( @"{{ ""GroupPage"":""{0}"", ""PersonProfilePage"":""{1}"", ""MapPage"":""{2}"", ""Template"":""{3}"" }}",
                 groupPage, personProfilePage, mapPage, template );
 
@@ -671,11 +776,39 @@ namespace RockWeb.Blocks.Groups
         {
             var preferences = GetBlockPersonPreferences();
 
-            preferences.SetValue( "GroupTypeIds", gtpGroupType.SelectedGroupTypeIds.AsDelimited( "," ) );
-            preferences.SetValue( "ShowChildGroups", cbShowAllGroups.Checked.ToTrueFalse() );
+            preferences.SetValue( PreferenceKey.GroupTypeIds, gtpGroupType.SelectedGroupTypeIds.AsDelimited( "," ) );
+            preferences.SetValue( PreferenceKey.ShowChildGroups, cbShowAllGroups.Checked.ToTrueFalse() );
             preferences.Save();
 
             Map();
+        }
+
+        /// <summary>
+        /// Gets the list of available campuses after filtering by any selected statuses or types.
+        /// </summary>
+        /// <returns></returns>
+        private List<CampusCache> GetCampuses()
+        {
+            var campusTypeIds = GetAttributeValues( AttributeKey.CampusTypes )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var campusStatusIds = GetAttributeValues( AttributeKey.CampusStatuses )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            return CampusCache.All()
+                .Where( c => ( !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                    && ( !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) ) )
+                .ToList();
         }
 
         #endregion

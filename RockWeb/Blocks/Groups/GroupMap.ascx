@@ -30,7 +30,7 @@
 
                 <asp:Literal ID="lMapStyling" runat="server" />
 
-                <Rock:CampusesPicker ID="cpCampuses" runat="server" FormGroupCssClass="js-campuses-picker" Label="Campus Filter" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
+                <Rock:CampusesPicker ID="cpCampuses" runat="server" FormGroupCssClass="js-campuses-picker" Label="Campuses Filter" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" ForceVisible="true" Visible="false" />
 
                 <div class="form-inline clearfix">
 

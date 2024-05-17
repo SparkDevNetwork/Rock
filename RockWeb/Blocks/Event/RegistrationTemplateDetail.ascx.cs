@@ -1882,13 +1882,25 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrantFormField_SaveClick( object sender, EventArgs e )
         {
+            var senderValidationGroup = ( ( System.Web.UI.HtmlControls.HtmlAnchor ) sender ).ValidationGroup == null
+                ? string.Empty
+                : ( ( System.Web.UI.HtmlControls.HtmlAnchor ) sender ).ValidationGroup;
+
+            // If page is not valid, exit and allow validators to display error messages.
+            Page.Validate( senderValidationGroup );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             nbFormField.Visible = false;
             if ( !FieldSave() )
             {
                 // Don't dismiss the dialog since the field didn't save.
                 return;
             }
-            
+
             HideDialog();
             BuildControls( true );
         }
