@@ -56,8 +56,6 @@
             @update:modelValue="onCampusChanged"
             :campusStatusFilter="campusStatusFilter"
             :campusTypeFilter="campusTypeFilter"
-            :forceVisible="true"
-            :includeInactive="true"
             :showBlankItem="true" />
 
         <AttributeValuesContainer
