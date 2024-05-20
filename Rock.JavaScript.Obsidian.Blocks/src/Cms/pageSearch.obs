@@ -11,24 +11,24 @@
             <div class="col-md-9 col-lg-10">
                 <div class="filter-container">
                     <div ref="searchContainer" class="search-input-container">
-                        <TextBox v-model="searchText" placeholder="Search" class="form-control" isClearable  />
+                        <TextBox v-model="searchText" placeholder="Search" class="form-control" isClearable />
                     </div>
                     <div>
-                        <RockButton @click="sortChildrenAlphabetically" btnType="default" class="sort-button" :class="{active: isSortedAlphabetically}">
+                        <RockButton @click="toggleSortOrder(true)" btnType="default" class="sort-button" :class="{active: isSortedAlphabetically}">
                             <i class="fa fa-sort-alpha-down"></i>
                         </RockButton>
-                        <RockButton @click="sortByOriginalOrder" btnType="default" class="sort-button" :class="{active: !isSortedAlphabetically}">
+                        <RockButton @click="toggleSortOrder(false)" btnType="default" class="sort-button" :class="{active: !isSortedAlphabetically}">
                             <i class="fa fa-list"></i>
                         </RockButton>
                     </div>
                 </div>
-                <div v-for="(category, index) in sortedCategories.filter(c => c.title === currentCategoryTitle || currentCategoryTitle === 'All')" :key="index" style="width: 100%;">
+                <div v-for="(category, index) in categorySections" :key="index" style="width: 100%;">
                     <div v-if="category.children && category.children.length > 0 && filteredSettings(category).length > 0">
                         <h2 >{{ category.title }}</h2>
                         <div class="list-as-blocks">
                             <ul class="mb-5">
                                 <li v-for="(setting, index) in filteredSettings(category)" :key="index" >
-                                    <a :href="setting.url ?? parrentUrl" v-if="setting.pageDisplayDescription" :title="setting.description ?? ''">
+                                    <a :href="setting.url ?? parentUrl" v-if="setting.pageDisplayDescription" :title="setting.description ?? ''">
                                             <i v-if="setting.icon != ''" :class="setting.icon"></i>
                                         <h3>{{ setting.title }}</h3>
                                     </a>
@@ -52,15 +52,15 @@
     import { PageSearchPageBag } from "@Obsidian/ViewModels/Blocks/Cms/PageSearch/pageSearchPageBag";
     import { onMounted, ref, nextTick, computed } from "vue";
     import { PreferenceKey } from "./PageSearch/types.partial";
-    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
 
 
-// #region Values
+    // #region Values
 
-const config = useConfigurationValues<PageSearchBag>();
+    const config = useConfigurationValues<PageSearchBag>();
     const preferences = usePersonPreferences().blockPreferences;
-    const parrentUrl = window.location.href;
-    const currentCategoryIndex = ref(toNumberOrNull(preferences.getValue(PreferenceKey.SelectedCategoryIndex)) ?? 0);
+    const parentUrl = window.location.href;
+    const currentCategoryIndex = ref(toNumber(preferences.getValue(PreferenceKey.SelectedCategoryIndex)) ?? 0);
     const currentCategoryTitle = ref<string | null | undefined>(preferences.getValue(PreferenceKey.SelectedCategoryTitle).length > 0 ? preferences.getValue(PreferenceKey.SelectedCategoryTitle) : "All");
     const pages = ref<PageSearchPageBag[]>([{id: -1, title: "All", children: [], icon: null, description: null, parentPageId: null, pageDisplayDescription: false}, ...config.pages ?? []]);
     const searchText = ref("");
@@ -93,6 +93,10 @@ const config = useConfigurationValues<PageSearchBag>();
         return pages.value;
     });
 
+    const categorySections = computed<PageSearchPageBag[]>(() => {
+        return sortedCategories.value.filter(c => c.title === currentCategoryTitle.value || currentCategoryTitle.value === "All");
+    });
+
     // #endregion
 
     // #region Functions
@@ -114,15 +118,8 @@ const config = useConfigurationValues<PageSearchBag>();
         await preferences.save();
     }
 
-    // Todo: come back and maybe refine.
-    async function sortChildrenAlphabetically(): Promise<void> {
-        isSortedAlphabetically.value = true;
-        preferences.setValue(PreferenceKey.IsSortedAlphabetically, isSortedAlphabetically.value.toString());
-        await preferences.save();
-    }
-
-    async function sortByOriginalOrder(): Promise<void> {
-        isSortedAlphabetically.value = false;
+    async function toggleSortOrder(isAlphabetical: boolean): Promise<void> {
+        isSortedAlphabetically.value = isAlphabetical;
         preferences.setValue(PreferenceKey.IsSortedAlphabetically, isSortedAlphabetically.value.toString());
         await preferences.save();
     }
@@ -141,7 +138,7 @@ const config = useConfigurationValues<PageSearchBag>();
 <style scoped>
 
 .active {
-    background-color: #EE7725;
+    background-color: var(--color-primary);
     color: #FFFFFF;
 }
 
@@ -173,7 +170,7 @@ const config = useConfigurationValues<PageSearchBag>();
 }
 
 .sort-button:focus {
-    background-color: #EE7725;
+    background-color: var(--color-primary);
     color: #FFFFFF;
 }
 
