@@ -1074,6 +1074,7 @@
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
     <Compile Include="Lava\Filters\LavaFilters.EntitySets.cs" />
     <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
+    <Compile Include="Lava\Shortcodes\NetworkGraphShortcode.cs" />
     <Compile Include="Logging\DynamicConfigurationProvider.cs" />
     <Compile Include="Logging\RockJobLogger.cs" />
     <Compile Include="Logging\RockLoggingCategoryAttribute.cs" />
