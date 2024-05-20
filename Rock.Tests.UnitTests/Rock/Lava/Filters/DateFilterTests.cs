@@ -666,22 +666,22 @@ namespace Rock.Tests.UnitTests.Lava
         public void DateDiff_CompareDifferenceInWeeks()
         {
             // Same date should result in 0 weeks
-            TestHelper.AssertTemplateOutput("0", "{{ '01-Jan-2024' | DateDiff:'01-Jan-2024','w' }}");
+            TestHelper.AssertTemplateOutput( "0", "{{ '01-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
         
             // 7 days apart should result in 1 week
-            TestHelper.AssertTemplateOutput("1", "{{ '01-Jan-2024' | DateDiff:'08-Jan-2024','w' }}");
+            TestHelper.AssertTemplateOutput( "1", "{{ '01-Jan-2024' | DateDiff:'08-Jan-2024','w' }}" );
         
             // 6 days apart should result in 0 weeks (round down)
-            TestHelper.AssertTemplateOutput("0", "{{ '01-Jan-2024' | DateDiff:'07-Jan-2024','w' }}");
+            TestHelper.AssertTemplateOutput( "0", "{{ '01-Jan-2024' | DateDiff:'07-Jan-2024','w' }}" );
         
             // 11 days apart should result in 1 week (round down)
-            TestHelper.AssertTemplateOutput("1", "{{ '01-Jan-2024' | DateDiff:'12-Jan-2024','w' }}");
+            TestHelper.AssertTemplateOutput( "1", "{{ '01-Jan-2024' | DateDiff:'12-Jan-2024','w' }}" );
         
             // 14 days apart should result in 2 weeks
-            TestHelper.AssertTemplateOutput("2", "{{ '01-Jan-2024' | DateDiff:'15-Jan-2024','w' }}");
+            TestHelper.AssertTemplateOutput( "2", "{{ '01-Jan-2024' | DateDiff:'15-Jan-2024','w' }}" );
         
             // 21 days apart should result in 3 weeks
-            TestHelper.AssertTemplateOutput("3", "{{ '01-Jan-2024' | DateDiff:'22-Jan-2024','w' }}");
+            TestHelper.AssertTemplateOutput( "3", "{{ '01-Jan-2024' | DateDiff:'22-Jan-2024','w' }}" );
         }
         
         /// <summary>
@@ -691,10 +691,10 @@ namespace Rock.Tests.UnitTests.Lava
         public void DateDiff_CompareEarlierDateInWeeks_YieldsNegativeInteger()
         {
             // Negative intervals
-            TestHelper.AssertTemplateOutput("-1", "{{ '08-Jan-2024' | DateDiff:'01-Jan-2024','w' }}");
-            TestHelper.AssertTemplateOutput("-1", "{{ '12-Jan-2024' | DateDiff:'01-Jan-2024','w' }}");
-            TestHelper.AssertTemplateOutput("-2", "{{ '15-Jan-2024' | DateDiff:'01-Jan-2024','w' }}");
-            TestHelper.AssertTemplateOutput("-3", "{{ '22-Jan-2024' | DateDiff:'01-Jan-2024','w' }}");
+            TestHelper.AssertTemplateOutput( "-1", "{{ '08-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+            TestHelper.AssertTemplateOutput( "-1", "{{ '12-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+            TestHelper.AssertTemplateOutput( "-2", "{{ '15-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
+            TestHelper.AssertTemplateOutput( "-3", "{{ '22-Jan-2024' | DateDiff:'01-Jan-2024','w' }}" );
         }
 
 
