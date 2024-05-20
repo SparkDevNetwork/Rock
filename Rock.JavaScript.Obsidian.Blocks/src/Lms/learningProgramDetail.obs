@@ -3,7 +3,7 @@
     <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
-    <div class="row d-flex mb-3">
+    <div v-if="showKpis" class="row d-flex mb-3">
         <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
         <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
         <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
@@ -12,6 +12,7 @@
     <DetailBlock
                  v-if="!blockError"
                  v-model:mode="panelMode"
+                 :alwaysShowLabels="true"
                  :isFullScreenVisible="false"
                  :isAuditHidden="false"
                  :name="panelName"
@@ -21,7 +22,6 @@
                  entityTypeName="LearningProgram"
                  :isBadgesVisible="true"
                  :isSecurityHidden="false"
-                 :footerActions="footerActions"
                  :footerSecondaryActions="footerSecondaryActions"
                  :onDelete="onDelete"
                  @cancelEdit="onCancelEdit"
@@ -34,6 +34,11 @@
         <template #view>
             <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
 
+            <div class="view-link-buttons">
+                <RockButton v-for="action in footerActions" :btnType="action.type" @click="action.handler">
+                    {{ action.title }}
+                </RockButton>
+            </div>
             <Modal v-model="showDetailsModal" title="Additional Details">
                 <AdditionalDetailsModal :modelValue="learningProgramAdditionalDetailsBag" />
             </Modal>
@@ -43,6 +48,12 @@
         </template>
     </DetailBlock>
 </template>
+
+<style scoped>
+.view-link-buttons > * {
+    margin-right: 12px;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
@@ -57,6 +68,7 @@
     import AdditionalDetailsModal from "./LearningProgramDetail/additionalDetailsModal.obs";
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
     import Kpi from "@Obsidian/Controls/kpi.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./LearningProgramDetail/types.partial";
@@ -87,9 +99,11 @@
     const imageGuid = ref<string>(learningProgramViewBag.value?.imageBinaryFile?.value ?? "");
     const iconCssClass = ref<string>(learningProgramViewBag.value?.iconCssClass ?? "");
     const highlightColor = ref<string>(learningProgramViewBag.value?.highlightColor ?? "");
+
     const activeClasses = ref(learningProgramViewBag.value?.activeClasses);
     const activeStudents = ref(learningProgramViewBag.value?.activeStudents);
     const completions = ref(learningProgramViewBag.value?.completions);
+    const showKpis = ref(learningProgramViewBag.value?.showKpis);
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.

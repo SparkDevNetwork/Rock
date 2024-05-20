@@ -1,4 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<!--
+    This template can be used as a starting point for new Learning Activity Components.
+    See the various TODO comments throughout.
+    In addition to this a .cs class inheriting from the LearningActivityComponent
+    is expected to have been compiled and available as a .dll in the RockWeb\bin directory.
+    That component should provide the url to this file.
+ -->
 <template>
     <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">

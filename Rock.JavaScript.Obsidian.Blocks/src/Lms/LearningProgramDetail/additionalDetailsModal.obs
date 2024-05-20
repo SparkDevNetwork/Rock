@@ -34,10 +34,10 @@
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
 
     const props = defineProps({
-    modelValue: {
-    type: Object as PropType<LearningProgramBag | null>,
-            required: false
-        },
+        modelValue: {
+        type: Object as PropType<LearningProgramBag | null>,
+                required: false
+            },
     });
 
     // #region Values
@@ -59,7 +59,7 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addHtmlValue("", `<h3 class="title">Public Name</h3>${props.modelValue?.publicName}`);
+        valueBuilder.addHtmlValue("", `<h3 class="title">Public Name</h3>${props.modelValue?.publicName ?? ""}`);
 
         return valueBuilder.build();
     });
@@ -72,7 +72,7 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addHtmlValue("", `<h3 class="title">Completion Workflow Type</h3>${props.modelValue?.completionWorkflowType?.text}`);
+        valueBuilder.addHtmlValue("", `<h3 class="title">Completion Workflow Type</h3>${props.modelValue?.completionWorkflowType?.text ?? ""}`);
 
         return valueBuilder.build();
     });

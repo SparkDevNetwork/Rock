@@ -106,6 +106,9 @@ export type LearningProgramBag = {
     /** Gets or sets the public name of the LearningProgram. */
     publicName?: string | null;
 
+    /** Gets or sets whether the KPIs are visible. */
+    showKpis: boolean;
+
     /** Gets or sets the summary text of the LearningProgram. */
     summary?: string | null;
 

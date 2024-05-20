@@ -66,10 +66,10 @@
                             :min="0"
                             :max="activityBag.points"
                             inputGroupClasses="input-width-md">
-                        <template #inputGroupAppend>
-                            <span class="input-group-addon">out of {{ activityBag.points }}</span>
-                        </template>
-                    </NumberBox>
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">out of {{ activityBag.points }}</span>
+                            </template>
+                        </NumberBox>
                     </div>
                 </div>
 

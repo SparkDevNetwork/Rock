@@ -4,7 +4,8 @@ using System.ComponentModel.Composition;
 namespace Rock.Lms
 {
     /// <summary>
-    /// The Check-Off activity is a learning activity that requires a participant to check a box for completion.
+    /// The Point Assessment activity is a learning activity that
+    /// has the facilitator evaluating a presentation or other material for completion.
     /// </summary>
     [Description( "A Learning Activity that has the facilitator evaluating a presentation or other material." )]
     [Export( typeof( LearningActivityComponent ) )]
@@ -16,12 +17,12 @@ namespace Rock.Lms
         /// <summary>
         /// Gets the Highlight color for the component.
         /// </summary>
-        public override string HighlightColor => "#fbf3c9";
+        public override string HighlightColor => "#ebe9f1";
 
         /// <summary>
         /// Gets the icon CSS class for the component.
         /// </summary>
-        public override string IconCssClass => "fa fa-list";
+        public override string IconCssClass => "fa fa-photo-video";
 
         /// <summary>
         /// Gets the name of the component.

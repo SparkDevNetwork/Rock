@@ -135,6 +135,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
         public string PublicName { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the KPIs are visible.
+        /// </summary>
+        public bool ShowKpis { get; set; }
+
+        /// <summary>
         /// Gets or sets the summary text of the LearningProgram.
         /// </summary>
         public string Summary { get; set; }

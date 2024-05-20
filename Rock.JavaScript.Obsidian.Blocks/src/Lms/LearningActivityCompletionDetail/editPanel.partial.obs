@@ -41,7 +41,6 @@
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
 
     const props = defineProps({
@@ -68,12 +67,11 @@
     const activityBag = ref(props.modelValue.bag?.activityBag ?? {} as LearningActivityBag);
     const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
 
-    const isStudentCommentingEnabled = propertyRef(completionBag.value.isStudentCommentingEnabled ?? false, "StudentCommentingEnabled");
-    const studentComment = propertyRef(completionBag.value.studentComment ?? "", "StudentComment");
-    const pointsPossible = propertyRef(activityBag.value?.points, "PointsPossible");
-    const isStudentCompleted = propertyRef(completionBag.value.isStudentCompleted ?? false, "IsStudentCompleted");
+    const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
+    const pointsPossible = ref(activityBag.value?.points);
+    const isStudentCompleted = ref(completionBag.value.isStudentCompleted ?? false);
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
-    const assignTo = propertyRef(activityBag.value.assignTo ?? AssignTo.Student, "AssignTo");
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointedEarned");
     const isPastDue = ref(completionBag.value.isPastDue ?? false);
@@ -81,12 +79,7 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [
-          isStudentCommentingEnabled
-        , studentComment
-        , pointsPossible
-        , isStudentCompleted
-        , isFacilitatorCompleted
-        , assignTo
+          isFacilitatorCompleted
         , facilitatorComment
         , pointsEarned
     ];
@@ -100,12 +93,9 @@
     );
 
     const screenToShow = computed(() => {
-        if ([isPastDue.value, requiresScoring.value].includes(true)) {
-            return ComponentScreen.Scoring;
-        }
-        else {
-            return ComponentScreen.Summary;
-        }
+        return [isPastDue.value, requiresScoring.value].includes(true) ?
+            ComponentScreen.Scoring :
+            ComponentScreen.Summary;
     });
 
     // #endregion
@@ -120,9 +110,6 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(isStudentCommentingEnabled, props.modelValue.bag?.isStudentCommentingEnabled ?? false);
-        updateRefValue(studentComment, props.modelValue.bag?.studentComment ?? "");
-        updateRefValue(isStudentCompleted, props.modelValue.bag?.isStudentCompleted ?? false);
         updateRefValue(isFacilitatorCompleted, props.modelValue.bag?.isFacilitatorCompleted ?? false);
         updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
         updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
@@ -135,9 +122,6 @@
             bag: { ...props.modelValue.bag } as LearningActivityCompletionBag
         };
 
-        setPropertiesBoxValue(newValue, "isStudentCommentingEnabled", isStudentCommentingEnabled.value);
-        setPropertiesBoxValue(newValue, "studentComment", studentComment.value);
-        setPropertiesBoxValue(newValue, "isStudentCompleted", isStudentCompleted.value);
         setPropertiesBoxValue(newValue, "isFacilitatorCompleted", isFacilitatorCompleted.value);
         setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
         setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);

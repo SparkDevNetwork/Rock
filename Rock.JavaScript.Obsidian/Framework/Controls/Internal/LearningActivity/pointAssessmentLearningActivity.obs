@@ -1,21 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel v-if="screenToShow !== ComponentScreen.Scoring" :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
+    <Panel v-if="screenToShow !== ComponentScreen.Completion" :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="instructions-section">
                 <StructuredContentEditor label="Instructions" v-model="instructions" />
             </div>
         </div>
 
-        <div v-if="screenToShow === ComponentScreen.Completion">
-            <div class="completion-section">
+        <div v-if="screenToShow === ComponentScreen.Scoring">
+            <div class="scoring-section">
                 <StructuredContentEditor :disabled="true" label="Instructions" v-model="instructions" />
-            </div>
-            <div class="completion-buttons">
-                <RockButton :btnType="BtnType.Primary"
-                            @click="emits('completed', true)">
-                    Complete
-                </RockButton>
             </div>
         </div>
 
@@ -40,9 +34,7 @@
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity.partial";
@@ -60,7 +52,6 @@
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
         assignee,
-        binaryFile,
         containerClasses,
         defaultAssigneeDescription,
         instructions,
@@ -88,20 +79,5 @@
     });
     watch(instructions, () => {
         debouncedActivityBagEmits();
-    }, { deep: true });
-
-    /** Watch for modified component completion. */
-    const debouncedCompletionBagEmits = debounce(() => {
-            const updatedCompletionBag = {
-                ...toValue(completionBag)
-            } as LearningActivityCompletionBag;
-
-            updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-                binaryFile: binaryFile.value
-            }) ?? "{}";
-            emits("update:completionBag", updatedCompletionBag);
-    });
-    watch([binaryFile], () => {
-        debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

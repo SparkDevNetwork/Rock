@@ -1,0 +1,223 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="screenToShow !== ComponentScreen.Scoring" :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <TextBox v-model="question"
+                     label="Question"
+                     rules="required" />
+
+            <TextBox v-model="helpText"
+                     textMode="multiline"
+                     label="Help Text" />
+
+            <div class="answers-list">
+                <span v-for="(_, index) in answers" :class="'answer-row answer-row-' + index">
+                    <TextBox v-model="answers[index]"
+                             :inputClasses="'answer-text-box-' + index"
+                             :label="index === 0 ? 'Answers' : '' "
+                             rules="required" />
+
+                    <button aria-label="Remove this answer" class="btn btn-default btn-square remove-answer-button" @click.prevent="answers.splice(index, 1)">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </span>
+            </div>
+            <div class="add-answer-button">
+                <i class="fa fa-plus-circle" @click.prevent="answers.push('')"></i>
+            </div>
+            <div class="correct-answer-field">
+                <DropDownList v-model="internalValue.correctAnswer" :items="answersAsListItems" label="Correct Answer" :show-blank-item="false" />
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <RadioButtonList v-model="response"
+                             class="multiple-choice-item-answer completion-screen"
+                             :help="helpText"
+                             label="question"
+                             rules="required"
+                             :items="answersAsListItems" />
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <div class="summary-screen-question-header">
+                <span class="multiple-choice-item-question summary-screen">{{ question }}</span>
+                <span v-html="correctnessLabel"></span>
+            </div>
+
+            <div class="summary-answers-list">
+                <div v-html="html" v-for="html in summaryAnswers" class="answer-row"></div>
+            </div>
+        </div>
+    </div>
+</template>
+<style scoped>
+.lms-assessment-item-multiple-choice-container > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.add-answer-button > i.fa-plus-circle {
+    border-radius: 4px;
+    background-color: #69717a;
+    color: #fff;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.answers-list {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 4px;
+    padding-right: 12px;
+
+    .answer-row {
+        display: grid;
+        grid-template-columns: calc(100% - 30px) 25px;
+        column-gap: 8px;
+
+        /*
+            Because each answer-row is a single row grid use margin instead of row-gap.
+            Skip the first row since the label includes margin-bottom already.
+        */
+        :not(.answer-row-0) {
+            margin-bottom: 12px;
+        }
+
+        /* Textbox for an answer. */
+        :first-child {
+            grid-column: 1;
+        }
+
+        /* Remove button for an answer. */
+        :last-child {
+            grid-column: 2;
+            padding: 3px;
+            max-height: 38px;
+        }
+    }
+
+    .answer-row-0 {
+        /* Add a margin-top to the first Remove button to offset the label of the first answer. */
+        > .remove-answer-button {
+            margin-top: 25px;
+        }
+    }
+}
+
+.correct-answer-field {
+    width: 80%;
+}
+
+/* Summary specific styles  */
+.summary-screen-question-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.summary-answers-list {
+    display: block;
+    margin: 8px;
+
+}
+
+.multiple-choice-item-question.summary-screen {
+    font-weight: bold;
+}
+
+.label.label-default.selected-response {
+    background-color: #e4e8eb;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, toValue, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ComponentScreen } from "./learningActivity.partial";
+    import { AssessmentItem, MultipleChoiceItem } from "./assessmentLearningActivity.partial";
+
+    const props = defineProps({
+        /** The assessment item's configuration. */
+        modelValue: {
+            type: Object as PropType<MultipleChoiceItem | AssessmentItem>,
+            required: true
+        },
+
+        screenToShow: {
+            type: Object as PropType<ComponentScreen>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (event: "update:modelValue", value: MultipleChoiceItem): void
+    }>();
+
+    const internalValue = props.modelValue as MultipleChoiceItem;
+
+    const question = ref(internalValue.question ?? "");
+    const helpText = ref(internalValue.helpText ?? "");
+    const answers = ref(internalValue.answers ?? []);
+    const response = ref(internalValue.response);
+    const isCorrect = ref(internalValue.response === "a game");
+    const correctAnswer = ref(internalValue.correctAnswer ?? "");
+    const answersAsListItems = ref<ListItemBag[]>(internalValue.answers.map(a => {
+        return {value: a, text: a} as ListItemBag;
+    }));
+
+    const summaryAnswers = computed(() => internalValue.answers.map(a => {
+        let cssClass = "";
+
+        response.value = "something else";
+
+        if (a === response.value) {
+            // If this was the response of the student.
+            cssClass = `class="label label-default selected-response"`;
+        }
+        else if (a === "a game") {
+            // If this was not the response of the student and was correct.
+            cssClass = `class="label label-success"`;
+        }
+        else {
+            cssClass = `class="ml-2"`;
+        }
+
+        return `<div ${cssClass}>${a}</div>`;
+    }));
+
+    const screenToShow = ref(props.screenToShow);
+
+    const correctnessLabel = ref(
+        isCorrect.value === true ?
+        `<span class="badge-success badge">Correct</span>` :
+        `<span class="badge-danger badge">Incorrect</span>`
+    );
+
+    watch([question, helpText, answers, correctAnswer], () => {
+        if (toValue(screenToShow) === ComponentScreen.Configuration) {
+            const newModelValue = {
+                typeName: internalValue.typeName,
+                question: question.value,
+                helpText: helpText.value,
+                answers: answers.value,
+                correctAnswer: correctAnswer.value
+            } as MultipleChoiceItem;
+
+            emit("update:modelValue", newModelValue);
+        }
+    });
+
+    /** CSS classes for the panel. */
+    const containerClasses = computed((): string[] => {
+        const screenName = toValue(screenToShow);
+        return [
+            "lms-assessment-item-container",
+            `lms-assessment-item-${screenName.toLowerCase()}-container`,
+            `lms-assessment-item-multiple-choice-container`
+        ];
+    });
+
+</script>

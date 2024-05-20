@@ -130,7 +130,16 @@ namespace Rock.Blocks.Lms
         {
             errorMessage = null;
 
-            return true;
+            if (learningActivity.Name.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "Name is a required field";
+            }
+            else if (learningActivity.ActivityComponentId == 0)
+            {
+                errorMessage = "Activity Type is a required field";
+            }
+
+            return errorMessage == null;
         }
 
         /// <summary>

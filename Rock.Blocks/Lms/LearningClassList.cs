@@ -36,6 +36,13 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning classes.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         This list block was created for use by multiple pages in different contexts.
+    ///         It's design to be used on a page with a Learning Program Detail block or
+    ///         on a page with a Course Detail block which provides additional filtering.
+    ///     </para>
+    /// </remarks>
 
     [DisplayName( "Learning Class List" )]
     [Category( "LMS" )]
@@ -219,10 +226,11 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var courseId = PageParameter( PageParameterKey.LearningCourseId ) ?? string.Empty;
             var queryParams = new Dictionary<string, string>
             {
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
-                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningCourseId] = courseId.Length > 0 ? courseId : "((LearningCourseIdKey))",
                 ["LearningClassId"] = "((Key))"
             };
 
@@ -275,12 +283,13 @@ namespace Rock.Blocks.Lms
             if ( RequestContext.GetContextEntity<LearningCourse>() == null )
             {
                 grid.AddTextField( "course", a => a.LearningCourse.Name );
+                grid.AddTextField( "learningCourseIdKey", a => a.LearningCourse.IdKey );
                 grid.AddTextField( "code", a => a.LearningCourse.CourseCode );
             }
 
             if ( GetAttributeValue( AttributeKey.ShowSemesterColumn ).AsBoolean() )
             {
-                grid.AddTextField( "semester", a => a.GroupLocations?.FirstOrDefault()?.Location.Name );
+                grid.AddTextField( "semester", a => a.LearningSemester.Name );
             }
 
             if ( GetAttributeValue( AttributeKey.ShowLocationColumn ).AsBoolean() )

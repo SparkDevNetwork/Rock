@@ -152,7 +152,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     let configuration = defaults.defaultConfig;
 
     try {
-        configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "");
+        configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "") as TConfig;
     }
     catch (error) {
         configuration = defaults.defaultConfig;
@@ -160,7 +160,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
 
     let completion = defaults.defaultCompletion;
     try {
-        completion = JSON.parse(toValue(completionBag)?.activityComponentCompletionJson ?? "");
+        completion = JSON.parse(toValue(completionBag)?.activityComponentCompletionJson ?? "") as TCompletion;
     }
     catch (error) {
         completion = defaults.defaultCompletion;
@@ -208,9 +208,10 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     /** CSS classes for the panel. */
     const containerClasses = computed((): string[] => {
         const screenName = toValue(screenToShow);
+        const componentName = toValue(activityBag)?.activityComponent?.name ?? "";
         return [
-            `lms-${screenName}-container`,
-            `lms-file-upload-${screenName}-container`
+            `lms-${screenName.toLowerCase()}-container`,
+            `lms-${componentName.toLowerCase()}-container`
         ];
     });
 
@@ -222,13 +223,15 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     const dynamicProps: {[key: string]: unknown} = {};
     for (const key in configuration) {
         if (Object.prototype.hasOwnProperty.call(configuration, key)) {
-            dynamicProps[key] = ref(configuration[key]);
+            const value = configuration[key];
+            dynamicProps[key] = ref(value);
         }
     }
 
     for (const key in completion) {
         if (Object.prototype.hasOwnProperty.call(completion, key)) {
-            dynamicProps[key] = ref(completion[key]);
+            const value = completion[key];
+            dynamicProps[key] = ref(value);
         }
     }
 

@@ -46,9 +46,14 @@ namespace Rock.Lms
         #endregion
 
         /// <summary>
-        /// Gets the supported configuration.
+        /// A method which performs scrubbing of any configuration data that the student should not know before completion.
         /// </summary>
-        public readonly string ConfigurationScreen;
+        /// <remarks>
+        ///     This method should be used to remove any indication of correct answers from the configuration
+        ///     before the configuration data is sent to the <see cref="Model.LearningParticipant">Student</see> for completion.
+        /// </remarks>
+        /// <returns>The configuration data scrubbed of sensitive content as a JSON <c>string</c></returns>
+        public virtual string StudentScrubbedConfiguration( string rawConfigurationJsonString ) => rawConfigurationJsonString;
 
         /// <summary>
         /// Gets the attribute value defaults.

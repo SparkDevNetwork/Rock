@@ -1071,6 +1071,7 @@
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
     <Compile Include="Lava\Filters\LavaFilters.EntitySets.cs" />
     <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
+    <Compile Include="Lms\AssessmentComponent.cs" />
     <Compile Include="Lms\PointAssessmentComponent.cs" />
     <Compile Include="Lms\VideoWatchComponent.cs" />
     <Compile Include="Lms\FileUploadComponent.cs" />

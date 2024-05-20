@@ -277,19 +277,17 @@
     // This will prevent users from losing their configuration when switching activity types.
     // We also need an empty configuration in order to instantiate the defaults in useLearningComponent.
     watch(activityComponentValue, (newValue, oldValue) => {
-        if (oldValue != null && oldValue.length > 0 && activityComponentSettingsJson.value?.length > 0) {
+        const configLength = activityBag.value?.activityComponentSettingsJson?.length ?? 0;
+        if (oldValue != null && oldValue.length > 0 && configLength > 0) {
             // Set the old configuraton and map it to the activity type.
             typeConfigMap.set(oldValue, activityComponentSettingsJson.value);
-
-            // Remove the configuration for proper instantiation of new config values.
-            activityComponentSettingsJson.value = "";
         }
 
-        // Look for a configuration for the new activity type.
-        if (typeConfigMap.has(newValue)) {
-            activityComponentSettingsJson.value = typeConfigMap.get(newValue) ?? "";
-        }
-    }, {immediate: true});
+        // Look for a configuration for the new activity type if there was a previous one.
+        // Otherwise clear it out so the default constructor can be used to
+        // properly generate the refs in the dynamic component.
+        activityBag.value.activityComponentSettingsJson = typeConfigMap.has(newValue) ? typeConfigMap.get(newValue) : "";
+    });
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
@@ -316,10 +314,8 @@
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newBag = { ...props.modelValue.bag } as LearningActivityBag;
-
         const newValue: ValidPropertiesBox<LearningActivityBag> = {
-            bag: newBag
+            bag: { ...props.modelValue.bag } as LearningActivityBag
         };
 
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
@@ -338,8 +334,6 @@
         setPropertiesBoxValue(newValue, "activityComponent", activityComponent.value);
         setPropertiesBoxValue(newValue, "activityComponentSettingsJson", activityComponentSettingsJson.value);
         setPropertiesBoxValue(newValue, "points", points.value);
-
-        activityBag.value = newBag;
 
         emit("update:modelValue", newValue);
     });

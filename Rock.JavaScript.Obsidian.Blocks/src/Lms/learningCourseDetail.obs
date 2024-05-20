@@ -6,6 +6,7 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
+                 :alwaysShowLabels="true"
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
@@ -15,7 +16,6 @@
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-
                  :isSecurityHidden="false"
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
@@ -61,7 +61,6 @@
     import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
-
 
     const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -130,10 +129,6 @@
      */
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
-
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
-        }
 
         if (learningCourseViewBag.value?.isActive === true) {
             labels.push({

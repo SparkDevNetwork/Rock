@@ -63,6 +63,11 @@ namespace Rock.Blocks.Lms
         DefaultValue = "Summary",
         Order = 2 )]
 
+    [BooleanField( "Show KPIs",
+        Description = "Determines if the KPIs are visible.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowKPIs )]
+
     [LinkedPage( "Courses Page",
         Description = "The page that will show the courses for the learning program.",
         Key = AttributeKey.CoursesPage, IsRequired = false, Order = 4 )]
@@ -91,6 +96,7 @@ namespace Rock.Blocks.Lms
             public const string CoursesPage = "CoursesPage";
             public const string DisplayMode = "DisplayMode";
             public const string SemestersPage = "SemestersPage";
+            public const string ShowKPIs = "ShowKPIs";
         }
 
         private static class DisplayMode
@@ -144,8 +150,8 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningProgramDetailOptionsBag();
 
-            options.SystemCommunications = GetCommunicationTemplates( rockContext );
-
+            options.SystemCommunications = isEditable ? GetCommunicationTemplates( rockContext ) : new List<ListItemBag>();
+            
             return options;
         }
 
@@ -183,6 +189,12 @@ namespace Rock.Blocks.Lms
         private bool ValidateLearningProgram( LearningProgram learningProgram, RockContext rockContext, out string errorMessage )
         {
             errorMessage = null;
+
+            if (learningProgram.Name.IsNullOrWhiteSpace())
+            {
+                errorMessage = "Name is required";
+                return false;
+            }
 
             return true;
         }
@@ -249,7 +261,8 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            var kpis = new LearningProgramService( RockContext ).GetProgramKpis( entity.Id );
+            var showKpis = GetAttributeValue( AttributeKey.ShowKPIs ).AsBoolean();
+            var kpis = showKpis ? new LearningProgramService( RockContext ).GetProgramKpis( entity.Id ) : new LearningProgramKpis();
 
             return new LearningProgramBag
             {
@@ -275,6 +288,7 @@ namespace Rock.Blocks.Lms
                 IsPublic = entity.IsPublic,
                 Name = entity.Name,
                 PublicName = entity.PublicName,
+                ShowKpis = showKpis,
                 Summary = entity.Summary,
                 SystemCommunication = entity.SystemCommunication.ToListItemBag()
             };

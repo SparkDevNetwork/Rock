@@ -112,6 +112,11 @@
 
     // #region Values
 
+    // Because this block may be used without a learningCourse page parameter
+    // we may need to dynamically include that value in the detail page navigation.
+    const courseIdKeyColumnName = "learningCourseIdKey";
+    const courseIdPlaceholder = "((LearningCourseIdKey))";
+
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
@@ -173,11 +178,25 @@
      * Called when the Add button has been clicked by the indivual.
      */
      function onRowClick(idKey: string): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", idKey);
+        let detailPageUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage] ?? "";
+
+        if (detailPageUrl.length > 0) {
+            if (detailPageUrl.includes(courseIdPlaceholder)) {
+                detailPageUrl = detailPageUrl.replace(courseIdPlaceholder, getCourseIdForKey(idKey));
+            }
+
+            window.location.href = detailPageUrl.replace("((Key))", idKey);
         }
     }
 
+    function getCourseIdForKey(idKey: string): string {
+        const row = gridData?.rows?.find(r => r.idKey === idKey);
+        if (row != null) {
+            return row[courseIdKeyColumnName] as string;
+        }
+
+        return "";
+    }
     // #endregion
 
     gridDataSource.value = loadGridData();

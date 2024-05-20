@@ -4,7 +4,7 @@ using System.ComponentModel.Composition;
 namespace Rock.Lms
 {
     /// <summary>
-    /// The Check-Off activity is a learning activity that requires a participant to check a box for completion.
+    /// The File Upload activity is a learning activity that requires a participant to upload a file for completion.
     /// </summary>
     [Description( "A Learning Activity that requires a participant to upload a file." )]
     [Export( typeof( LearningActivityComponent ) )]

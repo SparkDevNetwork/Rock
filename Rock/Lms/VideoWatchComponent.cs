@@ -4,7 +4,7 @@ using System.ComponentModel.Composition;
 namespace Rock.Lms
 {
     /// <summary>
-    /// The Check-Off activity is a learning activity that requires a participant to check a box for completion.
+    /// The Video Watch activity is a learning activity that requires a participant to watch a video for completion.
     /// </summary>
     [Description( "A Learning Activity that requires a participant to watch a video." )]
     [Export( typeof( LearningActivityComponent ) )]

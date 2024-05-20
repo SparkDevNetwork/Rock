@@ -16,16 +16,12 @@
 //
 
 import { LearningComponentBaseDefaults } from "./learningActivity.partial";
-//rename to .partial.ts
-// move to internal folder
-// if splitting component .obsfiles name: .screen.obs
+
 export type PointAssessmentActivityConfiguration = {
     instructions: string;
 };
 
-export type PointAssessmentActivityCompletion = {
-};
-
+export type PointAssessmentActivityCompletion = Record<string, never>;
 
 export class PointAssessmentActivityDefaults
 extends LearningComponentBaseDefaults<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion> {

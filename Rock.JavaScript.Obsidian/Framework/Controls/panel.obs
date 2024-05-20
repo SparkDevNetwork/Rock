@@ -1,123 +1,134 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Fullscreen v-model="isFullscreen" :isPageOnly="isFullscreenPageOnly" :class="fullScreenClass">
-        <div v-if="$slots.sidebar" class="panel-sidebar-content">
-            <slot name="sidebar" />
-        </div>
 
-        <div :class="panelClass" ref="panelElement" v-bind="$attrs" :tabIndex="panelTabIndex" @keydown="onPanelKeyDown">
-
-            <div v-if="hasTitle" :class="panelHeadingClass" @click="onPanelHeadingClick">
-                <h1 class="panel-title">
-                    <slot v-if="$slots.title" name="title" />
-                    <template v-else>
-                        <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
-                        {{ title }}
-                    </template>
-                </h1>
-
-                <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
-                    <slot name="headerActions" />
-
-                    <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
-                        <span class="input-group">
-                            <span class="input-group-addon">
-                                <span class="btn btn-default" type="button" @click="onZoomDecreaseClick"><i class="fa fa-minus"></i></span>
-                            </span>
-                            <input class="form-control text-center" type="text" style="width: 70px; pointer-events: none;" :value="zoomValue + '%'" />
-                            <span class="input-group-addon">
-                                <span class="btn btn-default" type="button" @click="onZoomIncreaseClick"><i class="fa fa-plus"></i></span>
-                            </span>
-                        </span>
-                    </span>
-
-                    <span v-if="hasZoom && isZoomSupported" class="action panel-action-zoom clickable" :class="{ active: isZoomActive }" @click="onZoomClick">
-                        <i class="fa fa-search-plus" />
-                    </span>
-
-                    <span v-if="$slots.helpContent" class="action panel-action-help clickable" @click="onHelpClick">
-                        <i class="fa fa-question"></i>
-                    </span>
-
-                    <span v-if="hasFullscreen" class="action panel-action-fullscreen clickable" @click="onFullscreenClick">
-                        <i class="fa fa-expand"></i>
-                    </span>
-
-                    <template v-if="hasHeaderSecondaryActions">
-                        <span class="action panel-action-context clickable" style="position: relative;">
-                            <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
-                            <ul class="dropdown-menu dropdown-menu-right">
-                                <li v-for="action in headerSecondaryActions" :class="getHeaderSecondaryActionItemClass(action)">
-                                    <a href="#" @click.prevent.stop="onActionClick(action, $event)">
-                                        <i :class="getHeaderSecondaryActionIconClass(action)"></i>
-                                        {{ action.title }}
-                                    </a>
-                                </li>
-                            </ul>
-                        </span>
-                    </template>
-
-                    <span v-if="hasCollapseAction" class="action clickable" @click="onPanelExpandClick">
-                        <i v-if="isPanelOpen" class="fa fa-chevron-up"></i>
-                        <i v-else class="fa fa-chevron-down"></i>
-                    </span>
-                </div>
+            <div v-if="$slots.sidebar" class="panel-sidebar-content">
+                <slot name="sidebar" />
             </div>
 
-            <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
-                <div class="panel-sub-header-left">
-                    <slot name="subheaderLeft" />
+            <div :class="panelClass" ref="panelElement" v-bind="$attrs" :tabIndex="panelTabIndex" @keydown="onPanelKeyDown">
+
+                <div v-if="hasTitle" :class="panelHeadingClass" @click="onPanelHeadingClick">
+                    <h1 class="panel-title">
+                        <slot v-if="$slots.title" name="title" />
+                        <template v-else>
+                            <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
+                            {{ title }}
+                        </template>
+                    </h1>
+
+                    <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
+                        <slot name="headerActions" />
+
+                        <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
+                            <span class="input-group">
+                                <span class="input-group-addon">
+                                    <span class="btn btn-default" type="button" @click="onZoomDecreaseClick"><i class="fa fa-minus"></i></span>
+                                </span>
+                                <input class="form-control text-center" type="text" style="width: 70px; pointer-events: none;" :value="zoomValue + '%'" />
+                                <span class="input-group-addon">
+                                    <span class="btn btn-default" type="button" @click="onZoomIncreaseClick"><i class="fa fa-plus"></i></span>
+                                </span>
+                            </span>
+                        </span>
+
+                        <span v-if="hasZoom && isZoomSupported" class="action panel-action-zoom clickable" :class="{ active: isZoomActive }" @click="onZoomClick">
+                            <i class="fa fa-search-plus" />
+                        </span>
+
+                        <span v-if="$slots.helpContent" class="action panel-action-help clickable" @click="onHelpClick">
+                            <i class="fa fa-question"></i>
+                        </span>
+
+                        <span v-if="hasFullscreen" class="action panel-action-fullscreen clickable" @click="onFullscreenClick">
+                            <i class="fa fa-expand"></i>
+                        </span>
+
+                        <template v-if="hasHeaderSecondaryActions">
+                            <span class="action panel-action-context clickable" style="position: relative;">
+                                <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    <li v-for="action in headerSecondaryActions" :class="getHeaderSecondaryActionItemClass(action)">
+                                        <a href="#" @click.prevent.stop="onActionClick(action, $event)">
+                                            <i :class="getHeaderSecondaryActionIconClass(action)"></i>
+                                            {{ action.title }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </span>
+                        </template>
+
+                        <span v-if="hasCollapseAction" class="action clickable" @click="onPanelExpandClick">
+                            <i v-if="isPanelOpen" class="fa fa-chevron-up"></i>
+                            <i v-else class="fa fa-chevron-down"></i>
+                        </span>
+                    </div>
                 </div>
 
-                <div class="panel-sub-header-right">
-                    <slot name="subheaderRight" />
-                </div>
-            </div>
+                <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
+                    <div class="panel-sub-header-left">
+                        <slot name="subheaderLeft" />
+                    </div>
 
-            <div v-if="$slots.helpContent" class="panel-help">
+                    <div class="panel-sub-header-right">
+                        <slot name="subheaderRight" />
+                    </div>
+                </div>
+
+                <div v-if="$slots.helpContent" class="panel-help">
+                    <TransitionVerticalCollapse>
+                        <div v-show="isHelpOpen" class="help-content">
+                            <slot name="helpContent" />
+                        </div>
+                    </TransitionVerticalCollapse>
+                </div>
+
+                <div v-if="$slots.drawer" class="panel-drawer rock-panel-drawer" :class="isDrawerOpen ? 'open' : ''">
+                    <TransitionVerticalCollapse>
+                        <div v-show="isDrawerOpen" class="drawer-content">
+                            <slot name="drawer" />
+                        </div>
+                    </TransitionVerticalCollapse>
+
+                    <div class="drawer-pull" @click="onDrawerPullClick">
+                        <i :class="isDrawerOpen ? 'fa fa-chevron-up fa-xs' : 'fa fa-chevron-down fa-xs'"></i>
+                    </div>
+                </div>
+
+                <template v-if="$slots.preBody">
+                    <slot name="preBody" />
+                </template>
+
                 <TransitionVerticalCollapse>
-                    <div v-show="isHelpOpen" class="help-content">
-                        <slot name="helpContent" />
+                    <div v-show="isPanelOpen" class="panel-body" :style="panelBodyStyle">
+                        <slot />
+
+                        <div v-if="!slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="actions">
+                            <div class="footer-actions">
+                                <slot name="footerActions" />
+                            </div>
+
+                            <div class="footer-secondary-actions">
+                                <slot name="footerSecondaryActions" />
+                            </div>
+                        </div>
                     </div>
                 </TransitionVerticalCollapse>
             </div>
 
-            <div v-if="$slots.drawer" class="panel-drawer rock-panel-drawer" :class="isDrawerOpen ? 'open' : ''">
-                <TransitionVerticalCollapse>
-                    <div v-show="isDrawerOpen" class="drawer-content">
-                        <slot name="drawer" />
+            <div v-if="slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="sidebar-footer">
+                <div class="actions">
+                    <div class="footer-actions">
+                        <slot name="footerActions" />
                     </div>
-                </TransitionVerticalCollapse>
 
-                <div class="drawer-pull" @click="onDrawerPullClick">
-                    <i :class="isDrawerOpen ? 'fa fa-chevron-up fa-xs' : 'fa fa-chevron-down fa-xs'"></i>
+                    <div class="footer-secondary-actions">
+                        <slot name="footerSecondaryActions" />
+                    </div>
                 </div>
             </div>
-
-            <template v-if="$slots.preBody">
-                <slot name="preBody" />
-            </template>
-
-            <TransitionVerticalCollapse>
-                <div v-show="isPanelOpen" class="panel-body" :style="panelBodyStyle">
-                    <slot />
-
-                    <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="actions">
-                        <div class="footer-actions">
-                            <slot name="footerActions" />
-                        </div>
-
-                        <div class="footer-secondary-actions">
-                            <slot name="footerSecondaryActions" />
-                        </div>
-                    </div>
-                </div>
-            </TransitionVerticalCollapse>
-        </div>
-
     </Fullscreen>
 </template>
-
 <script lang="ts">
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     declare function $(element: any): any;
