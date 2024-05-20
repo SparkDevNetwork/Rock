@@ -37,7 +37,8 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
-import { useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
+import { useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
+import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -269,6 +270,7 @@ export default defineComponent({
         const isPanelVisible = ref(true);
         const providedEntityTypeName = useEntityTypeName();
         const providedEntityTypeGuid = useEntityTypeGuid();
+        const browserBus = useBlockBrowserBus();
 
         let formSubmissionSource: PromiseCompletionSource | null = null;
         let editModeReadyCompletionSource: PromiseCompletionSource | null = null;
@@ -568,6 +570,7 @@ export default defineComponent({
             }
 
             internalMode.value = DetailPanelMode.View;
+            browserBus.publish(BlockMessages.EndEdit);
         };
 
         /**
@@ -602,6 +605,7 @@ export default defineComponent({
             await editModeReadyCompletionSource.promise;
 
             // Perform the final switch into edit mode.
+            browserBus.publish(BlockMessages.BeginEdit);
             internalMode.value = props.entityKey ? DetailPanelMode.Edit : DetailPanelMode.Add;
             isEditModeLoading.value = false;
             editModeReadyCompletionSource = null;
@@ -674,6 +678,7 @@ export default defineComponent({
                 }
 
                 internalMode.value = DetailPanelMode.View;
+                browserBus.publish(BlockMessages.EndEdit);
             }
             finally {
                 if (formSubmissionSource !== null) {
