@@ -39,7 +39,7 @@ type BrowserBusOptions = {
  */
 export type BrowserBusCallback<TData = unknown> = (message: Message<TData>) => void;
 
-// #region Framework Block Messages
+// #region Block Framework Messages
 
 /**
  * The data that is available in a block BeginEdit message.
@@ -53,6 +53,6 @@ export type BlockEndEditData = void;
 
 // #endregion
 
-// #region Framework Page Messages
+// #region Page Framework Messages
 
 // #endregion

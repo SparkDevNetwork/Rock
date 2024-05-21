@@ -173,6 +173,7 @@
     <Compile Include="Group\GroupMemberStatus.cs" />
     <Compile Include="Group\MeetsGroupRequirement.cs" />
     <Compile Include="Group\ParticipationType.cs" />
+    <Compile Include="Group\RelationshipTrend.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
     <Compile Include="Group\ScheduleConfirmationLogic.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />

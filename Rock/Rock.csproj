@@ -1191,6 +1191,7 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncInfo.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncResult.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
+    <Compile Include="Model\Group\PeerNetwork\PeerNetwork.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\AnalyticsSourcePostalCode.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\AnalyticsSourcePostalCode.Logic.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\ZipCodeBoundary.cs" />
