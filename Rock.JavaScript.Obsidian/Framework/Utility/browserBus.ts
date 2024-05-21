@@ -241,14 +241,28 @@ export class BrowserBus {
      * @param data The custom data to include with the message.
      */
     public publish(messageName: string, data?: unknown): void {
+        this.publishMessage({
+            name: messageName,
+            timestamp: Date.now(),
+            blockType: this.options.blockType,
+            block: this.options.block,
+            data
+        });
+    }
+
+    /**
+     * Publishes a message to the browser bus. No changes are made to the
+     * message object.
+     *
+     * Do not use this message to publish a block message unless you have
+     * manually filled in the {@link Message.blockType} and
+     * {@link Message.block} properties.
+     *
+     * @param message The message to publish.
+     */
+    public publishMessage(message: Message): void {
         const event = new CustomEvent<Message>(customDomEventName, {
-            detail: {
-                name: messageName,
-                timestamp: Date.now(),
-                blockType: this.options.blockType,
-                block: this.options.block,
-                data
-            }
+            detail: message
         });
 
         document.dispatchEvent(event);
