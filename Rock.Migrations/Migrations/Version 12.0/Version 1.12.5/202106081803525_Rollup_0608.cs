@@ -87,7 +87,9 @@ namespace Rock.Migrations
             Sql( "UPDATE [Page] SET [DisplayInNavWhen] = 2 WHERE [Guid] = 'EA9AE18F-3DBF-494D-947D-31BCE363DF39'" );
 
             // Add Page Route for Legacy Rock Updater
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute("EA9AE18F-3DBF-494D-947D-31BCE363DF39","RockUpdateLegacy","F6896AB7-8964-4CF2-A66B-E574C5BB8C1B");
+#pragma warning restore CS0618 // Type or member is obsolete
             // Add/Update BlockType Rock Update Legacy
             RockMigrationHelper.UpdateBlockType("Rock Update Legacy","Handles checking for and performing upgrades to the Rock system.","~/Blocks/Core/RockUpdateLegacy.ascx","Core","F3F2EFAD-1C25-444B-832C-4FB97F5B5D4F");
             // Add Block Rock Update Legacy to Page: Legacy Rock Updater, Site: Rock RMS

@@ -39,9 +39,10 @@ namespace Rock.Migrations
 
             // Add/Update BlockType - Name: Step Flow - Category: Steps - Path: - EntityType: -
             RockMigrationHelper.UpdateMobileBlockType( "Step Flow", "Show the flow of individuals as they move through different steps in a given step program.", "Rock.Blocks.Engagement.Steps.StepFlow", "Steps", SystemGuid.BlockType.STEP_FLOW );
-            
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route - Page:Step Flow - Route: steps/program/{ProgramId}/flow
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.STEP_FLOW, "steps/program/{ProgramId}/flow", SystemGuid.PageRoute.STEP_FLOW );
+#pragma warning restore CS0618 // Type or member is obsolete
             
             // Add Block - Block Name: Step Flow - Page Name: Step Flow Layout: - Site: Rock RMS
             RockMigrationHelper.AddBlock( true, SystemGuid.Page.STEP_FLOW.AsGuid(), null, SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid(), SystemGuid.BlockType.STEP_FLOW.AsGuid(), "Step Flow", "Main", @"", @"", 0, SystemGuid.Block.STEP_FLOW );

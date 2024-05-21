@@ -1198,6 +1198,7 @@
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.SaveHook.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
+    <Compile Include="Model\Validation\EmailAddressValidationAttribute.cs" />
     <Compile Include="Net\BrowserCookie.cs" />
     <Compile Include="Net\IRockRequestContextAccessor.cs" />
     <Compile Include="Net\IRockResponseContext.cs" />

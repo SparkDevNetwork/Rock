@@ -35,11 +35,13 @@ namespace Rock.Migrations
             // Add Page - Internal Name: Benevolence Type Detail - Site: Rock RMS
             RockMigrationHelper.AddPage( true, "C6BE9CF1-FFE9-4DC1-8472-865FD93B89A8", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Benevolence Type Detail", string.Empty, "DBFC432E-F0A4-457E-BA5B-572C49B899D1", string.Empty );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route - Page:Benevolence Types - Route:finance/benevolence/types
             RockMigrationHelper.AddPageRoute( "C6BE9CF1-FFE9-4DC1-8472-865FD93B89A8", "finance/benevolence/types", "E18502CE-2F60-4A7D-8DC9-9D83A6762C29" );
 
             // Add Page Route - Page:Benevolence Request Detail Route:finance/benevolence/{BenevolenceRequestId}
             RockMigrationHelper.AddPageRoute( "6DC7BAED-CA01-4703-B679-EC81143CDEDD", "finance/benevolence/{BenevolenceRequestId}", "16060BFA-ED0A-41B8-9CD0-56351DDD207C" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add/Update BlockType - Name: Benevolence Type List - Category: Finance - Path: ~/Blocks/Finance/BenevolenceTypeList.ascx
             RockMigrationHelper.UpdateBlockType( "Benevolence Type List", "Block to display the benevolence types.", "~/Blocks/Finance/BenevolenceTypeList.ascx", "Finance", "0DE16268-BD5B-4CFC-A7C6-F1E07F47527A" );

@@ -237,6 +237,7 @@
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
     <Compile Include="Modules\Core\Workflow\BackgroundCheckRequestTests.cs" />
+    <Compile Include="Modules\Core\Model\DataModelEmailFieldValidationTests.cs" />
     <Compile Include="Modules\Security\RockSigningCredentialsTests.cs" />
     <Compile Include="Modules\Security\SecurityRoleTests.cs" />
     <Compile Include="Modules\Crm\Following\FollowingTests.cs" />

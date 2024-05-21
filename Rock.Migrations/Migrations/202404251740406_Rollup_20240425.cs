@@ -201,7 +201,9 @@ FROM
         private void AddGenerosityPageRoute()
         {
             var volunteerGenerosityPageGuid = "16DD0891-E3D4-4FF3-9857-0869A6CCBA39";
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( volunteerGenerosityPageGuid, "finance/generosity-report" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }
