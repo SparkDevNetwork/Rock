@@ -46,12 +46,6 @@ namespace Rock.Jobs
         IsRequired = true,
         DefaultValue = "1",
         Order = 1 )]
-    [GroupTypeField( "Group Type",
-        Description = "The Group type to send attendance reminders for.",
-        IsRequired = false,
-        DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP,
-        Order = 0,
-        Key = AttributeKey.GroupType)]
 
     #endregion Job Attributes
 
@@ -68,12 +62,6 @@ namespace Rock.Jobs
             /// The method to use when determining how the notice should be sent.
             /// </summary>
             public const string SendUsing = "SendUsing";
-
-            /// <summary>
-            /// The Group Type to limit what Groups get sent reminders.
-            /// </summary>
-            public const string GroupType = "GroupType"
-
         }
 
         #endregion Attribute Keys
@@ -118,17 +106,9 @@ namespace Rock.Jobs
                 }
             }
 
-            var selectedGroupType = GroupTypeCache.Get( GetAttributeValue( AttributeKey.GroupType ) );
-
             var groupTypeQry = new GroupTypeService( rockContext ).Queryable()
                 .Where( t => t.TakesAttendance && t.SendAttendanceReminder )
                 .Include( t => t.AttendanceReminderSystemCommunication );
-
-            if ( selectedGroupType != null )
-            {
-                groupTypeQry = groupTypeQry
-                    .Where( g => g.Id == selectedGroupType.Id );
-            }
 
             var groupTypeList = groupTypeQry.ToList();
             foreach ( var groupType in groupTypeList )
