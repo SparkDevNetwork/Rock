@@ -53,6 +53,7 @@
                         </div>
                     </div>
                 </div>
+                <div class="my-3"><strong>Note:</strong> The highest protection profile among the adult family will determine which level the adults have.</div>
                 <hr />
                 <Rock:NotificationBox
                     runat="server"
