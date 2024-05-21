@@ -31,6 +31,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// Rock Cache Consumer
     /// </summary>
+    [RockLoggingCategory]
     public sealed class RockCacheConsumer : RockConsumer<CacheEventQueue, CacheWasUpdatedMessage>
     {
         /// <summary>

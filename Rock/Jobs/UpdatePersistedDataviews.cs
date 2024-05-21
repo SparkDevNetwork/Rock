@@ -26,6 +26,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -50,6 +51,7 @@ namespace Rock.Jobs
 
     #endregion
 
+    [RockLoggingCategory]
     public class UpdatePersistedDataviews : RockJob
     {
         #region Keys

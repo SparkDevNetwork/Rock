@@ -30,6 +30,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -88,6 +89,7 @@ namespace Rock.Jobs
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
+    [RockLoggingCategory]
     public class ProcessReminders : RockJob
     {
         /// <summary>

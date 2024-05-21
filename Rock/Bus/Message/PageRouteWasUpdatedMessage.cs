@@ -28,6 +28,7 @@ namespace Rock.Bus.Message
     /// <summary>
     /// Event bus message class used to indicate that a Page Route was updated. The consumer will rebuild the RouteTable when received.
     /// </summary>
+    [RockLoggingCategory]
     public class PageRouteWasUpdatedMessage : IEventMessage<PageRouteEventQueue>
     {
         /// <inheritdoc />

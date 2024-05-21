@@ -39,6 +39,7 @@ namespace Rock.Model
     /// <summary>
     /// DataView Service and Data access class
     /// </summary>
+    [RockLoggingCategory]
     public partial class DataViewService
     {
         /// <summary>

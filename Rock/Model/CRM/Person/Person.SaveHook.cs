@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 using Rock.Data;
+using Rock.Logging;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -33,6 +34,7 @@ namespace Rock.Model
         /// Save hook implementation for <see cref="Person"/>.
         /// </summary>
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
+        [RockLoggingCategory]
         internal class SaveHook : EntitySaveHook<Person>
         {
             private History.HistoryChangeList HistoryChanges { get; set; }

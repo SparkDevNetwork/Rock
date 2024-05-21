@@ -117,6 +117,7 @@ namespace Rock.Jobs
 
     #endregion
 
+    [RockLoggingCategory]
     public class DatabaseMaintenance : RockJob
     {
         #region Keys

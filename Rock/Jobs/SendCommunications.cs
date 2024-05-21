@@ -70,6 +70,7 @@ namespace Rock.Jobs
 
     #endregion
 
+    [RockLoggingCategory]
     public class SendCommunications : RockJob
     {
         #region Keys

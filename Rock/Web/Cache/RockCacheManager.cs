@@ -37,6 +37,7 @@ namespace Rock.Web.Cache
     /// </remarks>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="IRockCacheManager" />
+    [RockLoggingCategory]
     public sealed class RockCacheManager<T> : IRockCacheManager
     {
         private static RockCacheManager<T> instance;

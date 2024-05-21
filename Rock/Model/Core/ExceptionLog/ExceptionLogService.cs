@@ -33,6 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// The data access/service class for <see cref="Rock.Model.ExceptionLog"/> entity type objects.
     /// </summary>
+    [RockLoggingCategory]
     public partial class ExceptionLogService
     {
         #region Fields

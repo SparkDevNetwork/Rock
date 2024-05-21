@@ -141,6 +141,7 @@ namespace Rock.Bus.Message
     /// Credit Card Is Expiring Message.
     /// Sends queues for member credit cards that are close to expiration when running the <see cref="Rock.Jobs.SendCreditCardExpirationNotices"/> job
     /// </summary>
+    [RockLoggingCategory]
     public class CreditCardIsExpiringMessage : ICreditCardIsExpiringMessage
     {
         /// <summary>

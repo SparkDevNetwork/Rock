@@ -44,6 +44,7 @@ namespace Rock.Bus.Message
     /// <summary>
     /// </summary>
     /// <seealso cref="Rock.Bus.Message.IAuthorizationCacheWasUpdatedMessage" />
+    [RockLoggingCategory]
     public class AuthorizationCacheWasUpdatedMessage : IAuthorizationCacheWasUpdatedMessage
     {
         /// <summary>

@@ -34,6 +34,7 @@ namespace Rock.Model
     /// <summary>
     /// Service/Data access class for <see cref="AchievementAttempt"/> entity objects.
     /// </summary>
+    [RockLoggingCategory]
     public partial class AchievementAttemptService
     {
         /// <summary>

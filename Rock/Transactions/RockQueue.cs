@@ -48,6 +48,7 @@ namespace Rock.Transactions
     /// transactions from being processed until it has finished.
     /// </para>
     /// </remarks>
+    [RockLoggingCategory]
     static public class RockQueue
     {
         #region Fields

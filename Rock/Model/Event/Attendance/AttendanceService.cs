@@ -43,6 +43,7 @@ namespace Rock.Model
     /// <summary>
     /// Data Access/Service class for <see cref="Rock.Model.Attendance"/> entity objects
     /// </summary>
+    [RockLoggingCategory]
     public partial class AttendanceService
     {
         /// <summary>

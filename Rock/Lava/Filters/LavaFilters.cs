@@ -67,6 +67,7 @@ namespace Rock.Lava
     /// Filters that are confirmed as suitable for use with both the Rock Web and Rock Mobile applications should be
     /// implemented in the TemplateFilters class.
     /// </remarks>
+    [RockLoggingCategory]
     internal static partial class LavaFilters
     {
         static Random _randomNumberGenerator = new Random();

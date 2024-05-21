@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access/service class for <see cref="Rock.Model.IdentityVerificationCode"/> entities.
     /// </summary>
+    [RockLoggingCategory]
     public partial class IdentityVerificationCodeService
     {
         private static readonly object _obj = new object();

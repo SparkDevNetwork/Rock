@@ -31,6 +31,7 @@ namespace Rock.Bus.Faults
     /// This class is responsible for handling errors thrown by mass transit.
     /// </summary>
     /// <seealso cref="MassTransit.IReceiveObserver" />
+    [RockLoggingCategory]
     public sealed class ReceiveFaultObserver : IReceiveObserver
     {
         /// <summary>

@@ -28,6 +28,7 @@ using Rock.Attribute;
 using Rock.Cms;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Logging;
 using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Store;
 using Rock.Tasks;
@@ -39,6 +40,7 @@ namespace Rock.Model
     /// <summary>
     /// Manually created Service methods for ContentChannelItem
     /// </summary>
+    [RockLoggingCategory]
     public partial class ContentChannelItemService
     {
         /// <summary>

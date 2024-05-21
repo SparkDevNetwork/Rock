@@ -33,6 +33,7 @@ namespace Rock.Jobs
     /// to do it.  This class's VetoJobExecution is the traffic cop that will query all
     /// schedulers to decide if a job should be vetoed from running.
     /// </summary>
+    [RockLoggingCategory]
     public class RockTriggerListener : ITriggerListener
     {
         /// <summary>

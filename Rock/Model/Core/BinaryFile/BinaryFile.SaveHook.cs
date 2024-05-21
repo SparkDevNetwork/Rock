@@ -24,11 +24,13 @@ using ImageResizer;
 using Microsoft.Extensions.Logging;
 
 using Rock.Data;
+using Rock.Logging;
 
 namespace Rock.Model
 {
     public partial class BinaryFile
     {
+        [RockLoggingCategory]
         internal class SaveHook : EntitySaveHook<BinaryFile>
         {
             protected override void PreSave()

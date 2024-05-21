@@ -28,6 +28,7 @@ namespace Rock.Bus.Message
     /// <summary>
     /// Cache Update Message
     /// </summary>
+    [RockLoggingCategory]
     public class GivingUnitWasClassifiedMessage : IEventMessage<GivingEventQueue>
     {
         /// <summary>

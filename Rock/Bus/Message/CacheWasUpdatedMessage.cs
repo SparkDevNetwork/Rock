@@ -53,6 +53,7 @@ namespace Rock.Bus.Message
     /// <summary>
     /// Cache Update Message
     /// </summary>
+    [RockLoggingCategory]
     public class CacheWasUpdatedMessage : ICacheWasUpdatedMessage
     {
         /// <summary>

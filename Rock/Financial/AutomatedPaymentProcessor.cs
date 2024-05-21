@@ -43,6 +43,7 @@ namespace Rock.Financial
     /// 3. Charging a "future payment" that originated from mode 2.
     ///
     /// </summary>
+    [RockLoggingCategory]
     public class AutomatedPaymentProcessor
     {
         #region Keys

@@ -30,6 +30,7 @@ namespace Rock.Utility.ContentLibraryApi
     /// API Calls to Content Library server. 
     /// </summary>
     [RockInternal( "1.16" )]
+    [RockLoggingCategory]
     public class ContentLibraryApi : IContentLibraryApi
     {
         /// <summary>

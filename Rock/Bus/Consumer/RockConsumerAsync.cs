@@ -34,6 +34,7 @@ namespace Rock.Bus.Consumer
     /// <typeparam name="TQueue">The type of the queue.</typeparam>
     /// <typeparam name="TMessage">The type of the message.</typeparam>
     /// <seealso cref="Rock.Bus.Consumer.IRockConsumer{TQueue, TMessage}" />
+    [RockLoggingCategory]
     public abstract class RockConsumerAsync<TQueue, TMessage> : IRockConsumer<TQueue, TMessage>
         where TQueue : IRockQueue, new()
         where TMessage : class, IRockMessage<TQueue>

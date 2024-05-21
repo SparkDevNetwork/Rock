@@ -31,6 +31,7 @@ namespace Rock.Bus.Statistics
     /// <summary>
     /// Statistics Observer
     /// </summary>
+    [RockLoggingCategory]
     public sealed class StatObserver : IConsumeObserver
     {
         /// <summary>

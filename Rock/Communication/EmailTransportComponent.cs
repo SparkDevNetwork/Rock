@@ -40,6 +40,7 @@ namespace Rock.Communication
     /// This abstract class implements the code needed to create an email with all of the validation, lava substitution, and error checking completed.
     /// </summary>
     /// <seealso cref="Rock.Communication.TransportComponent" />
+    [RockLoggingCategory]
     public abstract class EmailTransportComponent : TransportComponent
     {
         /// <summary>
