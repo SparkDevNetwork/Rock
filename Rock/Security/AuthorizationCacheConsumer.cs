@@ -18,12 +18,14 @@ using Microsoft.Extensions.Logging;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Logging;
 
 namespace Rock.Web.Cache
 {
     /// <summary>
     /// Rock Authorization Cache Consumer
     /// </summary>
+    [RockLoggingCategory]
     public sealed class AuthorizationCacheConsumer : RockConsumer<CacheEventQueue, AuthorizationCacheWasUpdatedMessage>
     {
         /// <summary>

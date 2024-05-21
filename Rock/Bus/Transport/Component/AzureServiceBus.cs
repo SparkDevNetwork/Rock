@@ -67,6 +67,7 @@ namespace Rock.Bus.Transport
         Key = AttributeKey.DeadLetterOnMessageExpiration )]
 
     [Rock.SystemGuid.EntityTypeGuid( "91130C54-D189-4B0B-B8CB-F92B6681A327")]
+    [RockLoggingCategory]
     public class AzureServiceBus : TransportComponent
     {
         #region Attribute Keys

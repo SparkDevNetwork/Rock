@@ -20,6 +20,7 @@ using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Utility.Settings;
 
@@ -28,6 +29,7 @@ namespace Rock.Web
     /// <summary>
     /// Page Route Was Updated Consumer
     /// </summary>
+    [RockLoggingCategory]
     public sealed class PageRouteWasUpdatedConsumer : RockConsumer<PageRouteEventQueue, PageRouteWasUpdatedMessage>
     {
         /// <summary>

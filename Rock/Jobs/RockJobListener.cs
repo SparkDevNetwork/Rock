@@ -36,6 +36,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Summary description for JobListener
     /// </summary>
+    [RockLoggingCategory]
     public class RockJobListener : IJobListener
     {
         /// <summary>

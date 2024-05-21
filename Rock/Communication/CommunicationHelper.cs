@@ -29,6 +29,7 @@ namespace Rock.Communication
     /// <summary>
     /// This class is used to help consolidate the sending of communications.
     /// </summary>
+    [RockLoggingCategory]
     public class CommunicationHelper
     {
         /// <summary>

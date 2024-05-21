@@ -45,6 +45,21 @@ using System.Runtime.InteropServices;
 
 // Register friendly logging category names.
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Jobs" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Bus" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Communication" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Financial" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Lava" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Model" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Web" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.App_Code.TwilioDefaultResponseAsync" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.App_Code.TwilioSendGrid" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.CheckIn.AttendanceAnalytics" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Cms.ContentChannelItemList" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Crm.BulkUpdate" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Crm.PersonMerge" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Examples.SampleData" )]
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Security.PhoneNumberIdentification" )]
 
 // The following type forwardings were setup in Rock 1.13.0
 [assembly: TypeForwardedTo( typeof( Rock.RockObsolete ) )]

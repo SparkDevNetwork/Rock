@@ -115,6 +115,7 @@ namespace Rock.Jobs
         DefaultBooleanValue = false,
         Category = "Advanced",
         Order = 9 )]
+    [RockLoggingCategory]
     public class ProcessBIAnalytics : RockJob
     {
         #region Attribute Keys

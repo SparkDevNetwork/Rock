@@ -38,6 +38,7 @@ namespace Rock.Web
     /// <summary>
     /// Rock custom route handler
     /// </summary>
+    [RockLoggingCategory]
     public sealed class RockRouteHandler : IRouteHandler
     {
         /// <summary>

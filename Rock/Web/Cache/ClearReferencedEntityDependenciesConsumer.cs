@@ -22,12 +22,14 @@ using Microsoft.Extensions.Logging;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Logging;
 
 namespace Rock.Web.Cache
 {
     /// <summary>
     /// Clear Referenced Entity Dependencies Consumer class.
     /// </summary>
+    [RockLoggingCategory]
     public sealed class ClearReferencedEntityDependenciesConsumer : RockConsumer<CacheEventQueue, ClearReferencedEntityDependenciesMessage>
     {
         /// <summary>

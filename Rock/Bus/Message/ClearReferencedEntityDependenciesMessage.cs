@@ -24,6 +24,7 @@ namespace Rock.Bus.Message
     /// Sent whenever something happens that should cause the referenced entity cache
     /// to be cleared on AttributeCache.
     /// </summary>
+    [RockLoggingCategory]
     public class ClearReferencedEntityDependenciesMessage : IEventMessage<CacheEventQueue>
     {
         /// <summary>

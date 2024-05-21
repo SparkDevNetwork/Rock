@@ -49,6 +49,7 @@ namespace Rock.Jobs
 
     #endregion Job Attributes
 
+    [RockLoggingCategory]
     public class SendGroupAttendanceReminders : RockJob
     {
         #region Attribute Keys

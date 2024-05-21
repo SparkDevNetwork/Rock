@@ -56,6 +56,7 @@ namespace Rock.Jobs
 
     #endregion
 
+    [RockLoggingCategory]
     public class UpdatePersistedAttributeValues : RockJob
     {
         #region Keys

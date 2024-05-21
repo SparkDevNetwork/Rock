@@ -32,6 +32,7 @@ namespace Rock.Web.UI
     /// Optionally compresses the ViewState before storing it into a hidden field on the
     /// page to increase postback speed.
     /// </summary>
+    [RockLoggingCategory]
     public class RockHiddenFieldPageStatePersister : HiddenFieldPageStatePersister
     {
         // This  custom viewstate controller serves two purposes
