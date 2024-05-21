@@ -96,6 +96,10 @@
     <Compile Include="Migrations\202405121011403_UpdateAgeBracketValues.Designer.cs">
       <DependentUpon>202405121011403_UpdateAgeBracketValues.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202405211556129_AddPeerNetworkEntity.cs" />
+    <Compile Include="Migrations\202405211556129_AddPeerNetworkEntity.Designer.cs">
+      <DependentUpon>202405211556129_AddPeerNetworkEntity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2077,6 +2081,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202405121011403_UpdateAgeBracketValues.resx">
       <DependentUpon>202405121011403_UpdateAgeBracketValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202405211556129_AddPeerNetworkEntity.resx">
+      <DependentUpon>202405211556129_AddPeerNetworkEntity.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
