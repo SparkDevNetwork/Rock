@@ -269,6 +269,8 @@ namespace RockWeb.Blocks.Core
             campus.LocationId = lpLocation.Location.Id;
             campus.ShortCode = tbCampusCode.Text;
             campus.TimeZoneId = ddlTimeZone.SelectedValue;
+            campus.OpenedDate = dpOpenedDate.SelectedDate;
+            campus.ClosedDate = dpClosedDate.SelectedDate;
 
             var personService = new PersonService( rockContext );
             var leaderPerson = personService.GetNoTracking( ppCampusLeader.SelectedValue ?? 0 );
@@ -715,6 +717,11 @@ namespace RockWeb.Blocks.Core
                 dl.Add( "Status", DefinedValueCache.GetValue( campus.CampusStatusValueId ) );
             }
 
+            if ( campus.OpenedDate.HasValue )
+            {
+                dl.Add( "Opened Date", campus.OpenedDate.ToShortDateString() );
+            }
+
             if ( !string.IsNullOrWhiteSpace( campus.ShortCode ) )
             {
                 dl.Add( "Code", campus.ShortCode );
@@ -755,6 +762,11 @@ namespace RockWeb.Blocks.Core
             if ( campus.CampusTypeValueId.HasValue )
             {
                 dl.Add( "Type", DefinedValueCache.GetValue( campus.CampusTypeValueId ) );
+            }
+
+            if ( campus.ClosedDate.HasValue )
+            {
+                dl.Add( "Closed Date", campus.ClosedDate.ToShortDateString() );
             }
 
             if ( !string.IsNullOrWhiteSpace( campus.Url ) )
@@ -861,6 +873,9 @@ namespace RockWeb.Blocks.Core
                     TopicTypeId = t.TopicTypeValueId,
                     IsPersisted = true
                 } ).ToList();
+
+            dpOpenedDate.SelectedDate = campus.OpenedDate;
+            dpClosedDate.SelectedDate = campus.ClosedDate;
 
             BindCampusSchedulesGrid();
             BindCampusTopicsGrid();

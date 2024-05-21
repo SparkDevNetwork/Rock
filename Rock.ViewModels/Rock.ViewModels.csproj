@@ -82,6 +82,7 @@
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
     <Compile Include="Blocks\Finance\FinancialPersonBankAccountList\FinancialPersonBankAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialScheduledTransactionList\FinancialScheduledTransactionListOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\TithingOverview\TithingOverviewToolTipBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageList\AppleTvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
@@ -161,6 +162,7 @@
     <Compile Include="Blocks\Engagement\AchievementAttemptDetail\AchievementAttemptDetailOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\AchievementAttemptList\AchievementAttemptListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionOpportunityList\ConnectionOpportunityListOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\TithingOverview\TithingOverviewInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\AchievementTypeList\AchievementTypeListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\AttendanceList\AttendanceListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\ConnectionTypeList\ConnectionTypeListOptionsBag.cs" />

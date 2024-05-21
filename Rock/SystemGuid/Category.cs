@@ -289,6 +289,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string INSIGHTS = "CEC746EE-76D6-477F-B7CF-374542F92041";
 
+        /// <summary>
+        /// The tithing overview Category Guid
+        /// </summary>
+        public const string TITHING_OVERVIEW = "914E7A39-EA2D-469B-95B5-B6518DBE5F52";
+
         #endregion
 
         #region WorkflowType Categories

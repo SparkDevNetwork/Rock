@@ -324,6 +324,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
+            RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -3157,7 +3159,7 @@ END
         DELETE TOP (1500) FROM DataViewPersistedValue WHERE DataViewId IN (SELECT id from @dataViewIds)
     END
 ";
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = CreateRockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
                 int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
@@ -3171,7 +3173,7 @@ END
         /// <returns></returns>
         private int UpdateMissingPrimaryFamily()
        {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -3215,6 +3217,44 @@ END
                 }
 
                 return persons.Count;
+            }
+        }
+
+        /// <summary>
+        /// Sets each campus's tithe metric by by dividing the cumulative value if each campus's
+        /// FamiliesMedianIncome, based on their postal code by the number of individuals who have
+        /// given multiplied by 10%.
+        /// </summary>
+        /// <returns></returns>
+        private int UpdateCampusTitheMetric()
+        {
+            using ( var rockContext = CreateRockContext() )
+            {
+                var hasGivenQuery = new FinancialTransactionDetailService( rockContext )
+                    .Queryable()
+                    .Where( ftd => ftd.Account.IsTaxDeductible )
+                    .Select( ftd => new { PersonId = ftd.Transaction.AuthorizedPersonAlias.PersonId, CampusId = ftd.Transaction.AuthorizedPersonAlias.Person.PrimaryCampusId } )
+                    .Distinct();
+
+                var campusPostalCodes = new GroupLocationService( rockContext )
+                    .Queryable()
+                    .Where( gl => gl.IsMappedLocation && gl.Group.Members.Any( gm => hasGivenQuery.Any( t => t.PersonId == gm.PersonId ) ) )
+                    .GroupBy( gl => gl.Group.CampusId.Value )
+                    .Select( g => new { CampusId = g.Key, PostalCodes = g.Select( gl => gl.Location.PostalCode ) } )
+                    .ToList();
+
+                var postalCodesQuery = rockContext.Set<AnalyticsSourcePostalCode>().AsQueryable();
+                var campusService = new CampusService( rockContext );
+
+                foreach ( var item in campusPostalCodes )
+                {
+                    var postalCodes = item.PostalCodes.Select( p => p.Split( '-' )[0] ).Distinct();
+                    var campus = campusService.Get( item.CampusId );
+                    var hasGivenCount = hasGivenQuery.Count( t => t.CampusId == item.CampusId );
+                    campus.TitheMetric = ( postalCodesQuery.Where( p => postalCodes.Contains( p.PostalCode ) ).Sum( p => p.FamiliesMedianIncome ) / hasGivenCount ) * 0.1M;
+                }
+
+                return rockContext.SaveChanges();
             }
         }
 
