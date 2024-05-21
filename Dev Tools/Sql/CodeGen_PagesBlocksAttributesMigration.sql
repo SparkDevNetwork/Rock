@@ -120,7 +120,9 @@ insert into #knownGuidsToIgnore values
 ('621E03C5-6586-450B-A340-CC7D9727B69A'), --View My Giving Page
 ('FFFDCE23-7B67-4B0D-8DA0-E44D883708CC'), --Manage Giving Profiles
 ('2072F4BC-53B4-4481-BC15-38F14425C6C9'), --Edit Giving Profile
-('C0854F84-2E8B-479C-A3FB-6B47BE89B795') --My Account
+('C0854F84-2E8B-479C-A3FB-6B47BE89B795'), --My Account
+('DF471E9C-EEFC-4493-B6C0-C8D94BC248EB'), --Terms and Conditions
+('964A4B4B-BF7F-4520-8620-05A6DEEAB5C8') --Privacy
 
 -- External site blocks
 insert into #knownGuidsToIgnore values 
@@ -479,7 +481,7 @@ create table #codeTable (
         @crlf + '            // Add Page Route' +
         @crlf + '            //   Page:' + p.InternalName + 
         @crlf + '            //   Route:' + pr.Route + 
-        @crlf + '            RockMigrationHelper.AddPageRoute("' +
+        @crlf + '            RockMigrationHelper.AddOrUpdatePageRoute("' +
         CONVERT( nvarchar(50), [p].[Guid])+  '","'+  
         [pr].[Route] + '","'+
 		CONVERT( nvarchar(50), [pr].[Guid])+  '");'

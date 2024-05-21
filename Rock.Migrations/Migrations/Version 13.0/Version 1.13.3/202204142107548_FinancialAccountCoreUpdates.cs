@@ -31,9 +31,10 @@ namespace Rock.Migrations
 
             //Set Display in Nav to [Never=2]
             Sql( $"UPDATE [Page] SET DisplayInNavWhen = 2 WHERE [Guid] = '{SystemGuid.Page.FINANCIAL_ACCOUNT_SEARCH}'" );
-
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route Page:Financial Account Search Route:Account/Search/name
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.FINANCIAL_ACCOUNT_SEARCH, "Account/Search/name", SystemGuid.PageRoute.FINANCIAL_ACCOUNT_SEARCH );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add/Update BlockType Name: Account Search Category: Accounts Path: ~/Blocks/Finance/FinancialAccountSearch.ascx EntityType: -
             RockMigrationHelper.UpdateBlockType( "Account Search", "Handles displaying account search results and redirects to the accounts page when only one match is found.", "~/Blocks/Finance/FinancialAccountSearch.ascx", "Accounts", SystemGuid.BlockType.FINANCIAL_ACCOUNT_SEARCH );
