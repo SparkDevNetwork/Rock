@@ -53,7 +53,8 @@
 
     const learningActivityCompletionViewBag = ref(config.entity);
     const learningActivityCompletionEditBag = ref<ValidPropertiesBox<LearningActivityCompletionBag>>({
-        bag: config.entity as LearningActivityCompletionBag
+        bag: config.entity as LearningActivityCompletionBag,
+        validProperties: config.validProperties
     });
 
     // Initialize in edit mode.

@@ -14,11 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
 using Rock.Enums.Lms;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -42,7 +45,7 @@ namespace Rock.Model
         public ConfigurationMode GetConfigurationMode( int learningProgramId )
         {
             return Queryable()
-                .Where( p => p.Id == learningProgramId)
+                .Where( p => p.Id == learningProgramId )
                 .Select( p => p.ConfigurationMode )
                 .FirstOrDefault();
         }
@@ -52,7 +55,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="learningProgramId">The </param>
         /// <returns></returns>
-        public IQueryable<LearningSemester> Semesters ( int learningProgramId )
+        public IQueryable<LearningSemester> Semesters( int learningProgramId )
         {
             return Queryable()
                 .Where( p => p.Id == learningProgramId )
@@ -65,7 +68,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="learningProgramId">The identifier of the learning program for which to get the KPIs.</param>
         /// <returns>An object containing the KPI values.</returns>
-        public LearningProgramKpis GetProgramKpis ( int learningProgramId )
+        public LearningProgramKpis GetProgramKpis( int learningProgramId )
         {
             var context = ( RockContext ) Context;
             var now = RockDateTime.Now;
@@ -95,9 +98,80 @@ namespace Rock.Model
             return new LearningProgramKpis
             {
                 ActiveClasses = classAndStudentData.Select( c => c.ClassId ).Distinct().Count(),
-                ActiveStudents = classAndStudentData.SelectMany( c => c.PersonIds).Distinct().Count(),
+                ActiveStudents = classAndStudentData.SelectMany( c => c.PersonIds ).Distinct().Count(),
                 Completions = completions
             };
         }
+
+        /// <summary>
+        /// Gets a list of active, public programs with the completion status for the person specified.
+        /// </summary>
+        /// <param name="forPersonId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <returns>An enumerable of PublicLearningProgramBag.</returns>
+        public List<PublicLearningProgramBag> GetPublicPrograms( int forPersonId )
+        {
+            var personCompletions = new LearningProgramCompletionService( ( RockContext ) Context )
+                .Queryable()
+                .AsNoTracking()
+                .Include( c => c.PersonAlias )
+                .Where( c => c.PersonAlias.PersonId == forPersonId );
+
+            return Queryable()
+                .AsNoTracking()
+                .Include( p => p.ImageBinaryFile )
+                .Include( p => p.Category )
+                .Where( p => p.IsActive && p.IsPublic )
+                .Select( p => new PublicLearningProgramBag
+                {
+                    Entity = p,
+                    Category = p.Category.Name,
+                    CategoryColor = p.Category.HighlightColor,
+                    CompletionStatus = personCompletions
+                        .FirstOrDefault( c => c.LearningProgramId == p.Id )
+                        .CompletionStatus,
+                    ImageFileGuid = p.ImageBinaryFile.Guid
+                } )
+                .ToList();
+        }
+
+        #region Nested Classes
+
+        /// <summary>
+        /// Represents the Lava enabled data sent to the public programs list block.
+        /// </summary>
+        public class PublicLearningProgramBag : RockDynamic
+        {
+            /// <summary>
+            /// Gets or sets the Learning Program entity for this bag.
+            /// </summary>
+            public LearningProgram Entity { get; set; }
+
+            /// <summary>
+            /// Gets or sets the category.
+            /// </summary>
+            public string Category { get; set; }
+
+            /// <summary>
+            /// Gets or sets the highlight color of the category.
+            /// </summary>
+            public string CategoryColor { get; set; }
+
+            /// <summary>
+            /// Gets or sets the completion status of the program for the current person.
+            /// </summary>
+            public CompletionStatus? CompletionStatus { get; set; }
+
+            /// <summary>
+            /// Gets or sets the link to the course details.
+            /// </summary>
+            public string CoursesLink { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Guid for the Image file of this Program.
+            /// </summary>
+            public Guid? ImageFileGuid { get; set; }
+        }
+
+        #endregion
     }
 }

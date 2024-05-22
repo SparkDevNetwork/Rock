@@ -48,44 +48,45 @@
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Scoring">
-            <div class="question-section">
-                {{ question }}
-            </div>
-
+            <div class="scoring-screen-question-header question-header">
+                <span class="question-section">{{ question }}</span>
+                <NumberBox v-model="pointsEarned"
+                            label="Score"
+                            :min="0"
+                            :max="questionWeight"
+                            :rules="'lte:' + questionWeight"
+                            inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">out of {{ questionWeight }}</span>
+                    </template>
+                </NumberBox>
+                </div>
             <div class="answer-section text-muted">
                 {{ response }}
             </div>
 
-            <NumberBox v-model="pointsEarned"
-                        label="Score"
-                        :min="0"
-                        :max="questionWeight"
-                        inputGroupClasses="input-width-md">
-                <template #inputGroupAppend>
-                    <span class="input-group-addon">out of {{ questionWeight }}</span>
-                </template>
-            </NumberBox>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
-            <div class="summary-screen-question-header">
-                <span class="short-answer-item-question summary-screen">{{ question }}</span>
-                <slot name="points" />
+            <div class="summary-screen-question-header question-header">
+                <span class="short-answer-item-question question-section summary-screen">{{ question }}</span>
+                <span class="badge badge-default points-label">{{ pointsEarned }}/{{ questionWeight }}</span>
             </div>
             <div class="short-answer-item-response summary-screen">
                 {{ response }}
-            </div>
-            <div class="short-answer-item-score summary-screen">
-                <span class="badge badge-default points-label">{{ pointsEarned }}/{{ questionWeight }}</span>
             </div>
         </div>
     </div>
 </template>
 
-<style scoped>
-.summary-screen-question-header {
+<style>
+
+.question-header {
     display: flex;
     justify-content: space-between;
+}
+.summary-screen-question-header {
+    margin-bottom: 16px;
 }
 
 .assessment-item-short-answer-configuration-container {
@@ -125,7 +126,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, toValue, watch } from "vue";
+    import { PropType, computed, ref, toRef, toValue, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { ComponentScreen } from "./learningActivity.partial";
@@ -148,16 +149,16 @@
         (event: "update:modelValue", value: ShortAnswerItem): void
     }>();
 
-    const internalModelValue = props.modelValue as ShortAnswerItem;
+    const internalModelValue = toRef(() => props.modelValue as ShortAnswerItem);
 
     const screenToShow = ref(props.screenToShow);
-    const question = ref(internalModelValue.question ?? "");
-    const helpText = ref(internalModelValue.helpText ?? "");
-    const questionWeight = ref(internalModelValue.questionWeight);
-    const answerBoxRows = ref(internalModelValue.answerBoxRows);
-    const maxCharacterCount = ref(internalModelValue.maxCharacterCount);
-    const response = ref(internalModelValue.response ?? "");
-    const pointsEarned = ref(internalModelValue.pointsEarned ?? 0);
+    const question = ref(internalModelValue.value.question ?? "");
+    const helpText = ref(internalModelValue.value.helpText ?? "");
+    const questionWeight = ref(internalModelValue.value.questionWeight);
+    const answerBoxRows = ref(internalModelValue.value.answerBoxRows);
+    const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount);
+    const response = ref(internalModelValue.value.response ?? "");
+    const pointsEarned = ref(internalModelValue.value.pointsEarned ?? 0);
 
     watch([question, helpText, questionWeight, answerBoxRows, maxCharacterCount, response, pointsEarned], () => {
         const newModelValue = {
@@ -167,7 +168,7 @@
             pointsEarned: toValue(pointsEarned),
             question: toValue(question),
             questionWeight: toValue(questionWeight),
-            typeName: internalModelValue.typeName,
+            typeName: internalModelValue.value.typeName,
         } as ShortAnswerItem;
 
         emit("update:modelValue", newModelValue);

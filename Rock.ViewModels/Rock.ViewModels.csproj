@@ -96,6 +96,8 @@
     <Compile Include="Blocks\Finance\FinancialPersonBankAccountList\FinancialPersonBankAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterBag.cs" />
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\PublicLearningProgramList\PublicLearningProgramListBox.cs" />
+    <Compile Include="Blocks\Lms\PublicLearningCourseList\PublicLearningCourseListBox.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageList\AppleTvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />

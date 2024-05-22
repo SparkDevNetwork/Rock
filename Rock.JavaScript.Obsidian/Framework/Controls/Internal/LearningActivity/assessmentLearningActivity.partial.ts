@@ -64,6 +64,7 @@ export class AssessmentItemBase extends AssessmentItem {
         super();
         this.order = 0;
         this.pointsEarned = 0;
+        this.response = "";
         this.typeName = typeName;
         this.uniqueId = newGuid();
     }
@@ -119,7 +120,7 @@ export type AssessmentActivityConfiguration = {
 };
 
 export type AssessmentActivityCompletion = {
-    completedItems: AssessmentItem[];
+    completedItems: Array<AssessmentItem | MultipleChoiceItem | SectionItem | ShortAnswerItem>;
 };
 
 export class AssessmentActivityDefaults

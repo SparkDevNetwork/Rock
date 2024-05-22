@@ -4,7 +4,7 @@
         <div class="points-earned-section">
             <NumberBox v-model="pointsEarned"
                        label="Points Earned"
-                       rules="required"
+                       :rules="'required|lte:' + pointsPossible"
                        inputGroupClasses="input-width-md">
                 <template #inputGroupAppend>
                     <span class="input-group-addon">out of {{ pointsPossible }}</span>
@@ -42,6 +42,7 @@
     import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { deepEqual } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         modelValue: {
@@ -71,15 +72,17 @@
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const pointsPossible = ref(activityBag.value?.points);
     const isStudentCompleted = ref(completionBag.value.isStudentCompleted ?? false);
+    const isPastDue = ref(completionBag.value.isPastDue ?? false);
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointedEarned");
-    const isPastDue = ref(completionBag.value.isPastDue ?? false);
+    const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [
-          isFacilitatorCompleted
+          completionJson
+        , isFacilitatorCompleted
         , facilitatorComment
         , pointsEarned
     ];
@@ -110,6 +113,7 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
+        updateRefValue(completionJson, props.modelValue.bag?.activityComponentCompletionJson ?? "");
         updateRefValue(isFacilitatorCompleted, props.modelValue.bag?.isFacilitatorCompleted ?? false);
         updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
         updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
@@ -122,11 +126,18 @@
             bag: { ...props.modelValue.bag } as LearningActivityCompletionBag
         };
 
+        setPropertiesBoxValue(newValue, "activityComponentCompletionJson", completionJson.value);
         setPropertiesBoxValue(newValue, "isFacilitatorCompleted", isFacilitatorCompleted.value);
         setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
         setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
 
         emit("update:modelValue", newValue);
+    });
+
+    watch(completionBag, () => {
+        if (!deepEqual(completionBag.value.activityComponentCompletionJson, completionJson.value, true)) {
+            completionJson.value = completionBag.value.activityComponentCompletionJson;
+        }
     });
 
     const componentUrl = activityBag.value.activityComponent?.componentUrl ?? "";

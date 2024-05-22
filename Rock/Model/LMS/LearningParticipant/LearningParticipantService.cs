@@ -27,45 +27,32 @@ namespace Rock.Model
     public partial class LearningParticipantService
     {
         /// <summary>
-        /// Gets a list of <see cref="LearningParticipant">Students</see> for a specified <see cref="LearningClass"/>
+        /// Adds <see cref="LearningActivityCompletion">activity completions</see> for the <see cref="LearningParticipant">participant</see> .
+        /// If any activity completion already exists it will be not be recreated.
         /// </summary>
-        /// <param name="classId">The identifier of the <see cref="LearningClass"/> to return students for.</param>
-        /// <returns>Queryable of LearningParticipants that have a Group role of not IsLeader.</returns>
-        public IQueryable<LearningParticipant> GetStudents( int classId )
+        /// <param name="learningParticipantId">The identifier of the <see cref="LearningParticipant"/> for which to add the completion records.</param>
+        /// <returns>The list of <see cref="LearningActivityCompletion"/> records to be saved when the Context is saved.</returns>
+        public List<LearningActivityCompletion> AddActivityCompletions( int learningParticipantId )
         {
-            return GetParticipants( classId, true ).Where( a => !a.GroupRole.IsLeader );
-        }
+            var rockContext = ( RockContext ) Context;
 
-        /// <summary>
-        /// Gets a list of <see cref="LearningParticipant">Facilitators</see> for a specified <see cref="LearningClass"/>
-        /// </summary>
-        /// <param name="classId">The identifier of the <see cref="LearningClass"/> to return facilitators for.</param>
-        /// <returns>Queryable of LearningParticipants that have a Group role of IsLeader.</returns>
-        public IQueryable<LearningParticipant> GetFacilitators(int classId)
-        {
-            return GetParticipants( classId ).Where( a => a.GroupRole.IsLeader );
-        }
+            var completionsToAdd = GetActivities( learningParticipantId )
+                .AsNoTracking()
+                // If there happen to be some existing completions do not recreate them.
+                .Where( a => !a.LearningActivityCompletions.Any( c => c.StudentId == learningParticipantId && c.LearningActivityId == a.Id ) )
+                .Select( a => new LearningActivityCompletion
+                {
+                    StudentId = learningParticipantId,
+                    LearningActivityId = a.Id,
+                    AvailableDate = a.AvailableDateCalculated,
+                    DueDate = a.DueDateCalculated,
+                    NotificationCommunicationId = a.LearningClass.LearningCourse.SystemCommunicationId
+                } )
+                .ToList();
 
-        /// <summary>
-        /// Gets a list of <see cref="LearningParticipant">Participants</see> for a specified <see cref="LearningClass"/>
-        /// </summary>
-        /// <param name="classId">The identifier of the class for which to retreive participants.</param>
-        /// <param name="includeGradingScales">Whether to include the list of <see cref="LearningGradingSystemScale"/> for the course.</param>
-        /// <returns>Queryable of LearningParticipants.</returns>
-        public IQueryable<LearningParticipant> GetParticipants(int classId, bool includeGradingScales = false )
-        {
-            return includeGradingScales ?
-                 Queryable()
-                    .AsNoTracking()
-                    .Include( a => a.LearningGradingSystemScale )
-                    .Include( a => a.Person )
-                    .Include( a => a.GroupRole )
-                    .Where( a => a.LearningClassId == classId ) :
-                 Queryable()
-                    .AsNoTracking()
-                    .Include( a => a.Person )
-                    .Include( a => a.GroupRole )
-                    .Where( a => a.LearningClassId == classId );
+            new LearningActivityCompletionService( rockContext ).AddRange( completionsToAdd );
+
+            return completionsToAdd;
         }
 
         /// <summary>
@@ -105,32 +92,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds <see cref="LearningActivityCompletion">activity completions</see> for the <see cref="LearningParticipant">participant</see> .
-        /// If any activity completion already exists it will be not be recreated.
+        /// Gets a list of facilitator <see cref="LearningActivityParticipantBag"/> for the specified
+        /// <see cref="LearningClass"/> and (optionally) for one or more <see cref="Person" /> identifiers.
         /// </summary>
-        /// <param name="learningParticipantId">The identifier of the <see cref="LearningParticipant"/> for which to add the completion records.</param>
-        /// <returns>The list of <see cref="LearningActivityCompletion"/> records to be saved when the Context is saved.</returns>
-        public List<LearningActivityCompletion> AddActivityCompletions( int learningParticipantId )
+        /// <param name="classId">The identifier of the class to search within.</param>
+        /// <param name="personIds">Optional list of Person identifiers to search for.</param>
+        /// <returns>A list of <see cref="LearningActivityParticipantBag"/> that is the result of the search.</returns>
+        public IEnumerable<LearningActivityParticipantBag> GetFacilitatorBags( int classId, params int[] personIds )
         {
-            var rockContext = ( RockContext ) Context;
-
-            var completionsToAdd = GetActivities( learningParticipantId )
-                .AsNoTracking()
-                // If there happen to be some existing completions do not recreate them.
-                .Where( a => !a.LearningActivityCompletions.Any( c => c.StudentId == learningParticipantId && c.LearningActivityId == a.Id ) )
-                .Select( a => new LearningActivityCompletion
-                {
-                    StudentId = learningParticipantId,
-                    LearningActivityId = a.Id,
-                    AvailableDate = a.AvailableDateCalculated,
-                    DueDate = a.DueDateCalculated,
-                    NotificationCommunicationId = a.LearningClass.LearningCourse.SystemCommunicationId
-                } )
-                .ToList();
-
-            new LearningActivityCompletionService( rockContext ).AddRange( completionsToAdd );
-
-            return completionsToAdd;
+            return GetParticipantBags( classId, true, personIds );
         }
 
         /// <summary>
@@ -148,6 +118,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a list of <see cref="LearningParticipant">Facilitators</see> for a specified <see cref="LearningClass"/>
+        /// </summary>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> to return facilitators for.</param>
+        /// <returns>Queryable of LearningParticipants that have a Group role of IsLeader.</returns>
+        public IQueryable<LearningParticipant> GetFacilitators( int classId )
+        {
+            return GetParticipants( classId ).Where( a => a.GroupRole.IsLeader );
+        }
+
+        /// <summary>
         /// Gets the participantId of the participant in the specified class matching the provided <see cref="Person"/>
         /// identifier or <c>0</c> if not found.
         /// </summary>
@@ -160,18 +140,6 @@ namespace Rock.Model
                 .Include( a => a.Person )
                 .Include( a => a.GroupRole )
                 .Where( p => p.LearningClassId == classId && p.PersonId == personId );
-        }
-
-        /// <summary>
-        /// Gets a list of facilitator <see cref="LearningActivityParticipantBag"/> for the specified
-        /// <see cref="LearningClass"/> and (optionally) for one or more <see cref="Person" /> identifiers.
-        /// </summary>
-        /// <param name="classId">The identifier of the class to search within.</param>
-        /// <param name="personIds">Optional list of Person identifiers to search for.</param>
-        /// <returns>A list of <see cref="LearningActivityParticipantBag"/> that is the result of the search.</returns>
-        public IEnumerable<LearningActivityParticipantBag> GetFacilitatorBags( int classId, params int[] personIds )
-        {
-            return GetParticipantBags( classId, true, personIds );
         }
 
         /// <summary>
@@ -208,5 +176,38 @@ namespace Rock.Model
                     RoleName = p.RoleName
                 } );
         }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningParticipant">Participants</see> for a specified <see cref="LearningClass"/>
+        /// </summary>
+        /// <param name="classId">The identifier of the class for which to retreive participants.</param>
+        /// <param name="includeGradingScales">Whether to include the list of <see cref="LearningGradingSystemScale"/> for the course.</param>
+        /// <returns>Queryable of LearningParticipants.</returns>
+        public IQueryable<LearningParticipant> GetParticipants( int classId, bool includeGradingScales = false )
+        {
+            return includeGradingScales ?
+                 Queryable()
+                    .AsNoTracking()
+                    .Include( a => a.LearningGradingSystemScale )
+                    .Include( a => a.Person )
+                    .Include( a => a.GroupRole )
+                    .Where( a => a.LearningClassId == classId ) :
+                 Queryable()
+                    .AsNoTracking()
+                    .Include( a => a.Person )
+                    .Include( a => a.GroupRole )
+                    .Where( a => a.LearningClassId == classId );
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningParticipant">Students</see> for a specified <see cref="LearningClass"/>
+        /// </summary>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> to return students for.</param>
+        /// <returns>Queryable of LearningParticipants that have a Group role of not IsLeader.</returns>
+        public IQueryable<LearningParticipant> GetStudents( int classId )
+        {
+            return GetParticipants( classId, true ).Where( a => !a.GroupRole.IsLeader );
+        }
+
     }
 }

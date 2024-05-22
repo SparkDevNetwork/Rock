@@ -56,7 +56,7 @@
                 </div>
 
                 <div class="configuration-footer-buttons">
-                    <button aria-label="Add an assessment item" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem">
+                    <button v-if="items.length > 0" aria-label="Add an assessment item" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
                 </div>
@@ -72,9 +72,9 @@
 
                 <div class="well well-sm assessment-item-container assessment-items-section">
                     <div class="assessment-item" v-for="(item, index) in completedItems">
-                        <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="items[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="items[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="completedItems[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="completedItems[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" />
                     </div>
                 </div>
 
@@ -92,7 +92,7 @@
                     <div class="results-summary-section">
                         <h4>Results Summary</h4>
                         <h5>{{ resultSummarySubHeader }}</h5>
-                        <div class="multiple-choice-summary-text">
+                        <div class="multiple-choice-summary-text text-muted">
                             {{ multipleChoiceSummaryText }}
                         </div>
                     </div>
@@ -115,10 +115,10 @@
             </div>
         </div>
 
-        <div v-if="screenToShow == ComponentScreen.Scoring">
-            <div class="assessment-items-container" v-for="(item, index) of items">
+        <div v-if="screenToShow === ComponentScreen.Scoring">
+            <div class="assessment-items-container" v-for="(item, index) of completedItems">
                 <div class="well well-sm assessment-item-container" v-if="item.typeName === 'Short Answer'">
-                    <AssessmentItemShortAnswer v-model="items[index]" :screenToShow="screenToShow" />
+                    <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" />
                 </div>
             </div>
         </div>
@@ -127,10 +127,10 @@
             <div class="assessment-item-is-completed" v-if="isStudentAssignedAndCompleted">
                 <h4 class="summary-title">Assessment Summary</h4>
                 <div class="summary-sub-title">Below is a review of how {{ assignee?.name ?? defaultAssigneeDescription }} completed this {{ assessmentTerm }}.</div>
-                <div class="assessment-item" v-for="(item, index) in items">
+                <div class="assessment-item" v-for="(item, index) in completedItems">
                     <div class="well well-sm assessment-item-container" v-if="typeNamesWithSummaryScreen.includes(item.typeName)">
-                        <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="items[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="completedItems[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" />
                     </div>
                 </div>
             </div>
@@ -209,6 +209,10 @@
 div.summary-sub-title {
     margin-bottom: 12px;
 }
+
+.student-completion-summary-header {
+    margin-bottom: 16px;
+}
 </style>
 
 <script setup lang="ts">
@@ -230,7 +234,7 @@ div.summary-sub-title {
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity.partial";
-    import { AssessmentActivityCompletion, AssessmentActivityConfiguration, AssessmentActivityDefaults, AssessmentItem, AssessmentItemType, MultipleChoiceItem } from "./assessmentLearningActivity.partial";
+    import { AssessmentActivityCompletion, AssessmentActivityConfiguration, AssessmentActivityDefaults, AssessmentItem, AssessmentItemType, MultipleChoiceItem, ShortAnswerItem } from "./assessmentLearningActivity.partial";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder, DragOperation } from "@Obsidian/Directives/dragDrop";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
 
@@ -271,7 +275,7 @@ div.summary-sub-title {
         items.value.sort((a, b) => a.order - b.order);
     }
 
-    // Initialize the values
+    // Initialize the completion values to the current values plus any missing values.
     completedItems.value = getItemsForStudentCompletion();
 
     // Add drag reorder functionality, updating the order on successful drop.
@@ -288,6 +292,7 @@ div.summary-sub-title {
 
     const typeNamesWithSummaryScreen = ref([AssessmentItemType.MultipleChoice.toString(), AssessmentItemType.ShortAnswer.toString()]);
 
+    // Create the item types for use by the drop down.
     const itemTypes: ListItemBag[] = [];
     for (const key in AssessmentItemType) {
         itemTypes.push({
@@ -300,6 +305,7 @@ div.summary-sub-title {
 
     // #region Functions
 
+    /** Adds an empty default item to the configuration. */
     function addAssessmentItem(): void {
         const defaultItem = { typeName: AssessmentItemType.MultipleChoice, answers: ["", "", ""], order: 0 } as MultipleChoiceItem;
         if (!Array.isArray(items.value)) {
@@ -310,11 +316,15 @@ div.summary-sub-title {
         }
     }
 
+    /**
+     * Gets a list of completion items for the student.
+     * (Takes the configuration values and adds the student response).
+     */
     function getItemsForStudentCompletion(): AssessmentItem[] {
-        const studentItemIds = completedItems.value.map(c => c.uniqueId);
-        const missingItems = (toValue(items) ?? []).filter(ex => !studentItemIds.includes(ex.uniqueId)) ?? [];
-
-        return completedItems.value.concat(missingItems);
+        return (toValue(items) ?? []).map(i => {
+            i.response = completedItems.value.find(c => c.uniqueId === i.uniqueId)?.response ?? "";
+            return i;
+        });
     }
 
     // #endregion
@@ -329,42 +339,21 @@ div.summary-sub-title {
         assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted !== true
     );
 
+    const shortAnswerItems = computed(() =>
+        (toValue(items) ?? []).filter(i => i.typeName === AssessmentItemType.ShortAnswer) as ShortAnswerItem[]
+    );
+
     const multipleChoiceItems = computed(() =>
         (toValue(items) ?? []).filter(i => i.typeName === AssessmentItemType.MultipleChoice) as MultipleChoiceItem[]
     );
 
-    const correctMultipleChoiceItems = computed(() => {
-        if (toValue(completionBag)?.isFacilitatorCompleted !== true) {
-            return [];
-        }
-
-        // If no points are available, consider any response passing.
-        const isUngraded = activityBag.value.points === 0;
-        return (completedItems.value
-            .filter(r =>
-                r.hasBeenGraded === true &&
-                r.typeName === AssessmentItemType.MultipleChoice &&
-                (r.pointsEarned > 0 || isUngraded)
-            ) ?? []) as MultipleChoiceItem[];
-    });
-
-    const incorrectMultipleChoiceItems = computed(() => {
-        if (toValue(completionBag)?.isFacilitatorCompleted !== true || activityBag.value.points === 0) {
-            // If this hasn't been graded yet or no points are available, consider any response passing.
-            return [];
-        }
-
-        return (completedItems.value
-            .filter(r =>
-                r.hasBeenGraded === true &&
-                r.typeName === AssessmentItemType.MultipleChoice &&
-                (r.pointsEarned < activityBag.value.points)
-            ) ?? []) as MultipleChoiceItem[];
-    });
+    const correctMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response === i.correctAnswer));
+    const incorrectMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response !== i.correctAnswer));
 
     const totalQuestions = computed(() => multipleChoiceItems.value.length);
     const correctResponses = computed(() => correctMultipleChoiceItems.value.length);
     const hasMultipleChoiceQuestions = computed(() => totalQuestions.value > 0);
+    const hasShortAnswerQuestions = computed(() => shortAnswerItems.value.length > 0);
     const hasIncorrectResponses = computed(() => incorrectMultipleChoiceItems.value.length > 0);
     const gradePercent = computed(() => {
         if (correctResponses.value === 0 || totalQuestions.value === 0) {
@@ -385,23 +374,26 @@ div.summary-sub-title {
         if (multipleChoiceItems.value.length === 0) {
             return `Thank you for completing this ${assessmentTerm.value}`;
         }
-        toValue(completionBag)?.isFacilitatorCompleted === true ?
+        return toValue(completionBag)?.isFacilitatorCompleted === true ?
             `Below are your ${assessmentTerm.value} results.` :
             `Below are your ${assessmentTerm.value} results, including any missed questions.`;
     });
 
     const resultSummarySubHeader = computed(() =>
         toValue(completionBag)?.isFacilitatorCompleted === true ?
-            `Multiple Choice Score: ${correctResponses.value} of ${totalQuestions.value} correct.` :
-            `Score: ${gradePercent}%`
+            `Score: ${gradePercent.value}%` :
+            `Multiple Choice Score: ${correctResponses.value} of ${totalQuestions.value} correct.`
     );
 
     const multipleChoiceSummaryText = computed(() => {
-        const questionCorrectSentence = `You answered ${correctMultipleChoiceItems.value} out of ${totalQuestions.value} multiple choice questions correctly.`;
+        const questionsCorrectSentence = `You answered ${correctResponses.value} out of ${totalQuestions.value} multiple choice questions correctly.`;
+        const missedQuestionSentence = hasIncorrectResponses.value === true ?
+            "Below are the questions you missed, along with the correct answers." :
+            "";
 
-        toValue(completionBag)?.isFacilitatorCompleted === true ?
-            questionCorrectSentence :
-            `${questionCorrectSentence} Below are the question you missed, along with the correct answers. The short answer questions will be graded shortly.`;
+        return hasShortAnswerQuestions.value === true ?
+            `${questionsCorrectSentence} ${missedQuestionSentence}` :
+            `${questionsCorrectSentence} ${missedQuestionSentence} The short answer questions will be graded shortly.`;
     });
 
     /** Contains the custom style values to apply to the icon. */

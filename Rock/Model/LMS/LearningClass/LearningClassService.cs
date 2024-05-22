@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -61,9 +62,10 @@ namespace Rock.Model
         /// Creates a new <see cref="LearningClass" /> with Attributes by copying values from the specified learning class.
         /// </summary>
         /// <param name="learningClass">The <see cref="LearningClass"/> to use as a template for the copy.</param>
+        /// <param name="includeActivities"><c>true</c> if activities should also be copied.</param>
         /// <returns>
         ///     A new class whose properties and <see cref="AttributeValue" />s match the properties and <see cref="AttributeValue" />s
-        ///     of the class whose <paramref name="key"/> was provided.
+        ///     of the provided class.
         /// </returns>
         public LearningClass Copy( LearningClass learningClass, bool includeActivities = true)
         {
@@ -287,6 +289,23 @@ namespace Rock.Model
                 .AsQueryable()
                 .DefaultIfEmpty( new LearningActivity() )
                 .Select( selector );
+        }
+
+        /// <summary>
+        /// Gets the <see cref="LearningClass"/> class records for the specified person.
+        /// Where the person is in a student role.
+        /// </summary>
+        /// <param name="personId">The identifier of the <see cref="Person"/> for which to retrieve classes.</param>
+        /// <returns>A list of <see cref="LearningClass"/> for the specified <see cref="Person"/>.</returns>
+        public IQueryable<LearningClass> GetStudentClasses( int personId )
+        {
+            return Queryable()
+                .Include( c => c.LearningCourse )
+                .Where( c =>
+                    c.LearningParticipants.Any( p =>
+                        p.PersonId == personId &&
+                        p.GroupRole.IsLeader == false )
+                    );
         }
     }
 }

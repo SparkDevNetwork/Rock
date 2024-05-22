@@ -134,18 +134,10 @@
             </div>
         </div>
 
-        <DropDownList
-                v-model="screenToShow"
-                :grouped="false"
-                :items="screensToShow"
-                label="Screen"
-                :multiple="false"
-                :showBlankItem="false" />
-
         <!-- Pass the configuration and completion json values to the component. -->
         <activityTypeComponent
                                v-model:activityBag="activityBag"
-                               :screenToShow="screenToShow" />
+                               :screenToShow="ComponentScreen.Configuration" />
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
@@ -177,8 +169,6 @@
     import { AvailableDateCalculationMethodDescription, AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
     import { DueDateCalculationMethodDescription, DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculationMethod";
 
-    const screenToShow = ref(ComponentScreen.Configuration);
-    const screensToShow = [{value: "configuration", text: "Configuration"}, {value: "completion", text: "Completion"}, {value: "summary", text:  "Summary"}, {value: "scoring", text:  "Scoring"}];
     const lmsFileTypeGuid = BinaryFiletype.LearningManagementSystem;
 
     const props = defineProps({
@@ -314,8 +304,10 @@
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
+        activityBag.value = { ...props.modelValue.bag } as LearningActivityBag;
+
         const newValue: ValidPropertiesBox<LearningActivityBag> = {
-            bag: { ...props.modelValue.bag } as LearningActivityBag
+            bag: activityBag.value
         };
 
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
