@@ -33,6 +33,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Add Peer Network Table.
             CreateTable(
                 "dbo.PeerNetwork",
                 c => new
@@ -55,6 +56,7 @@ namespace Rock.Migrations
                 .ForeignKey( "dbo.PersonAlias", t => t.SourcePersonAliasId )
                 .ForeignKey( "dbo.PersonAlias", t => t.TargetPersonAliasId );
 
+            // Add Indexes.
             RockMigrationHelper.CreateIndexIfNotExists( "PeerNetwork",
                 indexOneKeys,
                 new[] { "RelationshipScore", "RelationshipTrend", "RelationshipTypeValueId" } );
@@ -63,6 +65,7 @@ namespace Rock.Migrations
                 indexTwoKeys,
                 new[] { "RelationshipScore", "RelationshipTrend", "RelationshipStartDate" } );
 
+            // Update Group Table.
             AddColumn( "dbo.Group", "RelationshipGrowthEnabledOverride", c => c.Boolean() );
             AddColumn( "dbo.Group", "RelationshipStrengthOverride", c => c.Int() );
             AddColumn( "dbo.Group", "LeaderToLeaderRelationshipMultiplierOverride", c => c.Decimal( precision: 8, scale: 2 ) );
@@ -70,6 +73,7 @@ namespace Rock.Migrations
             AddColumn( "dbo.Group", "NonLeaderToNonLeaderRelationshipMultiplierOverride", c => c.Decimal( precision: 8, scale: 2 ) );
             AddColumn( "dbo.Group", "NonLeaderToLeaderRelationshipMultiplierOverride", c => c.Decimal( precision: 8, scale: 2 ) );
 
+            // Update Group Type Table.
             AddColumn( "dbo.GroupType", "IsPeerNetworkEnabled", c => c.Boolean( nullable: false, defaultValue: false ) );
             AddColumn( "dbo.GroupType", "RelationshipGrowthEnabled", c => c.Boolean( nullable: false, defaultValue: false ) );
             AddColumn( "dbo.GroupType", "RelationshipStrength", c => c.Int( nullable: false, defaultValue: 0 ) );
@@ -78,7 +82,14 @@ namespace Rock.Migrations
             AddColumn( "dbo.GroupType", "NonLeaderToNonLeaderRelationshipMultiplier", c => c.Decimal( nullable: false, precision: 8, scale: 2, defaultValue: 1.0M ) );
             AddColumn( "dbo.GroupType", "NonLeaderToLeaderRelationshipMultiplier", c => c.Decimal( nullable: false, precision: 8, scale: 2, defaultValue: 1.0M ) );
 
+            // Update Group Type Role Table.
             AddColumn( "dbo.GroupTypeRole", "IsExcludedFromPeerNetwork", c => c.Boolean( nullable: false, defaultValue: false ) );
+
+            // Add Defined Type.
+            RockMigrationHelper.AddDefinedType( "Person", "Peer Network Relationship Type", "List of different types of relationships an individual could have in their Peer Network.", SystemGuid.DefinedType.PEER_NETWORK_RELATIONSHIP_TYPE );
+
+            // Add Defined Value.
+            RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.PEER_NETWORK_RELATIONSHIP_TYPE, "Group Connections", "Links individuals who are in common groups with one another.", "CB51DC46-FBDB-43DA-B7F3-60E7C6E70F40" );
         }
 
         /// <summary>
@@ -111,6 +122,9 @@ namespace Rock.Migrations
             DropColumn( "dbo.Group", "RelationshipGrowthEnabledOverride" );
 
             DropTable( "dbo.PeerNetwork" );
+
+            RockMigrationHelper.DeleteDefinedValue( "CB51DC46-FBDB-43DA-B7F3-60E7C6E70F40" );
+            RockMigrationHelper.DeleteDefinedType( SystemGuid.DefinedType.PEER_NETWORK_RELATIONSHIP_TYPE );
         }
     }
 }
