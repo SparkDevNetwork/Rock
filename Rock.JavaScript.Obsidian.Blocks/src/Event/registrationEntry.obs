@@ -562,6 +562,12 @@
     provide(CurrentRegistrationEntryState, registrationEntryState.value);
     provide(GetPersistSessionArgs, getRegistrationEntryBlockArgs);
     provide(PersistSession, persistSession);
+
+    // Provide the same dependencies with simple string keys for dependent plugins.
+    provide("registrationEntryState", registrationEntryState.value);
+    provide("getRegistrationEntryBlockArgs", getRegistrationEntryBlockArgs);
+    provide("persistSession", getRegistrationEntryBlockArgs);
+
     provide(RegistrationCostSummary, {
         // Provide a read-only version of the registrationCostSummary so
         // child components can only use the updateRegistrationCostSummary() to update
