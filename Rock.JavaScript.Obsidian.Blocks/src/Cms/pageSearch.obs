@@ -1,0 +1,156 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+
+    <Panel :hasTitle="false">
+        <div class="row">
+            <div class="col-md-3 col-lg-2" >
+                <ul style="list-style-type: none" class="pl-3" >
+                    <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" class="category" :class="currentCategoryIndex === index ? selectedCategoryClasses : ''">{{ page.title }}</li>
+                </ul>
+            </div>
+            <div class="col-md-9 col-lg-10">
+                <div class="row">
+                    <div ref="searchContainer" class="col-md-9 col-sm-8">
+                        <TextBox v-model="searchText" placeholder="Search" class="form-control input-width-xxl" isClearable />
+                    </div>
+                    <div class="control-wrapper col-md-3 col-sm-4">
+                        <div class="pull-right">
+                            <div class="btn-group btn-toggle btn-group-sm">
+                                <RockButton @click="toggleSortOrder(true)" :class="isSortedAlphabetically ? selectedButtonClasses : unselectedButtonClasses">
+                                    <i class="icon-fw fa fa-sort-alpha-down"></i>
+                                </RockButton>
+                                <RockButton @click="toggleSortOrder(false)" :class="isSortedAlphabetically ? unselectedButtonClasses : selectedButtonClasses">
+                                    <i class="icon-fw fa fa-list"></i>
+                                </RockButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-for="(category, index) in categorySections" :key="index" style="width: 100%;">
+                    <div v-if="category.children && category.children.length > 0 && filteredSettings(category).length > 0">
+                        <h2 >{{ category.title }}</h2>
+                        <div class="list-as-blocks">
+                            <ul class="mb-5">
+                                <li v-for="(setting, index) in filteredSettings(category)" :key="index" >
+                                    <a :href="setting.url ?? parentUrl" v-if="setting.pageDisplayDescription" :title="setting.description ?? ''">
+                                            <i v-if="setting.icon != ''" :class="setting.icon"></i>
+                                        <h3>{{ setting.title }}</h3>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Panel>
+
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, usePersonPreferences } from "@Obsidian/Utility/block";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { PageSearchBag } from "@Obsidian/ViewModels/Blocks/Cms/PageSearch/pageSearchBag";
+    import { PageSearchPageBag } from "@Obsidian/ViewModels/Blocks/Cms/PageSearch/pageSearchPageBag";
+    import { onMounted, ref, nextTick, computed } from "vue";
+    import { PreferenceKey } from "./PageSearch/types.partial";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+
+    // #region Values
+
+    const config = useConfigurationValues<PageSearchBag>();
+    const preferences = usePersonPreferences().blockPreferences;
+    const parentUrl = window.location.href;
+    const currentCategoryIndex = ref(toNumber(preferences.getValue(PreferenceKey.SelectedCategoryIndex)) ?? 0);
+    const currentCategoryTitle = ref<string | null | undefined>(preferences.getValue(PreferenceKey.SelectedCategoryTitle).length > 0 ? preferences.getValue(PreferenceKey.SelectedCategoryTitle) : "All");
+    const pages = ref<PageSearchPageBag[]>([{id: -1, title: "All", children: [], icon: null, description: null, parentPageId: null, pageDisplayDescription: false}, ...config.pages ?? []]);
+    const searchText = ref("");
+    const searchContainer = ref<HTMLElement>();
+    const isSortedAlphabetically = ref(preferences.getValue(PreferenceKey.IsSortedAlphabetically) === "true");
+    const selectedButtonClasses = "active btn btn-primary";
+    const unselectedButtonClasses = "btn btn-default";
+    const selectedCategoryClasses = "bg-primary text-white";
+
+    // #endregion
+
+    // #region Computed Values
+
+    const sortedCategories = computed<PageSearchPageBag[]>(() => {
+        if (isSortedAlphabetically.value) {
+            return pages.value.map(category => {
+                if (category.children && category.children.length > 0) {
+                    const sortedChildren = [...category.children].sort((a, b) => {
+                        if (a.pageDisplayDescription && b.pageDisplayDescription) {
+                            const titleA = (a.title ?? "").toLowerCase();
+                            const titleB = (b.title ?? "").toLowerCase();
+                            return titleA.localeCompare(titleB);
+                        }
+                        return 0;
+                    });
+                    return { ...category, children: sortedChildren };
+                }
+                else {
+                    return category;
+                }
+            });
+        }
+        return pages.value;
+    });
+
+    const categorySections = computed<PageSearchPageBag[]>(() => {
+        return sortedCategories.value.filter(c => c.title === currentCategoryTitle.value || currentCategoryTitle.value === "All");
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    onMounted(() => {
+        nextTick(() => {
+            const searchBox = searchContainer.value?.querySelector("input") as HTMLInputElement | null;
+            searchBox?.focus();
+        });
+    });
+
+    async function selectCategory(page: PageSearchPageBag, index: number): Promise<void> {
+        currentCategoryIndex.value = index;
+        currentCategoryTitle.value = page.title;
+        searchText.value = "";
+
+        preferences.setValue(PreferenceKey.SelectedCategoryIndex, currentCategoryIndex.value.toString());
+        preferences.setValue(PreferenceKey.SelectedCategoryTitle, currentCategoryTitle.value ?? "All");
+        await preferences.save();
+    }
+
+    async function toggleSortOrder(isAlphabetical: boolean): Promise<void> {
+        isSortedAlphabetically.value = isAlphabetical;
+        preferences.setValue(PreferenceKey.IsSortedAlphabetically, isSortedAlphabetically.value.toString());
+        await preferences.save();
+    }
+
+    const filteredSettings = (category: PageSearchPageBag): PageSearchPageBag[] => {
+        if (category.children) {
+            return category.children.filter(c => c.parentPageId === category.id && c.title?.toLowerCase().includes(searchText.value.toLowerCase()));
+        }
+        return [];
+    };
+
+    // #endregion
+
+</script>
+
+<style scoped>
+
+.category {
+    cursor: pointer;
+    text-align: left;
+    padding: 2px 10px;
+    width: 70%;
+    min-width: 150px;
+    border-radius: 4px;
+}
+
+</style>

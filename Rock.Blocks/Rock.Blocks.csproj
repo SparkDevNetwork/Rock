@@ -100,6 +100,7 @@
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
+    <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Crm\DocumentTypeList.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />

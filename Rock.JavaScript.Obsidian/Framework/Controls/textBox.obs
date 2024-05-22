@@ -14,10 +14,9 @@
             <div class="control-wrapper">
                 <slot name="prepend" :isInputGroupSupported="true" />
                 <div :class="controlContainerClass">
-                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-
-                    <textarea v-if="isTextarea"
-                              :value="internalValue"
+                    <template v-if="isTextarea">
+                        <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                        <textarea :value="internalValue"
                               :rows="rows"
                               cols="20"
                               :maxlength="maxLength"
@@ -26,8 +25,43 @@
                               v-bind="field"
                               @input="onInput"
                               @change="onChange"></textarea>
-
-                    <input v-else :value="internalValue"
+                        <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    </template>
+                    <template v-else-if="isClearable">
+                        <template v-if="$slots.inputGroupPrepend || $slots.inputGroupAppend">
+                            <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                            <input :value="internalValue"
+                               :id="uniqueId"
+                               :type="type"
+                               class="form-control"
+                               :class="formControlClass"
+                               style="display: table-cell;"
+                               v-bind="field"
+                               :maxlength="maxLength"
+                               :placeholder="placeholder"
+                               @input="onInput"
+                               @change="onChange" />
+                            <i class="fa fa-times clear-icon clear-position-with-slots" @click="internalValue = ''"></i>
+                            <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                        </template>
+                        <template v-else>
+                            <div class="input-container">
+                                <input :value="internalValue"
+                                   :id="uniqueId"
+                                   :type="type"
+                                   :class="formControlClass"
+                                   v-bind="field"
+                                   :maxlength="maxLength"
+                                   :placeholder="placeholder"
+                                   @input="onInput"
+                                   @change="onChange" />
+                                <i class="fa fa-times clear-icon" @click="internalValue = ''"></i>
+                            </div>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                        <input :value="internalValue"
                            :id="uniqueId"
                            :type="type"
                            :class="formControlClass"
@@ -36,7 +70,8 @@
                            :placeholder="placeholder"
                            @input="onInput"
                            @change="onChange" />
-                    <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                        <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    </template>
                 </div>
                 <slot name="append" :isInputGroupSupported="true" />
             </div>
@@ -101,6 +136,10 @@
         allowHtml: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        isClearable: {
+            type: Boolean as PropType<boolean>,
+            default: false,
         },
         ...standardRockFormFieldProps
     });
@@ -203,3 +242,26 @@
         internalValue.value = props.modelValue;
     });
 </script>
+
+<style scoped>
+
+.input-container {
+    display: flex;
+    align-items: center;
+}
+
+.clear-icon {
+    margin-left: -30px;
+    padding: 10px;
+    cursor: pointer;
+    color: #67717A;
+}
+
+.clear-position-with-slots {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+
+</style>
