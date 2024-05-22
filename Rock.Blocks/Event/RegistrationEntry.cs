@@ -3434,6 +3434,8 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            var isPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed;
+
             var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
@@ -3531,9 +3533,9 @@ namespace Rock.Blocks.Event
                 SavedAccounts = savedAccounts,
 
                 // Payment plan
-                IsPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed,
-                PaymentDeadlineDate = context.RegistrationSettings.PaymentDeadlineDate,
-                PaymentPlanFrequencies = GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ),
+                IsPaymentPlanAllowed = isPaymentPlanAllowed,
+                PaymentDeadlineDate = isPaymentPlanAllowed ? context.RegistrationSettings.PaymentDeadlineDate : null,
+                PaymentPlanFrequencies = isPaymentPlanAllowed ? GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ) : null,
                 IsPaymentPlanConfigured = context.Registration?.IsPaymentPlanActive ?? false,
 
                 // Currency Code
