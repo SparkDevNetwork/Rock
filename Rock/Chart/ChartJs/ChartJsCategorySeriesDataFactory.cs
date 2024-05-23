@@ -240,6 +240,17 @@ namespace Rock.Chart
             return chartData;
         }
 
+        /// <summary>
+        /// Gets the chart data json.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        public string GetChartDataJson( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
+        {
+            var chartData = GetChartDataJsonObjectForSpecificCategoryScale( args );
+            return SerializeJsonObject( chartData );
+        }
+
         #endregion
 
         #region Internal Methods

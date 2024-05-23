@@ -214,6 +214,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts a single entity to a ListItemBag.
+        /// </summary>
+        /// <param name="entity">The entity to be represented by the bag.</param>
+        /// <param name="text">The value to use for the Text property of the ListItemBag.</param>
+        /// <returns>A <see cref="ListItemBag"/> that represents the entity.</returns>
+        public static ListItemBag ToListItemBag( this IEntity entity, string text )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var viewModel = new ListItemBag
+            {
+                Value = entity.Guid.ToString(),
+                Text = text
+            };
+
+            return viewModel;
+        }
+
+        /// <summary>
         /// Converts a collection of entities to ListItemBags.
         /// </summary>
         /// <param name="entities">The entities to be represented by the bags.</param>
@@ -226,6 +248,22 @@ namespace Rock
             }
 
             return entities.Select( e => e.ToListItemBag() ).ToList();
+        }
+
+        /// <summary>
+        /// Converts a collection of entities to ListItemBags.
+        /// </summary>
+        /// <param name="entities">The entities to be represented by the bags.</param>
+        /// <param name="toText">A function that can set the Text property of the ListItemBag for the entity.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> that represents the entities.</returns>
+        public static List<ListItemBag> ToListItemBagList( this IEnumerable<IEntity> entities, Func<IEntity, string> toText )
+        {
+            if ( entities == null )
+            {
+                return new List<ListItemBag>();
+            }
+
+            return entities.Select( e => e.ToListItemBag( toText( e ) ) ).ToList();
         }
 
         /// <summary>

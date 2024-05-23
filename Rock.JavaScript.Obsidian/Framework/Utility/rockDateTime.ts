@@ -406,8 +406,11 @@ export class RockDateTime {
     }
 
     /**
-     * Creates a new RockDateTime instance that represents the end of the month
-     * for this instance.
+     * Creates a new RockDateTime instance that represents the last millisecond
+     * of the end of the month for this instance.
+     *
+     * @example
+     * RockDateTime.fromJSDate(new Date(2014, 3, 3)).endOfMonth().toISOString(); //=> '2014-03-31T23:59:59.999-05:00'
      */
     public endOfMonth(): RockDateTime {
         const dateTime = this.dateTime.endOf("month");

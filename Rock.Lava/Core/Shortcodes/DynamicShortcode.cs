@@ -279,22 +279,28 @@ namespace Rock.Lava
             // Child elements are grouped by <childElementName>, and each collection is passed as a separate parameter to the shortcode template
             // using the variable name "<childElementNameItems>". The first element of the array is also added using the variable name "<childElementName>".
             // Parameters declared on child elements can be referenced in the shortcode template as <childElementName>.<paramName>.
-            Dictionary<string, object> childElements;
+            string residualMarkup = string.Empty;
 
-            string residualMarkup;
-            var childElementsAreValid = ExtractShortcodeBlockChildElements( shortcodeTemplateMarkup, out childElements, out residualMarkup );
-
-            if ( !childElementsAreValid )
+            var shouldParseChildElements = internalMergeFields.Contains( "disablechildelementsparse" ) == false || ( internalMergeFields.Contains( "disablechildelementsparse" ) && internalMergeFields["disablechildelementsparse"].ToString().AsBoolean() == false );
+            if ( shouldParseChildElements )
             {
-                // The residual block markup contains the error message, so write it to the output stream.
-                result.Write( residualMarkup );
-                return;
-            }
+                Dictionary<string, object> childElements;
 
-            // Add the collections of child to the set of parameters that will be passed to the shortcode template.
-            foreach ( var item in childElements )
-            {
-                parms.AddOrReplace( item.Key, item.Value );
+                var childElementsAreValid = ExtractShortcodeBlockChildElements( shortcodeTemplateMarkup, out childElements, out residualMarkup );
+
+                if ( !childElementsAreValid )
+                {
+                    // The residual block markup contains the error message, so write it to the output stream.
+                    result.Write( residualMarkup );
+                    return;
+                }
+
+                // Add the collections of child to the set of parameters that will be passed to the shortcode template.
+                foreach ( var item in childElements )
+                {
+                    parms.AddOrReplace( item.Key, item.Value );
+                }
+
             }
 
             // Set context variables related to the block content so they can be referenced by the shortcode template.

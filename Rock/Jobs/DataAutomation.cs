@@ -283,7 +283,7 @@ Update Family Status: {updateFamilyStatus}
 
                     // Start the person qry by getting any of the people who are currently inactive
                     var personQry = new PersonService( rockContext )
-                        .Queryable().AsNoTracking()
+                        .Queryable( new PersonService.PersonQueryOptions() { IncludeRestUsers = false } ).AsNoTracking()
                         .Where( p =>
                             personIdQry.Contains( p.Id ) &&
                             p.RecordStatusValueId == inactiveStatus.Id );
@@ -487,7 +487,7 @@ Update Family Status: {updateFamilyStatus}
                     var maxRecordCreationDate = RockDateTime.Now.AddDays( settings.RecordsOlderThan * -1 );
                     // Start the person qry by getting any of the people who are currently active and not in the list of people with activity
                     var personQry = new PersonService( rockContext )
-                        .Queryable().AsNoTracking()
+                        .Queryable(new PersonService.PersonQueryOptions() { IncludeRestUsers = false } ).AsNoTracking()
                         .Where( p =>
                             !personIdQry.Contains( p.Id ) &&
                             p.RecordStatusValueId == activeStatus.Id &&
@@ -1252,13 +1252,13 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     dataViewRockContext.Database.CommandTimeout = commandTimeout;
-                    var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
+                    var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {
                         continue;
                     }
 
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                     {
                         DbContext = dataViewRockContext
                     };
@@ -1338,13 +1338,13 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     dataViewRockContext.Database.CommandTimeout = commandTimeout;
-                    var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
+                    var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {
                         continue;
                     }
 
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                     {
                         DbContext = dataViewRockContext
                     };
@@ -1665,13 +1665,13 @@ Update Family Status: {updateFamilyStatus}
                 return null;
             }
 
-            var dataView = new DataViewService( rockContext ).Get( dataviewId.Value );
+            var dataView = DataViewCache.Get( dataviewId.Value );
             if ( dataView == null )
             {
                 return null;
             }
 
-            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
             {
                 DbContext = rockContext
             };

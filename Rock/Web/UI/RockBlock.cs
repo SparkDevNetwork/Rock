@@ -304,7 +304,14 @@ namespace Rock.Web.UI
             {
                 if ( _logger == null )
                 {
-                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                    if ( GetType().FullName.StartsWith( "ASP" ) )
+                    {
+                        _logger = RockLogger.LoggerFactory.CreateLogger( GetType().BaseType.FullName );
+                    }
+                    else
+                    {
+                        _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                    }
                 }
 
                 return _logger;

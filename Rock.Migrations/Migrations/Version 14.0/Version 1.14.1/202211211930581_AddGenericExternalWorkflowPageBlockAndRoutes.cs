@@ -43,9 +43,10 @@ namespace Rock.Migrations
         private void AddGenericExternalWorkflowPageBlock_Up()
         {
             RockMigrationHelper.AddPage( true, SystemGuid.Page.SUPPORT_PAGES_EXTERNAL_SITE, SystemGuid.Layout.FULL_WIDTH, "Generic Workflow Entry", string.Empty, SystemGuid.Page.EXTERNAL_WORKFLOW_ENTRY, "" );
-
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.EXTERNAL_WORKFLOW_ENTRY, "WorkflowEntry/{WorkflowTypeGuid}/{WorkflowGuid}", SystemGuid.PageRoute.EXTERNAL_WORKFLOW_ENTRY_WITH_WORKFLOW );
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.EXTERNAL_WORKFLOW_ENTRY, "WorkflowEntry/{WorkflowTypeGuid}", SystemGuid.PageRoute.EXTERNAL_WORKFLOW_ENTRY );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             RockMigrationHelper.AddBlock( true, SystemGuid.Page.EXTERNAL_WORKFLOW_ENTRY.AsGuid(), null, SystemGuid.Site.EXTERNAL_SITE.AsGuid(), SystemGuid.BlockType.WORKFLOW_ENTRY.AsGuid(), "Generic Workflow Entry", "Main", @"", @"", 0, SystemGuid.Block.EXTERNAL_WORKFLOW_ENTRY );
 

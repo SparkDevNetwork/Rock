@@ -14,10 +14,64 @@
             <div class="control-wrapper">
                 <slot name="prepend" :isInputGroupSupported="true" />
                 <div :class="controlContainerClass">
-                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-                    <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" :class="formControlClass" :placeholder="placeholder" v-bind="field"></textarea>
-                    <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" :autocomplete="disableAutocomplete ? null : 'off'" />
-                    <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    <template v-if="isTextarea">
+                        <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                        <textarea :value="internalValue"
+                              :rows="rows"
+                              cols="20"
+                              :maxlength="maxLength"
+                              :id="uniqueId"
+                              class="form-control"
+                              v-bind="field"
+                              @input="onInput"
+                              @change="onChange"></textarea>
+                        <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    </template>
+                    <template v-else-if="isClearable">
+                        <template v-if="$slots.inputGroupPrepend || $slots.inputGroupAppend">
+                            <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                            <input :value="internalValue"
+                               :id="uniqueId"
+                               :type="type"
+                               class="form-control"
+                               :class="formControlClass"
+                               style="display: table-cell;"
+                               v-bind="field"
+                               :maxlength="maxLength"
+                               :placeholder="placeholder"
+                               @input="onInput"
+                               @change="onChange" />
+                            <i class="fa fa-times clear-icon clear-position-with-slots" @click="internalValue = ''"></i>
+                            <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                        </template>
+                        <template v-else>
+                            <div class="input-container">
+                                <input :value="internalValue"
+                                   :id="uniqueId"
+                                   :type="type"
+                                   :class="formControlClass"
+                                   v-bind="field"
+                                   :maxlength="maxLength"
+                                   :placeholder="placeholder"
+                                   @input="onInput"
+                                   @change="onChange" />
+                                <i class="fa fa-times clear-icon" @click="internalValue = ''"></i>
+                            </div>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                        <input :value="internalValue"
+                           :id="uniqueId"
+                           :type="type"
+                           :class="formControlClass"
+                           v-bind="field"
+                           :maxlength="maxLength"
+                           :placeholder="placeholder"
+                           @input="onInput"
+                           @change="onChange" />
+                        <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    </template>
                 </div>
                 <slot name="append" :isInputGroupSupported="true" />
             </div>
@@ -26,9 +80,8 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, useSlots } from "vue";
+    import { computed, ref, useSlots, watch } from "vue";
     import { PropType } from "vue";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import RockFormField from "./rockFormField.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
@@ -38,6 +91,11 @@
         modelValue: {
             type: String as PropType<string>,
             required: true
+        },
+        /** Internal use to track what modifier flags were applied to modelValue. */
+        modelModifiers: {
+            type: Object as PropType<Record<string, boolean>>,
+            default: () => ({})
         },
         type: {
             type: String as PropType<string>,
@@ -79,6 +137,10 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+        isClearable: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
         ...standardRockFormFieldProps
     });
 
@@ -88,7 +150,7 @@
 
     const slots = useSlots();
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalValue = ref(props.modelValue);
     const fieldProps = useStandardRockFormFieldProps(props);
 
     const isTextarea = computed((): boolean => {
@@ -141,4 +203,65 @@
 
         return rules;
     });
+
+    /**
+     * Event handler for the input field having any modification to the value
+     * happen. This is basically called on every key press.
+     *
+     * @param e The object that describes the event.
+     */
+    function onInput(e: Event): void {
+        if (e.target instanceof HTMLInputElement) {
+            internalValue.value = e.target.value;
+        }
+
+        // Lazy models do not get every single key press.
+        if (!props.modelModifiers.lazy) {
+            emit("update:modelValue", internalValue.value);
+        }
+    }
+
+    /**
+     * Event handler for the input field when the changed value is "committed".
+     * This is basically called when the focus leaves the input field.
+     *
+     * @param e The object that describes the event.
+     */
+    function onChange(e: Event): void {
+        if (e.target instanceof HTMLInputElement) {
+            internalValue.value = e.target.value;
+        }
+
+        // Only send the update if we didn't send it in the onInput handler.
+        if (props.modelModifiers.lazy) {
+            emit("update:modelValue", internalValue.value);
+        }
+    }
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
+    });
 </script>
+
+<style scoped>
+
+.input-container {
+    display: flex;
+    align-items: center;
+}
+
+.clear-icon {
+    margin-left: -30px;
+    padding: 10px;
+    cursor: pointer;
+    color: #67717A;
+}
+
+.clear-position-with-slots {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+
+</style>

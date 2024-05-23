@@ -31,6 +31,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Group Index
     /// </summary>
     /// <seealso cref="Rock.UniversalSearch.IndexModels.IndexModelBase" />
+    [RockLoggingCategory]
     public class GroupIndex : IndexModelBase
     {
         /// <summary>

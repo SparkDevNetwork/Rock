@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
@@ -111,5 +112,21 @@ namespace Rock.ViewModels.Blocks.Core.CampusDetail
         /// </summary>
         /// <value>The URL.</value>
         public string Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the opened date.
+        /// </summary>
+        /// <value>
+        /// The opened date.
+        /// </value>
+        public DateTime? OpenedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the closed date.
+        /// </summary>
+        /// <value>
+        /// The closed date.
+        /// </value>
+        public DateTime? ClosedDate { get; set; }
     }
 }

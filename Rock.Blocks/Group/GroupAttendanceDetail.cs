@@ -90,12 +90,30 @@ namespace Rock.Blocks.Group
         Key = AttributeKey.AllowCampusFilter,
         Order = 4 )]
 
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 5 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 6 )]
+
     [MergeTemplateField(
         "Attendance Roster Template",
         Category = AttributeCategory.None,
         IsRequired = false,
         Key = AttributeKey.AttendanceRosterTemplate,
-        Order = 6 )]
+        Order = 7 )]
 
     [CodeEditorField(
         "List Item Details Template",
@@ -107,7 +125,7 @@ namespace Rock.Blocks.Group
         EditorHeight = 400,
         IsRequired = false,
         Key = AttributeKey.ListItemDetailsTemplate,
-        Order = 7 )]
+        Order = 8 )]
 
     [BooleanField(
         "Restrict Future Occurrence Date",
@@ -116,7 +134,7 @@ namespace Rock.Blocks.Group
         Description = "Should user be prevented from selecting a future Occurrence date?",
         IsRequired = false,
         Key = AttributeKey.RestrictFutureOccurrenceDate,
-        Order = 8 )]
+        Order = 9 )]
 
     [BooleanField(
         "Show Notes",
@@ -125,7 +143,7 @@ namespace Rock.Blocks.Group
         Description = "Should the notes field be displayed?",
         IsRequired = false,
         Key = AttributeKey.ShowNotes,
-        Order = 9 )]
+        Order = 10 )]
 
     [TextField(
         "Attendance Note Label",
@@ -134,7 +152,7 @@ namespace Rock.Blocks.Group
         Description = "The text to use to describe the notes",
         IsRequired = true,
         Key = AttributeKey.AttendanceNoteLabel,
-        Order = 10 )]
+        Order = 11 )]
 
     [DefinedValueField(
         "Configured Attendance Types",
@@ -145,7 +163,7 @@ namespace Rock.Blocks.Group
         Description = "The Attendance types that an occurrence can have. If no or one Attendance type is selected, then none will be shown.",
         IsRequired = false,
         Key = AttributeKey.AttendanceOccurrenceTypes,
-        Order = 11 )]
+        Order = 12 )]
 
     [TextField(
         "Attendance Type Label",
@@ -154,7 +172,7 @@ namespace Rock.Blocks.Group
         Description = "The label that will be shown for the attendance types section.",
         IsRequired = false,
         Key = AttributeKey.AttendanceOccurrenceTypesLabel,
-        Order = 12 )]
+        Order = 13 )]
 
     [BooleanField(
         "Disable Long-List",
@@ -163,7 +181,7 @@ namespace Rock.Blocks.Group
         Description = "Will disable the long-list feature which groups individuals by the first character of their last name. When enabled, this only shows when there are more than 50 individuals on the list.",
         IsRequired = false,
         Key = AttributeKey.DisableLongList,
-        Order = 13 )]
+        Order = 14 )]
 
     [BooleanField(
         "Disable Did Not Meet",
@@ -172,7 +190,7 @@ namespace Rock.Blocks.Group
         Description = "Allows for hiding the flag that the group did not meet.",
         IsRequired = false,
         Key = AttributeKey.DisableDidNotMeet,
-        Order = 14 )]
+        Order = 15 )]
 
     [BooleanField(
         "Hide Back Button",
@@ -181,7 +199,7 @@ namespace Rock.Blocks.Group
         Description = "Will hide the back button from the bottom of the block.",
         IsRequired = false,
         Key = AttributeKey.HideBackButton,
-        Order = 15 )]
+        Order = 16 )]
 
     [EnumField(
         "Date Selection Mode",
@@ -191,7 +209,7 @@ namespace Rock.Blocks.Group
         EnumSourceType = typeof( DateSelectionModeSpecifier ),
         IsRequired = true,
         Key = AttributeKey.DateSelectionMode,
-        Order = 16 )]
+        Order = 17 )]
 
     [IntegerField(
         "Number of Previous Days To Show",
@@ -200,7 +218,7 @@ namespace Rock.Blocks.Group
         Description = "When the 'Pick From Schedule' option is used, this setting will control how many days back appear in the drop down list to choose from.",
         IsRequired = false,
         Key = AttributeKey.NumberOfPreviousDaysToShow,
-        Order = 17 )]
+        Order = 18 )]
 
     #endregion
 
@@ -261,6 +279,8 @@ namespace Rock.Blocks.Group
             public const string AddPersonAs = "AddPersonAs";
             public const string GroupMemberAddPage = "GroupMemberAddPage";
             public const string AllowCampusFilter = "AllowCampusFilter";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string AttendanceRosterTemplate = "AttendanceRosterTemplate";
             public const string ListItemDetailsTemplate = "ListItemDetailsTemplate";
             public const string RestrictFutureOccurrenceDate = "RestrictFutureOccurrenceDate";
@@ -372,6 +392,22 @@ namespace Rock.Blocks.Group
         ///   <c>true</c> if filtering by campus is allowed; otherwise, <c>false</c>.
         /// </value>
         private bool IsCampusFilteringAllowed => GetAttributeValue( AttributeKey.AllowCampusFilter ).AsBoolean();
+
+        /// <summary>
+        /// Campus type defined value guids that limit which campuses are included in the list of available campuses in the campus picker.
+        /// </summary>
+        /// <value>
+        /// The campus type filter.
+        /// </value>
+        private List<Guid> CampusTypeFilter => GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues( true ).AsGuidList();
+
+        /// <summary>
+        /// Campus status defined value guids that limit which campuses are included in the list of available campuses in the campus picker.
+        /// </summary>
+        /// <value>
+        /// The campus status filter.
+        /// </value>
+        private List<Guid> CampusStatusFilter => GetAttributeValue( AttributeKey.CampusStatuses ).SplitDelimitedValues( true ).AsGuidList();
 
         /// <summary>
         /// Gets the attendance roster template unique identifier.
@@ -1398,6 +1434,8 @@ namespace Rock.Blocks.Group
                 IsNotesSectionHidden = this.IsNotesSectionHidden,
                 NotesSectionLabel = this.NotesSectionLabel,
                 NumberOfPreviousDaysToShow = this.NumberOfPreviousDaysToShow,
+                CampusStatusFilter = this.CampusStatusFilter,
+                CampusTypeFilter = this.CampusTypeFilter,
             };
 
             var groupGuid = group.Guid;

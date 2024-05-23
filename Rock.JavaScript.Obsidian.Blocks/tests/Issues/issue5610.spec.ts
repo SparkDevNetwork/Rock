@@ -359,7 +359,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "<div class='row'><div class='col-md-6'>",
                     "postHtml": "    </div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "4ab11894-2b0a-43a4-89ba-d2f69935fb67",
@@ -372,7 +373,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "    <div class='col-md-6'>",
                     "postHtml": "    </div></div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "f8d52608-9763-43c6-98c4-d2a6e89e4f95",
@@ -413,7 +415,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": true
+                    "isSharedValue": true,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "8d0045c6-ded4-4771-9164-f17bbefaa338",
@@ -442,7 +445,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": true
+                    "isSharedValue": true,
+                    "isLockedIfValuesExist": false
                 }
             ]
         }
@@ -695,5 +699,7 @@ const configurationValues: RegistrationEntryInitializationBox = {
     ],
     "hideProgressBar": false,
     "showSmsOptIn": false,
+    "isPaymentPlanAllowed": false,
+    "isPaymentPlanConfigured": false,
     "disableCaptchaSupport": true
 };

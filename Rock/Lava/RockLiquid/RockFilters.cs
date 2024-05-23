@@ -69,6 +69,7 @@ namespace Rock.Lava
     /// This class is marked for internal use because it should only be used in the context of resolving a Lava template.
     /// </remarks>
     [RockInternal( "1.15", true )]
+    [RockLoggingCategory]
     public static class RockFilters
     {
         static Random _randomNumberGenerator = new Random();

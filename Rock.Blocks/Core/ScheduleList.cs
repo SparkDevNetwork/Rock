@@ -78,7 +78,7 @@ namespace Rock.Blocks.Core
             public const string CategoryGuid = "CategoryGuid";
         }
 
-        public static class PreferenceKey
+        private static class PreferenceKey
         {
             public const string FilterCategory = "filter-category";
             public const string FilterActiveStatus = "filter-active-status";

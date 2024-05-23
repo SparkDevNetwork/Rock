@@ -348,7 +348,7 @@ namespace RockWeb.Blocks.Event
                     .AsNoTracking()
                     .Where( r => r.Id == _registrationInstance.Id )
                     .SelectMany( r => r.Registrations )
-                    .GetPaymentPlanPairs()
+                    .SelectPaymentPlanPairs()
                     // Must call ToList here to use the Registration.BalanceDue property below.
                     .ToList();
 

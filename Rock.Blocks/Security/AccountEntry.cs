@@ -245,19 +245,37 @@ namespace Rock.Blocks.Security
         DefaultValue = "Campus",
         Order = 23 )]
 
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 24 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 25 )]
+
     [BooleanField( "Save Communication History",
         Key = AttributeKey.CreateCommunicationRecord,
         Description = "Should a record of communication from this block be saved to the recipient's profile?",
         DefaultBooleanValue = false,
         ControlType = Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
-        Order = 24 )]
+        Order = 26 )]
 
     [BooleanField(
         "Show Gender",
         Key = AttributeKey.ShowGender,
         Description = "Determines if the gender selection field should be shown.",
         DefaultBooleanValue = true,
-        Order = 25 )]
+        Order = 27 )]
 
     [AttributeCategoryField(
         "Attribute Categories",
@@ -266,14 +284,14 @@ namespace Rock.Blocks.Security
         AllowMultiple = true,
         EntityTypeName = "Rock.Model.Person",
         IsRequired = false,
-        Order = 26 )]
+        Order = 28 )]
 
     [BooleanField(
         "Disable Username Availability Checking",
         Key = AttributeKey.DisableUsernameAvailabilityCheck,
         Description = "Disables username availability checking.",
         DefaultBooleanValue = false,
-        Order = 27 )]
+        Order = 29 )]
 
     [SystemCommunicationField(
         "Confirm Account (Passwordless)",
@@ -282,7 +300,7 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT_PASSWORDLESS,
         Category = "Email Templates",
-        Order = 28 )]
+        Order = 30 )]
 
     [TextField(
         "Confirm Caption (Passwordless)",
@@ -290,14 +308,14 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         DefaultValue = "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We’ve sent you an email that contains a code for confirming.  Please enter the code from your email to continue.",
         Category = "Captions",
-        Order = 29 )]
+        Order = 31 )]
 
     [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         DefaultBooleanValue = false,
-        Order = 30 )]
+        Order = 32 )]
 
     #endregion
 
@@ -333,6 +351,8 @@ namespace Rock.Blocks.Security
             public const string PhoneTypesRequired = "PhoneTypesRequired";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string CreateCommunicationRecord = "CreateCommunicationRecord";
             public const string ShowGender = "ShowGender";
             public const string AttributeCategories = "AttributeCategories";
@@ -1085,6 +1105,8 @@ namespace Rock.Blocks.Security
                 IsGenderPickerShown = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean(),
                 AccountEntryPersonInfoBag = accountEntryPersonInfoBag,
                 DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                CampusStatusFilter = GetAttributeValue( AttributeKey.CampusStatuses ).SplitDelimitedValues( true ).AsGuidList(),
+                CampusTypeFilter = GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues( true ).AsGuidList()
             };
         }
 

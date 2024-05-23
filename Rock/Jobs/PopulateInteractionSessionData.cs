@@ -67,6 +67,7 @@ namespace Rock.Jobs
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of Interactions, this could take several hours or more.",
         IsRequired = false,
         DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
+    [RockLoggingCategory]
     public class PopulateInteractionSessionData : RockJob
     {
         #region Keys

@@ -100,6 +100,14 @@ namespace Rock.Chart
             }
         }
 
+        /// <summary>
+        /// Gets or sets the date format string.
+        /// </summary>
+        /// <value>
+        /// The date format string.
+        /// </value>
+        public string DateFormatString { get; set; }
+
         #endregion
 
         #region Chart.js JSON Renderer
@@ -490,7 +498,7 @@ namespace Rock.Chart
 
                 while ( thisDate < lastDateNextWeek )
                 {
-                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
+                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatString ?? DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
 
                     categoryDataPoints.Add( categoryDataPoint );
 
@@ -504,7 +512,7 @@ namespace Rock.Chart
 
                 while ( thisDate < lastDateNextDay )
                 {
-                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatStringMonthYear ), SortKey = thisDate.ToString( "yyyyMM" ) };
+                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatString ?? DateFormatStringMonthYear ), SortKey = thisDate.ToString( "yyyyMM" ) };
 
                     categoryDataPoints.Add( categoryDataPoint );
 
@@ -586,7 +594,7 @@ namespace Rock.Chart
                         .GroupBy( x => new { Day = x.DateTime } )
                         .Select( x => new ChartJsCategorySeriesDataPoint
                         {
-                            Category = x.Key.Day.ToString( DateFormatStringDayMonthYear ),
+                            Category = x.Key.Day.ToString( DateFormatString ?? DateFormatStringDayMonthYear ),
                             Value = x.Sum( y => y.Value ),
                             SortKey = x.Key.Day.ToString( "yyyyMMdd" ),
                         } )
@@ -601,7 +609,7 @@ namespace Rock.Chart
                         .GroupBy( x => new { Month = new DateTime( x.DateTime.Year, x.DateTime.Month, 1 ) } )
                         .Select( x => new ChartJsCategorySeriesDataPoint
                         {
-                            Category = x.Key.Month.ToString( DateFormatStringMonthYear ),
+                            Category = x.Key.Month.ToString( DateFormatString ?? DateFormatStringMonthYear ),
                             Value = x.Sum( y => y.Value ),
                             SortKey = x.Key.Month.ToString( "yyyyMM" ),
                         } )

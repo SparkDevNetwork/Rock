@@ -24,6 +24,9 @@
                                     label="Status"
                                     :definedTypeGuid="DefinedType.CampusStatus" />
 
+                <DatePicker v-model="openedDate"
+                            label="Opened Date" />
+
                 <TextBox v-model="shortCode"
                          label="Code" />
 
@@ -45,6 +48,9 @@
                 <DefinedValuePicker v-model="campusTypeValue"
                                     label="Type"
                                     :definedTypeGuid="DefinedType.CampusType" />
+
+                <DatePicker v-model="closedDate"
+                            label="Closed Date" />
 
                 <UrlLinkBox v-model="url"
                             label="URL"
@@ -84,6 +90,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
 
     const props = defineProps({
         modelValue: {
@@ -118,6 +125,8 @@
     const shortCode = propertyRef(props.modelValue.bag?.shortCode ?? "", "ShortCode");
     const timeZoneId = propertyRef(props.modelValue.bag?.timeZoneId ?? "", "TimeZoneId");
     const url = propertyRef(props.modelValue.bag?.url ?? "", "Url");
+    const openedDate = propertyRef(props.modelValue.bag?.openedDate ?? "", "OpenedDate");
+    const closedDate = propertyRef(props.modelValue.bag?.closedDate ?? "", "ClosedDate");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -132,7 +141,9 @@
         serviceTimes,
         shortCode,
         timeZoneId,
-        url];
+        url,
+        openedDate,
+        closedDate];
 
     // #endregion
 
@@ -173,6 +184,8 @@
         updateRefValue(shortCode, props.modelValue.bag?.shortCode ?? "");
         updateRefValue(timeZoneId, props.modelValue.bag?.timeZoneId ?? "");
         updateRefValue(url, props.modelValue.bag?.url ?? "");
+        updateRefValue(openedDate, props.modelValue.bag?.openedDate ?? "");
+        updateRefValue(closedDate, props.modelValue.bag?.closedDate ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -195,6 +208,8 @@
         setPropertiesBoxValue(newValue, "shortCode", shortCode.value);
         setPropertiesBoxValue(newValue, "timeZoneId", timeZoneId.value);
         setPropertiesBoxValue(newValue, "url", url.value);
+        setPropertiesBoxValue(newValue, "openedDate", openedDate.value);
+        setPropertiesBoxValue(newValue, "closedDate", closedDate.value);
 
         emit("update:modelValue", newValue);
     });

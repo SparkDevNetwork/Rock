@@ -235,10 +235,12 @@ namespace Rock.Migrations
         /// </summary>
         private void TVPageRoutes()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPS, "admin/cms/appletv-applications" );
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPLICATION_DETAIL, "admin/cms/appletv-applications/{SiteId}" );
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPLICATION_SCREEN_DETAIL, "admin/cms/appletv-applications/{SiteId}/{PageId}" );
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.MOBILE_SITE_PAGES, "admin/cms/mobile-applications/{SiteId}/{Page}" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }

@@ -2909,11 +2909,11 @@ namespace RockWeb.Blocks.Event
                     {
                         // So, here we should probably grab the "first" registrant from the State.
                         var firstRegistrantInfo = RegistrationState.Registrants.FirstOrDefault();
-                        bool forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+                        var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
-                        string firstName = firstRegistrantInfo.GetFirstName( RegistrationTemplate );
-                        string lastName = firstRegistrantInfo.GetLastName( RegistrationTemplate );
-                        string email = firstRegistrantInfo.GetEmail( RegistrationTemplate );
+                        var firstName = firstRegistrantInfo.GetFirstName( RegistrationTemplate );
+                        var lastName = firstRegistrantInfo.GetLastName( RegistrationTemplate );
+                        var email = firstRegistrantInfo.GetEmail( RegistrationTemplate );
                         var birthday = firstRegistrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate ).ToStringSafe().AsDateTime();
                         var mobilePhone = firstRegistrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone ).ToStringSafe();
 
@@ -3031,11 +3031,28 @@ namespace RockWeb.Blocks.Event
                     var personChanges = new History.HistoryChangeList();
 
                     RegistrationRegistrant registrant = null;
-                    Person person = null;
+                    Person registrantPerson = null;
 
-                    string firstName = registrantInfo.GetFirstName( RegistrationTemplate );
-                    string lastName = registrantInfo.GetLastName( RegistrationTemplate );
-                    string email = registrantInfo.GetEmail( RegistrationTemplate );
+                    var firstName = registrantInfo.GetFirstName( RegistrationTemplate );
+                    var lastName = registrantInfo.GetLastName( RegistrationTemplate );
+
+                    /*
+                        5/20/2024 - JMH
+
+                        In this specific scenario, the single registrant is initialized with values from the authenticated person
+
+                         - One registrant is being registered.
+                         - The person filling out the registration (not necessarily the registrar) is authenticated.
+                         - The registration template does not have an Email form field.
+
+                        var email = registrantInfo.GetEmail( RegistrationTemplate ) returns the authenticated person's email
+                        which caused the registrant's email to be updated with the authenticated person's
+                        email when personService.FindPerson() is invoked (as reported in https://github.com/SparkDevNetwork/Rock/issues/5853).
+
+                        Instead of using a fallback, we will try to retrieve the email from the Email form field and allow null if missing.
+                        The subsequent logic will take care of matching a person to the registrant info.
+                     */
+                    var email = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Email )?.ToString();
 
                     /*
                         10/11/2023 - DSH
@@ -3098,8 +3115,8 @@ namespace RockWeb.Blocks.Event
                         registrant = registration.Registrants.FirstOrDefault( r => r.Id == registrantInfo.Id );
                         if ( registrant != null )
                         {
-                            person = registrant.Person;
-                            if ( person != null && (
+                            registrantPerson = registrant.Person;
+                            if ( registrantPerson != null && (
                                 ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
                                 registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
                             {
@@ -3107,7 +3124,7 @@ namespace RockWeb.Blocks.Event
                             }
                             else
                             {
-                                person = null;
+                                registrantPerson = null;
                                 registrant.PersonAlias = null;
                                 registrant.PersonAliasId = null;
                             }
@@ -3115,24 +3132,24 @@ namespace RockWeb.Blocks.Event
                         else if ( registrantInfo.PersonId.HasValue )
                         {
                             // This can happen if the page has reloaded due to an error. The person was saved to the DB and we don't want to add them again.
-                            person = personService.Get( registrantInfo.PersonId.Value );
+                            registrantPerson = personService.Get( registrantInfo.PersonId.Value );
                         }
                     }
                     else
                     {
                         if ( registrantInfo.PersonId.HasValue && RegistrationTemplate.ShowCurrentFamilyMembers )
                         {
-                            person = personService.Get( registrantInfo.PersonId.Value );
+                            registrantPerson = personService.Get( registrantInfo.PersonId.Value );
                         }
                     }
 
-                    if ( person == null )
+                    if ( registrantPerson == null )
                     {
                         // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
                         var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
-                        person = personService.FindPerson( personQuery, true );
+                        registrantPerson = personService.FindPerson( personQuery, true );
 
-                        if ( person != null && personIdsRegisteredWithinThisSession.Contains( person.Id ) )
+                        if ( registrantPerson != null && personIdsRegisteredWithinThisSession.Contains( registrantPerson.Id ) )
                         {
                             /*
                                 1/8/2024 - JPH
@@ -3148,11 +3165,11 @@ namespace RockWeb.Blocks.Event
 
                                 Reason: Attempt to prevent merging different people based on an over-confident match result.
                             */
-                            person = null;
+                            registrantPerson = null;
                         }
 
                         // Try to find a matching person based on name within same family as registrar
-                        if ( person == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
+                        if ( registrantPerson == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
                         {
                             var familyMembers = registrar.GetFamilyMembers( true, rockContext )
                                 .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
@@ -3161,10 +3178,10 @@ namespace RockWeb.Blocks.Event
 
                             if ( familyMembers.Count() == 1 )
                             {
-                                person = familyMembers.First();
+                                registrantPerson = familyMembers.First();
                                 if ( !string.IsNullOrWhiteSpace( email ) )
                                 {
-                                    person.Email = email;
+                                    registrantPerson.Email = email;
                                 }
                             }
 
@@ -3177,7 +3194,7 @@ namespace RockWeb.Blocks.Event
                                     .ToList();
                                 if ( familyMembers.Count() == 1 )
                                 {
-                                    person = familyMembers.First();
+                                    registrantPerson = familyMembers.First();
                                 }
                             }
                         }
@@ -3196,37 +3213,51 @@ namespace RockWeb.Blocks.Event
                       * any time it is called. This prevents us from creating duplicate Person entities for
                       * both the Registrar and first Registrant who are the same person in this scenario.
                     */
-                    bool isCreatedAsRegistrant = RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == RegistrationState.Registrants.FirstOrDefault();
+                    var isCreatedAsRegistrant = RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == RegistrationState.Registrants.FirstOrDefault();
 
-                    if ( person == null )
+                    if ( registrantPerson == null )
                     {
                         if ( isCreatedAsRegistrant )
                         {
-                            person = registrar;
+                            registrantPerson = registrar;
                         }
                         else
                         {
                             // If a match was not found, create a new person
-                            person = new Person();
-                            person.FirstName = firstName;
-                            person.LastName = lastName;
-                            person.IsEmailActive = true;
-                            person.Email = email;
-                            person.EmailPreference = EmailPreference.EmailAllowed;
-                            person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                            registrantPerson = new Person();
+                            registrantPerson.FirstName = firstName;
+                            registrantPerson.LastName = lastName;
+                            registrantPerson.IsEmailActive = true;
+                            registrantPerson.Email = email;
+                            registrantPerson.EmailPreference = EmailPreference.EmailAllowed;
+                            registrantPerson.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                             if ( dvcConnectionStatus != null )
                             {
-                                person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                                registrantPerson.ConnectionStatusValueId = dvcConnectionStatus.Id;
                             }
 
                             if ( dvcRecordStatus != null )
                             {
-                                person.RecordStatusValueId = dvcRecordStatus.Id;
+                                registrantPerson.RecordStatusValueId = dvcRecordStatus.Id;
                             }
                         }
                     }
 
-                    int? campusId = CampusId;
+                    if ( registrantPerson != null && registrantPerson.Id > 0 )
+                    {
+                        // registrantPerson should not be null at this point but adding that condition just in case.
+
+                        // Keep the registrant info person in sync with the matched person.
+                        registrantInfo.PersonId = registrantPerson.Id;
+                    }
+                    else
+                    {
+                        // An existing person was not matched, but a new one will be created.
+                        // Clear the registrant info person for now until the new person is created.
+                        registrantInfo.PersonId = null;
+                    }
+
+                    var campusId = CampusId;
                     var updateExistingCampus = false;
                     Location location = null;
 
@@ -3245,12 +3276,12 @@ namespace RockWeb.Blocks.Event
                             {
                                 case RegistrationPersonFieldType.Email:
                                     // Only update the person's email if they are in the same family as the logged in person (not the registrar)
-                                    var isFamilyMember = CurrentPersonId.HasValue && person.GetFamilies().ToList().Select( f => f.ActiveMembers().Where( m => m.PersonId == CurrentPerson.Id ) ).Any();
+                                    var isFamilyMember = CurrentPersonId.HasValue && registrantPerson.GetFamilies().ToList().Select( f => f.ActiveMembers().Where( m => m.PersonId == CurrentPerson.Id ) ).Any();
                                     if ( isFamilyMember )
                                     {
                                         email = fieldValue.ToString().Trim();
-                                        History.EvaluateChange( personChanges, "Email", person.Email, email );
-                                        person.Email = email;
+                                        History.EvaluateChange( personChanges, "Email", registrantPerson.Email, email );
+                                        registrantPerson.Email = email;
                                     }
                                     break;
 
@@ -3261,8 +3292,8 @@ namespace RockWeb.Blocks.Event
 
                                 case RegistrationPersonFieldType.MiddleName:
                                     string middleName = fieldValue.ToString().Trim();
-                                    History.EvaluateChange( personChanges, "Middle Name", person.MiddleName, middleName );
-                                    person.MiddleName = middleName;
+                                    History.EvaluateChange( personChanges, "Middle Name", registrantPerson.MiddleName, middleName );
+                                    registrantPerson.MiddleName = middleName;
                                     break;
 
                                 case RegistrationPersonFieldType.Address:
@@ -3270,73 +3301,73 @@ namespace RockWeb.Blocks.Event
                                     break;
 
                                 case RegistrationPersonFieldType.Birthdate:
-                                    var oldBirthMonth = person.BirthMonth;
-                                    var oldBirthDay = person.BirthDay;
-                                    var oldBirthYear = person.BirthYear;
+                                    var oldBirthMonth = registrantPerson.BirthMonth;
+                                    var oldBirthDay = registrantPerson.BirthDay;
+                                    var oldBirthYear = registrantPerson.BirthYear;
 
-                                    person.SetBirthDate( fieldValue as DateTime? );
+                                    registrantPerson.SetBirthDate( fieldValue as DateTime? );
 
-                                    History.EvaluateChange( personChanges, "Birth Month", oldBirthMonth, person.BirthMonth );
-                                    History.EvaluateChange( personChanges, "Birth Day", oldBirthDay, person.BirthDay );
-                                    History.EvaluateChange( personChanges, "Birth Year", oldBirthYear, person.BirthYear );
+                                    History.EvaluateChange( personChanges, "Birth Month", oldBirthMonth, registrantPerson.BirthMonth );
+                                    History.EvaluateChange( personChanges, "Birth Day", oldBirthDay, registrantPerson.BirthDay );
+                                    History.EvaluateChange( personChanges, "Birth Year", oldBirthYear, registrantPerson.BirthYear );
                                     break;
 
                                 case RegistrationPersonFieldType.Grade:
                                     var newGraduationYear = fieldValue.ToString().AsIntegerOrNull();
-                                    History.EvaluateChange( personChanges, "Graduation Year", person.GraduationYear, newGraduationYear );
-                                    person.GraduationYear = newGraduationYear;
+                                    History.EvaluateChange( personChanges, "Graduation Year", registrantPerson.GraduationYear, newGraduationYear );
+                                    registrantPerson.GraduationYear = newGraduationYear;
                                     break;
 
                                 case RegistrationPersonFieldType.Gender:
                                     var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
-                                    History.EvaluateChange( personChanges, "Gender", person.Gender, newGender );
-                                    person.Gender = newGender;
+                                    History.EvaluateChange( personChanges, "Gender", registrantPerson.Gender, newGender );
+                                    registrantPerson.Gender = newGender;
                                     break;
 
                                 case RegistrationPersonFieldType.MaritalStatus:
                                     if ( fieldValue != null )
                                     {
-                                        int? newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
-                                        History.EvaluateChange( personChanges, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
-                                        person.MaritalStatusValueId = newMaritalStatusId;
+                                        var newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
+                                        History.EvaluateChange( personChanges, "Marital Status", DefinedValueCache.GetName( registrantPerson.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
+                                        registrantPerson.MaritalStatusValueId = newMaritalStatusId;
                                     }
 
                                     break;
 
                                 case RegistrationPersonFieldType.AnniversaryDate:
-                                    var oldAnniversaryDate = person.AnniversaryDate;
-                                    person.AnniversaryDate = fieldValue.ToString().AsDateTime();
-                                    History.EvaluateChange( personChanges, "Anniversary Date", oldAnniversaryDate, person.AnniversaryDate );
+                                    var oldAnniversaryDate = registrantPerson.AnniversaryDate;
+                                    registrantPerson.AnniversaryDate = fieldValue.ToString().AsDateTime();
+                                    History.EvaluateChange( personChanges, "Anniversary Date", oldAnniversaryDate, registrantPerson.AnniversaryDate );
                                     break;
 
                                 case RegistrationPersonFieldType.MobilePhone:
-                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges );
+                                    SavePhone( fieldValue, registrantPerson, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges );
                                     break;
 
                                 case RegistrationPersonFieldType.HomePhone:
-                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges );
+                                    SavePhone( fieldValue, registrantPerson, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges );
                                     break;
 
                                 case RegistrationPersonFieldType.WorkPhone:
-                                    SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
+                                    SavePhone( fieldValue, registrantPerson, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
                                     break;
 
                                 case RegistrationPersonFieldType.ConnectionStatus:
                                     var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
-                                    History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
-                                    person.ConnectionStatusValueId = newConnectionStatusId;
+                                    History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( registrantPerson.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
+                                    registrantPerson.ConnectionStatusValueId = newConnectionStatusId;
                                     break;
 
                                 case RegistrationPersonFieldType.Race:
                                     var raceValueId = fieldValue.ToString().AsIntegerOrNull();
-                                    History.EvaluateChange( personChanges, "Race", DefinedValueCache.GetName( person.RaceValueId ), DefinedValueCache.GetName( raceValueId ) );
-                                    person.RaceValueId = raceValueId;
+                                    History.EvaluateChange( personChanges, "Race", DefinedValueCache.GetName( registrantPerson.RaceValueId ), DefinedValueCache.GetName( raceValueId ) );
+                                    registrantPerson.RaceValueId = raceValueId;
                                     break;
 
                                 case RegistrationPersonFieldType.Ethnicity:
                                     var ethnicityValueId = fieldValue.ToString().AsIntegerOrNull();
-                                    History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( person.EthnicityValueId ), DefinedValueCache.GetName( ethnicityValueId ) );
-                                    person.EthnicityValueId = ethnicityValueId;
+                                    History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( registrantPerson.EthnicityValueId ), DefinedValueCache.GetName( ethnicityValueId ) );
+                                    registrantPerson.EthnicityValueId = ethnicityValueId;
                                     break;
                             }
                         }
@@ -3345,13 +3376,13 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Save the person ( and family if needed )
-                    SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateExistingCampus );
+                    SavePerson( rockContext, registrantPerson, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateExistingCampus );
 
                     // Take note of this registered person identifier.
-                    personIdsRegisteredWithinThisSession.Add( person.Id );
+                    personIdsRegisteredWithinThisSession.Add( registrantPerson.Id );
 
                     // Load the person's attributes
-                    person.LoadAttributes();
+                    registrantPerson.LoadAttributes();
 
                     // Set any of the template's person fields
                     foreach ( var field in RegistrationTemplate.Forms
@@ -3371,16 +3402,15 @@ namespace RockWeb.Blocks.Event
                             var attribute = AttributeCache.Get( field.AttributeId.Value );
                             if ( attribute != null )
                             {
-                                string originalValue = person.GetAttributeValue( attribute.Key );
-                                string newValue = fieldValue.ToString();
-                                person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+                                var originalValue = registrantPerson.GetAttributeValue( attribute.Key );
+                                var newValue = fieldValue.ToString();
+                                registrantPerson.SetAttributeValue( attribute.Key, fieldValue.ToString() );
 
                                 // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
                                 if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
                                     attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
                                 {
-                                    DateTime aDateTime;
-                                    if ( DateTime.TryParse( newValue, out aDateTime ) )
+                                    if ( DateTime.TryParse( newValue, out var aDateTime ) )
                                     {
                                         newValue = aDateTime.ToString( "o" );
                                     }
@@ -3388,19 +3418,19 @@ namespace RockWeb.Blocks.Event
 
                                 if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
-                                    string formattedOriginalValue = string.Empty;
+                                    var formattedOriginalValue = string.Empty;
                                     if ( !string.IsNullOrWhiteSpace( originalValue ) )
                                     {
                                         formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
                                     }
 
-                                    string formattedNewValue = string.Empty;
+                                    var formattedNewValue = string.Empty;
                                     if ( !string.IsNullOrWhiteSpace( newValue ) )
                                     {
                                         formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
                                     }
 
-                                    Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
+                                    Helper.SaveAttributeValue( registrantPerson, attribute, newValue, rockContext );
                                     History.EvaluateChange( personChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                                 }
                             }
@@ -3409,7 +3439,7 @@ namespace RockWeb.Blocks.Event
                         field.NoteFieldDetailsIfRequiredAndMissing( missingFieldsByFormId, fieldValue );
                     }
 
-                    string registrantName = person.FullName + ": ";
+                    var registrantName = registrantPerson.FullName + ": ";
 
                     personChanges.ForEach( c => registrantChanges.Add( c ) );
 
@@ -3422,7 +3452,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     registrant.OnWaitList = registrantInfo.OnWaitList;
-                    registrant.PersonAliasId = person.PrimaryAliasId;
+                    registrant.PersonAliasId = registrantPerson.PrimaryAliasId;
                     registrant.Cost = registrantInfo.Cost;
                     registrant.DiscountApplies = registrantInfo.DiscountApplies;
 
@@ -3485,7 +3515,7 @@ namespace RockWeb.Blocks.Event
                                 templateFee = RegistrationTemplate.Fees.Where( f => f.Id == uiFee.Key ).FirstOrDefault();
                             }
 
-                            string feeName = templateFee != null ? templateFee.Name : "Fee";
+                            var feeName = templateFee != null ? templateFee.Name : "Fee";
                             if ( !string.IsNullOrWhiteSpace( uiFeeOption.FeeLabel ) )
                             {
                                 feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.FeeLabel );
@@ -3571,7 +3601,7 @@ namespace RockWeb.Blocks.Event
                             Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                             registration.Id,
                             registrantChanges,
-                            "Registrant: " + person.FullName,
+                            "Registrant: " + registrantPerson.FullName,
                             null,
                             null,
                             true,
@@ -3588,8 +3618,8 @@ namespace RockWeb.Blocks.Event
                             var document = new SignatureDocument();
                             document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
                             document.DocumentKey = registrantInfo.SignatureDocumentKey;
-                            document.Name = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), person.FullName.RemoveSpecialCharacters() );
-                            document.AppliesToPersonAliasId = person.PrimaryAliasId;
+                            document.Name = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), registrantPerson.FullName.RemoveSpecialCharacters() );
+                            document.AppliesToPersonAliasId = registrantPerson.PrimaryAliasId;
                             document.AssignedToPersonAliasId = registrar.PrimaryAliasId;
                             document.SignedByPersonAliasId = registrar.PrimaryAliasId;
                             document.Status = SignatureDocumentStatus.Signed;
@@ -3629,7 +3659,10 @@ namespace RockWeb.Blocks.Event
                         ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
                     }
 
-                    registrantInfo.PersonId = person.Id;
+                    // Since the registrantPerson may be a new Person record created in this method,
+                    // and since the RockContext has been saved by this point,
+                    // update the person identifier on the registrant info to keep them in sync.
+                    registrantInfo.PersonId = registrantPerson.Id;
 
                     index++;
 

@@ -1729,11 +1729,36 @@ namespace RockWeb.Blocks.Event
                 hlCost.Visible = true;
                 hlCost.Text = registration.DiscountedCost.FormatAsCurrency();
 
-                decimal balanceDue = registration.BalanceDue;
+                var balanceDue = registration.BalanceDue;
                 hlBalance.Visible = true;
                 hlBalance.Text = balanceDue.FormatAsCurrency();
-                hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger :
-                    balanceDue < 0 ? LabelType.Warning : LabelType.Success;
+                
+                var isPaymentPlanActive = registration.IsPaymentPlanActive;
+
+                if ( balanceDue > 0.0m )
+                {
+                    if ( !isPaymentPlanActive )
+                    {
+                        hlBalance.LabelType = LabelType.Danger;
+                    }
+                    else
+                    {
+                        hlBalance.LabelType = LabelType.Warning;
+                    }
+                }
+                else if ( balanceDue < 0.0m )
+                {
+                    hlBalance.LabelType = LabelType.Warning;
+                }
+                else
+                {
+                    hlBalance.LabelType = LabelType.Success;
+                }
+
+                if ( isPaymentPlanActive )
+                {
+                    hlBalance.IconCssClass = "fa fa-calendar-day";
+                }
             }
             else
             {
@@ -2426,9 +2451,22 @@ namespace RockWeb.Blocks.Event
                 lNextPaymentDate.Text = nextPaymentDate.Value.ToShortDateString();
                 lNextPaymentDate.Visible = true;
 
-                // Disallow updates if the next payment date is today.
-                lbChangePaymentPlan.Enabled = nextPaymentDate.Value.Date != RockDateTime.Today;
-                spanChangeButtonWrapper.Attributes["title"] = ( lbChangePaymentPlan.Enabled ) ? "" : "The plan cannot be changed because the next payment is today (and may be in process).";
+                // Disallow updates if the next payment date is today
+                if ( nextPaymentDate.Value.Date == RockDateTime.Today )
+                {
+                    lbChangePaymentPlan.Enabled = false;
+                    spanChangeButtonWrapper.Attributes["title"] = "The plan cannot be changed because the next payment is today (and may be in process).";
+                }
+                else if ( this.Registration.BalanceDue <= 0 )
+                {
+                    lbChangePaymentPlan.Enabled = false;
+                    spanChangeButtonWrapper.Attributes["title"] = "The plan cannot be changed because the amount remaining is zero.";
+                }
+                else
+                {
+                    lbChangePaymentPlan.Enabled = true;
+                    spanChangeButtonWrapper.Attributes["title"] = string.Empty;
+                }
 
                 // Allow deletion if the recurring payment has more payments.
                 lbDeletePaymentPlan.Enabled = true;
@@ -3192,8 +3230,15 @@ namespace RockWeb.Blocks.Event
 
             var balanceAfterPaymentPlan = this.Registration.BalanceDue - paymentPlanConfiguration.PlannedAmount;
             var remainderSuffix = balanceAfterPaymentPlan > 0 ? $" (this will leave a remaining balance of { balanceAfterPaymentPlan.FormatAsCurrency() })" : string.Empty;
-            lPaymentPlanSummaryPaymentAmount.Text =
-                $"{ paymentPlanConfiguration.AmountPerPayment.FormatAsCurrency() } × { paymentPlanConfiguration.NumberOfPayments } { paymentPlanConfiguration.PaymentFrequencyConfiguration.PaymentFrequency }{ remainderSuffix }";
+            if ( paymentPlanConfiguration.NumberOfPayments > 0 && paymentPlanConfiguration.PaymentFrequencyConfiguration != null )
+            {
+                lPaymentPlanSummaryPaymentAmount.Text =
+                    $"{paymentPlanConfiguration.AmountPerPayment.FormatAsCurrency()} × {paymentPlanConfiguration.NumberOfPayments} {paymentPlanConfiguration.PaymentFrequencyConfiguration.PaymentFrequency}{remainderSuffix}";
+            }
+            else
+            {
+                lPaymentPlanSummaryPaymentAmount.Text = string.Empty;
+            }
 
             if ( paymentPlanConfiguration.AmountPerPayment > 0 )
             { 
@@ -3313,7 +3358,7 @@ namespace RockWeb.Blocks.Event
 
                     rockContext.SaveChanges();
 
-                    // TODO Should message be published to event bus?
+                    // TODO Should message be published to event bus? No. As indicated by the class name, this event is exclusively used for non-event giving (or real "gift" giving).
                     //Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( financialScheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
 
                     error = null;

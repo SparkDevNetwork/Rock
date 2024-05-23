@@ -67,7 +67,7 @@
                         <div class="control-wrapper">
                             <div class="form-control-static">
                                 <div>
-                                    {{ formatCurrency(registrationEntryState.viewModel.session.activePaymentPlan.amountPerPayment, registrationEntryState.viewModel.currencyInfo) }} x {{ registrationEntryState.viewModel.session.activePaymentPlan.remainingNumberOfPayments }} ({{ registrationEntryState.viewModel.session.activePaymentPlan.transactionFrequencyText }})
+                                    {{ toCurrencyOrNull(registrationEntryState.viewModel.session.activePaymentPlan.amountPerPayment, currencyInfo) ?? '(invalid)' }} x {{ registrationEntryState.viewModel.session.activePaymentPlan.remainingNumberOfPayments }} ({{ registrationEntryState.viewModel.session.activePaymentPlan.transactionFrequencyText }})
                                 </div>
                                 <RockButton btnType="link"
                                             btnSize="xs"
@@ -105,8 +105,8 @@
                         </div>
                     </div>
 
-                    <div v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs) && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.activePaymentPlan" class="form-group">
-                        <RockButton btnType="default" btnSize="xs" @click="onConfigurePaymentPlanClicked">Configure a Payment Plan</RockButton>
+                    <div v-if="isPaymentPlanConfigurationSupported && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.activePaymentPlan" class="form-group">
+                        <RockButton btnType="default" btnSize="xs" @click="onOpenConfigurePaymentPlanModal">Configure a Payment Plan</RockButton>
                     </div>
                 </template>
 
@@ -121,19 +121,17 @@
 
                 <div v-if="isPaymentPlanConfigured" class="payment-plan well">
                     <RockLabel class="primary-label">Payment Plan</RockLabel>
-                    <StaticFormControl label="Amount Due Today" :modelValue="formatCurrency(registrationEntryState.amountToPayToday, registrationEntryState.viewModel.currencyInfo)" />
-                    <StaticFormControl :label="`${registrationEntryState.paymentPlan?.transactionFrequencyText} Payment Amount`" :modelValue="`${formatCurrency(registrationEntryState.paymentPlan?.amountPerPayment ?? 0, registrationEntryState.viewModel.currencyInfo)} x ${registrationEntryState.paymentPlan?.numberOfPayments ?? 0}`" />
-                    <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="default" btnSize="xs" @click="onConfigurePaymentPlanClicked">Change</RockButton>
-                    <RockButton v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)" btnType="link" btnSize="xs" @click="onUnconfigurePaymentPlanClicked">Cancel</RockButton>
+                    <StaticFormControl label="Amount Due Today" :modelValue="toCurrencyOrNull(registrationEntryState.amountToPayToday, currencyInfo) ?? '(invalid)'" />
+                    <StaticFormControl :label="`${registrationEntryState.paymentPlan?.transactionFrequencyText} Payment Amount`" :modelValue="`${toCurrencyOrNull(registrationEntryState.paymentPlan?.amountPerPayment ?? 0, currencyInfo) ?? '(invalid)'} x ${registrationEntryState.paymentPlan?.numberOfPayments ?? 0}`" />
+                    <RockButton v-if="isPaymentPlanConfigurationSupported" btnType="default" btnSize="xs" @click="onOpenConfigurePaymentPlanModal">Change</RockButton>
+                    <RockButton v-if="isPaymentPlanConfigurationSupported" btnType="link" btnSize="xs" @click="onCancelPaymentPlanConfiguration">Cancel</RockButton>
                 </div>
             </div>
         </div>
     </Loading>
 
-    <ConfigurePaymentPlanModal v-if="isPaymentPlanConfigurationSupported(paymentPlanArgs)"
-                               v-model="isConfigurePaymentPlanModalShown"
-                               :paymentDeadlineDate="paymentPlanArgs.paymentPlanDeadlineDate"
-                               :paymentPlanFrequencies="paymentPlanArgs.paymentPlanFrequencies" />
+    <ConfigurePaymentPlanModal v-if="isPaymentPlanConfigurationSupported"
+                               v-model="isConfigurePaymentPlanModalShown" />
 
     <Modal v-model="isDeletePaymentPlanModalShown"
            saveText="Delete"
@@ -149,9 +147,8 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, ref, watch } from "vue";
-    import { CurrencyFormatString, CurrencyOptions, createCurrency, createReadonlyCurrencyOptions } from "./currency.partial";
-    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary, formatCurrency, PaymentPlanFrequency, getPaymentPlanFrequency } from "./utils.partial";
+    import { computed, ref, watch } from "vue";
+    import { GetPersistSessionArgs, CurrentRegistrationEntryState, use, RegistrationCostSummary } from "./utils.partial";
     import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
@@ -161,12 +158,13 @@
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { RegistrationEntryCostSummaryBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCostSummaryBag";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import ConfigurePaymentPlanModal from "./configurePaymentPlanModal.partial.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { useConfigurePaymentPlanFeature } from "./paymentPlans.partial";
 
     enum RegistrationCostSummaryType {
         Cost = 0,
@@ -186,95 +184,23 @@
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const { updateRegistrationCostSummary } = use(RegistrationCostSummary);
+    const {
+        cancel,
+        init,
+        isConfigured: isPaymentPlanConfigured,
+        isPaymentPlanConfigurationSupported } = useConfigurePaymentPlanFeature();
 
     // #region Values
 
     const isLoading = ref<boolean>(false);
     const lineItems = ref<RegistrationEntryCostSummaryBag[]>([]);
     const isConfigurePaymentPlanModalShown = ref<boolean>(false);
-    const isPaymentPlanConfigured = ref<boolean>(!!registrationEntryState.paymentPlan?.numberOfPayments && !!registrationEntryState.paymentPlan?.amountPerPayment);
     const isDeletePaymentPlanModalShown = ref<boolean>(false);
     const deletePaymentPlanErrorMessage = ref<string>("");
 
     // #endregion
 
     // #region Computed Values
-
-    type PaymentPlanArgs = {
-        paymentPlanDeadlineDate: RockDateTime;
-        paymentPlanFrequencies: PaymentPlanFrequency[];
-    };
-
-    const paymentPlanArgs = computed<Partial<PaymentPlanArgs>>(() => ({
-        paymentPlanDeadlineDate: paymentPlanDeadlineDate.value ?? undefined,
-        paymentPlanFrequencies: paymentPlanFrequencies.value
-    }));
-
-    /** Gets whether or not the payment plan feature can be shown. */
-    function isPaymentPlanConfigurationSupported(args: Partial<PaymentPlanArgs>): args is PaymentPlanArgs {
-        if (!args.paymentPlanDeadlineDate) {
-            return false;
-        }
-
-        if (!paymentPlanFrequencies.value.length) {
-            return false;
-        }
-
-        return true;
-    }
-
-    const paymentPlanDeadlineDate = computed<RockDateTime | null>(() => {
-        if (!registrationEntryState.viewModel.paymentDeadlineDate) {
-            return null;
-        }
-        else {
-            return RockDateTime.parseISO(registrationEntryState.viewModel.paymentDeadlineDate);
-        }
-    });
-
-    /** Gets the valid payment plan frequencies. */
-    const paymentPlanFrequencies = computed<PaymentPlanFrequency[]>(() => {
-        const deadlineDate = paymentPlanDeadlineDate.value;
-
-        if (!deadlineDate) {
-            // The payment plan deadline date is required to calculate
-            // the max number of payments per payment plan frequency.
-            // If there is no deadline date, then return an empty array.
-            return [];
-        }
-
-        const frequencies = (registrationEntryState.viewModel.paymentPlanFrequencies ?? [])
-            .map(listItemBag => getPaymentPlanFrequency(listItemBag, deadlineDate))
-            // Only return frequencies that can make at least
-            // two payments for the given payment plan start date.
-            .filter(frequency => frequency.maxNumberOfPayments >= 2);
-
-        // Sort the frequencies.
-        const rank: Record<string, number> = {
-            [DefinedValue.TransactionFrequencyWeekly]: 1,
-            [DefinedValue.TransactionFrequencyBiweekly]: 2,
-            [DefinedValue.TransactionFrequencyFirstAndFifteenth]: 3,
-            [DefinedValue.TransactionFrequencyTwicemonthly]: 4,
-            [DefinedValue.TransactionFrequencyMonthly]: 5,
-            [DefinedValue.TransactionFrequencyQuarterly]: 6,
-            [DefinedValue.TransactionFrequencyTwiceyearly]: 7,
-            [DefinedValue.TransactionFrequencyOneTime]: 8,
-        };
-
-        frequencies.sort((a, b): number => {
-            const aOrder = a.listItemBag.value ? rank[a.listItemBag.value] : -1;
-            const bOrder = b.listItemBag.value ? rank[b.listItemBag.value] : -1;
-
-            return aOrder < bOrder ? -1 : bOrder < aOrder ? 1 : 0;
-        });
-
-        return frequencies;
-    });
-
-    /** Gets whether or not the payment plan feature can be shown. */
-    // const isPaymentPlanConfigurationSupported = computed<boolean>(() => {
-    //     return !!paymentPlanDeadlineDate.value && paymentPlanFrequencies.value.length > 0;
-    // });
 
     const currencyInfo = computed<CurrencyInfoBag>(() => {
         return registrationEntryState.viewModel.currencyInfo ?? {
@@ -285,14 +211,19 @@
 
     /** Line items with some extra info computed for table rendering */
     const augmentedLineItems = computed<AugmentedLineItem[]>(() => {
+        const currencyInfoWithoutSymbol: CurrencyInfoBag = {
+            ...currencyInfo.value,
+            symbol: ""
+        };
+
         return lineItems.value.map(li => ({
             ...li,
             isFee: li.type === RegistrationCostSummaryType.Fee,
             discountHelp: (hasDiscount.value && li.cost === li.discountedCost) ? "This item is not eligible for the discount." : "",
             // Ignore the currency symbol when formatting.
             // It will be prepended with a space in the template.
-            amountFormatted: formatCurrency(li.cost, { symbol: "" }),
-            discountedAmountFormatted: formatCurrency(li.discountedCost, { symbol: "" })
+            amountFormatted: toCurrencyOrNull(li.cost, currencyInfoWithoutSymbol) ?? "(invalid)",
+            discountedAmountFormatted: toCurrencyOrNull(li.discountedCost, currencyInfoWithoutSymbol) ?? "(invalid)"
         } as AugmentedLineItem));
     });
 
@@ -310,7 +241,7 @@
 
     /** The total before discounts as a formatted string */
     const totalFormatted = computed<string>(() => {
-        return formatCurrency(total.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(total.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The total cost before discounts */
@@ -351,7 +282,7 @@
 
     /** The total after discounts as a formatted string */
     const discountedTotalFormatted = computed<string>(() => {
-        return formatCurrency(discountedTotal.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(discountedTotal.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The min amount that must be paid today */
@@ -367,7 +298,7 @@
 
     /** The min amount that must be paid today as a formatted string */
     const amountDueTodayFormatted = computed<string>(() => {
-        return formatCurrency(amountDueToday.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(amountDueToday.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** Should the amount that is due today be shown */
@@ -382,12 +313,12 @@
 
     /** The amount previously paid formatted as a string */
     const amountPreviouslyPaidFormatted = computed<string>(() => {
-        return formatCurrency(amountPreviouslyPaid.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(amountPreviouslyPaid.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The max amount that can be paid today */
     const maxAmountCanBePaid = computed<number>(() => {
-        // The max amount is the discounted total less the previously paid amount and any planned payment amount.
+        // The max amount is the discounted total less the previously paid amount and an existing payment plan's remaining amount.
         const plannedPaymentAmount = registrationEntryState.viewModel.session?.activePaymentPlan?.remainingPlannedAmount ?? 0;
         const balance = discountedTotal.value - amountPreviouslyPaid.value - plannedPaymentAmount;
 
@@ -399,7 +330,7 @@
 
     /** The max amount that can be paid today as a formatted string */
     const maxAmountCanBePaidFormatted = computed<string>(() => {
-        return formatCurrency(maxAmountCanBePaid.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(maxAmountCanBePaid.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The amount that would remain if the user paid the amount indicated in the currency box */
@@ -411,19 +342,15 @@
 
     /** The amount that would remain if the user paid the amount indicated in the currency box as a formatted string */
     const amountRemainingFormatted = computed<string>(() => {
-        return formatCurrency(amountRemaining.value, registrationEntryState.viewModel.currencyInfo);
+        return toCurrencyOrNull(amountRemaining.value, currencyInfo.value) ?? "(invalid)";
     });
 
     /** The validation rules for the amount to pay today */
     const amountToPayTodayRules = computed<ValidationRule[]>(() => {
-        const currencyOptions: CurrencyOptions = createReadonlyCurrencyOptions({
-            precision: registrationEntryState.viewModel.currencyInfo?.decimalPlaces ?? undefined,
-            symbol: registrationEntryState.viewModel.currencyInfo?.symbol ?? undefined,
-        });
         const rules: ValidationRule[] = [];
 
-        let min = createCurrency(amountDueToday.value, currencyOptions);
-        const max = createCurrency(maxAmountCanBePaid.value, currencyOptions);
+        let min = RockCurrency.create(amountDueToday.value, currencyInfo.value);
+        const max = RockCurrency.create(maxAmountCanBePaid.value, currencyInfo.value);
 
         if (min.isGreaterThan(max)) {
             min = max;
@@ -436,10 +363,15 @@
             rules.push("notblank");
         }
 
-        rules.push(`gte:${min.format(CurrencyFormatString.decimal)}`);
-        rules.push(`lte:${max.format(CurrencyFormatString.decimal)}`);
+        rules.push(`gte:${min}`);
+        rules.push(`lte:${max}`);
 
         return rules;
+    });
+
+    /** The balance due on the registration. */
+    const balanceDue = computed<RockCurrency>(() => {
+        return RockCurrency.create(maxAmountCanBePaid.value, currencyInfo.value);
     });
 
     // #endregion
@@ -449,7 +381,7 @@
     /** Retrieve the line item costs from the server */
     async function fetchCostData(): Promise<void> {
         isLoading.value = true;
-        lineItems.value = [];
+        // lineItems.value = [];
 
         try {
             const response = await invokeBlockAction<RegistrationEntryCostSummaryBag[]>("CalculateCost", {
@@ -459,6 +391,13 @@
             if (response.data) {
                 lineItems.value = response.data;
             }
+            else {
+                lineItems.value = [];
+            }
+        }
+        catch (e) {
+            lineItems.value = [];
+            throw e;
         }
         finally {
             isLoading.value = false;
@@ -477,12 +416,14 @@
     // #region Event Handlers
 
     /**
-     * Event handler for the payment plan deleted event.
+     * Event handler that shows the payment plan delete confirmation.
      */
-    async function onPaymentPlanDeleted(): Promise<void> {
+    async function onShowPaymentPlanDeleteConfirmation(): Promise<void> {
         if (registrationEntryState.viewModel.session) {
+            // Clear the existing payment plan.
             registrationEntryState.viewModel.session.activePaymentPlan = null;
         }
+        // Just in case, also clear any new payment plan that has been configured.
         registrationEntryState.paymentPlan = null;
 
         // Refresh the cost data as the previous payment plan may have reduced it.
@@ -490,7 +431,7 @@
     }
 
     /**
-     * Handler for the delete payment plan event.
+     * Event handler that deletes the registration's payment plan.
      */
     async function onDeletePaymentPlan(): Promise<void> {
         isLoading.value = true;
@@ -503,13 +444,13 @@
             if (!activePaymentPlan) {
                 // This shouldn't happen as the delete button should only
                 // be shown when there is an active payment plan to delete.
-                await onPaymentPlanDeleted();
+                await onShowPaymentPlanDeleteConfirmation();
             }
             else {
                 const result = await invokeBlockAction("DeletePaymentPlan");
 
                 if (result?.isSuccess) {
-                    await onPaymentPlanDeleted();
+                    await onShowPaymentPlanDeleteConfirmation();
                 }
                 else {
                     deletePaymentPlanErrorMessage.value = result.errorMessage ?? "An unknown error occurred while attempting to delete the payment plan.";
@@ -521,38 +462,32 @@
         }
     }
 
-    function onConfigurePaymentPlanClicked(): void {
-        // Open the modal on the next tick to avoid situations where the modal cannot be reopened.
-        nextTick(() => {
-            isConfigurePaymentPlanModalShown.value = true;
-        });
+    /**
+     * Event handler that opens the Configure Payment Plan modal.
+     */
+    function onOpenConfigurePaymentPlanModal(): void {
+        isConfigurePaymentPlanModalShown.value = true;
     }
 
-    function onUnconfigurePaymentPlanClicked(): void {
-        registrationEntryState.paymentPlan = null;
+    /** Event handler that removes the registration's payment plan configuration. */
+    function onCancelPaymentPlanConfiguration(): void {
+        cancel();
     }
 
     // #endregion
 
     // #region Watchers
 
-    watch(
-        [
-            () => registrationEntryState.paymentPlan?.transactionFrequencyGuid,
-            () => registrationEntryState.paymentPlan?.amountPerPayment,
-            () => registrationEntryState.paymentPlan?.numberOfPayments
-        ],
-        () => {
-            isPaymentPlanConfigured.value =
-                !!registrationEntryState?.paymentPlan?.numberOfPayments
-                && !!registrationEntryState.paymentPlan.amountPerPayment;
-        });
-
+    // Updates the amount to pay today whenever the default payment amount changes.
     watch(defaultPaymentAmount, () => {
-        // The amountToPayToday is set here on load of the summary.partial.obs component via this child component.
-        registrationEntryState.amountToPayToday = defaultPaymentAmount.value;
+        if (!isPaymentPlanConfigured.value) {
+            // A payment plan has not been configured,
+            // so update the amount to pay today with the updated default payment amount.
+            registrationEntryState.amountToPayToday = defaultPaymentAmount.value;
+        }
     }, {
-        immediate: true
+        // Immediately update the amount to pay today from the default payment amount if there isn't a configured payment plan.
+        immediate: !isPaymentPlanConfigured.value,
     });
 
     watch(() => registrationEntryState.discountCode, async (): Promise<void> => {
@@ -562,4 +497,10 @@
     // #endregion
 
     fetchCostData();
+
+    watch(balanceDue, (balance) => {
+        init(balance);
+    }, {
+        immediate: false // don't make this immediate as balanceDue starts as 0.00.
+    });
 </script>

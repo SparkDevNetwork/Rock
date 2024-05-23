@@ -52,6 +52,11 @@
                        field="isActive"
                        visiblePriority="xs" />
 
+        <Column name="Id"
+                title="Id"
+                field="Id"
+                :hideOnScreen="true" />
+
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />

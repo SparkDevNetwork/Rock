@@ -43,6 +43,7 @@ namespace Rock.Model
     /// <summary>
     /// Data Access/Service class for <see cref="Rock.Model.Attendance"/> entity objects
     /// </summary>
+    [RockLoggingCategory]
     public partial class AttendanceService
     {
         /// <summary>
@@ -1374,16 +1375,15 @@ namespace Rock.Model
 
             if ( schedulerResourceParameters.ResourceDataViewId.HasValue || schedulerResourceParameters.ResourceDataViewGuid.HasValue )
             {
-                DataView dataView = null;
-                var dataViewService = new DataViewService( rockContext );
+                DataViewCache dataView = null;
 
                 if ( schedulerResourceParameters.ResourceDataViewId.HasValue )
                 {
-                    dataView = dataViewService.Get( schedulerResourceParameters.ResourceDataViewId.Value );
+                    dataView = DataViewCache.Get( schedulerResourceParameters.ResourceDataViewId.Value );
                 }
                 else
                 {
-                    dataView = dataViewService.Get( schedulerResourceParameters.ResourceDataViewGuid.Value );
+                    dataView = DataViewCache.Get( schedulerResourceParameters.ResourceDataViewGuid.Value );
                 }
 
                 if ( dataView != null )
@@ -1393,7 +1393,7 @@ namespace Rock.Model
                         It's necessary to pass rockContext to dataview GetQuery method as the result is being used as part of subquery later
                         which may result in two different rockContext if not passed.
                     */
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs();
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions();
                     dataViewGetQueryArgs.DbContext = rockContext;
                     personQry = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                 }

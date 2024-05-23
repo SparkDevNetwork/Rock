@@ -324,6 +324,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
+            RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -3157,7 +3159,7 @@ END
         DELETE TOP (1500) FROM DataViewPersistedValue WHERE DataViewId IN (SELECT id from @dataViewIds)
     END
 ";
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = CreateRockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
                 int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
@@ -3171,7 +3173,7 @@ END
         /// <returns></returns>
         private int UpdateMissingPrimaryFamily()
        {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -3215,6 +3217,64 @@ END
                 }
 
                 return persons.Count;
+            }
+        }
+
+        /// <summary>
+        /// Sets each campus's tithe metric by by dividing the cumulative value if each campus's
+        /// FamiliesMedianIncome, based on their postal code by the number of individuals who have
+        /// given multiplied by 10%.
+        /// </summary>
+        /// <returns></returns>
+        private int UpdateCampusTitheMetric()
+        {
+            using ( var rockContext = CreateRockContext() )
+            {
+                var endDate = RockDateTime.Now.Date.AddDays( 1 );
+                var startDate = RockDateTime.Now.AddMonths( -12 ).Date;
+
+                var groupLocationsQuery = new GroupLocationService( rockContext )
+                    .Queryable()
+                    .Where( gl => gl.GroupLocationTypeValue.Guid.ToString() == SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME && gl.IsMappedLocation );
+
+                // Get families who have given within the last year and their postal codes.
+                var givingFamilies = new FinancialTransactionDetailService( rockContext )
+                    .Queryable()
+                    .Where( ftd => ftd.Account.IsTaxDeductible
+                        && ftd.Transaction.TransactionDateTime >= startDate
+                        && ftd.Transaction.TransactionDateTime <= endDate )
+                    .GroupBy( ftd => ftd.Transaction.AuthorizedPersonAlias.Person.PrimaryFamilyId )
+                    .Select( ftd => new
+                    {
+                        FamilyId = ftd.Key,
+                        CampusId = ftd.FirstOrDefault().Transaction.AuthorizedPersonAlias.Person.PrimaryCampusId,
+                        PostalCode = groupLocationsQuery.Where( gl => gl.GroupId == ftd.FirstOrDefault().Transaction.AuthorizedPersonAlias.Person.PrimaryFamilyId )
+                            .Select( gl => gl.Location.PostalCode ).ToList()
+                    } )
+                    .ToList();
+
+                var postalCodesQuery = rockContext.Set<AnalyticsSourcePostalCode>().AsQueryable();
+                var campusService = new CampusService( rockContext );
+
+                // Get the campuses they belong to so we update their tithe metrics.
+                var campusIds = givingFamilies.Where( gf => gf.CampusId.HasValue )
+                    .Select( gf => gf.CampusId )
+                    .Distinct();
+
+                foreach ( var campusId in campusIds )
+                {
+                    var campus = campusService.Get( campusId.Value );
+
+                    var givingFamiliesForCampus = givingFamilies.Where( gf => gf.CampusId == campusId );
+                    var postalCodes = givingFamiliesForCampus.SelectMany( gf =>
+                        gf.PostalCode.Select( p => p.Split( '-' )[0] ) ).Distinct();
+                    var hasGivenCount = givingFamiliesForCampus.Count( gf => gf.PostalCode.Any() );
+
+                    campus.TitheMetric = ( postalCodesQuery.Where( p => postalCodes.Contains( p.PostalCode ) )
+                        .Sum( p => p.FamiliesMedianIncome ) / hasGivenCount ) * 0.1M;
+                }
+
+                return rockContext.SaveChanges();
             }
         }
 

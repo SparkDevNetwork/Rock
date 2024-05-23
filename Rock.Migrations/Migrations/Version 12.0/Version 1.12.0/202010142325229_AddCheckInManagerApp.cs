@@ -297,8 +297,10 @@ WHERE [Guid] = '{Rock.SystemGuid.Page.CHECK_IN_MANAGER_LOGOUT}' AND [ParentPageI
             // Add Page Logout to Site:Rock Check-in Manager
             RockMigrationHelper.AddPage( true, "CECB1460-10D4-4054-B5C3-903991CA40AB", "8305704F-928D-4379-967A-253E576E0923", "Logout", "", "9762DE9F-F431-4108-9F1A-AE88DFEB3289", "" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route for Logout
             RockMigrationHelper.AddPageRoute( "9762DE9F-F431-4108-9F1A-AE88DFEB3289", "checkinmanager/logout", "36ED7574-0310-4A8F-9A30-11A82B74C525" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add Block Logout to Page: Logout, Site: Rock Check-in Manager
             RockMigrationHelper.AddBlock( true, "9762DE9F-F431-4108-9F1A-AE88DFEB3289".AsGuid(), null, "A5FA7C3C-A238-4E0B-95DE-B540144321EC".AsGuid(), "CCB87054-8AA3-4F44-AA48-19BD028C4190".AsGuid(), "Logout", "Main", @"", @"", 0, "80D16848-7EF2-4452-B2C6-480EDC8268C3" );

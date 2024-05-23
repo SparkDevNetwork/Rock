@@ -176,7 +176,7 @@ namespace Rock.Financial
 
                     if ( financialStatementGeneratorOptions.DataViewId.HasValue )
                     {
-                        var dataView = new DataViewService( new RockContext() ).Get( financialStatementGeneratorOptions.DataViewId.Value );
+                        var dataView = DataViewCache.Get( financialStatementGeneratorOptions.DataViewId.Value );
                         if ( dataView != null )
                         {
                             var personList = dataView.GetQuery().OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();

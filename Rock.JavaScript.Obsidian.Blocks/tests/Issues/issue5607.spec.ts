@@ -156,7 +156,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "<div class='row'><div class='col-md-6'>",
                     "postHtml": "    </div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "26daa545-3b91-48e5-ada6-0646020dda3b",
@@ -169,7 +170,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "    <div class='col-md-6'>",
                     "postHtml": "    </div></div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "7a654283-07e5-4af5-ae58-280f9879596b",
@@ -182,7 +184,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 }
             ]
         }
@@ -418,6 +421,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
     ],
     "hideProgressBar": false,
     "showSmsOptIn": false,
+    "isPaymentPlanAllowed": false,
+    "isPaymentPlanConfigured": false,
     "disableCaptchaSupport": true
 };
 

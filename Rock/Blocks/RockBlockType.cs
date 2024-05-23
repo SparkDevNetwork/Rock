@@ -537,6 +537,7 @@ Obsidian.onReady(() => {{
                 BlockFileUrl = ObsidianFileUrl,
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
+                BlockTypeGuid = BlockCache.BlockType.Guid,
                 ConfigurationValues = await GetBlockInitializationAsync( RockClientType.Web ),
                 CustomConfigurationActions = configActions,
                 Preferences = blockPreferences,

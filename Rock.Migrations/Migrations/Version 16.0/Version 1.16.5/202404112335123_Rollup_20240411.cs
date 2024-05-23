@@ -58,10 +58,26 @@ namespace Rock.Migrations
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( publicProfileEditBlockTypeGuid, Rock.SystemGuid.FieldType.SINGLE_SELECT, "Gender", "Gender", "Gender", "How should Gender be displayed?", 26, "Required", genderBlockTypeAttributeGuid );
 
             Sql( @"
+DECLARE @BlockEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
 DECLARE @BlockTypeId INT = (SELECT [Id] FROM [BlockType] WHERE Guid = '841D1670-8BFD-4913-8409-FB47EB7A2AB9')
-DECLARE @GenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'Gender' AND [EntityTypeQualifierValue] = @BlockTypeId)
-DECLARE @RequireGenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'RequireGender' AND [EntityTypeQualifierValue] = @BlockTypeId)
-DECLARE @ShowGenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'ShowGender' AND [EntityTypeQualifierValue] = @BlockTypeId)
+
+DECLARE @GenderAttributeId INT = (SELECT [Id] FROM [Attribute] 
+WHERE [KEY] = 'Gender' 
+AND [EntityTypeId] = @BlockEntityTypeId 
+AND [EntityTypeQualifierColumn] = 'BlockTypeId' 
+AND [EntityTypeQualifierValue] = CAST(@BlockTypeId AS VARCHAR))
+
+DECLARE @RequireGenderAttributeId INT = (SELECT [Id] FROM [Attribute] 
+WHERE [KEY] = 'RequireGender' 
+AND [EntityTypeId] = @BlockEntityTypeId 
+AND [EntityTypeQualifierColumn] = 'BlockTypeId' 
+AND [EntityTypeQualifierValue] = CAST(@BlockTypeId AS VARCHAR))
+
+DECLARE @ShowGenderAttributeId INT = (SELECT [Id] FROM [Attribute] 
+WHERE [KEY] = 'ShowGender' 
+AND [EntityTypeId] = @BlockEntityTypeId 
+AND [EntityTypeQualifierColumn] = 'BlockTypeId' 
+AND [EntityTypeQualifierValue] = CAST(@BlockTypeId AS VARCHAR))
 
 DECLARE @BlockId INT
 DECLARE @RequireGender VARCHAR(50)
@@ -237,7 +253,7 @@ END
             SET [Order] = [Order] + 1
             WHERE [EntityTypeId] = @EntityTypeId
             AND [EntityTypeQualifierColumn] = 'GroupTypeId'
-            AND [EntityTypeQualifierValue] = @GroupTypeId
+            AND [EntityTypeQualifierValue] = CAST(@GroupTypeId AS VARCHAR)
             AND [Order] > {order.Value}" );
             }
 

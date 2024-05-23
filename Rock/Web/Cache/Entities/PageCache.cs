@@ -448,6 +448,15 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the child pages.
+        /// </summary>
+        /// <value>
+        /// The child pages.
+        /// </value>
+        [DataMember]
+        public List<PageCache> Children { get; set; }
+
+        /// <summary>
         /// Gets the <see cref="Site"/> object for the page.
         /// </summary>
         public LayoutCache Layout => LayoutCache.Get( LayoutId );

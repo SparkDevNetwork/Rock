@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Cms
 
             // Person Filters
             dvpFilterDataView.SetValue( personalizationSegment.FilterDataViewId );
-            
+
             // Session Filters
             tglSessionCountFiltersAllAny.Checked = AdditionalFilterConfiguration.SessionFilterExpressionType == FilterExpressionType.GroupAll;
             BindSessionCountFiltersGrid();
@@ -272,10 +272,19 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
+            bool isSegmentDefinitionChanged = (
+               personalizationSegment.Name != tbName.Text ||
+               personalizationSegment.IsActive != cbIsActive.Checked ||
+               personalizationSegment.SegmentKey != tbSegmentKey.Text ||
+               personalizationSegment.FilterDataViewId != dvpFilterDataView.SelectedValueAsId() ||
+               personalizationSegment.AdditionalFilterConfiguration != this.AdditionalFilterConfiguration
+            );
+
             personalizationSegment.Name = tbName.Text;
             personalizationSegment.IsActive = cbIsActive.Checked;
             personalizationSegment.SegmentKey = tbSegmentKey.Text;
             personalizationSegment.FilterDataViewId = dvpFilterDataView.SelectedValueAsId();
+            personalizationSegment.AdditionalFilterConfiguration = this.AdditionalFilterConfiguration;
 
             if ( tglSessionCountFiltersAllAny.Checked )
             {
@@ -307,7 +316,7 @@ namespace RockWeb.Blocks.Cms
             personalizationSegment.AdditionalFilterConfiguration = this.AdditionalFilterConfiguration;
 
             // Mark segment as dirty to signal the PostSave hook to update the sometimes long running Personalization data on a background task.
-            personalizationSegment.IsDirty = true;
+            personalizationSegment.IsDirty = isSegmentDefinitionChanged;
 
             rockContext.SaveChanges();
 

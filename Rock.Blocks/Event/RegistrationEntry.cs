@@ -948,27 +948,19 @@ namespace Rock.Blocks.Event
         {
             if ( paymentPlan.TransactionFrequencyGuid == SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() )
             {
-                DateTime GetAllowedStartDate()
+                bool IsAllowedStartDate( DateTime startDate )
                 {
-                    var tomorrow = RockDateTime.Today.AddDays( 1 );
-                    if ( tomorrow.Day == 1 || tomorrow.Day == 15 )
+                    if ( startDate.Day == 1 || startDate.Day == 15 )
                     {
-                        return tomorrow;
-                    }
-                    else if ( tomorrow.Day < 15 )
-                    {
-                        return tomorrow.AddDays( 15 - tomorrow.Day );
+                        return true;
                     }
                     else
                     {
-                        // Day > 15 so return the 1st of the next month.
-                        return tomorrow.AddDays( -( tomorrow.Day - 1 ) ).AddMonths( 1 );
+                        return false;
                     }
                 }
 
-                var allowedStartDate = GetAllowedStartDate();
-
-                if ( paymentPlan.StartDate != allowedStartDate )
+                if ( !IsAllowedStartDate( paymentPlan.StartDate.Date ) )
                 {
                     errorMessage = $"The payment plan start date {paymentPlan.StartDate:d} is invalid";
                     return false;
@@ -1783,7 +1775,8 @@ namespace Rock.Blocks.Event
             {
                 var fields = form.Fields.Where( f =>
                 {
-                    if ( f.ShowCurrentValue && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
+                    // ShowCurrentValue means "Default to the person's current value for this field"
+                    if ( ( f.ShowCurrentValue || f.IsLockedIfValuesExist ) && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
                     {
                         return true;
                     }
@@ -1798,7 +1791,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( ( familySelection || f.ShowCurrentValue || f.IsLockedIfValuesExist ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName || f.PersonFieldType == RegistrationPersonFieldType.LastName;
                     }
@@ -2367,8 +2360,6 @@ namespace Rock.Blocks.Event
 
                  Duplicate prevention may be enhanced in the future to include suffix
                  or other identifying information.
-
-                 Reason: Registrant person matching updates to reduce duplicates
             */
             var currentPerson = GetCurrentPerson();
             if ( person == null && currentPerson != null && registrar.PrimaryAliasId != currentPerson.PrimaryAliasId )
@@ -3115,9 +3106,10 @@ namespace Rock.Blocks.Event
                 var financialGatewayService = new FinancialGatewayService( rockContext );
                 var paymentFinancialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
                 var gateway = paymentFinancialGateway?.GetGatewayComponent();
+                var paymentToken = string.Empty;
+                var wasRedirectedFromPayment = gateway is IPaymentTokenGateway paymentGateway && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out paymentToken );
 
-                if ( gateway is IPaymentTokenGateway paymentGateway
-                     && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out var paymentToken ) )
+                if ( wasRedirectedFromPayment )
                 {
                     args.GatewayToken = paymentToken;
 
@@ -3473,6 +3465,8 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            var isPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed;
+
             var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
@@ -3571,9 +3565,9 @@ namespace Rock.Blocks.Event
                 DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
 
                 // Payment plan
-                IsPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed,
-                PaymentDeadlineDate = context.RegistrationSettings.PaymentDeadlineDate,
-                PaymentPlanFrequencies = GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ),
+                IsPaymentPlanAllowed = isPaymentPlanAllowed,
+                PaymentDeadlineDate = isPaymentPlanAllowed ? context.RegistrationSettings.PaymentDeadlineDate : null,
+                PaymentPlanFrequencies = isPaymentPlanAllowed ? GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ) : null,
                 IsPaymentPlanConfigured = context.Registration?.IsPaymentPlanActive ?? false,
 
                 // Currency Code
@@ -4170,7 +4164,7 @@ namespace Rock.Blocks.Event
 
             rockContext.SaveChanges();
 
-            // TODO Should message be published to event bus?
+            // TODO Should message be published to event bus? No. As indicated by the class name, this event is exclusively used for non-event giving (or real "gift" giving).
             //Task.Run( () => Rock.Bus.Message.ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, Rock.Bus.Message.ScheduledGiftEventTypes.ScheduledGiftCreated ) );
         }
 
@@ -4475,7 +4469,7 @@ namespace Rock.Blocks.Event
                         ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
                     ) &&
                     r.RegistrationInstanceId == registrationContext.RegistrationSettings.RegistrationInstanceId )
-                .GetPaymentPlanPairs()
+                .SelectPaymentPlanPairs()
                 .FirstOrDefault();
 
             var registration = registrationPaymentPlanPair?.Registration;

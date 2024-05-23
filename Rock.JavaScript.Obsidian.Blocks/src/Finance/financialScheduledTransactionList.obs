@@ -1,0 +1,249 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Scheduled Transaction"
+          :entityTypeGuid="EntityType.FinancialScheduledTransaction"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          gridSettingsm
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn />
+
+        <PersonColumn name="authorized"
+                      title="Contributor"
+                      field="authorized"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="xs" />
+
+        <CurrencyColumn name="amount"
+                        title="Amount"
+                        field="amount"
+                        :filter="numberValueFilter"
+                        width="100"
+                        visiblePriority="md">
+            <template #format="{ row }">
+                <div class="flex-grow-1 text-right">
+                    {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
+                </div>
+            </template>
+        </CurrencyColumn>
+
+        <Column name="accounts"
+                title="Accounts"
+                :filter="textValueFilter"
+                :filterValue="getRowAccountsFilterValue"
+                :quickFilterValue="getRowAccountsFilterValue"
+                visiblePriority="lg">
+            <template #format="{ row }">
+                <div class="text-sm">
+                    <div v-for="account in row.accounts">
+                        {{ account.name }}: {{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn name="transactionFrequency"
+                    title="Frequency"
+                    field="transactionFrequency"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+
+        <DateColumn name="createdDateTime"
+                    title="Created"
+                    field="createdDateTime"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn name="startDate"
+                    title="Starting"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn name="endDate"
+                    title="Ending"
+                    field="endDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn name="nextPayment"
+                    title="Next Payment"
+                    field="nextPayment"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="currencyType"
+                    title="Currency Type"
+                    field="currencyType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn v-if="showTransactionTypeColumn"
+                    name="transactionType"
+                    title="Transaction Type"
+                    field="transactionType"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="gatewayScheduleId"
+                    title="Schedule ID"
+                    field="gatewayScheduleId"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       visiblePriority="xs" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, BooleanColumn, PersonColumn, DateColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, TextColumn, textValueFilter, CurrencyColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FinancialScheduledTransactionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialScheduledTransactionList/financialScheduledTransactionListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey, Row } from "./FinancialScheduledTransactionList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./FinancialScheduledTransactionList/gridSettingsModal.partial.obs";
+    import { toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
+
+    const config = useConfigurationValues<ListBlockBox<FinancialScheduledTransactionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        endDate: preferences.getValue(PreferenceKey.FilterDateRangeUpper),
+        startDate: preferences.getValue(PreferenceKey.FilterDateRangeLower),
+        account: JSON.parse(preferences.getValue(PreferenceKey.FilterAccount) || "[]"),
+        includeInactiveSchedules: asBoolean(preferences.getValue(PreferenceKey.FilterIncludeInctiveSchedules)),
+        frequency: JSON.parse(preferences.getValue(PreferenceKey.FilterFrequency) || "{}"),
+        amountRange: {
+            lower: toNumberOrNull(preferences.getValue(PreferenceKey.FilterAmountRangeFrom)),
+            upper: toNumberOrNull(preferences.getValue(PreferenceKey.FilterAmountRangeTo))
+        },
+    });
+
+    const showTransactionTypeColumn = computed(() => {
+        return config.options?.showTransactionTypeColumn;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+     /** `true` if the grid settings is performing any filtering. */
+     const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.startDate
+            || !!gridSettings.value.endDate
+            || !!gridSettings.value.amountRange
+            || !!gridSettings.value.frequency
+            || !!gridSettings.value.account
+            || !!gridSettings.value.includeInactiveSchedules;
+    });
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ViewPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.ViewPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+     function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.AddPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.AddPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    /**
+     * Gets the filter value text to use for the accounts column.
+     *
+     * @param row The row to be filtered.
+     */
+     function getRowAccountsFilterValue(row: Record<string, unknown>): string {
+        let filterValue = "";
+
+        for (const account of (row as Row).accounts) {
+            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount, config.options?.currencyInfo) ?? ""}`;
+        }
+
+        return filterValue;
+    }
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateRangeUpper, gridSettings.value.endDate ?? "");
+        preferences.setValue(PreferenceKey.FilterDateRangeLower, gridSettings.value.startDate ?? "");
+        preferences.setValue(PreferenceKey.FilterAmountRangeFrom, gridSettings.value.amountRange?.lower?.toString() ?? "");
+        preferences.setValue(PreferenceKey.FilterAmountRangeTo, gridSettings.value.amountRange?.upper?.toString() ?? "");
+        preferences.setValue(PreferenceKey.FilterIncludeInctiveSchedules, asTrueFalseOrNull(gridSettings.value.includeInactiveSchedules) ?? "");
+        preferences.setValue(PreferenceKey.FilterFrequency, JSON.stringify(gridSettings.value.frequency));
+        preferences.setValue(PreferenceKey.FilterAccount, JSON.stringify(gridSettings.value.account));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

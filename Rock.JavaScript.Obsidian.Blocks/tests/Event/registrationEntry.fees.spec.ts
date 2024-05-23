@@ -38,7 +38,11 @@ describe("RegistrationEntry Fees", () => {
         it("Auto-selects when required and available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -89,7 +93,11 @@ describe("RegistrationEntry Fees", () => {
         it("Does not auto-select when not required", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -140,7 +148,11 @@ describe("RegistrationEntry Fees", () => {
         it("Does not auto-select when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -226,7 +238,11 @@ describe("RegistrationEntry Fees", () => {
         it("Disables when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -311,7 +327,11 @@ describe("RegistrationEntry Fees", () => {
             // be considered a bug and if so the unit test should be updated.
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -375,7 +395,11 @@ describe("RegistrationEntry Fees", () => {
         it("Auto-sets when required and available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -426,7 +450,11 @@ describe("RegistrationEntry Fees", () => {
         it("Does not auto-set when not required", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -484,7 +512,11 @@ describe("RegistrationEntry Fees", () => {
         it("Does not auto-set when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -535,7 +567,11 @@ describe("RegistrationEntry Fees", () => {
         it("Disables up button when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -618,7 +654,11 @@ describe("RegistrationEntry Fees", () => {
         it("Prevents moving forward when no value entered but is required", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -683,7 +723,11 @@ describe("RegistrationEntry Fees", () => {
         it("Hides Checkbox when no quantity remaining", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -762,7 +806,11 @@ describe("RegistrationEntry Fees", () => {
         it("Hides NumberUpDown when no quantity remaining", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -841,7 +889,11 @@ describe("RegistrationEntry Fees", () => {
         it("Hides DropDownList item when no quantity remaining", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -946,7 +998,11 @@ describe("RegistrationEntry Fees", () => {
         it("Hides DropDownList when no item quantities remaining", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -1041,7 +1097,11 @@ describe("RegistrationEntry Fees", () => {
         it("Hides NumberUpDownGroup item when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -1137,7 +1197,11 @@ describe("RegistrationEntry Fees", () => {
         it("Hides NumberUpDownGroup item when no available quantity", async () => {
             const configuration = getConfigurationValues();
 
-            configuration.fees?.push({
+            if (!configuration.fees) {
+                configuration.fees = [];
+            }
+
+            configuration.fees.push({
                 "name": "Test Fee",
                 "guid": "74b1dd21-40ff-4f2c-8e30-be01547dccc7",
                 "items": [
@@ -1270,7 +1334,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "<div class='row'><div class='col-md-6'>",
                     "postHtml": "    </div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "8e47dcdb-7c6c-4f8d-8b4b-6ab893ad1115",
@@ -1283,7 +1348,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
                     "preHtml": "    <div class='col-md-6'>",
                     "postHtml": "    </div></div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 }
             ]
         }
@@ -1525,5 +1591,7 @@ const configurationValues: RegistrationEntryInitializationBox = {
     ],
     "hideProgressBar": false,
     "showSmsOptIn": false,
+    "isPaymentPlanAllowed": false,
+    "isPaymentPlanConfigured": false,
     "disableCaptchaSupport": true
 };

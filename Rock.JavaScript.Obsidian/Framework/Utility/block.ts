@@ -27,10 +27,12 @@ import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionCo
 import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 import { IEntity } from "@Obsidian/ViewModels/entity";
 import { debounce } from "./util";
+import { BrowserBus, useBrowserBus } from "./browserBus";
 
 const blockReloadSymbol = Symbol();
 const configurationValuesChangedSymbol = Symbol();
 const staticContentSymbol = Symbol("static-content");
+const blockBrowserBusSymbol = Symbol("block-browser-bus");
 
 // TODO: Change these to use symbols
 
@@ -179,6 +181,28 @@ export function useStaticContent(): Node[] {
     return content.value;
 }
 
+/**
+ * Provides the browser bus configured to publish messages for the current
+ * block.
+ *
+ * @param bus The browser bus.
+ */
+export function provideBlockBrowserBus(bus: BrowserBus): void {
+    provide(blockBrowserBusSymbol, bus);
+}
+
+/**
+ * Gets the browser bus configured for use by the current block. If available
+ * this will be properly configured to publish messages with the correct block
+ * and block type. If this is called outside the context of a block then a
+ * generic use {@link BrowserBus} will be returned.
+ *
+ * @returns An instance of {@link BrowserBus}.
+ */
+export function useBlockBrowserBus(): BrowserBus {
+    return inject<BrowserBus>(blockBrowserBusSymbol, () => useBrowserBus(), true);
+}
+
 
 /**
  * A type that returns the keys of a child property.
@@ -244,6 +268,9 @@ export function setPropertiesBoxValue<T extends Record<string, unknown>, K exten
 
 /**
  * Dispatches a block event to the document.
+ *
+ * @deprecated Do not use this function anymore, it will be removed in the future.
+ * Use the BrowserBus instead.
  *
  * @param eventName The name of the event to be dispatched.
  * @param eventData The custom data to be attached to the event.
@@ -571,9 +598,10 @@ export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, 
 
 // #endregion Extended Refs
 
-// #region Block Guid
+// #region Block and BlockType Guid
 
 const blockGuidSymbol = Symbol("block-guid");
+const blockTypeGuidSymbol = Symbol("block-type-guid");
 
 /**
  * Provides the block unique identifier to all child components.
@@ -592,6 +620,26 @@ export function provideBlockGuid(blockGuid: string): void {
  */
 export function useBlockGuid(): Guid | undefined {
     return inject<Guid>(blockGuidSymbol);
+}
+
+/**
+ * Provides the block type unique identifier to all child components.
+ * This is an internal method and should not be used by plugins.
+ *
+ * @param blockTypeGuid The unique identifier of the block type.
+ */
+export function provideBlockTypeGuid(blockTypeGuid: string): void {
+    provide(blockTypeGuidSymbol, blockTypeGuid);
+}
+
+/**
+ * Gets the block type unique identifier of the current block in this component
+ * chain.
+ *
+ * @returns The unique identifier of the block type.
+ */
+export function useBlockTypeGuid(): Guid | undefined {
+    return inject<Guid>(blockTypeGuidSymbol);
 }
 
 // #endregion

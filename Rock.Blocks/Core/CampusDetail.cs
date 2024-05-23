@@ -430,7 +430,9 @@ namespace Rock.Blocks.Core
                 ServiceTimes = ConvertServiceTimesToBags( entity.ServiceTimes ),
                 ShortCode = entity.ShortCode,
                 TimeZoneId = entity.TimeZoneId,
-                Url = entity.Url
+                Url = entity.Url,
+                ClosedDate = entity.ClosedDate,
+                OpenedDate = entity.OpenedDate,
             };
         }
 
@@ -522,6 +524,12 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Bag.Url ),
                 () => entity.Url = box.Bag.Url );
+
+            box.IfValidProperty( nameof( box.Bag.OpenedDate ),
+                () => entity.OpenedDate = box.Bag.OpenedDate );
+
+            box.IfValidProperty( nameof( box.Bag.ClosedDate ),
+                () => entity.ClosedDate = box.Bag.ClosedDate );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>

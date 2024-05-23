@@ -34,6 +34,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [RockLoggingCategory]
     public class BlockTypeCache : ModelCache<BlockTypeCache, BlockType>
     {
 

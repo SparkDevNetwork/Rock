@@ -40,6 +40,7 @@ namespace Rock.Bus
     /// <summary>
     /// Rock Bus Process Controls: Start the bus
     /// </summary>
+    [RockLoggingCategory]
     public static class RockMessageBus
     {
         /// <summary>

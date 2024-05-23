@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -160,9 +161,8 @@ namespace Rock.Jobs
                 // if the group data view guid is configured on the Job then limit to selected groups in the data view not considering child groups
                 if ( groupDataViewGuid.HasValue )
                 {
-                    var groupDataView = new DataViewService( rockContext ).Get( groupDataViewGuid.Value );
-                    var groupsQuery = groupDataView.GetQuery( new DataViewGetQueryArgs { DatabaseTimeoutSeconds = commandTimeoutSeconds } ) as IQueryable<Group>;
-                    groupIds.AddRange( groupsQuery.Select( a => a.Id ).ToList() );
+                    var groupDataView = DataViewCache.Get( groupDataViewGuid.Value );
+                    groupIds.AddRange( groupDataView.GetEntityIds( new Reporting.GetQueryableOptions { DatabaseTimeoutSeconds = commandTimeoutSeconds } ) );
                     sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a => groupIds.Contains( a.Occurrence.GroupId.Value ) );
                 }
 

@@ -45,6 +45,9 @@ export type CampusBag = {
     /** Gets or sets the campus type value. */
     campusTypeValue?: ListItemBag | null;
 
+    /** Gets or sets the closed date. */
+    closedDate?: string | null;
+
     /** Gets or sets the description. */
     description?: string | null;
 
@@ -65,6 +68,9 @@ export type CampusBag = {
 
     /** Gets or sets the name. */
     name?: string | null;
+
+    /** Gets or sets the opened date. */
+    openedDate?: string | null;
 
     /** Gets or sets the phone number. */
     phoneNumber?: string | null;
