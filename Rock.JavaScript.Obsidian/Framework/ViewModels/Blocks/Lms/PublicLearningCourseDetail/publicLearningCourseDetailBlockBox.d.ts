@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-export type PublicLearningProgramListBlockBox = {
-    /** Gets or sets the HTML representing the available programs. */
-    programsHtml: string;
+export type PublicLearningCourseDetailBlockBox = {
+    /** Gets or sets the HTML to be rendered for the course detail content. */
+    courseHtml: string;
 };

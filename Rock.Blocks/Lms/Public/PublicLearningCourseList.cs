@@ -16,6 +16,7 @@
 //
 
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -75,7 +76,7 @@ namespace Rock.Blocks.Lms
         {
             public const string CourseListTemplate = @"
 <div class=""page-container d-flex flex-column mb-3"">
-	<div class=""page-header-section mb-5"" style=""align-items: center; border-radius: 12px; background-image: url('/GetImage.ashx?guid=dcc4ff9c-51dd-4c5c-89be-3d676dfe2803&maxwidth=1000'); background-size: cover;"">
+	<div class=""page-header-section mb-5"" style=""align-items: center; border-radius: 12px; background-image: url('/GetImage.ashx?guid=dcc4ff9c-51dd-4c5c-89be-3d676dfe2803'); background-size: cover;"">
 		<div class=""d-flex flex-column header-block text-center"" style=""position: relative; bottom: -40px; background-color: white; border-radius: 12px; width: 80%; margin-top: 130px; margin-left: 10%; margin-right: 10%;"">
 			<h2>
 				{{ Program.Name }}
@@ -92,7 +93,7 @@ namespace Rock.Blocks.Lms
 		</span>
 	</div>
 	
-	<div class=""course-list-container d-flex"">
+	<div class=""course-list-container d-flex flex-fill"">
 		{% for course in Courses %}
 		<div class=""course-item-container mr-2 justify-content-between d-flex flex-column"" style=""background-color: white; border-radius: 12px;"">
 			<div class=""course-item-middle p-3"">
@@ -122,13 +123,12 @@ namespace Rock.Blocks.Lms
                 </div>
                 
                 <div class=""d-flex justify-content-between"">
-    				<button class=""btn btn-default"" href=""{{ course.CourseDetailsLink }}"">Learn More</button>
-    				{% assign countUnmentPrequisites = course.UnmetPrerequisites | Size %}
+    				<a class=""btn btn-default"" href=""{{ course.CourseDetailsLink }}"">Learn More</a>
     				{% if course.CompletionStatus == 'Pass' %}
     					<span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
     				{% elseif course.CompletionStatus == 'Incomplete' %}
     					<span class=""badge badge-info p-2"" style=""line-height: normal;"">Enrolled</span>
-    				{% elseif countUnmentPrequisites > 0 %}
+    				{% elseif course.UnmetPrerequisites != empty %}
                         <a class=""text-muted"" href=""{{ course.PrerequisiteEnrollmentLink }}"">Prerequisites Not Met</a>
                     {% else %}
                         <a class=""text-bold"" href=""{{ course.CourseEnrollmentLink }}"">Enroll</a>
@@ -165,7 +165,11 @@ namespace Rock.Blocks.Lms
         {
             var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
             var rockContext = new RockContext();
-            var program = new LearningProgramService( rockContext ).Get( programId );
+            var program = new LearningProgramService( rockContext )
+                .Queryable()
+                .Include( p => p.ImageBinaryFile )
+                .FirstOrDefault( p => p.Id == programId );
+
             var courses = new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson().Id );
 
             var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningCourseId", "((Key))" );
@@ -187,10 +191,6 @@ namespace Rock.Blocks.Lms
             var template = GetAttributeValue( AttributeKey.CourseListTemplate ) ?? string.Empty;
             box.CoursesHtml = template.ResolveMergeFields( mergeFields );
         }
-
-        #endregion
-
-        #region Block Actions
 
         #endregion
     }

@@ -111,6 +111,7 @@
     <Compile Include="Lms\LearningGradingSystemScaleList.cs" />
     <Compile Include="Finance\FinancialPersonBankAccountList.cs" />
     <Compile Include="Lms\LearningSemesterDetail.cs" />
+    <Compile Include="Lms\Public\PublicLearningCourseDetail.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />

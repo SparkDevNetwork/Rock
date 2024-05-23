@@ -92,6 +92,22 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a list of classes for the specified <see cref="Person"/>.
+        /// </summary>
+        /// <param name="personId">The identifier of the person for whom to get classes.</param>
+        /// <param name="includePerson"><c>true</c> if the Person navigation property should be included; otherwise <c>false</c>.</param>
+        /// <returns>A IQueryable of LearningParticipant records.</returns>
+        public IQueryable<LearningParticipant> GetClasses( int personId, bool includePerson = false )
+        {
+            var baseQuery = Queryable()
+                .Include( p => p.LearningClass )
+                .Include( p => p.LearningClass.LearningCourse )
+                .Where( p => p.PersonId == personId );
+
+            return includePerson ? baseQuery.Include( p => p.Person ) : baseQuery;
+        }
+
+        /// <summary>
         /// Gets a list of facilitator <see cref="LearningActivityParticipantBag"/> for the specified
         /// <see cref="LearningClass"/> and (optionally) for one or more <see cref="Person" /> identifiers.
         /// </summary>
@@ -125,6 +141,25 @@ namespace Rock.Model
         public IQueryable<LearningParticipant> GetFacilitators( int classId )
         {
             return GetParticipants( classId ).Where( a => a.GroupRole.IsLeader );
+        }
+
+        /// <summary>
+        /// Gets all facilitators for a specified <see cref="LearningCourse"/> and <see cref="LearningSemester"/>.
+        /// </summary>
+        /// <param name="courseId">The identifier of the course to get facilitators for.</param>
+        /// <param name="semesterId">The identifier of the semester to get facilitators for.</param>
+        /// <param name="includePerson"><c>true</c> to include the Person data.</param>
+        /// <returns>An IQueryable of LearningParticipant containing only Facilitators for the specified course and semester.</returns>
+        public IQueryable<LearningParticipant> GetFacilitators( int courseId, int semesterId, bool includePerson = true )
+        {
+            var baseQuery = Queryable()
+                .Include( c => c.LearningClass )
+                .Include( c => c.GroupRole )
+                .Where( c => c.LearningClass.LearningCourseId == courseId )
+                .Where( c => c.LearningClass.LearningSemesterId == semesterId )
+                .Where( c => c.GroupRole.IsLeader == true );
+
+            return includePerson ? baseQuery.Include( c => c.Person ) : baseQuery;
         }
 
         /// <summary>

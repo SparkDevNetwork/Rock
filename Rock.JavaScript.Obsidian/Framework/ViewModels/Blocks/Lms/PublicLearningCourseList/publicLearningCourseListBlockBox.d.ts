@@ -22,6 +22,6 @@
 //
 
 export type PublicLearningCourseListBlockBox = {
-    /** Gets or sets the HTML representing the available courses. */
+    /** Gets or sets the HTML to be rendered for the courses list content. */
     coursesHtml: string;
 };

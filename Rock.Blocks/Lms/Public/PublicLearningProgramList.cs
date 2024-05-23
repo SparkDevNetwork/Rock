@@ -110,7 +110,7 @@ namespace Rock.Blocks.Lms
 			</div>
 			
 			<div class=""program-item-footer d-flex justify-content-between mt-4 p-3"">
-				<button class=""btn btn-default"" href=""{{ program.CoursesLink }}"">Learn More</button>
+				<a class=""btn btn-default"" href=""{{ program.CoursesLink }}"">Learn More</a>
 				
 				{% if program.CompletionStatus == 'Completed' %}
 					<span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
@@ -161,10 +161,6 @@ namespace Rock.Blocks.Lms
             var template = GetAttributeValue( AttributeKey.ProgramListTemplate ) ?? string.Empty;
             box.ProgramsHtml = template.ResolveMergeFields( mergeFields );
         }
-
-        #endregion
-
-        #region Block Actions
 
         #endregion
     }

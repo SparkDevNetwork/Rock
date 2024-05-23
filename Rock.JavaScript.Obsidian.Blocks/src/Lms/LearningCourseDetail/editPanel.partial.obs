@@ -77,7 +77,7 @@
                                             </span>
                                         </div>
                                         <div class="col-xs-12 col-md-3">
-                                            {{ RequirementTypeDescription[req.requirementType] ?? "" }}
+                                            {{ RequirementTypeDescription[req.requirementType ?? ""] ?? "" }}
                                         </div>
                                         <div class="col-xs-12 col-md-2">
                                             <button @click="onDeleteRequirementClick(req.learningCourseRequirementIdKey ?? '')" class="btn btn-danger btn-sm" title="Delete Course Requirement">
@@ -216,7 +216,7 @@
     const allowHistoricalAccess = propertyRef(props.modelValue.allowHistoricalAccess ?? false, "AllowHistoricalAccess");
     const enableAnnouncements = propertyRef(props.modelValue.enableAnnouncements ?? false, "EnableAnnouncements");
     const imageBinaryFile = propertyRef(props.modelValue.imageBinaryFile ?? {}, "ImageBinaryFile");
-    const courseRequirements = ref(props.modelValue.courseRequirements ?? []);
+    const courseRequirements = ref<LearningCourseRequirementBag[]>(props.modelValue.courseRequirements ?? []);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -348,7 +348,6 @@
             completionWorkflowType: completionWorkflowType.value,
             allowHistoricalAccess: allowHistoricalAccess.value,
             enableAnnouncements: enableAnnouncements.value,
-            courseRequirements: courseRequirements.value,
             imageBinaryFile: imageBinaryFile.value
         };
 
