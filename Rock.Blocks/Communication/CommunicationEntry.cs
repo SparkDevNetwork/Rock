@@ -478,6 +478,7 @@ namespace Rock.Blocks.Communication
                         DocumentFolderRoot = GetAttributeValue( AttributeKey.DocumentRootFolder ),
                         FromName = sender?.FullName,
                         FromAddress = sender?.Email,
+                        HasActiveTransport = emailMedium.Transport?.IsActive ?? false,
                         ImageFolderRoot = GetAttributeValue( AttributeKey.ImageRootFolder ),
                         IsAttachmentUploaderShown = GetAttributeValue( AttributeKey.ShowAttachmentUploader ).AsBoolean(),
                         IsUserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean(),
@@ -493,10 +494,11 @@ namespace Rock.Blocks.Communication
                 var currentPerson = GetCurrentPerson();
                 return new CommunicationEntrySmsMediumOptionsBag
                 {
+                    HasActiveTransport = smsMedium.Transport?.IsActive ?? false,
                     SmsFromNumbers = SystemPhoneNumberCache
                         .All( includeInactive: false )
                         .Where( spn => spn.IsAuthorized( Authorization.VIEW, currentPerson ) && allowedSmsFromNumberGuids.ContainsOrEmpty( spn.Guid ) )
-                        .ToListItemBagList()
+                        .ToListItemBagList(),
                 };
             }
 

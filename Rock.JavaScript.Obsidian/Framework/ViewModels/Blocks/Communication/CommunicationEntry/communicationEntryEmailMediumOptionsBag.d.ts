@@ -42,6 +42,9 @@ export type CommunicationEntryEmailMediumOptionsBag = {
     /** Gets or sets the name of the sender. */
     fromName?: string | null;
 
+    /** Gets or sets a value indicating whether this medium has an active transport. */
+    hasActiveTransport: boolean;
+
     /** Gets or sets the image folder root. */
     imageFolderRoot?: string | null;
 

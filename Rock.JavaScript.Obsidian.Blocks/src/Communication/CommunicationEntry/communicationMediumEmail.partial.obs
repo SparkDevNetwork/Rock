@@ -3,12 +3,23 @@
     <NotificationBox v-if="errorMessage"
                      heading="Please correct the following:"
                      alertType="validation">
-        <ul>
+        <ul ref="errorMessageElement">
             <li>{{ errorMessage }}</li>
         </ul>
     </NotificationBox>
 
+    <NotificationBox v-if="!mediumOptions.hasActiveTransport"
+                     id="nbInvalidTransport"
+                     alertType="warning"
+                     :dismissible="true"
+                     heading="Warning">
+        The Email medium does not have an active transport configured. The communication will not be delivered until the transport is configured correctly.
+    </NotificationBox>
+
+    <div ref="topFormElement"></div>
+
     <RockForm v-model:submit="submitForm"
+              @visibleValidationChanged="onFormValidationChanged"
               @submit="onFormSubmitted">
         <div class="row">
             <div class="col-sm-12">
@@ -177,6 +188,13 @@
                         @click="save">Save as Draft</RockButton>
         </div>
     </RockForm>
+
+    <NotificationBox v-if="testResult?.messageHtml"
+                     :alertType="getAlertType(testResult.messageType)"
+                     class="margin-t-md"
+                     id="nbTestResult">
+        <span ref="testResultElement" v-html="testResult.messageHtml"></span>
+    </NotificationBox>
 </template>
 
 <style scoped>
@@ -221,6 +239,7 @@
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
     import { Guid } from "@Obsidian/Types";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { getAlertType, scrollIntoView } from "./utils.partial";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -262,6 +281,9 @@
 
     //#region Values
 
+    const topFormElement = ref<HTMLElement | undefined>();
+    const errorMessageElement = ref<HTMLElement | undefined>();
+    const testResultElement = ref<HTMLElement | undefined>();
     const isMounted = ref<boolean>(false);
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
     const recipients = ref<CommunicationEntryRecipientBag[]>(props.communication?.recipients ?? []);
@@ -449,7 +471,16 @@
 
     function raiseError(error: string): void {
         errorMessage.value = error;
+        scrollIntoView(() => errorMessageElement.value);
+
         emit("error", error);
+    }
+
+    function raiseTested(testResponse: CommunicationEntryTestResponseBag): void {
+        testResult.value = testResponse;
+        scrollIntoView(() => testResultElement.value);
+
+        emit("tested", testResponse);
     }
 
     //#endregion
@@ -511,14 +542,14 @@
         if (!isRecipientRequired.value) {
             // If validation is already turned off,
             // then trigger "save" immediately.
-            triggerFormSubmission(doSave);
+            validateFormAndExecuteAction(doSave);
         }
         else {
             // If validation needs to be turned off,
             // then trigger "save" on the next tick
             // so the form has a chance to update the validation UI.
             isRecipientRequired.value = false;
-            nextTick(() => triggerFormSubmission(doSave));
+            nextTick(() => validateFormAndExecuteAction(doSave));
         }
     }
 
@@ -531,14 +562,14 @@
         if (isRecipientRequired.value) {
             // If validation is already turned on,
             // then trigger "send" immediately.
-            triggerFormSubmission(doSend);
+            validateFormAndExecuteAction(doSend);
         }
         else {
             // If validation needs to be turned on,
             // then trigger "send" on the next tick
             // so the form has a chance to update the validation UI.
             isRecipientRequired.value = true;
-            nextTick(() => triggerFormSubmission(doSend));
+            nextTick(() => validateFormAndExecuteAction(doSend));
         }
     }
 
@@ -552,14 +583,14 @@
         if (isRecipientRequired.value) {
             // If validation is already turned on,
             // then trigger "sendTest" immediately.
-            triggerFormSubmission(doSendTest);
+            validateFormAndExecuteAction(doSendTest);
         }
         else {
             // If validation needs to be turned on,
             // then trigger "sendTest" on the next tick
             // so the form has a chance to update the validation UI.
             isRecipientRequired.value = true;
-            nextTick(() => triggerFormSubmission(doSendTest));
+            nextTick(() => validateFormAndExecuteAction(doSendTest));
         }
     }
 
@@ -568,7 +599,7 @@
      * This is needed because the button elements are outside
      * of the form element we want to submit.
      */
-    function triggerFormSubmission(action: () => PromiseLike<void>): void {
+    function validateFormAndExecuteAction(action: () => PromiseLike<void>): void {
         pendingAction.value = action;
         if (!submitForm.value) {
             submitForm.value = true;
@@ -577,6 +608,12 @@
             // Form is already submitted so resubmit it on the next tick.
             submitForm.value = false;
             nextTick(() => submitForm.value = true);
+        }
+    }
+
+    function onFormValidationChanged(errors: unknown[]): void {
+        if (errors?.length) {
+            scrollIntoView(() => topFormElement.value);
         }
     }
 
@@ -697,8 +734,7 @@
                 raiseError(result.errorMessage || "An error occurred while sending a test communication. Please try again.");
             }
             else {
-                emit("tested", result.data);
-                testResult.value = result.data;
+                raiseTested(result.data);
             }
         }
         finally {

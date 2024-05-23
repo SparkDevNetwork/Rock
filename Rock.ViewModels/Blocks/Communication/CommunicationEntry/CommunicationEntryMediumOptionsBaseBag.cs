@@ -49,6 +49,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         public List<ListItemBag> Templates { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this medium has an active transport.
+        /// </summary>
+        public bool HasActiveTransport { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this communication medium is unknown.
         /// </summary>
         /// <value>

@@ -3,30 +3,24 @@
            :title="config.title ?? 'New Communication'"
            titleIconCssClass="fa fa-comment-o"
            type="block">
+
         <template v-if="statusLabel" #subheaderRight>
             <HighlightLabel labelType="default">{{ statusLabel }}</HighlightLabel>
         </template>
 
         <template #default>
-            <div ref="panelDiv" v-if="!areResultsShown">
+            <div v-if="!areResultsShown">
                 <PanelNavigationBar v-model="selectedMediumEntityTypeGuidOrEmptyString"
                                     :isFirstSelectedByDefault="true"
                                     :items="mediums" />
-                <NotificationBox v-if="false"
-                                 id="nbInvalidTransport"
-                                 alertType="warning"
-                                 :dismissible="true"
-                                 heading="Warning" />
 
                 <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
                     <Email v-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumEmail)"
                            :communication="config.communication"
                            :isFullMode="isFullMode"
                            :mediumOptions="(config.mediumOptions as CommunicationEntryEmailMediumOptionsBag)"
-                           @error="onError"
-                           @saved="onSaved"
-                           @sent="onSent"
-                           @tested="onTested" />
+                           @saved="onSentOrSaved"
+                           @sent="onSentOrSaved" />
 
                     <Sms v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumSms)"
                          :isFullMode="isFullMode" />
@@ -46,35 +40,30 @@
                 </KeepAlive>
             </div>
 
-            <div ref="sentResultsDiv" v-if="areResultsShown" id="pnlResult" class="js-pnl-result">
+            <div v-else
+                 id="pnlResult"
+                 ref="sentResultsDiv"
+                 class="js-pnl-result">
+
                 <NotificationBox alertType="success">{{ resultMessage }}</NotificationBox>
                 <br />
                 <a :href="viewCommunicationUrl">View Communication</a>
             </div>
-
-            <NotificationBox v-if="testResult?.messageHtml"
-                             :alertType="getAlertType(testResult.messageType)"
-                             class="margin-t-md"
-                             id="nbTestResult">
-                <span ref="testResultsSpan" v-html="testResult.messageHtml"></span>
-            </NotificationBox>
         </template>
     </Panel>
 </template>
 
 <script setup lang="ts">
-    import { Ref, computed, nextTick, ref } from "vue";
+    import { computed, ref } from "vue";
     import PanelNavigationBar from "./CommunicationEntry/panelNavigationBar.partial.obs";
     import { Nullable } from "./CommunicationEntry/types.partial";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
-    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
-    import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import Email from "./CommunicationEntry/communicationMediumEmail.partial.obs";
     import Sms from "./CommunicationEntry/communicationMediumSms.partial.obs";
@@ -98,10 +87,6 @@
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
     const resultMessage = ref<Nullable<string>>("");
     const viewCommunicationUrl = ref<string>(window.location.href);
-    const validationSummaryMessage = ref<Nullable<string>>();
-    const testResult = ref<Nullable<CommunicationEntryTestResponseBag>>();
-    const panelDiv = ref<HTMLElement | undefined>();
-    const testResultsSpan = ref<HTMLElement | undefined>();
 
     //#endregion
 
@@ -110,11 +95,6 @@
     //#endregion
 
     //#region Functions
-
-    /** Converts a string to an alert type. */
-    function getAlertType(type: Nullable<string>): AlertType {
-        return type as AlertType ?? AlertType.Default;
-    }
 
     /** Gets the label for a communication status. */
     function getStatusLabel(status: CommunicationStatus): string {
@@ -126,37 +106,12 @@
         }
     }
 
-    /** Scrolls to an element. */
-    function scrollToElement(element: Ref<HTMLElement | undefined>): void {
-        console.log("about to scroll to ", element.value);
-        nextTick(() => {
-            console.log("about to scroll for real to ", element.value);
-            if (element.value) {
-                console.log("scrolling to ", element.value);
-                // element.value.scrollIntoView({
-                //     behavior: "smooth",
-                //     block: "start",
-                //     inline: "start"
-                // });
-                element.value.scrollIntoView(false);
-                console.log("scrolled to ", element.value);
-            }
-        });
-    }
-
     //#endregion
 
     //#region Event Handlers
 
-    /** Event handler for an error occurring. */
-    function onError(error: string): void {
-        validationSummaryMessage.value = error;
-        // Scroll to the top of the panel since the errors may be hidden behind the header.
-        scrollToElement(panelDiv);
-    }
-
     /** Event handler for the communication being sent. */
-    function onSent(value: CommunicationEntrySendResponseBag): void {
+    function onSentOrSaved(value: CommunicationEntrySendResponseBag): void {
         if (value.redirectToViewMode) {
             const url = new URL(window.location.href);
             const queryParams = url.searchParams;
@@ -168,21 +123,6 @@
         statusLabel.value = getStatusLabel(value.communicationStatus ?? CommunicationStatus.Draft);
         resultMessage.value = value.message;
         areResultsShown.value = true;
-
-        // Scroll on next tick so Vue can process the v-if binding that shows the elements.
-        scrollToElement(sentResultsDiv);
-    }
-
-    /** Event handler for the communication being saved. */
-    function onSaved(value: CommunicationEntrySendResponseBag): void {
-        // Behavior is the same as the communication being sent.
-        onSent(value);
-    }
-
-    /** Event handler for a test result being received. */
-    function onTested(value: CommunicationEntryTestResponseBag): void {
-        testResult.value = value;
-        scrollToElement(testResultsSpan);
     }
 
     //#endregion

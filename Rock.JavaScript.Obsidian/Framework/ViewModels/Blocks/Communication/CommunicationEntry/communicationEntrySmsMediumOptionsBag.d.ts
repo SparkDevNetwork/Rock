@@ -26,6 +26,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing the Email Medium options for the Communication Entry block. */
 export type CommunicationEntrySmsMediumOptionsBag = {
+    /** Gets or sets a value indicating whether this medium has an active transport. */
+    hasActiveTransport: boolean;
+
     /** Gets a value indicating whether this communication medium is unknown. */
     isUnknown: boolean;
 
